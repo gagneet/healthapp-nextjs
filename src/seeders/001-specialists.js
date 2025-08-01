@@ -1,7 +1,7 @@
 // src/seeders/001-specialities.js
 'use strict';
 
-module.exports = {
+export default {
   up: async (queryInterface, Sequelize) => {
     await queryInterface.bulkInsert('specialities', [
       {

@@ -1,8 +1,8 @@
 // src/controllers/authController.js
-const bcrypt = require('bcryptjs');
-const { User, Doctor, Patient, UserRole, Speciality } = require('../models');
-const { generateToken, generateRefreshToken } = require('../config/jwt');
-const { USER_CATEGORIES, ACCOUNT_STATUS } = require('../config/constants');
+import bcrypt from 'bcryptjs';
+import { User, Doctor, Patient, UserRole, Speciality } from '../models/index.js';
+import { generateToken, generateRefreshToken, verifyToken } from '../config/jwt.js';
+import { USER_CATEGORIES, ACCOUNT_STATUS } from '../config/constants.js';
 
 class AuthController {
   async signIn(req, res, next) {
@@ -256,4 +256,4 @@ class AuthController {
   }
 }
 
-module.exports = new AuthController();
+export default new AuthController();

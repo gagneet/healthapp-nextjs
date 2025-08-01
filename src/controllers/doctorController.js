@@ -1,6 +1,6 @@
 // src/controllers/doctorController.js
-const { Doctor, User, Speciality, Patient, CarePlan } = require('../models');
-const { Op } = require('sequelize');
+import { Doctor, User, Speciality, Patient, CarePlan } from '../models/index.js';
+import { Op } from 'sequelize';
 
 class DoctorController {
   async getDoctor(req, res, next) {
@@ -191,4 +191,4 @@ class DoctorController {
   }
 }
 
-module.exports = new DoctorController();
+export default new DoctorController();

@@ -1,6 +1,6 @@
 // src/controllers/appointmentController.js
-const { Appointment, Patient, Doctor, User, ScheduleEvent } = require('../models');
-const { Op } = require('sequelize');
+import { Appointment, Patient, Doctor, User, ScheduleEvent } from '../models/index.js';
+import { Op } from 'sequelize';
 
 class AppointmentController {
   async createAppointment(req, res, next) {
@@ -258,4 +258,4 @@ class AppointmentController {
   }
 }
 
-module.exports = new AppointmentController();
+export default new AppointmentController();

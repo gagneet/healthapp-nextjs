@@ -1,6 +1,6 @@
 // src/controllers/carePlanController.js
-const { CarePlan, Patient, Doctor, User, Medication, Appointment, Vital } = require('../models');
-const { Op } = require('sequelize');
+import { CarePlan, Patient, Doctor, User, Medication, Appointment, Vital } from '../models/index.js';
+import { Op } from 'sequelize';
 
 class CarePlanController {
   async getPatientCarePlan(req, res, next) {
@@ -219,4 +219,4 @@ class CarePlanController {
   }
 }
 
-module.exports = new CarePlanController();
+export default new CarePlanController();

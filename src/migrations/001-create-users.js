@@ -1,7 +1,7 @@
 // src/migrations/001-create-users.js
 'use strict';
 
-module.exports = {
+export default {
   up: async (queryInterface, Sequelize) => {
     await queryInterface.createTable('users', {
       id: {

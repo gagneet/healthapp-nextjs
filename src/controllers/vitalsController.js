@@ -1,5 +1,6 @@
 // src/controllers/vitalsController.js
-const { Vital, VitalTemplate, CarePlan, ScheduleEvent } = require('../models');
+import { Vital, VitalTemplate, CarePlan, ScheduleEvent } from '../models/index.js';
+import { Op } from 'sequelize';
 
 class VitalsController {
   async createVital(req, res, next) {
@@ -238,4 +239,4 @@ class VitalsController {
   }
 }
 
-module.exports = new VitalsController();
+export default new VitalsController();

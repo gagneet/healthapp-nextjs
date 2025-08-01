@@ -1,6 +1,6 @@
 // src/controllers/medicationController.js
-const { Medication, Medicine, Patient, User, ScheduleEvent } = require('../models');
-const { Op } = require('sequelize');
+import { Medication, Medicine, Patient, User, ScheduleEvent } from '../models/index.js';
+import { Op } from 'sequelize';
 
 class MedicationController {
   async getPatientMedications(req, res, next) {
@@ -251,4 +251,4 @@ class MedicationController {
   }
 }
 
-module.exports = new MedicationController();
+export default new MedicationController();

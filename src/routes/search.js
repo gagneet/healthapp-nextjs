@@ -1,8 +1,8 @@
 // src/routes/search.js
-const express = require('express');
-const { Medicine, Speciality } = require('../models');
-const { authenticate } = require('../middleware/auth');
-const { Op } = require('sequelize');
+import express from 'express';
+import { Medicine, Speciality } from '../models/index.js';
+import { authenticate } from '../middleware/auth.js';
+import { Op } from 'sequelize';
 
 const router = express.Router();
 
@@ -99,4 +99,4 @@ router.get('/specialities',
   }
 );
 
-module.exports = router;
+export default router;

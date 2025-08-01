@@ -1,6 +1,6 @@
 // src/controllers/adminController.js
-const { Doctor, Patient, User, Medicine, Speciality } = require('../models');
-const { Op } = require('sequelize');
+import { Doctor, Patient, User, Medicine, Speciality, Medication, Appointment } from '../models/index.js';
+import { Op } from 'sequelize';
 
 class AdminController {
   async getDoctors(req, res, next) {
@@ -239,4 +239,4 @@ class AdminController {
   }
 }
 
-module.exports = new AdminController();
+export default new AdminController();
