@@ -1,308 +1,310 @@
-// src/controllers/patientController.js
-const { Patient, User, Doctor, CarePlan, Medication, Appointment } = require('../models');
-const { Op } = require('sequelize');
-const { PAGINATION } = require('../config/constants');
+// src/controllers/PatientController.js - Modern ES Module Pattern
+import { User, Doctor, Patient, CarePlan } from '../models/index.js';
+import { Op } from 'sequelize';
+import { PAGINATION, USER_CATEGORIES } from '../config/constants.js';
+import ResponseFormatter from '../utils/responseFormatter.js';
+import PatientService from '../services/patientService.js';
+import { ValidationError, NotFoundError } from '../utils/errors.js';
 
 class PatientController {
+  /**
+   * Get patient details with comprehensive medical information
+   * @param {Request} req - Express request object
+   * @param {Response} res - Express response object
+   * @param {Function} next - Express next middleware function
+   */
   async getPatient(req, res, next) {
     try {
       const { patientId } = req.params;
 
-      const patient = await Patient.findByPk(patientId, {
+      // Use the normalized User model approach
+      const user = await User.findOne({
+        where: { 
+          id: patientId,
+          category: USER_CATEGORIES.PATIENT 
+        },
         include: [
           {
-            model: User,
-            as: 'user',
-            attributes: ['email', 'mobile_number', 'user_name']
+            model: Patient,
+            as: 'patient',
+            required: true
           },
           {
-            model: User,
-            as: 'assignedDoctor',
-            attributes: ['user_name', 'email']
+            model: Doctor,
+            as: 'primaryDoctor',
+            required: false,
+            include: [
+              {
+                model: User,
+                as: 'user',
+                attributes: ['first_name', 'last_name', 'email']
+              }
+            ]
           }
         ]
       });
 
-      if (!patient) {
-        return res.status(404).json({
-          status: false,
-          statusCode: 404,
-          payload: {
-            error: {
-              status: 'NOT_FOUND',
-              message: 'Patient not found'
-            }
-          }
-        });
+      if (!user) {
+        throw new NotFoundError('Patient not found');
       }
 
-      // Format response according to API documentation
+      // Modern response formatting with the normalized data
       const responseData = {
         patients: {
-          [patient.id]: {
+          [user.patient.id]: {
             basic_info: {
-              id: patient.id.toString(),
-              user_id: patient.user_id.toString(),
-              gender: patient.gender,
-              height: patient.height,
-              weight: patient.weight,
-              height_cm: patient.height_cm,
-              weight_kg: patient.weight_kg,
-              current_age: patient.current_age,
-              age: `${patient.current_age} years`,
-              first_name: patient.first_name,
-              middle_name: patient.middle_name,
-              last_name: patient.last_name,
-              full_name: `${patient.first_name} ${patient.middle_name || ''} ${patient.last_name}`.trim(),
-              address: `${patient.street || ''} ${patient.city || ''} ${patient.state || ''}`.trim(),
-              uid: patient.uid,
-              mobile_number: patient.user?.mobile_number
+              id: user.patient.id.toString(),
+              user_id: user.id.toString(),
+              
+              // Common fields from User model
+              gender: user.gender,
+              first_name: user.first_name,
+              middle_name: user.middle_name,
+              last_name: user.last_name,
+              full_name: user.full_name, // Virtual field
+              current_age: user.current_age, // Virtual field
+              age: `${user.current_age} years`,
+              
+              // Address information from User model
+              street: user.street,
+              city: user.city,
+              state: user.state,
+              country: user.country,
+              formatted_address: user.formatted_address,
+              
+              // Contact from User model
+              mobile_number: user.mobile_number,
+              email: user.email,
+              
+              // Patient-specific fields
+              patient_id: user.patient.patient_id,
+              blood_group: user.patient.blood_group,
+              height_cm: user.patient.height_cm,
+              weight_kg: user.patient.weight_kg,
+              bmi: user.patient.bmi, // Virtual field
             },
-            payment_terms_accepted: !!patient.payment_terms_accepted,
-            activated_on: patient.activated_on,
-            details: {
-              profile_pic: patient.details?.profile_pic || null,
-              comorbidities: patient.details?.comorbidities || null,
-              allergies: patient.details?.allergies || null
+            
+            // Medical information
+            medical_info: {
+              allergies: user.patient.allergies || [],
+              chronic_conditions: user.patient.chronic_conditions || [],
+              current_medications: user.patient.current_medications || [],
+              family_medical_history: user.patient.family_medical_history || {},
+              emergency_contact: user.patient.emergency_contact || {},
+              insurance_info: user.patient.insurance_info || {}
             },
-            dob: patient.dob,
-            created_at: patient.created_at,
-            care_plan_id: null, // Get from active care plan
-            user_role_id: null, // Get from user roles
-            feedId: Buffer.from(`patient_${patient.id}`).toString('base64'),
-            notificationToken: 'getstream_token'
+            
+            // System fields
+            consent_given: user.patient.consent_given,
+            data_sharing_consent: user.patient.data_sharing_consent,
+            activated_on: user.activated_on,
+            created_at: user.created_at,
+            updated_at: user.updated_at,
+            
+            // Relationships
+            primary_doctor: user.primaryDoctor ? {
+              id: user.primaryDoctor.id,
+              name: user.primaryDoctor.user.full_name,
+              email: user.primaryDoctor.user.email
+            } : null,
+            
+            // Integration fields
+            feedId: Buffer.from(`patient_${user.patient.id}`).toString('base64'),
+            notificationToken: 'getstream_token' // Implement GetStream integration
           }
         }
       };
 
-      res.status(200).json({
-        status: true,
-        statusCode: 200,
-        payload: {
-          data: responseData,
-          message: 'Patient details retrieved successfully'
-        }
-      });
+      res.status(200).json(ResponseFormatter.success(
+        responseData,
+        'Patient details retrieved successfully'
+      ));
+
     } catch (error) {
       next(error);
     }
   }
 
+  /**
+   * Create a new patient with modern validation and service layer
+   */
+  async createPatient(req, res, next) {
+    try {
+      const patientData = req.body;
+      
+      // Use service layer for complex business logic
+      const result = await PatientService.createPatientWithUser(
+        patientData, 
+        req.user.id
+      );
+
+      res.status(201).json(ResponseFormatter.success(
+        { 
+          patient: result.patient,
+          user: result.user 
+        },
+        'Patient created successfully',
+        201
+      ));
+
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * Get patients with advanced filtering and search
+   */
   async getPatients(req, res, next) {
     try {
       const {
         page = PAGINATION.DEFAULT_PAGE,
         limit = PAGINATION.DEFAULT_LIMIT,
         search,
+        filter = {},
         sortBy = 'created_at',
         sortOrder = 'desc'
       } = req.query;
 
-      const offset = (page - 1) * limit;
-      const whereClause = {};
+      // Build dynamic where clause
+      const whereClause = {
+        category: USER_CATEGORIES.PATIENT,
+        ...this.buildSearchClause(search),
+        ...this.buildFilterClause(filter, req.userCategory, req.user.id)
+      };
 
-      if (search) {
-        whereClause[Op.or] = [
-          { first_name: { [Op.like]: `%${search}%` } },
-          { last_name: { [Op.like]: `%${search}%` } },
-          { uid: { [Op.like]: `%${search}%` } }
-        ];
-      }
-
-      // Add doctor filter if user is a doctor
-      if (req.userCategory === 'doctor') {
-        // Get doctor's patients only (implement based on your business logic)
-      }
-
-      const { count, rows: patients } = await Patient.findAndCountAll({
+      const { count, rows: users } = await User.findAndCountAll({
         where: whereClause,
         include: [
           {
-            model: User,
-            as: 'user',
-            attributes: ['email', 'mobile_number']
+            model: Patient,
+            as: 'patient',
+            required: true,
+            include: [
+              {
+                model: User,
+                as: 'primaryDoctor',
+                required: false,
+                attributes: ['first_name', 'last_name']
+              }
+            ]
           }
         ],
-        offset,
+        offset: (page - 1) * limit,
         limit: parseInt(limit),
-        order: [[sortBy, sortOrder.toUpperCase()]]
+        order: [[sortBy, sortOrder.toUpperCase()]],
+        distinct: true // Important for accurate count with joins
       });
 
+      // Modern response formatting
       const responseData = {
-        patients: {}
+        patients: users.reduce((acc, user) => {
+          acc[user.patient.id] = {
+            basic_info: {
+              id: user.patient.id.toString(),
+              user_id: user.id.toString(),
+              full_name: user.full_name,
+              first_name: user.first_name,
+              last_name: user.last_name,
+              current_age: user.current_age,
+              gender: user.gender,
+              mobile_number: user.mobile_number,
+              patient_id: user.patient.patient_id,
+              primary_doctor: user.patient.primaryDoctor?.full_name || null
+            }
+          };
+          return acc;
+        }, {})
       };
 
-      patients.forEach(patient => {
-        responseData.patients[patient.id] = {
-          basic_info: {
-            id: patient.id.toString(),
-            first_name: patient.first_name,
-            last_name: patient.last_name,
-            mobile_number: patient.user?.mobile_number,
-            current_age: patient.current_age,
-            gender: patient.gender
-          }
-        };
-      });
+      const pagination = {
+        page: parseInt(page),
+        limit: parseInt(limit),
+        total: count,
+        total_pages: Math.ceil(count / limit),
+        has_next: page < Math.ceil(count / limit),
+        has_prev: page > 1
+      };
 
-      const totalPages = Math.ceil(count / limit);
+      res.status(200).json(ResponseFormatter.paginated(
+        responseData,
+        pagination,
+        'Patients retrieved successfully'
+      ));
 
-      res.status(200).json({
-        status: true,
-        statusCode: 200,
-        payload: {
-          data: responseData,
-          pagination: {
-            page: parseInt(page),
-            limit: parseInt(limit),
-            total: count,
-            total_pages: totalPages,
-            has_next: page < totalPages,
-            has_prev: page > 1
-          },
-          message: 'Patients retrieved successfully'
-        }
-      });
     } catch (error) {
       next(error);
     }
   }
 
-  async createPatient(req, res, next) {
-    try {
-      const {
-        first_name,
-        middle_name,
-        last_name,
-        gender,
-        dob,
-        mobile_number,
-        email,
-        address,
-        comorbidities,
-        allergies,
-        height_cm,
-        weight_kg
-      } = req.body;
-
-      // Create user account for patient
-      const user = await User.create({
-        email,
-        mobile_number,
-        user_name: `${first_name} ${last_name}`,
-        category: 'patient',
-        account_status: 'active'
-      });
-
-      // Create patient record
-      const patient = await Patient.create({
-        user_id: user.id,
-        first_name,
-        middle_name,
-        last_name,
-        gender,
-        dob,
-        height_cm,
-        weight_kg,
-        street: address,
-        details: {
-          comorbidities,
-          allergies
-        },
-        uid: `PAT${String(user.id).padStart(6, '0')}`
-      });
-
-      // Create user role
-      await UserRole.create({
-        user_identity: user.id,
-        linked_with: 'patient',
-        linked_id: patient.id
-      });
-
-      res.status(201).json({
-        status: true,
-        statusCode: 201,
-        payload: {
-          data: {
-            patient: {
-              id: patient.id,
-              user_id: user.id,
-              uid: patient.uid
-            }
-          },
-          message: 'Patient created successfully'
-        }
-      });
-    } catch (error) {
-      next(error);
-    }
-  }
-
+  /**
+   * Update patient with partial updates and validation
+   */
   async updatePatient(req, res, next) {
     try {
       const { patientId } = req.params;
       const updateData = req.body;
 
-      const patient = await Patient.findByPk(patientId);
-      if (!patient) {
-        return res.status(404).json({
-          status: false,
-          statusCode: 404,
-          payload: {
-            error: {
-              status: 'NOT_FOUND',
-              message: 'Patient not found'
-            }
-          }
-        });
-      }
+      const result = await PatientService.updatePatientData(
+        patientId, 
+        updateData,
+        req.user.id
+      );
 
-      await patient.update(updateData);
+      res.status(200).json(ResponseFormatter.success(
+        { patient: result },
+        'Patient updated successfully'
+      ));
 
-      res.status(200).json({
-        status: true,
-        statusCode: 200,
-        payload: {
-          data: { patient },
-          message: 'Patient updated successfully'
-        }
-      });
     } catch (error) {
       next(error);
     }
   }
 
-  async deletePatient(req, res, next) {
-    try {
-      const { patientId } = req.params;
+  // Helper methods using modern ES6+ features
+  buildSearchClause(search) {
+    if (!search) return {};
+    
+    return {
+      [Op.or]: [
+        { first_name: { [Op.like]: `%${search}%` } },
+        { last_name: { [Op.like]: `%${search}%` } },
+        { email: { [Op.like]: `%${search}%` } },
+        { '$patient.patient_id$': { [Op.like]: `%${search}%` } }
+      ]
+    };
+  }
 
-      const patient = await Patient.findByPk(patientId);
-      if (!patient) {
-        return res.status(404).json({
-          status: false,
-          statusCode: 404,
-          payload: {
-            error: {
-              status: 'NOT_FOUND',
-              message: 'Patient not found'
-            }
-          }
-        });
-      }
+  buildFilterClause(filter, userCategory, userId) {
+    const clause = {};
 
-      await patient.destroy(); // Soft delete
-
-      res.status(200).json({
-        status: true,
-        statusCode: 200,
-        payload: {
-          message: 'Patient deleted successfully'
-        }
-      });
-    } catch (error) {
-      next(error);
+    // Doctor can only see their patients
+    if (userCategory === USER_CATEGORIES.DOCTOR) {
+      clause['$patient.primary_doctor_id$'] = userId;
     }
+
+    // Additional filters
+    if (filter.gender) clause.gender = filter.gender;
+    if (filter.blood_group) clause['$patient.blood_group$'] = filter.blood_group;
+    if (filter.age_min || filter.age_max) {
+      // Date calculation for age filtering
+      const currentYear = new Date().getFullYear();
+      if (filter.age_min) {
+        clause.date_of_birth = {
+          ...clause.date_of_birth,
+          [Op.lte]: new Date(currentYear - filter.age_min, 11, 31)
+        };
+      }
+      if (filter.age_max) {
+        clause.date_of_birth = {
+          ...clause.date_of_birth,
+          [Op.gte]: new Date(currentYear - filter.age_max, 0, 1)
+        };
+      }
+    }
+
+    return clause;
   }
 }
 
-module.exports = new PatientController();
+export default new PatientController();

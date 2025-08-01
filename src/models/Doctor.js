@@ -1,5 +1,5 @@
-// src/models/Doctor.js
-module.exports = (sequelize, DataTypes) => {
+// src/models/Doctor.js - Simplified, Role-Specific Fields Only
+export default (sequelize, DataTypes) => {
   const Doctor = sequelize.define('Doctor', {
     id: {
       type: DataTypes.INTEGER,
@@ -9,15 +9,14 @@ module.exports = (sequelize, DataTypes) => {
     user_id: {
       type: DataTypes.INTEGER,
       allowNull: false,
+      unique: true,
       references: {
         model: 'users',
         key: 'id',
       },
     },
-    city: {
-      type: DataTypes.TEXT,
-      allowNull: true,
-    },
+    
+    // Doctor-Specific Professional Information
     speciality_id: {
       type: DataTypes.INTEGER,
       allowNull: true,
@@ -26,66 +25,59 @@ module.exports = (sequelize, DataTypes) => {
         key: 'id',
       },
     },
-    gender: {
-      type: DataTypes.ENUM('m', 'f', 'o', ''),
-      allowNull: true,
-    },
-    profile_pic: {
-      type: DataTypes.TEXT,
-      allowNull: true,
-    },
-    first_name: {
+    license_number: {
       type: DataTypes.STRING(100),
       allowNull: true,
     },
-    middle_name: {
+    medical_registration_number: {
       type: DataTypes.STRING(100),
       allowNull: true,
     },
-    last_name: {
-      type: DataTypes.STRING(100),
+    years_of_experience: {
+      type: DataTypes.INTEGER,
       allowNull: true,
     },
-    activated_on: {
-      type: DataTypes.DATE,
-      allowNull: true,
-    },
+    
+    // Doctor-Specific Assets
     signature_pic: {
       type: DataTypes.TEXT,
       allowNull: true,
     },
-    place_id: {
+    clinic_address: {
+      type: DataTypes.JSON, // For multiple clinic locations
+      allowNull: true,
+    },
+    
+    // Professional Details
+    consultation_fee: {
+      type: DataTypes.DECIMAL(10, 2),
+      allowNull: true,
+    },
+    available_hours: {
+      type: DataTypes.JSON,
+      allowNull: true,
+    },
+    languages_spoken: {
+      type: DataTypes.JSON,
+      allowNull: true,
+    },
+    
+    // Integration Fields
+    razorpay_account_id: {
       type: DataTypes.STRING(255),
       allowNull: true,
     },
-    latitude: {
-      type: DataTypes.DECIMAL(10, 8),
-      allowNull: true,
+    
+    // Status
+    is_verified: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
     },
-    longitude: {
-      type: DataTypes.DECIMAL(11, 8),
-      allowNull: true,
+    is_available_online: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: true,
     },
-    street: {
-      type: DataTypes.STRING(255),
-      allowNull: true,
-    },
-    state: {
-      type: DataTypes.STRING(255),
-      allowNull: true,
-    },
-    country: {
-      type: DataTypes.STRING(255),
-      allowNull: true,
-    },
-    postal_code: {
-      type: DataTypes.STRING(255),
-      allowNull: true,
-    },
-    formatted_address: {
-      type: DataTypes.STRING(255),
-      allowNull: true,
-    },
+    
     created_at: {
       type: DataTypes.DATE,
       allowNull: false,
@@ -102,11 +94,12 @@ module.exports = (sequelize, DataTypes) => {
     },
   }, {
     tableName: 'doctors',
-    charset: 'latin1',
     paranoid: true,
     indexes: [
       { fields: ['user_id'] },
       { fields: ['speciality_id'] },
+      { fields: ['license_number'] },
+      { fields: ['is_verified'] },
     ],
   });
 

@@ -1,5 +1,5 @@
-// src/models/Patient.js
-module.exports = (sequelize, DataTypes) => {
+// src/models/Patient.js - Simplified, Medical-Specific Fields Only
+export default (sequelize, DataTypes) => {
   const Patient = sequelize.define('Patient', {
     id: {
       type: DataTypes.INTEGER,
@@ -9,124 +9,96 @@ module.exports = (sequelize, DataTypes) => {
     user_id: {
       type: DataTypes.INTEGER,
       allowNull: false,
+      unique: true,
       references: {
         model: 'users',
         key: 'id',
       },
     },
-    assigned_doctor_id: {
-      type: DataTypes.INTEGER,
+    
+    // Medical-Specific Information
+    patient_id: {
+      type: DataTypes.STRING(50),
       allowNull: true,
-      references: {
-        model: 'users',
-        key: 'id',
-      },
+      unique: true,
     },
-    gender: {
-      type: DataTypes.ENUM('m', 'f', 'o', ''),
-      allowNull: true,
-      defaultValue: '',
-    },
-    first_name: {
-      type: DataTypes.STRING(100),
+    blood_group: {
+      type: DataTypes.ENUM('A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'),
       allowNull: true,
     },
-    middle_name: {
-      type: DataTypes.STRING(100),
-      allowNull: true,
-    },
-    last_name: {
-      type: DataTypes.STRING(100),
-      allowNull: true,
-    },
-    age: {
-      type: DataTypes.STRING(255),
-      allowNull: true,
-    },
-    dob: {
-      type: DataTypes.DATE,
-      allowNull: true,
-    },
-    height: {
-      type: DataTypes.STRING(255),
-      allowNull: true,
-    },
-    weight: {
-      type: DataTypes.STRING(255),
-      allowNull: true,
-    },
+    
+    // Physical Measurements
     height_cm: {
       type: DataTypes.DECIMAL(5, 2),
       allowNull: true,
-      validate: {
-        min: 0,
-        max: 300,
-      },
+      validate: { min: 0, max: 300 },
     },
     weight_kg: {
       type: DataTypes.DECIMAL(5, 2),
       allowNull: true,
-      validate: {
-        min: 0,
-        max: 1000,
+      validate: { min: 0, max: 1000 },
+    },
+    bmi: {
+      type: DataTypes.VIRTUAL,
+      get() {
+        if (this.height_cm && this.weight_kg) {
+          const heightM = this.height_cm / 100;
+          return (this.weight_kg / (heightM * heightM)).toFixed(1);
+        }
+        return null;
       },
     },
-    current_age: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-    },
-    activated_on: {
-      type: DataTypes.DATE,
-      allowNull: true,
-    },
-    uid: {
-      type: DataTypes.STRING(255),
-      allowNull: true,
-    },
-    details: {
+    
+    // Medical History
+    allergies: {
       type: DataTypes.JSON,
       allowNull: true,
     },
-    payment_terms_accepted: {
+    chronic_conditions: {
+      type: DataTypes.JSON,
+      allowNull: true,
+    },
+    current_medications: {
+      type: DataTypes.JSON,
+      allowNull: true,
+    },
+    family_medical_history: {
+      type: DataTypes.JSON,
+      allowNull: true,
+    },
+    
+    // Care Relationships
+    primary_doctor_id: {
       type: DataTypes.INTEGER,
-      defaultValue: 0,
+      allowNull: true,
+      references: {
+        model: 'users',
+        key: 'id',
+      },
     },
-    street: {
-      type: DataTypes.STRING(255),
+    
+    // Emergency Contact
+    emergency_contact: {
+      type: DataTypes.JSON,
       allowNull: true,
     },
-    city: {
-      type: DataTypes.STRING(255),
+    
+    // Insurance Information
+    insurance_info: {
+      type: DataTypes.JSON,
       allowNull: true,
     },
-    state: {
-      type: DataTypes.STRING(255),
-      allowNull: true,
+    
+    // Consent and Legal
+    consent_given: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
     },
-    country: {
-      type: DataTypes.STRING(255),
-      allowNull: true,
+    data_sharing_consent: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
     },
-    postal_code: {
-      type: DataTypes.STRING(255),
-      allowNull: true,
-    },
-    latitude: {
-      type: DataTypes.DECIMAL(10, 8),
-      allowNull: true,
-    },
-    longitude: {
-      type: DataTypes.DECIMAL(11, 8),
-      allowNull: true,
-    },
-    place_id: {
-      type: DataTypes.STRING(255),
-      allowNull: true,
-    },
-    formatted_address: {
-      type: DataTypes.STRING(255),
-      allowNull: true,
-    },
+    
     created_at: {
       type: DataTypes.DATE,
       allowNull: false,
@@ -143,40 +115,17 @@ module.exports = (sequelize, DataTypes) => {
     },
   }, {
     tableName: 'patients',
-    charset: 'latin1',
     paranoid: true,
     indexes: [
       { fields: ['user_id'] },
-      { fields: ['assigned_doctor_id'] },
-      { fields: ['uid'] },
+      { fields: ['patient_id'] },
+      { fields: ['primary_doctor_id'] },
+      { fields: ['blood_group'] },
     ],
     hooks: {
       beforeCreate: (patient) => {
-        if (patient.dob) {
-          const today = new Date();
-          const birthDate = new Date(patient.dob);
-          let age = today.getFullYear() - birthDate.getFullYear();
-          const monthDiff = today.getMonth() - birthDate.getMonth();
-          
-          if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-            age--;
-          }
-          
-          patient.current_age = age;
-        }
-      },
-      beforeUpdate: (patient) => {
-        if (patient.changed('dob') && patient.dob) {
-          const today = new Date();
-          const birthDate = new Date(patient.dob);
-          let age = today.getFullYear() - birthDate.getFullYear();
-          const monthDiff = today.getMonth() - birthDate.getMonth();
-          
-          if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-            age--;
-          }
-          
-          patient.current_age = age;
+        if (!patient.patient_id) {
+          patient.patient_id = `PAT${Date.now().toString().slice(-6)}`;
         }
       },
     },

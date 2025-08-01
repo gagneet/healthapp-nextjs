@@ -1,16 +1,19 @@
+// Modern ES Module Server Example
 // src/server.js
-const express = require('express');
-const cors = require('cors');
-const helmet = require('helmet');
-const compression = require('compression');
-const morgan = require('morgan');
-require('dotenv').config();
+import express from 'express';
+import cors from 'cors';
+import helmet from 'helmet';
+import compression from 'compression';
+import morgan from 'morgan';
+import { config } from 'dotenv';
 
-const { sequelize } = require('./models');
-const routes = require('./routes');
-const errorHandler = require('./middleware/errorHandler');
-const rateLimiter = require('./middleware/rateLimiter');
-const logger = require('./middleware/logger');
+import { sequelize } from './models/index.js';
+import routes from './routes/index.js';
+import errorHandler from './middleware/errorHandler.js';
+import rateLimiter from './middleware/rateLimiter.js';
+import logger from './middleware/logger.js';
+
+config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -40,7 +43,8 @@ app.get('/health', (req, res) => {
   res.status(200).json({ 
     status: 'OK', 
     timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV || 'development'
+    environment: process.env.NODE_ENV || 'development',
+    version: '1.0.0'
   });
 });
 
@@ -90,4 +94,4 @@ const startServer = async () => {
 
 startServer();
 
-module.exports = app;
+export default app;
