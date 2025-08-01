@@ -15,7 +15,10 @@
     "seed": "npx sequelize-cli db:seed:all",
     "seed:undo": "npx sequelize-cli db:seed:undo:all",
     "lint": "eslint src/",
-    "lint:fix": "eslint src/ --fix"
+    "lint:fix": "eslint src/ --fix",
+    "db:test": "node scripts/test-database-setup.js",
+    "db:compare": "node scripts/compare-with-target-schema.js",
+    "db:setup": "npm run migrate && npm run seed"
   },
   "dependencies": {
     "express": "^4.19.2",

@@ -1,13 +1,16 @@
-// src/models/associations.js - Updated for Doctor/HSP separation and new models
+// src/models/associations.js - Updated for PostgreSQL Healthcare Schema
 export default (db) => {
   const {
     User,
     UserRole,
     Organization,
+    HealthcareProvider,
     Doctor,
     HSP,
     Patient,
     Provider,
+    PatientProviderAssignment,
+    CarePlanTemplate,
     Medicine,
     Medication,
     Appointment,
@@ -15,7 +18,18 @@ export default (db) => {
     TreatmentPlan,
     Vital,
     VitalTemplate,
+    VitalType,
+    VitalRequirement,
+    VitalReading,
     ScheduleEvent,
+    ScheduledEvent,
+    AdherenceRecord,
+    Symptom,
+    Notification,
+    UserDevice,
+    ServicePlan,
+    PatientSubscription,
+    AuditLog,
     Speciality,
   } = db;
 
@@ -306,6 +320,351 @@ export default (db) => {
     foreignKey: 'verified_by',
     as: 'verifiedByUser'
   });
+
+  // HealthcareProvider associations (new PostgreSQL schema)
+  if (HealthcareProvider) {
+    User.hasOne(HealthcareProvider, {
+      foreignKey: 'user_id',
+      as: 'healthcareProvider'
+    });
+    HealthcareProvider.belongsTo(User, {
+      foreignKey: 'user_id',
+      as: 'user'
+    });
+
+    if (Organization) {
+      HealthcareProvider.belongsTo(Organization, {
+        foreignKey: 'organization_id',
+        as: 'organization'
+      });
+      Organization.hasMany(HealthcareProvider, {
+        foreignKey: 'organization_id',
+        as: 'healthcareProviders'
+      });
+    }
+
+    // Verification associations
+    HealthcareProvider.belongsTo(User, {
+      foreignKey: 'verified_by',
+      as: 'verifiedByUser'
+    });
+  }
+
+  // PatientProviderAssignment associations
+  if (PatientProviderAssignment) {
+    Patient.belongsToMany(HealthcareProvider, {
+      through: PatientProviderAssignment,
+      foreignKey: 'patient_id',
+      otherKey: 'provider_id',
+      as: 'assignedProviders'
+    });
+    
+    HealthcareProvider.belongsToMany(Patient, {
+      through: PatientProviderAssignment,
+      foreignKey: 'provider_id',
+      otherKey: 'patient_id',
+      as: 'assignedPatients'
+    });
+
+    PatientProviderAssignment.belongsTo(Patient, {
+      foreignKey: 'patient_id',
+      as: 'patient'
+    });
+    
+    PatientProviderAssignment.belongsTo(HealthcareProvider, {
+      foreignKey: 'provider_id',
+      as: 'provider'
+    });
+
+    PatientProviderAssignment.belongsTo(User, {
+      foreignKey: 'assigned_by',
+      as: 'assignedBy'
+    });
+  }
+
+  // CarePlanTemplate associations
+  if (CarePlanTemplate) {
+    HealthcareProvider.hasMany(CarePlanTemplate, {
+      foreignKey: 'created_by',
+      as: 'carePlanTemplates'
+    });
+    CarePlanTemplate.belongsTo(HealthcareProvider, {
+      foreignKey: 'created_by',
+      as: 'createdBy'
+    });
+
+    if (Organization) {
+      CarePlanTemplate.belongsTo(Organization, {
+        foreignKey: 'organization_id',
+        as: 'organization'
+      });
+    }
+
+    CarePlanTemplate.belongsTo(User, {
+      foreignKey: 'approved_by',
+      as: 'approvedBy'
+    });
+
+    // Self-referencing template versioning
+    CarePlanTemplate.belongsTo(CarePlanTemplate, {
+      foreignKey: 'parent_template_id',
+      as: 'parentTemplate'
+    });
+    CarePlanTemplate.hasMany(CarePlanTemplate, {
+      foreignKey: 'parent_template_id',
+      as: 'childTemplates'
+    });
+  }
+
+  // Updated CarePlan associations for PostgreSQL schema
+  if (CarePlan) {
+    CarePlan.belongsTo(Patient, {
+      foreignKey: 'patient_id',
+      as: 'patient'
+    });
+    Patient.hasMany(CarePlan, {
+      foreignKey: 'patient_id',
+      as: 'carePlans'
+    });
+
+    CarePlan.belongsTo(HealthcareProvider, {
+      foreignKey: 'provider_id',
+      as: 'provider'
+    });
+    HealthcareProvider.hasMany(CarePlan, {
+      foreignKey: 'provider_id',
+      as: 'carePlans'
+    });
+
+    if (CarePlanTemplate) {
+      CarePlan.belongsTo(CarePlanTemplate, {
+        foreignKey: 'template_id',
+        as: 'template'
+      });
+      CarePlanTemplate.hasMany(CarePlan, {
+        foreignKey: 'template_id',
+        as: 'activePlans'
+      });
+    }
+  }
+
+  // VitalType associations
+  if (VitalType) {
+    VitalType.hasMany(VitalRequirement, {
+      foreignKey: 'vital_type_id',
+      as: 'requirements'
+    });
+    
+    VitalType.hasMany(VitalReading, {
+      foreignKey: 'vital_type_id',
+      as: 'readings'
+    });
+  }
+
+  // VitalRequirement associations
+  if (VitalRequirement) {
+    CarePlan.hasMany(VitalRequirement, {
+      foreignKey: 'care_plan_id',
+      as: 'vitalRequirements'
+    });
+    VitalRequirement.belongsTo(CarePlan, {
+      foreignKey: 'care_plan_id',
+      as: 'carePlan'
+    });
+
+    VitalRequirement.belongsTo(VitalType, {
+      foreignKey: 'vital_type_id',
+      as: 'vitalType'
+    });
+  }
+
+  // VitalReading associations
+  if (VitalReading) {
+    Patient.hasMany(VitalReading, {
+      foreignKey: 'patient_id',
+      as: 'vitalReadings'
+    });
+    VitalReading.belongsTo(Patient, {
+      foreignKey: 'patient_id',
+      as: 'patient'
+    });
+
+    VitalReading.belongsTo(VitalType, {
+      foreignKey: 'vital_type_id',
+      as: 'vitalType'
+    });
+
+    if (AdherenceRecord) {
+      VitalReading.belongsTo(AdherenceRecord, {
+        foreignKey: 'adherence_record_id',
+        as: 'adherenceRecord'
+      });
+    }
+
+    VitalReading.belongsTo(HealthcareProvider, {
+      foreignKey: 'validated_by',
+      as: 'validatedBy'
+    });
+  }
+
+  // ScheduledEvent associations
+  if (ScheduledEvent) {
+    Patient.hasMany(ScheduledEvent, {
+      foreignKey: 'patient_id',
+      as: 'scheduledEvents'
+    });
+    ScheduledEvent.belongsTo(Patient, {
+      foreignKey: 'patient_id',
+      as: 'patient'
+    });
+
+    if (CarePlan) {
+      CarePlan.hasMany(ScheduledEvent, {
+        foreignKey: 'care_plan_id',
+        as: 'scheduledEvents'
+      });
+      ScheduledEvent.belongsTo(CarePlan, {
+        foreignKey: 'care_plan_id',
+        as: 'carePlan'
+      });
+    }
+
+    ScheduledEvent.belongsTo(User, {
+      foreignKey: 'completed_by',
+      as: 'completedBy'
+    });
+  }
+
+  // AdherenceRecord associations
+  if (AdherenceRecord) {
+    Patient.hasMany(AdherenceRecord, {
+      foreignKey: 'patient_id',
+      as: 'adherenceRecords'
+    });
+    AdherenceRecord.belongsTo(Patient, {
+      foreignKey: 'patient_id',
+      as: 'patient'
+    });
+
+    if (ScheduledEvent) {
+      AdherenceRecord.belongsTo(ScheduledEvent, {
+        foreignKey: 'scheduled_event_id',
+        as: 'scheduledEvent'
+      });
+      ScheduledEvent.hasMany(AdherenceRecord, {
+        foreignKey: 'scheduled_event_id',
+        as: 'adherenceRecords'
+      });
+    }
+
+    AdherenceRecord.hasMany(VitalReading, {
+      foreignKey: 'adherence_record_id',
+      as: 'vitalReadings'
+    });
+  }
+
+  // Symptom associations
+  if (Symptom) {
+    Patient.hasMany(Symptom, {
+      foreignKey: 'patient_id',
+      as: 'symptoms'
+    });
+    Symptom.belongsTo(Patient, {
+      foreignKey: 'patient_id',
+      as: 'patient'
+    });
+
+    if (CarePlan) {
+      CarePlan.hasMany(Symptom, {
+        foreignKey: 'care_plan_id',
+        as: 'symptoms'
+      });
+      Symptom.belongsTo(CarePlan, {
+        foreignKey: 'care_plan_id',
+        as: 'carePlan'
+      });
+    }
+  }
+
+  // Notification associations
+  if (Notification) {
+    User.hasMany(Notification, {
+      foreignKey: 'recipient_id',
+      as: 'notifications'
+    });
+    Notification.belongsTo(User, {
+      foreignKey: 'recipient_id',
+      as: 'recipient'
+    });
+  }
+
+  // UserDevice associations
+  if (UserDevice) {
+    User.hasMany(UserDevice, {
+      foreignKey: 'user_id',
+      as: 'devices'
+    });
+    UserDevice.belongsTo(User, {
+      foreignKey: 'user_id',
+      as: 'user'
+    });
+  }
+
+  // ServicePlan associations
+  if (ServicePlan) {
+    HealthcareProvider.hasMany(ServicePlan, {
+      foreignKey: 'provider_id',
+      as: 'servicePlans'
+    });
+    ServicePlan.belongsTo(HealthcareProvider, {
+      foreignKey: 'provider_id',
+      as: 'provider'
+    });
+  }
+
+  // PatientSubscription associations
+  if (PatientSubscription) {
+    Patient.hasMany(PatientSubscription, {
+      foreignKey: 'patient_id',
+      as: 'subscriptions'
+    });
+    PatientSubscription.belongsTo(Patient, {
+      foreignKey: 'patient_id',
+      as: 'patient'
+    });
+
+    HealthcareProvider.hasMany(PatientSubscription, {
+      foreignKey: 'provider_id',
+      as: 'patientSubscriptions'
+    });
+    PatientSubscription.belongsTo(HealthcareProvider, {
+      foreignKey: 'provider_id',
+      as: 'provider'
+    });
+
+    if (ServicePlan) {
+      ServicePlan.hasMany(PatientSubscription, {
+        foreignKey: 'service_plan_id',
+        as: 'subscriptions'
+      });
+      PatientSubscription.belongsTo(ServicePlan, {
+        foreignKey: 'service_plan_id',
+        as: 'servicePlan'
+      });
+    }
+  }
+
+  // AuditLog associations
+  if (AuditLog) {
+    User.hasMany(AuditLog, {
+      foreignKey: 'user_id',
+      as: 'auditLogs'
+    });
+    AuditLog.belongsTo(User, {
+      foreignKey: 'user_id',
+      as: 'user'
+    });
+  }
 
   return db;
 };
