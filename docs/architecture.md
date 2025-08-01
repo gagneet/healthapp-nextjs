@@ -128,3 +128,42 @@ Comprehensive diagrams and workflow charts to visualize the architecture and dat
 - Background job processing for scheduled reminders
 
 The architecture I've designed supports your experimental, logical approach by providing clear interfaces between components, making it easy to test individual features and iterate based on user feedback.
+
+## Architecture Upgrade to Multi-tenancy and PostgreSQL
+
+Completed Architecture Separation:
+
+### Doctor vs HSP Separation
+
+- Doctor Model: Full medical capabilities including prescribing, diagnosing, creating treatment/care plans
+- HSP Model: Role-based capabilities (Nurses, PAs, etc.) with appropriate supervision requirements
+- Different verification processes and capability validation for each type
+
+### Treatment Plans vs Care Plans
+
+- Treatment Plans: Short-term, acute issues for outpatient visits (only doctors can create)
+- Care Plans: Long-term chronic condition management (both doctors and qualified HSPs can create)
+- Distinct models with appropriate fields and timelines for each use case
+
+### Enhanced Authorization System
+
+- Created comprehensive middleware (providerCapability.js) to validate:
+  - Provider capabilities based on role type
+  - Supervision requirements for HSPs
+  - Patient access permissions
+  - Prescription authority validation
+
+### Updated Database Schema
+
+- Patient Model: Now supports both doctor and HSP primary care providers
+- User Model: Enhanced with HIPAA compliance fields and security features
+- PostgreSQL Features: UUIDs, JSONB fields, GIN indexes, proper constraints
+
+### Model Associations
+
+- Proper relationships between Users, Doctors, HSPs, Patients
+- HSP supervision by doctors
+- Care team management across both provider types
+- Multi-tenant organization support
+
+The architecture now properly reflects healthcare regulatory requirements where doctors have full medical authority while HSPs (like nurses, PAs) have specific, role-based capabilities with appropriate supervision when needed. Treatment plans handle acute issues while care plans manage long-term chronic conditions, exactly as the user requested.
