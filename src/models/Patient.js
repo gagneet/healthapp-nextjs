@@ -157,23 +157,40 @@ export default (sequelize) => {
       }
     },
     
-    // Care Coordination
-    primary_care_provider_id: {
+    // Care Coordination - Updated to support both doctors and HSPs
+    primary_care_doctor_id: {
       type: DataTypes.UUID,
       allowNull: true,
       references: {
-        model: 'healthcare_providers',
+        model: 'doctors',
         key: 'id'
-      }
+      },
+      comment: 'Primary care physician'
+    },
+    
+    primary_care_hsp_id: {
+      type: DataTypes.UUID,
+      allowNull: true,
+      references: {
+        model: 'hsps',
+        key: 'id'
+      },
+      comment: 'Primary HSP (if no doctor assigned)'
     },
     
     care_coordinator_id: {
       type: DataTypes.UUID,
       allowNull: true,
-      references: {
-        model: 'healthcare_providers',
-        key: 'id'
-      }
+      comment: 'Care coordinator (can be doctor or HSP)'
+    },
+    
+    care_coordinator_type: {
+      type: DataTypes.STRING(10),
+      allowNull: true,
+      validate: {
+        isIn: [['doctor', 'hsp']]
+      },
+      comment: 'Type of care coordinator'
     },
     
     // Analytics and Tracking
@@ -422,6 +439,51 @@ export default (sequelize) => {
         
         const pounds = Math.round(this.weight_kg * 2.20462);
         return `${pounds} lbs (${this.weight_kg}kg)`;
+      },
+      
+      // Get primary care provider (doctor or HSP)
+      async getPrimaryCareProvider() {
+        if (this.primary_care_doctor_id) {
+          const Doctor = sequelize.models.Doctor;
+          return await Doctor.findByPk(this.primary_care_doctor_id);
+        } else if (this.primary_care_hsp_id) {
+          const HSP = sequelize.models.HSP;
+          return await HSP.findByPk(this.primary_care_hsp_id);
+        }
+        return null;
+      },
+      
+      // Get care coordinator
+      async getCareCoordinator() {
+        if (!this.care_coordinator_id || !this.care_coordinator_type) return null;
+        
+        if (this.care_coordinator_type === 'doctor') {
+          const Doctor = sequelize.models.Doctor;
+          return await Doctor.findByPk(this.care_coordinator_id);
+        } else if (this.care_coordinator_type === 'hsp') {
+          const HSP = sequelize.models.HSP;
+          return await HSP.findByPk(this.care_coordinator_id);
+        }
+        return null;
+      },
+      
+      // Set primary care provider
+      setPrimaryCareProvider(providerId, providerType) {
+        if (providerType === 'doctor') {
+          this.primary_care_doctor_id = providerId;
+          this.primary_care_hsp_id = null;
+        } else if (providerType === 'hsp') {
+          this.primary_care_hsp_id = providerId;
+          this.primary_care_doctor_id = null;
+        }
+        return this.save();
+      },
+      
+      // Set care coordinator
+      setCareCoordinator(providerId, providerType) {
+        this.care_coordinator_id = providerId;
+        this.care_coordinator_type = providerType;
+        return this.save();
       }
     },
     
@@ -447,13 +509,32 @@ export default (sequelize) => {
         });
       },
       
-      // Find by provider
-      findByProvider(providerId) {
+      // Find by doctor provider
+      findByDoctor(doctorId) {
         return this.findAll({
           where: {
             [sequelize.Sequelize.Op.or]: [
-              { primary_care_provider_id: providerId },
-              { care_coordinator_id: providerId }
+              { primary_care_doctor_id: doctorId },
+              { 
+                care_coordinator_id: doctorId,
+                care_coordinator_type: 'doctor'
+              }
+            ],
+            deleted_at: null
+          }
+        });
+      },
+      
+      // Find by HSP provider
+      findByHSP(hspId) {
+        return this.findAll({
+          where: {
+            [sequelize.Sequelize.Op.or]: [
+              { primary_care_hsp_id: hspId },
+              { 
+                care_coordinator_id: hspId,
+                care_coordinator_type: 'hsp'
+              }
             ],
             deleted_at: null
           }
