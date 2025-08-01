@@ -1,5 +1,5 @@
 // src/models/CarePlan.js
-module.exports = (sequelize, DataTypes) => {
+export default (sequelize, DataTypes) => {
   const CarePlan = sequelize.define('CarePlan', {
     id: {
       type: DataTypes.INTEGER,

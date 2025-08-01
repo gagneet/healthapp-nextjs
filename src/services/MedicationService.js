@@ -1,6 +1,6 @@
 // src/services/medicationService.js
-const { Medication, Medicine, ScheduleEvent } = require('../models');
-const { Op } = require('sequelize');
+import { Medication, Medicine, ScheduleEvent } from '../models/index.js';
+import { Op } from 'sequelize';
 
 class MedicationService {
   async createMedicationWithSchedule(medicationData) {
@@ -124,4 +124,4 @@ class MedicationService {
   }
 }
 
-module.exports = new MedicationService();
+export default new MedicationService();

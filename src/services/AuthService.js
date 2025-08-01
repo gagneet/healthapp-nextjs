@@ -1,7 +1,7 @@
 // src/services/authService.js
-const bcrypt = require('bcryptjs');
-const { User, Doctor, Patient, UserRole } = require('../models');
-const { generateToken, generateRefreshToken } = require('../config/jwt');
+import bcrypt from 'bcryptjs';
+import { User, Doctor, Patient, UserRole } from '../models/index.js';
+import { generateToken, generateRefreshToken } from '../config/jwt.js';
 
 class AuthService {
   async createUser(userData) {
@@ -80,4 +80,4 @@ class AuthService {
   }
 }
 
-module.exports = new AuthService();
+export default new AuthService();

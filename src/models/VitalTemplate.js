@@ -1,5 +1,5 @@
 // src/models/VitalTemplate.js
-module.exports = (sequelize, DataTypes) => {
+export default (sequelize, DataTypes) => {
   const VitalTemplate = sequelize.define('VitalTemplate', {
     id: {
       type: DataTypes.INTEGER,

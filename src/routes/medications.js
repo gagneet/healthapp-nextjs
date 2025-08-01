@@ -1,9 +1,9 @@
 // src/routes/medications.js
-const express = require('express');
-const medicationController = require('../controllers/medicationController');
-const { authenticate, authorize } = require('../middleware/auth');
-const { validateRequest, schemas } = require('../middleware/validation');
-const { USER_CATEGORIES } = require('../config/constants');
+import express from 'express';
+import medicationController from '../controllers/medicationController.js';
+import { authenticate, authorize } from '../middleware/auth.js';
+import { validateRequest, schemas } from '../middleware/validation.js';
+import { USER_CATEGORIES } from '../config/constants.js';
 
 const router = express.Router();
 
@@ -63,4 +63,4 @@ router.delete('/:medicationId',
   }
 );
 
-module.exports = router;
+export default router;

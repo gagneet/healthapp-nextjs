@@ -1,8 +1,8 @@
 // src/routes/auth.js
-const express = require('express');
-const authController = require('../controllers/authController');
-const { validateRequest, schemas } = require('../middleware/validation');
-const { authLimiter } = require('../middleware/rateLimiter');
+import express from 'express';
+import authController from '../controllers/authController.js';
+import { validateRequest, schemas } from '../middleware/vaidation.js';
+import { authLimiter } from '../middleware/rateLimiter.js';
 
 const router = express.Router();
 
@@ -36,4 +36,4 @@ router.post('/logout', (req, res) => {
   });
 });
 
-module.exports = router;
+export default router;

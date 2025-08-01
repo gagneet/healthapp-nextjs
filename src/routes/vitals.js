@@ -1,8 +1,8 @@
 // src/routes/vitals.js
-const express = require('express');
-const vitalsController = require('../controllers/vitalsController');
-const { authenticate, authorize } = require('../middleware/auth');
-const { USER_CATEGORIES } = require('../config/constants');
+import express from 'express';
+import vitalsController from '../controllers/vitalsController.js';
+import { authenticate, authorize } from '../middleware/auth.js';
+import { USER_CATEGORIES } from '../config/constants.js';
 
 const router = express.Router();
 
@@ -43,4 +43,4 @@ router.put('/:vitalId',
   }
 );
 
-module.exports = router;
+export default router;

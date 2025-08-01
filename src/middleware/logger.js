@@ -1,6 +1,6 @@
 // src/middleware/logger.js
-const winston = require('winston');
-const path = require('path');
+import winston from 'winston';
+import path from 'path';
 
 const logger = winston.createLogger({
   level: process.env.LOG_LEVEL || 'info',
@@ -40,4 +40,4 @@ logger.stream = {
   }
 };
 
-module.exports = logger;
+export default logger;

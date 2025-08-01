@@ -1,9 +1,9 @@
 // src/routes/admin.js
-const express = require('express');
-const adminController = require('../controllers/adminController');
-const { authenticate, authorize } = require('../middleware/auth');
-const { validateQuery, schemas } = require('../middleware/validation');
-const { USER_CATEGORIES } = require('../config/constants');
+import express from 'express';
+import adminController from '../controllers/adminController.js';
+import { authenticate, authorize } from '../middleware/auth.js';
+import { validateQuery, schemas } from '../middleware/validation.js';
+import { USER_CATEGORIES } from '../config/constants.js';
 
 const router = express.Router();
 
@@ -55,4 +55,4 @@ router.get('/patients',
   }
 );
 
-module.exports = router;
+export default router;

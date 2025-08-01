@@ -1,5 +1,5 @@
 // src/middleware/validation.js
-const Joi = require('joi');
+import Joi from 'joi';
 
 const validateRequest = (schema) => {
   return (req, res, next) => {
@@ -100,4 +100,4 @@ const schemas = {
   })
 };
 
-module.exports = { validateRequest, validateQuery, schemas };
+export { validateRequest, validateQuery, schemas };

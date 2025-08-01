@@ -1,6 +1,6 @@
 // src/utils/helpers.js
-const crypto = require('crypto');
-const moment = require('moment');
+import crypto from 'crypto';
+import moment from 'moment';
 
 class Helpers {
   static generateUID(prefix = 'USR', length = 6) {
@@ -92,4 +92,4 @@ class Helpers {
   }
 }
 
-module.exports = Helpers;
+export default Helpers;

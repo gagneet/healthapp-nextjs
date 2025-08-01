@@ -1,5 +1,5 @@
 // src/models/ScheduleEvent.js
-module.exports = (sequelize, DataTypes) => {
+export default (sequelize, DataTypes) => {
   const ScheduleEvent = sequelize.define('ScheduleEvent', {
     id: {
       type: DataTypes.INTEGER,

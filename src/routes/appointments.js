@@ -1,9 +1,9 @@
 // src/routes/appointments.js
-const express = require('express');
-const appointmentController = require('../controllers/appointmentController');
-const { authenticate, authorize } = require('../middleware/auth');
-const { validateRequest, schemas } = require('../middleware/validation');
-const { USER_CATEGORIES } = require('../config/constants');
+import express from 'express';
+import appointmentController from '../controllers/appointmentController.js';
+import { authenticate, authorize } from '../middleware/auth.js';
+import { validateRequest, schemas } from '../middleware/validation.js';
+import { USER_CATEGORIES } from '../config/constants.js';
 
 const router = express.Router();
 
@@ -63,4 +63,4 @@ router.delete('/:appointmentId',
   }
 );
 
-module.exports = router;
+export default router;

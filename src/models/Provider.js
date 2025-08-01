@@ -1,5 +1,5 @@
 // src/models/Provider.js
-module.exports = (sequelize, DataTypes) => {
+export default (sequelize, DataTypes) => {
   const Provider = sequelize.define('Provider', {
     id: {
       type: DataTypes.INTEGER,

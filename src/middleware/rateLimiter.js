@@ -1,5 +1,5 @@
 // src/middleware/rateLimiter.js
-const rateLimit = require('express-rate-limit');
+import rateLimit from 'express-rate-limit';
 
 const createRateLimiter = (windowMs, max, message) => {
   return rateLimit({
@@ -34,5 +34,5 @@ const authLimiter = createRateLimiter(
   'Too many authentication attempts, please try again later'
 );
 
-module.exports = generalLimiter;
-module.exports.authLimiter = authLimiter;
+export default generalLimiter;
+export { authLimiter };

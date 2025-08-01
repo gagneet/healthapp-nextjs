@@ -1,5 +1,5 @@
 // src/models/Medicine.js
-module.exports = (sequelize, DataTypes) => {
+export default (sequelize, DataTypes) => {
   const Medicine = sequelize.define('Medicine', {
     id: {
       type: DataTypes.INTEGER,

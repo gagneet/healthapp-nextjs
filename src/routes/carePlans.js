@@ -1,8 +1,8 @@
 // src/routes/carePlans.js
-const express = require('express');
-const carePlanController = require('../controllers/carePlanController');
-const { authenticate, authorize } = require('../middleware/auth');
-const { USER_CATEGORIES } = require('../config/constants');
+import express from 'express';
+import carePlanController from '../controllers/carePlanController.js';
+import { authenticate, authorize } from '../middleware/auth.js';
+import { USER_CATEGORIES } from '../config/constants.js';
 
 const router = express.Router();
 
@@ -43,4 +43,4 @@ router.get('/:carePlanId',
   }
 );
 
-module.exports = router;
+export default router;

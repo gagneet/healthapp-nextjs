@@ -1,5 +1,5 @@
 // src/models/associations.js
-module.exports = (db) => {
+export default (db) => {
   const {
     User,
     UserRole,

@@ -1,10 +1,10 @@
 // src/routes/doctors.js
-const express = require('express');
-const doctorController = require('../controllers/doctorController');
-const patientController = require('../controllers/patientController');
-const { authenticate, authorize } = require('../middleware/auth');
-const { validateRequest, schemas } = require('../middleware/validation');
-const { USER_CATEGORIES } = require('../config/constants');
+import express from 'express';
+import doctorController from '../controllers/doctorController.js';
+import patientController from '../controllers/patientController.js';
+import { authenticate, authorize } from '../middleware/auth.js';
+import { validateRequest, schemas } from '../middleware/validation.js';
+import { USER_CATEGORIES } from '../config/constants.js';
 
 const router = express.Router();
 
@@ -36,4 +36,4 @@ router.post('/patients',
   patientController.createPatient
 );
 
-module.exports = router;
+export default router;

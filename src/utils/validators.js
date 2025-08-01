@@ -1,5 +1,5 @@
 // src/utils/validators.js
-const Joi = require('joi');
+import Joi from 'joi';
 
 class Validators {
   static validateEmail(email) {
@@ -50,4 +50,4 @@ class Validators {
   }
 }
 
-module.exports = Validators;
+export default Validators;

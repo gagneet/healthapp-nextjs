@@ -1,9 +1,9 @@
 // src/routes/patients.js
-const express = require('express');
-const patientController = require('../controllers/patientController');
-const { authenticate, authorize } = require('../middleware/auth');
-const { validateRequest, validateQuery, schemas } = require('../middleware/validation');
-const { USER_CATEGORIES } = require('../config/constants');
+import express from 'express';
+import patientController from '../controllers/patientController.js';
+import { authenticate, authorize } from '../middleware/auth.js';
+import { validateRequest, validateQuery, schemas } from '../middleware/validation.js';
+import { USER_CATEGORIES } from '../config/constants.js';
 
 const router = express.Router();
 
@@ -42,4 +42,4 @@ router.delete('/:patientId',
   patientController.deletePatient
 );
 
-module.exports = router;
+export default router;

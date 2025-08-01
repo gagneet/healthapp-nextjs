@@ -1,6 +1,6 @@
 // src/services/schedulingService.js
-const { ScheduleEvent, Appointment, Medication, Vital } = require('../models');
-const { Op } = require('sequelize');
+import { ScheduleEvent, Appointment, Medication, Vital } from '../models/index.js';
+import { Op } from 'sequelize';
 
 class SchedulingService {
   async getMissedEvents(patientId, eventType = null) {
@@ -131,4 +131,4 @@ class SchedulingService {
   }
 }
 
-module.exports = new SchedulingService();
+export default new SchedulingService();

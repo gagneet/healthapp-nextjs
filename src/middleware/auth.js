@@ -1,8 +1,8 @@
 // src/middleware/auth.js
-const jwt = require('jsonwebtoken');
-const { verifyToken } = require('../config/jwt');
-const { User, UserRole } = require('../models');
-const { USER_CATEGORIES } = require('../config/constants');
+import jwt from 'jsonwebtoken';
+import { verifyToken } from '../config/jwt.js';
+import { User, UserRole } from '../models/index.js';
+import { USER_CATEGORIES } from '../config/constants.js';
 
 const authenticate = async (req, res, next) => {
   try {
@@ -94,4 +94,4 @@ const authorize = (...categories) => {
   };
 };
 
-module.exports = { authenticate, authorize };
+export { authenticate, authorize };

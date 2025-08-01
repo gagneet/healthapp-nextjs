@@ -1,14 +1,14 @@
 // src/routes/index.js
-const express = require('express');
-const authRoutes = require('./auth');
-const patientRoutes = require('./patients');
-const doctorRoutes = require('./doctors');
-const medicationRoutes = require('./medications');
-const appointmentRoutes = require('./appointments');
-const carePlanRoutes = require('./carePlans');
-const vitalsRoutes = require('./vitals');
-const adminRoutes = require('./admin');
-const searchRoutes = require('./search');
+import express from 'express';
+import authRoutes from './auth.js';
+import patientRoutes from './patients.js';
+import doctorRoutes from './doctors.js';
+import medicationRoutes from './medications.js';
+import appointmentRoutes from './appointments.js';
+import carePlanRoutes from './carePlans.js';
+import vitalsRoutes from './vitals.js';
+import adminRoutes from './admin.js';
+import searchRoutes from './search.js';
 
 const router = express.Router();
 
@@ -50,4 +50,4 @@ router.get('/', (req, res) => {
   });
 });
 
-module.exports = router;
+export default router;
