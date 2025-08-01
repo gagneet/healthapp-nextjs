@@ -5,7 +5,7 @@ import { config } from 'dotenv';
 config();
 
 const sequelize = new Sequelize({
-  database: process.env.POSTGRES_DB || 'adhere_health',
+  database: process.env.POSTGRES_DB || 'healthapp',
   username: process.env.POSTGRES_USER || 'postgres',
   password: process.env.POSTGRES_PASSWORD || '',
   host: process.env.POSTGRES_HOST || 'localhost',
