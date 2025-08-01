@@ -226,7 +226,7 @@ npm run test:coverage
 
 ### Production Setup
 
-1. **Environment Configuration**
+#### **Environment Configuration**
 
 ```bash
 NODE_ENV=production
@@ -234,13 +234,13 @@ NODE_ENV=production
 # Configure proper JWT secrets
 ```
 
-2. **Database Migration**
+#### **Database Migration**
 
 ```bash
 npm run migrate
    ```
 
-3. **Start Production Server**
+#### **Start Production Server**
 
 ```bash
 npm start
