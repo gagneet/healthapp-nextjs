@@ -1,12 +1,14 @@
 # Next.js Conversion Strategy
 
 ## Overview
+
 This document outlines the strategy for converting the healthcare adherence management platform backend to work seamlessly with Next.js, implementing modern full-stack architecture patterns while maintaining HIPAA compliance and security standards.
 
 ## Current Architecture Analysis
 
 ### Existing Backend Structure
-```
+
+```text
 src/
 ├── config/          # Database and app configuration
 ├── controllers/     # Route handlers
@@ -19,9 +21,10 @@ src/
 ```
 
 ### Target Next.js Architecture
-```
+
+```text
 healthapp-nextjs/
-├── app/             # Next.js 13+ App Router
+├── app/             # Next.js 14+ App Router
 │   ├── api/         # API routes (replaces Express routes)
 │   ├── (dashboard)/ # Dashboard layout group
 │   ├── (auth)/      # Authentication layout group
@@ -41,6 +44,7 @@ healthapp-nextjs/
 ### Phase 1: Foundation Setup (2-3 weeks)
 
 #### 1.1 Next.js Project Initialization
+
 ```bash
 # Create Next.js project with TypeScript
 npx create-next-app@latest healthapp-nextjs --typescript --tailwind --eslint --app
@@ -57,6 +61,7 @@ npm install lucide-react       # Icons
 ```
 
 #### 1.2 Environment Configuration
+
 ```javascript
 // next.config.js
 /** @type {import('next').NextConfig} */
@@ -77,6 +82,7 @@ module.exports = nextConfig
 ```
 
 #### 1.3 Database Integration
+
 ```typescript
 // lib/db/connection.ts
 import { Sequelize } from 'sequelize';
@@ -100,6 +106,7 @@ export default sequelize;
 #### 2.1 Convert Express Routes to Next.js API Routes
 
 **Before (Express):**
+
 ```javascript
 // routes/patients.js
 router.get('/patients/:id', authenticateToken, async (req, res) => {
@@ -113,6 +120,7 @@ router.get('/patients/:id', authenticateToken, async (req, res) => {
 ```
 
 **After (Next.js API Route):**
+
 ```typescript
 // app/api/patients/[id]/route.ts
 import { NextRequest, NextResponse } from 'next/server';
@@ -146,7 +154,8 @@ export async function GET(
 ```
 
 #### 2.2 API Route Structure
-```
+
+```text
 app/api/
 ├── auth/
 │   └── [...nextauth]/route.ts
@@ -168,6 +177,7 @@ app/api/
 ```
 
 #### 2.3 Middleware Conversion
+
 ```typescript
 // middleware.ts (Next.js middleware)
 import { withAuth } from 'next-auth/middleware';
@@ -214,6 +224,7 @@ export const config = {
 ### Phase 3: Authentication Integration (2-3 weeks)
 
 #### 3.1 NextAuth.js Setup
+
 ```typescript
 // lib/auth.ts
 import { NextAuthOptions } from 'next-auth';
@@ -279,6 +290,7 @@ export const authOptions: NextAuthOptions = {
 ```
 
 #### 3.2 Protected Route Components
+
 ```typescript
 // components/ProtectedRoute.tsx
 'use client';
@@ -336,6 +348,7 @@ export default function ProtectedRoute({
 ### Phase 4: Frontend Integration (4-5 weeks)
 
 #### 4.1 Dashboard Structure
+
 ```typescript
 // app/(dashboard)/layout.tsx
 import { getServerSession } from 'next-auth';
@@ -370,6 +383,7 @@ export default async function DashboardLayout({
 ```
 
 #### 4.2 Server Components for Data Fetching
+
 ```typescript
 // app/(dashboard)/patients/page.tsx
 import { Patient } from '@/lib/db/models';
@@ -398,6 +412,7 @@ export default async function PatientsPage() {
 ```
 
 #### 4.3 Client Components for Interactivity
+
 ```typescript
 // components/patients/PatientList.tsx
 'use client';
@@ -441,6 +456,7 @@ export default function PatientList({ patients }: PatientListProps) {
 ### Phase 5: Advanced Features (3-4 weeks)
 
 #### 5.1 Server Actions for Forms
+
 ```typescript
 // lib/actions/patient-actions.ts
 'use server';
@@ -507,6 +523,7 @@ export async function createPatient(formData: FormData) {
 ```
 
 #### 5.2 Real-time Features with WebSockets
+
 ```typescript
 // lib/websocket.ts
 import { Server } from 'socket.io';
@@ -544,6 +561,7 @@ export function initializeWebSocket(server: any) {
 ### Phase 6: Testing and Optimization (2-3 weeks)
 
 #### 6.1 Testing Strategy
+
 ```typescript
 // __tests__/api/patients.test.ts
 import { GET } from '@/app/api/patients/route';
@@ -570,6 +588,7 @@ describe('/api/patients', () => {
 ```
 
 #### 6.2 Performance Optimization
+
 ```typescript
 // app/(dashboard)/patients/loading.tsx
 export default function Loading() {
@@ -591,6 +610,7 @@ export default function Loading() {
 ## Migration Benefits
 
 ### Technical Benefits
+
 - **Server-Side Rendering**: Better SEO and initial load performance
 - **API Routes**: Simplified backend architecture
 - **TypeScript**: Better type safety and developer experience
@@ -599,6 +619,7 @@ export default function Loading() {
 - **Built-in Optimization**: Image optimization, font optimization
 
 ### Healthcare-Specific Benefits
+
 - **HIPAA Compliance**: Built-in security features
 - **Real-time Updates**: WebSocket integration for critical alerts
 - **Mobile Responsive**: Better patient engagement

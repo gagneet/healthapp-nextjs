@@ -1,9 +1,11 @@
 # MySQL to PostgreSQL Migration Plan
 
 ## Overview
+
 This document outlines the comprehensive migration strategy from MySQL to PostgreSQL for the healthcare adherence management platform. The migration includes schema conversion, data migration, application updates, and testing procedures.
 
 ## Migration Objectives
+
 - Convert from MySQL to PostgreSQL for better JSON support, UUIDs, and advanced features
 - Implement proper HIPAA compliance with audit logging
 - Separate Doctor and HSP entities with role-based capabilities
@@ -13,6 +15,7 @@ This document outlines the comprehensive migration strategy from MySQL to Postgr
 ## Pre-Migration Assessment
 
 ### Current MySQL Schema Analysis
+
 ```sql
 -- Current MySQL tables (approximate structure)
 - users (INT primary keys)
@@ -28,6 +31,7 @@ This document outlines the comprehensive migration strategy from MySQL to Postgr
 ```
 
 ### PostgreSQL Target Schema
+
 ```sql
 -- New PostgreSQL tables with UUIDs
 - users (UUID primary keys, HIPAA fields)
@@ -48,9 +52,11 @@ This document outlines the comprehensive migration strategy from MySQL to Postgr
 ## Migration Phases
 
 ### Phase 1: Environment Setup and Preparation
-**Timeline: 1-2 weeks**
+
+Timeline: 1-2 weeks
 
 #### 1.1 PostgreSQL Environment Setup
+
 ```bash
 # Install PostgreSQL 15+
 sudo apt-get install postgresql-15 postgresql-contrib-15
@@ -64,6 +70,7 @@ sudo -u postgres createuser healthapp_user
 ```
 
 #### 1.2 Install Migration Tools
+
 ```bash
 # Install pgloader for data migration
 sudo apt-get install pgloader
@@ -73,6 +80,7 @@ sudo apt-get install postgresql-client-15
 ```
 
 #### 1.3 Backup Current MySQL Database
+
 ```bash
 # Full MySQL backup
 mysqldump -u root -p --single-transaction --routines --triggers healthapp_mysql > mysql_backup.sql
@@ -84,9 +92,11 @@ mysqldump -u root -p healthapp_mysql patients > patients_backup.sql
 ```
 
 ### Phase 2: Schema Migration
-**Timeline: 2-3 weeks**
+
+Timeline: 2-3 weeks
 
 #### 2.1 Create PostgreSQL Schema
+
 ```sql
 -- Create extensions
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
@@ -127,9 +137,11 @@ DECIMAL → NUMERIC
 ```
 
 ### Phase 3: Data Mapping and Transformation
-**Timeline: 2-3 weeks**
+
+Timeline: 2-3 weeks
 
 #### 3.1 UUID Generation Strategy
+
 ```javascript
 // Create UUID mapping for existing integer IDs
 const uuidMap = new Map();
@@ -146,6 +158,7 @@ async function generateUUIDs() {
 ```
 
 #### 3.2 Data Transformation Scripts
+
 ```javascript
 // Transform users table
 async function transformUsers() {
@@ -176,6 +189,7 @@ async function transformUsers() {
 ```
 
 #### 3.3 Provider Separation Logic
+
 ```javascript
 // Separate providers into doctors and HSPs
 async function separateProviders() {
@@ -210,9 +224,11 @@ function isDoctorRole(provider) {
 ```
 
 ### Phase 4: Application Code Migration
-**Timeline: 3-4 weeks**
+
+Timeline: 3-4 weeks
 
 #### 4.1 Database Configuration Update
+
 ```javascript
 // Update database.js to use PostgreSQL
 const config = {
@@ -235,12 +251,14 @@ const config = {
 ```
 
 #### 4.2 Model Updates
+
 - Update all models to use PostgreSQL-specific features
 - Implement UUID primary keys
 - Add JSONB field handling
 - Update associations for new schema
 
 #### 4.3 Query Updates
+
 ```javascript
 // Update queries for PostgreSQL syntax
 // MySQL: JSON_EXTRACT(column, '$.field')
@@ -258,9 +276,11 @@ const users = await User.findAll({
 ```
 
 ### Phase 5: Migration Execution
-**Timeline: 1-2 weeks**
+
+Timeline: 1-2 weeks
 
 #### 5.1 Migration Script
+
 ```bash
 #!/bin/bash
 # migration.sh - Complete migration script
@@ -286,6 +306,7 @@ echo "Migration completed!"
 ```
 
 #### 5.2 Data Verification Checklist
+
 ```javascript
 // verification script
 async function verifyMigration() {
@@ -314,9 +335,11 @@ async function verifyMigration() {
 ```
 
 ### Phase 6: Testing and Validation
-**Timeline: 2-3 weeks**
+
+Timeline: 2-3 weeks
 
 #### 6.1 Unit Testing
+
 ```javascript
 // Update all unit tests for PostgreSQL
 describe('User Model', () => {
@@ -332,26 +355,31 @@ describe('User Model', () => {
 ```
 
 #### 6.2 Integration Testing
+
 - Test all API endpoints with PostgreSQL
 - Verify HIPAA audit logging works
 - Test provider capability restrictions
 - Validate multi-tenant data isolation
 
 #### 6.3 Performance Testing
+
 - Compare query performance MySQL vs PostgreSQL
 - Test JSONB query performance
 - Validate index effectiveness
 
 ### Phase 7: Deployment and Cutover
-**Timeline: 1 week**
+
+Timeline: 1 week**
 
 #### 7.1 Pre-Deployment
+
 - Final production data migration
 - DNS and load balancer updates
 - SSL certificate updates
 - Monitoring setup
 
 #### 7.2 Deployment Strategy
+
 ```bash
 # Blue-Green Deployment
 # 1. Deploy new PostgreSQL-based application to "green" environment
@@ -362,6 +390,7 @@ describe('User Model', () => {
 ```
 
 #### 7.3 Rollback Plan
+
 - Keep MySQL database for 30 days
 - Prepared rollback scripts
 - Quick DNS switch capability
@@ -378,11 +407,12 @@ describe('User Model', () => {
 | 5. Execution | 1-2 weeks | Run migration |
 | 6. Testing | 2-3 weeks | Comprehensive testing |
 | 7. Deployment | 1 week | Production cutover |
-| **Total** | **12-18 weeks** | **Complete migration** |
+| **Total** | **12-18 weeks | **Complete migration** |
 
 ## Risk Mitigation
 
 ### High-Risk Areas
+
 1. **Data Loss**: Multiple backups, verification scripts
 2. **Downtime**: Blue-green deployment, quick rollback
 3. **Performance**: Extensive testing, query optimization
@@ -390,6 +420,7 @@ describe('User Model', () => {
 5. **Integration**: Third-party service compatibility
 
 ### Contingency Plans
+
 - Automated rollback procedures
 - 24/7 monitoring during cutover
 - Database replication for zero-downtime
@@ -398,24 +429,28 @@ describe('User Model', () => {
 ## Post-Migration Activities
 
 ### Immediate (Week 1)
+
 - Monitor system performance
 - Validate all functionality
 - Address any critical issues
 - User acceptance testing
 
 ### Short-term (Month 1)
+
 - Performance optimization
 - Index tuning
 - Query optimization
 - User feedback integration
 
 ### Long-term (Months 2-3)
+
 - PostgreSQL-specific feature adoption
 - Advanced JSONB queries
 - Partitioning for large tables
 - Archive strategy for HIPAA compliance
 
 ## Success Criteria
+
 - ✅ Zero data loss
 - ✅ < 4 hours total downtime
 - ✅ All tests passing
@@ -425,6 +460,7 @@ describe('User Model', () => {
 - ✅ User acceptance > 95%
 
 ## Migration Team Roles
+
 - **Project Manager**: Overall coordination
 - **Database Administrator**: PostgreSQL setup and optimization
 - **Backend Developer**: Application code migration
