@@ -20,7 +20,8 @@
   "dependencies": {
     "express": "^4.19.2",
     "sequelize": "^6.37.1",
-    "mysql2": "^3.9.1",
+    "pg": "^8.11.3",
+    "pg-hstore": "^2.3.4",
     "bcryptjs": "^2.4.3",
     "jsonwebtoken": "^9.0.2",
     "joi": "^17.12.1",
