@@ -5,17 +5,17 @@ implemented:
 
 ## 📦 What's Been Created
 
-### Docker Configurations
+### Docker Configurations (Located in `docker/` folder)
 
-- Dockerfile - Multi-stage NextJS frontend build
-- Dockerfile.backend - Optimized Node.js API server
+- `docker/Dockerfile` - Multi-stage NextJS frontend build
+- `docker/Dockerfile.backend` - Optimized Node.js API server  
 - Health checks and security best practices
 
 ### Environment Configurations
 
-- Development: docker-compose.dev.yml - Full dev stack with hot-reload
-- Production: docker-compose.prod.yml - Optimized production deployment
-- Docker Swarm: docker-stack.yml - Enterprise-grade cluster deployment
+- Development: `docker/docker-compose.dev.yml` - Full dev stack with hot-reload
+- Production: `docker/docker-compose.prod.yml` - Optimized production deployment
+- Docker Swarm: `docker/docker-stack.yml` - Enterprise-grade cluster deployment
 
 ### Infrastructure Components
 
@@ -25,13 +25,15 @@ implemented:
 - Monitoring: Prometheus + Grafana + Elasticsearch
 - Backup: Automated backup to AWS S3
 
-### Deployment Scripts
+### Deployment Scripts (✅ Updated for new Docker file locations)
 
-- deploy-dev.sh - One-click development deployment
-- deploy-prod.sh - Production deployment with rollback support
-- docker-swarm-init.sh - Swarm cluster initialization
-- backup-prod.sh - Automated backup with retention
-- reset-dev.sh - Clean development environment reset
+- `scripts/deploy-dev.sh` - One-click development deployment
+- `scripts/deploy-prod.sh` - Production deployment with rollback support  
+- `scripts/docker-swarm-init.sh` - Swarm cluster initialization
+- `scripts/backup-prod.sh` - Automated backup with retention
+- `scripts/reset-dev.sh` - Clean development environment reset
+
+All scripts have been updated to reference the new `docker/` folder structure.
 
 ### Environment Files
 
@@ -47,7 +49,11 @@ implemented:
 - cd healthapp-nextjs
 
 - Start development environment
-- ./scripts/deploy-dev.sh
+```bash
+./scripts/deploy-dev.sh
+```
+
+**Note**: All Docker files are now organized in the `docker/` folder, and deployment scripts have been updated accordingly.
 
 #### Access URLs
 

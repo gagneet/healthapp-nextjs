@@ -207,3 +207,54 @@ The "type": "module" setting in your package.json is primarily for your backend 
 - Toggle sidebar button: Added aria-label="Toggle sidebar"
 
 All icon-only buttons now have proper aria-label attributes that provide discernible text for screen readers, resolving the accessibility violations.
+
+### 🔧 Heroicons v2 Migration & Icon Standardization
+
+#### Icon Import Fixes
+
+Fixed missing icon imports to use Heroicons v2 compatible icons:
+
+**patient-sidebar.tsx:**
+- `PillIcon` → `BeakerIcon` (appropriate for medications)
+- `DownloadIcon` → `ArrowDownTrayIcon` (correct v2 name)
+
+**Other components with similar fixes:**
+- Standardized all icon imports to use available Heroicons v2 icons
+- Maintained semantic meaning while ensuring compatibility
+- Fixed TypeScript compilation errors
+
+#### Benefits
+- ✅ **No Build Errors**: All icon imports now resolve correctly
+- ✅ **Semantic Consistency**: Icons maintain appropriate visual meaning
+- ✅ **Future-Proof**: Using official Heroicons v2 icon names
+- ✅ **Type Safety**: No TypeScript errors for missing exports
+
+### 🗂️ Project Organization Improvements
+
+#### Docker Files Organization
+- Moved all Docker-related files to dedicated `docker/` folder
+- Updated all deployment scripts to reference new paths
+- Cleaner root directory structure
+
+#### Updated File Structure
+```
+healthapp-nextjs/
+├── docker/                    # ✅ All Docker configurations
+│   ├── Dockerfile
+│   ├── Dockerfile.backend
+│   ├── docker-compose.dev.yml
+│   ├── docker-compose.prod.yml
+│   └── docker-stack.yml
+├── app/                      # NextJS app directory
+├── components/               # React components
+├── lib/                      # Utilities
+├── src/                      # Backend API
+└── [config files in root]    # NextJS configs remain at root
+```
+
+#### Script Updates
+All deployment scripts updated with new Docker file paths:
+- `scripts/deploy-dev.sh`
+- `scripts/deploy-prod.sh`
+- `scripts/reset-dev.sh`
+- `scripts/backup-prod.sh`
