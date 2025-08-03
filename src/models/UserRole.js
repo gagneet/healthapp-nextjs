@@ -2,12 +2,12 @@
 export default (sequelize, DataTypes) => {
   const UserRole = sequelize.define('UserRole', {
     id: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.UUID,
+      defaultValue: DataTypes.UUIDV4,
       primaryKey: true,
-      autoIncrement: true,
     },
     user_identity: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.UUID,
       allowNull: false,
       references: {
         model: 'users',
@@ -19,7 +19,7 @@ export default (sequelize, DataTypes) => {
       allowNull: true,
     },
     linked_id: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.UUID,
       allowNull: true,
     },
     created_at: {
