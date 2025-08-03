@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   # PostgreSQL Database with optimized settings
   postgres:
@@ -12,9 +10,7 @@ services:
       POSTGRES_HOST_AUTH_METHOD: scram-sha-256
     volumes:
       - postgres_data_prod:/var/lib/postgresql/data
-      - ./scripts/postgresql.conf:/etc/postgresql/postgresql.conf
-      - ./scripts/init-prod-db.sql:/docker-entrypoint-initdb.d/init-db.sql
-    command: postgres -c config_file=/etc/postgresql/postgresql.conf
+    # Using default postgres configuration for now
     networks:
       - healthapp-backend
     deploy:

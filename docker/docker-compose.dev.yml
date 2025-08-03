@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   # PostgreSQL Database
   postgres:
@@ -12,7 +10,6 @@ services:
       POSTGRES_HOST_AUTH_METHOD: trust
     volumes:
       - postgres_data_dev:/var/lib/postgresql/data
-      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
     ports:
       - "5432:5432"
     networks:
@@ -43,8 +40,8 @@ services:
   # Backend API
   backend:
     build:
-      context: .
-      dockerfile: Dockerfile.backend
+      context: ..
+      dockerfile: docker/Dockerfile.backend
     container_name: healthapp-backend-dev
     environment:
       NODE_ENV: development
@@ -60,8 +57,8 @@ services:
       FRONTEND_URL: http://localhost:3000
       LOG_LEVEL: debug
     volumes:
-      - ./src:/app/src
-      - ./scripts:/app/scripts
+      - ../src:/app/src
+      - ../scripts:/app/scripts
       - backend_logs_dev:/app/logs
     ports:
       - "3001:3001"
@@ -78,20 +75,19 @@ services:
   # Frontend NextJS
   frontend:
     build:
-      context: .
-      dockerfile: Dockerfile
-      target: builder
+      context: ..
+      dockerfile: docker/Dockerfile.dev
     container_name: healthapp-frontend-dev
     environment:
       NODE_ENV: development
       BACKEND_URL: http://backend:3001
       NEXT_PUBLIC_API_URL: http://localhost:3001
     volumes:
-      - ./app:/app/app
-      - ./components:/app/components
-      - ./lib:/app/lib
-      - ./types:/app/types
-      - ./public:/app/public
+      - ../app:/app/app
+      - ../components:/app/components
+      - ../lib:/app/lib
+      - ../types:/app/types
+      - ../public:/app/public
       - /app/node_modules
       - /app/.next
     ports:
@@ -101,7 +97,6 @@ services:
     networks:
       - healthapp-network
     restart: unless-stopped
-    command: ["npm", "run", "dev"]
 
   # pgAdmin for database management (development only)
   pgadmin:

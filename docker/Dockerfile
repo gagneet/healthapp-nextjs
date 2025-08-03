@@ -16,7 +16,9 @@ RUN npm ci
 COPY . .
 # Disable telemetry during build
 ENV NEXT_TELEMETRY_DISABLED 1
-RUN npm run build
+
+# For development, we don't need to build - we'll use hot reload
+# RUN npm run build
 
 # Production image
 FROM node:18-alpine AS runner
