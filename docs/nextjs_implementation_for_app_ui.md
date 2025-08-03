@@ -181,9 +181,51 @@ The NextJS application should start without the module loading error.
 
 The "type": "module" setting in your package.json is primarily for your backend Node.js server code. If you continue to have issues with the frontend, you could alternatively remove the "type": "module" from package.json and keep the CommonJS syntax in the config files, but then you'd need to update your backend server files to use CommonJS as well.
 
-## Accessibility Improvements
+## Files Organized
 
-### ● All accessibility issues have been fixed across the 4 files. Here's a summary of the changes made:
+Moved to docker/ folder:
+
+- Dockerfile
+- Dockerfile.backend
+- docker-compose.dev.yml
+- docker-compose.prod.yml
+- docker-stack.yml
+
+Updated script references:
+
+- scripts/deploy-dev.sh - Updated all docker-compose references
+- scripts/deploy-prod.sh - Updated Dockerfile and docker-stack.yml references
+- scripts/reset-dev.sh - Updated docker-compose references
+- scripts/backup-prod.sh - Updated docker-stack.yml reference
+
+Config files remain in root:
+
+- next.config.js, postcss.config.js, tailwind.config.js stayed in root since Next.js expects them there
+
+Current Clean Root Structure:
+
+/home/gagneet/healthapp-nextjs/
+├── package.json, package-lock.json    # Package management
+├── tsconfig.json                       # TypeScript config
+├── next.config.js, postcss.config.js, tailwind.config.js  # Build configs
+├── README.md, LICENSE, CLAUDE.md       # Documentation
+├── docker/                            # All Docker files
+├── scripts/                           # Deployment/utility scripts
+├── docs/                              # Project documentation
+├── src/                               # Backend source code
+├── app/, components/, lib/, types/     # Frontend Next.js code
+├── nginx/, monitoring/                # Infrastructure configs
+└── typings/                           # TypeScript definitions
+
+The root is now much cleaner with Docker files organized in their own folder, and all script references have been updated to work with the new structure.
+
+## Issues
+
+### Accessibility Improvements
+
+● All accessibility issues have been fixed across the 4 files
+
+Here's a summary of the changes made:
 
 #### sidebar.tsx
 
@@ -215,15 +257,18 @@ All icon-only buttons now have proper aria-label attributes that provide discern
 Fixed missing icon imports to use Heroicons v2 compatible icons:
 
 **patient-sidebar.tsx:**
+
 - `PillIcon` → `BeakerIcon` (appropriate for medications)
 - `DownloadIcon` → `ArrowDownTrayIcon` (correct v2 name)
 
 **Other components with similar fixes:**
+
 - Standardized all icon imports to use available Heroicons v2 icons
 - Maintained semantic meaning while ensuring compatibility
 - Fixed TypeScript compilation errors
 
 #### Benefits
+
 - ✅ **No Build Errors**: All icon imports now resolve correctly
 - ✅ **Semantic Consistency**: Icons maintain appropriate visual meaning
 - ✅ **Future-Proof**: Using official Heroicons v2 icon names
@@ -232,12 +277,14 @@ Fixed missing icon imports to use Heroicons v2 compatible icons:
 ### 🗂️ Project Organization Improvements
 
 #### Docker Files Organization
+
 - Moved all Docker-related files to dedicated `docker/` folder
 - Updated all deployment scripts to reference new paths
 - Cleaner root directory structure
 
 #### Updated File Structure
-```
+
+```text
 healthapp-nextjs/
 ├── docker/                    # ✅ All Docker configurations
 │   ├── Dockerfile
@@ -253,8 +300,77 @@ healthapp-nextjs/
 ```
 
 #### Script Updates
+
 All deployment scripts updated with new Docker file paths:
+
 - `scripts/deploy-dev.sh`
 - `scripts/deploy-prod.sh`
 - `scripts/reset-dev.sh`
 - `scripts/backup-prod.sh`
+
+## 📚 Documentation Updates Completed
+
+### Docker Deployment Guide (docker_deployment_guide.md)
+
+- ✅ Updated all Docker file paths to reference docker/ folder
+- ✅ Added new project structure section showing organized layout
+- ✅ Updated all command examples with correct paths
+- ✅ Added note about file organization improvements
+
+### Project Folder Structure (project_folder_structure.md)
+
+- ✅ Complete rewrite with current hybrid NextJS + Node.js architecture
+- ✅ Detailed folder structure with emojis and descriptions
+- ✅ Highlighted recent improvements with ✅ checkmarks
+- ✅ Added accessibility fixes, icon standardization, and Docker organization
+- ✅ Comprehensive technology stack overview
+
+### NextJS Implementation (nextjs_implementation_for_app_ui.md)
+
+- ✅ Added section on Heroicons v2 migration and icon fixes
+- ✅ Documented project organization improvements
+- ✅ Updated with Docker file reorganization details
+- ✅ Added script update information
+
+### Docker Implementation (docker_implementation.md)
+
+- ✅ Updated all Docker file references to include docker/ folder
+- ✅ Noted script updates for new file locations
+- ✅ Added organization benefits explanation
+
+### Architecture Document (architecture.md)
+
+- ✅ Complete rewrite with modern architecture diagrams
+- ✅ Current technology stack with recent improvements marked
+- ✅ Comprehensive security, API, and deployment architecture
+- ✅ Added accessibility compliance and icon standardization notes
+- ✅ Future architecture considerations
+
+### New Accessibility Documentation (accessibility_improvements.md)
+
+- ✅ Brand new document detailing all accessibility fixes
+- ✅ Before/after code examples for all button fixes
+- ✅ WCAG 2.1 AA compliance documentation
+- ✅ Testing results and implementation best practices
+- ✅ Ongoing accessibility commitment guidelines
+
+## 🎯 Key Changes Documented
+
+### Recent Improvements Highlighted
+
+- ✅ Accessibility Compliance: All icon-only buttons now have proper aria-label attributes
+- ✅ Icon Standardization: Migrated to Heroicons v2 compatible icons (PillIcon → BeakerIcon, DownloadIcon → ArrowDownTrayIcon)
+- ✅ Project Organization: Docker files moved to dedicated docker/ folder
+- ✅ Script Updates: All deployment scripts updated with new file paths
+- ✅ Clean Architecture: Organized root directory structure
+
+### Files Updated Across Sessions
+
+- components/dashboard/sidebar.tsx
+- components/dashboard/doctor-sidebar.tsx
+- components/dashboard/patient-sidebar.tsx
+- components/dashboard/notification-drawer.tsx
+- All deployment scripts in scripts/ folder
+- Docker file organization
+
+The documentation is now completely up-to-date and accurately reflects the current state of the Healthcare Management Platform with all recent accessibility improvements, project organization enhancements, and technical implementations properly documented.
