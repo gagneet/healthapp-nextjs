@@ -3,7 +3,7 @@ import { User, Doctor, Patient, CarePlan } from '../models/index.js';
 import { Op } from 'sequelize';
 import { PAGINATION, USER_CATEGORIES } from '../config/constants.js';
 import ResponseFormatter from '../utils/responseFormatter.js';
-import PatientService from '../services/patientService.js';
+import PatientService from '../services/PatientService.js';
 import { ValidationError, NotFoundError } from '../utils/errors.js';
 
 class PatientController {

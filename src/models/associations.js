@@ -212,15 +212,7 @@ export default (db) => {
       as: 'createdByHSP'
     });
 
-    // Patient care plans
-    Patient.hasMany(CarePlan, {
-      foreignKey: 'patient_id',
-      as: 'carePlans'
-    });
-    CarePlan.belongsTo(Patient, {
-      foreignKey: 'patient_id',
-      as: 'patient'
-    });
+    // Patient care plans - moved to PostgreSQL schema section below
 
     if (Organization) {
       CarePlan.belongsTo(Organization, {
@@ -478,8 +470,8 @@ export default (db) => {
     });
   }
 
-  // VitalReading associations
-  if (VitalReading) {
+  // VitalReading associations - only if model exists
+  if (VitalReading && VitalType) {
     Patient.hasMany(VitalReading, {
       foreignKey: 'patient_id',
       as: 'vitalReadings'
@@ -507,8 +499,8 @@ export default (db) => {
     });
   }
 
-  // ScheduledEvent associations
-  if (ScheduledEvent) {
+  // ScheduledEvent associations - only if model exists
+  if (ScheduledEvent && User) {
     Patient.hasMany(ScheduledEvent, {
       foreignKey: 'patient_id',
       as: 'scheduledEvents'
@@ -535,8 +527,8 @@ export default (db) => {
     });
   }
 
-  // AdherenceRecord associations
-  if (AdherenceRecord) {
+  // AdherenceRecord associations - only if model exists
+  if (AdherenceRecord && ScheduledEvent) {
     Patient.hasMany(AdherenceRecord, {
       foreignKey: 'patient_id',
       as: 'adherenceRecords'
@@ -563,8 +555,8 @@ export default (db) => {
     });
   }
 
-  // Symptom associations
-  if (Symptom) {
+  // Symptom associations - only if model exists
+  if (Symptom && CarePlan) {
     Patient.hasMany(Symptom, {
       foreignKey: 'patient_id',
       as: 'symptoms'
