@@ -5,17 +5,19 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
   HomeIcon,
-  UsersIcon,
+  PillIcon,
   CalendarIcon,
-  BellIcon,
+  HeartIcon,
   UserIcon,
   DocumentTextIcon,
   CogIcon,
   ShieldCheckIcon,
-  CreditCardIcon,
+  BellIcon,
+  CameraIcon,
   PlusIcon,
   XMarkIcon,
   Bars3Icon,
+  DownloadIcon,
 } from '@heroicons/react/24/outline'
 import { useAuth } from '@/lib/auth-context'
 import NotificationDrawer from './notification-drawer'
@@ -26,29 +28,29 @@ interface SidebarProps {
 }
 
 const navigation = [
-  { name: 'Dashboard', href: '/dashboard/doctor', icon: HomeIcon },
-  { name: 'Patients', href: '/dashboard/doctor/patients', icon: UsersIcon },
-  { name: 'Calendar', href: '/dashboard/doctor/calendar', icon: CalendarIcon },
-  { name: 'Notifications', href: '/dashboard/doctor/notifications', icon: BellIcon },
-  { name: 'Profile', href: '/dashboard/doctor/profile', icon: UserIcon },
-  { name: 'Care Plan Templates', href: '/dashboard/doctor/templates', icon: DocumentTextIcon },
-  { name: 'Subscriptions & Services', href: '/dashboard/doctor/services', icon: CreditCardIcon },
-  { name: 'Settings', href: '/dashboard/doctor/settings', icon: CogIcon },
+  { name: 'Dashboard', href: '/dashboard/patient', icon: HomeIcon },
+  { name: 'Medications', href: '/dashboard/patient/medications', icon: PillIcon },
+  { name: 'Appointments', href: '/dashboard/patient/appointments', icon: CalendarIcon },
+  { name: 'Vital Readings', href: '/dashboard/patient/vitals', icon: HeartIcon },
+  { name: 'Symptoms', href: '/dashboard/patient/symptoms', icon: UserIcon },
+  { name: 'Prescriptions', href: '/dashboard/patient/prescriptions', icon: DocumentTextIcon },
+  { name: 'Profile', href: '/dashboard/patient/profile', icon: UserIcon },
+  { name: 'Settings', href: '/dashboard/patient/settings', icon: CogIcon },
 ]
 
 const quickActions = [
-  { name: 'Add Patient', href: '/dashboard/doctor/patients/new', icon: PlusIcon },
-  { name: 'Create Template', href: '/dashboard/doctor/templates/new', icon: DocumentTextIcon },
-  { name: 'Schedule Appointment', href: '/dashboard/doctor/appointments/new', icon: CalendarIcon },
+  { name: 'Record Symptom', href: '/dashboard/patient/symptoms/new', icon: CameraIcon },
+  { name: 'Add Vital Reading', href: '/dashboard/patient/vitals/new', icon: PlusIcon },
+  { name: 'View Prescriptions', href: '/dashboard/patient/prescriptions', icon: DownloadIcon },
 ]
 
-export default function DoctorSidebar({ isOpen, setIsOpen }: SidebarProps) {
+export default function PatientSidebar({ isOpen, setIsOpen }: SidebarProps) {
   const pathname = usePathname()
   const { user, logout } = useAuth()
   const [showNotifications, setShowNotifications] = useState(false)
 
   const isActive = (href: string) => {
-    if (href === '/dashboard/doctor') {
+    if (href === '/dashboard/patient') {
       return pathname === href
     }
     return pathname.startsWith(href)
@@ -76,7 +78,7 @@ export default function DoctorSidebar({ isOpen, setIsOpen }: SidebarProps) {
           {/* Header */}
           <div className="flex items-center justify-between p-4 border-b border-gray-200">
             <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+              <div className="w-8 h-8 bg-green-600 rounded-lg flex items-center justify-center">
                 <ShieldCheckIcon className="w-5 h-5 text-white" />
               </div>
               <span className="text-lg font-semibold text-gray-900">AdhereLive</span>
@@ -92,16 +94,35 @@ export default function DoctorSidebar({ isOpen, setIsOpen }: SidebarProps) {
           {/* User Info */}
           <div className="p-4 border-b border-gray-200">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                <span className="text-sm font-medium text-blue-600">
+              <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                <span className="text-sm font-medium text-green-600">
                   {user?.first_name?.[0]}{user?.last_name?.[0]}
                 </span>
               </div>
               <div>
                 <p className="text-sm font-medium text-gray-900">
-                  Dr. {user?.first_name} {user?.last_name}
+                  {user?.first_name} {user?.last_name}
                 </p>
                 <p className="text-xs text-gray-500">{user?.email}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Health Summary */}
+          <div className="p-4 border-b border-gray-200 bg-green-50">
+            <h3 className="text-sm font-medium text-gray-700 mb-2">Today's Summary</h3>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-gray-600">Medications</span>
+                <span className="text-green-600 font-medium">2/4 taken</span>
+              </div>
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-gray-600">Vitals</span>
+                <span className="text-yellow-600 font-medium">1 pending</span>
+              </div>
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-gray-600">Adherence</span>
+                <span className="text-green-600 font-medium">87%</span>
               </div>
             </div>
           </div>
@@ -109,7 +130,7 @@ export default function DoctorSidebar({ isOpen, setIsOpen }: SidebarProps) {
           {/* Navigation */}
           <nav className="flex-1 px-4 py-4 space-y-1 overflow-y-auto">
             {navigation.map((item) => {
-              if (item.name === 'Notifications') {
+              if (item.name === 'Settings') {
                 return (
                   <button
                     key={item.name}
@@ -120,21 +141,21 @@ export default function DoctorSidebar({ isOpen, setIsOpen }: SidebarProps) {
                     className={`
                       w-full group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors
                       ${isActive(item.href)
-                        ? 'bg-blue-100 text-blue-700 border-r-2 border-blue-700'
+                        ? 'bg-green-100 text-green-700 border-r-2 border-green-700'
                         : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                       }
                     `}
                   >
-                    <item.icon
+                    <BellIcon
                       className={`
                         mr-3 h-5 w-5 flex-shrink-0
                         ${isActive(item.href)
-                          ? 'text-blue-500'
+                          ? 'text-green-500'
                           : 'text-gray-400 group-hover:text-gray-500'
                         }
                       `}
                     />
-                    {item.name}
+                    Notifications
                     <span className="ml-auto inline-block w-2 h-2 bg-red-500 rounded-full"></span>
                   </button>
                 )
@@ -147,7 +168,7 @@ export default function DoctorSidebar({ isOpen, setIsOpen }: SidebarProps) {
                   className={`
                     group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors
                     ${isActive(item.href)
-                      ? 'bg-blue-100 text-blue-700 border-r-2 border-blue-700'
+                      ? 'bg-green-100 text-green-700 border-r-2 border-green-700'
                       : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                     }
                   `}
@@ -157,7 +178,7 @@ export default function DoctorSidebar({ isOpen, setIsOpen }: SidebarProps) {
                     className={`
                       mr-3 h-5 w-5 flex-shrink-0
                       ${isActive(item.href)
-                        ? 'text-blue-500'
+                        ? 'text-green-500'
                         : 'text-gray-400 group-hover:text-gray-500'
                       }
                     `}
@@ -184,6 +205,19 @@ export default function DoctorSidebar({ isOpen, setIsOpen }: SidebarProps) {
                     {action.name}
                   </Link>
                 ))}
+              </div>
+            </div>
+
+            {/* Emergency Contact */}
+            <div className="pt-6">
+              <div className="px-3 py-2 bg-red-50 rounded-lg border border-red-200">
+                <h4 className="text-sm font-medium text-red-800">Emergency?</h4>
+                <p className="text-xs text-red-600 mt-1">
+                  Call your doctor immediately or contact emergency services
+                </p>
+                <button className="mt-2 w-full px-3 py-1 bg-red-600 text-white text-xs font-medium rounded hover:bg-red-700">
+                  Emergency Contact
+                </button>
               </div>
             </div>
           </nav>
