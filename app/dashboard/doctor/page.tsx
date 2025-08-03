@@ -9,12 +9,14 @@ import {
   ChartBarIcon,
   PlusIcon,
   BellIcon,
+  EyeIcon,
 } from '@heroicons/react/24/outline'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { useAuth } from '@/lib/auth-context'
 import { DashboardStats, Patient, CriticalAlert, RecentActivity } from '@/types/dashboard'
 import { formatDate, getAdherenceColor, getInitials } from '@/lib/utils'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts'
+import PatientQuickView from '@/components/dashboard/patient-quick-view'
 
 // Mock data - replace with actual API calls
 const mockStats: DashboardStats = {
@@ -120,11 +122,18 @@ const monthlyAdherenceData = [
 export default function DoctorDashboard() {
   const { user } = useAuth()
   const [isLoading, setIsLoading] = useState(true)
+  const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null)
+  const [quickViewOpen, setQuickViewOpen] = useState(false)
 
   useEffect(() => {
     // Simulate loading
     setTimeout(() => setIsLoading(false), 1000)
   }, [])
+
+  const handlePatientQuickView = (patient: Patient) => {
+    setSelectedPatient(patient)
+    setQuickViewOpen(true)
+  }
 
   if (isLoading) {
     return (
@@ -328,9 +337,8 @@ export default function DoctorDashboard() {
           <CardContent>
             <div className="space-y-4">
               {mockPatients.slice(0, 5).map((patient) => (
-                <Link
+                <div
                   key={patient.id}
-                  href={`/dashboard/doctor/patients/${patient.id}`}
                   className="flex items-center p-3 hover:bg-gray-50 rounded-lg transition-colors"
                 >
                   <div className="flex-shrink-0">
@@ -368,12 +376,34 @@ export default function DoctorDashboard() {
                       Last visit: {formatDate(patient.last_visit)}
                     </p>
                   </div>
-                </Link>
+                  <div className="ml-3 flex items-center space-x-2">
+                    <button
+                      onClick={() => handlePatientQuickView(patient)}
+                      className="p-2 rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+                      title="Quick View"
+                    >
+                      <EyeIcon className="h-4 w-4" />
+                    </button>
+                    <Link
+                      href={`/dashboard/doctor/patients/${patient.id}`}
+                      className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+                    >
+                      View Details
+                    </Link>
+                  </div>
+                </div>
               ))}
             </div>
           </CardContent>
         </Card>
       </div>
+
+      {/* Patient Quick View Drawer */}
+      <PatientQuickView
+        isOpen={quickViewOpen}
+        setIsOpen={setQuickViewOpen}
+        patient={selectedPatient}
+      />
     </div>
   )
 }
