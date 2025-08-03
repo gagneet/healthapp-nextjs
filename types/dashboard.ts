@@ -16,6 +16,9 @@ export interface Patient {
   critical_alerts: number
   status: 'active' | 'inactive' | 'pending'
   created_at: string
+  assigned_doctor?: string
+  assigned_hsp?: string
+  department?: string
 }
 
 export interface AdherenceMetrics {
