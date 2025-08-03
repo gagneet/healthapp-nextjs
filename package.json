@@ -30,7 +30,6 @@
     "@headlessui/react": "^2.2.7",
     "@heroicons/react": "^2.1.0",
     "@hookform/resolvers": "^3.3.0",
-    "@next/font": "^14.2.0",
     "autoprefixer": "^10.4.0",
     "axios": "^1.7.0",
     "bcryptjs": "^2.4.3",
