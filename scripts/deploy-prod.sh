@@ -188,9 +188,9 @@ if [ "$SKIP_BUILD" = false ]; then
         image_tag="healthapp/${image}:${VERSION}"
         
         if [ "$image" = "backend" ]; then
-            dockerfile="Dockerfile.backend"
+            dockerfile="docker/Dockerfile.backend"
         else
-            dockerfile="Dockerfile"
+            dockerfile="docker/Dockerfile"
         fi
         
         print_status "Building $image_tag..."
@@ -212,7 +212,7 @@ print_header "4. Deploying stack..."
 
 # Deploy the stack
 export VERSION=$VERSION
-docker stack deploy -c docker-stack.yml healthapp
+docker stack deploy -c docker/docker-stack.yml healthapp
 
 print_header "5. Waiting for services to be ready..."
 

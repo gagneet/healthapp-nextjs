@@ -5,13 +5,14 @@ This comprehensive guide covers deploying Healthcare Application Healthcare Mana
 ## 📋 Table of Contents
 
 1. [Prerequisites](#-prerequisites)
-2. [Development Deployment](#-development-deployment)
-3. [Production Deployment](#production-deployment)
-4. [Docker Swarm Setup](#-docker-swarm-setup)
-5. [Monitoring & Logging](#-monitoring--logging)
-6. [Backup & Recovery](#-backup--recovery)
-7. [Scaling & Optimization](#-scaling--optimization)
-8. [Troubleshooting](#-troubleshooting)
+2. [Project Structure](#-project-structure)
+3. [Development Deployment](#-development-deployment)
+4. [Production Deployment](#production-deployment)
+5. [Docker Swarm Setup](#-docker-swarm-setup)
+6. [Monitoring & Logging](#-monitoring--logging)
+7. [Backup & Recovery](#-backup--recovery)
+8. [Scaling & Optimization](#-scaling--optimization)
+9. [Troubleshooting](#-troubleshooting)
 
 ## 🔧 Prerequisites
 
@@ -49,6 +50,38 @@ sudo chmod +x /usr/local/bin/docker-compose
 docker --version
 docker-compose --version
 ```
+
+## 📁 Project Structure
+
+### Docker Files Organization
+
+All Docker configurations are organized in the `docker/` directory:
+
+```
+healthapp-nextjs/
+├── docker/                      # All Docker configurations
+│   ├── Dockerfile               # NextJS frontend container
+│   ├── Dockerfile.backend       # Node.js API container  
+│   ├── docker-compose.dev.yml   # Development stack
+│   ├── docker-compose.prod.yml  # Production stack
+│   └── docker-stack.yml         # Docker Swarm deployment
+├── app/                         # NextJS app directory
+├── components/                  # React components
+├── lib/                         # Utilities and helpers
+├── src/                         # Backend API source
+│   ├── config/                  # Database, JWT, constants
+│   ├── controllers/             # Route handlers
+│   ├── models/                  # Sequelize models
+│   ├── routes/                  # API routes
+│   └── services/                # Business logic
+├── scripts/                     # Deployment scripts
+├── docs/                        # Documentation
+├── nginx/                       # NGINX configuration
+├── monitoring/                  # Prometheus configuration
+└── [config files]               # NextJS, PostCSS, Tailwind configs
+```
+
+This organization keeps all Docker-related files in one place while maintaining the hybrid NextJS + Node.js API architecture.
 
 ## 🚀 Development Deployment
 
@@ -91,13 +124,13 @@ The development stack includes:
 
 ```bash
 # View logs
-docker-compose -f docker-compose.dev.yml logs -f [service]
+docker-compose -f docker/docker-compose.dev.yml logs -f [service]
 
 # Restart services
-docker-compose -f docker-compose.dev.yml restart
+docker-compose -f docker/docker-compose.dev.yml restart
 
 # Shell access
-docker-compose -f docker-compose.dev.yml exec [service] sh
+docker-compose -f docker/docker-compose.dev.yml exec [service] sh
 
 # Reset environment
 ./scripts/reset-dev.sh

@@ -55,12 +55,12 @@ fi
 print_header "2. Building Docker images..."
 
 # Build images
-docker-compose -f docker-compose.dev.yml build --no-cache
+docker-compose -f docker/docker-compose.dev.yml build --no-cache
 
 print_header "3. Starting services..."
 
 # Start services
-docker-compose -f docker-compose.dev.yml up -d
+docker-compose -f docker/docker-compose.dev.yml up -d
 
 print_header "4. Waiting for services to be ready..."
 
@@ -68,7 +68,7 @@ print_header "4. Waiting for services to be ready..."
 print_status "Waiting for PostgreSQL..."
 timeout=60
 counter=0
-while ! docker-compose -f docker-compose.dev.yml exec postgres pg_isready -U healthapp_user -d healthapp_dev > /dev/null 2>&1; do
+while ! docker-compose -f docker/docker-compose.dev.yml exec postgres pg_isready -U healthapp_user -d healthapp_dev > /dev/null 2>&1; do
     if [ $counter -ge $timeout ]; then
         print_error "PostgreSQL failed to start within $timeout seconds"
         exit 1
@@ -83,7 +83,7 @@ echo ""
 print_status "Waiting for Redis..."
 timeout=30
 counter=0
-while ! docker-compose -f docker-compose.dev.yml exec redis redis-cli ping > /dev/null 2>&1; do
+while ! docker-compose -f docker/docker-compose.dev.yml exec redis redis-cli ping > /dev/null 2>&1; do
     if [ $counter -ge $timeout ]; then
         print_error "Redis failed to start within $timeout seconds"
         exit 1
@@ -97,23 +97,23 @@ echo ""
 print_header "5. Running database migrations..."
 
 # Run migrations
-docker-compose -f docker-compose.dev.yml exec backend npm run migrate
+docker-compose -f docker/docker-compose.dev.yml exec backend npm run migrate
 
 print_header "6. Seeding database..."
 
 # Seed database
-docker-compose -f docker-compose.dev.yml exec backend npm run seed
+docker-compose -f docker/docker-compose.dev.yml exec backend npm run seed
 
 print_header "7. Verifying deployment..."
 
 # Check service health
 services=("postgres" "redis" "backend" "frontend")
 for service in "${services[@]}"; do
-    if docker-compose -f docker-compose.dev.yml ps $service | grep -q "Up"; then
+    if docker-compose -f docker/docker-compose.dev.yml ps $service | grep -q "Up"; then
         print_status "$service is running ✓"
     else
         print_error "$service is not running ✗"
-        docker-compose -f docker-compose.dev.yml logs $service
+        docker-compose -f docker/docker-compose.dev.yml logs $service
         exit 1
     fi
 done
@@ -125,7 +125,7 @@ if curl -f http://localhost:3001/api/health > /dev/null 2>&1; then
     print_status "Backend API is healthy ✓"
 else
     print_warning "Backend API health check failed. Check logs:"
-    docker-compose -f docker-compose.dev.yml logs backend
+    docker-compose -f docker/docker-compose.dev.yml logs backend
 fi
 
 # Test Frontend
@@ -134,7 +134,7 @@ if curl -f http://localhost:3000 > /dev/null 2>&1; then
     print_status "Frontend is accessible ✓"
 else
     print_warning "Frontend health check failed. Check logs:"
-    docker-compose -f docker-compose.dev.yml logs frontend
+    docker-compose -f docker/docker-compose.dev.yml logs frontend
 fi
 
 print_header "✅ Development deployment completed!"
@@ -148,12 +148,12 @@ echo "   Backend:   http://localhost:3001"
 echo "   pgAdmin:   http://localhost:5050 (admin@healthapp.com / admin123)"
 echo ""
 echo "🔧 Useful commands:"
-echo "   View logs:        docker-compose -f docker-compose.dev.yml logs -f [service]"
-echo "   Stop services:    docker-compose -f docker-compose.dev.yml down"
-echo "   Restart service:  docker-compose -f docker-compose.dev.yml restart [service]"
-echo "   Shell access:     docker-compose -f docker-compose.dev.yml exec [service] sh"
+echo "   View logs:        docker-compose -f docker/docker-compose.dev.yml logs -f [service]"
+echo "   Stop services:    docker-compose -f docker/docker-compose.dev.yml down"
+echo "   Restart service:  docker-compose -f docker/docker-compose.dev.yml restart [service]"
+echo "   Shell access:     docker-compose -f docker/docker-compose.dev.yml exec [service] sh"
 echo ""
 echo "🐛 Troubleshooting:"
-echo "   If services fail to start, check: docker-compose -f docker-compose.dev.yml logs"
+echo "   If services fail to start, check: docker-compose -f docker/docker-compose.dev.yml logs"
 echo "   To reset everything: ./scripts/reset-dev.sh"
 echo ""

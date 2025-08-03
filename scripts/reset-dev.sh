@@ -38,13 +38,13 @@ if [[ ! $REPLY =~ ^[Yy]$ ]]; then
 fi
 
 print_status "Stopping all services..."
-docker-compose -f docker-compose.dev.yml down
+docker-compose -f docker/docker-compose.dev.yml down
 
 print_status "Removing volumes..."
-docker-compose -f docker-compose.dev.yml down -v
+docker-compose -f docker/docker-compose.dev.yml down -v
 
 print_status "Removing orphaned containers..."
-docker-compose -f docker-compose.dev.yml down --remove-orphans
+docker-compose -f docker/docker-compose.dev.yml down --remove-orphans
 
 print_status "Pruning unused images..."
 docker image prune -f

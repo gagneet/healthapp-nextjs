@@ -105,7 +105,7 @@ print_header "5. Backing up configuration files..."
 print_status "Backing up configuration files..."
 cp -r nginx/ "$BACKUP_DIR/$BACKUP_NAME/" 2>/dev/null || true
 cp -r monitoring/ "$BACKUP_DIR/$BACKUP_NAME/" 2>/dev/null || true
-cp docker-stack.yml "$BACKUP_DIR/$BACKUP_NAME/" 2>/dev/null || true
+cp docker/docker-stack.yml "$BACKUP_DIR/$BACKUP_NAME/" 2>/dev/null || true
 cp .env.production "$BACKUP_DIR/$BACKUP_NAME/env.production.backup" 2>/dev/null || true
 
 print_header "6. Creating compressed archive..."
