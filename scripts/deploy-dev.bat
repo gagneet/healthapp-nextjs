@@ -41,13 +41,11 @@ if not exist "data\redis" mkdir data\redis
 if not exist "data\grafana" mkdir data\grafana
 if not exist "data\prometheus" mkdir data\prometheus
 
-REM Copy environment file if it doesn't exist
+REM Check if environment file exists
 if not exist ".env.development" (
-    echo %WARN% .env.development not found. Creating from template...
-    copy .env.development .env.development >nul 2>&1
-    if errorlevel 1 (
-        echo %WARN% Could not create .env.development. Please create it manually.
-    )
+    echo %WARN% .env.development not found. Please ensure it exists.
+    echo %INFO% A default .env.development should be present in the project root.
+    echo %INFO% If missing, please check the project setup or documentation.
 )
 
 echo %STEP% 2. Building Docker images...

@@ -16,7 +16,6 @@ RUN npm ci --only=production
 
 # Copy source code
 COPY src/ ./src/
-COPY scripts/ ./scripts/
 
 # Create non-root user
 RUN addgroup --system --gid 1001 nodejs
