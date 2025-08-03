@@ -622,6 +622,38 @@ docker service rollback healthapp_frontend
 ./scripts/deploy-prod.sh --version v1.0.0-previous
 ```
 
+## ● Clean up steps (run these commands on Ubuntu server):
+
+### Stop and remove all containers
+
+> docker-compose -f docker/docker-compose.dev.yml down --volumes --remove-orphans
+
+### Remove specific healthapp containers if they exist
+
+> docker rm -f $(docker ps -a -q --filter name=healthapp) 2>/dev/null || true
+
+### Remove related images to force rebuild
+
+> docker rmi $(docker images --filter reference="docker_*" -q) 2>/dev/null || true
+
+### Clean up dangling images and containers
+
+> docker system prune -f
+
+### Optional: More aggressive cleanup if needed
+
+> docker system prune -af --volumes
+
+### Restart deployment
+
+> ./scripts/deploy-dev.sh
+
+#### ContainerConfig error typically occurs when
+
+1. Container metadata is corrupted
+2. Images have conflicting configurations
+3. Previous containers weren't properly cleaned up
+
 ## 📚 Additional Resources
 
 ### Documentation Links
