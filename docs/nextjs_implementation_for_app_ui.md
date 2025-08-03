@@ -180,3 +180,30 @@ The NextJS application should start without the module loading error.
 ## Note
 
 The "type": "module" setting in your package.json is primarily for your backend Node.js server code. If you continue to have issues with the frontend, you could alternatively remove the "type": "module" from package.json and keep the CommonJS syntax in the config files, but then you'd need to update your backend server files to use CommonJS as well.
+
+## Accessibility Improvements
+
+### ● All accessibility issues have been fixed across the 4 files. Here's a summary of the changes made:
+
+#### sidebar.tsx
+
+- Mobile menu button: Added aria-label="Open navigation menu"
+- Close button: Added aria-label="Close navigation menu"
+
+#### doctor-sidebar.tsx
+
+- Close sidebar button: Added aria-label="Close sidebar"
+- Toggle sidebar button: Added aria-label="Toggle sidebar"
+
+#### notification-drawer.tsx
+
+- Close notifications button: Added aria-label="Close notifications"
+- Mark as read button: Added aria-label="Mark as read"
+- Delete notification button: Added aria-label="Delete notification"
+
+#### patient-sidebar.tsx
+
+- Close sidebar button: Added aria-label="Close sidebar"
+- Toggle sidebar button: Added aria-label="Toggle sidebar"
+
+All icon-only buttons now have proper aria-label attributes that provide discernible text for screen readers, resolving the accessibility violations.
