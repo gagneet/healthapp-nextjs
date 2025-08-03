@@ -4,20 +4,21 @@ This comprehensive guide covers deploying Healthcare Application Healthcare Mana
 
 ## 📋 Table of Contents
 
-1. [Prerequisites](#prerequisites)
-2. [Development Deployment](#development-deployment)
+1. [Prerequisites](#-prerequisites)
+2. [Development Deployment](#-development-deployment)
 3. [Production Deployment](#production-deployment)
-4. [Docker Swarm Setup](#docker-swarm-setup)
-5. [Monitoring & Logging](#monitoring--logging)
-6. [Backup & Recovery](#backup--recovery)
-7. [Scaling & Optimization](#scaling--optimization)
-8. [Troubleshooting](#troubleshooting)
+4. [Docker Swarm Setup](#-docker-swarm-setup)
+5. [Monitoring & Logging](#-monitoring--logging)
+6. [Backup & Recovery](#-backup--recovery)
+7. [Scaling & Optimization](#-scaling--optimization)
+8. [Troubleshooting](#-troubleshooting)
 
 ## 🔧 Prerequisites
 
 ### System Requirements
 
 **Minimum (Development):**
+
 - CPU: 2 cores
 - RAM: 4GB
 - Storage: 20GB
@@ -25,6 +26,7 @@ This comprehensive guide covers deploying Healthcare Application Healthcare Mana
 - Docker Compose: 2.0+
 
 **Recommended (Production):**
+
 - CPU: 8+ cores per node
 - RAM: 16GB+ per node
 - Storage: 100GB+ SSD
@@ -52,20 +54,23 @@ docker-compose --version
 
 ### Quick Start
 
-1. **Clone and setup:**
+#### **Clone and setup:**
+
 ```bash
 git clone <repository-url>
 cd healthapp-nextjs
 chmod +x scripts/*.sh
 ```
 
-2. **Configure environment:**
+#### **Configure environment:**
+
 ```bash
 cp .env.development .env.development.local
 # Edit .env.development.local with your settings
 ```
 
-3. **Deploy development environment:**
+#### **Deploy development environment:**
+
 ```bash
 ./scripts/deploy-dev.sh
 ```
@@ -111,12 +116,14 @@ docker-compose -f docker-compose.dev.yml exec [service] sh
 
 ### Environment Configuration
 
-1. **Create production environment file:**
+#### **Create production environment file:**
+
 ```bash
 cp .env.production.example .env.production
 ```
 
-2. **Configure required variables:**
+#### **Configure required variables:**
+
 ```bash
 # Database
 DB_PASSWORD=your-strong-database-password
@@ -178,6 +185,7 @@ docker network ls
 ### Multi-Node Cluster
 
 **On Manager Node:**
+
 ```bash
 # Initialize swarm
 docker swarm init --advertise-addr <MANAGER-IP>
@@ -188,12 +196,14 @@ docker swarm join-token manager
 ```
 
 **On Worker Nodes:**
+
 ```bash
 # Join as worker
 docker swarm join --token <WORKER-TOKEN> <MANAGER-IP>:2377
 ```
 
 **Label Nodes:**
+
 ```bash
 # Database nodes
 docker node update --label-add database=true node1
@@ -213,6 +223,7 @@ docker node update --label-add monitoring=true node1
 ### High Availability Setup
 
 For production, ensure:
+
 - 3+ manager nodes (odd number)
 - Multiple worker nodes
 - Load balancing across nodes
@@ -234,10 +245,12 @@ The production deployment includes:
 ### Grafana Dashboards
 
 Access Grafana at `http://monitoring.healthcareapp.com`:
+
 - Username: `admin`
 - Password: `${GRAFANA_PASSWORD}`
 
 Pre-configured dashboards:
+
 - Application metrics
 - Database performance
 - System resources
@@ -274,6 +287,7 @@ The production stack includes automated backups:
 ### Backup Schedule
 
 Configure automated backups:
+
 ```bash
 # Add to crontab
 0 2 * * * /path/to/healthapp-nextjs/scripts/backup-prod.sh
@@ -305,6 +319,7 @@ docker service ls
 ### Performance Optimization
 
 **Database Optimization:**
+
 ```bash
 # Update PostgreSQL configuration
 docker config create postgres_config_v2 scripts/postgresql.conf
@@ -312,6 +327,7 @@ docker service update --config-rm postgres_config --config-add postgres_config_v
 ```
 
 **Resource Limits:**
+
 ```yaml
 # Update service constraints in docker-stack.yml
 deploy:
@@ -342,6 +358,7 @@ ab -n 100 -c 5 https://app.healthcareapp.com/
 ### Common Issues
 
 **Service Won't Start:**
+
 ```bash
 # Check service status
 docker service ps healthapp_backend --no-trunc
@@ -355,6 +372,7 @@ docker system df
 ```
 
 **Database Connection Issues:**
+
 ```bash
 # Test database connectivity
 docker exec -it $(docker ps -q -f name=postgres) psql -U healthapp_user -d healthapp_prod
@@ -364,6 +382,7 @@ docker service logs healthapp_postgres
 ```
 
 **SSL Certificate Issues:**
+
 ```bash
 # Verify certificate files
 docker config ls
@@ -374,6 +393,7 @@ openssl s_client -connect app.healthcareapp.com:443
 ```
 
 **Memory Issues:**
+
 ```bash
 # Check memory usage
 docker stats --no-stream
@@ -386,6 +406,7 @@ docker volume prune
 ### Performance Issues
 
 **Slow Database Queries:**
+
 ```bash
 # Check PostgreSQL performance
 docker exec -it $(docker ps -q -f name=postgres) psql -U healthapp_user -d healthapp_prod -c "
@@ -396,6 +417,7 @@ LIMIT 10;"
 ```
 
 **High Memory Usage:**
+
 ```bash
 # Check service resource usage
 docker service ls --format "table {{.Name}}\t{{.Replicas}}"
@@ -421,6 +443,7 @@ docker exec -it $(docker ps -q -f name=backend) nslookup postgres
 ### Service Recovery
 
 **Complete Stack Failure:**
+
 ```bash
 # Remove failed stack
 docker stack rm healthapp
@@ -433,6 +456,7 @@ sleep 30
 ```
 
 **Database Recovery:**
+
 ```bash
 # Restore from backup
 docker exec -i $(docker ps -q -f name=postgres) psql -U healthapp_user -d healthapp_prod < backup.sql
@@ -455,6 +479,7 @@ docker service rollback healthapp_frontend
 ## 📚 Additional Resources
 
 ### Documentation Links
+
 - [Docker Swarm Documentation](https://docs.docker.com/engine/swarm/)
 - [Docker Compose Documentation](https://docs.docker.com/compose/)
 - [PostgreSQL Docker Hub](https://hub.docker.com/_/postgres)
@@ -462,6 +487,7 @@ docker service rollback healthapp_frontend
 - [NGINX Docker Hub](https://hub.docker.com/_/nginx)
 
 ### Security Best Practices
+
 - Use Docker secrets for sensitive data
 - Enable Docker Content Trust
 - Regular security updates
@@ -470,6 +496,7 @@ docker service rollback healthapp_frontend
 - Audit logging
 
 ### Monitoring Best Practices
+
 - Set up alerting rules
 - Monitor key metrics
 - Log retention policies
@@ -511,6 +538,7 @@ docker network prune
 ### Support Contacts
 
 For deployment issues:
+
 - Review this guide
 - Check service logs
 - Consult Docker documentation
