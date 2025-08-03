@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
   HomeIcon,
-  PillIcon,
+  BeakerIcon,
   CalendarIcon,
   HeartIcon,
   UserIcon,
@@ -17,7 +17,7 @@ import {
   PlusIcon,
   XMarkIcon,
   Bars3Icon,
-  DownloadIcon,
+  ArrowDownTrayIcon,
 } from '@heroicons/react/24/outline'
 import { useAuth } from '@/lib/auth-context'
 import NotificationDrawer from './notification-drawer'
@@ -29,7 +29,7 @@ interface SidebarProps {
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard/patient', icon: HomeIcon },
-  { name: 'Medications', href: '/dashboard/patient/medications', icon: PillIcon },
+  { name: 'Medications', href: '/dashboard/patient/medications', icon: BeakerIcon },
   { name: 'Appointments', href: '/dashboard/patient/appointments', icon: CalendarIcon },
   { name: 'Vital Readings', href: '/dashboard/patient/vitals', icon: HeartIcon },
   { name: 'Symptoms', href: '/dashboard/patient/symptoms', icon: UserIcon },
@@ -41,7 +41,7 @@ const navigation = [
 const quickActions = [
   { name: 'Record Symptom', href: '/dashboard/patient/symptoms/new', icon: CameraIcon },
   { name: 'Add Vital Reading', href: '/dashboard/patient/vitals/new', icon: PlusIcon },
-  { name: 'View Prescriptions', href: '/dashboard/patient/prescriptions', icon: DownloadIcon },
+  { name: 'View Prescriptions', href: '/dashboard/patient/prescriptions', icon: ArrowDownTrayIcon },
 ]
 
 export default function PatientSidebar({ isOpen, setIsOpen }: SidebarProps) {
