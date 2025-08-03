@@ -248,6 +248,7 @@ export default function NotificationDrawer({ isOpen, setIsOpen }: NotificationDr
                           type="button"
                           className="rounded-md bg-gray-50 text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
                           onClick={() => setIsOpen(false)}
+                          aria-label="Close notifications"
                         >
                           <XMarkIcon className="h-6 w-6" />
                         </button>
@@ -372,6 +373,7 @@ export default function NotificationDrawer({ isOpen, setIsOpen }: NotificationDr
                                               onClick={() => markAsRead(notification.id)}
                                               className="p-1 rounded text-gray-400 hover:text-blue-600"
                                               title="Mark as read"
+                                              aria-label="Mark as read"
                                             >
                                               <EyeIcon className="h-4 w-4" />
                                             </button>
@@ -380,6 +382,7 @@ export default function NotificationDrawer({ isOpen, setIsOpen }: NotificationDr
                                             onClick={() => deleteNotification(notification.id)}
                                             className="p-1 rounded text-gray-400 hover:text-red-600"
                                             title="Delete notification"
+                                            aria-label="Delete notification"
                                           >
                                             <TrashIcon className="h-4 w-4" />
                                           </button>

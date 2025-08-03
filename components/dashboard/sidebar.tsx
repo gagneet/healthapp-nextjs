@@ -83,6 +83,7 @@ export function Sidebar({ userRole }: SidebarProps) {
         <button
           onClick={() => setIsMobileMenuOpen(true)}
           className="bg-white p-2 rounded-md shadow-lg"
+          aria-label="Open navigation menu"
         >
           <Bars3Icon className="h-6 w-6" />
         </button>
@@ -139,7 +140,7 @@ function SidebarContent({ navigation, pathname, user, onLogout, onClose }: Sideb
           <span className="ml-2 text-xl font-bold text-gray-900">Healthcare Application</span>
         </Link>
         {onClose && (
-          <button onClick={onClose} className="p-1">
+          <button onClick={onClose} className="p-1" aria-label="Close navigation menu">
             <XMarkIcon className="h-6 w-6" />
           </button>
         )}

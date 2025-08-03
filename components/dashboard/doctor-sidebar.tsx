@@ -84,6 +84,7 @@ export default function DoctorSidebar({ isOpen, setIsOpen }: SidebarProps) {
             <button
               onClick={() => setIsOpen(false)}
               className="lg:hidden p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100"
+              aria-label="Close sidebar"
             >
               <XMarkIcon className="w-5 h-5" />
             </button>
@@ -222,6 +223,7 @@ export function SidebarToggle({ isOpen, setIsOpen }: SidebarProps) {
     <button
       onClick={() => setIsOpen(!isOpen)}
       className="lg:hidden p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100"
+      aria-label="Toggle sidebar"
     >
       <Bars3Icon className="w-6 h-6" />
     </button>
