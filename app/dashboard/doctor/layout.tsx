@@ -18,7 +18,7 @@ function DoctorLayout({ children }: DoctorLayoutProps) {
         {/* Top bar for mobile */}
         <div className="lg:hidden bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between">
           <SidebarToggle isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
-          <h1 className="text-lg font-semibold text-gray-900">AdhereLive</h1>
+          <h1 className="text-lg font-semibold text-gray-900">Healthcare Application</h1>
           <div className="w-8"></div> {/* Spacer for centering */}
         </div>
         <main className="flex-1 overflow-y-auto p-6 lg:p-8">

@@ -67,7 +67,7 @@ export default function LoginPage() {
   
   const roleParam = searchParams.get('role') as keyof typeof roleConfig
   const config = roleConfig[roleParam] || {
-    title: 'Login to AdhereLive',
+    title: 'Login to the Health Care Application',
     subtitle: 'Access your healthcare dashboard',
     icon: '💚',
     redirectPath: '/dashboard',
@@ -117,7 +117,7 @@ export default function LoginPage() {
         <div className="text-center">
           <Link href="/" className="inline-flex items-center justify-center mb-6">
             <HeartIcon className="h-10 w-10 text-blue-600" />
-            <span className="ml-2 text-2xl font-bold text-gray-900">AdhereLive</span>
+            <span className="ml-2 text-2xl font-bold text-gray-900">Healthcare Application</span>
           </Link>
           
           <div className="mb-6">

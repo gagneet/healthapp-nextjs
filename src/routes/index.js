@@ -30,7 +30,7 @@ router.get('/', (req, res) => {
     statusCode: 200,
     payload: {
       data: {
-        api: 'AdhereLive Healthcare Management Platform API',
+        api: 'Healthcare Management Platform API',
         version: '1.0.0',
         environment: process.env.NODE_ENV || 'development',
         endpoints: [

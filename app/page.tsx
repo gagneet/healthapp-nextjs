@@ -9,7 +9,7 @@ export default function HomePage() {
         <div className="flex justify-between items-center py-6">
           <div className="flex items-center">
             <HeartIcon className="h-8 w-8 text-blue-600" />
-            <span className="ml-2 text-2xl font-bold text-gray-900">AdhereLive</span>
+            <span className="ml-2 text-2xl font-bold text-gray-900">Health Application</span>
           </div>
           <div className="flex space-x-4">
             <Link 
@@ -153,10 +153,10 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="flex items-center justify-center">
             <HeartIcon className="h-6 w-6 text-blue-400" />
-            <span className="ml-2 text-xl font-bold">AdhereLive</span>
+            <span className="ml-2 text-xl font-bold">Health Application</span>
           </div>
           <p className="text-center text-gray-400 mt-4">
-            © 2024 AdhereLive Healthcare Management Platform. All rights reserved.
+            © 2025 Healthcare Management Platform. All rights reserved.
           </p>
         </div>
       </footer>

@@ -7,7 +7,7 @@ import { AuthProvider } from '@/lib/auth-context'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'AdhereLive - Healthcare Management Platform',
+  title: 'Healthcare Management Platform',
   description: 'Modern healthcare management platform for doctors, patients, and healthcare providers',
   keywords: 'healthcare, medical, patients, doctors, medication adherence, appointments',
 }

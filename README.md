@@ -1,6 +1,6 @@
-# AdhereLive Healthcare Management Platform - Backend
+# Healthcare Management Platform - Backend
 
-A robust Node.js/Express backend for the AdhereLive Healthcare Management Platform, providing comprehensive API endpoints for patient care management, medication tracking, appointments, and vital signs monitoring.
+A robust Node.js/Express backend for the Healthcare Management Platform, providing comprehensive API endpoints for patient care management, medication tracking, appointments, and vital signs monitoring.
 
 ## 🏗️ Architecture
 

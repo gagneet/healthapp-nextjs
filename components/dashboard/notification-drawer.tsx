@@ -99,7 +99,7 @@ const mockNotifications: Notification[] = [
     id: '6',
     type: 'info',
     title: 'System Update',
-    message: 'New features available in your AdhereLive dashboard',
+    message: 'New features available in your Healthcare Application dashboard',
     created_at: '2024-01-21T09:00:00Z',
     read: true,
     action_required: false,

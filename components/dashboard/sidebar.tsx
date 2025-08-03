@@ -136,7 +136,7 @@ function SidebarContent({ navigation, pathname, user, onLogout, onClose }: Sideb
       <div className="flex items-center justify-between p-4 border-b border-gray-200">
         <Link href="/" className="flex items-center">
           <HeartIcon className="h-8 w-8 text-blue-600" />
-          <span className="ml-2 text-xl font-bold text-gray-900">AdhereLive</span>
+          <span className="ml-2 text-xl font-bold text-gray-900">Healthcare Application</span>
         </Link>
         {onClose && (
           <button onClick={onClose} className="p-1">
