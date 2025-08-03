@@ -1,0 +1,131 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: healthapp-postgres-dev
+    environment:
+      POSTGRES_DB: healthapp_dev
+      POSTGRES_USER: healthapp_user
+      POSTGRES_PASSWORD: healthapp_pass
+      POSTGRES_HOST_AUTH_METHOD: trust
+    volumes:
+      - postgres_data_dev:/var/lib/postgresql/data
+      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    ports:
+      - "5432:5432"
+    networks:
+      - healthapp-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U healthapp_user -d healthapp_dev"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: healthapp-redis-dev
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data_dev:/data
+    ports:
+      - "6379:6379"
+    networks:
+      - healthapp-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Backend API
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    container_name: healthapp-backend-dev
+    environment:
+      NODE_ENV: development
+      PORT: 3001
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: healthapp_dev
+      DB_USER: healthapp_user
+      DB_PASSWORD: healthapp_pass
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      JWT_SECRET: dev-jwt-secret-key-change-in-production
+      FRONTEND_URL: http://localhost:3000
+      LOG_LEVEL: debug
+    volumes:
+      - ./src:/app/src
+      - ./scripts:/app/scripts
+      - backend_logs_dev:/app/logs
+    ports:
+      - "3001:3001"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - healthapp-network
+    restart: unless-stopped
+    command: ["npm", "run", "backend:dev"]
+
+  # Frontend NextJS
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: builder
+    container_name: healthapp-frontend-dev
+    environment:
+      NODE_ENV: development
+      BACKEND_URL: http://backend:3001
+      NEXT_PUBLIC_API_URL: http://localhost:3001
+    volumes:
+      - ./app:/app/app
+      - ./components:/app/components
+      - ./lib:/app/lib
+      - ./types:/app/types
+      - ./public:/app/public
+      - /app/node_modules
+      - /app/.next
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    networks:
+      - healthapp-network
+    restart: unless-stopped
+    command: ["npm", "run", "dev"]
+
+  # pgAdmin for database management (development only)
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: healthapp-pgadmin-dev
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@healthapp.com
+      PGADMIN_DEFAULT_PASSWORD: admin123
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    volumes:
+      - pgadmin_data_dev:/var/lib/pgadmin
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres
+    networks:
+      - healthapp-network
+
+networks:
+  healthapp-network:
+    driver: bridge
+
+volumes:
+  postgres_data_dev:
+  redis_data_dev:
+  backend_logs_dev:
+  pgadmin_data_dev:
