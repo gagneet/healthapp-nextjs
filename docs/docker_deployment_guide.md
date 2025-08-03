@@ -87,12 +87,24 @@ This organization keeps all Docker-related files in one place while maintaining 
 
 ### Quick Start
 
-#### **Clone and setup:**
+#### **For Linux/macOS:**
 
 ```bash
 git clone <repository-url>
 cd healthapp-nextjs
 chmod +x scripts/*.sh
+```
+
+#### **For Windows:**
+
+See the comprehensive [Windows Development Guide](windows_development_guide.md) for detailed setup instructions.
+
+**Quick Windows setup:**
+```batch
+git clone <repository-url>
+cd healthapp-nextjs
+# Use Windows batch script
+scripts\deploy-dev.bat
 ```
 
 #### **Configure environment:**
@@ -104,8 +116,14 @@ cp .env.development .env.development.local
 
 #### **Deploy development environment:**
 
+**Linux/macOS:**
 ```bash
 ./scripts/deploy-dev.sh
+```
+
+**Windows:**
+```batch
+scripts\deploy-dev.bat
 ```
 
 ### Development Services
@@ -122,6 +140,7 @@ The development stack includes:
 
 ### Development Commands
 
+**Linux/macOS:**
 ```bash
 # View logs
 docker-compose -f docker/docker-compose.dev.yml logs -f [service]
@@ -134,6 +153,21 @@ docker-compose -f docker/docker-compose.dev.yml exec [service] sh
 
 # Reset environment
 ./scripts/reset-dev.sh
+```
+
+**Windows:**
+```batch
+REM View logs
+docker-compose -f docker\docker-compose.dev.yml logs -f [service]
+
+REM Restart services
+docker-compose -f docker\docker-compose.dev.yml restart
+
+REM Shell access
+docker-compose -f docker\docker-compose.dev.yml exec [service] sh
+
+REM Reset environment
+scripts\reset-dev.bat
 ```
 
 ## 🏭 Production Deployment
