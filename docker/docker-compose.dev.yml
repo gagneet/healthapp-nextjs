@@ -46,13 +46,16 @@ services:
     environment:
       NODE_ENV: development
       PORT: 3001
-      DB_HOST: postgres
-      DB_PORT: 5432
-      DB_NAME: healthapp_dev
-      DB_USER: healthapp_user
-      DB_PASSWORD: healthapp_pass
+      # PostgreSQL connection variables (matches database-postgres.js)
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: healthapp_dev
+      POSTGRES_USER: healthapp_user
+      POSTGRES_PASSWORD: healthapp_pass
+      # Redis connection variables
       REDIS_HOST: redis
       REDIS_PORT: 6379
+      # Application variables
       JWT_SECRET: dev-jwt-secret-key-change-in-production
       FRONTEND_URL: http://localhost:3000
       LOG_LEVEL: debug

@@ -261,6 +261,50 @@ class PatientController {
     }
   }
 
+  /**
+   * Soft delete patient (deactivate instead of hard delete)
+   */
+  async deletePatient(req, res, next) {
+    try {
+      const { patientId } = req.params;
+      
+      // Find patient first
+      const patient = await User.findOne({
+        where: { id: patientId },
+        include: [{
+          model: Patient,
+          as: 'patient',
+          required: true
+        }]
+      });
+
+      if (!patient) {
+        throw new NotFoundError('Patient not found');
+      }
+
+      // Soft delete (deactivate) the patient account
+      await User.update(
+        { 
+          is_active: false,
+          status: 'DEACTIVATED',
+          deactivated_at: new Date(),
+          deactivated_by: req.user.id
+        },
+        { 
+          where: { id: patientId }
+        }
+      );
+
+      res.status(200).json(ResponseFormatter.success(
+        null,
+        'Patient account deactivated successfully'
+      ));
+
+    } catch (error) {
+      next(error);
+    }
+  }
+
   // Helper methods using modern ES6+ features
   buildSearchClause(search) {
     if (!search) return {};

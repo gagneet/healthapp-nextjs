@@ -63,12 +63,18 @@ export const EVENT_TYPE = {
   REMINDER: 'REMINDER'
 };
 
+// Alias for backward compatibility
+export const EVENT_TYPES = EVENT_TYPE;
+
 export const PRIORITY_LEVEL = {
   LOW: 'LOW',
   MEDIUM: 'MEDIUM',
   HIGH: 'HIGH',
   CRITICAL: 'CRITICAL'
 };
+
+// Alias for backward compatibility
+export const PRIORITY_LEVELS = PRIORITY_LEVEL;
 
 export const NOTIFICATION_CHANNEL = {
   PUSH: 'PUSH',
