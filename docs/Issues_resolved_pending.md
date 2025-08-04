@@ -912,3 +912,25 @@ All scripts now have identical functionality across platforms:
 
 Your Windows deployments will now have the same reliability and proper service dependencies as the Linux version!
 
+## ✅ Issues Resolved for NODE_ENV and Backend container
+
+- Frontend: Now 1/1 and running successfully! The NODE_ENV fix (dev → development) and health check fix (curl → wget) resolved the frontend issues.
+- Database Connection: The backend is still having the same DNS resolution issue with finding the "postgres" hostname.
+
+### 🔍 Remaining Issue
+
+- The backend cannot resolve the "postgres" hostname, which suggests a network connectivity issue in Docker Swarm. This is the core problem we identified earlier.
+
+### 📋 Summary of Fixes Applied
+
+1. ✅ NODE_ENV Fixed: Changed from "dev" to "development" for proper Next.js compatibility
+2. ✅ Health Check Fixed: Changed from curl to wget for frontend container compatibility
+3. ✅ Frontend Working: Service is now 1/1 and running
+4. ⚠️ Backend DNS Issue: Still cannot resolve "postgres" hostname
+
+The main issues have been identified and mostly resolved. The frontend and all supporting services are now working. The backend needs either:
+
+- Better DNS resolution timing/retry logic, or
+- A different approach to database connection management
+
+Your identification of the NODE_ENV issue was spot-on and was a key factor in getting the frontend working!
