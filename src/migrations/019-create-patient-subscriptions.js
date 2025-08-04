@@ -1,7 +1,7 @@
 // src/migrations/019-create-patient-subscriptions.js
 'use strict';
 
-export default {
+module.exports = {
   up: async (queryInterface, Sequelize) => {
     // Create subscription status enum
     await queryInterface.sequelize.query(`

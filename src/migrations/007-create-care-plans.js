@@ -1,7 +1,7 @@
 // src/migrations/007-create-care-plans.js
 'use strict';
 
-export default {
+module.exports = {
   up: async (queryInterface, Sequelize) => {
     // Create enums first
     await queryInterface.sequelize.query(`

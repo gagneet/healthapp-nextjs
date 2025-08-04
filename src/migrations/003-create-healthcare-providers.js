@@ -1,7 +1,7 @@
 // src/migrations/003-create-healthcare-providers.js
 'use strict';
 
-export default {
+module.exports = {
   up: async (queryInterface, Sequelize) => {
     // Create healthcare_providers table
     await queryInterface.createTable('healthcare_providers', {

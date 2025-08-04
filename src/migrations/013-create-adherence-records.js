@@ -1,7 +1,7 @@
 // src/migrations/013-create-adherence-records.js
 'use strict';
 
-export default {
+module.exports = {
   up: async (queryInterface, Sequelize) => {
     // Create adherence_records table
     await queryInterface.createTable('adherence_records', {

@@ -1,7 +1,7 @@
 // src/migrations/010-create-vital-requirements.js
 'use strict';
 
-export default {
+module.exports = {
   up: async (queryInterface, Sequelize) => {
     // Create vital_requirements table
     await queryInterface.createTable('vital_requirements', {

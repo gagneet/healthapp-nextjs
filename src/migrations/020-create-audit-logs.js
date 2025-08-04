@@ -1,7 +1,7 @@
 // src/migrations/020-create-audit-logs.js
 'use strict';
 
-export default {
+module.exports = {
   up: async (queryInterface, Sequelize) => {
     // Create audit_logs table
     await queryInterface.createTable('audit_logs', {

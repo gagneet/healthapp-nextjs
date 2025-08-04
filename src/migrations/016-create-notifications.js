@@ -1,7 +1,7 @@
 // src/migrations/016-create-notifications.js
 'use strict';
 
-export default {
+module.exports = {
   up: async (queryInterface, Sequelize) => {
     // Create notification channel enum
     await queryInterface.sequelize.query(`

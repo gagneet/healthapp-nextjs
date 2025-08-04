@@ -14,8 +14,9 @@ COPY package.json package-lock.json ./
 # Install dependencies (including dev dependencies for development mode)
 RUN npm ci
 
-# Copy source code
+# Copy source code and Sequelize configuration
 COPY src/ ./src/
+COPY .sequelizerc ./
 
 # Create non-root user
 RUN addgroup --system --gid 1001 nodejs

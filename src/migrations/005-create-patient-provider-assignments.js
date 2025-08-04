@@ -1,7 +1,7 @@
 // src/migrations/005-create-patient-provider-assignments.js
 'use strict';
 
-export default {
+module.exports = {
   up: async (queryInterface, Sequelize) => {
     // Create patient_provider_assignments table
     await queryInterface.createTable('patient_provider_assignments', {

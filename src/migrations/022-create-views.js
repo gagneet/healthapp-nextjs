@@ -1,7 +1,7 @@
 // src/migrations/022-create-views.js
 'use strict';
 
-export default {
+module.exports = {
   up: async (queryInterface, Sequelize) => {
     // Active care plans with patient and provider info
     await queryInterface.sequelize.query(`

@@ -1,7 +1,7 @@
 // src/migrations/008-create-medications.js
 'use strict';
 
-export default {
+module.exports = {
   up: async (queryInterface, Sequelize) => {
     // Create medications table
     await queryInterface.createTable('medications', {

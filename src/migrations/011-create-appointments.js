@@ -1,7 +1,7 @@
 // src/migrations/011-create-appointments.js
 'use strict';
 
-export default {
+module.exports = {
   up: async (queryInterface, Sequelize) => {
     // Create appointment status enum
     await queryInterface.sequelize.query(`

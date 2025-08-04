@@ -1,7 +1,7 @@
 // src/migrations/001-create-organizations.js
 'use strict';
 
-export default {
+module.exports = {
   up: async (queryInterface, Sequelize) => {
     // Create organizations table
     await queryInterface.createTable('organizations', {

@@ -1,7 +1,7 @@
 // src/seeders/003-vital-templates.js
 'use strict';
 
-export default {
+module.exports = {
   up: async (queryInterface, Sequelize) => {
     await queryInterface.bulkInsert('vital_templates', [
       {

@@ -1,7 +1,7 @@
 // src/migrations/017-create-user-devices.js
 'use strict';
 
-export default {
+module.exports = {
   up: async (queryInterface, Sequelize) => {
     // Create user_devices table
     await queryInterface.createTable('user_devices', {

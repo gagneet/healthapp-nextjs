@@ -1,7 +1,7 @@
 // src/migrations/015-create-symptoms.js
 'use strict';
 
-export default {
+module.exports = {
   up: async (queryInterface, Sequelize) => {
     // Create symptoms table
     await queryInterface.createTable('symptoms', {

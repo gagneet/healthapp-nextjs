@@ -1,7 +1,7 @@
 // src/migrations/018-create-service-plans.js
 'use strict';
 
-export default {
+module.exports = {
   up: async (queryInterface, Sequelize) => {
     // Create service_plans table
     await queryInterface.createTable('service_plans', {

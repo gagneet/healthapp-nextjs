@@ -1,7 +1,7 @@
 // src/migrations/012-create-scheduled-events.js
 'use strict';
 
-export default {
+module.exports = {
   up: async (queryInterface, Sequelize) => {
     // Create event enums
     await queryInterface.sequelize.query(`

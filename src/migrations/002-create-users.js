@@ -1,7 +1,7 @@
 // src/migrations/002-create-users.js
 'use strict';
 
-export default {
+module.exports = {
   up: async (queryInterface, Sequelize) => {
     // First create the enum types
     await queryInterface.sequelize.query(`

@@ -1,7 +1,7 @@
 // src/migrations/009-create-vital-types.js
 'use strict';
 
-export default {
+module.exports = {
   up: async (queryInterface, Sequelize) => {
     // Create vital_types table
     await queryInterface.createTable('vital_types', {

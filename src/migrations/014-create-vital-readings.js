@@ -1,7 +1,7 @@
 // src/migrations/014-create-vital-readings.js
 'use strict';
 
-export default {
+module.exports = {
   up: async (queryInterface, Sequelize) => {
     // Create vital_readings table
     await queryInterface.createTable('vital_readings', {

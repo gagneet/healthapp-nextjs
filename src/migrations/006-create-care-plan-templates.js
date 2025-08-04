@@ -1,7 +1,7 @@
 // src/migrations/006-create-care-plan-templates.js
 'use strict';
 
-export default {
+module.exports = {
   up: async (queryInterface, Sequelize) => {
     // Create care_plan_templates table
     await queryInterface.createTable('care_plan_templates', {
