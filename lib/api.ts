@@ -49,7 +49,7 @@ api.interceptors.response.use(
 export const authAPI = {
   login: async (credentials: LoginCredentials): Promise<AuthResponse> => {
     try {
-      const response = await api.post('/auth/login', credentials)
+      const response = await api.post('/auth/sign-in', credentials)
       return response.data
     } catch (error) {
       if (axios.isAxiosError(error) && error.response) {
@@ -61,7 +61,7 @@ export const authAPI = {
 
   register: async (data: RegisterData): Promise<AuthResponse> => {
     try {
-      const response = await api.post('/auth/register', data)
+      const response = await api.post('/auth/sign-up', data)
       return response.data
     } catch (error) {
       if (axios.isAxiosError(error) && error.response) {
@@ -87,7 +87,7 @@ export const authAPI = {
 
   refreshToken: async (): Promise<AuthResponse> => {
     try {
-      const response = await api.post('/auth/refresh')
+      const response = await api.post('/auth/refresh-token')
       return response.data
     } catch (error) {
       if (axios.isAxiosError(error) && error.response) {
