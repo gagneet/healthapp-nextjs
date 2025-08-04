@@ -340,13 +340,20 @@ services:
           memory: 1G
         reservations:
           memory: 512M
+    # Backend waits for database health checks
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:3001/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
 
   frontend:
     image: healthapp-frontend:${MODE}
     environment:
       NODE_ENV: ${MODE}
       BACKEND_URL: http://backend:3001
-      NEXT_PUBLIC_API_URL: http://${IP_ADDRESS}:3001
+      NEXT_PUBLIC_API_URL: http://${IP_ADDRESS}:3001/api
     ports:
       - "3002:3000"
     networks:
@@ -366,6 +373,13 @@ services:
           memory: 1G
         reservations:
           memory: 512M
+    # Frontend healthcheck
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:3000/_next/static/chunks/webpack.js || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 45s
 
   pgadmin:
     image: dpage/pgadmin4
@@ -440,21 +454,21 @@ deploy_stack() {
 wait_for_services() {
     print_header "Waiting for services to be ready..."
     
-    # Wait for services to start
-    sleep 30
+    # Wait for initial deployment
+    sleep 20
     
     # Check service status
     print_status "Checking service status..."
     docker stack services "$DOCKER_STACK_NAME"
     
-    # Wait for database to be ready
-    print_status "Waiting for database to be ready..."
+    # Wait for database to be ready (FIRST PRIORITY)
+    print_status "Waiting for PostgreSQL database to be ready..."
     local timeout=120
     local counter=0
     
     while [ $counter -lt $timeout ]; do
         if docker service ls | grep "${DOCKER_STACK_NAME}_postgres" | grep -q "1/1"; then
-            print_status "Database service is ready"
+            print_status "PostgreSQL database service is ready"
             break
         fi
         sleep 5
@@ -464,7 +478,75 @@ wait_for_services() {
     echo ""
     
     if [ $counter -ge $timeout ]; then
-        print_warning "Database readiness check timed out, but continuing..."
+        print_error "Database failed to start within $timeout seconds!"
+        exit 1
+    fi
+    
+    # Wait for Redis to be ready (SECOND PRIORITY)
+    print_status "Waiting for Redis cache to be ready..."
+    counter=0
+    timeout=60
+    
+    while [ $counter -lt $timeout ]; do
+        if docker service ls | grep "${DOCKER_STACK_NAME}_redis" | grep -q "1/1"; then
+            print_status "Redis cache service is ready"
+            break
+        fi
+        sleep 5
+        counter=$((counter + 5))
+        echo -n "."
+    done
+    echo ""
+    
+    if [ $counter -ge $timeout ]; then
+        print_warning "Redis readiness check timed out, but continuing..."
+    fi
+    
+    # Wait for backend to be ready (THIRD PRIORITY)
+    print_status "Waiting for backend API to be ready..."
+    counter=0
+    timeout=180
+    
+    while [ $counter -lt $timeout ]; do
+        if docker service ls | grep "${DOCKER_STACK_NAME}_backend" | grep -q "1/1"; then
+            # Also check if backend health endpoint responds
+            if curl -f http://${IP_ADDRESS}:3001/health > /dev/null 2>&1; then
+                print_status "Backend API service is ready and responding"
+                break
+            fi
+        fi
+        sleep 5
+        counter=$((counter + 5))
+        echo -n "."
+    done
+    echo ""
+    
+    if [ $counter -ge $timeout ]; then
+        print_error "Backend API failed to start within $timeout seconds!"
+        exit 1
+    fi
+    
+    # Wait for frontend to be ready (FOURTH PRIORITY)
+    print_status "Waiting for frontend to be ready..."
+    counter=0
+    timeout=120
+    
+    while [ $counter -lt $timeout ]; do
+        if docker service ls | grep "${DOCKER_STACK_NAME}_frontend" | grep -q "1/1"; then
+            # Also check if frontend responds
+            if curl -f http://${IP_ADDRESS}:3002 > /dev/null 2>&1; then
+                print_status "Frontend service is ready and responding"
+                break
+            fi
+        fi
+        sleep 5
+        counter=$((counter + 5))
+        echo -n "."
+    done
+    echo ""
+    
+    if [ $counter -ge $timeout ]; then
+        print_warning "Frontend readiness check timed out, but continuing..."
     fi
 }
 
@@ -472,10 +554,23 @@ wait_for_services() {
 initialize_database() {
     print_header "Initializing database..."
     
-    # Wait a bit more for services to fully start
-    sleep 20
+    # Wait for backend container to be fully started
+    print_status "Waiting for backend container to be ready for database operations..."
+    sleep 30
     
-    # Get a backend container to run seeders
+    # Install UUID extension first
+    print_status "Installing PostgreSQL UUID extension..."
+    local postgres_task_id=$(docker service ps "${DOCKER_STACK_NAME}_postgres" --no-trunc --format "{{.ID}}" | head -n1)
+    if [ -n "$postgres_task_id" ]; then
+        local postgres_container_id=$(docker inspect --format='{{.Status.ContainerStatus.ContainerID}}' "$postgres_task_id" 2>/dev/null | head -c12)
+        if [ -n "$postgres_container_id" ]; then
+            docker exec "$postgres_container_id" psql -U healthapp_user -d "healthapp_${MODE}" -c "CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\";" || {
+                print_warning "Failed to install UUID extension, but continuing..."
+            }
+        fi
+    fi
+    
+    # Get a backend container to run database operations
     local task_id=$(docker service ps "${DOCKER_STACK_NAME}_backend" --no-trunc --format "{{.ID}}" | head -n1)
     
     if [ -n "$task_id" ]; then
