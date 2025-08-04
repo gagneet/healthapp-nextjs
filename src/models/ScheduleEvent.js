@@ -2,9 +2,9 @@
 export default (sequelize, DataTypes) => {
   const ScheduleEvent = sequelize.define('ScheduleEvent', {
     id: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.UUID,
+      defaultValue: DataTypes.UUIDV4,
       primaryKey: true,
-      autoIncrement: true,
     },
     critical: {
       type: DataTypes.BOOLEAN,
@@ -15,7 +15,7 @@ export default (sequelize, DataTypes) => {
       allowNull: true,
     },
     event_id: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.UUID,
       allowNull: true,
     },
     details: {

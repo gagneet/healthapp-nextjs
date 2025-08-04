@@ -2,12 +2,12 @@
 export default (sequelize, DataTypes) => {
   const Vital = sequelize.define('Vital', {
     id: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.UUID,
+      defaultValue: DataTypes.UUIDV4,
       primaryKey: true,
-      autoIncrement: true,
     },
     vital_template_id: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.UUID,
       allowNull: false,
       references: {
         model: 'vital_templates',
@@ -15,7 +15,7 @@ export default (sequelize, DataTypes) => {
       },
     },
     care_plan_id: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.UUID,
       allowNull: false,
       references: {
         model: 'care_plans',

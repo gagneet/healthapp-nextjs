@@ -2,12 +2,12 @@
 export default (sequelize, DataTypes) => {
   const Medication = sequelize.define('Medication', {
     id: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.UUID,
+      defaultValue: DataTypes.UUIDV4,
       primaryKey: true,
-      autoIncrement: true,
     },
     participant_id: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.UUID,
       allowNull: false,
     },
     organizer_type: {
@@ -15,11 +15,11 @@ export default (sequelize, DataTypes) => {
       allowNull: true,
     },
     organizer_id: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.UUID,
       allowNull: false,
     },
     medicine_id: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.UUID,
       allowNull: false,
       references: {
         model: 'medicines',

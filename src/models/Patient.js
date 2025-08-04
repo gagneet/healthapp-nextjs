@@ -303,7 +303,10 @@ export default (sequelize) => {
         }
       },
       {
-        fields: ['primary_care_provider_id']
+        fields: ['primary_care_doctor_id']
+      },
+      {
+        fields: ['primary_care_hsp_id']
       },
       {
         fields: ['risk_level']

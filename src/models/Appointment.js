@@ -2,16 +2,16 @@
 export default (sequelize, DataTypes) => {
   const Appointment = sequelize.define('Appointment', {
     id: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.UUID,
+      defaultValue: DataTypes.UUIDV4,
       primaryKey: true,
-      autoIncrement: true,
     },
     participant_one_type: {
       type: DataTypes.ENUM('doctor', 'patient', 'hsp'),
       allowNull: true,
     },
     participant_one_id: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.UUID,
       allowNull: true,
     },
     participant_two_type: {
@@ -19,7 +19,7 @@ export default (sequelize, DataTypes) => {
       allowNull: true,
     },
     participant_two_id: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.UUID,
       allowNull: true,
     },
     organizer_type: {
@@ -27,11 +27,11 @@ export default (sequelize, DataTypes) => {
       allowNull: true,
     },
     organizer_id: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.UUID,
       allowNull: true,
     },
     provider_id: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.UUID,
       allowNull: true,
       references: {
         model: 'users',

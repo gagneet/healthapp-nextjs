@@ -78,6 +78,7 @@ export default (sequelize) => {
         where: { ended_at: null }
       },
       {
+        name: 'patient_provider_role_unique',
         fields: ['patient_id', 'provider_id', 'role', 'ended_at'],
         unique: true
       }

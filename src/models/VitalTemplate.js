@@ -2,9 +2,9 @@
 export default (sequelize, DataTypes) => {
   const VitalTemplate = sequelize.define('VitalTemplate', {
     id: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.UUID,
+      defaultValue: DataTypes.UUIDV4,
       primaryKey: true,
-      autoIncrement: true,
     },
     name: {
       type: DataTypes.STRING(255),
