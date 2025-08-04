@@ -4,6 +4,7 @@ import React, { createContext, useContext, useEffect, useState, ReactNode } from
 import { User, AuthState, LoginCredentials, RegisterData } from '@/types/auth'
 import { authAPI } from '@/lib/api'
 import toast from 'react-hot-toast'
+import { createLogger } from './logger'
 
 interface AuthContextType extends AuthState {
   login: (credentials: LoginCredentials) => Promise<boolean>
@@ -25,6 +26,8 @@ export const useAuth = () => {
 interface AuthProviderProps {
   children: ReactNode
 }
+
+const logger = createLogger('AuthProvider')
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [state, setState] = useState<AuthState>({
@@ -71,7 +74,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           }))
         }
       } catch (error) {
-        console.error('Auth initialization error:', error)
+        logger.error('Auth initialization error:', error)
         localStorage.removeItem('authToken')
         localStorage.removeItem('user')
         setState({
@@ -158,7 +161,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       await authAPI.logout()
     } catch (error) {
-      console.error('Logout error:', error)
+      logger.error('Logout error:', error)
     } finally {
       setState({
         user: null,
@@ -181,7 +184,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         localStorage.setItem('user', JSON.stringify(response.data.user))
       }
     } catch (error) {
-      console.error('User refresh error:', error)
+      logger.error('User refresh error:', error)
     }
   }
 

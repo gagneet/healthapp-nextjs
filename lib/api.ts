@@ -1,7 +1,9 @@
 // lib/api.ts
 import axios, { AxiosError, AxiosResponse } from 'axios'
 import { AuthResponse, LoginCredentials, RegisterData } from '@/types/auth'
+import { createLogger } from './logger'
 
+const logger = createLogger('API')
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api'
 
 // Create axios instance
@@ -107,7 +109,7 @@ export const authAPI = {
       await api.post('/auth/logout')
     } catch (error) {
       // Even if logout fails, we should clear local storage
-      console.error('Logout error:', error)
+      logger.error('Logout error:', error)
     } finally {
       if (typeof window !== 'undefined') {
         localStorage.removeItem('authToken')

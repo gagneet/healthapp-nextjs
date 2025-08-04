@@ -11,6 +11,7 @@ import {
   CloudArrowUpIcon,
 } from '@heroicons/react/24/outline'
 import { formatDate } from '@/lib/utils'
+import { createLogger } from '@/lib/logger'
 
 interface PrescriptionGeneratorProps {
   isOpen: boolean
@@ -71,6 +72,8 @@ interface PrescriptionData {
   prescription_date: string
   prescription_id: string
 }
+
+const logger = createLogger('PrescriptionGenerator')
 
 export default function PrescriptionGenerator({
   isOpen,
@@ -134,7 +137,7 @@ export default function PrescriptionGenerator({
       await uploadToCloud(blob, prescriptionData.prescription_id)
       
     } catch (error) {
-      console.error('Error generating PDF:', error)
+      logger.error('Error generating PDF:', error)
       alert('Failed to generate prescription PDF. Please try again.')
     } finally {
       setIsGenerating(false)
@@ -160,13 +163,13 @@ export default function PrescriptionGenerator({
       }
 
       const uploadResult = await response.json()
-      console.log('PDF uploaded successfully:', uploadResult.url)
+      logger.info('PDF uploaded successfully:', uploadResult.url)
       
       // Show success message
       alert('Prescription generated and automatically saved to cloud storage!')
       
     } catch (error) {
-      console.error('Error uploading to cloud:', error)
+      logger.error('Error uploading to cloud:', error)
       alert('PDF generated successfully, but failed to upload to cloud storage.')
     } finally {
       setIsUploading(false)

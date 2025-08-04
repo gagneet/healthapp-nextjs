@@ -19,6 +19,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { useAuth } from '@/lib/auth-context'
 import { formatDate, formatDateTime } from '@/lib/utils'
+import { createLogger } from '@/lib/logger'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts'
 
 interface PatientDashboardStats {
@@ -176,6 +177,8 @@ const adherenceWeeklyData = [
   { day: 'Sun', medications: 100, vitals: 0, exercise: 0 },
 ]
 
+const logger = createLogger('PatientDashboard')
+
 export default function PatientDashboard() {
   const { user } = useAuth()
   const [isLoading, setIsLoading] = useState(true)
@@ -187,12 +190,12 @@ export default function PatientDashboard() {
 
   const markMedicationTaken = (medicationId: string) => {
     // In real app, this would call an API
-    console.log('Marking medication as taken:', medicationId)
+    logger.info('Marking medication as taken:', medicationId)
   }
 
   const recordVital = (vitalType: string) => {
     // In real app, this would open a modal or navigate to recording page
-    console.log('Recording vital:', vitalType)
+    logger.info('Recording vital:', vitalType)
   }
 
   if (isLoading) {
