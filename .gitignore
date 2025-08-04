@@ -73,9 +73,9 @@ web_modules/
 
 # dotenv environment variable files
 .env
-.env.*
-.env.local
-.env.production
+!.env.*
+!.env.local
+!.env.production
 !.env.example
 
 # parcel-bundler cache (https://parceljs.org/)

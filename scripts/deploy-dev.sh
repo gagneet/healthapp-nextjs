@@ -49,7 +49,17 @@ mkdir -p logs/{backend,nginx} data/{postgres,redis,grafana,prometheus}
 # Copy environment file if it doesn't exist
 if [ ! -f .env.development ]; then
     print_warning ".env.development not found. Creating from template..."
-    cp .env.development .env.development
+    if [ -f .env.development.example ]; then
+        cp .env.development.example .env.development
+        print_warning "⚠️  IMPORTANT: Edit .env.development with your configuration before proceeding!"
+        print_warning "   Database passwords, JWT secrets, and other settings need to be configured."
+        print_warning "   See SETUP_GUIDE.md for detailed instructions."
+        echo ""
+        read -p "Press Enter after updating .env.development, or Ctrl+C to cancel..."
+    else
+        print_error ".env.development.example template not found!"
+        exit 1
+    fi
 fi
 
 print_header "2. Building Docker images..."
