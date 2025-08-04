@@ -259,6 +259,13 @@ build_images() {
 create_swarm_stack() {
     print_header "Creating Docker Swarm stack configuration..."
     
+    # Map deployment mode to proper NODE_ENV values
+    if [ "$MODE" = "dev" ]; then
+        NODE_ENV_VALUE="development"
+    else
+        NODE_ENV_VALUE="production"
+    fi
+    
     cat > docker-stack-$MODE.yml << EOF
 version: '3.8'
 
@@ -308,7 +315,7 @@ services:
   backend:
     image: healthapp-backend:${MODE}
     environment:
-      NODE_ENV: ${MODE}
+      NODE_ENV: ${NODE_ENV_VALUE}
       PORT: 3001
       POSTGRES_HOST: postgres
       POSTGRES_PORT: 5432
@@ -320,6 +327,9 @@ services:
       JWT_SECRET: ${MODE}-jwt-secret-key-change-in-production
       FRONTEND_URL: http://${IP_ADDRESS}:3002
       LOG_LEVEL: info
+      # Add connection retry configuration for better startup reliability
+      DB_CONNECT_RETRY_DELAY: 5000
+      DB_CONNECT_MAX_RETRIES: 10
     volumes:
       - backend_logs_${MODE}:/app/logs
     ports:
@@ -347,15 +357,15 @@ services:
       - redis
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:3001/health || exit 1"]
-      interval: 15s
+      interval: 30s
       timeout: 10s
       retries: 5
-      start_period: 60s
+      start_period: 120s  # Increased to allow database connection setup
 
   frontend:
     image: healthapp-frontend:${MODE}
     environment:
-      NODE_ENV: ${MODE}
+      NODE_ENV: ${NODE_ENV_VALUE}
       BACKEND_URL: http://backend:3001
       NEXT_PUBLIC_API_URL: http://${IP_ADDRESS}:3001/api
     ports:
@@ -379,13 +389,13 @@ services:
           memory: 1G
         reservations:
           memory: 512M
-    # Frontend healthcheck
+    # Frontend healthcheck - simplified to just check if Next.js is responding
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:3000/_next/static/chunks/webpack.js || exit 1"]
-      interval: 10s
-      timeout: 5s
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3000/ || exit 1"]
+      interval: 30s
+      timeout: 10s
       retries: 5
-      start_period: 45s
+      start_period: 90s
 
   pgadmin:
     image: dpage/pgadmin4

@@ -48,16 +48,19 @@ services:
     environment:
       NODE_ENV: development
       PORT: 3001
-      POSTGRES_HOST: tasks.healthapp_postgres
+      POSTGRES_HOST: postgres
       POSTGRES_PORT: 5432
       POSTGRES_DB: healthapp_dev
       POSTGRES_USER: healthapp_user
       POSTGRES_PASSWORD: healthapp_pass
-      REDIS_HOST: tasks.healthapp_redis
+      REDIS_HOST: redis
       REDIS_PORT: 6379
       JWT_SECRET: dev-jwt-secret-key-change-in-production
       FRONTEND_URL: http://192.168.0.148:3002
       LOG_LEVEL: info
+      # Add connection retry configuration for better startup reliability
+      DB_CONNECT_RETRY_DELAY: 5000
+      DB_CONNECT_MAX_RETRIES: 10
     volumes:
       - backend_logs_dev:/app/logs
     ports:
@@ -85,16 +88,16 @@ services:
       - redis
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:3001/health || exit 1"]
-      interval: 15s
+      interval: 30s
       timeout: 10s
       retries: 5
-      start_period: 60s
+      start_period: 120s  # Increased to allow database connection setup
 
   frontend:
     image: healthapp-frontend:dev
     environment:
       NODE_ENV: development
-      BACKEND_URL: http://tasks.healthapp_backend:3001
+      BACKEND_URL: http://backend:3001
       NEXT_PUBLIC_API_URL: http://192.168.0.148:3001/api
     ports:
       - "3002:3000"
@@ -117,13 +120,13 @@ services:
           memory: 1G
         reservations:
           memory: 512M
-    # Frontend healthcheck - simplified to avoid issues
+    # Frontend healthcheck - simplified to just check if Next.js is responding
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:3000 || exit 1"]
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3000/ || exit 1"]
       interval: 30s
       timeout: 10s
-      retries: 3
-      start_period: 60s
+      retries: 5
+      start_period: 90s
 
   pgadmin:
     image: dpage/pgadmin4
