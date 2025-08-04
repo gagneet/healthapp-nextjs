@@ -237,6 +237,278 @@ class AdminController {
       next(error);
     }
   }
+
+  // Medicine CRUD Operations
+  async createMedicine(req, res, next) {
+    try {
+      const { name, type, strength, generic_name, description, public_medicine = true } = req.body;
+
+      const medicine = await Medicine.create({
+        name,
+        type,
+        details: {
+          strength,
+          generic_name
+        },
+        description,
+        public_medicine,
+        creator_id: req.user.id
+      });
+
+      res.status(201).json({
+        status: true,
+        statusCode: 201,
+        payload: {
+          data: { medicine },
+          message: 'Medicine created successfully'
+        }
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async updateMedicine(req, res, next) {
+    try {
+      const { medicineId } = req.params;
+      const { name, type, strength, generic_name, description, public_medicine } = req.body;
+
+      const medicine = await Medicine.findByPk(medicineId);
+      if (!medicine) {
+        return res.status(404).json({
+          status: false,
+          statusCode: 404,
+          payload: {
+            error: {
+              status: 'NOT_FOUND',
+              message: 'Medicine not found'
+            }
+          }
+        });
+      }
+
+      await medicine.update({
+        name,
+        type,
+        details: {
+          strength,
+          generic_name
+        },
+        description,
+        public_medicine
+      });
+
+      res.status(200).json({
+        status: true,
+        statusCode: 200,
+        payload: {
+          data: { medicine },
+          message: 'Medicine updated successfully'
+        }
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async deleteMedicine(req, res, next) {
+    try {
+      const { medicineId } = req.params;
+
+      const medicine = await Medicine.findByPk(medicineId);
+      if (!medicine) {
+        return res.status(404).json({
+          status: false,
+          statusCode: 404,
+          payload: {
+            error: {
+              status: 'NOT_FOUND',
+              message: 'Medicine not found'
+            }
+          }
+        });
+      }
+
+      // Check if medicine is being used in active prescriptions
+      const activeUsage = await Medication.count({
+        where: { 
+          medicine_id: medicineId,
+          end_date: { [Op.gte]: new Date() }
+        }
+      });
+
+      if (activeUsage > 0) {
+        return res.status(400).json({
+          status: false,
+          statusCode: 400,
+          payload: {
+            error: {
+              status: 'VALIDATION_ERROR',
+              message: 'Cannot delete medicine with active prescriptions'
+            }
+          }
+        });
+      }
+
+      await medicine.destroy();
+
+      res.status(200).json({
+        status: true,
+        statusCode: 200,
+        payload: {
+          message: 'Medicine deleted successfully'
+        }
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  // Condition Management (Simple string-based conditions)
+  async getConditions(req, res, next) {
+    try {
+      // For simplicity, return hardcoded conditions that can be managed
+      const conditions = [
+        'Acute', 'Chronic', 'Stable', 'Progressive', 'Terminal', 
+        'Recovering', 'Under Investigation', 'Monitoring Required', 'Emergency'
+      ];
+
+      res.status(200).json({
+        status: true,
+        statusCode: 200,
+        payload: {
+          data: { conditions },
+          message: 'Conditions retrieved successfully'
+        }
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async createCondition(req, res, next) {
+    try {
+      // This would require a new Condition model/table
+      res.status(501).json({
+        status: false,
+        statusCode: 501,
+        payload: {
+          error: {
+            status: 'NOT_IMPLEMENTED',
+            message: 'Condition creation not implemented - using predefined list'
+          }
+        }
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async updateCondition(req, res, next) {
+    try {
+      res.status(501).json({
+        status: false,
+        statusCode: 501,
+        payload: {
+          error: {
+            status: 'NOT_IMPLEMENTED',
+            message: 'Condition update not implemented - using predefined list'
+          }
+        }
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async deleteCondition(req, res, next) {
+    try {
+      res.status(501).json({
+        status: false,
+        statusCode: 501,
+        payload: {
+          error: {
+            status: 'NOT_IMPLEMENTED',
+            message: 'Condition deletion not implemented - using predefined list'
+          }
+        }
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  // Treatment Management (Simple string-based treatments)
+  async getTreatments(req, res, next) {
+    try {
+      const treatments = [
+        'Medication', 'Surgery', 'Hip Replacement', 'Chemotherapy',
+        'Diet & Nutrition', 'Exercise & Lifestyle', 'Saline', 'Other'
+      ];
+
+      res.status(200).json({
+        status: true,
+        statusCode: 200,
+        payload: {
+          data: { treatments },
+          message: 'Treatments retrieved successfully'
+        }
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async createTreatment(req, res, next) {
+    try {
+      res.status(501).json({
+        status: false,
+        statusCode: 501,
+        payload: {
+          error: {
+            status: 'NOT_IMPLEMENTED',
+            message: 'Treatment creation not implemented - using predefined list'
+          }
+        }
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async updateTreatment(req, res, next) {
+    try {
+      res.status(501).json({
+        status: false,
+        statusCode: 501,
+        payload: {
+          error: {
+            status: 'NOT_IMPLEMENTED',
+            message: 'Treatment update not implemented - using predefined list'
+          }
+        }
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async deleteTreatment(req, res, next) {
+    try {
+      res.status(501).json({
+        status: false,
+        statusCode: 501,
+        payload: {
+          error: {
+            status: 'NOT_IMPLEMENTED',
+            message: 'Treatment deletion not implemented - using predefined list'
+          }
+        }
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
 }
 
 export default new AdminController();

@@ -45,6 +45,64 @@ router.delete('/medicines/:medicineId',
   adminController.deleteMedicine
 );
 
+// Conditions Management
+// GET /api/admin/conditions
+router.get('/conditions',
+  authenticate,
+  authorize(USER_CATEGORIES.ADMIN),
+  adminController.getConditions
+);
+
+// POST /api/admin/conditions
+router.post('/conditions',
+  authenticate,
+  authorize(USER_CATEGORIES.ADMIN),
+  adminController.createCondition
+);
+
+// PUT /api/admin/conditions/:conditionId
+router.put('/conditions/:conditionId',
+  authenticate,
+  authorize(USER_CATEGORIES.ADMIN),
+  adminController.updateCondition
+);
+
+// DELETE /api/admin/conditions/:conditionId
+router.delete('/conditions/:conditionId',
+  authenticate,
+  authorize(USER_CATEGORIES.ADMIN),
+  adminController.deleteCondition
+);
+
+// Treatments Management
+// GET /api/admin/treatments
+router.get('/treatments',
+  authenticate,
+  authorize(USER_CATEGORIES.ADMIN),
+  adminController.getTreatments
+);
+
+// POST /api/admin/treatments
+router.post('/treatments',
+  authenticate,
+  authorize(USER_CATEGORIES.ADMIN),
+  adminController.createTreatment
+);
+
+// PUT /api/admin/treatments/:treatmentId
+router.put('/treatments/:treatmentId',
+  authenticate,
+  authorize(USER_CATEGORIES.ADMIN),
+  adminController.updateTreatment
+);
+
+// DELETE /api/admin/treatments/:treatmentId
+router.delete('/treatments/:treatmentId',
+  authenticate,
+  authorize(USER_CATEGORIES.ADMIN),
+  adminController.deleteTreatment
+);
+
 // GET /api/admin/stats
 router.get('/stats',
   authenticate,

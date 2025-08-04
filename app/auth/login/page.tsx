@@ -173,6 +173,9 @@ export default function LoginPage() {
                   {...register('password')}
                   type={showPassword ? 'text' : 'password'}
                   autoComplete="current-password"
+                  autoCapitalize="off"
+                  autoCorrect="off"
+                  spellCheck="false"
                   className={`appearance-none block w-full px-3 py-2 pr-10 border ${
                     errors.password ? 'border-red-300' : 'border-gray-300'
                   } rounded-md placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm`}
@@ -254,13 +257,23 @@ export default function LoginPage() {
 
         {/* Demo Credentials */}
         {process.env.NODE_ENV === 'development' && (
-          <div className="bg-yellow-50 border border-yellow-200 rounded-md p-4">
+          <div className="bg-yellow-50 border border-yellow-200 rounded-md p-4 mb-4">
             <h3 className="text-sm font-medium text-yellow-800 mb-2">Test Credentials</h3>
             <div className="text-xs text-yellow-700">
               <p><strong>Doctor:</strong> doctor@healthapp.com / password123</p>
               <p><strong>Patient:</strong> patient@healthapp.com / password123</p>
               <p><strong>Admin:</strong> admin@healthapp.com / password123</p>
             </div>
+          </div>
+        )}
+
+        {typeof window !== 'undefined' && window.location.protocol === 'http:' && (
+          <div className="bg-orange-50 border border-orange-200 rounded-md p-4 mb-4">
+            <h3 className="text-sm font-medium text-orange-800 mb-2">Security Notice</h3>
+            <p className="text-xs text-orange-700">
+              For production use, ensure this application is served over HTTPS to secure password transmission.
+              The browser may show security warnings when password fields are used over HTTP.
+            </p>
           </div>
         )}
       </div>
