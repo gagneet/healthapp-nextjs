@@ -94,9 +94,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setState(prev => ({ ...prev, isLoading: true }))
       
       const response = await authAPI.login(credentials)
+      logger.debug('Login response:', response)
       
       if (response.success && response.data) {
         const { user, token } = response.data
+        logger.debug('Login successful, user:', user)
+        logger.debug('Token:', token)
         
         // Store in localStorage
         localStorage.setItem('authToken', token)
@@ -109,14 +112,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           isAuthenticated: true,
         })
         
+        logger.info('Auth state updated, isAuthenticated: true')
         toast.success(`Welcome back, ${user.first_name || user.email}!`)
         return true
       } else {
+        logger.warn('Login failed:', response.message)
         setState(prev => ({ ...prev, isLoading: false }))
         toast.error(response.message || 'Login failed')
         return false
       }
     } catch (error) {
+      logger.error('Login error:', error)
       setState(prev => ({ ...prev, isLoading: false }))
       toast.error('Network error occurred')
       return false

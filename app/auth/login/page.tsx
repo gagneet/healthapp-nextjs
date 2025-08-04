@@ -10,6 +10,7 @@ import { EyeIcon, EyeSlashIcon, HeartIcon } from '@heroicons/react/24/outline'
 import { useAuth } from '@/lib/auth-context'
 import { LoginCredentials, UserRole } from '@/types/auth'
 import toast from 'react-hot-toast'
+import { createLogger } from '@/lib/logger'
 
 const loginSchema = z.object({
   email: z
@@ -58,6 +59,8 @@ const roleConfig = {
   },
 }
 
+const logger = createLogger('LoginPage')
+
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
@@ -86,24 +89,31 @@ export default function LoginPage() {
 
   // Redirect if already authenticated
   useEffect(() => {
+    logger.debug('Auth state changed:', { isAuthenticated, redirectPath: config.redirectPath })
     if (isAuthenticated) {
+      logger.info('User is authenticated, redirecting to:', config.redirectPath)
       router.push(config.redirectPath)
     }
   }, [isAuthenticated, router, config.redirectPath])
 
   const onSubmit = async (data: LoginFormData) => {
     setIsLoading(true)
+    logger.debug('Login attempt with:', { email: data.email, redirectPath: config.redirectPath })
     
     try {
       const success = await login(data)
+      logger.debug('Login result:', success)
       
       if (success) {
+        logger.info('Login successful, will redirect to:', config.redirectPath)
         // Small delay to show success message
         setTimeout(() => {
+          logger.info('Executing redirect to:', config.redirectPath)
           router.push(config.redirectPath)
         }, 1000)
       }
     } catch (error) {
+      logger.error('Login error:', error)
       toast.error('An unexpected error occurred')
     } finally {
       setIsLoading(false)
