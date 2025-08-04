@@ -37,10 +37,11 @@ services:
       update_config:
         order: stop-first
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-healthapp_user} -d ${DB_NAME:-healthapp_prod}"]
-      interval: 30s
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-healthapp_user} -d ${DB_NAME:-healthapp_prod} && psql -U ${DB_USER:-healthapp_user} -d ${DB_NAME:-healthapp_prod} -c 'SELECT 1'"]
+      interval: 15s
       timeout: 10s
-      retries: 3
+      retries: 6
+      start_period: 120s
 
   # Redis Cluster
   redis:
@@ -142,10 +143,10 @@ services:
           memory: 512M
           cpus: '0.5'
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3001/api/health"]
-      interval: 30s
+      test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
+      interval: 15s
       timeout: 10s
-      retries: 3
+      retries: 5
       start_period: 60s
 
   # Frontend NextJS - Horizontally scalable
@@ -154,7 +155,7 @@ services:
     environment:
       NODE_ENV: production
       BACKEND_URL: http://backend:3001
-      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-https://api.healthcareapp.com}
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-https://api.healthcareapp.com/api}
       PORT: 3000
       NODE_OPTIONS: "--max-old-space-size=512"
     networks:
@@ -188,7 +189,7 @@ services:
           memory: 512M
           cpus: '0.5'
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/api/health"]
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000"]
       interval: 30s
       timeout: 10s
       retries: 3

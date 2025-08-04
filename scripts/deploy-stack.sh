@@ -277,10 +277,11 @@ services:
     networks:
       - healthapp-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U healthapp_user -d healthapp_${MODE}"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+      test: ["CMD-SHELL", "pg_isready -U healthapp_user -d healthapp_${MODE} && psql -U healthapp_user -d healthapp_${MODE} -c 'SELECT 1'"]
+      interval: 15s
+      timeout: 10s
+      retries: 6
+      start_period: 120s
     deploy:
       replicas: 1
       placement:
@@ -341,12 +342,15 @@ services:
         reservations:
           memory: 512M
     # Backend waits for database health checks
+    depends_on:
+      - postgres
+      - redis
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:3001/health || exit 1"]
-      interval: 10s
-      timeout: 5s
+      interval: 15s
+      timeout: 10s
       retries: 5
-      start_period: 30s
+      start_period: 60s
 
   frontend:
     image: healthapp-frontend:${MODE}
@@ -358,6 +362,8 @@ services:
       - "3002:3000"
     networks:
       - healthapp-network
+    depends_on:
+      - backend
     deploy:
       replicas: ${SCALE_FRONTEND}
       update_config:
@@ -463,13 +469,24 @@ wait_for_services() {
     
     # Wait for database to be ready (FIRST PRIORITY)
     print_status "Waiting for PostgreSQL database to be ready..."
-    local timeout=120
+    local timeout=180  # Increased to 3 minutes
     local counter=0
+    local postgres_healthy=false
     
     while [ $counter -lt $timeout ]; do
         if docker service ls | grep "${DOCKER_STACK_NAME}_postgres" | grep -q "1/1"; then
-            print_status "PostgreSQL database service is ready"
-            break
+            # Double-check with actual health status
+            local postgres_task_id=$(docker service ps "${DOCKER_STACK_NAME}_postgres" --no-trunc --format "{{.ID}}" | head -n1)
+            if [ -n "$postgres_task_id" ]; then
+                local container_id=$(docker inspect --format='{{.Status.ContainerStatus.ContainerID}}' "$postgres_task_id" 2>/dev/null | head -c12)
+                if [ -n "$container_id" ]; then
+                    if docker exec "$container_id" pg_isready -U healthapp_user -d "healthapp_${MODE}" > /dev/null 2>&1; then
+                        print_status "PostgreSQL database service is ready and healthy"
+                        postgres_healthy=true
+                        break
+                    fi
+                fi
+            fi
         fi
         sleep 5
         counter=$((counter + 5))
@@ -477,9 +494,51 @@ wait_for_services() {
     done
     echo ""
     
-    if [ $counter -ge $timeout ]; then
-        print_error "Database failed to start within $timeout seconds!"
-        exit 1
+    if [ "$postgres_healthy" = false ]; then
+        print_error "PostgreSQL failed to start within $timeout seconds!"
+        print_error "Attempting recovery procedures..."
+        
+        # Recovery attempt 1: Check logs for issues
+        print_status "Checking PostgreSQL logs for errors..."
+        docker service logs "${DOCKER_STACK_NAME}_postgres" --tail 50
+        
+        # Recovery attempt 2: Restart PostgreSQL service
+        print_status "Attempting to restart PostgreSQL service..."
+        docker service update --force "${DOCKER_STACK_NAME}_postgres"
+        
+        # Wait additional 60 seconds for restart
+        print_status "Waiting additional 60 seconds for PostgreSQL restart..."
+        counter=0
+        while [ $counter -lt 60 ]; do
+            if docker service ls | grep "${DOCKER_STACK_NAME}_postgres" | grep -q "1/1"; then
+                local postgres_task_id=$(docker service ps "${DOCKER_STACK_NAME}_postgres" --no-trunc --format "{{.ID}}" | head -n1)
+                if [ -n "$postgres_task_id" ]; then
+                    local container_id=$(docker inspect --format='{{.Status.ContainerStatus.ContainerID}}' "$postgres_task_id" 2>/dev/null | head -c12)
+                    if [ -n "$container_id" ]; then
+                        if docker exec "$container_id" pg_isready -U healthapp_user -d "healthapp_${MODE}" > /dev/null 2>&1; then
+                            print_status "PostgreSQL recovered successfully after restart"
+                            postgres_healthy=true
+                            break
+                        fi
+                    fi
+                fi
+            fi
+            sleep 5
+            counter=$((counter + 5))
+            echo -n "."
+        done
+        echo ""
+        
+        if [ "$postgres_healthy" = false ]; then
+            print_error "PostgreSQL recovery failed. Manual intervention required."
+            print_error "Troubleshooting steps:"
+            echo "  1. Check PostgreSQL logs: docker service logs ${DOCKER_STACK_NAME}_postgres"
+            echo "  2. Check available disk space: df -h"
+            echo "  3. Check PostgreSQL data volume: docker volume inspect postgres_data_${MODE}"
+            echo "  4. Try removing and recreating the stack"
+            echo "  5. Contact system administrator if issues persist"
+            exit 1
+        fi
     fi
     
     # Wait for Redis to be ready (SECOND PRIORITY)

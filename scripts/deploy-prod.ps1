@@ -206,15 +206,107 @@ if ($LASTEXITCODE -ne 0) {
 
 Write-Step "5. Waiting for services to be ready..."
 
-# Wait for services to be deployed
+# Wait for initial deployment
 Write-Info "Waiting for stack deployment..."
-Start-Sleep -Seconds 30
+Start-Sleep -Seconds 20
 
 # Check service status
 Write-Info "Checking service status..."
 docker stack services healthapp
 
-Write-Step "6. Running database migrations..."
+# Wait for database to be ready (FIRST PRIORITY)
+Write-Info "Waiting for PostgreSQL database to be ready..."
+$timeout = 120
+$counter = 0
+
+while ($counter -lt $timeout) {
+    $postgresStatus = docker service ls | Select-String "healthapp_postgres" | Select-String "1/1"
+    if ($postgresStatus) {
+        Write-Info "PostgreSQL database service is ready"
+        break
+    }
+    Start-Sleep -Seconds 5
+    $counter += 5
+    Write-Host "." -NoNewline
+}
+Write-Host ""
+
+if ($counter -ge $timeout) {
+    Write-Error "Database failed to start within $timeout seconds!"
+    Read-Host "Press Enter to exit"
+    exit 1
+}
+
+# Wait for Redis to be ready (SECOND PRIORITY)
+Write-Info "Waiting for Redis cache to be ready..."
+$counter = 0
+$timeout = 60
+
+while ($counter -lt $timeout) {
+    $redisStatus = docker service ls | Select-String "healthapp_redis" | Select-String "1/1"
+    if ($redisStatus) {
+        Write-Info "Redis cache service is ready"
+        break
+    }
+    Start-Sleep -Seconds 5
+    $counter += 5
+    Write-Host "." -NoNewline
+}
+Write-Host ""
+
+if ($counter -ge $timeout) {
+    Write-Warn "Redis readiness check timed out, but continuing..."
+}
+
+# Wait for backend to be ready (THIRD PRIORITY)
+Write-Info "Waiting for backend API to be ready..."
+$counter = 0
+$timeout = 180
+
+while ($counter -lt $timeout) {
+    $backendStatus = docker service ls | Select-String "healthapp_backend" | Select-String "/5"
+    if ($backendStatus) {
+        # Also check if backend health endpoint responds (assuming production domain)
+        try {
+            $response = Invoke-WebRequest -Uri "https://api.healthcareapp.com/health" -TimeoutSec 5 -ErrorAction Stop
+            if ($response.StatusCode -eq 200) {
+                Write-Info "Backend API service is ready and responding"
+                break
+            }
+        } catch {
+            # Health check failed, continue waiting
+        }
+    }
+    Start-Sleep -Seconds 5
+    $counter += 5
+    Write-Host "." -NoNewline
+}
+Write-Host ""
+
+if ($counter -ge $timeout) {
+    Write-Error "Backend API failed to start within $timeout seconds!"
+    Read-Host "Press Enter to exit"
+    exit 1
+}
+
+Write-Step "6. Installing PostgreSQL extensions..."
+
+# Install UUID extension
+Write-Info "Installing PostgreSQL UUID extension..."
+try {
+    $postgresTaskId = docker service ps healthapp_postgres --no-trunc --format "{{.ID}}" | Select-Object -First 1
+    if ($postgresTaskId) {
+        $postgresContainerId = docker inspect --format='{{.Status.ContainerStatus.ContainerID}}' $postgresTaskId 2>$null | ForEach-Object { $_.Substring(0, 12) }
+        if ($postgresContainerId) {
+            docker exec $postgresContainerId psql -U $env:DB_USER -d $env:DB_NAME -c "CREATE EXTENSION IF NOT EXISTS `"uuid-ossp`";"
+            Write-Info "PostgreSQL UUID extension installed successfully"
+        }
+    }
+} catch {
+    Write-Warn "Failed to install UUID extension, but continuing..."
+}
+
+Write-Step "7. Running database migrations..."
 
 if (-not $SkipMigration) {
     Write-Info "Waiting for database to be ready..."
@@ -252,7 +344,7 @@ if (-not $SkipMigration) {
     Write-Info "Skipping database migrations (-SkipMigration specified)"
 }
 
-Write-Step "7. Verifying deployment..."
+Write-Step "8. Verifying deployment..."
 
 # Check service health
 $services = @("healthapp_postgres", "healthapp_redis", "healthapp_backend", "healthapp_frontend", "healthapp_nginx")

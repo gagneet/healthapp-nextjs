@@ -114,7 +114,16 @@ goto wait_redis
 echo.
 echo %INFO% Redis is ready!
 
-echo %STEP% 5. Running database migrations...
+echo %STEP% 5. Installing PostgreSQL extensions...
+
+REM Install UUID extension
+echo %INFO% Installing PostgreSQL UUID extension...
+docker-compose -f docker/docker-compose.dev.yml exec -T postgres psql -U healthapp_user -d healthapp_dev -c "CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\";"
+if errorlevel 1 (
+    echo %WARN% Failed to install UUID extension, but continuing...
+)
+
+echo %STEP% 6. Running database migrations...
 
 REM Run migrations
 docker-compose -f docker/docker-compose.dev.yml exec -T backend npm run migrate
@@ -122,7 +131,7 @@ if errorlevel 1 (
     echo %WARN% Migration failed. This might be normal for first-time setup.
 )
 
-echo %STEP% 6. Seeding database...
+echo %STEP% 7. Seeding database...
 
 REM Seed database
 docker-compose -f docker/docker-compose.dev.yml exec -T backend npm run seed
@@ -130,7 +139,31 @@ if errorlevel 1 (
     echo %WARN% Seeding failed. This might be normal if data already exists.
 )
 
-echo %STEP% 7. Verifying deployment...
+echo %STEP% 8. Waiting for backend to be ready...
+
+REM Wait for backend to be ready
+echo %INFO% Waiting for backend API to be ready...
+set /a timeout=180
+set /a counter=0
+
+:wait_backend
+curl -f http://localhost:3001/health >nul 2>&1
+if not errorlevel 1 goto backend_ready
+set /a counter+=5
+if %counter% geq %timeout% (
+    echo %ERROR% Backend API failed to start within %timeout% seconds
+    pause
+    exit /b 1
+)
+timeout /t 5 /nobreak >nul
+echo .
+goto wait_backend
+
+:backend_ready
+echo.
+echo %INFO% Backend API is ready!
+
+echo %STEP% 9. Verifying deployment...
 
 REM Check service health
 echo %INFO% Checking service status...
@@ -149,7 +182,7 @@ for %%s in (postgres redis backend frontend) do (
 REM Test API endpoint
 echo %INFO% Testing API endpoint...
 timeout /t 5 /nobreak >nul
-curl -f http://localhost:3001/api/health >nul 2>&1
+curl -f http://localhost:3001/health >nul 2>&1
 if not errorlevel 1 (
     echo %INFO% Backend API is healthy ✓
 ) else (
@@ -159,7 +192,7 @@ if not errorlevel 1 (
 
 REM Test Frontend
 echo %INFO% Testing Frontend...
-curl -f http://localhost:3000 >nul 2>&1
+curl -f http://localhost:3002 >nul 2>&1
 if not errorlevel 1 (
     echo %INFO% Frontend is accessible ✓
 ) else (
@@ -172,7 +205,7 @@ echo.
 echo 🌟 Healthcare Application Development Environment is ready!
 echo.
 echo 📋 Access URLs:
-echo    Frontend:  http://localhost:3000
+echo    Frontend:  http://localhost:3002
 echo    Backend:   http://localhost:3001
 echo    pgAdmin:   http://localhost:5050 (admin@healthapp.com / admin123)
 echo.
