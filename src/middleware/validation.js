@@ -51,7 +51,8 @@ const validateQuery = (schema) => {
 const schemas = {
   login: Joi.object({
     email: Joi.string().email().required(),
-    password: Joi.string().min(6).required()
+    password: Joi.string().min(6).required(),
+    remember_me: Joi.boolean().optional()
   }),
   
   patientCreate: Joi.object({
