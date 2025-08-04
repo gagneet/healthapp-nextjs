@@ -1,5 +1,5 @@
 // src/controllers/symptomsDiagnosisController.js - Symptoms and Diagnosis management
-import { SymptomsDatabase, TreatmentDatabase } from '../models/index.js';
+import { SymptomsDatabase, TreatmentDatabase, sequelize } from '../models/index.js';
 import { Op } from 'sequelize';
 import ResponseFormatter from '../utils/responseFormatter.js';
 import { ValidationError, NotFoundError } from '../utils/errors.js';

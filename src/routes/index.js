@@ -9,6 +9,7 @@ import carePlanRoutes from './carePlans.js';
 import vitalsRoutes from './vitals.js';
 import adminRoutes from './admin.js';
 import searchRoutes from './search.js';
+import symptomsRoutes from './symptoms.js';
 
 const router = express.Router();
 
@@ -22,6 +23,7 @@ router.use('/careplan', carePlanRoutes);
 router.use('/vitals', vitalsRoutes);
 router.use('/admin', adminRoutes);
 router.use('/search', searchRoutes);
+router.use('/symptoms', symptomsRoutes);
 
 // API info endpoint
 router.get('/', (req, res) => {
@@ -42,7 +44,8 @@ router.get('/', (req, res) => {
           '/careplan - Care plan management',
           '/vitals - Vital signs management',
           '/admin - Administrative functions',
-          '/search - Search functionality'
+          '/search - Search functionality',
+          '/symptoms - Symptoms and diagnosis management'
         ]
       },
       message: 'API is running successfully'

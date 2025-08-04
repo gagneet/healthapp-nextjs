@@ -1,5 +1,4 @@
 // src/utils/phoneValidation.js - Phone validation with country code support
-import { parsePhoneNumber, isValidPhoneNumber, getCountryCallingCode } from 'libphonenumber-js';
 
 // Country codes with phone number digit requirements
 export const COUNTRY_CODES = {
@@ -199,27 +198,59 @@ export function validatePhoneNumber(phoneNumber, countryCode = 'US') {
       };
     }
 
-    // Use libphonenumber-js for comprehensive validation
-    const fullNumber = country.code + numberToValidate;
-    const isValid = isValidPhoneNumber(fullNumber, countryCode);
+    // Additional validation based on country-specific rules
+    let isValidFormat = true;
     
-    if (!isValid) {
+    // Country-specific validation patterns
+    switch (countryCode) {
+      case 'US':
+      case 'CA':
+        // North American Numbering Plan - no 0 or 1 as first digit of area code or exchange
+        const areaCode = numberToValidate.substring(0, 3);
+        const exchange = numberToValidate.substring(3, 6);
+        if (areaCode.startsWith('0') || areaCode.startsWith('1') || 
+            exchange.startsWith('0') || exchange.startsWith('1')) {
+          isValidFormat = false;
+        }
+        break;
+      case 'IN':
+        // Indian mobile numbers start with 6, 7, 8, or 9
+        if (!['6', '7', '8', '9'].includes(numberToValidate.charAt(0))) {
+          isValidFormat = false;
+        }
+        break;
+      case 'GB':
+        // UK mobile numbers start with 7
+        if (!numberToValidate.startsWith('7')) {
+          isValidFormat = false;
+        }
+        break;
+      case 'AU':
+        // Australian mobile numbers start with 4
+        if (!numberToValidate.startsWith('4')) {
+          isValidFormat = false;
+        }
+        break;
+    }
+    
+    if (!isValidFormat) {
       return {
         isValid: false,
-        error: 'Invalid phone number format',
+        error: 'Invalid phone number format for this country',
         formatted: null,
         expectedFormat: country.format
       };
     }
 
-    // Parse and format the number
-    const phoneNumberParsed = parsePhoneNumber(fullNumber, countryCode);
+    // Format the number for different representations
+    const fullNumber = country.code + numberToValidate;
+    const formattedNumber = formatPhoneInput(numberToValidate, countryCode);
     
     return {
       isValid: true,
-      formatted: phoneNumberParsed.formatInternational(),
-      national: phoneNumberParsed.formatNational(),
-      e164: phoneNumberParsed.format('E.164'),
+      formatted: `${country.code} ${formattedNumber}`,
+      national: formattedNumber,
+      e164: fullNumber,
       countryCode: countryCode,
       countryCallingCode: country.code,
       error: null
@@ -325,8 +356,18 @@ export function extractCountryCode(phoneNumber) {
   try {
     if (!phoneNumber) return null;
     
-    const parsedNumber = parsePhoneNumber(phoneNumber);
-    return parsedNumber?.country || null;
+    // Remove all non-digits and leading +
+    const cleanNumber = phoneNumber.replace(/[^\d]/g, '');
+    
+    // Check against known country codes
+    for (const [countryCode, country] of Object.entries(COUNTRY_CODES)) {
+      const dialCode = country.code.replace('+', '');
+      if (cleanNumber.startsWith(dialCode)) {
+        return countryCode;
+      }
+    }
+    
+    return null;
   } catch (error) {
     return null;
   }

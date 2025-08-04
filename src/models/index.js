@@ -30,6 +30,8 @@ import NotificationModel from './Notification.js';
 import UserDeviceModel from './UserDevice.js';
 import AuditLogModel from './AuditLog.js';
 import SpecialityModel from './Speciality.js';
+import SymptomsDatabaseModel from './SymptomsDatabase.js';
+import TreatmentDatabaseModel from './TreatmentDatabase.js';
 
 // Initialize models with new ES modules format
 const User = UserModel(sequelize);
@@ -59,6 +61,8 @@ const Notification = NotificationModel(sequelize);
 const UserDevice = UserDeviceModel(sequelize);
 const AuditLog = AuditLogModel(sequelize);
 const Speciality = SpecialityModel(sequelize, Sequelize.DataTypes);
+const SymptomsDatabase = SymptomsDatabaseModel(sequelize);
+const TreatmentDatabase = TreatmentDatabaseModel(sequelize);
 
 const db = {
   sequelize,
@@ -90,6 +94,8 @@ const db = {
   UserDevice,
   AuditLog,
   Speciality,
+  SymptomsDatabase,
+  TreatmentDatabase,
 };
 
 // Set up associations
@@ -125,6 +131,8 @@ export {
   Notification,
   UserDevice,
   AuditLog,
-  Speciality 
+  Speciality,
+  SymptomsDatabase,
+  TreatmentDatabase
 };
 export default db;
