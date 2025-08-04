@@ -5,5 +5,7 @@ module.exports = {
   'config': path.resolve('src/config', 'config.cjs'),
   'models-path': path.resolve('src', 'models'),
   'seeders-path': path.resolve('src', 'seeders'),
-  'migrations-path': path.resolve('src', 'migrations')
+  'migrations-path': path.resolve('src', 'migrations'),
+  'seeders-extension': 'cjs',
+  'migrations-extension': 'cjs'
 };
