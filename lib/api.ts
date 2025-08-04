@@ -53,17 +53,23 @@ export const authAPI = {
     try {
       const response = await api.post('/auth/sign-in', credentials)
       const backendResponse = response.data
+      logger.debug('Raw backend response:', backendResponse)
       
       // Transform backend response format to frontend format
       if (backendResponse.status && backendResponse.payload?.data) {
         const userData = backendResponse.payload.data.users
         const tokens = backendResponse.payload.data.tokens
+        logger.debug('Extracted userData:', userData)
+        logger.debug('Extracted tokens:', tokens)
         
         // Extract user data from the nested structure
         const userKey = Object.keys(userData)[0]
         const user = userData[userKey]?.basic_info
+        logger.debug('User key:', userKey)
+        logger.debug('Extracted user:', user)
         
         if (user && tokens?.accessToken) {
+          logger.debug('Login parsing successful, returning success response')
           return {
             success: true,
             data: {
@@ -73,7 +79,11 @@ export const authAPI = {
             },
             message: backendResponse.payload.message || 'Login successful'
           }
+        } else {
+          logger.warn('Missing user or token data:', { user: !!user, token: !!tokens?.accessToken })
         }
+      } else {
+        logger.warn('Invalid backend response structure:', { status: backendResponse.status, hasPayload: !!backendResponse.payload, hasData: !!backendResponse.payload?.data })
       }
       
       return {
