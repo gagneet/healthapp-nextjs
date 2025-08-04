@@ -11,7 +11,7 @@ import { sequelize } from './models/index.js';
 import routes from './routes/index.js';
 import errorHandler from './middleware/errorHandler.js';
 import rateLimiter from './middleware/rateLimiter.js';
-import logger from './middleware/logger.js';
+import { logger } from './middleware/logger.js';
 
 config();
 
