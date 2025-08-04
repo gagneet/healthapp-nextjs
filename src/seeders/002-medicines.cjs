@@ -1,4 +1,4 @@
-// src/seeders/002-medicines.js
+// src/seeders/002-medicines.cjs
 'use strict';
 
 module.exports = {

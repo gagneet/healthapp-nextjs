@@ -9,27 +9,12 @@ class AuthController {
     try {
       const { email, password } = req.body;
 
-      // Find user by email
+      // Find user by email (simplified without associations for now)
       const user = await User.findOne({
         where: { 
           email,
           account_status: ACCOUNT_STATUS.ACTIVE 
-        },
-        include: [
-          {
-            model: Doctor,
-            as: 'doctor',
-            include: [{ model: Speciality, as: 'speciality' }]
-          },
-          {
-            model: Patient,
-            as: 'patient'
-          },
-          {
-            model: UserRole,
-            as: 'roles'
-          }
-        ]
+        }
       });
 
       if (!user) {
@@ -60,12 +45,10 @@ class AuthController {
         });
       }
 
-      // Generate tokens
-      const userRole = user.roles?.[0];
+      // Generate tokens (simplified without roles for now)
       const tokenPayload = {
         userId: user.id,
-        userCategory: user.category,
-        userRoleId: userRole?.id || null,
+        userCategory: user.role, // Using role field directly
         permissions: [] // Add permissions logic as needed
       };
 
@@ -82,14 +65,14 @@ class AuthController {
             basic_info: {
               id: user.id.toString(),
               email: user.email,
-              mobile_number: user.mobile_number,
-              user_name: user.user_name,
-              category: user.category,
+              phone: user.phone,
+              first_name: user.first_name,
+              last_name: user.last_name,
+              role: user.role,
               account_status: user.account_status,
-              email_verified: user.verified,
-              mobile_verified: user.verified
+              email_verified: user.email_verified
             },
-            feedId: Buffer.from(`${user.category}_${userRole?.id || user.id}`).toString('base64'),
+            feedId: Buffer.from(`${user.role}_${user.id}`).toString('base64'),
             notificationToken: 'getstream_token', // Implement GetStream integration
             created_at: user.created_at,
             updated_at: user.updated_at
@@ -236,8 +219,7 @@ class AuthController {
 
       const newAccessToken = generateToken({
         userId: user.id,
-        userCategory: user.category,
-        userRoleId: decoded.userRoleId
+        userCategory: user.role
       });
 
       res.status(200).json({
