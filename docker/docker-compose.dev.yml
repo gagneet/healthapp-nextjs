@@ -2,7 +2,7 @@ services:
   # PostgreSQL Database
   postgres:
     image: postgres:15-alpine
-    container_name: healthapp-postgres-dev
+    container_name: healthapp-postgres
     environment:
       POSTGRES_DB: healthapp_dev
       POSTGRES_USER: healthapp_user
@@ -23,7 +23,7 @@ services:
   # Redis Cache
   redis:
     image: redis:7-alpine
-    container_name: healthapp-redis-dev
+    container_name: healthapp-redis
     command: redis-server --appendonly yes
     volumes:
       - redis_data_dev:/data
@@ -42,7 +42,8 @@ services:
     build:
       context: ..
       dockerfile: docker/Dockerfile.backend
-    container_name: healthapp-backend-dev
+    image: healthapp-backend:dev
+    container_name: healthapp-backend
     environment:
       NODE_ENV: development
       PORT: 3001
@@ -80,11 +81,12 @@ services:
     build:
       context: ..
       dockerfile: docker/Dockerfile.dev
-    container_name: healthapp-frontend-dev
+    image: healthapp-frontend:dev
+    container_name: healthapp-frontend
     environment:
       NODE_ENV: development
       BACKEND_URL: http://backend:3001
-      NEXT_PUBLIC_API_URL: http://192.168.0.148:3001
+      NEXT_PUBLIC_API_URL: http://192.168.0.148:3001/api
     volumes:
       - ../app:/app/app
       - ../components:/app/components
@@ -104,7 +106,7 @@ services:
   # pgAdmin for database management (development only)
   pgadmin:
     image: dpage/pgadmin4
-    container_name: healthapp-pgadmin-dev
+    container_name: healthapp-pgadmin
     environment:
       PGADMIN_DEFAULT_EMAIL: admin@healthapp.com
       PGADMIN_DEFAULT_PASSWORD: admin123

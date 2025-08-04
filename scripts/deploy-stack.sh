@@ -212,7 +212,11 @@ update_environment_files() {
     fi
 
     # Create working environment file
-    local working_env=".env.$MODE"
+    if [ "$MODE" = "prod" ]; then
+        local working_env=".env.production"
+    else
+        local working_env=".env.development"
+    fi
     
     if [ -f "$env_file" ]; then
         # Copy template and update with IP address
