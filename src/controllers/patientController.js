@@ -153,6 +153,84 @@ class PatientController {
   }
 
   /**
+   * Search patient by phone number
+   */
+  async searchPatientByPhone(req, res, next) {
+    try {
+      const { phoneNumber, countryCode = 'US' } = req.body;
+
+      if (!phoneNumber) {
+        return res.status(400).json(ResponseFormatter.error(
+          'Phone number is required',
+          400
+        ));
+      }
+
+      const result = await PatientService.findPatientByPhone(phoneNumber, countryCode);
+
+      res.status(200).json(ResponseFormatter.success(
+        result,
+        result.exists ? 'Patient found' : 'No patient found with this phone number'
+      ));
+
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * Validate patient phone number
+   */
+  async validatePatientPhone(req, res, next) {
+    try {
+      const { phoneNumber, countryCode = 'US' } = req.body;
+
+      if (!phoneNumber) {
+        return res.status(400).json(ResponseFormatter.error(
+          'Phone number is required',
+          400
+        ));
+      }
+
+      const validation = await PatientService.validatePatientPhone(phoneNumber, countryCode);
+
+      res.status(200).json(ResponseFormatter.success(
+        validation,
+        'Phone number validation completed'
+      ));
+
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * Generate patient ID preview
+   */
+  async generatePatientId(req, res, next) {
+    try {
+      const { doctorName } = req.body;
+      
+      // Use current user's name if not provided
+      let nameToUse = doctorName;
+      if (!nameToUse && req.user) {
+        const user = await User.findByPk(req.user.id);
+        nameToUse = user ? `${user.first_name} ${user.last_name}` : 'Unknown Doctor';
+      }
+
+      const patientId = await PatientService.generatePatientID(nameToUse || 'Unknown Doctor');
+
+      res.status(200).json(ResponseFormatter.success(
+        { patientId },
+        'Patient ID generated successfully'
+      ));
+
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
    * Get patients with advanced filtering and search
    */
   async getPatients(req, res, next) {

@@ -1,8 +1,10 @@
 // src/services/PatientService.js
 
 import { User, Patient, Doctor, sequelize } from '../models/index.js';
-import { ValidationError, ConflictError } from '../utils/errors.js';
+import { ValidationError, ConflictError, NotFoundError } from '../utils/errors.js';
 import { generatePatientId } from '../utils/generators.js';
+import { getPhoneSearchFormats, validatePhoneNumber } from '../utils/phoneValidation.js';
+import { Op } from 'sequelize';
 
 class PatientService {
   /**
@@ -65,10 +67,17 @@ class PatientService {
         activated_on: new Date()
       }, { transaction });
 
+      // Get creator info for patient ID generation
+      const creator = await User.findByPk(creatorId, { transaction });
+      const creatorName = creator ? `${creator.first_name} ${creator.last_name}` : 'Unknown Doctor';
+      
+      // Generate patient ID
+      const patientId = await this.generatePatientID(creatorName);
+
       // Create patient with medical-specific fields
       const patient = await Patient.create({
         user_id: user.id,
-        patient_id: generatePatientId(),
+        patient_id: patientId,
         blood_group,
         height_cm,
         weight_kg,
@@ -129,6 +138,151 @@ class PatientService {
     } catch (error) {
       await transaction.rollback();
       throw error;
+    }
+  }
+
+  /**
+   * Search patient by mobile number with fuzzy matching
+   * @param {string} phoneNumber - Phone number to search
+   * @param {string} countryCode - Country code (e.g., 'US', 'IN')
+   * @returns {Object|null} Patient data if found
+   */
+  async findPatientByPhone(phoneNumber, countryCode = 'US') {
+    try {
+      if (!phoneNumber) {
+        return null;
+      }
+
+      // Get all possible formats for the phone number
+      const searchFormats = getPhoneSearchFormats(phoneNumber, countryCode);
+      
+      // Search for patient with any of these phone number formats
+      const user = await User.findOne({
+        where: {
+          [Op.or]: searchFormats.map(format => ({
+            mobile_number: {
+              [Op.like]: `%${format}%`
+            }
+          })),
+          category: 'patient'
+        },
+        include: [{
+          model: Patient,
+          as: 'patient',
+          required: true
+        }],
+        order: [['created_at', 'DESC']] // Return most recent if multiple matches
+      });
+
+      if (user && user.patient) {
+        return {
+          exists: true,
+          patient: {
+            id: user.patient.id,
+            patient_id: user.patient.patient_id,
+            user_id: user.id,
+            first_name: user.first_name,
+            middle_name: user.middle_name,
+            last_name: user.last_name,
+            full_name: `${user.first_name} ${user.middle_name || ''} ${user.last_name}`.trim(),
+            email: user.email,
+            mobile_number: user.mobile_number,
+            gender: user.gender,
+            date_of_birth: user.date_of_birth,
+            age: user.current_age,
+            street: user.street,
+            city: user.city,
+            state: user.state,
+            country: user.country,
+            blood_group: user.patient.blood_group,
+            height_cm: user.patient.height_cm,
+            weight_kg: user.patient.weight_kg,
+            allergies: user.patient.allergies || [],
+            chronic_conditions: user.patient.chronic_conditions || [],
+            created_at: user.created_at,
+            last_updated: user.updated_at
+          }
+        };
+      }
+
+      return { exists: false, patient: null };
+
+    } catch (error) {
+      console.error('Error searching patient by phone:', error);
+      throw new Error('Failed to search patient by phone number');
+    }
+  }
+
+  /**
+   * Validate and format phone number for patient
+   * @param {string} phoneNumber - Phone number to validate
+   * @param {string} countryCode - Country code
+   * @returns {Object} Validation result with formatted number
+   */
+  async validatePatientPhone(phoneNumber, countryCode = 'US') {
+    const validation = validatePhoneNumber(phoneNumber, countryCode);
+    
+    if (!validation.isValid) {
+      return validation;
+    }
+
+    // Check if phone number is already in use
+    const existingPatient = await this.findPatientByPhone(phoneNumber, countryCode);
+    
+    return {
+      ...validation,
+      isAlreadyRegistered: existingPatient.exists,
+      existingPatient: existingPatient.patient
+    };
+  }
+
+  /**
+   * Generate patient ID in format XXX/YYYYMM/NNNNNN
+   * @param {string} doctorName - Doctor's name for prefix
+   * @returns {string} Generated patient ID
+   */
+  async generatePatientID(doctorName) {
+    try {
+      // Extract 3-character prefix from doctor name
+      const namePrefix = doctorName
+        .split(' ')
+        .map(name => name.charAt(0).toUpperCase())
+        .join('')
+        .substring(0, 3)
+        .padEnd(3, 'X');
+
+      // Get current year and month
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = (now.getMonth() + 1).toString().padStart(2, '0');
+      const yearMonth = `${year}${month}`;
+
+      // Find the last patient ID with the same prefix and year/month
+      const lastPatient = await Patient.findOne({
+        where: {
+          patient_id: {
+            [Op.like]: `${namePrefix}/${yearMonth}/%`
+          }
+        },
+        order: [['patient_id', 'DESC']]
+      });
+
+      let sequenceNumber = 1;
+      if (lastPatient && lastPatient.patient_id) {
+        const lastSequence = lastPatient.patient_id.split('/')[2];
+        sequenceNumber = parseInt(lastSequence) + 1;
+      }
+
+      // Format sequence as 6-digit number
+      const sequenceStr = sequenceNumber.toString().padStart(6, '0');
+      
+      return `${namePrefix}/${yearMonth}/${sequenceStr}`;
+
+    } catch (error) {
+      console.error('Error generating patient ID:', error);
+      // Fallback to timestamp-based ID
+      const timestamp = Date.now().toString().slice(-6);
+      return `PAT/${new Date().getFullYear()}${(new Date().getMonth() + 1).toString().padStart(2, '0')}/${timestamp}`;
     }
   }
 
