@@ -207,3 +207,78 @@ Your Healthcare Management Platform is now ready for both development and enterp
 - Automated backup and disaster recovery
 - Horizontal scaling capabilities
 - Zero-downtime deployments
+
+## ● Implementation Complete
+
+I've implemented comprehensive fixes for the PostgreSQL health check issues and added robust fallback strategies. Here's
+what happens if PostgreSQL is still not healthy after 2+ minutes:
+
+### Multi-layered Fallback Strategy
+
+#### Extended Grace Period
+
+- Increased health check timeout from 120s to 180s (3 minutes)
+- Added start_period: 120s giving PostgreSQL 2 minutes before health failures count
+- Enhanced health check combines pg_isready + actual query execution
+
+#### Automatic Recovery Procedures
+
+If PostgreSQL fails after 3 minutes, the script automatically:
+
+##### Diagnostic Phase
+
+- Shows PostgreSQL service logs (last 50 lines) to identify the root cause
+- Checks service status and container health
+
+##### Recovery Phase
+
+- Force restarts the PostgreSQL service using docker service update --force
+- Waits additional 60 seconds for restart completion
+- Re-validates health with both service status and actual database connectivity
+
+##### Manual Intervention Guidance
+
+If automatic recovery fails, the script provides detailed troubleshooting steps:
+
+1. Check PostgreSQL logs: docker service logs healthapp_postgres
+2. Check available disk space: df -h
+3. Check PostgreSQL data volume: docker volume inspect postgres_data_dev
+4. Try removing and recreating the stack
+5. Contact system administrator if issues persist
+
+### Common Causes & Solutions
+
+When PostgreSQL fails after 2+ minutes, it's usually due to:
+
+#### Resource Issues
+
+- Insufficient memory: PostgreSQL needs adequate RAM for initialization
+- Disk space: Data volume or temp space exhaustion
+- CPU constraints: Slow initialization on resource-constrained systems
+
+#### Configuration Problems
+
+- Authentication failures: Wrong credentials in environment variables
+- Permission issues: Container can't access data volume
+- Network connectivity: PostgreSQL can't bind to expected ports
+
+#### Data Corruption
+
+- Corrupted data volume: Previous crash left database in inconsistent state
+- Lock files: Stale lock files preventing startup
+
+### Additional Safeguards Added
+
+1. Enhanced Health Checks: Now tests both process readiness AND query execution
+2. Proper Service Dependencies: Backend waits for PostgreSQL health, Frontend waits for Backend
+3. Consistent Timing: 15-second intervals across all services
+4. Better Error Reporting: Detailed logs and specific troubleshooting steps
+
+### Deployment Behavior
+
+- 0-120s: Grace period - health failures don't count
+- 120-180s: Active health monitoring with retries
+- 180s+: Automatic recovery attempt
+- 240s+: Manual intervention required with detailed diagnostics
+
+The system is now much more resilient and provides clear guidance when PostgreSQL issues occur beyond the normal startup window.

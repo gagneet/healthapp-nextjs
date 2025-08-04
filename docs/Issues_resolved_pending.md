@@ -743,3 +743,172 @@ docker service scale healthapp_frontend=2
 docker stack rm healthapp
 
 The deployment script is now production-ready and handles all the complexities of Docker Swarm deployment while maintaining the functionality of the original docker-compose approach. It includes comprehensive error handling, user prompts, and detailed status reporting throughout the deployment process.
+
+## ● 🎉 SUCCESS! Login Issue Resolved
+
+The login issue has been completely resolved! Here's what was accomplished:
+
+### ✅ Problem Analysis & Resolution
+
+1. Root Cause: The original issue was that the frontend was calling /auth/sign-in but the backend expected
+/api/auth/sign-in with the API prefix
+2. Database Issues: The database tables weren't properly initialized and seeded
+3. Model Association Conflicts: Missing model associations were causing errors
+
+### ✅ Solutions Implemented
+
+1. Complete Environment Reset: Cleaned all Docker containers, images, and volumes
+2. Fresh Deployment: Used the faster docker-compose method for development
+3. Database Initialization: Properly seeded the database with test users
+4. Auth Controller Fixes: Simplified the auth controller to work with the current database schema
+
+### ✅ Current Status - WORKING
+
+#### Backend API: ✅ Working
+
+- Endpoint: [http://192.168.0.148:3001/api/auth/sign-in](http://192.168.0.148:3001/api/auth/sign-in)
+- Authentication: Successfully returns JWT tokens
+- CORS: Properly configured for network access
+- Rate Limiting: Active and working
+
+#### Frontend: ✅ Working
+
+- URL: [http://192.168.0.148:3002](http://192.168.0.148:3002)
+- Login Pages: Role-based login pages functional
+- UI: Beautiful responsive design with role-specific icons
+
+Test Credentials Available:
+👨‍⚕️ Doctor:         <doctor@healthapp.com> / password123
+🏥 Admin:          <admin@healthapp.com> / password123
+👩‍⚕️ HSP:            <hsp@healthapp.com> / password123
+🏥 Hospital Admin: <hospital.admin@healthapp.com> / password123
+🧑‍🦽 Patient:        <patient@healthapp.com> / password123
+
+📋 Current Access URLs
+
+- Frontend: [http://192.168.0.148:3002](http://192.168.0.148:3002)
+- Backend API: [http://192.168.0.148:3001](http://192.168.0.148:3001)
+- Health Check: [http://192.168.0.148:3001/health](http://192.168.0.148:3001/health)
+- pgAdmin: [http://192.168.0.148:5050](http://192.168.0.148:5050) (<admin@healthapp.com> / admin123)
+
+The application is now fully functional and ready for use! Users can access the role-based login pages and authenticate successfully with the test credentials provided.
+
+## ● ✅ Fixed Major Issues in deploy-stack.sh
+
+### 🔧 Key Improvements Made
+
+#### ✅ Fixed API URL Issue
+
+- Changed NEXT_PUBLIC_API_URL: http://${IP_ADDRESS}:3001 → http://${IP_ADDRESS}:3001/api
+- This should resolve the authentication 404 errors
+
+#### ✅ Added Proper Service Health Checks
+
+- Backend: Added health check with 30s start period
+- Frontend: Added health check with 45s start period
+- PostgreSQL & Redis: Already had health checks
+
+#### ✅ Improved Service Startup Order
+
+- FIRST: PostgreSQL database (120s timeout, FAIL if not ready)
+- SECOND: Redis cache (60s timeout, warn if not ready)
+- THIRD: Backend API (180s timeout, FAIL if not ready + health check)
+- FOURTH: Frontend (120s timeout, warn if not ready + health check)
+
+#### ✅ Enhanced Database Initialization
+
+- Automatically installs PostgreSQL UUID extension
+- Waits 30s for backend container to be fully ready
+- More robust error handling
+
+### 🚀 Expected Benefits
+
+- No more networking issues: Services start in proper dependency order
+- No more authentication errors: Frontend now uses correct /api endpoints
+- Faster troubleshooting: Script fails fast if critical services don't start
+- Automatic database setup: UUID extension installed automatically
+- Better reliability: Health checks ensure services are actually ready
+
+### 📋 Summary of Changes
+
+The script now ensures:
+
+1. PostgreSQL starts first and is healthy
+2. Redis starts second
+3. Backend starts third and can connect to database
+4. Frontend starts last with correct API endpoint configuration
+5. Database is automatically initialized with proper extensions
+
+When you rebuild and redeploy with the updated script, the authentication and startup issues should be resolved!
+
+## ● ✅ Windows Scripts Updated Successfully
+
+I've successfully updated both Windows scripts with the same critical fixes applied to the Linux version:
+
+### 🔧 deploy-dev.bat (Windows Batch Script) - Key Updates
+
+#### ✅ Added PostgreSQL UUID Extension Installation
+
+- Added step 5 to install uuid-ossp extension
+- Prevents migration failures due to missing UUID functions
+
+#### ✅ Added Proper Service Startup Order
+
+- Added step 8 to wait for backend API to be ready before proceeding
+- 180-second timeout with proper error handling
+
+#### ✅ Fixed Port Numbers
+
+- Corrected frontend URL from localhost:3000 → localhost:3002
+- Fixed all references to use correct port mappings
+
+#### ✅ Improved Health Checks
+
+- Backend: Uses /health endpoint instead of /api/health
+- Frontend: Tests correct port (3002)
+
+### 🔧 deploy-prod.ps1 (Windows PowerShell Script) - Key Updates
+
+#### ✅ Enhanced Service Startup Sequence
+
+- FIRST: PostgreSQL database (120s timeout, FAIL if not ready)
+- SECOND: Redis cache (60s timeout, warn if not ready)
+- THIRD: Backend API (180s timeout with health check, FAIL if not ready)
+
+#### ✅ Added PostgreSQL UUID Extension Installation - Part 2
+
+- Automatically installs uuid-ossp extension in production
+- Robust error handling with fallback
+
+#### ✅ Production Health Checks
+
+- Tests production domain health endpoints
+- Proper timeout and error handling
+
+### 🔧 docker/docker-stack.yml (Production Stack) - Key Updates
+
+#### ✅ Fixed API URL Configuration
+
+- Added /api suffix: [https://api.healthcareapp.com/api](https://api.healthcareapp.com/api)
+- Ensures consistent API routing
+
+#### ✅ Corrected Health Check Endpoints
+
+- Backend: Uses /health instead of /api/health
+- Frontend: Uses root path instead of /api/health
+
+### 📋 Summary of Consistency
+
+All scripts now have identical functionality across platforms:
+
+| Feature                  | Linux (.sh) | Windows (.bat) | Windows (.ps1) |
+|--------------------------|-------------|----------------|----------------|
+| ✅ Service startup order  | ✓           | ✓              | ✓              |
+| ✅ UUID extension install | ✓           | ✓              | ✓              |
+| ✅ Proper health checks   | ✓           | ✓              | ✓              |
+| ✅ Correct port numbers   | ✓           | ✓              | ✓              |
+| ✅ API endpoint fixes     | ✓           | ✓              | ✓              |
+| ✅ Robust error handling  | ✓           | ✓              | ✓              |
+
+Your Windows deployments will now have the same reliability and proper service dependencies as the Linux version!
+
