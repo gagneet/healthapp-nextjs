@@ -1,19 +1,19 @@
 // src/config/constants.js
 export const USER_CATEGORIES = {
-  DOCTOR: 'doctor',
-  PATIENT: 'patient',
-  CARE_TAKER: 'care_taker',
-  HSP: 'hsp',
-  PROVIDER: 'provider',
-  ADMIN: 'admin',
+  SYSTEM_ADMIN: 'SYSTEM_ADMIN',
+  HOSPITAL_ADMIN: 'HOSPITAL_ADMIN',
+  DOCTOR: 'DOCTOR',
+  HSP: 'HSP',
+  PATIENT: 'PATIENT',
+  CAREGIVER: 'CAREGIVER',
 };
 
 export const ACCOUNT_STATUS = {
-  PENDING_VERIFICATION: 'pending_verification',
-  ACTIVE: 'active',
-  INACTIVE: 'inactive',
-  DEACTIVATED: 'deactivated',
-  SUSPENDED: 'suspended',
+  PENDING_VERIFICATION: 'PENDING_VERIFICATION',
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
+  DEACTIVATED: 'DEACTIVATED',
+  SUSPENDED: 'SUSPENDED',
 };
 
 export const EVENT_TYPES = {
