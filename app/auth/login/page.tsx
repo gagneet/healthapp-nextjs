@@ -245,11 +245,11 @@ export default function LoginPage() {
         {/* Demo Credentials */}
         {process.env.NODE_ENV === 'development' && (
           <div className="bg-yellow-50 border border-yellow-200 rounded-md p-4">
-            <h3 className="text-sm font-medium text-yellow-800 mb-2">Demo Credentials</h3>
+            <h3 className="text-sm font-medium text-yellow-800 mb-2">Test Credentials</h3>
             <div className="text-xs text-yellow-700">
-              <p><strong>Doctor:</strong> doctor@demo.com / password123</p>
-              <p><strong>Patient:</strong> patient@demo.com / password123</p>
-              <p><strong>Admin:</strong> admin@demo.com / password123</p>
+              <p><strong>Doctor:</strong> doctor@healthapp.com / password123</p>
+              <p><strong>Patient:</strong> patient@healthapp.com / password123</p>
+              <p><strong>Admin:</strong> admin@healthapp.com / password123</p>
             </div>
           </div>
         )}

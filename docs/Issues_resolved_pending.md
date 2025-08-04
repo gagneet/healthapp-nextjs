@@ -934,3 +934,70 @@ The main issues have been identified and mostly resolved. The frontend and all s
 - A different approach to database connection management
 
 Your identification of the NODE_ENV issue was spot-on and was a key factor in getting the frontend working!
+
+## ✅ Issue Resolution Summary for backend container crashes
+
+### Root Cause: The backend was failing because
+
+1. Logger Import Error: Server.js was importing logger as default export, but the logger middleware exports it as a named export
+2. Database Connection Timing: PostgreSQL wasn't fully ready when the backend tried to connect immediately
+
+### Solutions Implemented
+
+#### Fixed Logger Import
+
+- Changed import logger from './middleware/logger.js' to import { logger } from './middleware/logger.js'
+
+#### Added Connection Retry Logic
+
+- Implemented robust database connection retry mechanism in server.js:connectWithRetry() with:
+
+- 15 retry attempts (configurable)
+- 3-second delay between retries (configurable)
+- Proper error logging for each attempt
+
+#### Enhanced Docker Configuration
+
+- Improved PostgreSQL health checks and service restart policies
+
+### 🚀 Current Status
+
+All containers are now running successfully:
+
+- ✅ PostgreSQL: Running and healthy
+- ✅ Redis: Running and healthy
+- ✅ Backend: Running and healthy (responding to /health)
+- ✅ Frontend: Running
+- ✅ pgAdmin: Running
+
+The database connection retry logic ensures the backend waits for PostgreSQL to be fully ready before attempting to connect, preventing the startup failures you were experiencing.
+
+## Issue resolution for the dashboard not displayed after login
+
+● The issue was a response format mismatch between backend and frontend. The backend returns:
+
+```javascript
+  {
+    "status": true,
+    "payload": {
+      "data": {
+        "users": { "userId": { "basic_info": {...} } },
+        "tokens": { "accessToken": "...", "refreshToken": "..." }
+      }
+    }
+  }
+```
+
+But the frontend expected:
+
+```javascript
+  {
+    "success": true,
+    "data": {
+      "user": {...},
+      "token": "..."
+    }
+  }
+```
+
+I've fixed the authAPI.login function in /lib/api.ts:50-91 to transform the backend response format to match what the frontend auth context expects. Now when you log in, the authentication state should be properly set and redirect to the doctor dashboard at /dashboard/doctor.
