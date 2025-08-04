@@ -35,10 +35,14 @@ const DIAGNOSIS_OPTIONS = [
 ]
 
 const TREATMENT_OPTIONS = [
-  'ACE Inhibitors Therapy', 'Beta Blockers', 'Iron Supplementation', 
-  'Physical Therapy', 'Dietary Modifications', 'Anticonvulsants',
-  'Blood Transfusion', 'Antibiotics - Penicillin', 'Cardiac Surgery',
-  'Speech Therapy', 'Regular Monitoring', 'Emergency Stabilization'
+  'Medication',
+  'Surgery',
+  'Hip Replacement',
+  'Chemotherapy',
+  'Diet & Nutrition',
+  'Exercise & Lifestyle',
+  'Saline',
+  'Other'
 ]
 
 const CONDITIONS_OPTIONS = [
@@ -84,11 +88,7 @@ export default function AddPatientPage() {
     
     // Patient Info
     patientName: '',
-    dateOfBirth: {
-      day: '',
-      month: '',
-      year: ''
-    },
+    dateOfBirth: '',
     gender: '',
     patientId: '',
     address: '',
@@ -269,14 +269,22 @@ export default function AddPatientPage() {
     setFormData(prev => ({ ...prev, patientName: value }))
   }
 
-  const handleDateChange = (field: 'day' | 'month' | 'year', value: string) => {
+  const handleDateChange = (value: string) => {
     setFormData(prev => ({
       ...prev,
-      dateOfBirth: {
-        ...prev.dateOfBirth,
-        [field]: value
-      }
+      dateOfBirth: value
     }))
+  }
+
+  const formatDateForInput = (dateString: string) => {
+    if (!dateString) return ''
+    const date = new Date(dateString)
+    return date.toISOString().split('T')[0]
+  }
+
+  const handleDateInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value
+    handleDateChange(value)
   }
 
   const handleSymptomToggle = (symptom: string) => {
@@ -353,8 +361,8 @@ export default function AddPatientPage() {
       newErrors.patientName = 'Patient name is required'
     }
     
-    if (!formData.dateOfBirth.day || !formData.dateOfBirth.month) {
-      newErrors.dateOfBirth = 'Day and month are required for date of birth'
+    if (!formData.dateOfBirth) {
+      newErrors.dateOfBirth = 'Date of birth is required'
     }
     
     if (formData.symptoms.length === 0) {
@@ -383,11 +391,16 @@ export default function AddPatientPage() {
     setIsSubmitting(true)
     
     try {
-      // Process date of birth - if year is not provided, use 25 years ago
-      let year = formData.dateOfBirth.year
-      if (!year) {
+      // Process date of birth - if only day/month provided, use current year minus 25
+      let processedDateOfBirth = formData.dateOfBirth
+      if (formData.dateOfBirth && !formData.dateOfBirth.includes('-')) {
+        // Handle partial date input if needed
         const currentYear = new Date().getFullYear()
-        year = (currentYear - 25).toString()
+        processedDateOfBirth = `${currentYear - 25}-01-01`
+      } else if (!formData.dateOfBirth) {
+        // Default to 25 years ago if no date provided
+        const currentYear = new Date().getFullYear()
+        processedDateOfBirth = `${currentYear - 25}-01-01`
       }
       
       // Split patient name into components
@@ -397,49 +410,65 @@ export default function AddPatientPage() {
       const middleName = nameParts.length > 2 ? nameParts.slice(1, -1).join(' ') : nameParts[1] || ''
       
       const patientData = {
-        // Contact info
-        mobileNumber: formData.mobileNumber,
-        email: formData.email,
-        countryCode: formData.countryCode,
-        
-        // Name
-        firstName,
-        middleName,
-        lastName,
-        
-        // Basic info
-        dateOfBirth: `${year}-${formData.dateOfBirth.month.padStart(2, '0')}-${formData.dateOfBirth.day.padStart(2, '0')}`,
+        // User fields (snake_case for backend)
+        first_name: firstName,
+        middle_name: middleName || '',
+        last_name: lastName,
+        email: formData.email || '',
+        mobile_number: formData.mobileNumber,
         gender: formData.gender,
-        address: formData.address,
+        date_of_birth: processedDateOfBirth,
+        street: formData.address || '',
+        city: '',
+        state: '',
+        country: formData.countryCode || 'US',
         
-        // Physical
-        heightCm: parseFloat(formData.heightCm) || null,
-        weightKg: parseFloat(formData.weightKg) || null,
+        // Patient-specific fields
+        height_cm: parseFloat(formData.heightCm) || null,
+        weight_kg: parseFloat(formData.weightKg) || null,
+        allergies: formData.allergies || [],
+        chronic_conditions: formData.comorbidities || [],
+        emergency_contact: null,
+        insurance_info: null,
         
-        // Medical
-        comorbidities: formData.comorbidities,
-        allergies: formData.allergies,
-        
-        // Treatment plan
+        // Additional clinical data (for care plan creation)
         symptoms: formData.symptoms,
         diagnosis: formData.diagnosis,
         treatment: formData.treatment,
-        clinicalNotes: formData.clinicalNotes,
+        clinical_notes: formData.clinicalNotes,
         condition: formData.condition,
         severity: formData.severity
       }
       
-      // Mock API call - replace with actual API
       console.log('Submitting patient data:', patientData)
       
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 2000))
+      // Make actual API call
+      const response = await fetch('/api/patients', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('authToken')}` // Add auth token
+        },
+        body: JSON.stringify(patientData)
+      })
+      
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.payload?.error?.message || 'Failed to create patient')
+      }
+      
+      const result = await response.json()
+      console.log('Patient created successfully:', result)
+      
+      // Show success message
+      alert('Patient created successfully!')
       
       // Redirect to patient list
       router.push('/dashboard/doctor/patients')
       
     } catch (error) {
       console.error('Error creating patient:', error)
+      alert(`Error creating patient: ${error.message || 'Please try again'}`)
     } finally {
       setIsSubmitting(false)
     }
@@ -597,48 +626,18 @@ export default function AddPatientPage() {
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Date of Birth <span className="text-red-500">*</span>
               </label>
-              <div className="grid grid-cols-3 gap-2">
-                <div>
-                  <select
-                    value={formData.dateOfBirth.day}
-                    onChange={(e) => handleDateChange('day', e.target.value)}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  >
-                    <option value="">Day</option>
-                    {Array.from({length: 31}, (_, i) => i + 1).map(day => (
-                      <option key={day} value={day.toString()}>{day}</option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <select
-                    value={formData.dateOfBirth.month}
-                    onChange={(e) => handleDateChange('month', e.target.value)}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  >
-                    <option value="">Month</option>
-                    {[
-                      'January', 'February', 'March', 'April', 'May', 'June',
-                      'July', 'August', 'September', 'October', 'November', 'December'
-                    ].map((month, index) => (
-                      <option key={month} value={(index + 1).toString()}>{month}</option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <input
-                    type="number"
-                    value={formData.dateOfBirth.year}
-                    onChange={(e) => handleDateChange('year', e.target.value)}
-                    placeholder="Year (optional)"
-                    min="1900"
-                    max={new Date().getFullYear()}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
-                </div>
+              <div className="relative">
+                <input
+                  type="date"
+                  value={formatDateForInput(formData.dateOfBirth)}
+                  onChange={handleDateInput}
+                  max={new Date().toISOString().split('T')[0]}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+                <CalendarDaysIcon className="absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
               </div>
               <p className="text-xs text-gray-500 mt-1">
-                If year is not provided, it will default to 25 years ago from the selected day and month
+                Select date using the calendar widget or enter manually
               </p>
               {errors.dateOfBirth && (
                 <p className="text-red-500 text-sm mt-1">{errors.dateOfBirth}</p>

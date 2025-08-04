@@ -11,7 +11,7 @@ import {
   CalendarIcon,
   BeakerIcon,
   HeartIcon,
-  PillIcon,
+  Square3Stack3DIcon,
 } from '@heroicons/react/24/outline'
 import { Patient } from '@/types/dashboard'
 import { formatDate, formatDateTime, getInitials, getAdherenceColor } from '@/lib/utils'
@@ -121,7 +121,7 @@ const upcomingAppointments = [
 function getTypeIcon(type: string) {
   switch (type) {
     case 'medication':
-      return PillIcon
+      return Square3Stack3DIcon
     case 'vital':
       return HeartIcon
     case 'appointment':
@@ -316,7 +316,7 @@ export default function PatientQuickView({ isOpen, setIsOpen, patient }: Patient
                       {/* Current Medications */}
                       <div className="mb-6">
                         <h3 className="text-sm font-medium text-gray-700 mb-3 flex items-center">
-                          <PillIcon className="h-4 w-4 mr-2" />
+                          <Square3Stack3DIcon className="h-4 w-4 mr-2" />
                           Current Medications
                         </h3>
                         <div className="space-y-2">

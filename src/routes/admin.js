@@ -15,12 +15,34 @@ router.get('/doctors',
   adminController.getDoctors
 );
 
+// Medicine Management
 // GET /api/admin/medicines
 router.get('/medicines',
   authenticate,
   authorize(USER_CATEGORIES.ADMIN),
   validateQuery(schemas.pagination),
   adminController.getMedicines
+);
+
+// POST /api/admin/medicines
+router.post('/medicines',
+  authenticate,
+  authorize(USER_CATEGORIES.ADMIN),
+  adminController.createMedicine
+);
+
+// PUT /api/admin/medicines/:medicineId
+router.put('/medicines/:medicineId',
+  authenticate,
+  authorize(USER_CATEGORIES.ADMIN),
+  adminController.updateMedicine
+);
+
+// DELETE /api/admin/medicines/:medicineId
+router.delete('/medicines/:medicineId',
+  authenticate,
+  authorize(USER_CATEGORIES.ADMIN),
+  adminController.deleteMedicine
 );
 
 // GET /api/admin/stats
