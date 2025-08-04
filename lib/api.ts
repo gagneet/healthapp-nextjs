@@ -57,10 +57,12 @@ export const authAPI = {
       
       // Transform backend response format to frontend format
       if (backendResponse.status && backendResponse.payload?.data) {
+        logger.debug('Full payload.data:', backendResponse.payload.data)
         const userData = backendResponse.payload.data.users
         const tokens = backendResponse.payload.data.tokens
         logger.debug('Extracted userData:', userData)
         logger.debug('Extracted tokens:', tokens)
+        logger.debug('Available data keys:', Object.keys(backendResponse.payload.data))
         
         // Extract user data from the nested structure
         const userKey = Object.keys(userData)[0]
