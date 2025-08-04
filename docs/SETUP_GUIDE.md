@@ -4,15 +4,15 @@ This comprehensive guide will walk you through setting up the Healthcare Managem
 
 ## 📋 Table of Contents
 
-1. [Prerequisites](#prerequisites)
-2. [Initial Setup](#initial-setup)
-3. [Environment Configuration](#environment-configuration)
-4. [Database Setup](#database-setup)
-5. [External Services Configuration](#external-services-configuration)
-6. [Deployment](#deployment)
-7. [Post-Deployment Verification](#post-deployment-verification)
-8. [Troubleshooting](#troubleshooting)
-9. [Production Deployment](#production-deployment)
+1. [Prerequisites](#-prerequisites)
+2. [Initial Setup](#-initial-setup)
+3. [Environment Configuration](#️-environment-configuration)
+4. [Database Setup](#-database-setup)
+5. [External Services Configuration](#-external-services-configuration)
+6. [Deployment](#-deployment)
+7. [Post-Deployment Verification](#-post-deployment-verification)
+8. [Troubleshooting](#-troubleshooting)
+9. [Production Deployment](#-production-deployment)
 
 ## 🔧 Prerequisites
 
@@ -81,6 +81,7 @@ cp .env.production.example .env.production
 #### 🔐 Security Settings
 
 **JWT Configuration:**
+
 ```bash
 # Generate a secure JWT secret (run this command):
 node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
@@ -92,6 +93,7 @@ JWT_REFRESH_EXPIRES_IN=7d
 ```
 
 **Password Requirements:**
+
 - Minimum 12 characters
 - Include uppercase, lowercase, numbers, and symbols
 - Different passwords for each environment
@@ -216,7 +218,7 @@ AWS_S3_PUBLIC_URL=https://your-bucket.s3.amazonaws.com
 
 ### 📧 Email Service (SMTP)
 
-**Option 1: Gmail (Development)**
+#### **Option 1: Gmail (Development)**
 
 1. Enable 2-Factor Authentication on Gmail
 2. Generate App Password:
@@ -233,7 +235,7 @@ EMAIL_PASS=your-16-char-app-password        # App password, not regular password
 EMAIL_FROM="Healthcare App <your-email@gmail.com>"
 ```
 
-**Option 2: SendGrid (Production)**
+#### **Option 2: SendGrid (Production)**
 
 1. Sign up at [https://sendgrid.com](https://sendgrid.com)
 2. Create API Key: Settings → API Keys → Create API Key
@@ -335,6 +337,7 @@ chmod +x scripts/deploy-dev.sh
 ```
 
 **What the script does:**
+
 1. ✅ **Environment Check**: Verifies Docker is running
 2. ✅ **Directory Setup**: Creates necessary folders
 3. ✅ **Image Building**: Builds Docker images
@@ -403,10 +406,10 @@ docker-compose -f docker/docker-compose.dev.yml ps
 
 | Service | URL | Credentials |
 |---------|-----|-------------|
-| **Frontend** | http://localhost:3002 | Create account via UI |
-| **Backend API** | http://localhost:3001/api | API endpoints |
-| **pgAdmin** | http://localhost:5050 | admin@healthapp.com / admin123 |
-| **API Docs** | http://localhost:3001/api-docs | Auto-generated docs |
+| **Frontend** | [http://localhost:3002](http://localhost:3002) | Create account via UI |
+| **Backend API** | [http://localhost:3001/api(http://localhost:3001/api)] | API endpoints |
+| **pgAdmin** | [http://localhost:5050](http://localhost:5050) | admin @healthapp.com / admin123 |
+| **API Docs** | [http://localhost:3001/api-docs](http://localhost:3001/api-docs) | Auto-generated docs |
 
 ### Database Connection Test
 
@@ -446,6 +449,7 @@ curl -I http://localhost:3002
 **Error:** `Port 3000 is already in use`
 
 **Solution:**
+
 ```bash
 # Find what's using the port
 lsof -ti:3000
@@ -461,6 +465,7 @@ ports:
 **Error:** `ECONNREFUSED ::1:5432`
 
 **Solutions:**
+
 ```bash
 # Check if PostgreSQL container is running
 docker-compose -f docker/docker-compose.dev.yml ps postgres
@@ -480,6 +485,7 @@ docker-compose -f docker/docker-compose.dev.yml exec backend env | grep POSTGRES
 **Error:** `Migration failed`
 
 **Solutions:**
+
 ```bash
 # Reset database (DEVELOPMENT ONLY!)
 docker-compose -f docker/docker-compose.dev.yml down -v
@@ -497,6 +503,7 @@ docker-compose -f docker/docker-compose.dev.yml exec backend npm run seed
 **Error:** `Module not found` or build failures
 
 **Solutions:**
+
 ```bash
 # Clear Node modules and reinstall
 rm -rf node_modules package-lock.json
@@ -544,7 +551,7 @@ docker system prune -f
 
 ### Environment Setup
 
-1. **Create production environment file:**
+#### **Create production environment file:**
 
 ```bash
 # .env.production
@@ -578,7 +585,7 @@ SENTRY_DSN=https://your-production-sentry-dsn
 LOG_LEVEL=info
 ```
 
-2. **Production deployment:**
+#### **Production deployment:**
 
 ```bash
 # Deploy to production
@@ -627,7 +634,7 @@ docker-compose -f docker/docker-compose.dev.yml logs -f   # View logs
 
 ### File Structure Reference
 
-```
+```text
 healthapp-nextjs/
 ├── 📁 src/                     # Backend source code
 │   ├── 📁 config/             # Configuration files
@@ -684,10 +691,10 @@ chmod +x scripts/deploy-dev.sh && ./scripts/deploy-dev.sh
 If you encounter issues:
 
 1. **Check logs:** `docker-compose -f docker/docker-compose.dev.yml logs [service]`
-2. **Reset environment:** `./scripts/reset-dev.sh` 
+2. **Reset environment:** `./scripts/reset-dev.sh`
 3. **Review this guide:** Most issues are covered in the troubleshooting section
 4. **Create an issue:** Document the error and steps to reproduce
 
 ---
 
-*Last updated: January 2025*
+## *Last updated: July 2025*

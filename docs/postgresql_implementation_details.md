@@ -101,41 +101,43 @@ docker run postgres:15
 -e POSTGRES_HOST_AUTH_METHOD=trust    # Allows passwordless local connections
 ```
 
-# 2. Backend container starts and connects
+#### Backend container starts and connects
+
+```bash
 docker run backend
 -e POSTGRES_HOST=postgres             # Connects to service named "postgres"
 -e POSTGRES_DB=healthapp_dev          # Uses database "healthapp_dev"
 -e POSTGRES_USER=healthapp_user       # Uses user "healthapp_user"
 -e POSTGRES_PASSWORD=healthapp_pass   # Uses password "healthapp_pass"
+```
 
-3. What POSTGRES_HOST_AUTH_METHOD=trust Does:
+#### What POSTGRES_HOST_AUTH_METHOD=trust Does
 
-This is a PostgreSQL-specific setting that allows connections without password verification for local connections. It's commonly used in development but should 
-NOT be used in production.
+This is a PostgreSQL-specific setting that allows connections without password verification for local connections. It's commonly used in development but should NOT be used in production.
 
 - ✅ Development: Safe because containers are isolated
 - ❌ Production: Security risk - always require passwords
 
-🔍 Why It Was Still Working:
+#### 🔍 Why It Was Still Working
 
 Even with mismatched passwords, the system was working because of POSTGRES_HOST_AUTH_METHOD=trust which bypasses password authentication for local connections
 within the Docker network.
 
-🎯 Best Practice Configuration:
+#### 🎯 Best Practice Configuration
 
 Here's the correct, secure setup:
 
-For Development (Docker):
+##### For Development (Docker)
 
-# docker-compose.dev.yml - PostgreSQL service
+- docker-compose.dev.yml - PostgreSQL service
 postgres:
 environment:
 POSTGRES_DB: healthapp_dev
 POSTGRES_USER: healthapp_user
 POSTGRES_PASSWORD: healthapp_pass
-# Remove POSTGRES_HOST_AUTH_METHOD=trust for better security
+- Remove POSTGRES_HOST_AUTH_METHOD=trust for better security
 
-# docker-compose.dev.yml - Backend service  
+- docker-compose.dev.yml - Backend service  
 backend:
 environment:
 POSTGRES_HOST: postgres          # Docker service name
@@ -146,29 +148,28 @@ POSTGRES_PASSWORD: healthapp_pass  # Must match above!
 
 For Local Development (No Docker):
 
-# .env.development - for running locally
+- .env.development - for running locally
 POSTGRES_HOST=localhost             # Local PostgreSQL
 POSTGRES_PORT=5432                 # Standard PostgreSQL port
 POSTGRES_DB=healthapp_dev
 POSTGRES_USER=healthapp_user
 POSTGRES_PASSWORD=your_local_db_password
 
-For Production:
+##### For Production
 
-# .env.production - secure production values
+- .env.production - secure production values
 POSTGRES_HOST=your-production-db-host.com
 POSTGRES_PORT=5432
 POSTGRES_DB=healthapp_prod
 POSTGRES_USER=healthapp_prod_user
 POSTGRES_PASSWORD=ultra-secure-production-password-123!@#
-# Never use POSTGRES_HOST_AUTH_METHOD=trust in production!
+- Never use POSTGRES_HOST_AUTH_METHOD=trust in production!
 
-✅ Summary - How Database Connection Works:
+## ✅ Summary - How Database Connection Works
 
 1. PostgreSQL Container creates database + user with specified password
 2. Backend Container reads environment variables from Docker Compose
-3. Sequelize uses these variables to connect: new Sequelize({ database: POSTGRES_DB, username: POSTGRES_USER, password: POSTGRES_PASSWORD, host: POSTGRES_HOST 
-})
+3. Sequelize uses these variables to connect: new Sequelize({ database: POSTGRES_DB, username: POSTGRES_USER, password: POSTGRES_PASSWORD, host: POSTGRES_HOST })
 4. Connection Success because all values match!
 
 The key is ensuring all password values match across all configuration files for the same environment.
