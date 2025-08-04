@@ -69,12 +69,35 @@ app.use('*', (req, res) => {
   });
 });
 
+// Database connection with retry logic
+const connectWithRetry = async () => {
+  const maxRetries = parseInt(process.env.DB_CONNECT_MAX_RETRIES) || 10;
+  const retryDelay = parseInt(process.env.DB_CONNECT_RETRY_DELAY) || 5000;
+  
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      await sequelize.authenticate();
+      logger.info('Database connection established successfully');
+      return;
+    } catch (error) {
+      logger.warn(`Database connection attempt ${attempt}/${maxRetries} failed: ${error.message}`);
+      
+      if (attempt === maxRetries) {
+        logger.error('Max database connection retries reached');
+        throw error;
+      }
+      
+      logger.info(`Retrying database connection in ${retryDelay}ms...`);
+      await new Promise(resolve => setTimeout(resolve, retryDelay));
+    }
+  }
+};
+
 // Start server
 const startServer = async () => {
   try {
-    // Test database connection
-    await sequelize.authenticate();
-    logger.info('Database connection established successfully');
+    // Connect to database with retry logic
+    await connectWithRetry();
     
     // Sync database (use with caution in production)
     if (process.env.NODE_ENV === 'development') {
