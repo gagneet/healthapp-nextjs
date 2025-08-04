@@ -1,6 +1,9 @@
 // src/models/Doctor.js - Doctor Model for Licensed Physicians (PostgreSQL)
 import { DataTypes } from 'sequelize';
+import { createLogger } from '../middleware/logger.js';
 import { PROVIDER_CAPABILITIES } from '../config/enums.js';
+
+const logger = createLogger(import.meta.url);
 
 export default (sequelize) => {
   const Doctor = sequelize.define('Doctor', {
@@ -312,7 +315,7 @@ export default (sequelize) => {
       
       afterUpdate: (doctor, options) => {
         if (doctor.changed('is_verified')) {
-          console.log(`Doctor ${doctor.id} verification status changed to: ${doctor.is_verified}`);
+          logger.info(`Doctor ${doctor.id} verification status changed to: ${doctor.is_verified}`);
         }
       }
     }

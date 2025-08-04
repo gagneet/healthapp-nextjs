@@ -1,5 +1,8 @@
 // src/models/HealthcareProvider.js - Healthcare Provider Model
 import { DataTypes } from 'sequelize';
+import { createLogger } from '../middleware/logger.js';
+
+const logger = createLogger(import.meta.url);
 
 export default (sequelize) => {
   const HealthcareProvider = sequelize.define('HealthcareProvider', {
@@ -262,7 +265,7 @@ export default (sequelize) => {
       afterUpdate: (provider, options) => {
         // Log verification status changes for audit
         if (provider.changed('is_verified')) {
-          console.log(`Provider ${provider.id} verification status changed to: ${provider.is_verified}`);
+          logger.info(`Provider ${provider.id} verification status changed to: ${provider.is_verified}`);
         }
       }
     },

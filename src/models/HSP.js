@@ -1,6 +1,9 @@
 // src/models/HSP.js - Healthcare Support Personnel Model (Nurses, PAs, etc.)
 import { DataTypes } from 'sequelize';
+import { createLogger } from '../middleware/logger.js';
 import { HSP_TYPES, PROVIDER_CAPABILITIES } from '../config/enums.js';
+
+const logger = createLogger(import.meta.url);
 
 export default (sequelize) => {
   const HSP = sequelize.define('HSP', {
@@ -324,7 +327,7 @@ export default (sequelize) => {
       
       afterUpdate: (hsp, options) => {
         if (hsp.changed('is_verified')) {
-          console.log(`HSP ${hsp.id} verification status changed to: ${hsp.is_verified}`);
+          logger.info(`HSP ${hsp.id} verification status changed to: ${hsp.is_verified}`);
         }
       }
     }

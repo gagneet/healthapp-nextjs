@@ -1,5 +1,8 @@
 // src/models/MedicalDevice.js - Medical Devices and Remote Monitoring Integration
 import { DataTypes } from 'sequelize';
+import { createLogger } from '../middleware/logger.js';
+
+const logger = createLogger(import.meta.url);
 
 export default (sequelize) => {
   const MedicalDevice = sequelize.define('MedicalDevice', {
@@ -542,7 +545,7 @@ export default (sequelize) => {
     // Create alert if battery is low
     if (this.battery_level <= 20 && this.notification_preferences.low_battery) {
       // Trigger low battery notification
-      console.log(`Low battery alert for device ${this.device_name}: ${this.battery_level}%`);
+      logger.warn(`Low battery alert for device ${this.device_name}: ${this.battery_level}%`);
     }
     
     return this.save();

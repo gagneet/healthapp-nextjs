@@ -50,10 +50,41 @@ export const authAPI = {
   login: async (credentials: LoginCredentials): Promise<AuthResponse> => {
     try {
       const response = await api.post('/auth/sign-in', credentials)
-      return response.data
+      const backendResponse = response.data
+      
+      // Transform backend response format to frontend format
+      if (backendResponse.status && backendResponse.payload?.data) {
+        const userData = backendResponse.payload.data.users
+        const tokens = backendResponse.payload.data.tokens
+        
+        // Extract user data from the nested structure
+        const userKey = Object.keys(userData)[0]
+        const user = userData[userKey]?.basic_info
+        
+        if (user && tokens?.accessToken) {
+          return {
+            success: true,
+            data: {
+              user: user,
+              token: tokens.accessToken,
+              expires_in: 86400 // 24 hours default
+            },
+            message: backendResponse.payload.message || 'Login successful'
+          }
+        }
+      }
+      
+      return {
+        success: false,
+        message: backendResponse.payload?.message || 'Login failed'
+      }
     } catch (error) {
       if (axios.isAxiosError(error) && error.response) {
-        return error.response.data
+        const backendError = error.response.data
+        return {
+          success: false,
+          message: backendError.payload?.message || 'Login failed'
+        }
       }
       throw new Error('Network error occurred')
     }

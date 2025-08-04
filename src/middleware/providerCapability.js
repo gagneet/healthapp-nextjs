@@ -1,5 +1,8 @@
 // src/middleware/providerCapability.js - Validate provider capabilities
+import { createLogger } from './logger.js';
 import { PROVIDER_CAPABILITIES, USER_ROLES } from '../config/enums.js';
+
+const logger = createLogger(import.meta.url);
 
 /**
  * Middleware to validate that a provider has the required capability to perform an action
@@ -90,7 +93,7 @@ export const requireCapability = (requiredCapability) => {
       
       next();
     } catch (error) {
-      console.error('Provider capability validation error:', error);
+      logger.error('Provider capability validation error:', error);
       res.status(500).json({
         success: false,
         message: 'Error validating provider capabilities'
@@ -141,7 +144,7 @@ export const requirePrescriptionCapability = async (req, res, next) => {
       
       next();
     } catch (error) {
-      console.error('Prescription capability validation error:', error);
+      logger.error('Prescription capability validation error:', error);
       res.status(500).json({
         success: false,
         message: 'Error validating prescription capabilities'
@@ -237,7 +240,7 @@ export const requirePatientAccess = (patientIdParam = 'patientId') => {
       req.patient = patient;
       next();
     } catch (error) {
-      console.error('Patient access validation error:', error);
+      logger.error('Patient access validation error:', error);
       res.status(500).json({
         success: false,
         message: 'Error validating patient access'
@@ -271,7 +274,7 @@ export const requireOrganizationAccess = async (req, res, next) => {
     
     next();
   } catch (error) {
-    console.error('Organization access validation error:', error);
+    logger.error('Organization access validation error:', error);
     res.status(500).json({
       success: false,
       message: 'Error validating organization access'

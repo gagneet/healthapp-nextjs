@@ -1,5 +1,8 @@
 // src/models/Patient.js - Enhanced Patient Model for PostgreSQL
 import { DataTypes } from 'sequelize';
+import { createLogger } from '../middleware/logger.js';
+
+const logger = createLogger(import.meta.url);
 
 export default (sequelize) => {
   const Patient = sequelize.define('Patient', {
@@ -354,7 +357,7 @@ export default (sequelize) => {
         // Update risk level based on conditions
         if (patient.changed('medical_history') || patient.changed('allergies')) {
           // Trigger risk assessment recalculation (implement as needed)
-          console.log(`Risk assessment needed for patient ${patient.id}`);
+          logger.info(`Risk assessment needed for patient ${patient.id}`);
         }
       }
     },

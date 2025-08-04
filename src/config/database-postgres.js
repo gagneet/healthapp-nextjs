@@ -1,6 +1,9 @@
 // src/config/database-postgres.js
 import { Sequelize } from 'sequelize';
 import { config } from 'dotenv';
+import { createLogger } from '../middleware/logger.js';
+
+const logger = createLogger(import.meta.url);
 
 config();
 
@@ -22,7 +25,7 @@ const sequelize = new Sequelize({
   
   timezone: 'UTC',
   
-  logging: process.env.NODE_ENV === 'development' ? console.log : false,
+  logging: process.env.NODE_ENV === 'development' ? (msg) => logger.debug(msg) : false,
   
   pool: {
     max: parseInt(process.env.DB_POOL_MAX) || 20,
@@ -50,15 +53,15 @@ const sequelize = new Sequelize({
 const testConnection = async () => {
   try {
     await sequelize.authenticate();
-    console.log('✅ PostgreSQL connection established successfully');
+    logger.info('✅ PostgreSQL connection established successfully');
     
     // Log connection details for debugging (without sensitive info)
-    console.log(`📊 Database: ${sequelize.config.database}`);
-    console.log(`🌐 Host: ${sequelize.config.host}:${sequelize.config.port}`);
-    console.log(`👤 User: ${sequelize.config.username}`);
-    console.log(`🔧 Environment: ${process.env.NODE_ENV || 'development'}`);
+    logger.info(`📊 Database: ${sequelize.config.database}`);
+    logger.info(`🌐 Host: ${sequelize.config.host}:${sequelize.config.port}`);
+    logger.info(`👤 User: ${sequelize.config.username}`);
+    logger.info(`🔧 Environment: ${process.env.NODE_ENV || 'development'}`);
   } catch (error) {
-    console.error('❌ Unable to connect to PostgreSQL database:', error.message);
+    logger.error('❌ Unable to connect to PostgreSQL database:', error.message);
     throw error;
   }
 };

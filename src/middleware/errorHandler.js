@@ -1,5 +1,7 @@
 // src/middleware/errorHandler.js
-import logger from './logger.js';
+import { createLogger } from './logger.js';
+
+const logger = createLogger(import.meta.url);
 
 const errorHandler = (err, req, res, next) => {
   let error = { ...err };

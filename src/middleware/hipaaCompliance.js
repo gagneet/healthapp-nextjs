@@ -1,6 +1,9 @@
 // src/middleware/hipaaCompliance.js - HIPAA Compliance Framework
 import crypto from 'crypto';
+import { createLogger } from './logger.js';
 import { USER_ROLES } from '../config/enums.js';
+
+const logger = createLogger(import.meta.url);
 
 /**
  * HIPAA Audit Log Entry
@@ -33,7 +36,7 @@ export class HIPAAAuditLog {
       
       next();
     } catch (error) {
-      console.error('HIPAA audit logging error:', error);
+      logger.error('HIPAA audit logging error:', error);
       // Don't block the request due to audit logging failure
       next();
     }
@@ -61,7 +64,7 @@ export class HIPAAAuditLog {
 
       await HIPAAAuditLog.storeAuditEntry(auditEntry);
     } catch (error) {
-      console.error('HIPAA access denial logging error:', error);
+      logger.error('HIPAA access denial logging error:', error);
     }
   }
 
@@ -88,7 +91,7 @@ export class HIPAAAuditLog {
       });
     } else {
       // Fallback to secure file logging
-      console.log('HIPAA AUDIT:', JSON.stringify(entry));
+      logger.info('HIPAA AUDIT:', JSON.stringify(entry));
     }
   }
 
@@ -151,7 +154,7 @@ export const requireHIPAAConsent = async (req, res, next) => {
 
     next();
   } catch (error) {
-    console.error('HIPAA consent check error:', error);
+    logger.error('HIPAA consent check error:', error);
     await HIPAAAuditLog.logAccessDenied(req, 'HIPAA consent verification error');
     res.status(500).json({
       success: false,
@@ -212,7 +215,7 @@ export const requireBAA = async (req, res, next) => {
     req.organization = organization;
     next();
   } catch (error) {
-    console.error('BAA validation error:', error);
+    logger.error('BAA validation error:', error);
     await HIPAAAuditLog.logAccessDenied(req, 'BAA validation error');
     res.status(500).json({
       success: false,
@@ -240,7 +243,7 @@ export const enforceDataMinimization = (allowedFields = []) => {
         
         originalSend.call(this, JSON.stringify(data));
       } catch (error) {
-        console.error('Data minimization error:', error);
+        logger.error('Data minimization error:', error);
         originalSend.call(this, data);
       }
     };
@@ -386,7 +389,7 @@ export class BreachDetection {
       req.securityAlerts = alerts;
       next();
     } catch (error) {
-      console.error('Breach detection error:', error);
+      logger.error('Breach detection error:', error);
       next(); // Don't block on security check errors
     }
   }
@@ -427,7 +430,7 @@ export class BreachDetection {
   
   static async logSecurityAlert(alertData) {
     // Log security alerts to secure monitoring system
-    console.warn('HIPAA SECURITY ALERT:', JSON.stringify(alertData, null, 2));
+    logger.warn('HIPAA SECURITY ALERT:', JSON.stringify(alertData, null, 2));
     
     // In production, integrate with security monitoring tools
     // like Splunk, ELK stack, or specialized HIPAA monitoring solutions
@@ -452,13 +455,13 @@ export class DataRetention {
         await DataRetention.archiveOldData(dataType, policy);
       }
     } catch (error) {
-      console.error('Data retention policy enforcement error:', error);
+      logger.error('Data retention policy enforcement error:', error);
     }
   }
   
   static async archiveOldData(dataType, policy) {
     // Implementation would move old data to secure archive storage
-    console.log(`Enforcing retention policy for ${dataType}:`, policy);
+    logger.info(`Enforcing retention policy for ${dataType}:`, policy);
   }
 }
 

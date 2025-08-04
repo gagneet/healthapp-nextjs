@@ -1,5 +1,8 @@
 // src/models/AuditLog.js - HIPAA Audit Log Model
 import { DataTypes } from 'sequelize';
+import { createLogger } from '../middleware/logger.js';
+
+const logger = createLogger(import.meta.url);
 
 export default (sequelize) => {
   const AuditLog = sequelize.define('AuditLog', {
@@ -340,7 +343,7 @@ export default (sequelize) => {
       const { PHIEncryption } = require('../middleware/hipaaCompliance.js');
       return PHIEncryption.decrypt(this.encrypted_data);
     } catch (error) {
-      console.error('Error decrypting audit data:', error);
+      logger.error('Error decrypting audit data:', error);
       return null;
     }
   };

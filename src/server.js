@@ -11,10 +11,11 @@ import { sequelize } from './models/index.js';
 import routes from './routes/index.js';
 import errorHandler from './middleware/errorHandler.js';
 import rateLimiter from './middleware/rateLimiter.js';
-import { logger } from './middleware/logger.js';
+import { createLogger } from './middleware/logger.js';
 
 config();
 
+const logger = createLogger(import.meta.url);
 const app = express();
 const PORT = process.env.PORT || 3000;
 
