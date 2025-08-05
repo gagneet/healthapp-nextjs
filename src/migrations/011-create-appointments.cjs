@@ -3,18 +3,32 @@
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
-    // Create appointment status enum
-    await queryInterface.sequelize.query(`
-      CREATE TYPE appointment_status AS ENUM (
-        'SCHEDULED',
-        'CONFIRMED',
-        'IN_PROGRESS',
-        'COMPLETED',
-        'CANCELLED',
-        'NO_SHOW',
-        'RESCHEDULED'
-      );
-    `);
+    // Check if table already exists
+    const tableExists = await queryInterface.tableExists('appointments');
+    if (tableExists) {
+      console.log('Table appointments already exists, skipping creation');
+      return;
+    }
+
+    // Create appointment status enum with error handling
+    try {
+      await queryInterface.sequelize.query(`
+        CREATE TYPE appointment_status AS ENUM (
+          'SCHEDULED',
+          'CONFIRMED',
+          'IN_PROGRESS',
+          'COMPLETED',
+          'CANCELLED',
+          'NO_SHOW',
+          'RESCHEDULED'
+        );
+      `);
+    } catch (error) {
+      if (!error.message.includes('already exists')) {
+        throw error;
+      }
+      console.log('Enum appointment_status already exists, skipping');
+    }
 
     // Create appointments table
     await queryInterface.createTable('appointments', {
@@ -109,23 +123,24 @@ module.exports = {
       },
     });
 
-    // Add indexes as per schema
-    await queryInterface.addIndex('appointments', ['patient_id'], { 
-      where: { deleted_at: null },
-      name: 'idx_appointments_patient'
-    });
-    await queryInterface.addIndex('appointments', ['provider_id'], { 
-      where: { deleted_at: null },
-      name: 'idx_appointments_provider'
-    });
-    await queryInterface.addIndex('appointments', ['start_time'], { 
-      where: { deleted_at: null },
-      name: 'idx_appointments_time'
-    });
-    await queryInterface.addIndex('appointments', ['status'], { 
-      where: { deleted_at: null },
-      name: 'idx_appointments_status'
-    });
+    // Add indexes with error handling
+    const indexes = [
+      { fields: ['patient_id'], options: { where: { deleted_at: null }, name: 'idx_appointments_patient' } },
+      { fields: ['provider_id'], options: { where: { deleted_at: null }, name: 'idx_appointments_provider' } },
+      { fields: ['start_time'], options: { where: { deleted_at: null }, name: 'idx_appointments_time' } },
+      { fields: ['status'], options: { where: { deleted_at: null }, name: 'idx_appointments_status' } }
+    ];
+
+    for (const index of indexes) {
+      try {
+        await queryInterface.addIndex('appointments', index.fields, index.options);
+      } catch (error) {
+        if (!error.message.includes('already exists')) {
+          throw error;
+        }
+        console.log(`Index ${index.options.name} already exists, skipping`);
+      }
+    }
   },
 
   down: async (queryInterface, Sequelize) => {

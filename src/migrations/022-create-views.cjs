@@ -3,9 +3,10 @@
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
-    // Active care plans with patient and provider info
-    await queryInterface.sequelize.query(`
-      CREATE VIEW v_active_care_plans AS
+    // Active care plans with patient and provider info (with idempotent check)
+    try {
+      await queryInterface.sequelize.query(`
+        CREATE VIEW v_active_care_plans AS
       SELECT 
           cp.id,
           cp.name,
@@ -39,11 +40,18 @@ module.exports = {
           AND hp.deleted_at IS NULL 
           AND u_provider.deleted_at IS NULL
           AND cp.status = 'ACTIVE';
-    `);
+      `);
+    } catch (error) {
+      if (!error.message.includes('already exists')) {
+        throw error;
+      }
+      console.log('View v_active_care_plans already exists, skipping');
+    }
 
-    // Patient adherence summary
-    await queryInterface.sequelize.query(`
-      CREATE VIEW v_patient_adherence_summary AS
+    // Patient adherence summary (with idempotent check)
+    try {
+      await queryInterface.sequelize.query(`
+        CREATE VIEW v_patient_adherence_summary AS
       SELECT 
           p.id as patient_id,
           u.first_name,
@@ -71,11 +79,18 @@ module.exports = {
       WHERE p.deleted_at IS NULL 
           AND u.deleted_at IS NULL
       GROUP BY p.id, u.first_name, u.last_name, u.email, p.created_at, p.updated_at;
-    `);
+      `);
+    } catch (error) {
+      if (!error.message.includes('already exists')) {
+        throw error;
+      }
+      console.log('View v_patient_adherence_summary already exists, skipping');
+    }
 
-    // Upcoming scheduled events
-    await queryInterface.sequelize.query(`
-      CREATE VIEW v_upcoming_events AS
+    // Upcoming scheduled events (with idempotent check)
+    try {
+      await queryInterface.sequelize.query(`
+        CREATE VIEW v_upcoming_events AS
       SELECT 
           se.id,
           se.event_type,
@@ -107,7 +122,13 @@ module.exports = {
           AND se.scheduled_for >= NOW()
           AND se.status IN ('SCHEDULED', 'PENDING')
       ORDER BY se.scheduled_for ASC;
-    `);
+      `);
+    } catch (error) {
+      if (!error.message.includes('already exists')) {
+        throw error;
+      }
+      console.log('View v_upcoming_events already exists, skipping');
+    }
   },
 
   down: async (queryInterface, Sequelize) => {

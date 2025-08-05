@@ -3,6 +3,13 @@
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
+    // Check if table already exists
+    const tableExists = await queryInterface.tableExists('care_plan_templates');
+    if (tableExists) {
+      console.log('Table care_plan_templates already exists, skipping creation');
+      return;
+    }
+
     // Create care_plan_templates table
     await queryInterface.createTable('care_plan_templates', {
       id: {
@@ -111,23 +118,45 @@ module.exports = {
       },
     });
 
-    // Add indexes
-    await queryInterface.addIndex('care_plan_templates', ['name']);
-    await queryInterface.addIndex('care_plan_templates', ['created_by']);
-    await queryInterface.addIndex('care_plan_templates', ['organization_id']);
-    await queryInterface.addIndex('care_plan_templates', ['is_public']);
-    await queryInterface.addIndex('care_plan_templates', ['is_approved']);
+    // Add indexes with error handling
+    const indexes = [
+      { fields: ['name'], name: 'idx_templates_name' },
+      { fields: ['created_by'], name: 'idx_templates_created_by' },
+      { fields: ['organization_id'], name: 'idx_templates_organization_id' },
+      { fields: ['is_public'], name: 'idx_templates_is_public' },
+      { fields: ['is_approved'], name: 'idx_templates_is_approved' }
+    ];
 
-    // GIN indexes for array fields
-    await queryInterface.sequelize.query(`
-      CREATE INDEX idx_templates_conditions ON care_plan_templates USING GIN(conditions);
-    `);
-    await queryInterface.sequelize.query(`
-      CREATE INDEX idx_templates_specialties ON care_plan_templates USING GIN(specialties);
-    `);
-    await queryInterface.sequelize.query(`
-      CREATE INDEX idx_templates_tags ON care_plan_templates USING GIN(tags);
-    `);
+    for (const index of indexes) {
+      try {
+        await queryInterface.addIndex('care_plan_templates', index.fields, { name: index.name });
+      } catch (error) {
+        if (!error.message.includes('already exists')) {
+          throw error;
+        }
+        console.log(`Index ${index.name} already exists, skipping`);
+      }
+    }
+
+    // GIN indexes for array fields with error handling
+    const ginIndexes = [
+      { name: 'idx_templates_conditions', field: 'conditions' },
+      { name: 'idx_templates_specialties', field: 'specialties' },
+      { name: 'idx_templates_tags', field: 'tags' }
+    ];
+
+    for (const ginIndex of ginIndexes) {
+      try {
+        await queryInterface.sequelize.query(`
+          CREATE INDEX ${ginIndex.name} ON care_plan_templates USING GIN(${ginIndex.field});
+        `);
+      } catch (error) {
+        if (!error.message.includes('already exists')) {
+          throw error;
+        }
+        console.log(`GIN Index ${ginIndex.name} already exists, skipping`);
+      }
+    }
   },
 
   down: async (queryInterface, Sequelize) => {

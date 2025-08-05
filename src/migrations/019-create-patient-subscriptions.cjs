@@ -3,16 +3,30 @@
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
-    // Create subscription status enum
-    await queryInterface.sequelize.query(`
-      CREATE TYPE subscription_status AS ENUM (
-        'ACTIVE',
-        'INACTIVE', 
-        'PAST_DUE',
-        'CANCELLED',
-        'EXPIRED'
-      );
-    `);
+    // Check if table already exists
+    const tableExists = await queryInterface.tableExists('patient_subscriptions');
+    if (tableExists) {
+      console.log('Table patient_subscriptions already exists, skipping creation');
+      return;
+    }
+
+    // Create subscription status enum with error handling
+    try {
+      await queryInterface.sequelize.query(`
+        CREATE TYPE subscription_status AS ENUM (
+          'ACTIVE',
+          'INACTIVE', 
+          'PAST_DUE',
+          'CANCELLED',
+          'EXPIRED'
+        );
+      `);
+    } catch (error) {
+      if (!error.message.includes('already exists')) {
+        throw error;
+      }
+      console.log('Enum subscription_status already exists, skipping');
+    }
 
     // Create patient_subscriptions table
     await queryInterface.createTable('patient_subscriptions', {
@@ -89,13 +103,26 @@ module.exports = {
       },
     });
 
-    // Add indexes
-    await queryInterface.addIndex('patient_subscriptions', ['patient_id']);
-    await queryInterface.addIndex('patient_subscriptions', ['provider_id']);
-    await queryInterface.addIndex('patient_subscriptions', ['service_plan_id']);
-    await queryInterface.addIndex('patient_subscriptions', ['status']);
-    await queryInterface.addIndex('patient_subscriptions', ['next_billing_date']);
-    await queryInterface.addIndex('patient_subscriptions', ['patient_id', 'provider_id']);
+    // Add indexes with error handling
+    const indexes = [
+      { fields: ['patient_id'], name: 'idx_patient_subscriptions_patient' },
+      { fields: ['provider_id'], name: 'idx_patient_subscriptions_provider' },
+      { fields: ['service_plan_id'], name: 'idx_patient_subscriptions_plan' },
+      { fields: ['status'], name: 'idx_patient_subscriptions_status' },
+      { fields: ['next_billing_date'], name: 'idx_patient_subscriptions_billing' },
+      { fields: ['patient_id', 'provider_id'], name: 'idx_patient_subscriptions_composite' }
+    ];
+
+    for (const index of indexes) {
+      try {
+        await queryInterface.addIndex('patient_subscriptions', index.fields, { name: index.name });
+      } catch (error) {
+        if (!error.message.includes('already exists')) {
+          throw error;
+        }
+        console.log(`Index ${index.name} already exists, skipping`);
+      }
+    }
   },
 
   down: async (queryInterface, Sequelize) => {

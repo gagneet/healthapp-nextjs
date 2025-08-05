@@ -3,32 +3,51 @@
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
-    // First create the enum types
-    await queryInterface.sequelize.query(`
-      CREATE TYPE user_role AS ENUM (
-        'SYSTEM_ADMIN',
-        'HOSPITAL_ADMIN', 
-        'DOCTOR',
-        'HSP',
-        'NURSE',
-        'PATIENT',
-        'CAREGIVER'
-      );
-    `);
+    // Check if users table already exists
+    const tableExists = await queryInterface.tableExists('users');
+    if (tableExists) {
+      console.log('ℹ️ Table "users" already exists, skipping creation');
+      return;
+    }
 
-    await queryInterface.sequelize.query(`
-      CREATE TYPE account_status AS ENUM (
-        'PENDING_VERIFICATION',
-        'ACTIVE',
-        'INACTIVE', 
-        'SUSPENDED',
-        'DEACTIVATED'
-      );
-    `);
+    // First create the enum types (with idempotent checks)
+    try {
+      await queryInterface.sequelize.query(`
+        CREATE TYPE user_role AS ENUM (
+          'SYSTEM_ADMIN',
+          'HOSPITAL_ADMIN', 
+          'DOCTOR',
+          'HSP',
+          'NURSE',
+          'PATIENT',
+          'CAREGIVER'
+        );
+      `);
+    } catch (error) {
+      if (!error.message.includes('already exists')) throw error;
+    }
 
-    await queryInterface.sequelize.query(`
-      CREATE TYPE gender AS ENUM ('MALE', 'FEMALE', 'OTHER', 'PREFER_NOT_TO_SAY');
-    `);
+    try {
+      await queryInterface.sequelize.query(`
+        CREATE TYPE account_status AS ENUM (
+          'PENDING_VERIFICATION',
+          'ACTIVE',
+          'INACTIVE', 
+          'SUSPENDED',
+          'DEACTIVATED'
+        );
+      `);
+    } catch (error) {
+      if (!error.message.includes('already exists')) throw error;
+    }
+
+    try {
+      await queryInterface.sequelize.query(`
+        CREATE TYPE gender AS ENUM ('MALE', 'FEMALE', 'OTHER', 'PREFER_NOT_TO_SAY');
+      `);
+    } catch (error) {
+      if (!error.message.includes('already exists')) throw error;
+    }
 
     // Create users table
     await queryInterface.createTable('users', {
@@ -154,29 +173,52 @@ module.exports = {
       },
     });
 
-    // Add indexes as per schema
-    await queryInterface.addIndex('users', ['email'], { 
-      where: { deleted_at: null },
-      name: 'idx_users_email'
-    });
-    await queryInterface.addIndex('users', ['role'], { 
-      where: { deleted_at: null },
-      name: 'idx_users_role'
-    });
-    await queryInterface.addIndex('users', ['account_status'], { 
-      where: { deleted_at: null },
-      name: 'idx_users_status'
-    });
-    await queryInterface.addIndex('users', ['phone'], { 
-      where: { deleted_at: null },
-      name: 'idx_users_phone'
-    });
+    // Add indexes as per schema (with idempotent checks)
+    try {
+      await queryInterface.addIndex('users', ['email'], { 
+        where: { deleted_at: null },
+        name: 'idx_users_email'
+      });
+    } catch (error) {
+      if (!error.message.includes('already exists')) throw error;
+    }
+    
+    try {
+      await queryInterface.addIndex('users', ['role'], { 
+        where: { deleted_at: null },
+        name: 'idx_users_role'
+      });
+    } catch (error) {
+      if (!error.message.includes('already exists')) throw error;
+    }
+    
+    try {
+      await queryInterface.addIndex('users', ['account_status'], { 
+        where: { deleted_at: null },
+        name: 'idx_users_status'
+      });
+    } catch (error) {
+      if (!error.message.includes('already exists')) throw error;
+    }
+    
+    try {
+      await queryInterface.addIndex('users', ['phone'], { 
+        where: { deleted_at: null },
+        name: 'idx_users_phone'
+      });
+    } catch (error) {
+      if (!error.message.includes('already exists')) throw error;
+    }
 
-    // Full-text search index
-    await queryInterface.sequelize.query(`
-      CREATE INDEX idx_users_name_search ON users 
-      USING GIN(to_tsvector('english', COALESCE(first_name, '') || ' ' || COALESCE(last_name, '')));
-    `);
+    // Full-text search index (with idempotent check)
+    try {
+      await queryInterface.sequelize.query(`
+        CREATE INDEX idx_users_name_search ON users 
+        USING GIN(to_tsvector('english', COALESCE(first_name, '') || ' ' || COALESCE(last_name, '')));
+      `);
+    } catch (error) {
+      if (!error.message.includes('already exists')) throw error;
+    }
   },
 
   down: async (queryInterface, Sequelize) => {

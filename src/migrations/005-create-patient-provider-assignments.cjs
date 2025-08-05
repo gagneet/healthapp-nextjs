@@ -3,6 +3,13 @@
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
+    // Check if table already exists
+    const tableExists = await queryInterface.tableExists('patient_provider_assignments');
+    if (tableExists) {
+      console.log('Table patient_provider_assignments already exists, skipping creation');
+      return;
+    }
+
     // Create patient_provider_assignments table
     await queryInterface.createTable('patient_provider_assignments', {
       id: {
@@ -52,26 +59,56 @@ module.exports = {
       },
     });
 
-    // Add unique constraint
-    await queryInterface.addConstraint('patient_provider_assignments', {
-      fields: ['patient_id', 'provider_id', 'role', 'ended_at'],
-      type: 'unique',
-      name: 'unique_patient_provider_role_assignment'
-    });
+    // Add unique constraint with error handling
+    try {
+      await queryInterface.addConstraint('patient_provider_assignments', {
+        fields: ['patient_id', 'provider_id', 'role', 'ended_at'],
+        type: 'unique',
+        name: 'unique_patient_provider_role_assignment'
+      });
+    } catch (error) {
+      if (!error.message.includes('already exists') && !error.message.includes('duplicate key')) {
+        throw error;
+      }
+      console.log('Constraint unique_patient_provider_role_assignment already exists, skipping');
+    }
 
-    // Add indexes as per schema
-    await queryInterface.addIndex('patient_provider_assignments', ['patient_id'], { 
-      where: { ended_at: null },
-      name: 'idx_assignments_patient'
-    });
-    await queryInterface.addIndex('patient_provider_assignments', ['provider_id'], { 
-      where: { ended_at: null },
-      name: 'idx_assignments_provider'
-    });
-    await queryInterface.addIndex('patient_provider_assignments', ['patient_id', 'provider_id'], { 
-      where: { ended_at: null },
-      name: 'idx_assignments_active'
-    });
+    // Add indexes with error handling
+    try {
+      await queryInterface.addIndex('patient_provider_assignments', ['patient_id'], { 
+        where: { ended_at: null },
+        name: 'idx_assignments_patient'
+      });
+    } catch (error) {
+      if (!error.message.includes('already exists')) {
+        throw error;
+      }
+      console.log('Index idx_assignments_patient already exists, skipping');
+    }
+
+    try {
+      await queryInterface.addIndex('patient_provider_assignments', ['provider_id'], { 
+        where: { ended_at: null },
+        name: 'idx_assignments_provider'
+      });
+    } catch (error) {
+      if (!error.message.includes('already exists')) {
+        throw error;
+      }
+      console.log('Index idx_assignments_provider already exists, skipping');
+    }
+
+    try {
+      await queryInterface.addIndex('patient_provider_assignments', ['patient_id', 'provider_id'], { 
+        where: { ended_at: null },
+        name: 'idx_assignments_active'
+      });
+    } catch (error) {
+      if (!error.message.includes('already exists')) {
+        throw error;
+      }
+      console.log('Index idx_assignments_active already exists, skipping');
+    }
   },
 
   down: async (queryInterface, Sequelize) => {

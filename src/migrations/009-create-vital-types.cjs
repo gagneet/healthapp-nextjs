@@ -3,6 +3,13 @@
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
+    // Check if table already exists
+    const tableExists = await queryInterface.tableExists('vital_types');
+    if (tableExists) {
+      console.log('Table vital_types already exists, skipping creation');
+      return;
+    }
+
     // Create vital_types table
     await queryInterface.createTable('vital_types', {
       id: {
@@ -48,11 +55,36 @@ module.exports = {
       },
     });
 
-    // Add indexes
-    await queryInterface.addIndex('vital_types', ['name']);
-    await queryInterface.addIndex('vital_types', ['unit']);
+    // Add indexes with error handling
+    try {
+      await queryInterface.addIndex('vital_types', ['name'], { name: 'idx_vital_types_name' });
+    } catch (error) {
+      if (!error.message.includes('already exists')) {
+        throw error;
+      }
+      console.log('Index idx_vital_types_name already exists, skipping');
+    }
 
-    // Insert default vital types from schema
+    try {
+      await queryInterface.addIndex('vital_types', ['unit'], { name: 'idx_vital_types_unit' });
+    } catch (error) {
+      if (!error.message.includes('already exists')) {
+        throw error;
+      }
+      console.log('Index idx_vital_types_unit already exists, skipping');
+    }
+
+    // Insert default vital types from schema with existence check
+    const existingRecords = await queryInterface.sequelize.query(
+      'SELECT COUNT(*) as count FROM vital_types',
+      { type: queryInterface.sequelize.QueryTypes.SELECT }
+    );
+    
+    if (existingRecords[0].count > 0) {
+      console.log('Vital types data already exists, skipping seeding');
+      return;
+    }
+
     await queryInterface.bulkInsert('vital_types', [
       {
         id: Sequelize.literal('uuid_generate_v4()'),

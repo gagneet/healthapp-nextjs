@@ -3,6 +3,13 @@
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
+    // Check if table already exists
+    const tableExists = await queryInterface.tableExists('healthcare_providers');
+    if (tableExists) {
+      console.log('Table healthcare_providers already exists, skipping creation');
+      return;
+    }
+
     // Create healthcare_providers table
     await queryInterface.createTable('healthcare_providers', {
       id: {
@@ -103,23 +110,53 @@ module.exports = {
       },
     });
 
-    // Add indexes as per schema
-    await queryInterface.addIndex('healthcare_providers', ['user_id'], { 
-      name: 'idx_providers_user_id'
-    });
-    await queryInterface.addIndex('healthcare_providers', ['organization_id'], { 
-      where: { deleted_at: null },
-      name: 'idx_providers_org'
-    });
-    await queryInterface.addIndex('healthcare_providers', ['is_verified'], { 
-      where: { deleted_at: null },
-      name: 'idx_providers_verified'
-    });
+    // Add indexes with error handling
+    try {
+      await queryInterface.addIndex('healthcare_providers', ['user_id'], { 
+        name: 'idx_providers_user_id'
+      });
+    } catch (error) {
+      if (!error.message.includes('already exists')) {
+        throw error;
+      }
+      console.log('Index idx_providers_user_id already exists, skipping');
+    }
 
-    // GIN index for specialties array
-    await queryInterface.sequelize.query(`
-      CREATE INDEX idx_providers_specialties ON healthcare_providers USING GIN(specialties);
-    `);
+    try {
+      await queryInterface.addIndex('healthcare_providers', ['organization_id'], { 
+        where: { deleted_at: null },
+        name: 'idx_providers_org'
+      });
+    } catch (error) {
+      if (!error.message.includes('already exists')) {
+        throw error;
+      }
+      console.log('Index idx_providers_org already exists, skipping');
+    }
+
+    try {
+      await queryInterface.addIndex('healthcare_providers', ['is_verified'], { 
+        where: { deleted_at: null },
+        name: 'idx_providers_verified'
+      });
+    } catch (error) {
+      if (!error.message.includes('already exists')) {
+        throw error;
+      }
+      console.log('Index idx_providers_verified already exists, skipping');
+    }
+
+    // GIN index for specialties array with error handling
+    try {
+      await queryInterface.sequelize.query(`
+        CREATE INDEX idx_providers_specialties ON healthcare_providers USING GIN(specialties);
+      `);
+    } catch (error) {
+      if (!error.message.includes('already exists')) {
+        throw error;
+      }
+      console.log('Index idx_providers_specialties already exists, skipping');
+    }
   },
 
   down: async (queryInterface, Sequelize) => {

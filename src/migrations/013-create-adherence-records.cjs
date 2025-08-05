@@ -3,6 +3,13 @@
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
+    // Check if table already exists
+    const tableExists = await queryInterface.tableExists('adherence_records');
+    if (tableExists) {
+      console.log('Table adherence_records already exists, skipping creation');
+      return;
+    }
+
     // Create adherence_records table
     await queryInterface.createTable('adherence_records', {
       id: {
@@ -84,19 +91,24 @@ module.exports = {
       },
     });
 
-    // Add indexes as per schema
-    await queryInterface.addIndex('adherence_records', ['patient_id'], { 
-      name: 'idx_adherence_patient'
-    });
-    await queryInterface.addIndex('adherence_records', ['due_at'], { 
-      name: 'idx_adherence_due_at'
-    });
-    await queryInterface.addIndex('adherence_records', ['adherence_type'], { 
-      name: 'idx_adherence_type'
-    });
-    await queryInterface.addIndex('adherence_records', ['is_completed', 'is_missed'], { 
-      name: 'idx_adherence_status'
-    });
+    // Add indexes with error handling
+    const indexes = [
+      { fields: ['patient_id'], name: 'idx_adherence_patient' },
+      { fields: ['due_at'], name: 'idx_adherence_due_at' },
+      { fields: ['adherence_type'], name: 'idx_adherence_type' },
+      { fields: ['is_completed', 'is_missed'], name: 'idx_adherence_status' }
+    ];
+
+    for (const index of indexes) {
+      try {
+        await queryInterface.addIndex('adherence_records', index.fields, { name: index.name });
+      } catch (error) {
+        if (!error.message.includes('already exists')) {
+          throw error;
+        }
+        console.log(`Index ${index.name} already exists, skipping`);
+      }
+    }
   },
 
   down: async (queryInterface, Sequelize) => {

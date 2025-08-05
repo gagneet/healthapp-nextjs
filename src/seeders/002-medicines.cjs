@@ -3,6 +3,19 @@
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
+    console.log('💊 Seeding medicines database (idempotent)...');
+    
+    // Check if medicines already exist
+    const existingMedicines = await queryInterface.sequelize.query(
+      "SELECT COUNT(*) as count FROM medicines",
+      { type: Sequelize.QueryTypes.SELECT }
+    );
+    
+    if (existingMedicines[0].count > 0) {
+      console.log(`ℹ️ Medicines already exist (${existingMedicines[0].count} found), skipping seeding`);
+      return;
+    }
+
     await queryInterface.bulkInsert('medicines', [
       {
         id: 1,
@@ -46,7 +59,9 @@ module.exports = {
         created_at: new Date(),
         updated_at: new Date(),
       }
-    ], {});
+    ], { ignoreDuplicates: true });
+    
+    console.log('✅ Medicines database seeded successfully');
   },
 
   down: async (queryInterface, Sequelize) => {

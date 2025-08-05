@@ -6,6 +6,19 @@ const { v4: uuidv4 } = require('uuid');
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
+    console.log('👥 Seeding test users (idempotent)...');
+    
+    // Check if test users already exist
+    const existingUsers = await queryInterface.sequelize.query(
+      "SELECT email FROM users WHERE email IN ('admin@healthapp.com', 'doctor@healthapp.com', 'hsp@healthapp.com', 'hospital.admin@healthapp.com', 'patient@healthapp.com')",
+      { type: Sequelize.QueryTypes.SELECT }
+    );
+    
+    if (existingUsers.length > 0) {
+      console.log(`ℹ️ Test users already exist (${existingUsers.length} found), skipping seeding`);
+      return;
+    }
+
     // Hash passwords for test users
     const passwordHash = await bcrypt.hash('password123', 10);
 
@@ -73,9 +86,9 @@ module.exports = {
       }
     ];
 
-    await queryInterface.bulkInsert('users', users, {});
+    await queryInterface.bulkInsert('users', users, { ignoreDuplicates: true });
 
-    console.log('✅ Created test users:');
+    console.log('✅ Test users seeded successfully:');
     console.log('📧 admin@healthapp.com (SYSTEM_ADMIN) - password: password123');
     console.log('📧 doctor@healthapp.com (DOCTOR) - password: password123');
     console.log('📧 hsp@healthapp.com (HSP) - password: password123');

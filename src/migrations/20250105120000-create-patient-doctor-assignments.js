@@ -3,6 +3,13 @@
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
+    // Check if patient_doctor_assignments table already exists
+    const tableExists = await queryInterface.tableExists('patient_doctor_assignments');
+    if (tableExists) {
+      console.log('ℹ️ Table "patient_doctor_assignments" already exists, skipping creation');
+      return;
+    }
+
     await queryInterface.createTable('patient_doctor_assignments', {
       id: {
         type: Sequelize.UUID,
@@ -165,62 +172,88 @@ module.exports = {
       }
     });
 
-    // Add indexes
-    await queryInterface.addIndex('patient_doctor_assignments', ['patient_id']);
-    await queryInterface.addIndex('patient_doctor_assignments', ['doctor_id']);
-    await queryInterface.addIndex('patient_doctor_assignments', ['assignment_type']);
-    await queryInterface.addIndex('patient_doctor_assignments', ['is_active']);
-    await queryInterface.addIndex('patient_doctor_assignments', ['patient_consent_status']);
+    // Add indexes (with idempotent checks)
+    const indexes = [
+      { fields: ['patient_id'], name: 'idx_patient_doctor_assignments_patient_id' },
+      { fields: ['doctor_id'], name: 'idx_patient_doctor_assignments_doctor_id' },
+      { fields: ['assignment_type'], name: 'idx_patient_doctor_assignments_assignment_type' },
+      { fields: ['is_active'], name: 'idx_patient_doctor_assignments_is_active' },
+      { fields: ['patient_consent_status'], name: 'idx_patient_doctor_assignments_consent_status' }
+    ];
+
+    for (const index of indexes) {
+      try {
+        await queryInterface.addIndex('patient_doctor_assignments', index.fields, { name: index.name });
+      } catch (error) {
+        if (!error.message.includes('already exists')) throw error;
+      }
+    }
     
-    // Add unique constraint for primary doctor per patient
-    await queryInterface.addIndex('patient_doctor_assignments', {
-      fields: ['patient_id', 'assignment_type'],
-      unique: true,
-      where: {
-        assignment_type: 'primary',
-        is_active: true
-      },
-      name: 'unique_primary_doctor_per_patient'
-    });
+    // Add unique constraint for primary doctor per patient (with idempotent check)
+    try {
+      await queryInterface.addIndex('patient_doctor_assignments', {
+        fields: ['patient_id', 'assignment_type'],
+        unique: true,
+        where: {
+          assignment_type: 'primary',
+          is_active: true
+        },
+        name: 'unique_primary_doctor_per_patient'
+      });
+    } catch (error) {
+      if (!error.message.includes('already exists')) throw error;
+    }
 
-    // Add check constraints
-    await queryInterface.addConstraint('patient_doctor_assignments', {
-      fields: ['assignment_type'],
-      type: 'check',
-      where: {
-        assignment_type: {
-          [Sequelize.Op.in]: ['primary', 'specialist', 'substitute', 'transferred']
-        }
-      },
-      name: 'valid_assignment_type'
-    });
-
-    await queryInterface.addConstraint('patient_doctor_assignments', {
-      fields: ['patient_consent_status'],
-      type: 'check',
-      where: {
-        patient_consent_status: {
-          [Sequelize.Op.in]: ['not_required', 'pending', 'granted', 'denied', 'expired']
-        }
-      },
-      name: 'valid_consent_status'
-    });
-
-    await queryInterface.addConstraint('patient_doctor_assignments', {
-      fields: ['consent_method'],
-      type: 'check',
-      where: {
-        [Sequelize.Op.or]: [
-          { consent_method: null },
-          {
-            consent_method: {
-              [Sequelize.Op.in]: ['sms_otp', 'email_otp', 'in_person', 'phone_call']
-            }
+    // Add check constraints (with idempotent checks)
+    try {
+      await queryInterface.addConstraint('patient_doctor_assignments', {
+        fields: ['assignment_type'],
+        type: 'check',
+        where: {
+          assignment_type: {
+            [Sequelize.Op.in]: ['primary', 'specialist', 'substitute', 'transferred']
           }
-        ]
-      },
-      name: 'valid_consent_method'
-    });
+        },
+        name: 'valid_assignment_type'
+      });
+    } catch (error) {
+      if (!error.message.includes('already exists')) throw error;
+    }
+
+    try {
+      await queryInterface.addConstraint('patient_doctor_assignments', {
+        fields: ['patient_consent_status'],
+        type: 'check',
+        where: {
+          patient_consent_status: {
+            [Sequelize.Op.in]: ['not_required', 'pending', 'granted', 'denied', 'expired']
+          }
+        },
+        name: 'valid_consent_status'
+      });
+    } catch (error) {
+      if (!error.message.includes('already exists')) throw error;
+    }
+
+    try {
+      await queryInterface.addConstraint('patient_doctor_assignments', {
+        fields: ['consent_method'],
+        type: 'check',
+        where: {
+          [Sequelize.Op.or]: [
+            { consent_method: null },
+            {
+              consent_method: {
+                [Sequelize.Op.in]: ['sms_otp', 'email_otp', 'in_person', 'phone_call']
+              }
+            }
+          ]
+        },
+        name: 'valid_consent_method'
+      });
+    } catch (error) {
+      if (!error.message.includes('already exists')) throw error;
+    }
   },
 
   down: async (queryInterface, Sequelize) => {

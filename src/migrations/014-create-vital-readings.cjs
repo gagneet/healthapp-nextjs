@@ -3,6 +3,13 @@
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
+    // Check if table already exists
+    const tableExists = await queryInterface.tableExists('vital_readings');
+    if (tableExists) {
+      console.log('Table vital_readings already exists, skipping creation');
+      return;
+    }
+
     // Create vital_readings table
     await queryInterface.createTable('vital_readings', {
       id: {
@@ -96,13 +103,26 @@ module.exports = {
       },
     });
 
-    // Add indexes
-    await queryInterface.addIndex('vital_readings', ['patient_id']);
-    await queryInterface.addIndex('vital_readings', ['vital_type_id']);
-    await queryInterface.addIndex('vital_readings', ['reading_time']);
-    await queryInterface.addIndex('vital_readings', ['is_flagged']);
-    await queryInterface.addIndex('vital_readings', ['is_validated']);
-    await queryInterface.addIndex('vital_readings', ['patient_id', 'vital_type_id', 'reading_time']);
+    // Add indexes with error handling
+    const indexes = [
+      { fields: ['patient_id'], name: 'idx_vital_readings_patient' },
+      { fields: ['vital_type_id'], name: 'idx_vital_readings_vital_type' },
+      { fields: ['reading_time'], name: 'idx_vital_readings_time' },
+      { fields: ['is_flagged'], name: 'idx_vital_readings_flagged' },
+      { fields: ['is_validated'], name: 'idx_vital_readings_validated' },
+      { fields: ['patient_id', 'vital_type_id', 'reading_time'], name: 'idx_vital_readings_composite' }
+    ];
+
+    for (const index of indexes) {
+      try {
+        await queryInterface.addIndex('vital_readings', index.fields, { name: index.name });
+      } catch (error) {
+        if (!error.message.includes('already exists')) {
+          throw error;
+        }
+        console.log(`Index ${index.name} already exists, skipping`);
+      }
+    }
   },
 
   down: async (queryInterface, Sequelize) => {

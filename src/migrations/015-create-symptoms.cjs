@@ -3,6 +3,13 @@
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
+    // Check if table already exists
+    const tableExists = await queryInterface.tableExists('symptoms');
+    if (tableExists) {
+      console.log('Table symptoms already exists, skipping creation');
+      return;
+    }
+
     // Create symptoms table
     await queryInterface.createTable('symptoms', {
       id: {
@@ -92,19 +99,39 @@ module.exports = {
       },
     });
 
-    // Add constraint for severity range
-    await queryInterface.sequelize.query(`
-      ALTER TABLE symptoms ADD CONSTRAINT check_severity_range 
-      CHECK (severity >= 1 AND severity <= 10);
-    `);
+    // Add constraint for severity range with error handling
+    try {
+      await queryInterface.sequelize.query(`
+        ALTER TABLE symptoms ADD CONSTRAINT check_severity_range 
+        CHECK (severity >= 1 AND severity <= 10);
+      `);
+    } catch (error) {
+      if (!error.message.includes('already exists') && !error.message.includes('duplicate key')) {
+        throw error;
+      }
+      console.log('Constraint check_severity_range already exists, skipping');
+    }
 
-    // Add indexes
-    await queryInterface.addIndex('symptoms', ['patient_id']);
-    await queryInterface.addIndex('symptoms', ['care_plan_id']);
-    await queryInterface.addIndex('symptoms', ['symptom_name']);
-    await queryInterface.addIndex('symptoms', ['severity']);
-    await queryInterface.addIndex('symptoms', ['recorded_at']);
-    await queryInterface.addIndex('symptoms', ['onset_time']);
+    // Add indexes with error handling
+    const indexes = [
+      { fields: ['patient_id'], name: 'idx_symptoms_patient' },
+      { fields: ['care_plan_id'], name: 'idx_symptoms_care_plan' },
+      { fields: ['symptom_name'], name: 'idx_symptoms_name' },
+      { fields: ['severity'], name: 'idx_symptoms_severity' },
+      { fields: ['recorded_at'], name: 'idx_symptoms_recorded_at' },
+      { fields: ['onset_time'], name: 'idx_symptoms_onset_time' }
+    ];
+
+    for (const index of indexes) {
+      try {
+        await queryInterface.addIndex('symptoms', index.fields, { name: index.name });
+      } catch (error) {
+        if (!error.message.includes('already exists')) {
+          throw error;
+        }
+        console.log(`Index ${index.name} already exists, skipping`);
+      }
+    }
   },
 
   down: async (queryInterface, Sequelize) => {

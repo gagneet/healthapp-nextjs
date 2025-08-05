@@ -3,6 +3,13 @@
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
+    // Check if table already exists
+    const tableExists = await queryInterface.tableExists('audit_logs');
+    if (tableExists) {
+      console.log('Table audit_logs already exists, skipping creation');
+      return;
+    }
+
     // Create audit_logs table
     await queryInterface.createTable('audit_logs', {
       id: {
@@ -65,14 +72,27 @@ module.exports = {
       },
     });
 
-    // Add indexes for audit logs
-    await queryInterface.addIndex('audit_logs', ['user_id']);
-    await queryInterface.addIndex('audit_logs', ['action']);
-    await queryInterface.addIndex('audit_logs', ['resource_type']);
-    await queryInterface.addIndex('audit_logs', ['resource_id']);
-    await queryInterface.addIndex('audit_logs', ['created_at']);
-    await queryInterface.addIndex('audit_logs', ['user_id', 'created_at']);
-    await queryInterface.addIndex('audit_logs', ['resource_type', 'resource_id']);
+    // Add indexes with error handling
+    const indexes = [
+      { fields: ['user_id'], name: 'idx_audit_logs_user' },
+      { fields: ['action'], name: 'idx_audit_logs_action' },
+      { fields: ['resource_type'], name: 'idx_audit_logs_resource_type' },
+      { fields: ['resource_id'], name: 'idx_audit_logs_resource_id' },
+      { fields: ['created_at'], name: 'idx_audit_logs_created_at' },
+      { fields: ['user_id', 'created_at'], name: 'idx_audit_logs_user_time' },
+      { fields: ['resource_type', 'resource_id'], name: 'idx_audit_logs_resource_composite' }
+    ];
+
+    for (const index of indexes) {
+      try {
+        await queryInterface.addIndex('audit_logs', index.fields, { name: index.name });
+      } catch (error) {
+        if (!error.message.includes('already exists')) {
+          throw error;
+        }
+        console.log(`Index ${index.name} already exists, skipping`);
+      }
+    }
   },
 
   down: async (queryInterface, Sequelize) => {

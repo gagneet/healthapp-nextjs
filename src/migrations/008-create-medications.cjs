@@ -3,6 +3,13 @@
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
+    // Check if table already exists
+    const tableExists = await queryInterface.tableExists('medications');
+    if (tableExists) {
+      console.log('Table medications already exists, skipping creation');
+      return;
+    }
+
     // Create medications table
     await queryInterface.createTable('medications', {
       id: {
@@ -94,29 +101,37 @@ module.exports = {
       },
     });
 
-    // Add indexes as per schema
-    await queryInterface.addIndex('medications', ['care_plan_id'], { 
-      where: { deleted_at: null },
-      name: 'idx_medications_care_plan'
-    });
-    await queryInterface.addIndex('medications', ['medication_name'], { 
-      where: { deleted_at: null },
-      name: 'idx_medications_name'
-    });
-    await queryInterface.addIndex('medications', ['start_date', 'end_date'], { 
-      where: { deleted_at: null },
-      name: 'idx_medications_dates'
-    });
-    await queryInterface.addIndex('medications', ['is_critical'], { 
-      where: { deleted_at: null },
-      name: 'idx_medications_critical'
-    });
+    // Add indexes with error handling
+    const indexes = [
+      { fields: ['care_plan_id'], options: { where: { deleted_at: null }, name: 'idx_medications_care_plan' } },
+      { fields: ['medication_name'], options: { where: { deleted_at: null }, name: 'idx_medications_name' } },
+      { fields: ['start_date', 'end_date'], options: { where: { deleted_at: null }, name: 'idx_medications_dates' } },
+      { fields: ['is_critical'], options: { where: { deleted_at: null }, name: 'idx_medications_critical' } }
+    ];
 
-    // Full-text search index for medication names
-    await queryInterface.sequelize.query(`
-      CREATE INDEX idx_medications_name_search ON medications 
-      USING GIN(to_tsvector('english', medication_name));
-    `);
+    for (const index of indexes) {
+      try {
+        await queryInterface.addIndex('medications', index.fields, index.options);
+      } catch (error) {
+        if (!error.message.includes('already exists')) {
+          throw error;
+        }
+        console.log(`Index ${index.options.name} already exists, skipping`);
+      }
+    }
+
+    // Full-text search index for medication names with error handling
+    try {
+      await queryInterface.sequelize.query(`
+        CREATE INDEX idx_medications_name_search ON medications 
+        USING GIN(to_tsvector('english', medication_name));
+      `);
+    } catch (error) {
+      if (!error.message.includes('already exists')) {
+        throw error;
+      }
+      console.log('Index idx_medications_name_search already exists, skipping');
+    }
   },
 
   down: async (queryInterface, Sequelize) => {

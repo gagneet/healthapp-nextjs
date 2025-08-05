@@ -3,30 +3,51 @@
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
-    // Create event enums
-    await queryInterface.sequelize.query(`
-      CREATE TYPE event_status AS ENUM (
-        'SCHEDULED',
-        'PENDING',
-        'IN_PROGRESS', 
-        'COMPLETED',
-        'MISSED',
-        'CANCELLED',
-        'EXPIRED'
-      );
-    `);
+    // Check if table already exists
+    const tableExists = await queryInterface.tableExists('scheduled_events');
+    if (tableExists) {
+      console.log('Table scheduled_events already exists, skipping creation');
+      return;
+    }
 
-    await queryInterface.sequelize.query(`
-      CREATE TYPE event_type AS ENUM (
-        'MEDICATION',
-        'APPOINTMENT',
-        'VITAL_CHECK',
-        'SYMPTOM_LOG',
-        'DIET_LOG',
-        'EXERCISE',
-        'REMINDER'
-      );
-    `);
+    // Create event enums with error handling
+    try {
+      await queryInterface.sequelize.query(`
+        CREATE TYPE event_status AS ENUM (
+          'SCHEDULED',
+          'PENDING',
+          'IN_PROGRESS', 
+          'COMPLETED',
+          'MISSED',
+          'CANCELLED',
+          'EXPIRED'
+        );
+      `);
+    } catch (error) {
+      if (!error.message.includes('already exists')) {
+        throw error;
+      }
+      console.log('Enum event_status already exists, skipping');
+    }
+
+    try {
+      await queryInterface.sequelize.query(`
+        CREATE TYPE event_type AS ENUM (
+          'MEDICATION',
+          'APPOINTMENT',
+          'VITAL_CHECK',
+          'SYMPTOM_LOG',
+          'DIET_LOG',
+          'EXERCISE',
+          'REMINDER'
+        );
+      `);
+    } catch (error) {
+      if (!error.message.includes('already exists')) {
+        throw error;
+      }
+      console.log('Enum event_type already exists, skipping');
+    }
 
     // Create scheduled_events table
     await queryInterface.createTable('scheduled_events', {
@@ -127,27 +148,25 @@ module.exports = {
       },
     });
 
-    // Add indexes as per schema
-    await queryInterface.addIndex('scheduled_events', ['patient_id'], { 
-      where: { deleted_at: null },
-      name: 'idx_events_patient'
-    });
-    await queryInterface.addIndex('scheduled_events', ['scheduled_for'], { 
-      where: { deleted_at: null },
-      name: 'idx_events_scheduled_for'
-    });
-    await queryInterface.addIndex('scheduled_events', ['status'], { 
-      where: { deleted_at: null },
-      name: 'idx_events_status'
-    });
-    await queryInterface.addIndex('scheduled_events', ['event_type'], { 
-      where: { deleted_at: null },
-      name: 'idx_events_type'
-    });
-    await queryInterface.addIndex('scheduled_events', ['priority'], { 
-      where: { deleted_at: null },
-      name: 'idx_events_priority'
-    });
+    // Add indexes with error handling
+    const indexes = [
+      { fields: ['patient_id'], options: { where: { deleted_at: null }, name: 'idx_events_patient' } },
+      { fields: ['scheduled_for'], options: { where: { deleted_at: null }, name: 'idx_events_scheduled_for' } },
+      { fields: ['status'], options: { where: { deleted_at: null }, name: 'idx_events_status' } },
+      { fields: ['event_type'], options: { where: { deleted_at: null }, name: 'idx_events_type' } },
+      { fields: ['priority'], options: { where: { deleted_at: null }, name: 'idx_events_priority' } }
+    ];
+
+    for (const index of indexes) {
+      try {
+        await queryInterface.addIndex('scheduled_events', index.fields, index.options);
+      } catch (error) {
+        if (!error.message.includes('already exists')) {
+          throw error;
+        }
+        console.log(`Index ${index.options.name} already exists, skipping`);
+      }
+    }
   },
 
   down: async (queryInterface, Sequelize) => {

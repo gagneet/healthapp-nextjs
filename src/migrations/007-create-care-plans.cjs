@@ -3,20 +3,41 @@
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
-    // Create enums first
-    await queryInterface.sequelize.query(`
-      CREATE TYPE care_plan_status AS ENUM (
-        'DRAFT',
-        'ACTIVE', 
-        'PAUSED',
-        'COMPLETED',
-        'CANCELLED'
-      );
-    `);
+    // Check if table already exists
+    const tableExists = await queryInterface.tableExists('care_plans');
+    if (tableExists) {
+      console.log('Table care_plans already exists, skipping creation');
+      return;
+    }
 
-    await queryInterface.sequelize.query(`
-      CREATE TYPE priority_level AS ENUM ('LOW', 'MEDIUM', 'HIGH', 'CRITICAL');
-    `);
+    // Create enums first with error handling
+    try {
+      await queryInterface.sequelize.query(`
+        CREATE TYPE care_plan_status AS ENUM (
+          'DRAFT',
+          'ACTIVE', 
+          'PAUSED',
+          'COMPLETED',
+          'CANCELLED'
+        );
+      `);
+    } catch (error) {
+      if (!error.message.includes('already exists')) {
+        throw error;
+      }
+      console.log('Enum care_plan_status already exists, skipping');
+    }
+
+    try {
+      await queryInterface.sequelize.query(`
+        CREATE TYPE priority_level AS ENUM ('LOW', 'MEDIUM', 'HIGH', 'CRITICAL');
+      `);
+    } catch (error) {
+      if (!error.message.includes('already exists')) {
+        throw error;
+      }
+      console.log('Enum priority_level already exists, skipping');
+    }
 
     // Create care_plans table
     await queryInterface.createTable('care_plans', {
@@ -115,23 +136,24 @@ module.exports = {
       },
     });
 
-    // Add indexes as per schema
-    await queryInterface.addIndex('care_plans', ['patient_id'], { 
-      where: { deleted_at: null },
-      name: 'idx_care_plans_patient'
-    });
-    await queryInterface.addIndex('care_plans', ['provider_id'], { 
-      where: { deleted_at: null },
-      name: 'idx_care_plans_provider'
-    });
-    await queryInterface.addIndex('care_plans', ['status'], { 
-      where: { deleted_at: null },
-      name: 'idx_care_plans_status'
-    });
-    await queryInterface.addIndex('care_plans', ['start_date', 'end_date'], { 
-      where: { deleted_at: null },
-      name: 'idx_care_plans_dates'
-    });
+    // Add indexes with error handling
+    const indexes = [
+      { fields: ['patient_id'], options: { where: { deleted_at: null }, name: 'idx_care_plans_patient' } },
+      { fields: ['provider_id'], options: { where: { deleted_at: null }, name: 'idx_care_plans_provider' } },
+      { fields: ['status'], options: { where: { deleted_at: null }, name: 'idx_care_plans_status' } },
+      { fields: ['start_date', 'end_date'], options: { where: { deleted_at: null }, name: 'idx_care_plans_dates' } }
+    ];
+
+    for (const index of indexes) {
+      try {
+        await queryInterface.addIndex('care_plans', index.fields, index.options);
+      } catch (error) {
+        if (!error.message.includes('already exists')) {
+          throw error;
+        }
+        console.log(`Index ${index.options.name} already exists, skipping`);
+      }
+    }
   },
 
   down: async (queryInterface, Sequelize) => {

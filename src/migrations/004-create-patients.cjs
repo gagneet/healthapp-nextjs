@@ -3,6 +3,13 @@
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
+    // Check if table already exists
+    const tableExists = await queryInterface.tableExists('patients');
+    if (tableExists) {
+      console.log('Table patients already exists, skipping creation');
+      return;
+    }
+
     // Create patients table
     await queryInterface.createTable('patients', {
       id: {
@@ -99,29 +106,66 @@ module.exports = {
       },
     });
 
-    // Add constraints for height and weight
-    await queryInterface.sequelize.query(`
-      ALTER TABLE patients ADD CONSTRAINT check_height_range 
-      CHECK (height_cm > 0 AND height_cm < 300);
-    `);
+    // Add constraints for height and weight with error handling
+    try {
+      await queryInterface.sequelize.query(`
+        ALTER TABLE patients ADD CONSTRAINT check_height_range 
+        CHECK (height_cm > 0 AND height_cm < 300);
+      `);
+    } catch (error) {
+      if (!error.message.includes('already exists') && !error.message.includes('duplicate key')) {
+        throw error;
+      }
+      console.log('Constraint check_height_range already exists, skipping');
+    }
     
-    await queryInterface.sequelize.query(`
-      ALTER TABLE patients ADD CONSTRAINT check_weight_range 
-      CHECK (weight_kg > 0 AND weight_kg < 1000);
-    `);
+    try {
+      await queryInterface.sequelize.query(`
+        ALTER TABLE patients ADD CONSTRAINT check_weight_range 
+        CHECK (weight_kg > 0 AND weight_kg < 1000);
+      `);
+    } catch (error) {
+      if (!error.message.includes('already exists') && !error.message.includes('duplicate key')) {
+        throw error;
+      }
+      console.log('Constraint check_weight_range already exists, skipping');
+    }
 
-    // Add indexes as per schema
-    await queryInterface.addIndex('patients', ['user_id'], { 
-      name: 'idx_patients_user_id'
-    });
-    await queryInterface.addIndex('patients', ['organization_id'], { 
-      where: { deleted_at: null },
-      name: 'idx_patients_org'
-    });
-    await queryInterface.addIndex('patients', ['medical_record_number'], { 
-      where: { deleted_at: null },
-      name: 'idx_patients_mrn'
-    });
+    // Add indexes with error handling
+    try {
+      await queryInterface.addIndex('patients', ['user_id'], { 
+        name: 'idx_patients_user_id'
+      });
+    } catch (error) {
+      if (!error.message.includes('already exists')) {
+        throw error;
+      }
+      console.log('Index idx_patients_user_id already exists, skipping');
+    }
+
+    try {
+      await queryInterface.addIndex('patients', ['organization_id'], { 
+        where: { deleted_at: null },
+        name: 'idx_patients_org'
+      });
+    } catch (error) {
+      if (!error.message.includes('already exists')) {
+        throw error;
+      }
+      console.log('Index idx_patients_org already exists, skipping');
+    }
+
+    try {
+      await queryInterface.addIndex('patients', ['medical_record_number'], { 
+        where: { deleted_at: null },
+        name: 'idx_patients_mrn'
+      });
+    } catch (error) {
+      if (!error.message.includes('already exists')) {
+        throw error;
+      }
+      console.log('Index idx_patients_mrn already exists, skipping');
+    }
   },
 
   down: async (queryInterface, Sequelize) => {

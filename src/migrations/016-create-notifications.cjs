@@ -3,10 +3,24 @@
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
-    // Create notification channel enum
-    await queryInterface.sequelize.query(`
-      CREATE TYPE notification_channel AS ENUM ('PUSH', 'SMS', 'EMAIL', 'VOICE_CALL');
-    `);
+    // Check if table already exists
+    const tableExists = await queryInterface.tableExists('notifications');
+    if (tableExists) {
+      console.log('Table notifications already exists, skipping creation');
+      return;
+    }
+
+    // Create notification channel enum with error handling
+    try {
+      await queryInterface.sequelize.query(`
+        CREATE TYPE notification_channel AS ENUM ('PUSH', 'SMS', 'EMAIL', 'VOICE_CALL');
+      `);
+    } catch (error) {
+      if (!error.message.includes('already exists')) {
+        throw error;
+      }
+      console.log('Enum notification_channel already exists, skipping');
+    }
 
     // Create notifications table
     await queryInterface.createTable('notifications', {
@@ -103,23 +117,24 @@ module.exports = {
       },
     });
 
-    // Add indexes as per schema
-    await queryInterface.addIndex('notifications', ['recipient_id'], { 
-      where: { deleted_at: null },
-      name: 'idx_notifications_recipient'
-    });
-    await queryInterface.addIndex('notifications', ['scheduled_for'], { 
-      where: { deleted_at: null },
-      name: 'idx_notifications_scheduled'
-    });
-    await queryInterface.addIndex('notifications', ['recipient_id', 'is_read'], { 
-      where: { deleted_at: null },
-      name: 'idx_notifications_unread'
-    });
-    await queryInterface.addIndex('notifications', ['priority'], { 
-      where: { deleted_at: null },
-      name: 'idx_notifications_priority'
-    });
+    // Add indexes with error handling
+    const indexes = [
+      { fields: ['recipient_id'], options: { where: { deleted_at: null }, name: 'idx_notifications_recipient' } },
+      { fields: ['scheduled_for'], options: { where: { deleted_at: null }, name: 'idx_notifications_scheduled' } },
+      { fields: ['recipient_id', 'is_read'], options: { where: { deleted_at: null }, name: 'idx_notifications_unread' } },
+      { fields: ['priority'], options: { where: { deleted_at: null }, name: 'idx_notifications_priority' } }
+    ];
+
+    for (const index of indexes) {
+      try {
+        await queryInterface.addIndex('notifications', index.fields, index.options);
+      } catch (error) {
+        if (!error.message.includes('already exists')) {
+          throw error;
+        }
+        console.log(`Index ${index.options.name} already exists, skipping`);
+      }
+    }
   },
 
   down: async (queryInterface, Sequelize) => {

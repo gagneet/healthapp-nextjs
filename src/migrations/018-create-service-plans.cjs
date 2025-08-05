@@ -3,6 +3,13 @@
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
+    // Check if table already exists
+    const tableExists = await queryInterface.tableExists('service_plans');
+    if (tableExists) {
+      console.log('Table service_plans already exists, skipping creation');
+      return;
+    }
+
     // Create service_plans table
     await queryInterface.createTable('service_plans', {
       id: {
@@ -80,12 +87,25 @@ module.exports = {
       },
     });
 
-    // Add indexes
-    await queryInterface.addIndex('service_plans', ['provider_id']);
-    await queryInterface.addIndex('service_plans', ['name']);
-    await queryInterface.addIndex('service_plans', ['service_type']);
-    await queryInterface.addIndex('service_plans', ['is_active']);
-    await queryInterface.addIndex('service_plans', ['price']);
+    // Add indexes with error handling
+    const indexes = [
+      { fields: ['provider_id'], name: 'idx_service_plans_provider' },
+      { fields: ['name'], name: 'idx_service_plans_name' },
+      { fields: ['service_type'], name: 'idx_service_plans_type' },
+      { fields: ['is_active'], name: 'idx_service_plans_active' },
+      { fields: ['price'], name: 'idx_service_plans_price' }
+    ];
+
+    for (const index of indexes) {
+      try {
+        await queryInterface.addIndex('service_plans', index.fields, { name: index.name });
+      } catch (error) {
+        if (!error.message.includes('already exists')) {
+          throw error;
+        }
+        console.log(`Index ${index.name} already exists, skipping`);
+      }
+    }
   },
 
   down: async (queryInterface, Sequelize) => {

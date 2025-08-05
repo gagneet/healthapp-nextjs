@@ -3,6 +3,13 @@
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
+    // Check if organizations table already exists
+    const tableExists = await queryInterface.tableExists('organizations');
+    if (tableExists) {
+      console.log('ℹ️ Table "organizations" already exists, skipping creation');
+      return;
+    }
+
     // Create organizations table
     await queryInterface.createTable('organizations', {
       id: {
@@ -54,10 +61,24 @@ module.exports = {
       },
     });
 
-    // Add indexes
-    await queryInterface.addIndex('organizations', ['name']);
-    await queryInterface.addIndex('organizations', ['type']);
-    await queryInterface.addIndex('organizations', ['is_active']);
+    // Add indexes (with idempotent checks)
+    try {
+      await queryInterface.addIndex('organizations', ['name'], { name: 'idx_organizations_name' });
+    } catch (error) {
+      if (!error.message.includes('already exists')) throw error;
+    }
+    
+    try {
+      await queryInterface.addIndex('organizations', ['type'], { name: 'idx_organizations_type' });
+    } catch (error) {
+      if (!error.message.includes('already exists')) throw error;
+    }
+    
+    try {
+      await queryInterface.addIndex('organizations', ['is_active'], { name: 'idx_organizations_is_active' });
+    } catch (error) {
+      if (!error.message.includes('already exists')) throw error;
+    }
   },
 
   down: async (queryInterface, Sequelize) => {

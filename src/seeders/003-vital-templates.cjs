@@ -3,6 +3,19 @@
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
+    console.log('🩺 Seeding vital sign templates (idempotent)...');
+    
+    // Check if vital templates already exist
+    const existingTemplates = await queryInterface.sequelize.query(
+      "SELECT COUNT(*) as count FROM vital_templates",
+      { type: Sequelize.QueryTypes.SELECT }
+    );
+    
+    if (existingTemplates[0].count > 0) {
+      console.log(`ℹ️ Vital templates already exist (${existingTemplates[0].count} found), skipping seeding`);
+      return;
+    }
+
     await queryInterface.bulkInsert('vital_templates', [
       {
         id: 1,
@@ -52,7 +65,9 @@ module.exports = {
         created_at: new Date(),
         updated_at: new Date(),
       }
-    ], {});
+    ], { ignoreDuplicates: true });
+    
+    console.log('✅ Vital sign templates seeded successfully');
   },
 
   down: async (queryInterface, Sequelize) => {
