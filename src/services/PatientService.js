@@ -54,6 +54,18 @@ class PatientService {
         }
       }
 
+      // Map frontend gender values to database enum values
+      const genderMapping = {
+        'm': 'MALE',
+        'f': 'FEMALE',
+        'male': 'MALE',
+        'female': 'FEMALE',
+        'other': 'OTHER',
+        'prefer_not_to_say': 'PREFER_NOT_TO_SAY'
+      };
+      
+      const mappedGender = gender ? genderMapping[gender.toLowerCase()] || gender.toUpperCase() : null;
+
       // Create user with common fields
       const user = await User.create({
         first_name,
@@ -61,7 +73,7 @@ class PatientService {
         last_name,
         email: email || '', // Email can be empty
         phone: mobile_number, // Map 'mobile_number' to 'phone' field
-        gender,
+        gender: mappedGender,
         date_of_birth: dob ? new Date(dob) : null, // Convert to Date object
         role: 'PATIENT', // Use 'role' instead of 'category' as per User model
         account_status: 'ACTIVE',
