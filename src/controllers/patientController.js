@@ -21,23 +21,25 @@ class PatientController {
       const user = await User.findOne({
         where: { 
           id: patientId,
-          category: USER_CATEGORIES.PATIENT 
+          role: USER_CATEGORIES.PATIENT 
         },
         include: [
           {
             model: Patient,
             as: 'patient',
-            required: true
-          },
-          {
-            model: Doctor,
-            as: 'primaryDoctor',
-            required: false,
+            required: true,
             include: [
               {
-                model: User,
-                as: 'user',
-                attributes: ['first_name', 'last_name', 'email']
+                model: Doctor,
+                as: 'primaryCareDoctor',
+                required: false,
+                include: [
+                  {
+                    model: User,
+                    as: 'user',
+                    attributes: ['first_name', 'last_name', 'email']
+                  }
+                ]
               }
             ]
           }
@@ -77,7 +79,7 @@ class PatientController {
               email: user.email,
               
               // Patient-specific fields
-              patient_id: user.patient.patient_id,
+              medical_record_number: user.patient.medical_record_number,
               blood_group: user.patient.blood_group,
               height_cm: user.patient.height_cm,
               weight_kg: user.patient.weight_kg,
@@ -102,10 +104,10 @@ class PatientController {
             updated_at: user.updated_at,
             
             // Relationships
-            primary_doctor: user.primaryDoctor ? {
-              id: user.primaryDoctor.id,
-              name: user.primaryDoctor.user.full_name,
-              email: user.primaryDoctor.user.email
+            primary_doctor: user.patient.primaryCareDoctor ? {
+              id: user.patient.primaryCareDoctor.id,
+              name: user.patient.primaryCareDoctor.user.full_name,
+              email: user.patient.primaryCareDoctor.user.email
             } : null,
             
             // Integration fields
@@ -245,11 +247,27 @@ class PatientController {
       } = req.query;
 
       // Build dynamic where clause
-      const whereClause = {
-        category: USER_CATEGORIES.PATIENT,
-        ...this.buildSearchClause(search),
-        ...this.buildFilterClause(filter, req.userCategory, req.user.id)
+      let whereClause = {
+        role: USER_CATEGORIES.PATIENT
       };
+
+      // Add search clause
+      if (search) {
+        whereClause[Op.or] = [
+          { first_name: { [Op.like]: `%${search}%` } },
+          { last_name: { [Op.like]: `%${search}%` } },
+          { email: { [Op.like]: `%${search}%` } },
+          { '$patient.medical_record_number$': { [Op.like]: `%${search}%` } }
+        ];
+      }
+
+      // Add filter clauses
+      if (req.userCategory === USER_CATEGORIES.DOCTOR) {
+        whereClause['$patient.primary_care_doctor_id$'] = req.user.id;
+      }
+
+      if (filter.gender) whereClause.gender = filter.gender;
+      if (filter.blood_group) whereClause['$patient.blood_group$'] = filter.blood_group;
 
       const { count, rows: users } = await User.findAndCountAll({
         where: whereClause,
@@ -260,10 +278,16 @@ class PatientController {
             required: true,
             include: [
               {
-                model: User,
-                as: 'primaryDoctor',
+                model: Doctor,
+                as: 'primaryCareDoctor',
                 required: false,
-                attributes: ['first_name', 'last_name']
+                include: [
+                  {
+                    model: User,
+                    as: 'user',
+                    attributes: ['first_name', 'last_name']
+                  }
+                ]
               }
             ]
           }
@@ -287,8 +311,8 @@ class PatientController {
               current_age: user.current_age,
               gender: user.gender,
               mobile_number: user.mobile_number,
-              patient_id: user.patient.patient_id,
-              primary_doctor: user.patient.primaryDoctor?.full_name || null
+              medical_record_number: user.patient.medical_record_number,
+              primary_doctor: user.patient.primaryCareDoctor?.user?.full_name || null
             }
           };
           return acc;
@@ -392,7 +416,7 @@ class PatientController {
         { first_name: { [Op.like]: `%${search}%` } },
         { last_name: { [Op.like]: `%${search}%` } },
         { email: { [Op.like]: `%${search}%` } },
-        { '$patient.patient_id$': { [Op.like]: `%${search}%` } }
+        { '$patient.medical_record_number$': { [Op.like]: `%${search}%` } }
       ]
     };
   }
@@ -402,7 +426,7 @@ class PatientController {
 
     // Doctor can only see their patients
     if (userCategory === USER_CATEGORIES.DOCTOR) {
-      clause['$patient.primary_doctor_id$'] = userId;
+      clause['$patient.primary_care_doctor_id$'] = userId;
     }
 
     // Additional filters

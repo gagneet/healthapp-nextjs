@@ -22,21 +22,25 @@ class PatientService {
         email,
         mobile_number,
         gender,
-        date_of_birth,
-        street,
-        city,
-        state,
-        country,
+        dob, // Frontend sends 'dob', not 'date_of_birth'
+        address, // Frontend sends 'address', not separate street/city/state
         
         // Patient-specific fields
-        patient_id, // Custom patient ID provided by user
-        blood_group,
+        medical_record_number, // Frontend sends this, not 'patient_id'
         height_cm,
         weight_kg,
         allergies,
-        chronic_conditions,
-        emergency_contact,
-        insurance_info
+        comorbidities, // Frontend sends 'comorbidities', not 'chronic_conditions'
+        emergency_contacts, // Frontend sends array, not single object
+        insurance_information, // Frontend sends this field name
+        
+        // Clinical fields from frontend
+        symptoms,
+        diagnosis,
+        treatment,
+        clinical_notes,
+        condition,
+        severity
       } = patientData;
 
       // Check for existing user
@@ -55,54 +59,54 @@ class PatientService {
         first_name,
         middle_name,
         last_name,
-        email,
-        mobile_number,
+        email: email || '', // Email can be empty
+        phone: mobile_number, // Map 'mobile_number' to 'phone' field
         gender,
-        date_of_birth,
-        street,
-        city,
-        state,
-        country,
-        category: 'patient',
-        account_status: 'active',
-        activated_on: new Date()
+        date_of_birth: dob ? new Date(dob) : null, // Convert to Date object
+        role: 'PATIENT', // Use 'role' instead of 'category' as per User model
+        account_status: 'ACTIVE',
+        password_hash: 'temp_password_hash', // Required field - set temporary value
+        email_verified: false
       }, { transaction });
 
-      // Use custom patient_id if provided, otherwise generate one
-      let finalPatientId = patient_id;
+      // Use custom medical_record_number if provided, otherwise generate one
+      let finalMedicalRecordNumber = medical_record_number;
       
-      if (!finalPatientId || finalPatientId.trim() === '') {
-        // Get creator info for patient ID generation
+      if (!finalMedicalRecordNumber || finalMedicalRecordNumber.trim() === '') {
+        // Get creator info for medical record number generation
         const creator = await User.findByPk(creatorId, { transaction });
         const creatorName = creator ? `${creator.first_name} ${creator.last_name}` : 'Unknown Doctor';
         
-        // Generate patient ID
-        finalPatientId = await this.generatePatientID(creatorName);
+        // Generate medical record number
+        finalMedicalRecordNumber = await this.generatePatientID(creatorName);
       } else {
-        // Validate that custom patient_id doesn't already exist
+        // Validate that custom medical_record_number doesn't already exist
         const existingPatient = await Patient.findOne({
-          where: { patient_id: finalPatientId.trim() },
+          where: { medical_record_number: finalMedicalRecordNumber.trim() },
           transaction
         });
         
         if (existingPatient) {
-          throw new ConflictError(`Patient ID '${finalPatientId}' already exists. Please choose a different ID.`);
+          throw new ConflictError(`Medical record number '${finalMedicalRecordNumber}' already exists. Please choose a different ID.`);
         }
       }
 
       // Create patient with medical-specific fields
       const patient = await Patient.create({
         user_id: user.id,
-        patient_id: finalPatientId.trim(),
-        blood_group,
+        medical_record_number: finalMedicalRecordNumber ? finalMedicalRecordNumber.trim() : null,
         height_cm,
         weight_kg,
-        allergies: Array.isArray(allergies) ? allergies : [],
-        chronic_conditions: Array.isArray(chronic_conditions) ? chronic_conditions : [],
-        emergency_contact,
-        insurance_info,
-        primary_doctor_id: creatorId,
-        consent_given: true
+        // Convert allergies and comorbidities strings to arrays for JSONB storage
+        allergies: allergies ? (typeof allergies === 'string' ? [allergies] : allergies) : [],
+        medical_history: comorbidities ? (typeof comorbidities === 'string' ? [comorbidities] : comorbidities) : [],
+        emergency_contacts: emergency_contacts || [],
+        insurance_information: insurance_information || {},
+        primary_care_doctor_id: creatorId,
+        // Store clinical data for potential care plan creation
+        notes: clinical_notes || '',
+        // Additional metadata
+        created_at: new Date()
       }, { transaction });
 
       await transaction.commit();

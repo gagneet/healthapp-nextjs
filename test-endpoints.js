@@ -4,7 +4,7 @@ import axios from 'axios';
 
 const API_BASE = 'http://192.168.0.148:3001/api';
 // Use the token from our successful JWT debug
-const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI0MjY5N2ExZi1mYjkxLTRiMTgtYWVjNi00ZjE4OTMxNjZlN2IiLCJ1c2VyQ2F0ZWdvcnkiOiJET0NUT1IiLCJwZXJtaXNzaW9ucyI6W10sImlhdCI6MTc1NDM3OTMzNSwiZXhwIjoxNzU0NDY1NzM1fQ.hsSW-_DyvGpdtNCk3vvlB1OLqOCKummjlcT7K5d74SE';
+const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJmYzI3MWQzZS1kZjQ1LTRkM2MtOTUxYS02NzIwNDZhMjk0NDciLCJ1c2VyQ2F0ZWdvcnkiOiJET0NUT1IiLCJwZXJtaXNzaW9ucyI6W10sImlhdCI6MTc1NDM4MTUxMSwiZXhwIjoxNzU0NDY3OTExfQ.C47BlGExLwl1YQuWS36Swn0OAaqUmHN8NqoC1sf1UgI';
 
 async function testEndpoints() {
   console.log('🔐 Testing endpoints with known good token...');

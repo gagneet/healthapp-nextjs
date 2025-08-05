@@ -16,7 +16,10 @@ import {
   PlayIcon,
   PlusIcon,
   XMarkIcon,
-  MagnifyingGlassIcon
+  MagnifyingGlassIcon,
+  ChevronDownIcon,
+  ChevronUpIcon,
+  ShieldCheckIcon
 } from '@heroicons/react/24/outline'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { apiRequest } from '@/lib/api'
@@ -36,13 +39,32 @@ const DIAGNOSIS_OPTIONS = [
 ]
 
 const TREATMENT_OPTIONS = [
-  'Medication',
+  // 🟥 Critical & Life-Saving
   'Surgery',
-  'Hip Replacement',
   'Chemotherapy',
+  'Radiotherapy',
+  'Dialysis',
+  'Immunotherapy',
+  'Saline',
+  
+  // 🟧 Essential & Disease-Modifying
+  'Medication',
+  'Hip Replacement',
+  'Vaccination',
+  
+  // 🟨 Supportive & Restorative
+  'Rehabilitation programs',
+  'Psychotherapy',
+  'Wound care',
+  'Palliative care',
+  
+  // 🟩 Preventive & Lifestyle-Based
   'Diet & Nutrition',
   'Exercise & Lifestyle',
-  'Saline',
+  'Occupational therapy',
+  'Speech therapy',
+  
+  // ⚪ Other / Contextual
   'Other'
 ]
 
@@ -175,6 +197,38 @@ export default function AddPatientPage() {
     emergencyContactNumber: '',
     emergencyContactDetails: '',
     
+    // Insurance Information (Optional)
+    insurance_info: {
+      primary: {
+        insurance_company: '',
+        policy_number: '',
+        group_number: '',
+        member_id: '',
+        subscriber_name: '',
+        relationship_to_subscriber: 'self',
+        effective_date: '',
+        expiration_date: '',
+        copay_amount: '',
+        deductible_amount: '',
+        phone_number: ''
+      },
+      secondary: {
+        insurance_company: '',
+        policy_number: '',
+        group_number: '',
+        member_id: '',
+        subscriber_name: '',
+        relationship_to_subscriber: 'self',
+        effective_date: '',
+        expiration_date: '',
+        copay_amount: '',
+        deductible_amount: '',
+        phone_number: ''
+      },
+      coverage_type: '',
+      notes: ''
+    },
+    
     // Treatment Plan (Mandatory)
     symptoms: [] as string[],
     diagnosis: [] as string[],
@@ -194,6 +248,10 @@ export default function AddPatientPage() {
   const [diagnosisSearch, setDiagnosisSearch] = useState('')
   const [conditionsSearch, setConditionsSearch] = useState('')
   const [isPatientIdEditable, setIsPatientIdEditable] = useState(false)
+  const [isInsuranceExpanded, setIsInsuranceExpanded] = useState(false)
+  const [isEmergencyContactExpanded, setIsEmergencyContactExpanded] = useState(false)
+  const [isMedicalInfoExpanded, setIsMedicalInfoExpanded] = useState(false)
+  const [isClinicalDataExpanded, setIsClinicalDataExpanded] = useState(false)
 
   // Voice recognition setup
   useEffect(() => {
@@ -504,16 +562,18 @@ export default function AddPatientPage() {
         address: formData.address || '',
         
         // Patient-specific fields
-        patient_id: formData.patientId.trim() || null, // Include custom patient ID
+        medical_record_number: formData.patientId.trim() || null, // Include custom patient ID
         height_cm: parseFloat(formData.heightCm) || null,
         weight_kg: parseFloat(formData.weightKg) || null,
         allergies: Array.isArray(formData.allergies) ? formData.allergies.join(', ') : (formData.allergies || ''),
         comorbidities: Array.isArray(formData.comorbidities) ? formData.comorbidities.join(', ') : (formData.comorbidities || ''),
-        emergency_contact: (formData.emergencyContactNumber || formData.emergencyContactDetails) ? {
+        emergency_contacts: (formData.emergencyContactNumber || formData.emergencyContactDetails) ? [{
           contact_number: formData.emergencyContactNumber || '',
-          other_details: formData.emergencyContactDetails || ''
-        } : null,
-        insurance_info: null,
+          other_details: formData.emergencyContactDetails || '',
+          name: '',
+          relationship: ''
+        }] : [],
+        insurance_information: formData.insurance_info,
         
         // Additional clinical data (for care plan creation)
         symptoms: formData.symptoms,
@@ -844,81 +904,610 @@ export default function AddPatientPage() {
 
         {/* Medical Information */}
         <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <BeakerIcon className="h-5 w-5" />
-              Medical Information
-            </CardTitle>
+          <CardHeader className="pb-3">
+            <button
+              type="button"
+              onClick={() => setIsMedicalInfoExpanded(!isMedicalInfoExpanded)}
+              className="w-full flex items-center justify-between text-left hover:bg-gray-50 -m-3 p-3 rounded-lg transition-colors"
+            >
+              <div className="flex items-center gap-2">
+                <BeakerIcon className="h-5 w-5" />
+                <span className="font-semibold">Medical Information (Optional)</span>
+              </div>
+              {isMedicalInfoExpanded ? (
+                <ChevronUpIcon className="h-5 w-5 text-gray-500" />
+              ) : (
+                <ChevronDownIcon className="h-5 w-5 text-gray-500" />
+              )}
+            </button>
+            {!isMedicalInfoExpanded && (
+              <p className="text-sm text-gray-600 mt-2">
+                Click to add medical history and allergy information
+              </p>
+            )}
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Comorbidities</label>
-              <textarea
-                value={formData.comorbidities}
-                onChange={(e) => setFormData(prev => ({ ...prev, comorbidities: e.target.value }))}
-                placeholder="List any existing medical conditions"
-                rows={3}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-            </div>
+          
+          {isMedicalInfoExpanded && (
+            <CardContent className="space-y-4 pt-0">
+              <p className="text-sm text-gray-600 border-b border-gray-200 pb-3">
+                Provide medical history and allergy information for this patient
+              </p>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Comorbidities</label>
+                <textarea
+                  value={formData.comorbidities}
+                  onChange={(e) => setFormData(prev => ({ ...prev, comorbidities: e.target.value }))}
+                  placeholder="List any existing medical conditions"
+                  rows={3}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Allergies</label>
-              <textarea
-                value={formData.allergies}
-                onChange={(e) => setFormData(prev => ({ ...prev, allergies: e.target.value }))}
-                placeholder="List any known allergies"
-                rows={3}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-            </div>
-          </CardContent>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Allergies</label>
+                <textarea
+                  value={formData.allergies}
+                  onChange={(e) => setFormData(prev => ({ ...prev, allergies: e.target.value }))}
+                  placeholder="List any known allergies"
+                  rows={3}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+            </CardContent>
+          )}
         </Card>
 
         {/* Emergency Contact Information */}
         <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <PhoneIcon className="h-5 w-5" />
-              Emergency Contact (Optional)
-            </CardTitle>
-            <p className="text-sm text-gray-600">
-              Provide emergency contact information for this patient
-            </p>
+          <CardHeader className="pb-3">
+            <button
+              type="button"
+              onClick={() => setIsEmergencyContactExpanded(!isEmergencyContactExpanded)}
+              className="w-full flex items-center justify-between text-left hover:bg-gray-50 -m-3 p-3 rounded-lg transition-colors"
+            >
+              <div className="flex items-center gap-2">
+                <PhoneIcon className="h-5 w-5" />
+                <span className="font-semibold">Emergency Contact (Optional)</span>
+              </div>
+              {isEmergencyContactExpanded ? (
+                <ChevronUpIcon className="h-5 w-5 text-gray-500" />
+              ) : (
+                <ChevronDownIcon className="h-5 w-5 text-gray-500" />
+              )}
+            </button>
+            {!isEmergencyContactExpanded && (
+              <p className="text-sm text-gray-600 mt-2">
+                Click to add emergency contact information
+              </p>
+            )}
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Emergency Contact Number
-              </label>
-              <input
-                type="tel"
-                value={formData.emergencyContactNumber}
-                onChange={(e) => setFormData(prev => ({ ...prev, emergencyContactNumber: e.target.value }))}
-                placeholder="Enter emergency contact phone number"
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-              <p className="text-xs text-gray-500 mt-1">
-                Format: Include country code (e.g., +91 9876543210)
+          
+          {isEmergencyContactExpanded && (
+            <CardContent className="space-y-4 pt-0">
+              <p className="text-sm text-gray-600 border-b border-gray-200 pb-3">
+                Provide emergency contact information for this patient
               </p>
-            </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Emergency Contact Number
+                </label>
+                <input
+                  type="tel"
+                  value={formData.emergencyContactNumber}
+                  onChange={(e) => setFormData(prev => ({ ...prev, emergencyContactNumber: e.target.value }))}
+                  placeholder="Enter emergency contact phone number"
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Format: Include country code (e.g., +91 9876543210)
+                </p>
+              </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Other Details
-              </label>
-              <textarea
-                value={formData.emergencyContactDetails}
-                onChange={(e) => setFormData(prev => ({ ...prev, emergencyContactDetails: e.target.value }))}
-                placeholder="Relationship, name, alternative contact methods, special instructions, etc."
-                rows={3}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-              <p className="text-xs text-gray-500 mt-1">
-                Include name, relationship to patient, alternative contacts, or any special instructions
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Other Details
+                </label>
+                <textarea
+                  value={formData.emergencyContactDetails}
+                  onChange={(e) => setFormData(prev => ({ ...prev, emergencyContactDetails: e.target.value }))}
+                  placeholder="Relationship, name, alternative contact methods, special instructions, etc."
+                  rows={3}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Include name, relationship to patient, alternative contacts, or any special instructions
+                </p>
+              </div>
+            </CardContent>
+          )}
+        </Card>
+
+        {/* Insurance Information */}
+        <Card>
+          <CardHeader className="pb-3">
+            <button
+              type="button"
+              onClick={() => setIsInsuranceExpanded(!isInsuranceExpanded)}
+              className="w-full flex items-center justify-between text-left hover:bg-gray-50 -m-3 p-3 rounded-lg transition-colors"
+            >
+              <div className="flex items-center gap-2">
+                <ShieldCheckIcon className="h-5 w-5" />
+                <span className="font-semibold">Insurance Information (Optional)</span>
+              </div>
+              {isInsuranceExpanded ? (
+                <ChevronUpIcon className="h-5 w-5 text-gray-500" />
+              ) : (
+                <ChevronDownIcon className="h-5 w-5 text-gray-500" />
+              )}
+            </button>
+            {!isInsuranceExpanded && (
+              <p className="text-sm text-gray-600 mt-2">
+                Click to add insurance coverage information
               </p>
-            </div>
-          </CardContent>
+            )}
+          </CardHeader>
+          
+          {isInsuranceExpanded && (
+            <CardContent className="space-y-6 pt-0">
+              <p className="text-sm text-gray-600 border-b border-gray-200 pb-3">
+                Provide insurance coverage information for billing and claims processing
+              </p>
+              
+              {/* Primary Insurance */}
+              <div className="bg-blue-50 p-4 rounded-lg">
+                <h4 className="font-medium text-blue-900 mb-4 flex items-center gap-2">
+                  <ShieldCheckIcon className="h-4 w-4" />
+                  Primary Insurance
+                </h4>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Insurance Company
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.insurance_info.primary.insurance_company}
+                      onChange={(e) => setFormData(prev => ({
+                        ...prev,
+                        insurance_info: {
+                          ...prev.insurance_info,
+                          primary: { ...prev.insurance_info.primary, insurance_company: e.target.value }
+                        }
+                      }))}
+                      placeholder="e.g., Blue Cross Blue Shield"
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Policy/Member ID
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.insurance_info.primary.member_id}
+                      onChange={(e) => setFormData(prev => ({
+                        ...prev,
+                        insurance_info: {
+                          ...prev.insurance_info,
+                          primary: { ...prev.insurance_info.primary, member_id: e.target.value }
+                        }
+                      }))}
+                      placeholder="Member ID from insurance card"
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Group Number
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.insurance_info.primary.group_number}
+                      onChange={(e) => setFormData(prev => ({
+                        ...prev,
+                        insurance_info: {
+                          ...prev.insurance_info,
+                          primary: { ...prev.insurance_info.primary, group_number: e.target.value }
+                        }
+                      }))}
+                      placeholder="Group number from insurance card"
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Policy Number
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.insurance_info.primary.policy_number}
+                      onChange={(e) => setFormData(prev => ({
+                        ...prev,
+                        insurance_info: {
+                          ...prev.insurance_info,
+                          primary: { ...prev.insurance_info.primary, policy_number: e.target.value }
+                        }
+                      }))}
+                      placeholder="Policy number"
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Subscriber Name
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.insurance_info.primary.subscriber_name}
+                      onChange={(e) => setFormData(prev => ({
+                        ...prev,
+                        insurance_info: {
+                          ...prev.insurance_info,
+                          primary: { ...prev.insurance_info.primary, subscriber_name: e.target.value }
+                        }
+                      }))}
+                      placeholder="Name of the policyholder"
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Relationship to Subscriber
+                    </label>
+                    <select
+                      value={formData.insurance_info.primary.relationship_to_subscriber}
+                      onChange={(e) => setFormData(prev => ({
+                        ...prev,
+                        insurance_info: {
+                          ...prev.insurance_info,
+                          primary: { ...prev.insurance_info.primary, relationship_to_subscriber: e.target.value }
+                        }
+                      }))}
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    >
+                      <option value="self">Self</option>
+                      <option value="spouse">Spouse</option>
+                      <option value="child">Child</option>
+                      <option value="parent">Parent</option>
+                      <option value="other">Other</option>
+                    </select>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Effective Date
+                    </label>
+                    <input
+                      type="date"
+                      value={formData.insurance_info.primary.effective_date}
+                      onChange={(e) => setFormData(prev => ({
+                        ...prev,
+                        insurance_info: {
+                          ...prev.insurance_info,
+                          primary: { ...prev.insurance_info.primary, effective_date: e.target.value }
+                        }
+                      }))}
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Expiration Date
+                    </label>
+                    <input
+                      type="date"
+                      value={formData.insurance_info.primary.expiration_date}
+                      onChange={(e) => setFormData(prev => ({
+                        ...prev,
+                        insurance_info: {
+                          ...prev.insurance_info,
+                          primary: { ...prev.insurance_info.primary, expiration_date: e.target.value }
+                        }
+                      }))}
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Copay Amount ($)
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      value={formData.insurance_info.primary.copay_amount}
+                      onChange={(e) => setFormData(prev => ({
+                        ...prev,
+                        insurance_info: {
+                          ...prev.insurance_info,
+                          primary: { ...prev.insurance_info.primary, copay_amount: e.target.value }
+                        }
+                      }))}
+                      placeholder="0.00"
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Deductible Amount ($)
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      value={formData.insurance_info.primary.deductible_amount}
+                      onChange={(e) => setFormData(prev => ({
+                        ...prev,
+                        insurance_info: {
+                          ...prev.insurance_info,
+                          primary: { ...prev.insurance_info.primary, deductible_amount: e.target.value }
+                        }
+                      }))}
+                      placeholder="0.00"
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+                  
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Insurance Phone Number
+                    </label>
+                    <input
+                      type="tel"
+                      value={formData.insurance_info.primary.phone_number}
+                      onChange={(e) => setFormData(prev => ({
+                        ...prev,
+                        insurance_info: {
+                          ...prev.insurance_info,
+                          primary: { ...prev.insurance_info.primary, phone_number: e.target.value }
+                        }
+                      }))}
+                      placeholder="Insurance company customer service number"
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+                </div>
+              </div>
+              
+              {/* Secondary Insurance */}
+              <div className="bg-green-50 p-4 rounded-lg">
+                <h4 className="font-medium text-green-900 mb-4 flex items-center gap-2">
+                  <ShieldCheckIcon className="h-4 w-4" />
+                  Secondary Insurance (Optional)
+                </h4>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Insurance Company
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.insurance_info.secondary.insurance_company}
+                      onChange={(e) => setFormData(prev => ({
+                        ...prev,
+                        insurance_info: {
+                          ...prev.insurance_info,
+                          secondary: { ...prev.insurance_info.secondary, insurance_company: e.target.value }
+                        }
+                      }))}
+                      placeholder="e.g., Aetna"
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Policy/Member ID
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.insurance_info.secondary.member_id}
+                      onChange={(e) => setFormData(prev => ({
+                        ...prev,
+                        insurance_info: {
+                          ...prev.insurance_info,
+                          secondary: { ...prev.insurance_info.secondary, member_id: e.target.value }
+                        }
+                      }))}
+                      placeholder="Secondary member ID"
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Group Number
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.insurance_info.secondary.group_number}
+                      onChange={(e) => setFormData(prev => ({
+                        ...prev,
+                        insurance_info: {
+                          ...prev.insurance_info,
+                          secondary: { ...prev.insurance_info.secondary, group_number: e.target.value }
+                        }
+                      }))}
+                      placeholder="Secondary group number"
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Relationship to Subscriber
+                    </label>
+                    <select
+                      value={formData.insurance_info.secondary.relationship_to_subscriber}
+                      onChange={(e) => setFormData(prev => ({
+                        ...prev,
+                        insurance_info: {
+                          ...prev.insurance_info,
+                          secondary: { ...prev.insurance_info.secondary, relationship_to_subscriber: e.target.value }
+                        }
+                      }))}
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    >
+                      <option value="self">Self</option>
+                      <option value="spouse">Spouse</option>
+                      <option value="child">Child</option>
+                      <option value="parent">Parent</option>
+                      <option value="other">Other</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Coverage Type and Notes */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Coverage Type
+                  </label>
+                  <select
+                    value={formData.insurance_info.coverage_type}
+                    onChange={(e) => setFormData(prev => ({
+                      ...prev,
+                      insurance_info: {
+                        ...prev.insurance_info,
+                        coverage_type: e.target.value
+                      }
+                    }))}
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  >
+                    <option value="">Select coverage type</option>
+                    <option value="individual">Individual</option>
+                    <option value="family">Family</option>
+                    <option value="employer">Employer-Sponsored</option>
+                    <option value="medicare">Medicare</option>
+                    <option value="medicaid">Medicaid</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Insurance Notes
+                  </label>
+                  <textarea
+                    value={formData.insurance_info.notes}
+                    onChange={(e) => setFormData(prev => ({
+                      ...prev,
+                      insurance_info: {
+                        ...prev.insurance_info,
+                        notes: e.target.value
+                      }
+                    }))}
+                    placeholder="Any additional insurance notes or special instructions"
+                    rows={3}
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+              </div>
+            </CardContent>
+          )}
+        </Card>
+
+        {/* Clinical Data */}
+        <Card>
+          <CardHeader className="pb-3">
+            <button
+              type="button"
+              onClick={() => setIsClinicalDataExpanded(!isClinicalDataExpanded)}
+              className="w-full flex items-center justify-between text-left hover:bg-gray-50 -m-3 p-3 rounded-lg transition-colors"
+            >
+              <div className="flex items-center gap-2">
+                <ExclamationTriangleIcon className="h-5 w-5" />
+                <span className="font-semibold">Clinical Data (Optional)</span>
+              </div>
+              {isClinicalDataExpanded ? (
+                <ChevronUpIcon className="h-5 w-5 text-gray-500" />
+              ) : (
+                <ChevronDownIcon className="h-5 w-5 text-gray-500" />
+              )}
+            </button>
+            {!isClinicalDataExpanded && (
+              <p className="text-sm text-gray-600 mt-2">
+                Click to add clinical notes and severity assessment
+              </p>
+            )}
+          </CardHeader>
+          
+          {isClinicalDataExpanded && (
+            <CardContent className="space-y-4 pt-0">
+              <p className="text-sm text-gray-600 border-b border-gray-200 pb-3">
+                Record clinical observations and severity assessment
+              </p>
+              
+              {/* Clinical Notes with Voice-to-Text */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Clinical Notes
+                </label>
+                <div className="relative">
+                  <textarea
+                    value={formData.clinicalNotes}
+                    onChange={(e) => setFormData(prev => ({ ...prev, clinicalNotes: e.target.value }))}
+                    placeholder="Enter clinical notes... (Supports Hindi and English voice input)"
+                    rows={4}
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 pr-12 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                  <button
+                    type="button"
+                    onClick={isRecording ? stopVoiceRecording : startVoiceRecording}
+                    className={`absolute right-2 top-2 p-2 rounded-lg ${
+                      isRecording 
+                        ? 'bg-red-100 text-red-600 hover:bg-red-200' 
+                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    }`}
+                    title={isRecording ? 'Stop recording' : 'Start voice recording'}
+                  >
+                    {isRecording ? (
+                      <StopIcon className="h-4 w-4" />
+                    ) : (
+                      <MicrophoneIcon className="h-4 w-4" />
+                    )}
+                  </button>
+                </div>
+                <p className="text-xs text-gray-500 mt-1">
+                  Click the microphone to record voice notes in Hindi or English
+                </p>
+              </div>
+
+              {/* Severity */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Severity</label>
+                <div className="flex gap-4">
+                  {['Mild', 'Moderate', 'Severe'].map(severity => (
+                    <button
+                      key={severity}
+                      type="button"
+                      onClick={() => setFormData(prev => ({ ...prev, severity }))}
+                      className={`px-6 py-3 rounded-lg border-2 transition-colors ${
+                        formData.severity === severity
+                          ? 'border-red-500 bg-red-50 text-red-700'
+                          : 'border-gray-300 hover:border-gray-400'
+                      }`}
+                    >
+                      {severity}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </CardContent>
+          )}
         </Card>
 
         {/* Treatment Plan */}
@@ -1081,40 +1670,6 @@ export default function AddPatientPage() {
               )}
             </div>
 
-            {/* Clinical Notes with Voice-to-Text */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Clinical Notes
-              </label>
-              <div className="relative">
-                <textarea
-                  value={formData.clinicalNotes}
-                  onChange={(e) => setFormData(prev => ({ ...prev, clinicalNotes: e.target.value }))}
-                  placeholder="Enter clinical notes... (Supports Hindi and English voice input)"
-                  rows={4}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 pr-12 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-                <button
-                  type="button"
-                  onClick={isRecording ? stopVoiceRecording : startVoiceRecording}
-                  className={`absolute right-2 top-2 p-2 rounded-lg ${
-                    isRecording 
-                      ? 'bg-red-100 text-red-600 hover:bg-red-200' 
-                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                  }`}
-                  title={isRecording ? 'Stop recording' : 'Start voice recording'}
-                >
-                  {isRecording ? (
-                    <StopIcon className="h-4 w-4" />
-                  ) : (
-                    <MicrophoneIcon className="h-4 w-4" />
-                  )}
-                </button>
-              </div>
-              <p className="text-xs text-gray-500 mt-1">
-                Click the microphone to record voice notes in Hindi or English
-              </p>
-            </div>
 
             {/* Condition */}
             <div>
@@ -1155,26 +1710,6 @@ export default function AddPatientPage() {
               </p>
             </div>
 
-            {/* Severity */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Severity</label>
-              <div className="flex gap-4">
-                {['Mild', 'Moderate', 'Severe'].map(severity => (
-                  <button
-                    key={severity}
-                    type="button"
-                    onClick={() => setFormData(prev => ({ ...prev, severity }))}
-                    className={`px-6 py-3 rounded-lg border-2 transition-colors ${
-                      formData.severity === severity
-                        ? 'border-red-500 bg-red-50 text-red-700'
-                        : 'border-gray-300 hover:border-gray-400'
-                    }`}
-                  >
-                    {severity}
-                  </button>
-                ))}
-              </div>
-            </div>
           </CardContent>
         </Card>
 
