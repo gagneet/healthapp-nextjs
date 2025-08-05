@@ -103,6 +103,16 @@ class PatientService {
         }
       }
 
+      // Get doctor record for the creator (if exists)
+      let primaryCareDoctorId = null;
+      if (creatorId) {
+        const doctorRecord = await Doctor.findOne({
+          where: { user_id: creatorId },
+          transaction
+        });
+        primaryCareDoctorId = doctorRecord ? doctorRecord.id : null;
+      }
+
       // Create patient with medical-specific fields
       const patient = await Patient.create({
         user_id: user.id,
@@ -114,7 +124,7 @@ class PatientService {
         medical_history: comorbidities ? (typeof comorbidities === 'string' ? [comorbidities] : comorbidities) : [],
         emergency_contacts: emergency_contacts || [],
         insurance_information: insurance_information || {},
-        primary_care_doctor_id: creatorId,
+        primary_care_doctor_id: primaryCareDoctorId, // Use doctor record ID, not user ID
         // Store clinical data for potential care plan creation
         notes: clinical_notes || '',
         // Additional metadata
