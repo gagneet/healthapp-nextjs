@@ -66,7 +66,7 @@ node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
 ### Check All Services
 
 ```bash
-docker-compose -f docker/docker-compose.dev.yml ps
+docker stack services healthapp
 ```
 
 Expected output:
@@ -109,17 +109,18 @@ sudo fuser -k 3000/tcp 3001/tcp 5432/tcp
 **Database Connection Issues:**
 
 ```bash
-# Check PostgreSQL container
-docker-compose -f docker/docker-compose.dev.yml logs postgres
-docker-compose -f docker/docker-compose.dev.yml restart postgres
+# Check PostgreSQL service
+docker service logs healthapp_postgres -f
+docker service update --force healthapp_postgres
 ```
 
 **Complete Reset (Nuclear Option):**
 
 ```bash
 # Stop everything and start fresh
-docker-compose -f docker/docker-compose.dev.yml down -v
-./scripts/deploy-dev.sh
+docker stack rm healthapp
+sleep 30
+./scripts/deploy-stack.sh dev --auto-yes
 ```
 
 ## 📚 Useful Commands
@@ -128,25 +129,26 @@ docker-compose -f docker/docker-compose.dev.yml down -v
 
 ```bash
 # View logs
-docker-compose -f docker/docker-compose.dev.yml logs -f [service]
+docker service logs healthapp_[service] -f
 
 # Restart specific service
-docker-compose -f docker/docker-compose.dev.yml restart [service]
+docker service update --force healthapp_[service]
 
-# Access container shell
-docker-compose -f docker/docker-compose.dev.yml exec [service] sh
+# Scale services
+docker service scale healthapp_backend=5 healthapp_frontend=3
 
 # Stop all services
-docker-compose -f docker/docker-compose.dev.yml down
+docker stack rm healthapp
 ```
 
 ### Database Operations
 
 ```bash
-# Inside backend container
-docker-compose -f docker/docker-compose.dev.yml exec backend npm run migrate
-docker-compose -f docker/docker-compose.dev.yml exec backend npm run seed
-docker-compose -f docker/docker-compose.dev.yml exec backend npm run migrate:undo
+# Database operations (get container ID first)
+BACKEND_CONTAINER=$(docker ps -q -f name=healthapp_backend)
+docker exec $BACKEND_CONTAINER npm run migrate
+docker exec $BACKEND_CONTAINER npm run seed
+docker exec $BACKEND_CONTAINER npm run migrate:undo
 ```
 
 ### Development

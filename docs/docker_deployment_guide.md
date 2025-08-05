@@ -1,6 +1,6 @@
-# Healthcare Application Docker Deployment Guide
+# Healthcare Application Docker Swarm Deployment Guide
 
-This comprehensive guide covers deploying Healthcare Application Healthcare Management Platform using Docker containers and Docker Swarm for both development and production environments.
+This comprehensive guide covers deploying the Healthcare Application Management Platform using **Docker Swarm** for both development and production environments with enterprise-grade scalability.
 
 ## 📋 Table of Contents
 
@@ -9,9 +9,9 @@ This comprehensive guide covers deploying Healthcare Application Healthcare Mana
 3. [Development Deployment](#-development-deployment)
 4. [Production Deployment](#production-deployment)
 5. [Docker Swarm Setup](#-docker-swarm-setup)
-6. [Monitoring & Logging](#-monitoring--logging)
-7. [Backup & Recovery](#-backup--recovery)
-8. [Scaling & Optimization](#-scaling--optimization)
+6. [Scaling & Performance](#-scaling--performance)
+7. [Monitoring & Logging](#-monitoring--logging)
+8. [Backup & Recovery](#-backup--recovery)
 9. [Troubleshooting](#-troubleshooting)
 
 ## 🔧 Prerequisites
@@ -19,15 +19,13 @@ This comprehensive guide covers deploying Healthcare Application Healthcare Mana
 ### System Requirements
 
 **Minimum (Development):**
-
 - CPU: 2 cores
 - RAM: 4GB
 - Storage: 20GB
 - Docker: 20.10+
-- Docker Compose: 2.0+
+- Docker Swarm: Single node
 
 **Recommended (Production):**
-
 - CPU: 8+ cores per node
 - RAM: 16GB+ per node
 - Storage: 100GB+ SSD
@@ -42,243 +40,133 @@ curl -fsSL https://get.docker.com -o get-docker.sh
 sudo sh get-docker.sh
 sudo usermod -aG docker $USER
 
-# Install Docker Compose
-sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-sudo chmod +x /usr/local/bin/docker-compose
-
 # Verify installation
 docker --version
-docker-compose --version
+docker info
 ```
 
 ## 📁 Project Structure
 
-### Docker Files Organization
+### Docker Swarm Files Organization
 
-All Docker configurations are organized in the `docker/` directory:
+All Docker Swarm configurations are organized for production-ready deployment:
 
 ```text
 healthapp-nextjs/
-├── docker/                      # All Docker configurations
+├── docker/                      # Docker Swarm configurations
 │   ├── Dockerfile               # NextJS frontend container
 │   ├── Dockerfile.backend       # Node.js API container  
-│   ├── docker-compose.dev.yml   # Development stack
-│   ├── docker-compose.prod.yml  # Production stack
-│   └── docker-stack.yml         # Docker Swarm deployment
+│   ├── Dockerfile.dev           # Development container
+│   └── docker-stack.yml         # Docker Swarm stack definition
+├── scripts/                     # Deployment automation
+│   ├── deploy-stack.sh          # Main deployment script
+│   ├── deploy-prod.sh           # Production deployment
+│   ├── deploy-prod.ps1          # Windows PowerShell
+│   ├── docker-swarm-init.sh     # Swarm initialization
+│   └── docker-cleanup.sh        # Cleanup utilities
 ├── app/                         # NextJS app directory
 ├── components/                  # React components
 ├── lib/                         # Utilities and helpers
 ├── src/                         # Backend API source
-│   ├── config/                  # Database, JWT, constants
-│   ├── controllers/             # Route handlers
-│   ├── models/                  # Sequelize models
-│   ├── routes/                  # API routes
-│   └── services/                # Business logic
-├── scripts/                     # Deployment scripts
-├── docs/                        # Documentation
-├── nginx/                       # NGINX configuration
-├── monitoring/                  # Prometheus configuration
-└── [config files]               # NextJS, PostCSS, Tailwind configs
+└── [config files]               # Application configuration
 ```
-
-This organization keeps all Docker-related files in one place while maintaining the hybrid NextJS + Node.js API architecture.
 
 ## 🚀 Development Deployment
 
 ### Quick Start
 
-#### **For Linux/macOS:**
-
 ```bash
+# Clone repository
 git clone <repository-url>
 cd healthapp-nextjs
+
+# Make scripts executable
 chmod +x scripts/*.sh
-```
 
-#### **For Windows:**
+# Initialize Docker Swarm (one-time)
+./scripts/docker-swarm-init.sh
 
-See the comprehensive [Windows Development Guide](windows_development_guide.md) for detailed setup instructions.
-
-**Quick Windows setup:**
-
-```batch
-git clone <repository-url>
-cd healthapp-nextjs
-# Use Windows batch script
-scripts\deploy-dev.bat
-```
-
-#### **Configure environment:**
-
-```bash
-cp .env.development .env.development.local
-# Edit .env.development.local with your settings
-```
-
-#### **Deploy development environment:**
-
-**Linux/macOS:**
-
-```bash
-./scripts/deploy-dev.sh
-```
-
-**Windows:**
-
-```batch
-scripts\deploy-dev.bat
+# Deploy development environment
+./scripts/deploy-stack.sh dev --auto-yes
 ```
 
 ### Development Services
 
-The development stack includes:
+The development stack includes horizontally scalable services:
 
-| Service | Port | Description |
-|---------|------|-------------|
-| Frontend | 3000 | NextJS application |
-| Backend | 3001 | Node.js API server |
-| PostgreSQL | 5432 | Database |
-| Redis | 6379 | Cache & sessions |
-| pgAdmin | 5050 | Database management |
+| Service | Port | Replicas | Description |
+|---------|------|----------|-------------|
+| Frontend | 3002 | 1-3 | NextJS application |
+| Backend | 3001 | 1-5 | Node.js API server |
+| PostgreSQL | 5433 | 1 | Database |
+| Redis | 6379 | 1 | Cache & sessions |
+| pgAdmin | 5050 | 1 | Database management |
 
 ### Development Commands
 
-**Linux/macOS:**
+```bash
+# View all services
+docker stack services healthapp
+
+# Scale services
+docker service scale healthapp_backend=3
+docker service scale healthapp_frontend=2
+
+# View service logs
+docker service logs healthapp_backend -f
+docker service logs healthapp_frontend -f
+
+# Remove deployment
+docker stack rm healthapp
+
+# Clean up resources
+./scripts/docker-cleanup.sh
+```
+
+### Custom Scaling During Deployment
 
 ```bash
-# View logs
-docker-compose -f docker/docker-compose.dev.yml logs -f [service]
+# Deploy with custom scaling
+./scripts/deploy-stack.sh dev --scale-backend=5 --scale-frontend=3 --auto-yes
 
-# Restart services
-docker-compose -f docker/docker-compose.dev.yml restart
-
-# Shell access
-docker-compose -f docker/docker-compose.dev.yml exec [service] sh
-
-# Reset environment
-./scripts/reset-dev.sh
+# Deploy with specific IP
+./scripts/deploy-stack.sh dev 192.168.1.100 --auto-yes
 ```
-
-**Windows:**
-
-```batch
-REM View logs
-docker-compose -f docker\docker-compose.dev.yml logs -f [service]
-
-REM Restart services
-docker-compose -f docker\docker-compose.dev.yml restart
-
-REM Shell access
-docker-compose -f docker\docker-compose.dev.yml exec [service] sh
-
-REM Reset environment
-scripts\reset-dev.bat
-```
-
-## 🖥️ Complete Windows Docker Setup
-
-### ✅ Windows-Specific Scripts Created
-
-1. scripts/deploy-dev.bat - Windows batch script for development deployment
-2. scripts/reset-dev.bat - Windows environment reset script
-3. scripts/deploy-prod.ps1 - PowerShell script for production deployment
-
-### ✅ Key Features
-
-- Windows-compatible path handling (\ vs /)
-- Proper error checking and colored output
-- Service health verification
-- Automatic directory creation
-- Docker service management
-
-### 🎯 My Strong Recommendation: Use WSL2
-
-#### Why WSL2 is Superior
-
-- 🚀 Performance: 5-10x faster file I/O (npm install 45s → 8s)
-- 🔧 Compatibility: 100% Linux tooling compatibility
-- 📜 Scripts: Use existing bash scripts without modification
-- 🐳 Docker: Optimal container performance
-- 💻 Development: Better VS Code integration
-
-#### When to Use Native Windows
-
-- Corporate restrictions on WSL2
-- Preference for Windows-native tools
-- Integration requirements with Windows-specific software
-
-### 📚 Comprehensive Documentation Created
-
-docs/windows_development_guide.md
-
-#### Complete guide covering
-
-- WSL2 Setup: Step-by-step installation and configuration
-- Native Windows: Alternative setup with provided scripts
-- Docker Desktop: Optimal configuration settings
-- Performance Comparison: Detailed benchmarks
-- Troubleshooting: Common issues and solutions
-- VS Code Integration: Best practices for both environments
-
-#### Updated docs/docker_deployment_guide.md
-
-- Added Windows-specific commands
-- Cross-platform deployment instructions
-- References to Windows development guide
-
-🚀 Quick Start Options:
-
-Option 1: WSL2 (Recommended)
-
-### Install WSL2, then use existing Linux scripts
-
-./scripts/deploy-dev.sh
-
-Option 2: Native Windows
-
-### Use provided Windows batch scripts
-
-scripts\deploy-dev.bat
-
-📊 Performance Benefits (WSL2 vs Native Windows):
-
-- npm install: 5.6x faster
-- npm run build: 4.8x faster
-- Docker build: 5.1x faster
-- Hot reload: 5x faster
-
-The Windows setup is now production-ready with both WSL2 and native Windows options, but I strongly recommend WSL2 for the optimal healthcare application development experience!
 
 ## 🏭 Production Deployment
 
 ### Pre-deployment Checklist
 
-- [ ] Docker Swarm initialized
-- [ ] SSL certificates obtained
+- [ ] Docker Swarm initialized on production cluster
+- [ ] SSL certificates obtained and configured
 - [ ] Environment variables configured
 - [ ] DNS records configured
 - [ ] Firewall rules configured
 - [ ] Backup strategy implemented
+- [ ] Monitoring systems configured
 
 ### Environment Configuration
 
-#### **Create production environment file:**
-
 ```bash
-cp .env.production.example .env.production
+# Copy and configure production environment
+cp env_files/.env.production.example env_files/.env.production
+
+# Edit with production values
+nano env_files/.env.production
 ```
 
-#### **Configure required variables:**
+### Required Production Variables
 
 ```bash
-# Database
+# Database Security
 DB_PASSWORD=your-strong-database-password
-
-# Security
-JWT_SECRET=your-256-bit-jwt-secret (25af6001e43881f727388f44e0f6fff837510b0649fe9393987f009c595156f778442654270516863b00617b478aa46dea6311f74fb95325d3c9a344b125d033)
 REDIS_PASSWORD=your-redis-password
 
-# AWS (for file storage)
+# Application Security
+JWT_SECRET=your-256-bit-jwt-secret
+SESSION_SECRET=your-session-secret
+
+# AWS Configuration (for file storage)
 AWS_ACCESS_KEY_ID=your-aws-access-key
 AWS_SECRET_ACCESS_KEY=your-aws-secret-key
 AWS_S3_BUCKET=your-s3-bucket-name
@@ -308,16 +196,19 @@ chmod 600 ssl/key.pem
 ### Production Deployment
 
 ```bash
-# Initialize Swarm (if not done)
+# Initialize Swarm cluster (if not done)
 ./scripts/docker-swarm-init.sh
 
 # Deploy production stack
 ./scripts/deploy-prod.sh --version v1.0.0
+
+# Deploy with scaling
+./scripts/deploy-stack.sh prod --scale-backend=10 --scale-frontend=5
 ```
 
 ## 🐳 Docker Swarm Setup
 
-### Single Node Setup
+### Single Node Setup (Development)
 
 ```bash
 # Initialize swarm
@@ -325,10 +216,10 @@ chmod 600 ssl/key.pem
 
 # Verify setup
 docker node ls
-docker network ls
+docker network ls --filter driver=overlay
 ```
 
-### Multi-Node Cluster
+### Multi-Node Cluster (Production)
 
 **On Manager Node:**
 
@@ -348,338 +239,343 @@ docker swarm join-token manager
 docker swarm join --token <WORKER-TOKEN> <MANAGER-IP>:2377
 ```
 
-**Label Nodes:**
+**Label Nodes for Service Placement:**
 
 ```bash
-# Database nodes
+# Database nodes (usually manager nodes)
 docker node update --label-add database=true node1
 
-# Backend nodes
+# Backend nodes (worker nodes)
 docker node update --label-add backend=true node2
 docker node update --label-add backend=true node3
 
-# Frontend nodes
+# Frontend nodes (worker nodes)  
 docker node update --label-add frontend=true node2
 docker node update --label-add frontend=true node3
+docker node update --label-add frontend=true node4
 
-# Monitoring nodes
+# Monitoring nodes (manager nodes)
 docker node update --label-add monitoring=true node1
+docker node update --label-add logging=true node1
 ```
 
-### High Availability Setup
+### High Availability Configuration
 
-For production, ensure:
+For production clusters, ensure:
 
-- 3+ manager nodes (odd number)
-- Multiple worker nodes
-- Load balancing across nodes
-- Data replication
-- Backup strategies
+- **3+ manager nodes** (odd number for quorum)
+- **Multiple worker nodes** for load distribution
+- **Node labeling** for proper service placement
+- **Resource reservations** for critical services
+- **Health checks** for all services
+- **Automated backup strategies**
 
-## 📊 Monitoring & Logging
+## 🔄 Scaling & Performance
 
-### Monitoring Stack
-
-The production deployment includes:
-
-| Service | Port | Purpose |
-|---------|------|---------|
-| Prometheus | 9090 | Metrics collection |
-| Grafana | 3001 | Dashboards & alerting |
-| Elasticsearch | 9200 | Log aggregation |
-
-### Grafana Dashboards
-
-Access Grafana at `http://monitoring.healthcareapp.com`:
-
-- Username: `admin`
-- Password: `${GRAFANA_PASSWORD}`
-
-Pre-configured dashboards:
-
-- Application metrics
-- Database performance
-- System resources
-- Error rates
-- Response times
-
-### Log Management
+### Horizontal Scaling Commands
 
 ```bash
-# View service logs
-docker service logs healthapp_backend -f
+# Scale backend services (handles API load)
+docker service scale healthapp_backend=10
 
-# Export logs
-docker service logs healthapp_backend > backend-logs.txt
+# Scale frontend services (serves web traffic)
+docker service scale healthapp_frontend=5
 
-# Real-time monitoring
-docker stats $(docker ps -q)
+# Scale multiple services simultaneously
+docker service scale healthapp_backend=15 healthapp_frontend=8
+
+# View current scaling status
+docker service ls --format "table {{.Name}}\\t{{.Replicas}}\\t{{.Image}}"
 ```
 
-## 💾 Backup & Recovery
+### Performance Scaling Examples
 
-### Automated Backups
+**High Traffic Scaling:**
+```bash
+# Scale for high traffic scenarios
+docker service scale healthapp_backend=20      # More API capacity
+docker service scale healthapp_frontend=10     # More web servers
+docker service scale healthapp_nginx=3         # Load balancer redundancy
+```
 
-The production stack includes automated backups:
+**Resource-Optimized Scaling:**
+```bash
+# Development/testing environment
+docker service scale healthapp_backend=2
+docker service scale healthapp_frontend=1
+
+# Production environment
+docker service scale healthapp_backend=12
+docker service scale healthapp_frontend=6
+```
+
+### Advanced Service Updates
 
 ```bash
-# Manual backup
-./scripts/backup-prod.sh
+# Rolling update with specific parallelism
+docker service update --replicas 10 --update-parallelism 2 healthapp_backend
 
-# Restore from backup
-./scripts/restore-prod.sh /path/to/backup.tar.gz
-```
+# Update with resource constraints
+docker service update --limit-memory 1GB --limit-cpu 0.75 healthapp_backend
 
-### Backup Schedule
-
-Configure automated backups:
-
-```bash
-# Add to crontab
-0 2 * * * /path/to/healthapp-nextjs/scripts/backup-prod.sh
-```
-
-### Backup Contents
-
-- PostgreSQL database dump
-- Redis data snapshot
-- Application logs
-- Configuration files
-- SSL certificates
-
-## 🔄 Scaling & Optimization
-
-### Horizontal Scaling
-
-```bash
-# Scale backend services
-docker service scale healthapp_backend=5
-
-# Scale frontend services
-docker service scale healthapp_frontend=3
-
-# View current scaling
-docker service ls
-```
-
-### Performance Optimization
-
-**Database Optimization:**
-
-```bash
-# Update PostgreSQL configuration
-docker config create postgres_config_v2 scripts/postgresql.conf
-docker service update --config-rm postgres_config --config-add postgres_config_v2 healthapp_postgres
-```
-
-**Resource Limits:**
-
-```yaml
-# Update service constraints in docker-stack.yml
-deploy:
-  resources:
-    limits:
-      memory: 1G
-      cpus: '0.5'
-    reservations:
-      memory: 512M
-      cpus: '0.25'
+# Update image version
+docker service update --image healthapp-backend:v2.0 healthapp_backend
 ```
 
 ### Load Testing
 
 ```bash
-# Install Apache Bench
+# Install Apache Bench for load testing
 sudo apt install apache2-utils
 
-# Test API endpoints
-ab -n 1000 -c 10 https://api.healthcareapp.com/api/health
+# Test API endpoints under load
+ab -n 10000 -c 50 http://your-domain.com/api/health
 
-# Test frontend
-ab -n 100 -c 5 https://app.healthcareapp.com/
+# Test frontend performance
+ab -n 1000 -c 20 http://your-domain.com/
+
+# Monitor during load testing
+watch docker service ls
+```
+
+## 📊 Monitoring & Logging
+
+### Production Monitoring Stack
+
+The production deployment includes comprehensive monitoring:
+
+| Service | Port | Purpose | Replicas |
+|---------|------|---------|----------|
+| Prometheus | 9090 | Metrics collection | 1 |
+| Grafana | 3001 | Dashboards & alerting | 1 |
+| Elasticsearch | 9200 | Log aggregation | 1 |
+| NGINX | 80/443 | Load balancer | 2 |
+
+### Service Monitoring Commands
+
+```bash
+# View all service status
+docker stack services healthapp
+
+# Monitor service health in real-time
+watch docker service ls
+
+# Check service resource usage
+docker stats --no-stream
+
+# View service placement across nodes
+docker service ps healthapp_backend --no-trunc
+```
+
+### Log Management
+
+```bash
+# View service logs
+docker service logs healthapp_backend -f --tail 100
+docker service logs healthapp_frontend -f --tail 50
+
+# Export logs for analysis
+docker service logs healthapp_backend --since 1h > backend-logs.txt
+
+# Monitor logs from all replicas
+docker service logs healthapp_backend -f --raw
+```
+
+### Grafana Dashboard Access
+
+Access monitoring dashboard at `https://monitoring.healthcareapp.com`:
+- Username: `admin`
+- Password: `${GRAFANA_PASSWORD}`
+
+Pre-configured dashboards include:
+- Application performance metrics
+- Database query performance
+- System resource utilization
+- Service health and availability
+- Error rates and response times
+
+## 💾 Backup & Recovery
+
+### Automated Backup Service
+
+The stack includes an automated backup service that:
+- Creates daily PostgreSQL dumps
+- Backs up Redis data snapshots
+- Stores configuration files
+- Uploads to AWS S3 (if configured)
+
+```bash
+# Manual backup execution
+./scripts/backup-prod.sh
+
+# View backup service logs
+docker service logs healthapp_backup -f
+```
+
+### Database Backup & Restore
+
+```bash
+# Manual database backup
+docker exec $(docker ps -q -f name=healthapp_postgres) \
+    pg_dump -U healthapp_user healthapp_prod > backup-$(date +%Y%m%d).sql
+
+# Restore from backup
+docker exec -i $(docker ps -q -f name=healthapp_postgres) \
+    psql -U healthapp_user -d healthapp_prod < backup-20240101.sql
+```
+
+### Full Stack Recovery
+
+```bash
+# Emergency stack recovery
+docker stack rm healthapp
+sleep 30  # Wait for cleanup
+./scripts/deploy-prod.sh --skip-migration
+
+# Restore database after stack recovery
+docker exec -i $(docker ps -q -f name=healthapp_postgres) \
+    psql -U healthapp_user -d healthapp_prod < latest-backup.sql
 ```
 
 ## 🔍 Troubleshooting
 
-### Common Issues
-
-**Service Won't Start:**
+### Service Health Diagnostics
 
 ```bash
-# Check service status
+# Check service status and health
 docker service ps healthapp_backend --no-trunc
 
-# View detailed logs
+# View detailed service configuration
+docker service inspect healthapp_backend
+
+# Check service resource constraints
+docker service ls --format "table {{.Name}}\\t{{.Replicas}}\\t{{.Image}}"
+```
+
+### Common Issues & Solutions
+
+**Service Won't Start:**
+```bash
+# Check service logs for errors
 docker service logs healthapp_backend --tail 100
 
-# Check node resources
+# Verify node resources
 docker node ls
 docker system df
+
+# Check placement constraints
+docker service inspect healthapp_backend | grep -A 10 Placement
 ```
 
 **Database Connection Issues:**
-
 ```bash
 # Test database connectivity
-docker exec -it $(docker ps -q -f name=postgres) psql -U healthapp_user -d healthapp_prod
+docker exec $(docker ps -q -f name=healthapp_postgres) \
+    pg_isready -U healthapp_user -d healthapp_prod
 
-# Check database logs
-docker service logs healthapp_postgres
+# Check database service health
+docker service logs healthapp_postgres --tail 50
+
+# Verify network connectivity
+docker network inspect healthapp-backend
 ```
 
-**SSL Certificate Issues:**
-
+**Scaling Issues:**
 ```bash
-# Verify certificate files
-docker config ls
-docker secret ls
+# Check node capacity for scaling
+docker node ls --format "table {{.Hostname}}\\t{{.Status}}\\t{{.Availability}}"
 
-# Test SSL connection
-openssl s_client -connect app.healthcareapp.com:443
+# Verify resource availability
+docker node inspect <node-name> | grep -A 10 Resources
+
+# Check service update status
+docker service ps healthapp_backend
 ```
 
-**Memory Issues:**
-
-```bash
-# Check memory usage
-docker stats --no-stream
-
-# Clear unused resources
-docker system prune -a
-docker volume prune
-```
-
-### Performance Issues
-
-**Slow Database Queries:**
-
-```bash
-# Check PostgreSQL performance
-docker exec -it $(docker ps -q -f name=postgres) psql -U healthapp_user -d healthapp_prod -c "
-SELECT query, calls, total_time, mean_time 
-FROM pg_stat_statements 
-ORDER BY total_time DESC 
-LIMIT 10;"
-```
+### Performance Troubleshooting
 
 **High Memory Usage:**
-
 ```bash
-# Check service resource usage
-docker service ls --format "table {{.Name}}\t{{.Replicas}}"
-docker stats --no-stream
+# Identify memory-intensive services
+docker stats --no-stream --format "table {{.Container}}\\t{{.CPUPerc}}\\t{{.MemUsage}}"
 
-# Restart memory-heavy services
+# Update service with memory limits
+docker service update --limit-memory 1GB --reserve-memory 512MB healthapp_backend
+
+# Force service restart if needed
 docker service update --force healthapp_backend
 ```
 
-### Network Issues
-
+**Network Performance Issues:**
 ```bash
-# Test network connectivity
-docker network ls
-docker network inspect healthapp-backend
+# Test inter-service connectivity
+docker exec $(docker ps -q -f name=healthapp_backend) nslookup postgres
 
-# Test service discovery
-docker exec -it $(docker ps -q -f name=backend) nslookup postgres
+# Check network throughput
+docker exec $(docker ps -q -f name=healthapp_backend) wget -O /dev/null http://frontend:3000
+
+# Verify load balancer performance
+docker service logs healthapp_nginx --tail 100
 ```
 
 ## 🚨 Emergency Procedures
 
-### Service Recovery
-
-**Complete Stack Failure:**
+### Complete Stack Recovery
 
 ```bash
-# Remove failed stack
+# Stop all services gracefully
 docker stack rm healthapp
 
-# Wait for cleanup
-sleep 30
+# Wait for complete cleanup
+sleep 60
 
-# Redeploy
-./scripts/deploy-prod.sh --skip-migration
+# Redeploy with latest configuration
+./scripts/deploy-prod.sh --version latest
+
+# Restore from backup if needed
+./scripts/restore-prod.sh /path/to/backup.tar.gz
 ```
 
-**Database Recovery:**
+### Service Rollback
 
 ```bash
-# Restore from backup
-docker exec -i $(docker ps -q -f name=postgres) psql -U healthapp_user -d healthapp_prod < backup.sql
-
-# Restart dependent services
-docker service update --force healthapp_backend
-```
-
-### Rollback Procedures
-
-```bash
-# Rollback to previous version
+# Rollback individual service
 docker service rollback healthapp_backend
 docker service rollback healthapp_frontend
 
-# Rollback entire stack
-./scripts/deploy-prod.sh --version v1.0.0-previous
+# Rollback to specific version
+docker service update --image healthapp-backend:v1.0 healthapp_backend
 ```
 
-## ● Clean up steps (run these commands on Ubuntu server)
+### Zero-Downtime Updates
 
-### Stop and remove all containers
+```bash
+# Update with rolling deployment
+docker service update --update-parallelism 1 --update-delay 30s healthapp_backend
 
-> docker-compose -f docker/docker-compose.dev.yml down --volumes --remove-orphans
-
-### Remove specific healthapp containers if they exist
-
-> docker rm -f $(docker ps -a -q --filter name=healthapp) 2>/dev/null || true
-
-### Remove related images to force rebuild
-
-> docker rmi $(docker images --filter reference="docker_*" -q) 2>/dev/null || true
-
-### Clean up dangling images and containers
-
-> docker system prune -f
-
-### Optional: More aggressive cleanup if needed
-
-> docker system prune -af --volumes
-
-### Restart deployment
-
-> ./scripts/deploy-dev.sh
-
-#### ContainerConfig error typically occurs when
-
-1. Container metadata is corrupted
-2. Images have conflicting configurations
-3. Previous containers weren't properly cleaned up
+# Monitor update progress
+watch docker service ps healthapp_backend
+```
 
 ## 📚 Additional Resources
 
-### Documentation Links
+### Docker Swarm Best Practices
 
-- [Docker Swarm Documentation](https://docs.docker.com/engine/swarm/)
-- [Docker Compose Documentation](https://docs.docker.com/compose/)
-- [PostgreSQL Docker Hub](https://hub.docker.com/_/postgres)
-- [Redis Docker Hub](https://hub.docker.com/_/redis)
-- [NGINX Docker Hub](https://hub.docker.com/_/nginx)
+- Use placement constraints for service distribution
+- Implement health checks for all services
+- Set resource limits and reservations
+- Use secrets for sensitive configuration
+- Implement proper backup strategies
+- Monitor service performance continuously
 
-### Security Best Practices
+### Security Considerations
 
-- Use Docker secrets for sensitive data
 - Enable Docker Content Trust
+- Use Docker secrets for sensitive data
+- Implement network segmentation
 - Regular security updates
-- Network segmentation
-- Access controls
-- Audit logging
-
-### Monitoring Best Practices
-
-- Set up alerting rules
-- Monitor key metrics
-- Log retention policies
-- Regular health checks
-- Performance baselines
+- Access controls and audit logging
+- SSL/TLS for all external communications
 
 ---
 
@@ -688,40 +584,40 @@ docker service rollback healthapp_frontend
 ### Essential Commands
 
 ```bash
-# Development
-./scripts/deploy-dev.sh
-./scripts/reset-dev.sh
-
-# Production
+# Swarm Initialization
 ./scripts/docker-swarm-init.sh
-./scripts/deploy-prod.sh
-./scripts/backup-prod.sh
+
+# Deployment
+./scripts/deploy-stack.sh dev|prod [--auto-yes] [--scale-backend=N] [--scale-frontend=N]
+
+# Service Management
+docker stack services healthapp
+docker service logs <service> -f
+docker service scale <service>=<replicas>
 
 # Monitoring
-docker service ls
-docker service logs <service> -f
-docker stack ps healthapp
-docker node ls
-
-# Scaling
-docker service scale healthapp_backend=5
-docker service update healthapp_frontend
+docker service ps <service>
+docker stats --no-stream
+docker system df
 
 # Maintenance
 docker system prune -a
-docker volume prune
-docker network prune
+./scripts/docker-cleanup.sh
 ```
 
-### Support Contacts
+### Scaling Examples
 
-For deployment issues:
+```bash
+# Development scaling
+docker service scale healthapp_backend=3 healthapp_frontend=2
 
-- Review this guide
-- Check service logs
-- Consult Docker documentation
-- Open GitHub issue with logs
+# Production scaling
+docker service scale healthapp_backend=15 healthapp_frontend=8
+
+# High-availability scaling
+docker service scale healthapp_backend=20 healthapp_frontend=10 healthapp_nginx=3
+```
 
 ---
 
-*This guide is maintained alongside the Healthcare Application Healthcare Management Platform. Please keep it updated with any deployment changes.*
+*This guide provides comprehensive Docker Swarm deployment instructions for the Healthcare Application Management Platform. The platform is designed for enterprise-grade scalability with horizontal scaling, load balancing, and zero-downtime updates.*

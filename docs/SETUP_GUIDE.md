@@ -38,7 +38,7 @@ node --version  # Should be 18.0.0+
 
 # Check Docker
 docker --version
-docker-compose --version
+docker info | grep "Swarm"
 
 # Check Git
 git --version
@@ -349,20 +349,14 @@ chmod +x scripts/deploy-dev.sh
 **Manual Step-by-Step (if script fails):**
 
 ```bash
-# 1. Build and start containers
-docker-compose -f docker/docker-compose.dev.yml up -d --build
+# 1. Initialize Docker Swarm (one-time setup)
+./scripts/docker-swarm-init.sh
 
-# 2. Wait for database to be ready
-docker-compose -f docker/docker-compose.dev.yml exec postgres pg_isready -U healthapp_user
+# 2. Deploy development environment
+./scripts/deploy-stack.sh dev --auto-yes
 
-# 3. Run migrations  
-docker-compose -f docker/docker-compose.dev.yml exec backend npm run migrate
-
-# 4. Seed database
-docker-compose -f docker/docker-compose.dev.yml exec backend npm run seed
-
-# 5. Check all services
-docker-compose -f docker/docker-compose.dev.yml ps
+# 3. Check all services
+docker stack services healthapp
 ```
 
 ### Local Development (No Docker)
