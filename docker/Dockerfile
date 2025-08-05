@@ -33,7 +33,8 @@ RUN apk add --no-cache \
     busybox-extras \
     mysql-client \
     iproute2 \
-    net-tools
+    net-tools \
+    bash
 
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
