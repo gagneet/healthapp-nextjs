@@ -275,7 +275,7 @@ services:
     environment:
       POSTGRES_DB: healthapp_${MODE}
       POSTGRES_USER: healthapp_user
-      POSTGRES_PASSWORD: healthapp_pass
+      POSTGRES_PASSWORD: pg_password
       POSTGRES_HOST_AUTH_METHOD: trust
     volumes:
       - postgres_data_${MODE}:/var/lib/postgresql/data
@@ -321,10 +321,10 @@ services:
       POSTGRES_PORT: 5432
       POSTGRES_DB: healthapp_${MODE}
       POSTGRES_USER: healthapp_user
-      POSTGRES_PASSWORD: healthapp_pass
+      POSTGRES_PASSWORD: pg_password
       REDIS_HOST: redis
       REDIS_PORT: 6379
-      JWT_SECRET: ${MODE}-jwt-secret-key-change-in-production
+      JWT_SECRET: ${MODE}-25af6001e43881f727388f44e0f6fff837510b0649fe9393987f009c595156f778442654270516863b00617b478aa46dea6311f74fb95325d3c9a344b125d033
       FRONTEND_URL: http://${IP_ADDRESS}:3002
       LOG_LEVEL: info
       # Add connection retry configuration for better startup reliability
