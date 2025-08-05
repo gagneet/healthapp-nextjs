@@ -1,9 +1,9 @@
 #!/bin/bash
 
-# Healthcare Application Production Deployment Script
+# HealthApp Production Deployment Script
 set -e
 
-echo "🚀 Starting Healthcare Application Production Deployment..."
+echo "🚀 Starting HealthApp Production Deployment..."
 
 # Colors for output
 RED='\033[0;31m'
@@ -100,14 +100,14 @@ if ! docker node ls > /dev/null 2>&1; then
 fi
 
 # Check if environment file exists
-if [ ! -f .env.production ]; then
-    print_error ".env.production file not found. Please create it from .env.production.example"
+if [ ! -f env_files/.env.docker.production ]; then
+    print_error "env_files/.env.docker.production file not found. Please create it from env_files/.env.production.example"
     exit 1
 fi
 
 # Source environment variables
 set -a
-source .env.production
+source env_files/.env.docker.production
 set +a
 
 print_header "2. Preparing environment..."
@@ -278,8 +278,8 @@ print_status "Testing application endpoints..."
 sleep 10
 
 endpoints=(
-    "https://api.healthcareapp.com/api/health:Backend API"
-    "https://app.healthcareapp.com:Frontend"
+    "https://api.healthapp.com/api/health:Backend API"
+    "https://app.healthapp.com:Frontend"
 )
 
 for endpoint in "${endpoints[@]}"; do
@@ -296,12 +296,12 @@ done
 print_header "✅ Production deployment completed!"
 
 echo ""
-echo "🌟 Healthcare Application Production Environment is ready!"
+echo "🌟 HealthApp Production Environment is ready!"
 echo ""
 echo "📋 Access URLs:"
-echo "   Frontend:    https://app.healthcareapp.com"
-echo "   Backend API: https://api.healthcareapp.com"
-echo "   Monitoring:  http://monitoring.healthcareapp.com (admin / $GRAFANA_PASSWORD)"
+echo "   Frontend:    https://app.healthapp.com"
+echo "   Backend API: https://api.healthapp.com"
+echo "   Monitoring:  http://monitoring.healthapp.com (admin / $GRAFANA_PASSWORD)"
 echo ""
 echo "🔧 Management commands:"
 echo "   View services:    docker stack services healthapp"
@@ -312,7 +312,7 @@ echo "   Remove stack:     docker stack rm healthapp"
 echo ""
 echo "📊 Monitoring:"
 echo "   Prometheus: http://localhost:9090"
-echo "   Grafana:    http://monitoring.healthcareapp.com"
+echo "   Grafana:    http://monitoring.healthapp.com"
 echo ""
 echo "🔍 Troubleshooting:"
 echo "   Check service status: docker stack ps healthapp"

@@ -1,9 +1,9 @@
 #!/bin/bash
 
-# Production Backup Script for Healthcare Application
+# Production Backup Script for HealthApp
 set -e
 
-echo "💾 Starting Healthcare Application Production Backup..."
+echo "💾 Starting HealthApp Production Backup..."
 
 # Colors for output
 RED='\033[0;31m'

@@ -1,9 +1,9 @@
 #!/bin/bash
 
-# Docker Swarm Initialization Script for Healthcare Application
+# Docker Swarm Initialization Script for HealthApp
 set -e
 
-echo "🐳 Initializing Docker Swarm for Healthcare Application..."
+echo "🐳 Initializing Docker Swarm for HealthApp..."
 
 # Colors for output
 RED='\033[0;31m'
@@ -127,7 +127,7 @@ docker network ls --filter driver=overlay
 print_header "✅ Docker Swarm initialization completed!"
 
 echo ""
-echo "🌟 Docker Swarm is ready for Healthcare Application deployment!"
+echo "🌟 Docker Swarm is ready for HealthApp deployment!"
 echo ""
 echo "📋 Next steps:"
 echo "   1. Copy the worker join command to add more nodes (if needed):"
@@ -141,7 +141,7 @@ echo "      docker node update --label-add database=true <node-name>"
 echo "      docker node update --label-add backend=true <node-name>"
 echo "      docker node update --label-add frontend=true <node-name>"
 echo ""
-echo "   4. Deploy Healthcare Application stack:"
+echo "   4. Deploy HealthApp stack:"
 echo "      ./scripts/deploy-prod.sh"
 echo ""
 echo "🔧 Useful commands:"

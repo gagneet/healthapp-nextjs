@@ -3,7 +3,7 @@
 # Reset Development Environment Script
 set -e
 
-echo "🔄 Resetting Healthcare Application Development Environment..."
+echo "🔄 Resetting HealthApp Development Environment..."
 
 # Colors for output
 RED='\033[0;31m'

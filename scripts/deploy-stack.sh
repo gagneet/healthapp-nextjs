@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Healthcare Application Deployment Script with Docker Swarm Support (Updated)
+# HealthApp Deployment Script with Docker Swarm Support (Updated)
 # NOTICE: This script now uses the new unified Docker setup
 # Usage: ./deploy-stack.sh dev|prod [IP_ADDRESS] [--auto-yes] [--scale-backend=N] [--scale-frontend=N]
 # Example: ./deploy-stack.sh dev 192.168.0.148 --auto-yes --scale-backend=2 --scale-frontend=1
@@ -46,7 +46,7 @@ print_header() {
 
 # Function to display usage
 show_usage() {
-    echo "Healthcare Application Deployment Script"
+    echo "HealthApp Deployment Script"
     echo ""
     echo "Usage: $0 MODE [IP_ADDRESS] [OPTIONS]"
     echo ""
@@ -465,7 +465,7 @@ cleanup_existing() {
 
 # Function to deploy the stack
 deploy_stack() {
-    print_header "Deploying Healthcare Application Stack..."
+    print_header "Deploying HealthApp Stack..."
     
     # Check if we should use the unified docker-stack.yml or the generated one
     if [ -f "docker/docker-stack.yml" ]; then
@@ -698,7 +698,7 @@ show_deployment_summary() {
     print_header "Deployment Summary"
     
     echo ""
-    echo "🌟 Healthcare Application Deployed Successfully!"
+    echo "🌟 HealthApp Deployed Successfully!"
     echo ""
     echo "📋 Deployment Details:"
     echo "   Mode:           $MODE"
@@ -743,7 +743,7 @@ cleanup_on_exit() {
 
 # Main execution function
 main() {
-    echo "🏥 Healthcare Application Docker Swarm Deployment Script"
+    echo "🏥 HealthApp Docker Swarm Deployment Script"
     echo "=================================================="
     echo ""
     

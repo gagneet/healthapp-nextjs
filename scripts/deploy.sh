@@ -84,7 +84,7 @@ if ! command -v docker-compose &> /dev/null; then
 fi
 
 # Set environment file based on deployment environment
-ENV_FILE=".env.docker.$ENVIRONMENT"
+ENV_FILE="env_files/.env.docker.$ENVIRONMENT"
 
 if [[ ! -f "$ENV_FILE" ]]; then
     log_error "Environment file $ENV_FILE not found!"

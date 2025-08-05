@@ -95,7 +95,7 @@ services:
       REDIS_PASSWORD: ${REDIS_PASSWORD}
       JWT_SECRET: ${JWT_SECRET}
       JWT_EXPIRE: ${JWT_EXPIRE:-24h}
-      FRONTEND_URL: ${FRONTEND_URL:-https://app.healthcareapp.com}
+      FRONTEND_URL: ${FRONTEND_URL:-https://app.healthapp.com}
       LOG_LEVEL: ${LOG_LEVEL:-info}
       AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
       AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
@@ -155,7 +155,7 @@ services:
     environment:
       NODE_ENV: production
       BACKEND_URL: http://backend:3001
-      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-https://api.healthcareapp.com/api}
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-https://api.healthapp.com/api}
       PORT: 3000
       NODE_OPTIONS: "--max-old-space-size=512"
     networks:
@@ -295,7 +295,7 @@ services:
     environment:
       GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD}
       GF_USERS_ALLOW_SIGN_UP: "false"
-      GF_SERVER_ROOT_URL: https://monitoring.healthcareapp.com
+      GF_SERVER_ROOT_URL: https://monitoring.healthapp.com
       GF_SECURITY_ALLOW_EMBEDDING: "true"
     secrets:
       - grafana_password
