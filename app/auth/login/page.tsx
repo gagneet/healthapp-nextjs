@@ -64,9 +64,14 @@ const logger = createLogger('LoginPage')
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [isClient, setIsClient] = useState(false)
   const router = useRouter()
   const searchParams = useSearchParams()
   const { login, isAuthenticated } = useAuth()
+  
+  useEffect(() => {
+    setIsClient(true)
+  }, [])
   
   const roleParam = searchParams.get('role') as keyof typeof roleConfig
   const config = roleConfig[roleParam] || {
@@ -173,7 +178,7 @@ export default function LoginPage() {
                   {...register('password')}
                   type={showPassword ? 'text' : 'password'}
                   autoComplete="current-password"
-                  autoCapitalize="off"
+                  autoCapitalize="none"
                   autoCorrect="off"
                   spellCheck="false"
                   className={`appearance-none block w-full px-3 py-2 pr-10 border ${
@@ -255,8 +260,8 @@ export default function LoginPage() {
           </form>
         </div>
 
-        {/* Demo Credentials */}
-        {process.env.NODE_ENV === 'development' && (
+        {/* Demo Credentials - Only show after client hydration */}
+        {isClient && process.env.NODE_ENV === 'development' && (
           <div className="bg-yellow-50 border border-yellow-200 rounded-md p-4 mb-4">
             <h3 className="text-sm font-medium text-yellow-800 mb-2">Test Credentials</h3>
             <div className="text-xs text-yellow-700">
@@ -267,7 +272,8 @@ export default function LoginPage() {
           </div>
         )}
 
-        {typeof window !== 'undefined' && window.location.protocol === 'http:' && (
+        {/* Security Notice - Only show after client hydration and for HTTP */}
+        {isClient && window.location.protocol === 'http:' && (
           <div className="bg-orange-50 border border-orange-200 rounded-md p-4 mb-4">
             <h3 className="text-sm font-medium text-orange-800 mb-2">Security Notice</h3>
             <p className="text-xs text-orange-700">
