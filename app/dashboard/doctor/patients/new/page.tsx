@@ -481,6 +481,13 @@ export default function AddPatientPage() {
       const lastName = nameParts[nameParts.length - 1] || ''
       const middleName = nameParts.length > 2 ? nameParts.slice(1, -1).join(' ') : nameParts[1] || ''
       
+      // Map gender from frontend format to backend format
+      const genderMapping = {
+        'MALE': 'm',
+        'FEMALE': 'f',
+        'OTHER': 'o'
+      }
+      
       const patientData = {
         // User fields (snake_case for backend)
         first_name: firstName,
@@ -488,19 +495,16 @@ export default function AddPatientPage() {
         last_name: lastName,
         email: formData.email || '',
         mobile_number: formData.mobileNumber,
-        gender: formData.gender,
-        date_of_birth: processedDateOfBirth,
-        street: formData.address || '',
-        city: '',
-        state: '',
-        country: formData.countryCode || 'US',
+        gender: genderMapping[formData.gender] || '',
+        dob: processedDateOfBirth,
+        address: formData.address || '',
         
         // Patient-specific fields
         patient_id: formData.patientId.trim() || null, // Include custom patient ID
         height_cm: parseFloat(formData.heightCm) || null,
         weight_kg: parseFloat(formData.weightKg) || null,
-        allergies: formData.allergies || [],
-        chronic_conditions: formData.comorbidities || [],
+        allergies: Array.isArray(formData.allergies) ? formData.allergies.join(', ') : (formData.allergies || ''),
+        comorbidities: Array.isArray(formData.comorbidities) ? formData.comorbidities.join(', ') : (formData.comorbidities || ''),
         emergency_contact: null,
         insurance_info: null,
         
