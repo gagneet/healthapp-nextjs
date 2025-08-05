@@ -1,6 +1,7 @@
 #!/bin/bash
 
-# Healthcare Application Deployment Script with Docker Swarm Support
+# Healthcare Application Deployment Script with Docker Swarm Support (Updated)
+# NOTICE: This script now uses the new unified Docker setup
 # Usage: ./deploy-stack.sh dev|prod [IP_ADDRESS] [--auto-yes] [--scale-backend=N] [--scale-frontend=N]
 # Example: ./deploy-stack.sh dev 192.168.0.148 --auto-yes --scale-backend=2 --scale-frontend=1
 
@@ -245,12 +246,19 @@ build_images() {
         exit 1
     }
     
-    # Build frontend image
+    # Build frontend image - use appropriate Dockerfile based on mode
     print_status "Building frontend image..."
-    docker build -f docker/Dockerfile.dev -t healthapp-frontend:${MODE} . || {
-        print_error "Failed to build frontend image"
-        exit 1
-    }
+    if [ "$MODE" = "dev" ]; then
+        docker build -f docker/Dockerfile.dev -t healthapp-frontend:${MODE} . || {
+            print_error "Failed to build frontend image"
+            exit 1
+        }
+    else
+        docker build -f docker/Dockerfile -t healthapp-frontend:${MODE} . || {
+            print_error "Failed to build frontend image"
+            exit 1
+        }
+    fi
     
     print_status "Docker images built successfully"
 }
@@ -459,9 +467,26 @@ cleanup_existing() {
 deploy_stack() {
     print_header "Deploying Healthcare Application Stack..."
     
-    # Deploy the stack
-    print_status "Deploying stack: $DOCKER_STACK_NAME"
-    docker stack deploy -c docker-stack-$MODE.yml "$DOCKER_STACK_NAME" --detach=false
+    # Check if we should use the unified docker-stack.yml or the generated one
+    if [ -f "docker/docker-stack.yml" ]; then
+        print_status "Using unified Docker Swarm configuration: docker/docker-stack.yml"
+        
+        # Set environment variables for the stack
+        export VERSION=$MODE
+        export DB_NAME=healthapp_$MODE
+        export DB_USER=healthapp_user  
+        export DB_PASSWORD=pg_password
+        export JWT_SECRET=25af6001e43881f727388f44e0f6fff837510b0649fe9393987f009c595156f778442654270516863b00617b478aa46dea6311f74fb95325d3c9a344b125d033
+        export FRONTEND_URL=http://$IP_ADDRESS:3002
+        export NEXT_PUBLIC_API_URL=http://$IP_ADDRESS:3001/api
+        
+        # Deploy the unified stack
+        docker stack deploy -c docker/docker-stack.yml "$DOCKER_STACK_NAME" --detach=false
+    else
+        # Fallback to generated stack file
+        print_status "Using generated stack configuration: docker-stack-$MODE.yml"
+        docker stack deploy -c docker-stack-$MODE.yml "$DOCKER_STACK_NAME" --detach=false
+    fi
     
     print_status "Stack deployment initiated successfully"
 }
