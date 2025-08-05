@@ -171,6 +171,10 @@ export default function AddPatientPage() {
     comorbidities: '',
     allergies: '',
     
+    // Emergency Contact (Optional)
+    emergencyContactNumber: '',
+    emergencyContactDetails: '',
+    
     // Treatment Plan (Mandatory)
     symptoms: [] as string[],
     diagnosis: [] as string[],
@@ -505,7 +509,10 @@ export default function AddPatientPage() {
         weight_kg: parseFloat(formData.weightKg) || null,
         allergies: Array.isArray(formData.allergies) ? formData.allergies.join(', ') : (formData.allergies || ''),
         comorbidities: Array.isArray(formData.comorbidities) ? formData.comorbidities.join(', ') : (formData.comorbidities || ''),
-        emergency_contact: null,
+        emergency_contact: (formData.emergencyContactNumber || formData.emergencyContactDetails) ? {
+          contact_number: formData.emergencyContactNumber || '',
+          other_details: formData.emergencyContactDetails || ''
+        } : null,
         insurance_info: null,
         
         // Additional clinical data (for care plan creation)
@@ -864,6 +871,52 @@ export default function AddPatientPage() {
                 rows={3}
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Emergency Contact Information */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <PhoneIcon className="h-5 w-5" />
+              Emergency Contact (Optional)
+            </CardTitle>
+            <p className="text-sm text-gray-600">
+              Provide emergency contact information for this patient
+            </p>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Emergency Contact Number
+              </label>
+              <input
+                type="tel"
+                value={formData.emergencyContactNumber}
+                onChange={(e) => setFormData(prev => ({ ...prev, emergencyContactNumber: e.target.value }))}
+                placeholder="Enter emergency contact phone number"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                Format: Include country code (e.g., +91 9876543210)
+              </p>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Other Details
+              </label>
+              <textarea
+                value={formData.emergencyContactDetails}
+                onChange={(e) => setFormData(prev => ({ ...prev, emergencyContactDetails: e.target.value }))}
+                placeholder="Relationship, name, alternative contact methods, special instructions, etc."
+                rows={3}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                Include name, relationship to patient, alternative contacts, or any special instructions
+              </p>
             </div>
           </CardContent>
         </Card>

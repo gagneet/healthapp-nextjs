@@ -68,7 +68,11 @@ const schemas = {
     weight_kg: Joi.number().min(0).max(1000).optional(),
     comorbidities: Joi.string().optional(),
     allergies: Joi.string().optional(),
-    patient_id: Joi.string().max(100).optional() // Allow custom patient ID in any format
+    patient_id: Joi.string().max(100).optional(), // Allow custom patient ID in any format
+    emergency_contact: Joi.object({
+      contact_number: Joi.string().pattern(/^\+?[1-9]\d{1,14}$/).optional().allow(''),
+      other_details: Joi.string().max(500).optional().allow('')
+    }).optional().allow(null) // Allow emergency_contact to be null or optional
   }),
   
   medicationCreate: Joi.object({

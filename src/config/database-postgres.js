@@ -28,10 +28,13 @@ const sequelize = new Sequelize({
   logging: process.env.NODE_ENV === 'development' ? (msg) => logger.debug(msg) : false,
   
   pool: {
-    max: parseInt(process.env.DB_POOL_MAX) || 20,
-    min: parseInt(process.env.DB_POOL_MIN) || 5,
-    acquire: 30000,
-    idle: 10000,
+    max: parseInt(process.env.DB_POOL_MAX) || 150,     // Increased for 500+ concurrent doctors
+    min: parseInt(process.env.DB_POOL_MIN) || 30,      // Higher baseline for consistent performance
+    acquire: 60000,                                    // Longer timeout for complex healthcare queries
+    idle: 120000,                                      // Extended idle time for healthcare workflows
+    evict: 10000,                                      // Connection health check interval
+    handleDisconnects: true,                           // Automatic reconnection
+    maxUses: 1000,                                     // Max uses before connection refresh
   },
   
   define: {

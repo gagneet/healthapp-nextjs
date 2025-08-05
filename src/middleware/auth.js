@@ -4,6 +4,7 @@ import { verifyToken } from '../config/jwt.js';
 import { User, UserRole } from '../models/index.js';
 import { USER_CATEGORIES } from '../config/constants.js';
 import { ACCOUNT_STATUS } from '../config/enums.js';
+import cacheService from '../services/CacheService.js';
 
 const authenticate = async (req, res, next) => {
   try {
@@ -25,12 +26,25 @@ const authenticate = async (req, res, next) => {
     const token = authHeader.substring(7);
     const decoded = verifyToken(token);
     
-    const user = await User.findByPk(decoded.userId, {
-      include: [{
-        model: UserRole,
-        as: 'roles'
-      }]
-    });
+    // Check cache first for performance optimization
+    let user = await cacheService.getCachedUser(decoded.userId);
+    
+    if (!user) {
+      // Only hit database if not in cache
+      user = await User.findByPk(decoded.userId, {
+        attributes: ['id', 'email', 'first_name', 'last_name', 'category', 'account_status'],
+        include: [{
+          model: UserRole,
+          as: 'roles',
+          attributes: ['id', 'linked_with']
+        }]
+      });
+      
+      if (user) {
+        // Cache user data for 15 minutes to reduce database load
+        await cacheService.cacheUser(decoded.userId, user.toJSON(), 900);
+      }
+    }
 
     if (!user || user.account_status !== ACCOUNT_STATUS.ACTIVE) {
       return res.status(401).json({
@@ -46,7 +60,7 @@ const authenticate = async (req, res, next) => {
     }
 
     req.user = user;
-    req.userCategory = decoded.userCategory;
+    req.userCategory = decoded.userCategory || user.category;
     req.userRoleId = decoded.userRoleId;
     next();
   } catch (error) {

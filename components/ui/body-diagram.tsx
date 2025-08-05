@@ -286,31 +286,32 @@ export default function BodyDiagram({
                   onMouseLeave={() => setHoveredSymptom(null)}
                 />
               
-              {/* Symptom label on hover */}
-              {hoveredSymptom === symptom.id && (
-                <g>
-                  <rect
-                    x={(symptom.x / 100) * 300 - 40}
-                    y={(symptom.y / 100) * 400 - 35}
-                    width="80"
-                    height="25"
-                    fill="rgba(0, 0, 0, 0.8)"
-                    rx="4"
-                  />
-                  <text
-                    x={(symptom.x / 100) * 300}
-                    y={(symptom.y / 100) * 400 - 18}
-                    textAnchor="middle"
-                    fill="white"
-                    fontSize="10"
-                    className="pointer-events-none"
-                  >
-                    {symptom.name}
-                  </text>
-                </g>
-              )}
-            </g>
-          ))}
+                {/* Symptom label on hover */}
+                {hoveredSymptom === symptom.id && (
+                  <g>
+                    <rect
+                      x={(symptom.x / 100) * 300 - 40}
+                      y={(symptom.y / 100) * 400 - 35}
+                      width="80"
+                      height="25"
+                      fill="rgba(0, 0, 0, 0.8)"
+                      rx="4"
+                    />
+                    <text
+                      x={(symptom.x / 100) * 300}
+                      y={(symptom.y / 100) * 400 - 18}
+                      textAnchor="middle"
+                      fill="white"
+                      fontSize="10"
+                      className="pointer-events-none"
+                    >
+                      {symptom.name}
+                    </text>
+                  </g>
+                )}
+              </g>
+            )
+          })}
         </svg>
 
         {/* Legend */}
