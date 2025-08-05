@@ -1,10 +1,17 @@
 # Backend API Dockerfile
 FROM node:18-alpine
 
-# Install system dependencies
+# Install system dependencies and debugging utilities
 RUN apk add --no-cache \
     postgresql-client \
-    curl
+    curl \
+    build-base \
+    vim \
+    iputils \
+    busybox-extras \
+    mysql-client \
+    iproute2 \
+    net-tools
 
 WORKDIR /app
 

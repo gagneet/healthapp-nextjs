@@ -1,8 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import SafeLink from '@/components/SafeLink'
 import {
   HomeIcon,
   UsersIcon,
@@ -142,7 +142,7 @@ export default function DoctorSidebar({ isOpen, setIsOpen }: SidebarProps) {
               }
               
               return (
-                <Link
+                <SafeLink
                   key={item.name}
                   href={item.href}
                   className={`
@@ -153,6 +153,7 @@ export default function DoctorSidebar({ isOpen, setIsOpen }: SidebarProps) {
                     }
                   `}
                   onClick={() => setIsOpen(false)}
+                  fallbackBehavior="toast"
                 >
                   <item.icon
                     className={`
@@ -164,7 +165,7 @@ export default function DoctorSidebar({ isOpen, setIsOpen }: SidebarProps) {
                     `}
                   />
                   {item.name}
-                </Link>
+                </SafeLink>
               )
             })}
 
@@ -175,15 +176,16 @@ export default function DoctorSidebar({ isOpen, setIsOpen }: SidebarProps) {
               </h3>
               <div className="mt-2 space-y-1">
                 {quickActions.map((action) => (
-                  <Link
+                  <SafeLink
                     key={action.name}
                     href={action.href}
                     className="group flex items-center px-3 py-2 text-sm font-medium text-gray-600 rounded-md hover:bg-gray-50 hover:text-gray-900 transition-colors"
                     onClick={() => setIsOpen(false)}
+                    fallbackBehavior="toast"
                   >
                     <action.icon className="mr-3 h-4 w-4 text-gray-400 group-hover:text-gray-500" />
                     {action.name}
-                  </Link>
+                  </SafeLink>
                 ))}
               </div>
             </div>
@@ -192,12 +194,13 @@ export default function DoctorSidebar({ isOpen, setIsOpen }: SidebarProps) {
           {/* Footer */}
           <div className="border-t border-gray-200 p-4">
             <div className="space-y-2">
-              <Link
+              <SafeLink
                 href="/privacy-policy"
                 className="block text-xs text-gray-500 hover:text-gray-700 transition-colors"
+                fallbackBehavior="toast"
               >
                 Privacy Policy
-              </Link>
+              </SafeLink>
               <button
                 onClick={logout}
                 className="block w-full text-left text-xs text-gray-500 hover:text-gray-700 transition-colors"

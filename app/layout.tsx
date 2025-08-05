@@ -3,6 +3,7 @@ import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import { Toaster } from 'react-hot-toast'
 import { AuthProvider } from '@/lib/auth-context'
+import ErrorBoundary from '@/components/ErrorBoundary'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -20,31 +21,33 @@ export default function RootLayout({
   return (
     <html lang="en" className="h-full">
       <body className={`${inter.className} h-full bg-gray-50`}>
-        <AuthProvider>
-          <div id="root" className="h-full">
-            {children}
-          </div>
-          <Toaster 
-            position="top-center"
-            toastOptions={{
-              duration: 4000,
-              style: {
-                background: '#363636',
-                color: '#fff',
-              },
-              success: {
+        <ErrorBoundary>
+          <AuthProvider>
+            <div id="root" className="h-full">
+              {children}
+            </div>
+            <Toaster 
+              position="top-center"
+              toastOptions={{
+                duration: 4000,
                 style: {
-                  background: '#22c55e',
+                  background: '#363636',
+                  color: '#fff',
                 },
-              },
-              error: {
-                style: {
-                  background: '#ef4444',
+                success: {
+                  style: {
+                    background: '#22c55e',
+                  },
                 },
-              },
-            }}
-          />
-        </AuthProvider>
+                error: {
+                  style: {
+                    background: '#ef4444',
+                  },
+                },
+              }}
+            />
+          </AuthProvider>
+        </ErrorBoundary>
       </body>
     </html>
   )

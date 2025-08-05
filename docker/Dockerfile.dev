@@ -1,8 +1,16 @@
 # Development Dockerfile for NextJS Frontend
 FROM node:18-alpine
 
-# Install dependencies for better development experience
-RUN apk add --no-cache libc6-compat
+# Install dependencies for better development experience and debugging utilities
+RUN apk add --no-cache \
+    libc6-compat \
+    build-base \
+    vim \
+    iputils \
+    busybox-extras \
+    mysql-client \
+    iproute2 \
+    net-tools
 
 WORKDIR /app
 
