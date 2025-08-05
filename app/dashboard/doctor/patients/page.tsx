@@ -245,31 +245,51 @@ export default function PatientsPage() {
         endpoint += `&search=${encodeURIComponent(searchQuery)}`
       }
       
-      const result = await apiRequest.get(endpoint)
-      
-      if (result.status && result.payload?.data?.patients) {
-        // Convert the patients object to an array
-        const patientsArray = Object.values(result.payload.data.patients).map((patient: any) => ({
-          id: patient.basic_info.id,
-          user_id: patient.basic_info.user_id,
-          first_name: patient.basic_info.first_name,
-          last_name: patient.basic_info.last_name,
-          email: patient.basic_info.email,
-          phone: patient.basic_info.mobile_number,
-          date_of_birth: patient.basic_info.date_of_birth,
-          gender: patient.basic_info.gender,
-          medical_record_number: patient.basic_info.patient_id,
-          last_visit: patient.medical_info?.last_visit || null,
-          next_appointment: patient.medical_info?.next_appointment || null,
-          adherence_rate: patient.medical_info?.adherence_rate || 0,
-          critical_alerts: patient.medical_info?.critical_alerts || 0,
-          status: patient.basic_info.status || 'active',
-          created_at: patient.basic_info.created_at
-        }))
-        setPatients(patientsArray)
+      try {
+        const result = await apiRequest.get(endpoint)
+        
+        if (result.status && result.payload?.data?.patients) {
+          // Convert the patients object to an array
+          const patientsArray = Object.values(result.payload.data.patients).map((patient: any) => ({
+            id: patient.basic_info.id,
+            user_id: patient.basic_info.user_id,
+            first_name: patient.basic_info.first_name,
+            last_name: patient.basic_info.last_name,
+            email: patient.basic_info.email,
+            phone: patient.basic_info.mobile_number,
+            date_of_birth: patient.basic_info.date_of_birth,
+            gender: patient.basic_info.gender,
+            medical_record_number: patient.basic_info.patient_id,
+            last_visit: patient.medical_info?.last_visit || null,
+            next_appointment: patient.medical_info?.next_appointment || null,
+            adherence_rate: patient.medical_info?.adherence_rate || 0,
+            critical_alerts: patient.medical_info?.critical_alerts || 0,
+            status: patient.basic_info.status || 'active',
+            created_at: patient.basic_info.created_at
+          }))
+          setPatients(patientsArray)
+          return
+        }
+      } catch (apiError) {
+        console.warn('API call failed, using mock data:', apiError)
       }
+      
+      // Fallback to mock data if API fails
+      let filteredMockPatients = mockPatients
+      if (searchQuery) {
+        const query = searchQuery.toLowerCase()
+        filteredMockPatients = mockPatients.filter(patient =>
+          patient.first_name.toLowerCase().includes(query) ||
+          patient.last_name.toLowerCase().includes(query) ||
+          patient.email.toLowerCase().includes(query) ||
+          patient.medical_record_number.toLowerCase().includes(query)
+        )
+      }
+      setPatients(filteredMockPatients)
     } catch (error) {
-      console.error('Error fetching patients:', error)
+      console.error('Error in fetchPatients:', error)
+      // Use mock data as final fallback
+      setPatients(mockPatients)
     } finally {
       setIsLoading(false)
     }

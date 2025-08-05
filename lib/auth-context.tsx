@@ -47,36 +47,49 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         if (token && userString) {
           const user = JSON.parse(userString) as User
           
-          // Verify token is still valid
-          const response = await authAPI.verifyToken()
-          if (response.success && response.data) {
+          try {
+            // Try to verify token is still valid
+            const response = await authAPI.verifyToken()
+            if (response.success && response.data) {
+              setState({
+                user: response.data.user,
+                token,
+                isLoading: false,
+                isAuthenticated: true,
+              })
+              logger.info('Token verification successful')
+              return
+            } else {
+              logger.warn('Token verification failed:', response.message)
+            }
+          } catch (verifyError) {
+            logger.warn('Token verification error, but continuing with stored data:', verifyError)
+            // If verification fails due to network issues, but we have stored data, use it
             setState({
-              user: response.data.user,
+              user,
               token,
               isLoading: false,
               isAuthenticated: true,
             })
-          } else {
-            // Token is invalid, clear storage
-            localStorage.removeItem('authToken')
-            localStorage.removeItem('user')
-            setState({
-              user: null,
-              token: null,
-              isLoading: false,
-              isAuthenticated: false,
-            })
+            return
           }
-        } else {
-          setState(prev => ({
-            ...prev,
-            isLoading: false,
-          }))
+          
+          // Only clear storage if verification explicitly failed (not network error)
+          logger.info('Clearing invalid auth data')
+          localStorage.removeItem('authToken')
+          localStorage.removeItem('user')
         }
+        
+        // No token or token verification failed
+        setState({
+          user: null,
+          token: null,
+          isLoading: false,
+          isAuthenticated: false,
+        })
       } catch (error) {
         logger.error('Auth initialization error:', error)
-        localStorage.removeItem('authToken')
-        localStorage.removeItem('user')
+        // Don't clear storage on initialization error - might be network issue
         setState({
           user: null,
           token: null,

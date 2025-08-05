@@ -36,8 +36,11 @@ api.interceptors.response.use(
   (response: AxiosResponse) => response,
   (error: AxiosError) => {
     if (error.response?.status === 401) {
-      // Token expired or invalid
-      if (typeof window !== 'undefined') {
+      // Don't redirect if it's a verify token request - let the auth context handle it
+      const isVerifyRequest = error.config?.url?.includes('/auth/verify')
+      
+      if (!isVerifyRequest && typeof window !== 'undefined') {
+        // Token expired or invalid for non-verify requests
         localStorage.removeItem('authToken')
         localStorage.removeItem('user')
         window.location.href = '/auth/login'
@@ -147,10 +150,44 @@ export const authAPI = {
   verifyToken: async (): Promise<AuthResponse> => {
     try {
       const response = await api.get('/auth/verify')
-      return response.data
+      const backendResponse = response.data
+      logger.debug('Verify token response:', backendResponse)
+      
+      // Transform backend response format similar to login
+      if (backendResponse.status && backendResponse.payload?.data) {
+        const userData = backendResponse.payload.data.users
+        
+        if (userData) {
+          // Extract user data from the nested structure
+          const userKey = Object.keys(userData)[0]
+          const user = userData[userKey]?.basic_info
+          
+          if (user) {
+            return {
+              success: true,
+              data: {
+                user: user,
+                token: localStorage.getItem('authToken') || '', // Use existing token
+                expires_in: 86400
+              },
+              message: backendResponse.payload.message || 'Token verified'
+            }
+          }
+        }
+      }
+      
+      return {
+        success: false,
+        message: backendResponse.payload?.message || 'Token verification failed'
+      }
     } catch (error) {
+      logger.error('Token verification error:', error)
       if (axios.isAxiosError(error) && error.response) {
-        return error.response.data
+        const backendError = error.response.data
+        return {
+          success: false,
+          message: backendError.payload?.message || 'Token verification failed'
+        }
       }
       throw new Error('Network error occurred')
     }
