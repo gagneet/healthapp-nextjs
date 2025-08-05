@@ -68,11 +68,59 @@ const schemas = {
     weight_kg: Joi.number().min(0).max(1000).optional(),
     comorbidities: Joi.string().optional(),
     allergies: Joi.string().optional(),
-    patient_id: Joi.string().max(100).optional(), // Allow custom patient ID in any format
-    emergency_contact: Joi.object({
-      contact_number: Joi.string().pattern(/^\+?[1-9]\d{1,14}$/).optional().allow(''),
-      other_details: Joi.string().max(500).optional().allow('')
-    }).optional().allow(null) // Allow emergency_contact to be null or optional
+    medical_record_number: Joi.string().max(100).optional(), // Allow custom patient ID in any format
+    emergency_contacts: Joi.array().items(
+      Joi.object({
+        contact_number: Joi.string().pattern(/^\+?[1-9]\d{1,14}$/).optional().allow(''),
+        other_details: Joi.string().max(500).optional().allow(''),
+        name: Joi.string().max(200).optional().allow(''),
+        relationship: Joi.string().max(100).optional().allow('')
+      })
+    ).optional().allow(null), // Allow emergency_contacts to be null or optional
+    
+    insurance_information: Joi.object({
+      // Primary Insurance
+      primary: Joi.object({
+        insurance_company: Joi.string().max(200).optional().allow(''),
+        policy_number: Joi.string().max(50).optional().allow(''),
+        group_number: Joi.string().max(50).optional().allow(''),
+        member_id: Joi.string().max(50).optional().allow(''),
+        subscriber_name: Joi.string().max(200).optional().allow(''),
+        relationship_to_subscriber: Joi.string().valid('self', 'spouse', 'child', 'parent', 'other').optional().allow(''),
+        effective_date: Joi.date().optional().allow(null),
+        expiration_date: Joi.date().optional().allow(null),
+        copay_amount: Joi.number().min(0).optional().allow(null),
+        deductible_amount: Joi.number().min(0).optional().allow(null),
+        phone_number: Joi.string().pattern(/^\+?[1-9]\d{1,14}$/).optional().allow('')
+      }).optional().allow(null),
+      
+      // Secondary Insurance (optional)
+      secondary: Joi.object({
+        insurance_company: Joi.string().max(200).optional().allow(''),
+        policy_number: Joi.string().max(50).optional().allow(''),
+        group_number: Joi.string().max(50).optional().allow(''),
+        member_id: Joi.string().max(50).optional().allow(''),
+        subscriber_name: Joi.string().max(200).optional().allow(''),
+        relationship_to_subscriber: Joi.string().valid('self', 'spouse', 'child', 'parent', 'other').optional().allow(''),
+        effective_date: Joi.date().optional().allow(null),
+        expiration_date: Joi.date().optional().allow(null),
+        copay_amount: Joi.number().min(0).optional().allow(null),
+        deductible_amount: Joi.number().min(0).optional().allow(null),
+        phone_number: Joi.string().pattern(/^\+?[1-9]\d{1,14}$/).optional().allow('')
+      }).optional().allow(null),
+      
+      // Additional insurance metadata
+      coverage_type: Joi.string().valid('individual', 'family', 'employer', 'medicare', 'medicaid', 'other').optional().allow(''),
+      notes: Joi.string().max(1000).optional().allow('')
+    }).optional().allow(null),
+    
+    // Clinical/Treatment Plan fields (for care plan creation)
+    symptoms: Joi.array().items(Joi.string().max(200)).optional().allow(null),
+    diagnosis: Joi.array().items(Joi.string().max(200)).optional().allow(null),
+    treatment: Joi.string().max(200).optional().allow(''),
+    clinical_notes: Joi.string().max(5000).optional().allow(''),
+    condition: Joi.string().max(500).optional().allow(''),
+    severity: Joi.string().valid('Mild', 'Moderate', 'Severe', '').optional().allow('')
   }),
   
   medicationCreate: Joi.object({
