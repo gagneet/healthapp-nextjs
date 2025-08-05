@@ -2,8 +2,7 @@
 import jwt from 'jsonwebtoken';
 import { verifyToken } from '../config/jwt.js';
 import { User, UserRole } from '../models/index.js';
-import { USER_CATEGORIES } from '../config/constants.js';
-import { ACCOUNT_STATUS } from '../config/enums.js';
+import { USER_CATEGORIES, ACCOUNT_STATUS } from '../config/constants.js';
 import cacheService from '../services/CacheService.js';
 
 const authenticate = async (req, res, next) => {
@@ -26,8 +25,13 @@ const authenticate = async (req, res, next) => {
     const token = authHeader.substring(7);
     const decoded = verifyToken(token);
     
-    // Check cache first for performance optimization
-    let user = await cacheService.getCachedUser(decoded.userId);
+    // Check cache first for performance optimization (gracefully handle Redis failures)
+    let user = null;
+    try {
+      user = await cacheService.getCachedUser(decoded.userId);
+    } catch (cacheError) {
+      // Ignore cache errors and continue with database lookup
+    }
     
     if (!user) {
       // Only hit database if not in cache
@@ -41,8 +45,12 @@ const authenticate = async (req, res, next) => {
       });
       
       if (user) {
-        // Cache user data for 15 minutes to reduce database load
-        await cacheService.cacheUser(decoded.userId, user.toJSON(), 900);
+        // Cache user data for 15 minutes to reduce database load (handle cache failures gracefully)
+        try {
+          await cacheService.cacheUser(decoded.userId, user.toJSON(), 900);
+        } catch (cacheError) {
+          // Ignore cache errors - authentication should still work
+        }
       }
     }
 

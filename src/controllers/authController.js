@@ -184,6 +184,68 @@ class AuthController {
     }
   }
 
+  async verify(req, res, next) {
+    try {
+      // req.user is populated by authenticate middleware
+      const user = req.user;
+
+      // Get user with all necessary associations
+      const fullUser = await User.findByPk(user.id, {
+        include: [{
+          model: UserRole,
+          as: 'roles',
+          attributes: ['id', 'linked_with', 'linked_id']
+        }]
+      });
+
+      if (!fullUser) {
+        return res.status(401).json({
+          status: false,
+          statusCode: 401,
+          payload: {
+            error: {
+              status: 'UNAUTHORIZED',
+              message: 'User not found'
+            }
+          }
+        });
+      }
+
+      // Format response similar to login
+      const responseData = {
+        users: {
+          [fullUser.id]: {
+            basic_info: {
+              id: fullUser.id.toString(),
+              email: fullUser.email,
+              phone: fullUser.phone,
+              first_name: fullUser.first_name,
+              last_name: fullUser.last_name,
+              role: fullUser.role,
+              account_status: fullUser.account_status,
+              email_verified: fullUser.email_verified
+            },
+            feedId: Buffer.from(`${fullUser.role}_${fullUser.id}`).toString('base64'),
+            notificationToken: 'getstream_token',
+            created_at: fullUser.created_at,
+            updated_at: fullUser.updated_at
+          }
+        }
+      };
+
+      res.status(200).json({
+        status: true,
+        statusCode: 200,
+        payload: {
+          data: responseData,
+          message: 'Token verified successfully'
+        }
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
   async refreshToken(req, res, next) {
     try {
       const { refresh_token } = req.body;

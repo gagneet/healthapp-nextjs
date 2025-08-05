@@ -3,6 +3,7 @@ import express from 'express';
 import authController from '../controllers/authController.js';
 import { validateRequest, schemas } from '../middleware/validation.js';
 import { authLimiter } from '../middleware/rateLimiter.js';
+import { authenticate } from '../middleware/auth.js';
 
 const router = express.Router();
 
@@ -18,6 +19,12 @@ router.post('/sign-up',
   authLimiter,
   validateRequest(schemas.patientCreate), // Modify for user creation
   authController.signUp
+);
+
+// GET /api/auth/verify - Verify current token
+router.get('/verify',
+  authenticate,
+  authController.verify
 );
 
 // POST /api/auth/refresh-token
