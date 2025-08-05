@@ -27,40 +27,54 @@ router.get('/date',
   appointmentController.getAppointmentsByDate
 );
 
+// GET /api/appointments/slots/available?doctorId=123&date=2023-01-15
+router.get('/slots/available',
+  authenticate,
+  appointmentController.getDoctorAvailableSlots
+);
+
+// GET /api/appointments/calendar/doctor/:doctorId?startDate=2023-01-01&endDate=2023-01-31
+router.get('/calendar/doctor/:doctorId?',
+  authenticate,
+  authorize(USER_CATEGORIES.DOCTOR, USER_CATEGORIES.HSP, USER_CATEGORIES.ADMIN),
+  appointmentController.getDoctorCalendar
+);
+
+// GET /api/appointments/calendar/patient/:patientId?startDate=2023-01-01&endDate=2023-01-31
+router.get('/calendar/patient/:patientId?',
+  authenticate,
+  appointmentController.getPatientCalendar
+);
+
+// POST /api/appointments/availability/doctor/:doctorId
+router.post('/availability/doctor/:doctorId?',
+  authenticate,
+  authorize(USER_CATEGORIES.DOCTOR, USER_CATEGORIES.HSP, USER_CATEGORIES.ADMIN),
+  validateRequest(schemas.doctorAvailability),
+  appointmentController.setDoctorAvailability
+);
+
+// PUT /api/appointments/:appointmentId/reschedule
+router.put('/:appointmentId/reschedule',
+  authenticate,
+  authorize(USER_CATEGORIES.DOCTOR, USER_CATEGORIES.HSP),
+  validateRequest(schemas.appointmentReschedule),
+  appointmentController.rescheduleAppointment
+);
+
 // PUT /api/appointments/:appointmentId
 router.put('/:appointmentId',
   authenticate,
   authorize(USER_CATEGORIES.DOCTOR, USER_CATEGORIES.HSP),
-  (req, res) => {
-    res.status(501).json({
-      status: false,
-      statusCode: 501,
-      payload: {
-        error: {
-          status: 'NOT_IMPLEMENTED',
-          message: 'Appointment update not implemented yet'
-        }
-      }
-    });
-  }
+  validateRequest(schemas.appointmentUpdate),
+  appointmentController.updateAppointment
 );
 
 // DELETE /api/appointments/:appointmentId
 router.delete('/:appointmentId',
   authenticate,
   authorize(USER_CATEGORIES.DOCTOR, USER_CATEGORIES.HSP),
-  (req, res) => {
-    res.status(501).json({
-      status: false,
-      statusCode: 501,
-      payload: {
-        error: {
-          status: 'NOT_IMPLEMENTED',
-          message: 'Appointment cancellation not implemented yet'
-        }
-      }
-    });
-  }
+  appointmentController.cancelAppointment
 );
 
 export default router;

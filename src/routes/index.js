@@ -11,6 +11,7 @@ import adminRoutes from './admin.js';
 import searchRoutes from './search.js';
 import symptomsRoutes from './symptoms.js';
 import secondaryDoctorRoutes from './secondaryDoctorRoutes.js';
+import subscriptionRoutes from './subscriptions.js';
 
 const router = express.Router();
 
@@ -25,6 +26,7 @@ router.use('/vitals', vitalsRoutes);
 router.use('/admin', adminRoutes);
 router.use('/search', searchRoutes);
 router.use('/symptoms', symptomsRoutes);
+router.use('/subscriptions', subscriptionRoutes);
 router.use('/', secondaryDoctorRoutes);
 
 // API info endpoint

@@ -57,8 +57,8 @@ services:
       REDIS_HOST: redis
       REDIS_PORT: 6379
       # Application variables
-      JWT_SECRET: 25af6001e43881f727388f44e0f6fff837510b0649fe9393987f009c595156f778442654270516863b00617b478aa46dea6311f74fb95325d3c9a344b125d033
-      FRONTEND_URL: http://192.168.0.148:3002
+      JWT_SECRET: ${JWT_SECRET:-dev_jwt_secret_key_change_in_production}
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3002}
       LOG_LEVEL: debug
     volumes:
       - ../src:/app/src
@@ -86,7 +86,7 @@ services:
     environment:
       NODE_ENV: development
       BACKEND_URL: http://backend:3001
-      NEXT_PUBLIC_API_URL: http://192.168.0.148:3001/api
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:3001/api}
     volumes:
       - ../app:/app/app
       - ../components:/app/components

@@ -18,7 +18,8 @@ module.exports = {
           'INACTIVE', 
           'PAST_DUE',
           'CANCELLED',
-          'EXPIRED'
+          'EXPIRED',
+          'TRIALING'
         );
       `);
     } catch (error) {
@@ -80,10 +81,44 @@ module.exports = {
         allowNull: true,
       },
       
+      trial_start: {
+        type: Sequelize.DATEONLY,
+        allowNull: true,
+      },
+      trial_end: {
+        type: Sequelize.DATEONLY,
+        allowNull: true,
+      },
+      
       // Payment
       payment_method_id: {
         type: Sequelize.STRING(255),
         allowNull: true,
+      },
+      stripe_subscription_id: {
+        type: Sequelize.STRING(255),
+        allowNull: true,
+        unique: true,
+      },
+      stripe_customer_id: {
+        type: Sequelize.STRING(255),
+        allowNull: true,
+      },
+      last_payment_date: {
+        type: Sequelize.DATE,
+        allowNull: true,
+      },
+      last_payment_amount: {
+        type: Sequelize.DECIMAL(10, 2),
+        allowNull: true,
+      },
+      failure_count: {
+        type: Sequelize.INTEGER,
+        defaultValue: 0,
+      },
+      metadata: {
+        type: Sequelize.JSON,
+        defaultValue: {},
       },
       
       // Timestamps

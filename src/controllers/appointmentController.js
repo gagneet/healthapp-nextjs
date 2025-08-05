@@ -1,6 +1,7 @@
 // src/controllers/appointmentController.js
-import { Appointment, Patient, Doctor, User, ScheduleEvent } from '../models/index.js';
+import { Appointment, Patient, Doctor, User, ScheduleEvent, AppointmentSlot } from '../models/index.js';
 import { Op } from 'sequelize';
+import CalendarService from '../services/CalendarService.js';
 
 class AppointmentController {
   async createAppointment(req, res, next) {
@@ -13,8 +14,55 @@ class AppointmentController {
         appointment_type,
         treatment_id,
         repeat_type,
-        repeat_count
+        repeat_count,
+        slot_id
       } = req.body;
+
+      const startTime = new Date(start_date);
+      const endTime = new Date(end_date);
+
+      // Check for conflicts
+      const conflicts = await CalendarService.checkConflicts(
+        req.user.id,
+        startTime,
+        endTime
+      );
+
+      if (conflicts.length > 0) {
+        return res.status(409).json({
+          status: false,
+          statusCode: 409,
+          payload: {
+            error: {
+              status: 'CONFLICT',
+              message: 'Time slot conflicts with existing appointment',
+              conflicts: conflicts.map(c => ({
+                id: c.id,
+                start_time: c.start_time,
+                end_time: c.end_time
+              }))
+            }
+          }
+        });
+      }
+
+      // Book slot if provided
+      if (slot_id) {
+        try {
+          await CalendarService.bookAppointmentSlot(slot_id, null);
+        } catch (error) {
+          return res.status(400).json({
+            status: false,
+            statusCode: 400,
+            payload: {
+              error: {
+                status: 'SLOT_UNAVAILABLE',
+                message: error.message
+              }
+            }
+          });
+        }
+      }
 
       const appointment = await Appointment.create({
         participant_one_type: req.userCategory,
@@ -24,17 +72,23 @@ class AppointmentController {
         organizer_type: req.userCategory,
         organizer_id: req.user.id,
         description,
-        start_date,
-        end_date,
-        start_time: new Date(start_date),
-        end_time: new Date(end_date),
+        start_date: startTime.toISOString().split('T')[0],
+        end_date: endTime.toISOString().split('T')[0],
+        start_time: startTime,
+        end_time: endTime,
         details: {
           type: appointment_type,
           treatment_id,
-          status: 'scheduled'
+          status: 'scheduled',
+          slot_id
         },
         rr_rule: repeat_type !== 'none' ? this.generateRRule(repeat_type) : null
       });
+
+      // Update slot with appointment ID
+      if (slot_id) {
+        await CalendarService.bookAppointmentSlot(slot_id, appointment.id);
+      }
 
       // Create schedule events
       await this.createAppointmentSchedule(appointment, repeat_count);
@@ -254,6 +308,306 @@ class AppointmentController {
           participant_two_id: appointment.participant_two_id
         }
       });
+    }
+  }
+
+  // New calendar and availability methods
+  async getDoctorAvailableSlots(req, res, next) {
+    try {
+      const { doctorId, date, appointmentType } = req.query;
+
+      if (!doctorId || !date) {
+        return res.status(400).json({
+          status: false,
+          statusCode: 400,
+          payload: {
+            error: {
+              status: 'VALIDATION_ERROR',
+              message: 'Doctor ID and date are required'
+            }
+          }
+        });
+      }
+
+      const slots = await CalendarService.getAvailableSlots(doctorId, date, appointmentType);
+
+      res.status(200).json({
+        status: true,
+        statusCode: 200,
+        payload: {
+          data: { slots, date, doctor_id: doctorId },
+          message: 'Available slots retrieved successfully'
+        }
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async getDoctorCalendar(req, res, next) {
+    try {
+      const { doctorId } = req.params;
+      const { startDate, endDate } = req.query;
+
+      // Use current user's ID if doctorId not provided and user is doctor
+      const targetDoctorId = doctorId || (req.userCategory === 'doctor' ? req.user.id : null);
+
+      if (!targetDoctorId) {
+        return res.status(400).json({
+          status: false,
+          statusCode: 400,
+          payload: {
+            error: {
+              status: 'VALIDATION_ERROR',
+              message: 'Doctor ID is required'
+            }
+          }
+        });
+      }
+
+      const defaultStartDate = startDate || new Date().toISOString().split('T')[0];
+      const defaultEndDate = endDate || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+
+      const calendar = await CalendarService.getDoctorCalendar(targetDoctorId, defaultStartDate, defaultEndDate);
+
+      res.status(200).json({
+        status: true,
+        statusCode: 200,
+        payload: {
+          data: calendar,
+          message: 'Doctor calendar retrieved successfully'
+        }
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async getPatientCalendar(req, res, next) {
+    try {
+      const { patientId } = req.params;
+      const { startDate, endDate } = req.query;
+
+      // Use current user's ID if patientId not provided and user is patient
+      const targetPatientId = patientId || (req.userCategory === 'patient' ? req.user.id : null);
+
+      if (!targetPatientId) {
+        return res.status(400).json({
+          status: false,
+          statusCode: 400,
+          payload: {
+            error: {
+              status: 'VALIDATION_ERROR',
+              message: 'Patient ID is required'
+            }
+          }
+        });
+      }
+
+      const defaultStartDate = startDate || new Date().toISOString().split('T')[0];
+      const defaultEndDate = endDate || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+
+      const calendar = await CalendarService.getPatientCalendar(targetPatientId, defaultStartDate, defaultEndDate);
+
+      res.status(200).json({
+        status: true,
+        statusCode: 200,
+        payload: {
+          data: calendar,
+          message: 'Patient calendar retrieved successfully'
+        }
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async setDoctorAvailability(req, res, next) {
+    try {
+      const { doctorId } = req.params;
+      const availabilityData = req.body;
+
+      // Use current user's ID if doctorId not provided and user is doctor
+      const targetDoctorId = doctorId || (req.userCategory === 'doctor' ? req.user.id : null);
+
+      if (!targetDoctorId) {
+        return res.status(400).json({
+          status: false,
+          statusCode: 400,
+          payload: {
+            error: {
+              status: 'VALIDATION_ERROR',
+              message: 'Doctor ID is required'
+            }
+          }
+        });
+      }
+
+      const availability = await CalendarService.setDoctorAvailability(targetDoctorId, availabilityData);
+
+      res.status(200).json({
+        status: true,
+        statusCode: 200,
+        payload: {
+          data: { availability },
+          message: 'Doctor availability updated successfully'
+        }
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async rescheduleAppointment(req, res, next) {
+    try {
+      const { appointmentId } = req.params;
+      const { start_time, end_time, slot_id } = req.body;
+
+      if (!start_time || !end_time) {
+        return res.status(400).json({
+          status: false,
+          statusCode: 400,
+          payload: {
+            error: {
+              status: 'VALIDATION_ERROR',
+              message: 'Start time and end time are required'
+            }
+          }
+        });
+      }
+
+      const appointment = await CalendarService.rescheduleAppointment(
+        appointmentId,
+        new Date(start_time),
+        new Date(end_time),
+        slot_id
+      );
+
+      res.status(200).json({
+        status: true,
+        statusCode: 200,
+        payload: {
+          data: { appointment },
+          message: 'Appointment rescheduled successfully'
+        }
+      });
+    } catch (error) {
+      if (error.message.includes('conflict')) {
+        return res.status(409).json({
+          status: false,
+          statusCode: 409,
+          payload: {
+            error: {
+              status: 'CONFLICT',
+              message: error.message
+            }
+          }
+        });
+      }
+      next(error);
+    }
+  }
+
+  async updateAppointment(req, res, next) {
+    try {
+      const { appointmentId } = req.params;
+      const updateData = req.body;
+
+      const appointment = await Appointment.findByPk(appointmentId);
+      
+      if (!appointment) {
+        return res.status(404).json({
+          status: false,
+          statusCode: 404,
+          payload: {
+            error: {
+              status: 'NOT_FOUND',
+              message: 'Appointment not found'
+            }
+          }
+        });
+      }
+
+      // Update appointment details
+      await appointment.update({
+        description: updateData.description || appointment.description,
+        details: {
+          ...appointment.details,
+          ...updateData.details,
+          status: updateData.status || appointment.details?.status,
+          notes: updateData.notes || appointment.details?.notes
+        }
+      });
+
+      res.status(200).json({
+        status: true,
+        statusCode: 200,
+        payload: {
+          data: { appointment },
+          message: 'Appointment updated successfully'
+        }
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async cancelAppointment(req, res, next) {
+    try {
+      const { appointmentId } = req.params;
+      const { cancellation_reason } = req.body;
+
+      const appointment = await Appointment.findByPk(appointmentId);
+      
+      if (!appointment) {
+        return res.status(404).json({
+          status: false,
+          statusCode: 404,
+          payload: {
+            error: {
+              status: 'NOT_FOUND',
+              message: 'Appointment not found'
+            }
+          }
+        });
+      }
+
+      // Release slot if exists
+      if (appointment.details?.slot_id) {
+        await CalendarService.releaseAppointmentSlot(appointment.details.slot_id);
+      }
+
+      // Update appointment status
+      await appointment.update({
+        details: {
+          ...appointment.details,
+          status: 'cancelled',
+          cancelled_at: new Date(),
+          cancellation_reason
+        }
+      });
+
+      // Update related schedule events
+      await ScheduleEvent.update(
+        { status: 'cancelled' },
+        {
+          where: {
+            event_type: 'appointment',
+            event_id: appointmentId
+          }
+        }
+      );
+
+      res.status(200).json({
+        status: true,
+        statusCode: 200,
+        payload: {
+          data: { appointment },
+          message: 'Appointment cancelled successfully'
+        }
+      });
+    } catch (error) {
+      next(error);
     }
   }
 }

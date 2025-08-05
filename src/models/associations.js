@@ -32,6 +32,12 @@ export default (db) => {
     AuditLog,
     Speciality,
     PatientDoctorAssignment,
+    DoctorAvailability,
+    AppointmentSlot,
+    ServicePlan,
+    PatientSubscription,
+    Payment,
+    PaymentMethod,
   } = db;
 
   // Organization associations
@@ -714,6 +720,138 @@ export default (db) => {
       foreignKey: 'doctor_id',
       otherKey: 'patient_id',
       as: 'assignedPatients'
+    });
+  }
+
+  // Doctor Availability associations
+  if (DoctorAvailability && Doctor) {
+    Doctor.hasMany(DoctorAvailability, {
+      foreignKey: 'doctor_id',
+      as: 'availability'
+    });
+    DoctorAvailability.belongsTo(Doctor, {
+      foreignKey: 'doctor_id',
+      as: 'doctor'
+    });
+  }
+
+  // Appointment Slot associations
+  if (AppointmentSlot && Doctor) {
+    Doctor.hasMany(AppointmentSlot, {
+      foreignKey: 'doctor_id',
+      as: 'slots'
+    });
+    AppointmentSlot.belongsTo(Doctor, {
+      foreignKey: 'doctor_id',
+      as: 'doctor'
+    });
+  }
+
+  // Appointment to Slot association
+  if (Appointment && AppointmentSlot) {
+    Appointment.belongsTo(AppointmentSlot, {
+      foreignKey: 'slot_id',
+      as: 'slot'
+    });
+    AppointmentSlot.hasMany(Appointment, {
+      foreignKey: 'slot_id',
+      as: 'appointments'
+    });
+  }
+
+  // Service Plan associations
+  if (ServicePlan && HealthcareProvider) {
+    HealthcareProvider.hasMany(ServicePlan, {
+      foreignKey: 'provider_id',
+      as: 'servicePlans'
+    });
+    ServicePlan.belongsTo(HealthcareProvider, {
+      foreignKey: 'provider_id',
+      as: 'provider'
+    });
+  }
+
+  // Patient Subscription associations
+  if (PatientSubscription) {
+    if (Patient) {
+      Patient.hasMany(PatientSubscription, {
+        foreignKey: 'patient_id',
+        as: 'subscriptions'
+      });
+      PatientSubscription.belongsTo(Patient, {
+        foreignKey: 'patient_id',
+        as: 'patient'
+      });
+    }
+
+    if (HealthcareProvider) {
+      HealthcareProvider.hasMany(PatientSubscription, {
+        foreignKey: 'provider_id',
+        as: 'subscriptions'
+      });
+      PatientSubscription.belongsTo(HealthcareProvider, {
+        foreignKey: 'provider_id',
+        as: 'provider'
+      });
+    }
+
+    if (ServicePlan) {
+      ServicePlan.hasMany(PatientSubscription, {
+        foreignKey: 'service_plan_id',
+        as: 'subscriptions'
+      });
+      PatientSubscription.belongsTo(ServicePlan, {
+        foreignKey: 'service_plan_id',
+        as: 'servicePlan'
+      });
+    }
+  }
+
+  // Payment associations
+  if (Payment) {
+    if (PatientSubscription) {
+      PatientSubscription.hasMany(Payment, {
+        foreignKey: 'subscription_id',
+        as: 'payments'
+      });
+      Payment.belongsTo(PatientSubscription, {
+        foreignKey: 'subscription_id',
+        as: 'subscription'
+      });
+    }
+
+    if (Patient) {
+      Patient.hasMany(Payment, {
+        foreignKey: 'patient_id',
+        as: 'payments'
+      });
+      Payment.belongsTo(Patient, {
+        foreignKey: 'patient_id',
+        as: 'patient'
+      });
+    }
+
+    if (HealthcareProvider) {
+      HealthcareProvider.hasMany(Payment, {
+        foreignKey: 'provider_id',
+        as: 'payments'
+      });
+      Payment.belongsTo(HealthcareProvider, {
+        foreignKey: 'provider_id',
+        as: 'provider'
+      });
+    }
+  }
+
+  // Payment Method associations
+  if (PaymentMethod && Patient) {
+    Patient.hasMany(PaymentMethod, {
+      foreignKey: 'patient_id',
+      as: 'paymentMethods'
+    });
+    PaymentMethod.belongsTo(Patient, {
+      foreignKey: 'patient_id',
+      as: 'patient'
     });
   }
 

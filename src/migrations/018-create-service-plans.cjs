@@ -56,8 +56,20 @@ module.exports = {
       
       // Features
       features: {
-        type: Sequelize.JSONB,
+        type: Sequelize.JSON,
         defaultValue: [],
+      },
+      trial_period_days: {
+        type: Sequelize.INTEGER,
+        defaultValue: 0,
+      },
+      setup_fee: {
+        type: Sequelize.DECIMAL(10, 2),
+        defaultValue: 0.00,
+      },
+      stripe_price_id: {
+        type: Sequelize.STRING(255),
+        allowNull: true,
       },
       patient_limit: {
         type: Sequelize.INTEGER,

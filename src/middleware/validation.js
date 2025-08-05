@@ -142,7 +142,80 @@ const schemas = {
     end_date: Joi.date().required(),
     appointment_type: Joi.string().required(),
     repeat_type: Joi.string().valid('none', 'daily', 'weekly', 'monthly').optional(),
-    repeat_count: Joi.number().integer().min(1).optional()
+    repeat_count: Joi.number().integer().min(1).optional(),
+    slot_id: Joi.string().uuid().optional()
+  }),
+
+  doctorAvailability: Joi.object({
+    day_of_week: Joi.number().integer().min(0).max(6).required(),
+    start_time: Joi.string().pattern(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/).required(),
+    end_time: Joi.string().pattern(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/).required(),
+    slot_duration: Joi.number().integer().min(15).max(240).optional(),
+    max_appointments_per_slot: Joi.number().integer().min(1).max(10).optional(),
+    break_start_time: Joi.string().pattern(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/).optional(),
+    break_end_time: Joi.string().pattern(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/).optional()
+  }),
+
+  appointmentReschedule: Joi.object({
+    start_time: Joi.date().required(),
+    end_time: Joi.date().required(),
+    slot_id: Joi.string().uuid().optional()
+  }),
+
+  appointmentUpdate: Joi.object({
+    description: Joi.string().optional(),
+    status: Joi.string().valid('scheduled', 'confirmed', 'in_progress', 'completed', 'cancelled', 'no_show').optional(),
+    notes: Joi.string().optional(),
+    details: Joi.object().optional()
+  }),
+
+  // Subscription management schemas
+  servicePlanCreate: Joi.object({
+    name: Joi.string().min(1).max(255).required(),
+    description: Joi.string().max(1000).optional(),
+    service_type: Joi.string().max(100).optional(),
+    price: Joi.number().positive().required(),
+    currency: Joi.string().length(3).default('USD').optional(),
+    billing_cycle: Joi.string().valid('weekly', 'monthly', 'yearly', 'one-time').required(),
+    features: Joi.array().items(Joi.string()).optional(),
+    patient_limit: Joi.number().integer().min(1).optional(),
+    trial_period_days: Joi.number().integer().min(0).max(365).optional(),
+    setup_fee: Joi.number().min(0).optional()
+  }),
+
+  servicePlanUpdate: Joi.object({
+    name: Joi.string().min(1).max(255).optional(),
+    description: Joi.string().max(1000).optional(),
+    service_type: Joi.string().max(100).optional(),
+    price: Joi.number().positive().optional(),
+    billing_cycle: Joi.string().valid('weekly', 'monthly', 'yearly', 'one-time').optional(),
+    features: Joi.array().items(Joi.string()).optional(),
+    patient_limit: Joi.number().integer().min(1).optional(),
+    trial_period_days: Joi.number().integer().min(0).max(365).optional(),
+    setup_fee: Joi.number().min(0).optional(),
+    is_active: Joi.boolean().optional()
+  }),
+
+  subscriptionCreate: Joi.object({
+    patientId: Joi.string().uuid().required(),
+    providerId: Joi.string().uuid().required(),
+    servicePlanId: Joi.string().uuid().required(),
+    paymentMethodId: Joi.string().uuid().optional()
+  }),
+
+  subscriptionCancel: Joi.object({
+    cancelReason: Joi.string().max(255).optional(),
+    cancelAtPeriodEnd: Joi.boolean().default(true).optional()
+  }),
+
+  paymentMethodAdd: Joi.object({
+    stripePaymentMethodId: Joi.string().required(),
+    setAsDefault: Joi.boolean().default(false).optional()
+  }),
+
+  processPayment: Joi.object({
+    amount: Joi.number().positive().required(),
+    paymentMethodId: Joi.string().uuid().optional()
   }),
   
   pagination: Joi.object({

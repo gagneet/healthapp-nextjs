@@ -33,6 +33,12 @@ import SpecialityModel from './Speciality.js';
 import SymptomsDatabaseModel from './SymptomsDatabase.js';
 import TreatmentDatabaseModel from './TreatmentDatabase.js';
 import PatientDoctorAssignmentModel from './PatientDoctorAssignment.js';
+import DoctorAvailabilityModel from './DoctorAvailability.js';
+import AppointmentSlotModel from './AppointmentSlot.js';
+import ServicePlanModel from './ServicePlan.js';
+import PatientSubscriptionModel from './PatientSubscription.js';
+import PaymentModel from './Payment.js';
+import PaymentMethodModel from './PaymentMethod.js';
 
 // Initialize models with new ES modules format
 const User = UserModel(sequelize);
@@ -65,6 +71,12 @@ const Speciality = SpecialityModel(sequelize, Sequelize.DataTypes);
 const SymptomsDatabase = SymptomsDatabaseModel(sequelize);
 const TreatmentDatabase = TreatmentDatabaseModel(sequelize);
 const PatientDoctorAssignment = PatientDoctorAssignmentModel(sequelize);
+const DoctorAvailability = DoctorAvailabilityModel(sequelize, Sequelize.DataTypes);
+const AppointmentSlot = AppointmentSlotModel(sequelize, Sequelize.DataTypes);
+const ServicePlan = ServicePlanModel(sequelize, Sequelize.DataTypes);
+const PatientSubscription = PatientSubscriptionModel(sequelize, Sequelize.DataTypes);
+const Payment = PaymentModel(sequelize, Sequelize.DataTypes);
+const PaymentMethod = PaymentMethodModel(sequelize, Sequelize.DataTypes);
 
 const db = {
   sequelize,
@@ -137,6 +149,12 @@ export {
   Speciality,
   SymptomsDatabase,
   TreatmentDatabase,
-  PatientDoctorAssignment
+  PatientDoctorAssignment,
+  DoctorAvailability,
+  AppointmentSlot,
+  ServicePlan,
+  PatientSubscription,
+  Payment,
+  PaymentMethod
 };
 export default db;
