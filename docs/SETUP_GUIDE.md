@@ -87,7 +87,7 @@ cp .env.production.example .env.production
 node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
 
 # Use the output in your .env files:
-JWT_SECRET=your-generated-256-bit-secret-key-here
+JWT_SECRET=your-generated-256-bit-secret-key-here (25af6001e43881f727388f44e0f6fff837510b0649fe9393987f009c595156f778442654270516863b00617b478aa46dea6311f74fb95325d3c9a344b125d033)
 JWT_EXPIRES_IN=24h
 JWT_REFRESH_EXPIRES_IN=7d
 ```
@@ -572,7 +572,7 @@ REDIS_PORT=6379
 REDIS_PASSWORD=redis-production-password
 
 # Security
-JWT_SECRET=your-production-jwt-secret-256-bits-minimum
+JWT_SECRET=your-production-jwt-secret-256-bits-minimum (25af6001e43881f727388f44e0f6fff837510b0649fe9393987f009c595156f778442654270516863b00617b478aa46dea6311f74fb95325d3c9a344b125d033)
 BCRYPT_ROUNDS=12
 
 # External services with production credentials

@@ -275,7 +275,7 @@ cp .env.production.example .env.production
 DB_PASSWORD=your-strong-database-password
 
 # Security
-JWT_SECRET=your-256-bit-jwt-secret
+JWT_SECRET=your-256-bit-jwt-secret (25af6001e43881f727388f44e0f6fff837510b0649fe9393987f009c595156f778442654270516863b00617b478aa46dea6311f74fb95325d3c9a344b125d033)
 REDIS_PASSWORD=your-redis-password
 
 # AWS (for file storage)
@@ -622,7 +622,7 @@ docker service rollback healthapp_frontend
 ./scripts/deploy-prod.sh --version v1.0.0-previous
 ```
 
-## ● Clean up steps (run these commands on Ubuntu server):
+## ● Clean up steps (run these commands on Ubuntu server)
 
 ### Stop and remove all containers
 
