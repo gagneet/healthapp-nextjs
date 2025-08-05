@@ -36,7 +36,7 @@ const authenticate = async (req, res, next) => {
     if (!user) {
       // Only hit database if not in cache
       user = await User.findByPk(decoded.userId, {
-        attributes: ['id', 'email', 'first_name', 'last_name', 'category', 'account_status'],
+        attributes: ['id', 'email', 'first_name', 'last_name', 'role', 'account_status'],
         include: [{
           model: UserRole,
           as: 'roles',
@@ -68,10 +68,12 @@ const authenticate = async (req, res, next) => {
     }
 
     req.user = user;
-    req.userCategory = decoded.userCategory || user.category;
+    req.userCategory = decoded.userCategory || user.role;
     req.userRoleId = decoded.userRoleId;
     next();
   } catch (error) {
+    console.error('Auth middleware error:', error.message);
+    console.error('Token verification failed:', error.name);
     return res.status(401).json({
       status: false,
       statusCode: 401,

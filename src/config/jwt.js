@@ -2,6 +2,7 @@
 import jwt from 'jsonwebtoken';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-super-secret-jwt-key';
+console.log('JWT_SECRET being used:', JWT_SECRET?.substring(0, 20) + '...');
 const JWT_EXPIRE = process.env.JWT_EXPIRE || '24h';
 const JWT_REFRESH_EXPIRE = process.env.JWT_REFRESH_EXPIRE || '7d';
 
