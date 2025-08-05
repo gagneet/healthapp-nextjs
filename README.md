@@ -28,11 +28,12 @@ Key Updates Made:
 - Database development with Sequelize commands
 - Code quality standards and modern JavaScript practices
 
-## ✅ Docker Deployment
+## ✅ Docker Swarm Deployment
 
-- Both development and production deployment instructions
-- Service overview with port mappings
-- References to comprehensive deployment guide
+- Production-ready Docker Swarm orchestration
+- Horizontal scaling and load balancing
+- Zero-downtime rolling updates
+- Complete deployment automation
 
 ## ✅ Security & Compliance Features
 
@@ -349,18 +350,50 @@ The project enforces modern JavaScript standards:
 - **TypeScript**: Type safety across frontend and backend
 - **Jest**: Comprehensive testing with coverage reporting
 
-## 🐳 Docker Deployment
+## 🐳 Docker Swarm Deployment
 
-### Development with Docker
+This application uses **Docker Swarm** for production-ready deployment with horizontal scaling, load balancing, and zero-downtime updates.
+
+### Quick Start
 
 ```bash
-# Using deployment script (Linux/macOS)
-chmod +x scripts/*.sh
-./scripts/deploy-dev.sh
+# 1. Initialize Docker Swarm (one-time setup)
+./scripts/docker-swarm-init.sh
 
-# Using Docker Compose directly
-docker-compose -f docker/docker-compose.dev.yml up -d
+# 2. Deploy development environment
+./scripts/deploy-stack.sh dev --auto-yes
+
+# 3. Deploy production environment  
+./scripts/deploy-stack.sh prod --auto-yes
 ```
+
+### Scaling Services
+
+```bash
+# Scale backend to 10 replicas
+docker service scale healthapp_backend=10
+
+# Scale frontend to 5 replicas
+docker service scale healthapp_frontend=5
+
+# Scale during deployment
+./scripts/deploy-stack.sh dev --scale-backend=8 --scale-frontend=4
+```
+
+### Service Management
+
+```bash
+# View all services
+docker stack services healthapp
+
+# View service logs
+docker service logs healthapp_backend -f
+
+# Remove deployment
+docker stack rm healthapp
+```
+
+📖 **Complete Guide**: See [README-Docker-Swarm.md](./README-Docker-Swarm.md) for comprehensive documentation.
 
 ### Production Deployment
 
@@ -545,7 +578,7 @@ npm run seed
 
 - **Create an issue** in the repository for bugs
 - **Check documentation** in the `docs/` folder
-- **Review logs** with `docker-compose logs [service]`
+- **Review logs** with `docker service logs healthapp_[service] -f`
 - **Test environment** with health check endpoints
 
 ## 📄 License
