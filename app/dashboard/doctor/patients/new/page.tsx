@@ -573,7 +573,19 @@ export default function AddPatientPage() {
           name: '',
           relationship: ''
         }] : [],
-        insurance_information: formData.insurance_info,
+        insurance_information: {
+          ...formData.insurance_info,
+          primary: {
+            ...formData.insurance_info.primary,
+            copay_amount: formData.insurance_info.primary.copay_amount ? parseFloat(formData.insurance_info.primary.copay_amount) : null,
+            deductible_amount: formData.insurance_info.primary.deductible_amount ? parseFloat(formData.insurance_info.primary.deductible_amount) : null
+          },
+          secondary: {
+            ...formData.insurance_info.secondary,
+            copay_amount: formData.insurance_info.secondary.copay_amount ? parseFloat(formData.insurance_info.secondary.copay_amount) : null,
+            deductible_amount: formData.insurance_info.secondary.deductible_amount ? parseFloat(formData.insurance_info.secondary.deductible_amount) : null
+          }
+        },
         
         // Additional clinical data (for care plan creation)
         symptoms: formData.symptoms,
