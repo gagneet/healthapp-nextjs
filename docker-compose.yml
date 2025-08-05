@@ -1,140 +1,34 @@
-# Unified Docker Compose for HealthApp Development
+# HealthApp - Docker Swarm Deployment Only
+# 
+# This application is designed for Docker Swarm deployment.
+# Docker Compose is NOT supported for this application.
+#
+# For deployment instructions, see: README-Docker-Swarm.md
+#
+# Quick Start:
+# 1. Initialize Docker Swarm: ./scripts/docker-swarm-init.sh
+# 2. Deploy stack: ./scripts/deploy-stack.sh dev
+#
+# This file exists only to prevent confusion about deployment methods.
+
 version: '3.8'
 
 services:
-  # PostgreSQL Database
-  postgres:
-    image: postgres:15-alpine
-    container_name: healthapp-postgres
-    environment:
-      POSTGRES_DB: ${DB_NAME:-healthapp_dev}
-      POSTGRES_USER: ${DB_USER:-healthapp_user}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-healthapp_pass}
-      POSTGRES_HOST_AUTH_METHOD: trust
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    ports:
-      - "${DB_PORT:-5433}:5432"
-    networks:
-      - healthapp-network
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-healthapp_user} -d ${DB_NAME:-healthapp_dev}"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-  # Redis Cache
-  redis:
-    image: redis:7-alpine
-    container_name: healthapp-redis
-    command: redis-server --appendonly yes
-    volumes:
-      - redis_data:/data
-    ports:
-      - "${REDIS_PORT:-6379}:6379"
-    networks:
-      - healthapp-network
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-  # Backend API
-  backend:
-    build:
-      context: .
-      dockerfile: docker/Dockerfile.backend
-    image: healthapp-backend:${VERSION:-latest}
-    container_name: healthapp-backend
-    environment:
-      NODE_ENV: ${NODE_ENV:-development}
-      PORT: 3001
-      # PostgreSQL connection
-      POSTGRES_HOST: postgres
-      POSTGRES_PORT: 5432
-      POSTGRES_DB: ${DB_NAME:-healthapp_dev}
-      POSTGRES_USER: ${DB_USER:-healthapp_user}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-healthapp_pass}
-      # Redis connection
-      REDIS_HOST: redis
-      REDIS_PORT: 6379
-      # Application config
-      JWT_SECRET: ${JWT_SECRET:-dev_jwt_secret_key_change_in_production}
-      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3002}
-      LOG_LEVEL: ${LOG_LEVEL:-debug}
-      # Stripe (optional)
-      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-}
-      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-}
-    volumes:
-      - ./src:/app/src:${VOLUME_MODE:-rw}
-      - ./scripts:/app/scripts:ro
-      - backend_logs:/app/logs
-    ports:
-      - "${BACKEND_PORT:-3001}:3001"
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-    networks:
-      - healthapp-network
-    restart: unless-stopped
-    command: ${BACKEND_COMMAND:-node src/server.js}
-
-  # Frontend NextJS
-  frontend:
-    build:
-      context: .
-      dockerfile: docker/Dockerfile${FRONTEND_DOCKERFILE_SUFFIX:-.dev}
-    image: healthapp-frontend:${VERSION:-latest}
-    container_name: healthapp-frontend
-    environment:
-      NODE_ENV: ${NODE_ENV:-development}
-      BACKEND_URL: http://backend:3001
-      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:3001/api}
-      PORT: 3000
-    volumes:
-      - ./app:/app/app:${VOLUME_MODE:-rw}
-      - ./components:/app/components:${VOLUME_MODE:-rw}
-      - ./lib:/app/lib:${VOLUME_MODE:-rw}
-      - ./types:/app/types:${VOLUME_MODE:-rw}
-      - ./public:/app/public:${VOLUME_MODE:-rw}
-      - /app/node_modules
-      - /app/.next
-    ports:
-      - "${FRONTEND_PORT:-3002}:3000"
-    depends_on:
-      - backend
-    networks:
-      - healthapp-network
-    restart: unless-stopped
-
-  # pgAdmin for database management (development only)
-  pgadmin:
-    image: dpage/pgadmin4
-    container_name: healthapp-pgadmin
-    environment:
-      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@healthapp.com}
-      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-admin123}
-      PGADMIN_CONFIG_SERVER_MODE: 'False'
-    volumes:
-      - pgadmin_data:/var/lib/pgadmin
-    ports:
-      - "${PGADMIN_PORT:-5050}:80"
-    depends_on:
-      - postgres
-    networks:
-      - healthapp-network
-    profiles:
-      - tools
-
-networks:
-  healthapp-network:
-    driver: bridge
-
-volumes:
-  postgres_data:
-  redis_data:
-  backend_logs:
-  pgadmin_data:
+  deployment-notice:
+    image: alpine:latest
+    command: |
+      sh -c "
+      echo '=============================================='
+      echo 'HealthApp uses Docker Swarm for deployment'
+      echo '=============================================='
+      echo ''
+      echo 'This application is NOT designed for docker-compose.'
+      echo 'Please use the Docker Swarm deployment method:'
+      echo ''
+      echo '1. Initialize Swarm: ./scripts/docker-swarm-init.sh'
+      echo '2. Deploy stack: ./scripts/deploy-stack.sh dev'
+      echo ''
+      echo 'See README-Docker-Swarm.md for full documentation'
+      echo '=============================================='
+      exit 1
+      "

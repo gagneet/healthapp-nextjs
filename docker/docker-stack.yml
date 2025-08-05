@@ -81,7 +81,7 @@ services:
 
   # Backend API - Horizontally scalable
   backend:
-    image: healthapp/backend:${VERSION:-latest}
+    image: healthapp-backend:${VERSION:-latest}
     environment:
       NODE_ENV: production
       PORT: 3001
@@ -151,7 +151,7 @@ services:
 
   # Frontend NextJS - Horizontally scalable
   frontend:
-    image: healthapp/frontend:${VERSION:-latest}
+    image: healthapp-frontend:${VERSION:-latest}
     environment:
       NODE_ENV: production
       BACKEND_URL: http://backend:3001
@@ -362,7 +362,7 @@ services:
 
   # Backup Service
   backup:
-    image: healthapp/backup:latest
+    image: healthapp-backup:latest
     environment:
       DB_HOST: postgres
       DB_NAME: ${DB_NAME:-healthapp_prod}
