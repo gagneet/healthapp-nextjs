@@ -23,7 +23,8 @@
     "lint:fix": "eslint src/ --fix",
     "db:test": "node scripts/test-database-setup.js",
     "db:compare": "node scripts/compare-with-target-schema.js",
-    "db:setup": "npm run migrate && npm run seed"
+    "db:setup": "npm run migrate && npm run seed",
+    "test:node": "node scripts/test-node-compatibility.js"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.525.0",
@@ -86,7 +87,7 @@
     "typescript": "^5.4.0"
   },
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=22.18.0"
   },
   "jest": {
     "testEnvironment": "node",

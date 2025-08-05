@@ -33,7 +33,7 @@ npm run lint:fix             # Auto-fix ESLint issues
 
 ### Core Technology Stack
 
-- **Runtime**: Node.js (>=18.0.0) with ES Modules
+- **Runtime**: Node.js (>=22.18.0 LTS) with ES Modules
 - **Framework**: Express.js with comprehensive middleware stack
 - **Database**: MySQL with Sequelize ORM
 - **Authentication**: JWT with role-based access control  

@@ -1,5 +1,5 @@
 # Development Dockerfile for NextJS Frontend
-FROM node:18-alpine
+FROM node:22.18.0-alpine
 
 # Install dependencies for better development experience and debugging utilities
 RUN apk add --no-cache \

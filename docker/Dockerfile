@@ -1,5 +1,5 @@
 # Multi-stage build for production optimization
-FROM node:18-alpine AS deps
+FROM node:22.18.0-alpine AS deps
 RUN apk add --no-cache libc6-compat build-base
 WORKDIR /app
 
@@ -8,7 +8,7 @@ COPY package.json package-lock.json ./
 RUN npm ci --only=production
 
 # Build stage
-FROM node:18-alpine AS builder
+FROM node:22.18.0-alpine AS builder
 WORKDIR /app
 RUN apk add --no-cache build-base
 COPY package.json package-lock.json ./
@@ -22,7 +22,7 @@ ENV NEXT_TELEMETRY_DISABLED 1
 # RUN npm run build
 
 # Production image
-FROM node:18-alpine AS runner
+FROM node:22.18.0-alpine AS runner
 WORKDIR /app
 
 # Install debugging and networking utilities

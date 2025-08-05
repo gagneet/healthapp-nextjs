@@ -1,5 +1,5 @@
 # Backend API Dockerfile
-FROM node:18-alpine
+FROM node:22.18.0-alpine
 
 # Install system dependencies and debugging utilities
 RUN apk add --no-cache \
