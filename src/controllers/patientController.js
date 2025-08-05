@@ -263,11 +263,23 @@ class PatientController {
 
       // Add filter clauses
       if (req.userCategory === USER_CATEGORIES.DOCTOR) {
-        whereClause['$patient.primary_care_doctor_id$'] = req.user.id;
+        // Get the doctor record ID for the current user
+        const doctorRecord = await Doctor.findOne({
+          where: { user_id: req.user.id }
+        });
+        
+        if (doctorRecord) {
+          whereClause['$patient.primary_care_doctor_id$'] = doctorRecord.id;
+        } else {
+          // If no doctor record exists, return empty results
+          whereClause['$patient.primary_care_doctor_id$'] = null;
+        }
       }
+
 
       if (filter.gender) whereClause.gender = filter.gender;
       if (filter.blood_group) whereClause['$patient.blood_group$'] = filter.blood_group;
+
 
       const { count, rows: users } = await User.findAndCountAll({
         where: whereClause,
@@ -421,12 +433,22 @@ class PatientController {
     };
   }
 
-  buildFilterClause(filter, userCategory, userId) {
+  async buildFilterClause(filter, userCategory, userId) {
     const clause = {};
 
     // Doctor can only see their patients
     if (userCategory === USER_CATEGORIES.DOCTOR) {
-      clause['$patient.primary_care_doctor_id$'] = userId;
+      // Get the doctor record ID for the current user
+      const doctorRecord = await Doctor.findOne({
+        where: { user_id: userId }
+      });
+      
+      if (doctorRecord) {
+        clause['$patient.primary_care_doctor_id$'] = doctorRecord.id;
+      } else {
+        // If no doctor record exists, return empty results
+        clause['$patient.primary_care_doctor_id$'] = null;
+      }
     }
 
     // Additional filters

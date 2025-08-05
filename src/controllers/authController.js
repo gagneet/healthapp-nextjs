@@ -58,6 +58,24 @@ class AuthController {
       // Update last login
       await user.update({ last_login_at: new Date() });
 
+      // Check if user has complete profile based on their role
+      let profileComplete = true;
+      let profileData = null;
+
+      if (user.role === USER_CATEGORIES.DOCTOR) {
+        const doctorRecord = await Doctor.findOne({
+          where: { user_id: user.id }
+        });
+        profileComplete = !!doctorRecord;
+        profileData = doctorRecord;
+      } else if (user.role === USER_CATEGORIES.PATIENT) {
+        const patientRecord = await Patient.findOne({
+          where: { user_id: user.id }
+        });
+        profileComplete = !!patientRecord;
+        profileData = patientRecord;
+      }
+
       // Format response according to API documentation
       const responseData = {
         users: {
@@ -70,7 +88,8 @@ class AuthController {
               last_name: user.last_name,
               role: user.role,
               account_status: user.account_status,
-              email_verified: user.email_verified
+              email_verified: user.email_verified,
+              profile_complete: profileComplete
             },
             feedId: Buffer.from(`${user.role}_${user.id}`).toString('base64'),
             notificationToken: 'getstream_token', // Implement GetStream integration
@@ -79,6 +98,10 @@ class AuthController {
           }
         }
       };
+
+      const loginMessage = profileComplete 
+        ? 'Login successful'
+        : `Login successful. Warning: Your ${user.role.toLowerCase()} profile is incomplete. Please complete your profile setup to access all features.`;
 
       res.status(200).json({
         status: true,
@@ -89,7 +112,8 @@ class AuthController {
             accessToken,
             refreshToken
           },
-          message: 'Login successful'
+          message: loginMessage,
+          profile_complete: profileComplete
         }
       });
     } catch (error) {

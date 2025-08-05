@@ -4,6 +4,7 @@ import { Inter } from 'next/font/google'
 import { Toaster } from 'react-hot-toast'
 import { AuthProvider } from '@/lib/auth-context'
 import ErrorBoundary from '@/components/ErrorBoundary'
+import GlobalErrorHandler from '@/components/GlobalErrorHandler'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -20,8 +21,12 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className="h-full">
+      <head>
+        <meta httpEquiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline' 'unsafe-eval'" />
+      </head>
       <body className={`${inter.className} h-full bg-gray-50`}>
         <ErrorBoundary>
+          <GlobalErrorHandler />
           <AuthProvider>
             <div id="root" className="h-full">
               {children}

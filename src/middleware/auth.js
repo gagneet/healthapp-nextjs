@@ -1,7 +1,7 @@
 // src/middleware/auth.js
 import jwt from 'jsonwebtoken';
 import { verifyToken } from '../config/jwt.js';
-import { User, UserRole } from '../models/index.js';
+import { User, UserRole, Doctor, Patient } from '../models/index.js';
 import { USER_CATEGORIES, ACCOUNT_STATUS } from '../config/constants.js';
 import cacheService from '../services/CacheService.js';
 
@@ -119,4 +119,99 @@ const authorize = (...categories) => {
   };
 };
 
-export { authenticate, authorize };
+/**
+ * Enhanced authorization that validates role-specific profile completeness
+ * Use this for routes that require complete doctor/patient profiles
+ */
+const authorizeWithProfile = (...categories) => {
+  return async (req, res, next) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({
+          status: false,
+          statusCode: 401,
+          payload: {
+            error: {
+              status: 'UNAUTHORIZED',
+              message: 'Authentication required'
+            }
+          }
+        });
+      }
+
+      if (!categories.includes(req.userCategory)) {
+        return res.status(403).json({
+          status: false,
+          statusCode: 403,
+          payload: {
+            error: {
+              status: 'FORBIDDEN',
+              message: 'Insufficient permissions'
+            }
+          }
+        });
+      }
+
+      // Validate role-specific profiles
+      if (req.userCategory === USER_CATEGORIES.DOCTOR) {
+        const doctorRecord = await Doctor.findOne({
+          where: { user_id: req.user.id }
+        });
+
+        if (!doctorRecord) {
+          return res.status(403).json({
+            status: false,
+            statusCode: 403,
+            payload: {
+              error: {
+                status: 'PROFILE_INCOMPLETE',
+                message: 'Doctor profile not found. Please complete your profile setup.'
+              }
+            }
+          });
+        }
+
+        // Attach doctor record to request for downstream use
+        req.doctorProfile = doctorRecord;
+      }
+
+      if (req.userCategory === USER_CATEGORIES.PATIENT) {
+        const patientRecord = await Patient.findOne({
+          where: { user_id: req.user.id }
+        });
+
+        if (!patientRecord) {
+          return res.status(403).json({
+            status: false,
+            statusCode: 403,
+            payload: {
+              error: {
+                status: 'PROFILE_INCOMPLETE',
+                message: 'Patient profile not found. Please complete your profile setup.'
+              }
+            }
+          });
+        }
+
+        // Attach patient record to request for downstream use
+        req.patientProfile = patientRecord;
+      }
+
+      next();
+    } catch (error) {
+      console.error('Profile validation error:', error);
+      return res.status(500).json({
+        status: false,
+        statusCode: 500,
+        payload: {
+          error: {
+            status: 'INTERNAL_ERROR',
+            message: 'Profile validation failed'
+          }
+        }
+      });
+    }
+  };
+};
+
+export { authenticate, authorize, authorizeWithProfile };
