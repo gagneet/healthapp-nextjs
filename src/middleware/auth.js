@@ -3,6 +3,7 @@ import jwt from 'jsonwebtoken';
 import { verifyToken } from '../config/jwt.js';
 import { User, UserRole } from '../models/index.js';
 import { USER_CATEGORIES } from '../config/constants.js';
+import { ACCOUNT_STATUS } from '../config/enums.js';
 
 const authenticate = async (req, res, next) => {
   try {
@@ -31,7 +32,7 @@ const authenticate = async (req, res, next) => {
       }]
     });
 
-    if (!user || user.account_status !== 'active') {
+    if (!user || user.account_status !== ACCOUNT_STATUS.ACTIVE) {
       return res.status(401).json({
         status: false,
         statusCode: 401,
