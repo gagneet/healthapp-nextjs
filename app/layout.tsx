@@ -10,9 +10,6 @@ export const metadata: Metadata = {
   title: 'Healthcare Management Platform',
   description: 'Modern healthcare management platform for doctors, patients, and healthcare providers',
   keywords: 'healthcare, medical, patients, doctors, medication adherence, appointments',
-  icons: {
-    icon: '/favicon.ico',
-  },
 }
 
 export default function RootLayout({
