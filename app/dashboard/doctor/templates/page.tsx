@@ -8,7 +8,7 @@ import {
   EyeIcon,
   PencilIcon,
   TrashIcon,
-  DuplicateIcon,
+  DocumentDuplicateIcon,
   MagnifyingGlassIcon,
   FunnelIcon,
 } from '@heroicons/react/24/outline'
@@ -413,7 +413,7 @@ export default function CareplanTemplatesPage() {
                   className="p-2 text-gray-400 hover:text-gray-600"
                   title="Duplicate"
                 >
-                  <DuplicateIcon className="h-4 w-4" />
+                  <DocumentDuplicateIcon className="h-4 w-4" />
                 </button>
                 <button
                   onClick={() => deleteTemplate(template.id)}

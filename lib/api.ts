@@ -15,11 +15,40 @@ const api = axios.create({
   timeout: 10000,
 })
 
-// Request interceptor to add auth token
+// Request interceptor to add auth token with automatic refresh
 api.interceptors.request.use(
-  (config) => {
+  async (config) => {
     if (typeof window !== 'undefined') {
-      const token = localStorage.getItem('authToken')
+      // Try to get access token first
+      let token = localStorage.getItem('accessToken') || localStorage.getItem('authToken')
+      
+      // Check if token is expired or will expire soon
+      if (token && isTokenExpired(token, 2)) {
+        // Try to refresh token
+        const refreshToken = localStorage.getItem('refreshToken')
+        if (refreshToken) {
+          try {
+            const refreshResponse = await axios.post(`${API_BASE_URL}/auth/enhanced/refresh-token`, {
+              refreshToken
+            })
+            
+            if (refreshResponse.data.status && refreshResponse.data.payload?.data?.tokens) {
+              const { tokens } = refreshResponse.data.payload.data
+              localStorage.setItem('accessToken', tokens.accessToken)
+              localStorage.setItem('refreshToken', tokens.refreshToken)
+              token = tokens.accessToken
+            }
+          } catch (refreshError) {
+            // Refresh failed, clear tokens
+            localStorage.removeItem('accessToken')
+            localStorage.removeItem('refreshToken')
+            localStorage.removeItem('authToken')
+            localStorage.removeItem('user')
+            token = null
+          }
+        }
+      }
+      
       if (token) {
         config.headers.Authorization = `Bearer ${token}`
       }
@@ -30,6 +59,18 @@ api.interceptors.request.use(
     return Promise.reject(error)
   }
 )
+
+// Helper function to check if token is expired
+function isTokenExpired(token: string, bufferMinutes = 2): boolean {
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]))
+    const expirationTime = payload.exp * 1000
+    const bufferTime = bufferMinutes * 60 * 1000
+    return Date.now() >= (expirationTime - bufferTime)
+  } catch {
+    return true
+  }
+}
 
 // Response interceptor for error handling
 api.interceptors.response.use(

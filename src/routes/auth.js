@@ -4,6 +4,7 @@ import authController from '../controllers/authController.js';
 import { validateRequest, schemas } from '../middleware/validation.js';
 import { authLimiter } from '../middleware/rateLimiter.js';
 import { authenticate } from '../middleware/auth.js';
+import enhancedAuthRoutes from './enhancedAuth.js';
 
 const router = express.Router();
 
@@ -42,5 +43,8 @@ router.post('/logout', (req, res) => {
     }
   });
 });
+
+// Mount enhanced authentication routes
+router.use('/enhanced', enhancedAuthRoutes);
 
 export default router;
