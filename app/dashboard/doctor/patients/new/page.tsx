@@ -19,6 +19,7 @@ import {
   MagnifyingGlassIcon
 } from '@heroicons/react/24/outline'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { apiRequest } from '@/lib/api'
 
 // Mock data - replace with actual API calls
 const SYMPTOMS_OPTIONS = [
@@ -46,8 +47,77 @@ const TREATMENT_OPTIONS = [
 ]
 
 const CONDITIONS_OPTIONS = [
-  'Acute', 'Chronic', 'Stable', 'Progressive', 'Terminal', 'Recovering',
-  'Under Investigation', 'Monitoring Required', 'Emergency'
+  { code: '1', name: 'Unconfirmed' },
+  { code: 'A000', name: 'Cholera due to Vibrio cholerae 01, biovar cholerae' },
+  { code: 'A001', name: 'Cholera due to Vibrio cholerae 01, biovar eltor' },
+  { code: 'A009', name: 'Cholera, unspecified' },
+  { code: 'A0100', name: 'Typhoid fever, unspecified' },
+  { code: 'A0101', name: 'Typhoid meningitis' },
+  { code: 'A0102', name: 'Typhoid fever with heart involvement' },
+  { code: 'A0103', name: 'Typhoid pneumonia' },
+  { code: 'A0104', name: 'Typhoid arthritis' },
+  { code: 'A0105', name: 'Typhoid osteomyelitis' },
+  { code: 'A0109', name: 'Typhoid fever with other complications' },
+  { code: 'A011', name: 'Paratyphoid fever A' },
+  { code: 'A012', name: 'Paratyphoid fever B' },
+  { code: 'A013', name: 'Paratyphoid fever C' },
+  { code: 'A014', name: 'Paratyphoid fever, unspecified' },
+  { code: 'A020', name: 'Salmonella enteritis' },
+  { code: 'A021', name: 'Salmonella sepsis' },
+  { code: 'A0220', name: 'Localized salmonella infection, unspecified' },
+  { code: 'A0221', name: 'Salmonella meningitis' },
+  { code: 'A0222', name: 'Salmonella pneumonia' },
+  { code: 'A0223', name: 'Salmonella arthritis' },
+  { code: 'A0224', name: 'Salmonella osteomyelitis' },
+  { code: 'A0225', name: 'Salmonella pyelonephritis' },
+  { code: 'A0229', name: 'Salmonella with other localized infection' },
+  { code: 'A028', name: 'Other specified salmonella infections' },
+  { code: 'A029', name: 'Salmonella infection, unspecified' },
+  { code: 'A030', name: 'Shigellosis due to Shigella dysenteriae' },
+  { code: 'A031', name: 'Shigellosis due to Shigella flexneri' },
+  { code: 'A032', name: 'Shigellosis due to Shigella boydii' },
+  { code: 'A033', name: 'Shigellosis due to Shigella sonnei' },
+  { code: 'A038', name: 'Other shigellosis' },
+  { code: 'A039', name: 'Shigellosis, unspecified' },
+  { code: 'A040', name: 'Enteropathogenic Escherichia coli infection' },
+  { code: 'A041', name: 'Enterotoxigenic Escherichia coli infection' },
+  { code: 'A042', name: 'Enteroinvasive Escherichia coli infection' },
+  { code: 'A043', name: 'Enterohemorrhagic Escherichia coli infection' },
+  { code: 'A044', name: 'Other intestinal Escherichia coli infections' },
+  { code: 'A045', name: 'Campylobacter enteritis' },
+  { code: 'A046', name: 'Enteritis due to Yersinia enterocolitica' },
+  { code: 'A0471', name: 'Enterocolitis due to Clostridium difficile, recurrent' },
+  { code: 'A0472', name: 'Enterocolitis due to Clostridium difficile, not specified as recurrent' },
+  { code: 'A048', name: 'Other specified bacterial intestinal infections' },
+  { code: 'A049', name: 'Bacterial intestinal infection, unspecified' },
+  { code: 'A150', name: 'Tuberculosis of lung' },
+  { code: 'A154', name: 'Tuberculosis of intrathoracic lymph nodes' },
+  { code: 'A155', name: 'Tuberculosis of larynx, trachea and bronchus' },
+  { code: 'A156', name: 'Tuberculous pleurisy' },
+  { code: 'A157', name: 'Primary respiratory tuberculosis' },
+  { code: 'A158', name: 'Other respiratory tuberculosis' },
+  { code: 'A159', name: 'Respiratory tuberculosis unspecified' },
+  { code: 'A170', name: 'Tuberculous meningitis' },
+  { code: 'A171', name: 'Meningeal tuberculoma' },
+  { code: 'A400', name: 'Sepsis due to streptococcus, group A' },
+  { code: 'A401', name: 'Sepsis due to streptococcus, group B' },
+  { code: 'A403', name: 'Sepsis due to Streptococcus pneumoniae' },
+  { code: 'A408', name: 'Other streptococcal sepsis' },
+  { code: 'A409', name: 'Streptococcal sepsis, unspecified' },
+  { code: 'A4101', name: 'Sepsis due to Methicillin susceptible Staphylococcus aureus' },
+  { code: 'A4102', name: 'Sepsis due to Methicillin resistant Staphylococcus aureus' },
+  { code: 'A411', name: 'Sepsis due to other specified staphylococcus' },
+  { code: 'A412', name: 'Sepsis due to unspecified staphylococcus' },
+  { code: 'A413', name: 'Sepsis due to Hemophilus influenzae' },
+  { code: 'A414', name: 'Sepsis due to anaerobes' },
+  { code: 'A4150', name: 'Gram-negative sepsis, unspecified' },
+  { code: 'A4151', name: 'Sepsis due to Escherichia coli [E. coli]' },
+  { code: 'A4152', name: 'Sepsis due to Pseudomonas' },
+  { code: 'A4153', name: 'Sepsis due to Serratia' },
+  { code: 'A4159', name: 'Other Gram-negative sepsis' },
+  { code: 'A4181', name: 'Sepsis due to Enterococcus' },
+  { code: 'A4189', name: 'Other specified sepsis' },
+  { code: 'A419', name: 'Sepsis, unspecified organism' }
 ]
 
 const COUNTRY_CODES = [
@@ -82,7 +152,7 @@ export default function AddPatientPage() {
   // Form state
   const [formData, setFormData] = useState({
     // Contact & Basic Info (Mandatory)
-    countryCode: 'US',
+    countryCode: 'IN',
     mobileNumber: '',
     email: '',
     
@@ -118,6 +188,7 @@ export default function AddPatientPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [symptomsSearch, setSymptomsSearch] = useState('')
   const [diagnosisSearch, setDiagnosisSearch] = useState('')
+  const [conditionsSearch, setConditionsSearch] = useState('')
   const [isPatientIdEditable, setIsPatientIdEditable] = useState(false)
 
   // Voice recognition setup
@@ -444,22 +515,8 @@ export default function AddPatientPage() {
       
       console.log('Submitting patient data:', patientData)
       
-      // Make actual API call
-      const response = await fetch('/api/patients', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('authToken')}` // Add auth token
-        },
-        body: JSON.stringify(patientData)
-      })
-      
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.payload?.error?.message || 'Failed to create patient')
-      }
-      
-      const result = await response.json()
+      // Make actual API call using configured API client
+      const result = await apiRequest.post('/patients', patientData)
       console.log('Patient created successfully:', result)
       
       // Show success message
@@ -1005,18 +1062,39 @@ export default function AddPatientPage() {
             {/* Condition */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Condition</label>
+              
+              {/* Search input for conditions */}
+              <div className="relative mb-2">
+                <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Search conditions by code or name..."
+                  value={conditionsSearch}
+                  onChange={(e) => setConditionsSearch(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                />
+              </div>
+              
               <select
                 value={formData.condition}
                 onChange={(e) => setFormData(prev => ({ ...prev, condition: e.target.value, treatment: '' }))}
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
                 <option value="">Select condition</option>
-                {CONDITIONS_OPTIONS.map(condition => (
-                  <option key={condition} value={condition}>{condition}</option>
-                ))}
+                {CONDITIONS_OPTIONS
+                  .filter(condition => 
+                    conditionsSearch === '' || 
+                    condition.code.toLowerCase().includes(conditionsSearch.toLowerCase()) ||
+                    condition.name.toLowerCase().includes(conditionsSearch.toLowerCase())
+                  )
+                  .map(condition => (
+                    <option key={condition.code} value={`${condition.code} - ${condition.name}`}>
+                      {condition.code} - {condition.name}
+                    </option>
+                  ))}
               </select>
               <p className="text-xs text-gray-500 mt-1">
-                Selecting a condition will reset treatment selection
+                Selecting a condition will reset treatment selection. Use search to find specific ICD-10 codes.
               </p>
             </div>
 

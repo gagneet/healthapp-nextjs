@@ -12,6 +12,7 @@ import {
   EnvelopeIcon,
 } from '@heroicons/react/24/outline'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { apiRequest } from '@/lib/api'
 import { Patient } from '@/types/dashboard'
 import { formatDate, getAdherenceColor, getInitials, getStatusColor } from '@/lib/utils'
 
@@ -239,42 +240,33 @@ export default function PatientsPage() {
   const fetchPatients = async (searchQuery = '') => {
     try {
       setIsLoading(true)
-      let url = '/api/patients/pagination?page=1&limit=50'
+      let endpoint = '/patients/pagination?page=1&limit=50'
       if (searchQuery) {
-        url += `&search=${encodeURIComponent(searchQuery)}`
+        endpoint += `&search=${encodeURIComponent(searchQuery)}`
       }
       
-      const response = await fetch(url, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('authToken')}`
-        }
-      })
+      const result = await apiRequest.get(endpoint)
       
-      if (response.ok) {
-        const result = await response.json()
-        if (result.status && result.payload?.data?.patients) {
-          // Convert the patients object to an array
-          const patientsArray = Object.values(result.payload.data.patients).map((patient: any) => ({
-            id: patient.basic_info.id,
-            user_id: patient.basic_info.user_id,
-            first_name: patient.basic_info.first_name,
-            last_name: patient.basic_info.last_name,
-            email: patient.basic_info.email,
-            phone: patient.basic_info.mobile_number,
-            date_of_birth: patient.basic_info.date_of_birth,
-            gender: patient.basic_info.gender,
-            medical_record_number: patient.basic_info.patient_id,
-            last_visit: patient.medical_info?.last_visit || null,
-            next_appointment: patient.medical_info?.next_appointment || null,
-            adherence_rate: patient.medical_info?.adherence_rate || 0,
-            critical_alerts: patient.medical_info?.critical_alerts || 0,
-            status: patient.basic_info.status || 'active',
-            created_at: patient.basic_info.created_at
-          }))
-          setPatients(patientsArray)
-        }
-      } else {
-        console.error('Failed to fetch patients:', response.statusText)
+      if (result.status && result.payload?.data?.patients) {
+        // Convert the patients object to an array
+        const patientsArray = Object.values(result.payload.data.patients).map((patient: any) => ({
+          id: patient.basic_info.id,
+          user_id: patient.basic_info.user_id,
+          first_name: patient.basic_info.first_name,
+          last_name: patient.basic_info.last_name,
+          email: patient.basic_info.email,
+          phone: patient.basic_info.mobile_number,
+          date_of_birth: patient.basic_info.date_of_birth,
+          gender: patient.basic_info.gender,
+          medical_record_number: patient.basic_info.patient_id,
+          last_visit: patient.medical_info?.last_visit || null,
+          next_appointment: patient.medical_info?.next_appointment || null,
+          adherence_rate: patient.medical_info?.adherence_rate || 0,
+          critical_alerts: patient.medical_info?.critical_alerts || 0,
+          status: patient.basic_info.status || 'active',
+          created_at: patient.basic_info.created_at
+        }))
+        setPatients(patientsArray)
       }
     } catch (error) {
       console.error('Error fetching patients:', error)
