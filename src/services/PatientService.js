@@ -29,6 +29,7 @@ class PatientService {
         country,
         
         // Patient-specific fields
+        patient_id, // Custom patient ID provided by user
         blood_group,
         height_cm,
         weight_kg,
@@ -67,17 +68,32 @@ class PatientService {
         activated_on: new Date()
       }, { transaction });
 
-      // Get creator info for patient ID generation
-      const creator = await User.findByPk(creatorId, { transaction });
-      const creatorName = creator ? `${creator.first_name} ${creator.last_name}` : 'Unknown Doctor';
+      // Use custom patient_id if provided, otherwise generate one
+      let finalPatientId = patient_id;
       
-      // Generate patient ID
-      const patientId = await this.generatePatientID(creatorName);
+      if (!finalPatientId || finalPatientId.trim() === '') {
+        // Get creator info for patient ID generation
+        const creator = await User.findByPk(creatorId, { transaction });
+        const creatorName = creator ? `${creator.first_name} ${creator.last_name}` : 'Unknown Doctor';
+        
+        // Generate patient ID
+        finalPatientId = await this.generatePatientID(creatorName);
+      } else {
+        // Validate that custom patient_id doesn't already exist
+        const existingPatient = await Patient.findOne({
+          where: { patient_id: finalPatientId.trim() },
+          transaction
+        });
+        
+        if (existingPatient) {
+          throw new ConflictError(`Patient ID '${finalPatientId}' already exists. Please choose a different ID.`);
+        }
+      }
 
       // Create patient with medical-specific fields
       const patient = await Patient.create({
         user_id: user.id,
-        patient_id: patientId,
+        patient_id: finalPatientId.trim(),
         blood_group,
         height_cm,
         weight_kg,

@@ -40,6 +40,13 @@ export default (sequelize) => {
       comment: 'Organization-specific patient identifier'
     },
     
+    patient_id: {
+      type: DataTypes.STRING(100),
+      allowNull: true,
+      unique: true,
+      comment: 'Custom patient identifier - supports any format (numbers, alphanumeric, structured)'
+    },
+    
     emergency_contacts: {
       type: DataTypes.JSONB,
       defaultValue: [],

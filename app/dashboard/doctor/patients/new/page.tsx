@@ -118,6 +118,7 @@ export default function AddPatientPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [symptomsSearch, setSymptomsSearch] = useState('')
   const [diagnosisSearch, setDiagnosisSearch] = useState('')
+  const [isPatientIdEditable, setIsPatientIdEditable] = useState(false)
 
   // Voice recognition setup
   useEffect(() => {
@@ -155,7 +156,7 @@ export default function AddPatientPage() {
     }
   }, [])
 
-  // Auto-generate patient ID when doctor name is available
+  // Auto-generate patient ID when page loads
   useEffect(() => {
     if (!formData.patientId) {
       const doctorName = 'Dr. John Doe' // Replace with actual doctor name from context
@@ -424,6 +425,7 @@ export default function AddPatientPage() {
         country: formData.countryCode || 'US',
         
         // Patient-specific fields
+        patient_id: formData.patientId.trim() || null, // Include custom patient ID
         height_cm: parseFloat(formData.heightCm) || null,
         weight_kg: parseFloat(formData.weightKg) || null,
         allergies: formData.allergies || [],
@@ -667,16 +669,71 @@ export default function AddPatientPage() {
 
             {/* Patient ID */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Patient ID</label>
-              <input
-                type="text"
-                value={formData.patientId}
-                readOnly
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 bg-gray-50 text-gray-600"
-              />
-              <p className="text-xs text-gray-500 mt-1">
-                Auto-generated format: Doctor Initials/YYYYMM/NNNNNN
-              </p>
+              <div className="flex items-center justify-between mb-2">
+                <label className="block text-sm font-medium text-gray-700">
+                  Patient ID
+                </label>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    id="editPatientId"
+                    checked={isPatientIdEditable}
+                    onChange={(e) => {
+                      setIsPatientIdEditable(e.target.checked)
+                      // If enabling editing and no ID exists, generate one first
+                      if (e.target.checked && !formData.patientId) {
+                        const doctorName = 'Dr. John Doe'
+                        generatePatientId(doctorName)
+                      }
+                    }}
+                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  />
+                  <label htmlFor="editPatientId" className="text-sm text-gray-600 cursor-pointer">
+                    {isPatientIdEditable ? '🔓 Editing enabled' : '🔒 Allow editing'}
+                  </label>
+                </div>
+              </div>
+              
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={formData.patientId}
+                  onChange={(e) => setFormData(prev => ({ ...prev, patientId: e.target.value }))}
+                  readOnly={!isPatientIdEditable}
+                  placeholder={isPatientIdEditable ? "Enter custom patient ID" : "Auto-generated patient ID"}
+                  className={`flex-1 border rounded-lg px-3 py-2 transition-all duration-200 ${
+                    isPatientIdEditable 
+                      ? 'border-blue-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white shadow-sm' 
+                      : 'border-gray-300 bg-gray-50 text-gray-600 cursor-not-allowed'
+                  }`}
+                />
+                {!isPatientIdEditable && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const doctorName = 'Dr. John Doe' // Replace with actual doctor name from context
+                      generatePatientId(doctorName)
+                    }}
+                    className="px-4 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 whitespace-nowrap"
+                    title="Regenerate auto ID"
+                  >
+                    Regenerate
+                  </button>
+                )}
+              </div>
+              
+              <div className="flex items-start gap-2 mt-1">
+                <div className="flex-1">
+                  <p className={`text-xs transition-colors duration-200 ${
+                    isPatientIdEditable ? 'text-blue-600' : 'text-gray-500'
+                  }`}>
+                    {isPatientIdEditable 
+                      ? "✏️ Custom format: supports numbers (123456), alphanumeric (PAT001), or structured (ABC/202501/000001)"
+                      : "🔄 Auto-generated format: Doctor Initials/YYYYMM/NNNNNN (check 'Allow editing' to customize)"
+                    }
+                  </p>
+                </div>
+              </div>
             </div>
 
             {/* Address */}
