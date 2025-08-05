@@ -1,6 +1,6 @@
 {
   "name": "healthapp-template",
-  "version": "1.0.0",
+  "version": "4.0.0",
   "description": "HealthApp Healthcare Management Platform using NextJS, Node.js, Express, Sequelize, and PostgreSQL",
   "type": "module",
   "main": "src/server.js",
