@@ -77,6 +77,8 @@ The Healthcare Management Platform uses a modern hybrid architecture combining N
 │ ├── Medications & Adherence        │
 │ ├── Appointments & Scheduling      │
 │ ├── Vital Signs & Readings        │
+│ ├── Secondary Doctor Management   │ ✅ New
+│ ├── Symptoms & Body Mapping       │ ✅ New
 │ └── Audit Logs & Compliance       │
 ├─────────────────────────────────────┤
 │ Redis (Cache & Sessions)           │ 
@@ -147,17 +149,19 @@ The Healthcare Management Platform uses a modern hybrid architecture combining N
 healthapp-nextjs/
 ├── 🐳 docker/                    # ✅ All Docker configurations
 ├── 🎨 app/                      # NextJS App Router
-├── 🧩 components/               # React components ✅ Accessibility fixed
+├── 🧩 components/               # React components ✅ Enhanced with interactive UI
+│   ├── dashboard/              # Dashboard components
+│   └── ui/                     # Interactive UI components ✅ Body diagram, symptoms timeline
 ├── 📚 lib/                      # Frontend utilities
 ├── 🔧 src/                      # Backend API source
 │   ├── config/                  # Configuration
-│   ├── controllers/             # Route handlers (8 controllers)
+│   ├── controllers/             # Route handlers (9 controllers) ✅ Added secondary doctor
 │   ├── middleware/             # Express middleware (7 modules)
-│   ├── models/                 # Sequelize models (25+ models)
-│   ├── routes/                 # API routes (10 route files)
-│   ├── services/               # Business logic (4 services)
+│   ├── models/                 # Sequelize models (25+ models) ✅ Enhanced with new healthcare models
+│   ├── routes/                 # API routes (12 route files) ✅ Added secondary doctor routes
+│   ├── services/               # Business logic (5 services) ✅ Added secondary doctor service
 │   ├── utils/                  # Backend utilities
-│   ├── migrations/             # Database migrations (22 files)
+│   ├── migrations/             # Database migrations (24 files) ✅ Added patient-doctor assignments
 │   └── seeders/                # Initial data (3 seeders)
 ├── 🚀 scripts/                  # Deployment scripts ✅ Updated paths
 ├── 📖 docs/                     # Documentation ✅ Updated
@@ -202,16 +206,20 @@ app.use(compression())             // Response compression
 
 ### **RESTful API Design**
 ```
-/api/auth          # Authentication endpoints
-/api/patients      # Patient management
-/api/doctors       # Doctor operations  
-/api/medications   # Medication tracking
-/api/appointments  # Scheduling
-/api/carePlans     # Care plan management
-/api/vitals        # Vital signs
-/api/admin         # Administrative functions
+/api/auth                                    # Authentication endpoints
+/api/patients                             # Patient management
+  └── /patients/:id/secondary-doctors     # Secondary doctor assignments ✅ New
+/api/doctors                              # Doctor operations  
+  └── /doctors/:id/patient-access/:pid    # Access verification ✅ New
+/api/medications                          # Medication tracking
+/api/appointments                         # Scheduling
+/api/carePlans                            # Care plan management
+/api/vitals                               # Vital signs
+/api/symptoms                             # Symptoms & diagnosis ✅ New
+/api/assignments                          # Doctor assignment management ✅ New
+/api/admin                                # Administrative functions
 
-/m-api/*           # Mobile-optimized endpoints (same routes)
+/m-api/*                                  # Mobile-optimized endpoints (same routes)
 ```
 
 ### **Response Format Standardization**
@@ -297,6 +305,12 @@ interface APIResponse<T> {
 ```
 
 ## 🎯 Recent Architecture Improvements ✅
+
+### **Healthcare-Specific Enhancements**
+- **Secondary Doctor Management**: Complete system for managing multiple doctors per patient with consent workflows
+- **Interactive UI Components**: Body diagram with 4-view rotation and symptoms timeline with bi-directional highlighting
+- **Enhanced Patient Management**: 11 specialized tabs covering all healthcare domains
+- **Comprehensive API**: 50+ endpoints with secondary doctor assignment management
 
 ### **Code Organization**
 - **Docker Cleanup**: All Docker files moved to `docker/` folder

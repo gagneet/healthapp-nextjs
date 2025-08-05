@@ -49,7 +49,9 @@ healthapp-nextjs/
 │   │   │   ├── patient-quick-view.tsx   # Patient overview drawer
 │   │   │   └── prescription-generator.tsx # PDF prescription generator
 │   │   └── 📂 ui/                       # Base UI components
-│   │       └── card.tsx                 # Card component
+│   │       ├── card.tsx                 # Card component
+│   │       ├── body-diagram.tsx         # Interactive body diagram ✅ New
+│   │       └── symptoms-timeline.tsx    # Symptoms timeline ✅ New
 │   │
 │   ├── 📂 lib/                          # Frontend Utilities
 │   │   ├── api.ts                       # API client configuration
@@ -79,6 +81,8 @@ healthapp-nextjs/
 │       │   ├── doctorController.js      # Doctor operations
 │       │   ├── medicationController.js  # Medication tracking
 │       │   ├── patientController.js     # Patient management
+│       │   ├── secondaryDoctorController.js # Secondary doctor assignments ✅ New
+│       │   ├── symptomsDiagnosisController.js # Symptoms & diagnosis management ✅ New
 │       │   └── vitalsController.js      # Vital signs tracking
 │       │
 │       ├── 📂 middleware/               # Express Middleware
@@ -96,13 +100,20 @@ healthapp-nextjs/
 │       │   ├── User.js                  # User model
 │       │   ├── Doctor.js                # Doctor profile
 │       │   ├── Patient.js               # Patient profile
-│       │   ├── Provider.js              # Healthcare provider
+│       │   ├── Provider.js              # Healthcare provider (legacy)
+│       │   ├── HealthcareProvider.js    # New provider model ✅
+│       │   ├── PatientDoctorAssignment.js # Secondary doctor management ✅ New
 │       │   ├── CarePlan.js              # Care plans
 │       │   ├── Medications.js           # Medication instances
 │       │   ├── Medicine.js              # Medicine templates
 │       │   ├── Appointment.js           # Appointments
 │       │   ├── Vital.js                 # Vital sign readings
 │       │   ├── VitalTemplate.js         # Vital templates
+│       │   ├── VitalType.js             # Vital types ✅ New
+│       │   ├── VitalReading.js          # Enhanced vital readings ✅ New
+│       │   ├── Symptom.js               # Patient symptoms ✅ New
+│       │   ├── SymptomsDatabase.js      # Symptoms database ✅ New
+│       │   ├── TreatmentDatabase.js     # Treatment database ✅ New
 │       │   ├── Notification.js          # System notifications
 │       │   └── [additional models...]   # Other domain models
 │       │
@@ -116,24 +127,28 @@ healthapp-nextjs/
 │       │   ├── carePlans.js             # Care plan endpoints
 │       │   ├── vitals.js                # Vital signs endpoints
 │       │   ├── admin.js                 # Admin endpoints
-│       │   └── search.js                # Search functionality
+│       │   ├── search.js                # Search functionality
+│       │   ├── secondaryDoctorRoutes.js # Secondary doctor management ✅ New
+│       │   └── symptoms.js              # Symptoms & diagnosis endpoints ✅ New
 │       │
 │       ├── 📂 services/                 # Business Logic Layer
 │       │   ├── AuthService.js           # Authentication services
 │       │   ├── PatientService.js        # Patient business logic
 │       │   ├── MedicationService.js     # Medication management
-│       │   └── SchedulingService.js     # Appointment scheduling
+│       │   ├── SchedulingService.js     # Appointment scheduling
+│       │   └── SecondaryDoctorService.js # Secondary doctor management ✅ New
 │       │
 │       ├── 📂 utils/                    # Backend Utilities
 │       │   ├── helpers.js               # Helper functions
 │       │   ├── responseFormatter.js     # API response formatting
 │       │   └── validators.js            # Data validation
 │       │
-│       ├── 📂 migrations/               # Database Migrations (22 files)
-│       │   ├── 001-create-organizations.js
-│       │   ├── 002-create-users.js
-│       │   ├── [003-021...]            # Additional migrations
-│       │   └── 022-create-views.js
+│       ├── 📂 migrations/               # Database Migrations (24 files)
+│       │   ├── 001-create-organizations.cjs
+│       │   ├── 002-create-users.cjs
+│       │   ├── [003-022...]            # PostgreSQL migrations
+│       │   ├── 023-add-patient-id-field.cjs
+│       │   └── 20250105120000-create-patient-doctor-assignments.js ✅ New
 │       │
 │       ├── 📂 seeders/                  # Database Seeders
 │       │   ├── 001-specialists.js       # Medical specialties
@@ -204,6 +219,9 @@ healthapp-nextjs/
 - **Modern ES Modules**: Full ES6+ module support
 
 ### Recent Improvements ✅
+- **Secondary Doctor Management**: Complete system for managing multiple doctors per patient with consent workflows
+- **Interactive UI Components**: Body diagram with 4-view rotation and symptoms timeline
+- **Enhanced Patient Management**: Comprehensive patient detail pages with 11 specialized tabs
 - **Accessibility**: All icon-only buttons have proper `aria-label` attributes
 - **Icon Standardization**: Migrated to Heroicons v2 compatible icons
 - **Project Organization**: Docker files moved to dedicated `docker/` folder
