@@ -32,6 +32,7 @@ import AuditLogModel from './AuditLog.js';
 import SpecialityModel from './Speciality.js';
 import SymptomsDatabaseModel from './SymptomsDatabase.js';
 import TreatmentDatabaseModel from './TreatmentDatabase.js';
+import PatientDoctorAssignmentModel from './PatientDoctorAssignment.js';
 
 // Initialize models with new ES modules format
 const User = UserModel(sequelize);
@@ -63,6 +64,7 @@ const AuditLog = AuditLogModel(sequelize);
 const Speciality = SpecialityModel(sequelize, Sequelize.DataTypes);
 const SymptomsDatabase = SymptomsDatabaseModel(sequelize);
 const TreatmentDatabase = TreatmentDatabaseModel(sequelize);
+const PatientDoctorAssignment = PatientDoctorAssignmentModel(sequelize);
 
 const db = {
   sequelize,
@@ -96,6 +98,7 @@ const db = {
   Speciality,
   SymptomsDatabase,
   TreatmentDatabase,
+  PatientDoctorAssignment,
 };
 
 // Set up associations
@@ -133,6 +136,7 @@ export {
   AuditLog,
   Speciality,
   SymptomsDatabase,
-  TreatmentDatabase
+  TreatmentDatabase,
+  PatientDoctorAssignment
 };
 export default db;

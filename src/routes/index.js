@@ -10,6 +10,7 @@ import vitalsRoutes from './vitals.js';
 import adminRoutes from './admin.js';
 import searchRoutes from './search.js';
 import symptomsRoutes from './symptoms.js';
+import secondaryDoctorRoutes from './secondaryDoctorRoutes.js';
 
 const router = express.Router();
 
@@ -24,6 +25,7 @@ router.use('/vitals', vitalsRoutes);
 router.use('/admin', adminRoutes);
 router.use('/search', searchRoutes);
 router.use('/symptoms', symptomsRoutes);
+router.use('/', secondaryDoctorRoutes);
 
 // API info endpoint
 router.get('/', (req, res) => {
@@ -45,7 +47,9 @@ router.get('/', (req, res) => {
           '/vitals - Vital signs management',
           '/admin - Administrative functions',
           '/search - Search functionality',
-          '/symptoms - Symptoms and diagnosis management'
+          '/symptoms - Symptoms and diagnosis management',
+          '/assignments - Secondary doctor assignments',
+          '/doctors/*/patient-access/* - Doctor patient access verification'
         ]
       },
       message: 'API is running successfully'

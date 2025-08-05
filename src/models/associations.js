@@ -31,6 +31,7 @@ export default (db) => {
     PatientSubscription,
     AuditLog,
     Speciality,
+    PatientDoctorAssignment,
   } = db;
 
   // Organization associations
@@ -655,6 +656,64 @@ export default (db) => {
     AuditLog.belongsTo(User, {
       foreignKey: 'user_id',
       as: 'user'
+    });
+  }
+
+  // PatientDoctorAssignment associations
+  if (PatientDoctorAssignment) {
+    // Patient to Doctor assignments
+    Patient.hasMany(PatientDoctorAssignment, {
+      foreignKey: 'patient_id',
+      as: 'doctorAssignments'
+    });
+    PatientDoctorAssignment.belongsTo(Patient, {
+      foreignKey: 'patient_id',
+      as: 'patient'
+    });
+
+    // Doctor to Patient assignments
+    Doctor.hasMany(PatientDoctorAssignment, {
+      foreignKey: 'doctor_id',
+      as: 'patientAssignments'
+    });
+    PatientDoctorAssignment.belongsTo(Doctor, {
+      foreignKey: 'doctor_id',
+      as: 'doctor'
+    });
+
+    // Doctor who assigned (primary doctor)
+    PatientDoctorAssignment.belongsTo(Doctor, {
+      foreignKey: 'assigned_by_doctor_id',
+      as: 'assignedByDoctor'
+    });
+    Doctor.hasMany(PatientDoctorAssignment, {
+      foreignKey: 'assigned_by_doctor_id',
+      as: 'assignmentsMade'
+    });
+
+    // Admin who assigned
+    PatientDoctorAssignment.belongsTo(User, {
+      foreignKey: 'assigned_by_admin_id',
+      as: 'assignedByAdmin'
+    });
+    User.hasMany(PatientDoctorAssignment, {
+      foreignKey: 'assigned_by_admin_id',
+      as: 'doctorAssignmentsMade'
+    });
+
+    // Many-to-many relationship through assignments
+    Patient.belongsToMany(Doctor, {
+      through: PatientDoctorAssignment,
+      foreignKey: 'patient_id',
+      otherKey: 'doctor_id',
+      as: 'assignedDoctors'
+    });
+    
+    Doctor.belongsToMany(Patient, {
+      through: PatientDoctorAssignment,
+      foreignKey: 'doctor_id',
+      otherKey: 'patient_id',
+      as: 'assignedPatients'
     });
   }
 
