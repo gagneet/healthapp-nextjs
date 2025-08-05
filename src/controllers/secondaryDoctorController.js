@@ -1,6 +1,6 @@
 // src/controllers/secondaryDoctorController.js - API endpoints for Secondary Doctor Management
-import { SecondaryDoctorService } from '../services/SecondaryDoctorService.js';
-import { responseFormatter } from '../utils/responseFormatter.js';
+import SecondaryDoctorService from '../services/SecondaryDoctorService.js';
+import responseFormatter from '../utils/responseFormatter.js';
 import { createLogger } from '../middleware/logger.js';
 import { validationResult } from 'express-validator';
 

@@ -2,8 +2,7 @@
 import express from 'express';
 import { body, param, query } from 'express-validator';
 import { SecondaryDoctorController } from '../controllers/secondaryDoctorController.js';
-import { authenticate } from '../middleware/authenticate.js';
-import { authorize } from '../middleware/authorize.js';
+import { authenticate, authorize } from '../middleware/auth.js';
 import { USER_CATEGORIES } from '../config/constants.js';
 
 const router = express.Router();

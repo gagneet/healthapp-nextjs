@@ -1,11 +1,7 @@
 // src/services/SecondaryDoctorService.js - Business logic for Secondary Doctor Management
 import { Op } from 'sequelize';
 import { createLogger } from '../middleware/logger.js';
-import PatientDoctorAssignment from '../models/PatientDoctorAssignment.js';
-import Doctor from '../models/Doctor.js';
-import Patient from '../models/Patient.js';
-import User from '../models/User.js';
-import Organization from '../models/Organization.js';
+import { PatientDoctorAssignment, Doctor, Patient, User, Organization } from '../models/index.js';
 
 const logger = createLogger(import.meta.url);
 
