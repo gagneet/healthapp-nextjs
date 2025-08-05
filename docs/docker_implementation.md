@@ -282,3 +282,42 @@ When PostgreSQL fails after 2+ minutes, it's usually due to:
 - 240s+: Manual intervention required with detailed diagnostics
 
 The system is now much more resilient and provides clear guidance when PostgreSQL issues occur beyond the normal startup window.
+
+## ✅ Docker Utilities Added
+
+All Dockerfiles now include:
+
+### Development Tools
+
+- build-base - Alpine equivalent of build-essential
+- vim - Text editor for debugging
+
+### Network Debugging Tools
+
+- iputils - Ping utilities
+- busybox-extras - Includes telnet
+- iproute2 - Advanced routing tools (ip command)
+- net-tools - Network tools (netstat, ifconfig, etc.)
+
+### Database Client
+
+- mysql-client - MySQL command-line client
+
+### Updated Files
+
+1. docker/Dockerfile (Production Frontend) - Added to all stages
+2. docker/Dockerfile.dev (Development Frontend) - Added utilities
+3. docker/Dockerfile.backend (Backend API) - Added utilities
+
+### Available Commands After Build
+
+- ping - Test network connectivity
+- telnet - Test port connectivity
+- mysql - Connect to MySQL databases
+- vim - Edit files inside containers
+- ip - Advanced network configuration
+- netstat - View network connections
+- ifconfig - Network interface configuration
+- gcc/make - Build tools for native modules
+
+These utilities will be very helpful for debugging network issues, database connectivity, and general container troubleshooting. The tools will be available in all your Docker containers once rebuilt.
