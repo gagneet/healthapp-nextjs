@@ -71,7 +71,7 @@ const schemas = {
     medical_record_number: Joi.string().max(100).optional(), // Allow custom patient ID in any format
     emergency_contacts: Joi.array().items(
       Joi.object({
-        contact_number: Joi.string().pattern(/^\+?[1-9]\d{1,14}$/).optional().allow(''),
+        contact_number: Joi.string().optional().allow(''), // Allow any format for emergency contact numbers
         other_details: Joi.string().max(500).optional().allow(''),
         name: Joi.string().max(200).optional().allow(''),
         relationship: Joi.string().max(100).optional().allow('')
@@ -87,11 +87,11 @@ const schemas = {
         member_id: Joi.string().max(50).optional().allow(''),
         subscriber_name: Joi.string().max(200).optional().allow(''),
         relationship_to_subscriber: Joi.string().valid('self', 'spouse', 'child', 'parent', 'other').optional().allow(''),
-        effective_date: Joi.date().optional().allow(null),
-        expiration_date: Joi.date().optional().allow(null),
+        effective_date: Joi.date().optional().allow(null, ''),
+        expiration_date: Joi.date().optional().allow(null, ''),
         copay_amount: Joi.number().min(0).optional().allow(null),
         deductible_amount: Joi.number().min(0).optional().allow(null),
-        phone_number: Joi.string().pattern(/^\+?[1-9]\d{1,14}$/).optional().allow('')
+        phone_number: Joi.string().optional().allow('') // Allow any format for insurance phone numbers
       }).optional().allow(null),
       
       // Secondary Insurance (optional)
@@ -102,11 +102,11 @@ const schemas = {
         member_id: Joi.string().max(50).optional().allow(''),
         subscriber_name: Joi.string().max(200).optional().allow(''),
         relationship_to_subscriber: Joi.string().valid('self', 'spouse', 'child', 'parent', 'other').optional().allow(''),
-        effective_date: Joi.date().optional().allow(null),
-        expiration_date: Joi.date().optional().allow(null),
+        effective_date: Joi.date().optional().allow(null, ''),
+        expiration_date: Joi.date().optional().allow(null, ''),
         copay_amount: Joi.number().min(0).optional().allow(null),
         deductible_amount: Joi.number().min(0).optional().allow(null),
-        phone_number: Joi.string().pattern(/^\+?[1-9]\d{1,14}$/).optional().allow('')
+        phone_number: Joi.string().optional().allow('') // Allow any format for insurance phone numbers
       }).optional().allow(null),
       
       // Additional insurance metadata
