@@ -3,13 +3,17 @@
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
-    // Active care plans with patient and provider info (with idempotent check)
-    try {
-      await queryInterface.sequelize.query(`
+    // Drop existing views first to ensure clean recreation
+    await queryInterface.sequelize.query('DROP VIEW IF EXISTS v_active_care_plans CASCADE;');
+    await queryInterface.sequelize.query('DROP VIEW IF EXISTS v_patient_adherence_summary CASCADE;');
+    await queryInterface.sequelize.query('DROP VIEW IF EXISTS v_upcoming_events CASCADE;');
+
+    // Active care plans with patient and provider info
+    await queryInterface.sequelize.query(`
         CREATE VIEW v_active_care_plans AS
       SELECT 
           cp.id,
-          cp.name,
+          cp.title as name,
           cp.status,
           cp.priority,
           cp.start_date,
@@ -32,25 +36,18 @@ module.exports = {
       FROM care_plans cp
       JOIN patients p ON cp.patient_id = p.id
       JOIN users u_patient ON p.user_id = u_patient.id
-      JOIN healthcare_providers hp ON cp.provider_id = hp.id
-      JOIN users u_provider ON hp.user_id = u_provider.id
+      LEFT JOIN healthcare_providers hp ON cp.provider_id = hp.id
+      LEFT JOIN users u_provider ON hp.user_id = u_provider.id
       WHERE cp.deleted_at IS NULL 
           AND p.deleted_at IS NULL 
           AND u_patient.deleted_at IS NULL
-          AND hp.deleted_at IS NULL 
-          AND u_provider.deleted_at IS NULL
+          AND (hp.deleted_at IS NULL OR hp.id IS NULL)
+          AND (u_provider.deleted_at IS NULL OR u_provider.id IS NULL)
           AND cp.status = 'ACTIVE';
       `);
-    } catch (error) {
-      if (!error.message.includes('already exists')) {
-        throw error;
-      }
-      console.log('View v_active_care_plans already exists, skipping');
-    }
 
-    // Patient adherence summary (with idempotent check)
-    try {
-      await queryInterface.sequelize.query(`
+    // Patient adherence summary
+    await queryInterface.sequelize.query(`
         CREATE VIEW v_patient_adherence_summary AS
       SELECT 
           p.id as patient_id,
@@ -80,16 +77,9 @@ module.exports = {
           AND u.deleted_at IS NULL
       GROUP BY p.id, u.first_name, u.last_name, u.email, p.created_at, p.updated_at;
       `);
-    } catch (error) {
-      if (!error.message.includes('already exists')) {
-        throw error;
-      }
-      console.log('View v_patient_adherence_summary already exists, skipping');
-    }
 
-    // Upcoming scheduled events (with idempotent check)
-    try {
-      await queryInterface.sequelize.query(`
+    // Upcoming scheduled events
+    await queryInterface.sequelize.query(`
         CREATE VIEW v_upcoming_events AS
       SELECT 
           se.id,
@@ -123,17 +113,14 @@ module.exports = {
           AND se.status IN ('SCHEDULED', 'PENDING')
       ORDER BY se.scheduled_for ASC;
       `);
-    } catch (error) {
-      if (!error.message.includes('already exists')) {
-        throw error;
-      }
-      console.log('View v_upcoming_events already exists, skipping');
-    }
+    
+    console.log('✅ All database views created successfully');
   },
 
   down: async (queryInterface, Sequelize) => {
-    await queryInterface.sequelize.query('DROP VIEW IF EXISTS v_active_care_plans;');
-    await queryInterface.sequelize.query('DROP VIEW IF EXISTS v_patient_adherence_summary;');
-    await queryInterface.sequelize.query('DROP VIEW IF EXISTS v_upcoming_events;');
+    await queryInterface.sequelize.query('DROP VIEW IF EXISTS v_active_care_plans CASCADE;');
+    await queryInterface.sequelize.query('DROP VIEW IF EXISTS v_patient_adherence_summary CASCADE;');
+    await queryInterface.sequelize.query('DROP VIEW IF EXISTS v_upcoming_events CASCADE;');
+    console.log('✅ All database views dropped successfully');
   }
 };

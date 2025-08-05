@@ -748,7 +748,7 @@ CREATE TRIGGER update_notifications_updated_at BEFORE UPDATE ON notifications FO
 CREATE VIEW v_active_care_plans AS
 SELECT 
     cp.id,
-    cp.name,
+    cp.title as name,
     cp.status,
     cp.priority,
     cp.start_date,

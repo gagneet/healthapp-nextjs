@@ -72,7 +72,7 @@ module.exports = {
       },
       
       // Plan details
-      name: {
+      title: {
         type: Sequelize.STRING(255),
         allowNull: false,
       },
