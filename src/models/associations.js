@@ -34,8 +34,6 @@ export default (db) => {
     PatientDoctorAssignment,
     DoctorAvailability,
     AppointmentSlot,
-    ServicePlan,
-    PatientSubscription,
     Payment,
     PaymentMethod,
   } = db;
