@@ -64,8 +64,8 @@ const schemas = {
     gender: Joi.string().valid('m', 'f', 'o', '').optional(),
     dob: Joi.date().optional(),
     address: Joi.string().max(500).optional(),
-    height_cm: Joi.number().min(0).max(300).optional(),
-    weight_kg: Joi.number().min(0).max(1000).optional(),
+    height_cm: Joi.number().min(0).max(300).optional().allow(null, ''),
+    weight_kg: Joi.number().min(0).max(1000).optional().allow(null, ''),
     comorbidities: Joi.string().optional(),
     allergies: Joi.string().optional(),
     medical_record_number: Joi.string().max(100).optional(), // Allow custom patient ID in any format
@@ -89,8 +89,8 @@ const schemas = {
         relationship_to_subscriber: Joi.string().valid('self', 'spouse', 'child', 'parent', 'other').optional().allow(''),
         effective_date: Joi.date().optional().allow(null, ''),
         expiration_date: Joi.date().optional().allow(null, ''),
-        copay_amount: Joi.number().min(0).optional().allow(null),
-        deductible_amount: Joi.number().min(0).optional().allow(null),
+        copay_amount: Joi.number().min(0).optional().allow(null, ''),
+        deductible_amount: Joi.number().min(0).optional().allow(null, ''),
         phone_number: Joi.string().optional().allow('') // Allow any format for insurance phone numbers
       }).optional().allow(null),
       
@@ -104,8 +104,8 @@ const schemas = {
         relationship_to_subscriber: Joi.string().valid('self', 'spouse', 'child', 'parent', 'other').optional().allow(''),
         effective_date: Joi.date().optional().allow(null, ''),
         expiration_date: Joi.date().optional().allow(null, ''),
-        copay_amount: Joi.number().min(0).optional().allow(null),
-        deductible_amount: Joi.number().min(0).optional().allow(null),
+        copay_amount: Joi.number().min(0).optional().allow(null, ''),
+        deductible_amount: Joi.number().min(0).optional().allow(null, ''),
         phone_number: Joi.string().optional().allow('') // Allow any format for insurance phone numbers
       }).optional().allow(null),
       
