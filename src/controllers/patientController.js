@@ -63,7 +63,7 @@ class PatientController {
               first_name: user.first_name,
               middle_name: user.middle_name,
               last_name: user.last_name,
-              full_name: user.full_name, // Virtual field
+              full_name: `${user.first_name || ''} ${user.middle_name || ''} ${user.last_name || ''}`.replace(/\s+/g, ' ').trim(), // Constructed field
               current_age: user.current_age, // Virtual field
               age: `${user.current_age} years`,
               
@@ -106,7 +106,7 @@ class PatientController {
             // Relationships
             primary_doctor: user.patientProfile.primaryCareDoctor ? {
               id: user.patientProfile.primaryCareDoctor.id,
-              name: user.patientProfile.primaryCareDoctor.user.full_name,
+              name: `${user.patientProfile.primaryCareDoctor.user.first_name || ''} ${user.patientProfile.primaryCareDoctor.user.middle_name || ''} ${user.patientProfile.primaryCareDoctor.user.last_name || ''}`.replace(/\s+/g, ' ').trim(),
               email: user.patientProfile.primaryCareDoctor.user.email
             } : null,
             
@@ -317,14 +317,14 @@ class PatientController {
             basic_info: {
               id: user.patientProfile.id.toString(),
               user_id: user.id.toString(),
-              full_name: user.full_name,
+              full_name: `${user.first_name || ''} ${user.middle_name || ''} ${user.last_name || ''}`.replace(/\s+/g, ' ').trim(),
               first_name: user.first_name,
               last_name: user.last_name,
               current_age: user.current_age,
               gender: user.gender,
               mobile_number: user.mobile_number,
               medical_record_number: user.patientProfile.medical_record_number,
-              primary_doctor: user.patientProfile.primaryCareDoctor?.user?.full_name || null
+              primary_doctor: user.patientProfile.primaryCareDoctor?.user ? `${user.patientProfile.primaryCareDoctor.user.first_name || ''} ${user.patientProfile.primaryCareDoctor.user.middle_name || ''} ${user.patientProfile.primaryCareDoctor.user.last_name || ''}`.replace(/\s+/g, ' ').trim() : null
             }
           };
           return acc;

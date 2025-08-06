@@ -109,7 +109,7 @@ router.post('/enhanced-sign-in', async (req, res, next) => {
       email: user.email,
       first_name: user.first_name,
       last_name: user.last_name,
-      full_name: user.full_name,
+      full_name: `${user.first_name || ''} ${user.middle_name || ''} ${user.last_name || ''}`.replace(/\s+/g, ' ').trim(),
       role: user.role,
       account_status: user.account_status,
       profile: profileData

@@ -358,7 +358,7 @@ class AdminController {
           {
             model: User,
             as: 'user',
-            attributes: ['id', 'email', 'phone', 'full_name', 'first_name', 'middle_name', 'last_name', 'gender', 'email_verified', 'created_at']
+            attributes: ['id', 'email', 'phone', 'first_name', 'middle_name', 'last_name', 'gender', 'email_verified', 'created_at']
           },
           {
             model: Speciality,
@@ -459,8 +459,7 @@ class AdminController {
       // Update User table (basic info)
       const userUpdateData = {};
       if (full_name) {
-        userUpdateData.full_name = full_name;
-        // Split full name into components
+        // Split full name into components (don't store full_name as it's not a real field)
         const nameParts = full_name.trim().split(' ');
         if (nameParts.length >= 1) userUpdateData.first_name = nameParts[0];
         if (nameParts.length >= 2) userUpdateData.last_name = nameParts[nameParts.length - 1];
@@ -516,7 +515,7 @@ class AdminController {
           {
             model: User,
             as: 'user',
-            attributes: ['id', 'email', 'phone', 'full_name', 'first_name', 'middle_name', 'last_name', 'gender', 'email_verified']
+            attributes: ['id', 'email', 'phone', 'first_name', 'middle_name', 'last_name', 'gender', 'email_verified']
           },
           {
             model: Speciality,
@@ -610,7 +609,7 @@ class AdminController {
           {
             model: User,
             as: 'user',
-            attributes: ['id', 'email', 'phone', 'full_name', 'first_name', 'middle_name', 'last_name', 'gender', 'email_verified', 'account_status', 'created_at']
+            attributes: ['id', 'email', 'phone', 'first_name', 'middle_name', 'last_name', 'gender', 'email_verified', 'account_status', 'created_at']
           },
           {
             model: Speciality,
@@ -647,7 +646,7 @@ class AdminController {
           // Basic Information
           id: doctor.id.toString(),
           user_id: doctor.user_id.toString(),
-          full_name: doctor.user?.full_name || `${doctor.user?.first_name || ''} ${doctor.user?.last_name || ''}`.trim(),
+          full_name: `${doctor.user?.first_name || ''} ${doctor.user?.middle_name || ''} ${doctor.user?.last_name || ''}`.replace(/\s+/g, ' ').trim(),
           first_name: doctor.user?.first_name || '',
           middle_name: doctor.user?.middle_name || '',
           last_name: doctor.user?.last_name || '',

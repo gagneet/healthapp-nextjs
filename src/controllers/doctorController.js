@@ -51,7 +51,7 @@ class DoctorController {
           {
             model: User,
             as: 'user',
-            attributes: ['id', 'email', 'phone', 'full_name', 'first_name', 'middle_name', 'last_name', 'gender', 'profile_picture_url', 'email_verified', 'created_at']
+            attributes: ['id', 'email', 'phone', 'first_name', 'middle_name', 'last_name', 'gender', 'profile_picture_url', 'email_verified', 'created_at']
           },
           {
             model: Speciality,
@@ -89,7 +89,7 @@ class DoctorController {
           // Basic Information
           id: doctor.id.toString(),
           user_id: doctor.user_id.toString(),
-          full_name: doctor.user?.full_name || `${doctor.user?.first_name || ''} ${doctor.user?.last_name || ''}`.trim(),
+          full_name: `${doctor.user?.first_name || ''} ${doctor.user?.middle_name || ''} ${doctor.user?.last_name || ''}`.replace(/\s+/g, ' ').trim(),
           first_name: doctor.user?.first_name || '',
           middle_name: doctor.user?.middle_name || '',
           last_name: doctor.user?.last_name || '',
@@ -262,8 +262,7 @@ class DoctorController {
       // Update User table (basic info)
       const userUpdateData = {};
       if (full_name) {
-        userUpdateData.full_name = full_name;
-        // Split full name into components
+        // Split full name into components (don't store full_name as it's not a real field)
         const nameParts = full_name.trim().split(' ');
         if (nameParts.length >= 1) userUpdateData.first_name = nameParts[0];
         if (nameParts.length >= 2) userUpdateData.last_name = nameParts[nameParts.length - 1];
@@ -402,7 +401,7 @@ class DoctorController {
           {
             model: User,
             as: 'user',
-            attributes: ['email', 'full_name', 'first_name', 'last_name', 'email_verified']
+            attributes: ['email', 'first_name', 'middle_name', 'last_name', 'email_verified']
           },
           {
             model: Speciality,
@@ -437,7 +436,7 @@ class DoctorController {
       const responseData = {
         id: doctor.id.toString(),
         user_id: doctor.user_id.toString(),
-        full_name: doctor.user?.full_name,
+        full_name: `${doctor.user?.first_name || ''} ${doctor.user?.middle_name || ''} ${doctor.user?.last_name || ''}`.replace(/\s+/g, ' ').trim(),
         first_name: doctor.user?.first_name,
         last_name: doctor.user?.last_name,
         email: doctor.user?.email,
@@ -502,7 +501,7 @@ class DoctorController {
           {
             model: User,
             as: 'user',
-            attributes: ['email', 'phone', 'full_name']
+            attributes: ['email', 'phone', 'first_name', 'middle_name', 'last_name']
           }
         ],
         offset,
@@ -517,7 +516,7 @@ class DoctorController {
             id: patient.id.toString(),
             first_name: patient.first_name,
             last_name: patient.last_name,
-            full_name: patient.user?.full_name,
+            full_name: `${patient.user?.first_name || ''} ${patient.user?.middle_name || ''} ${patient.user?.last_name || ''}`.replace(/\s+/g, ' ').trim(),
             current_age: patient.current_age,
             gender: patient.gender,
             mobile_number: patient.user?.phone,
@@ -941,7 +940,7 @@ class DoctorController {
           {
             model: User,
             as: 'user',
-            attributes: ['email', 'phone', 'full_name', 'profile_picture_url']
+            attributes: ['email', 'phone', 'first_name', 'middle_name', 'last_name', 'profile_picture_url']
           }
         ],
         order: [['updated_at', 'DESC']],
@@ -953,7 +952,7 @@ class DoctorController {
         user_id: patient.user_id.toString(),
         first_name: patient.user?.first_name || '',
         last_name: patient.user?.last_name || '',
-        full_name: patient.user?.full_name || `${patient.user?.first_name || ''} ${patient.user?.last_name || ''}`.trim(),
+        full_name: `${patient.user?.first_name || ''} ${patient.user?.middle_name || ''} ${patient.user?.last_name || ''}`.replace(/\s+/g, ' ').trim(),
         email: patient.user?.email,
         phone: patient.user?.phone,
         profile_picture_url: patient.user?.profile_picture_url,
@@ -1010,7 +1009,7 @@ class DoctorController {
           {
             model: User,
             as: 'user',
-            attributes: ['full_name']
+            attributes: ['first_name', 'middle_name', 'last_name']
           }
         ],
         order: [['updated_at', 'DESC']],
@@ -1023,7 +1022,7 @@ class DoctorController {
         .map((patient, index) => ({
           id: `alert_${patient.id}_${index}`,
           patient_id: patient.id.toString(),
-          patient_name: patient.user?.full_name || 'Unknown Patient',
+          patient_name: `${patient.user?.first_name || ''} ${patient.user?.middle_name || ''} ${patient.user?.last_name || ''}`.replace(/\s+/g, ' ').trim() || 'Unknown Patient',
           type: ['medication', 'vital', 'appointment'][Math.floor(Math.random() * 3)],
           severity: ['critical', 'high', 'medium'][Math.floor(Math.random() * 3)],
           message: [
@@ -1231,7 +1230,7 @@ class DoctorController {
           include: [{
             model: User,
             as: 'user',
-            attributes: ['first_name', 'last_name', 'full_name']
+            attributes: ['first_name', 'middle_name', 'last_name']
           }]
         }]
       });
