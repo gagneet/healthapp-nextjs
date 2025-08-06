@@ -132,9 +132,9 @@ services:
         delay: 30s
         failure_action: rollback
         order: start-first
-        rollback_config:
-          parallelism: 1
-          delay: 30s
+      rollback_config:
+        parallelism: 1
+        delay: 30s
       resources:
         limits:
           memory: 1G
@@ -178,9 +178,9 @@ services:
         delay: 30s
         failure_action: rollback
         order: start-first
-        rollback_config:
-          parallelism: 1
-          delay: 30s
+      rollback_config:
+        parallelism: 1
+        delay: 30s
       resources:
         limits:
           memory: 1G

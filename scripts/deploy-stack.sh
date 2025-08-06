@@ -739,6 +739,13 @@ cleanup_on_exit() {
     if [ -f "docker-stack-$MODE.yml" ]; then
         rm -f "docker-stack-$MODE.yml"
     fi
+    # Clean up temporary environment files
+    if [ -f ".env.development" ]; then
+        rm -f ".env.development"
+    fi
+    if [ -f ".env.production" ]; then
+        rm -f ".env.production"
+    fi
 }
 
 # Main execution function
