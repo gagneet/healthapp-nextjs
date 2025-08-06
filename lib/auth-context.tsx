@@ -182,13 +182,23 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     } catch (error) {
       logger.error('Logout error:', error)
     } finally {
+      // Clear localStorage
+      localStorage.removeItem('authToken')
+      localStorage.removeItem('user')
+      
       setState({
         user: null,
         token: null,
         isLoading: false,
         isAuthenticated: false,
       })
+      
       toast.success('Logged out successfully')
+      
+      // Redirect to login page
+      if (typeof window !== 'undefined') {
+        window.location.href = '/auth/login'
+      }
     }
   }
 

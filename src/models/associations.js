@@ -32,6 +32,7 @@ export default (db) => {
     AuditLog,
     Speciality,
     PatientDoctorAssignment,
+    Clinic,
     DoctorAvailability,
     AppointmentSlot,
     Payment,
@@ -851,6 +852,31 @@ export default (db) => {
       foreignKey: 'patient_id',
       as: 'patient'
     });
+  }
+
+  // Clinic associations
+  if (Clinic) {
+    // Doctor has many clinics
+    Doctor.hasMany(Clinic, {
+      foreignKey: 'doctor_id',
+      as: 'clinics'
+    });
+    Clinic.belongsTo(Doctor, {
+      foreignKey: 'doctor_id',
+      as: 'doctor'
+    });
+
+    // Organization has many clinics (optional)
+    if (Organization) {
+      Organization.hasMany(Clinic, {
+        foreignKey: 'organization_id',
+        as: 'clinics'
+      });
+      Clinic.belongsTo(Organization, {
+        foreignKey: 'organization_id',
+        as: 'organization'
+      });
+    }
   }
 
   return db;

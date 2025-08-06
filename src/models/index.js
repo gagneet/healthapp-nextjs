@@ -33,6 +33,7 @@ import SpecialityModel from './Speciality.js';
 import SymptomsDatabaseModel from './SymptomsDatabase.js';
 import TreatmentDatabaseModel from './TreatmentDatabase.js';
 import PatientDoctorAssignmentModel from './PatientDoctorAssignment.js';
+import ClinicModel from './Clinic.js';
 import DoctorAvailabilityModel from './DoctorAvailability.js';
 import AppointmentSlotModel from './AppointmentSlot.js';
 import ServicePlanModel from './ServicePlan.js';
@@ -71,6 +72,7 @@ const Speciality = SpecialityModel(sequelize, Sequelize.DataTypes);
 const SymptomsDatabase = SymptomsDatabaseModel(sequelize);
 const TreatmentDatabase = TreatmentDatabaseModel(sequelize);
 const PatientDoctorAssignment = PatientDoctorAssignmentModel(sequelize);
+const Clinic = ClinicModel(sequelize);
 const DoctorAvailability = DoctorAvailabilityModel(sequelize, Sequelize.DataTypes);
 const AppointmentSlot = AppointmentSlotModel(sequelize, Sequelize.DataTypes);
 const ServicePlan = ServicePlanModel(sequelize, Sequelize.DataTypes);
@@ -111,6 +113,13 @@ const db = {
   SymptomsDatabase,
   TreatmentDatabase,
   PatientDoctorAssignment,
+  Clinic,
+  DoctorAvailability,
+  AppointmentSlot,
+  ServicePlan,
+  PatientSubscription,
+  Payment,
+  PaymentMethod
 };
 
 // Set up associations
@@ -150,6 +159,7 @@ export {
   SymptomsDatabase,
   TreatmentDatabase,
   PatientDoctorAssignment,
+  Clinic,
   DoctorAvailability,
   AppointmentSlot,
   ServicePlan,

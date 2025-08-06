@@ -39,7 +39,8 @@ const IMPLEMENTED_ROUTES = {
     '/dashboard/admin',
     '/dashboard/admin/medicines',
     '/dashboard/admin/conditions',
-    '/dashboard/admin/treatments'
+    '/dashboard/admin/treatments',
+    '/dashboard/admin/doctors'
   ]
 }
 

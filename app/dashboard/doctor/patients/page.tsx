@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { 
   MagnifyingGlassIcon,
@@ -296,10 +296,10 @@ export default function PatientsPage() {
   }
 
   // Handle search with debouncing
-  const handleSearch = async (query: string) => {
+  const handleSearch = useCallback(async (query: string) => {
     setSearchTerm(query)
     await fetchPatients(query)
-  }
+  }, [])
 
   const filteredPatients = patients.filter(patient => {
     const matchesStatus = statusFilter === 'all' || patient.status === statusFilter

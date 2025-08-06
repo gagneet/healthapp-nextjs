@@ -18,7 +18,7 @@ module.exports = {
 
     await queryInterface.bulkInsert('medicines', [
       {
-        id: 1,
+        id: '550e8400-e29b-41d4-a716-446655440001',
         name: 'Metformin',
         type: 'tablet',
         description: 'Diabetes medication',
@@ -32,7 +32,7 @@ module.exports = {
         updated_at: new Date(),
       },
       {
-        id: 2,
+        id: '550e8400-e29b-41d4-a716-446655440002',
         name: 'Lisinopril',
         type: 'tablet',
         description: 'Blood pressure medication',
@@ -46,7 +46,7 @@ module.exports = {
         updated_at: new Date(),
       },
       {
-        id: 3,
+        id: '550e8400-e29b-41d4-a716-446655440003',
         name: 'Aspirin',
         type: 'tablet',
         description: 'Pain relief and blood thinner',
@@ -54,6 +54,34 @@ module.exports = {
           generic_name: 'Acetylsalicylic acid',
           formulation: 'tablet',
           strength: '81mg'
+        }),
+        public_medicine: true,
+        created_at: new Date(),
+        updated_at: new Date(),
+      },
+      {
+        id: '550e8400-e29b-41d4-a716-446655440004',
+        name: 'Ibuprofen',
+        type: 'tablet',
+        description: 'Anti-inflammatory pain reliever',
+        details: JSON.stringify({
+          generic_name: 'Ibuprofen',
+          formulation: 'tablet',
+          strength: '200mg'
+        }),
+        public_medicine: true,
+        created_at: new Date(),
+        updated_at: new Date(),
+      },
+      {
+        id: '550e8400-e29b-41d4-a716-446655440005',
+        name: 'Amlodipine',
+        type: 'tablet',
+        description: 'Calcium channel blocker for blood pressure',
+        details: JSON.stringify({
+          generic_name: 'Amlodipine Besylate',
+          formulation: 'tablet',
+          strength: '5mg'
         }),
         public_medicine: true,
         created_at: new Date(),

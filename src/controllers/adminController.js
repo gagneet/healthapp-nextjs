@@ -1,5 +1,5 @@
 // src/controllers/adminController.js
-import { Doctor, Patient, User, Medicine, Speciality, Medication, Appointment } from '../models/index.js';
+import { Doctor, Patient, User, Medicine, Speciality, Medication, Appointment, SymptomsDatabase, TreatmentDatabase } from '../models/index.js';
 import { Op } from 'sequelize';
 
 class AdminController {
@@ -364,20 +364,57 @@ class AdminController {
     }
   }
 
-  // Condition Management (Simple string-based conditions)
+  // Condition Management using SymptomsDatabase
   async getConditions(req, res, next) {
     try {
-      // For simplicity, return hardcoded conditions that can be managed
-      const conditions = [
-        'Acute', 'Chronic', 'Stable', 'Progressive', 'Terminal', 
-        'Recovering', 'Under Investigation', 'Monitoring Required', 'Emergency'
-      ];
+      const { page = 1, limit = 20, search } = req.query;
+      const offset = (page - 1) * limit;
+
+      const whereClause = { is_active: true };
+      if (search) {
+        whereClause.diagnosis_name = { [Op.like]: `%${search}%` };
+      }
+
+      const { count, rows: conditions } = await SymptomsDatabase.findAndCountAll({
+        where: whereClause,
+        offset,
+        limit: parseInt(limit),
+        order: [['created_at', 'DESC']]
+      });
+
+      const responseData = { conditions: {} };
+
+      for (const condition of conditions) {
+        responseData.conditions[condition.id] = {
+          basic_info: {
+            id: condition.id.toString(),
+            diagnosis_name: condition.diagnosis_name,
+            category: condition.category,
+            symptoms: condition.symptoms,
+            severity_indicators: condition.severity_indicators,
+            common_age_groups: condition.common_age_groups,
+            gender_specific: condition.gender_specific,
+            is_active: condition.is_active
+          },
+          metadata: {
+            created_by: condition.created_by?.toString(),
+            created_at: condition.created_at,
+            updated_at: condition.updated_at
+          }
+        };
+      }
 
       res.status(200).json({
         status: true,
         statusCode: 200,
         payload: {
-          data: { conditions },
+          data: responseData,
+          pagination: {
+            page: parseInt(page),
+            limit: parseInt(limit),
+            total: count,
+            total_pages: Math.ceil(count / limit)
+          },
           message: 'Conditions retrieved successfully'
         }
       });
@@ -388,15 +425,32 @@ class AdminController {
 
   async createCondition(req, res, next) {
     try {
-      // This would require a new Condition model/table
-      res.status(501).json({
-        status: false,
-        statusCode: 501,
+      const { 
+        diagnosis_name, 
+        category, 
+        symptoms, 
+        severity_indicators,
+        common_age_groups,
+        gender_specific = 'both'
+      } = req.body;
+
+      const condition = await SymptomsDatabase.create({
+        diagnosis_name,
+        category,
+        symptoms: Array.isArray(symptoms) ? symptoms : JSON.parse(symptoms || '[]'),
+        severity_indicators: typeof severity_indicators === 'object' ? severity_indicators : JSON.parse(severity_indicators || '{}'),
+        common_age_groups: Array.isArray(common_age_groups) ? common_age_groups : JSON.parse(common_age_groups || '[]'),
+        gender_specific,
+        is_active: true,
+        created_by: req.user.id
+      });
+
+      res.status(201).json({
+        status: true,
+        statusCode: 201,
         payload: {
-          error: {
-            status: 'NOT_IMPLEMENTED',
-            message: 'Condition creation not implemented - using predefined list'
-          }
+          data: { condition },
+          message: 'Condition created successfully'
         }
       });
     } catch (error) {
@@ -406,14 +460,47 @@ class AdminController {
 
   async updateCondition(req, res, next) {
     try {
-      res.status(501).json({
-        status: false,
-        statusCode: 501,
-        payload: {
-          error: {
-            status: 'NOT_IMPLEMENTED',
-            message: 'Condition update not implemented - using predefined list'
+      const { conditionId } = req.params;
+      const { 
+        diagnosis_name, 
+        category, 
+        symptoms, 
+        severity_indicators,
+        common_age_groups,
+        gender_specific,
+        is_active
+      } = req.body;
+
+      const condition = await SymptomsDatabase.findByPk(conditionId);
+      if (!condition) {
+        return res.status(404).json({
+          status: false,
+          statusCode: 404,
+          payload: {
+            error: {
+              status: 'NOT_FOUND',
+              message: 'Condition not found'
+            }
           }
+        });
+      }
+
+      await condition.update({
+        diagnosis_name,
+        category,
+        symptoms: Array.isArray(symptoms) ? symptoms : JSON.parse(symptoms || '[]'),
+        severity_indicators: typeof severity_indicators === 'object' ? severity_indicators : JSON.parse(severity_indicators || '{}'),
+        common_age_groups: Array.isArray(common_age_groups) ? common_age_groups : JSON.parse(common_age_groups || '[]'),
+        gender_specific,
+        is_active
+      });
+
+      res.status(200).json({
+        status: true,
+        statusCode: 200,
+        payload: {
+          data: { condition },
+          message: 'Condition updated successfully'
         }
       });
     } catch (error) {
@@ -423,14 +510,30 @@ class AdminController {
 
   async deleteCondition(req, res, next) {
     try {
-      res.status(501).json({
-        status: false,
-        statusCode: 501,
-        payload: {
-          error: {
-            status: 'NOT_IMPLEMENTED',
-            message: 'Condition deletion not implemented - using predefined list'
+      const { conditionId } = req.params;
+
+      const condition = await SymptomsDatabase.findByPk(conditionId);
+      if (!condition) {
+        return res.status(404).json({
+          status: false,
+          statusCode: 404,
+          payload: {
+            error: {
+              status: 'NOT_FOUND',
+              message: 'Condition not found'
+            }
           }
+        });
+      }
+
+      // Soft delete by setting is_active to false
+      await condition.update({ is_active: false });
+
+      res.status(200).json({
+        status: true,
+        statusCode: 200,
+        payload: {
+          message: 'Condition deleted successfully'
         }
       });
     } catch (error) {
@@ -438,19 +541,68 @@ class AdminController {
     }
   }
 
-  // Treatment Management (Simple string-based treatments)
+  // Treatment Management using TreatmentDatabase
   async getTreatments(req, res, next) {
     try {
-      const treatments = [
-        'Medication', 'Surgery', 'Hip Replacement', 'Chemotherapy',
-        'Diet & Nutrition', 'Exercise & Lifestyle', 'Saline', 'Other'
-      ];
+      const { page = 1, limit = 20, search } = req.query;
+      const offset = (page - 1) * limit;
+
+      const whereClause = { is_active: true };
+      if (search) {
+        whereClause.treatment_name = { [Op.like]: `%${search}%` };
+      }
+
+      const { count, rows: treatments } = await TreatmentDatabase.findAndCountAll({
+        where: whereClause,
+        offset,
+        limit: parseInt(limit),
+        order: [['created_at', 'DESC']]
+      });
+
+      const responseData = { treatments: {} };
+
+      for (const treatment of treatments) {
+        responseData.treatments[treatment.id] = {
+          basic_info: {
+            id: treatment.id.toString(),
+            treatment_name: treatment.treatment_name,
+            treatment_type: treatment.treatment_type,
+            description: treatment.description,
+            applicable_conditions: treatment.applicable_conditions,
+            duration: treatment.duration,
+            frequency: treatment.frequency,
+            dosage_info: treatment.dosage_info,
+            category: treatment.category,
+            severity_level: treatment.severity_level,
+            requires_specialist: treatment.requires_specialist,
+            prescription_required: treatment.prescription_required,
+            is_active: treatment.is_active
+          },
+          safety_info: {
+            age_restrictions: treatment.age_restrictions,
+            contraindications: treatment.contraindications,
+            side_effects: treatment.side_effects,
+            monitoring_required: treatment.monitoring_required
+          },
+          metadata: {
+            created_by: treatment.created_by?.toString(),
+            created_at: treatment.created_at,
+            updated_at: treatment.updated_at
+          }
+        };
+      }
 
       res.status(200).json({
         status: true,
         statusCode: 200,
         payload: {
-          data: { treatments },
+          data: responseData,
+          pagination: {
+            page: parseInt(page),
+            limit: parseInt(limit),
+            total: count,
+            total_pages: Math.ceil(count / limit)
+          },
           message: 'Treatments retrieved successfully'
         }
       });
@@ -461,14 +613,50 @@ class AdminController {
 
   async createTreatment(req, res, next) {
     try {
-      res.status(501).json({
-        status: false,
-        statusCode: 501,
+      const { 
+        treatment_name, 
+        treatment_type,
+        description,
+        applicable_conditions,
+        duration,
+        frequency,
+        dosage_info,
+        category,
+        severity_level,
+        age_restrictions,
+        contraindications,
+        side_effects,
+        monitoring_required,
+        requires_specialist = false,
+        prescription_required = false
+      } = req.body;
+
+      const treatment = await TreatmentDatabase.create({
+        treatment_name,
+        treatment_type,
+        description,
+        applicable_conditions: Array.isArray(applicable_conditions) ? applicable_conditions : JSON.parse(applicable_conditions || '[]'),
+        duration,
+        frequency,
+        dosage_info: typeof dosage_info === 'object' ? dosage_info : JSON.parse(dosage_info || '{}'),
+        category,
+        severity_level,
+        age_restrictions: typeof age_restrictions === 'object' ? age_restrictions : JSON.parse(age_restrictions || '{}'),
+        contraindications: Array.isArray(contraindications) ? contraindications : JSON.parse(contraindications || '[]'),
+        side_effects: Array.isArray(side_effects) ? side_effects : JSON.parse(side_effects || '[]'),
+        monitoring_required: Array.isArray(monitoring_required) ? monitoring_required : JSON.parse(monitoring_required || '[]'),
+        requires_specialist,
+        prescription_required,
+        is_active: true,
+        created_by: req.user.id
+      });
+
+      res.status(201).json({
+        status: true,
+        statusCode: 201,
         payload: {
-          error: {
-            status: 'NOT_IMPLEMENTED',
-            message: 'Treatment creation not implemented - using predefined list'
-          }
+          data: { treatment },
+          message: 'Treatment created successfully'
         }
       });
     } catch (error) {
@@ -478,14 +666,65 @@ class AdminController {
 
   async updateTreatment(req, res, next) {
     try {
-      res.status(501).json({
-        status: false,
-        statusCode: 501,
-        payload: {
-          error: {
-            status: 'NOT_IMPLEMENTED',
-            message: 'Treatment update not implemented - using predefined list'
+      const { treatmentId } = req.params;
+      const { 
+        treatment_name, 
+        treatment_type,
+        description,
+        applicable_conditions,
+        duration,
+        frequency,
+        dosage_info,
+        category,
+        severity_level,
+        age_restrictions,
+        contraindications,
+        side_effects,
+        monitoring_required,
+        requires_specialist,
+        prescription_required,
+        is_active
+      } = req.body;
+
+      const treatment = await TreatmentDatabase.findByPk(treatmentId);
+      if (!treatment) {
+        return res.status(404).json({
+          status: false,
+          statusCode: 404,
+          payload: {
+            error: {
+              status: 'NOT_FOUND',
+              message: 'Treatment not found'
+            }
           }
+        });
+      }
+
+      await treatment.update({
+        treatment_name,
+        treatment_type,
+        description,
+        applicable_conditions: Array.isArray(applicable_conditions) ? applicable_conditions : JSON.parse(applicable_conditions || '[]'),
+        duration,
+        frequency,
+        dosage_info: typeof dosage_info === 'object' ? dosage_info : JSON.parse(dosage_info || '{}'),
+        category,
+        severity_level,
+        age_restrictions: typeof age_restrictions === 'object' ? age_restrictions : JSON.parse(age_restrictions || '{}'),
+        contraindications: Array.isArray(contraindications) ? contraindications : JSON.parse(contraindications || '[]'),
+        side_effects: Array.isArray(side_effects) ? side_effects : JSON.parse(side_effects || '[]'),
+        monitoring_required: Array.isArray(monitoring_required) ? monitoring_required : JSON.parse(monitoring_required || '[]'),
+        requires_specialist,
+        prescription_required,
+        is_active
+      });
+
+      res.status(200).json({
+        status: true,
+        statusCode: 200,
+        payload: {
+          data: { treatment },
+          message: 'Treatment updated successfully'
         }
       });
     } catch (error) {
@@ -495,14 +734,30 @@ class AdminController {
 
   async deleteTreatment(req, res, next) {
     try {
-      res.status(501).json({
-        status: false,
-        statusCode: 501,
-        payload: {
-          error: {
-            status: 'NOT_IMPLEMENTED',
-            message: 'Treatment deletion not implemented - using predefined list'
+      const { treatmentId } = req.params;
+
+      const treatment = await TreatmentDatabase.findByPk(treatmentId);
+      if (!treatment) {
+        return res.status(404).json({
+          status: false,
+          statusCode: 404,
+          payload: {
+            error: {
+              status: 'NOT_FOUND',
+              message: 'Treatment not found'
+            }
           }
+        });
+      }
+
+      // Soft delete by setting is_active to false
+      await treatment.update({ is_active: false });
+
+      res.status(200).json({
+        status: true,
+        statusCode: 200,
+        payload: {
+          message: 'Treatment deleted successfully'
         }
       });
     } catch (error) {

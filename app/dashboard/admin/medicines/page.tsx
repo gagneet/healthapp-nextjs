@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import {
   PlusIcon,
   MagnifyingGlassIcon,
@@ -74,10 +74,10 @@ export default function MedicinesManagement() {
     }
   }
 
-  const handleSearch = (query: string) => {
+  const handleSearch = useCallback((query: string) => {
     setSearchTerm(query)
     fetchMedicines(query)
-  }
+  }, [])
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault()
