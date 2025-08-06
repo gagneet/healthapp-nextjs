@@ -84,7 +84,7 @@ export default function AdminDoctorsPage() {
   }
 
   const handleEditDoctor = (doctorId: string) => {
-    toast.info('Edit functionality will be implemented')
+    alert('Edit functionality will be implemented')
   }
 
   const handleDeleteDoctor = async (doctorId: string) => {
