@@ -91,6 +91,29 @@ router.delete('/clinics/:clinicId',
   doctorController.deleteClinic
 );
 
+// Geo-location Routes for Clinics
+
+// POST /api/doctors/clinics/:clinicId/geocode (Manually geocode clinic address)
+router.post('/clinics/:clinicId/geocode',
+  authenticate,
+  authorize(USER_CATEGORIES.DOCTOR),
+  doctorController.geocodeClinicAddress
+);
+
+// GET /api/doctors/clinics/nearby (Find nearby clinics by coordinates)
+router.get('/clinics/nearby',
+  authenticate,
+  authorize(USER_CATEGORIES.DOCTOR, USER_CATEGORIES.PATIENT),
+  doctorController.findNearbyClinics
+);
+
+// POST /api/doctors/reverse-geocode (Reverse geocode coordinates to address)
+router.post('/reverse-geocode',
+  authenticate,
+  authorize(USER_CATEGORIES.DOCTOR),
+  doctorController.reverseGeocodeLocation
+);
+
 // General Doctor Routes
 
 // GET /api/doctors/:doctorId (Get doctor details by ID - for admin/other users)

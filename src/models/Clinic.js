@@ -42,8 +42,42 @@ const Clinic = (sequelize) => {
           if (typeof value !== 'object') {
             throw new Error('Address must be a valid JSON object');
           }
+          // Expected structure: { street, city, state, country, postal_code, formatted_address, latitude, longitude }
         }
       }
+    },
+    
+    // Geo-location fields for enhanced location services
+    latitude: {
+      type: DataTypes.DECIMAL(10, 8),
+      allowNull: true,
+      validate: {
+        min: -90,
+        max: 90
+      },
+      comment: 'Latitude coordinate for maps and location services'
+    },
+    
+    longitude: {
+      type: DataTypes.DECIMAL(11, 8), 
+      allowNull: true,
+      validate: {
+        min: -180,
+        max: 180
+      },
+      comment: 'Longitude coordinate for maps and location services'
+    },
+    
+    location_verified: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+      comment: 'Whether the location has been verified via geocoding'
+    },
+    
+    location_accuracy: {
+      type: DataTypes.STRING(20),
+      allowNull: true,
+      comment: 'Geocoding accuracy level (ROOFTOP, RANGE_INTERPOLATED, GEOMETRIC_CENTER, APPROXIMATE)'
     },
     phone: {
       type: DataTypes.STRING(20),

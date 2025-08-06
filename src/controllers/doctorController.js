@@ -4,6 +4,7 @@ import { Op } from 'sequelize';
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
+import geoLocationService from '../services/GeoLocationService.js';
 
 // Configure multer for file uploads
 const storage = multer.diskStorage({
@@ -583,7 +584,7 @@ class DoctorController {
     }
   }
 
-  // Create new clinic
+  // Create new clinic with geo-location support
   async createClinic(req, res, next) {
     try {
       const userId = req.user.id;
@@ -603,16 +604,55 @@ class DoctorController {
         });
       }
 
-      const clinic = await Clinic.create({
+      // Prepare clinic data with geo-location
+      const clinicCreateData = {
         ...clinicData,
         doctor_id: doctor.id
-      });
+      };
+
+      // If address is provided, attempt to geocode it
+      if (clinicData.address && typeof clinicData.address === 'object') {
+        try {
+          const geocodeResult = await geoLocationService.geocodeAddress(clinicData.address);
+          
+          if (geocodeResult.success) {
+            // Add geocoded coordinates to clinic data
+            clinicCreateData.latitude = geocodeResult.latitude;
+            clinicCreateData.longitude = geocodeResult.longitude;
+            clinicCreateData.location_verified = true;
+            clinicCreateData.location_accuracy = geocodeResult.accuracy;
+            
+            // Update address with formatted version if available
+            if (geocodeResult.formatted_address) {
+              clinicCreateData.address = {
+                ...clinicData.address,
+                formatted_address: geocodeResult.formatted_address
+              };
+            }
+          } else {
+            // Log geocoding failure but don't fail clinic creation
+            console.warn(`Geocoding failed for clinic: ${geocodeResult.error}`);
+            clinicCreateData.location_verified = false;
+          }
+        } catch (geocodeError) {
+          // Log error but don't fail clinic creation
+          console.error('Geocoding error during clinic creation:', geocodeError);
+          clinicCreateData.location_verified = false;
+        }
+      }
+
+      const clinic = await Clinic.create(clinicCreateData);
 
       res.status(201).json({
         status: true,
         statusCode: 201,
         payload: {
-          data: { clinic },
+          data: { 
+            clinic: {
+              ...clinic.toJSON(),
+              geocoding_success: clinicCreateData.location_verified || false
+            }
+          },
           message: 'Clinic created successfully'
         }
       });
@@ -621,7 +661,7 @@ class DoctorController {
     }
   }
 
-  // Update clinic
+  // Update clinic with geo-location support
   async updateClinic(req, res, next) {
     try {
       const { clinicId } = req.params;
@@ -659,13 +699,63 @@ class DoctorController {
         });
       }
 
-      await clinic.update(updateData);
+      // Prepare update data with geo-location handling
+      const clinicUpdateData = { ...updateData };
+
+      // Check if address is being updated
+      if (updateData.address && typeof updateData.address === 'object') {
+        // Check if address has actually changed
+        const currentAddress = clinic.address || {};
+        const addressChanged = JSON.stringify(currentAddress) !== JSON.stringify(updateData.address);
+
+        if (addressChanged) {
+          try {
+            const geocodeResult = await geoLocationService.geocodeAddress(updateData.address);
+            
+            if (geocodeResult.success) {
+              // Update coordinates and verification status
+              clinicUpdateData.latitude = geocodeResult.latitude;
+              clinicUpdateData.longitude = geocodeResult.longitude;
+              clinicUpdateData.location_verified = true;
+              clinicUpdateData.location_accuracy = geocodeResult.accuracy;
+              
+              // Update address with formatted version if available
+              if (geocodeResult.formatted_address) {
+                clinicUpdateData.address = {
+                  ...updateData.address,
+                  formatted_address: geocodeResult.formatted_address
+                };
+              }
+            } else {
+              // Mark location as unverified if geocoding fails
+              console.warn(`Geocoding failed for clinic update: ${geocodeResult.error}`);
+              clinicUpdateData.location_verified = false;
+              clinicUpdateData.location_accuracy = null;
+            }
+          } catch (geocodeError) {
+            // Log error but don't fail update
+            console.error('Geocoding error during clinic update:', geocodeError);
+            clinicUpdateData.location_verified = false;
+            clinicUpdateData.location_accuracy = null;
+          }
+        }
+      }
+
+      await clinic.update(clinicUpdateData);
+
+      // Reload to get updated data
+      await clinic.reload();
 
       res.status(200).json({
         status: true,
         statusCode: 200,
         payload: {
-          data: { clinic },
+          data: { 
+            clinic: {
+              ...clinic.toJSON(),
+              geocoding_success: clinicUpdateData.location_verified || false
+            }
+          },
           message: 'Clinic updated successfully'
         }
       });
@@ -1005,6 +1095,225 @@ class DoctorController {
           message: 'Adherence analytics retrieved successfully'
         }
       });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  // Geocode clinic address manually
+  async geocodeClinicAddress(req, res, next) {
+    try {
+      const { clinicId } = req.params;
+      const userId = req.user.id;
+
+      const doctor = await Doctor.findOne({ where: { user_id: userId } });
+      if (!doctor) {
+        return res.status(404).json({
+          status: false,
+          statusCode: 404,
+          payload: {
+            error: {
+              status: 'NOT_FOUND',
+              message: 'Doctor profile not found'
+            }
+          }
+        });
+      }
+
+      const clinic = await Clinic.findOne({
+        where: { id: clinicId, doctor_id: doctor.id }
+      });
+
+      if (!clinic) {
+        return res.status(404).json({
+          status: false,
+          statusCode: 404,
+          payload: {
+            error: {
+              status: 'NOT_FOUND',
+              message: 'Clinic not found'
+            }
+          }
+        });
+      }
+
+      if (!clinic.address || Object.keys(clinic.address).length === 0) {
+        return res.status(400).json({
+          status: false,
+          statusCode: 400,
+          payload: {
+            error: {
+              status: 'BAD_REQUEST',
+              message: 'Clinic address is required for geocoding'
+            }
+          }
+        });
+      }
+
+      const geocodeResult = await geoLocationService.geocodeAddress(clinic.address);
+
+      if (geocodeResult.success) {
+        // Update clinic with geocoded coordinates
+        await clinic.update({
+          latitude: geocodeResult.latitude,
+          longitude: geocodeResult.longitude,
+          location_verified: true,
+          location_accuracy: geocodeResult.accuracy,
+          address: {
+            ...clinic.address,
+            formatted_address: geocodeResult.formatted_address
+          }
+        });
+
+        res.status(200).json({
+          status: true,
+          statusCode: 200,
+          payload: {
+            data: {
+              geocoding: geocodeResult,
+              clinic: clinic.toJSON()
+            },
+            message: 'Clinic address geocoded successfully'
+          }
+        });
+      } else {
+        res.status(400).json({
+          status: false,
+          statusCode: 400,
+          payload: {
+            error: {
+              status: 'GEOCODING_FAILED',
+              message: geocodeResult.error || 'Failed to geocode address'
+            }
+          }
+        });
+      }
+
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  // Find nearby clinics based on coordinates
+  async findNearbyClinics(req, res, next) {
+    try {
+      const { latitude, longitude, radius = 10 } = req.query;
+
+      // Validate coordinates
+      const coordValidation = geoLocationService.validateCoordinates(
+        parseFloat(latitude), 
+        parseFloat(longitude)
+      );
+
+      if (!coordValidation.valid) {
+        return res.status(400).json({
+          status: false,
+          statusCode: 400,
+          payload: {
+            error: {
+              status: 'INVALID_COORDINATES',
+              message: coordValidation.errors.join(', ')
+            }
+          }
+        });
+      }
+
+      // Get all clinics with coordinates
+      const clinics = await Clinic.findAll({
+        where: {
+          latitude: { [Op.ne]: null },
+          longitude: { [Op.ne]: null },
+          location_verified: true
+        },
+        include: [{
+          model: Doctor,
+          as: 'doctor',
+          include: [{
+            model: User,
+            as: 'user',
+            attributes: ['first_name', 'last_name', 'full_name']
+          }]
+        }]
+      });
+
+      // Find nearby clinics
+      const nearbyClinicsList = geoLocationService.findNearbyClinics(
+        parseFloat(latitude),
+        parseFloat(longitude),
+        parseFloat(radius),
+        clinics.map(clinic => clinic.toJSON())
+      );
+
+      res.status(200).json({
+        status: true,
+        statusCode: 200,
+        payload: {
+          data: {
+            search_criteria: {
+              latitude: parseFloat(latitude),
+              longitude: parseFloat(longitude),
+              radius_km: parseFloat(radius)
+            },
+            nearby_clinics: nearbyClinicsList,
+            total_found: nearbyClinicsList.length
+          },
+          message: 'Nearby clinics found successfully'
+        }
+      });
+
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  // Reverse geocode coordinates to get address
+  async reverseGeocodeLocation(req, res, next) {
+    try {
+      const { latitude, longitude } = req.body;
+
+      // Validate coordinates
+      const coordValidation = geoLocationService.validateCoordinates(latitude, longitude);
+
+      if (!coordValidation.valid) {
+        return res.status(400).json({
+          status: false,
+          statusCode: 400,
+          payload: {
+            error: {
+              status: 'INVALID_COORDINATES',
+              message: coordValidation.errors.join(', ')
+            }
+          }
+        });
+      }
+
+      const reverseResult = await geoLocationService.reverseGeocode(latitude, longitude);
+
+      if (reverseResult.success) {
+        res.status(200).json({
+          status: true,
+          statusCode: 200,
+          payload: {
+            data: {
+              coordinates: { latitude, longitude },
+              address: reverseResult.address
+            },
+            message: 'Address found successfully'
+          }
+        });
+      } else {
+        res.status(400).json({
+          status: false,
+          statusCode: 400,
+          payload: {
+            error: {
+              status: 'REVERSE_GEOCODING_FAILED',
+              message: reverseResult.error || 'Failed to find address for coordinates'
+            }
+          }
+        });
+      }
+
     } catch (error) {
       next(error);
     }
