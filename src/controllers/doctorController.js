@@ -5,7 +5,7 @@ import { Op } from 'sequelize';
 class DoctorController {
   async getProfile(req, res, next) {
     try {
-      const userId = req.user.user_id;
+      const userId = req.user.id;
 
       const doctor = await Doctor.findOne({
         where: { user_id: userId },
