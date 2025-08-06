@@ -28,36 +28,40 @@ interface DoctorProfile {
   id: string
   user_id: string
   speciality_id: string
-  license_number: string
+  medical_license_number: string
   years_of_experience: number
-  qualification: string
-  bio: string
-  consultation_fee: number
-  availability: {
-    monday: { start: string; end: string; available: boolean }
-    tuesday: { start: string; end: string; available: boolean }
-    wednesday: { start: string; end: string; available: boolean }
-    thursday: { start: string; end: string; available: boolean }
-    friday: { start: string; end: string; available: boolean }
-    saturday: { start: string; end: string; available: boolean }
-    sunday: { start: string; end: string; available: boolean }
-  }
-  clinic_address: string
-  education: Array<{
+  qualification_details: Array<{
     degree: string
     institution: string
     year: string
   }>
-  certifications: Array<{
-    name: string
-    issuer: string
-    year: string
-  }>
-  languages: string[]
-  profile_image: string
-  rating: number
+  bio?: string
+  consultation_fee: number
+  availability_schedule: {
+    monday?: { start: string; end: string; available: boolean }
+    tuesday?: { start: string; end: string; available: boolean }
+    wednesday?: { start: string; end: string; available: boolean }
+    thursday?: { start: string; end: string; available: boolean }
+    friday?: { start: string; end: string; available: boolean }
+    saturday?: { start: string; end: string; available: boolean }
+    sunday?: { start: string; end: string; available: boolean }
+  }
+  practice_address: object | string
+  board_certifications: string[]
+  languages_spoken: string[]
+  profile_picture_url: string
+  average_rating: number | null
   total_patients: number
-  speciality_name: string
+  speciality: {
+    id: string
+    name: string
+    description: string
+  } | null
+  mobile_number?: string
+  first_name?: string
+  middle_name?: string
+  last_name?: string
+  email?: string
 }
 
 export default function DoctorProfilePage() {
@@ -75,8 +79,8 @@ export default function DoctorProfilePage() {
   const fetchDoctorProfile = async () => {
     try {
       const response = await apiRequest.get('/doctors/profile')
-      if (response.status && response.payload?.data) {
-        setProfile(response.payload.data)
+      if (response.status && response.payload?.data?.profile) {
+        setProfile(response.payload.data.profile)
       }
     } catch (error) {
       console.error('Failed to fetch doctor profile:', error)
@@ -129,7 +133,7 @@ export default function DoctorProfilePage() {
       })
       
       if (response.status && response.payload?.data?.imageUrl) {
-        setProfile(prev => prev ? { ...prev, profile_image: response.payload.data.imageUrl } : null)
+        setProfile(prev => prev ? { ...prev, profile_picture_url: response.payload.data.imageUrl } : null)
         toast.success('Profile image updated successfully')
       }
     } catch (error) {
@@ -239,9 +243,9 @@ export default function DoctorProfilePage() {
         <div className="flex items-center space-x-6">
           <div className="relative">
             <div className="h-24 w-24 rounded-full bg-white/20 flex items-center justify-center">
-              {profile.profile_image ? (
+              {profile.profile_picture_url ? (
                 <img
-                  src={profile.profile_image}
+                  src={profile.profile_picture_url}
                   alt="Profile"
                   className="h-24 w-24 rounded-full object-cover"
                 />
@@ -263,11 +267,11 @@ export default function DoctorProfilePage() {
             <h1 className="text-2xl font-bold">
               Dr. {user?.first_name} {user?.last_name}
             </h1>
-            <p className="text-blue-100">{profile.speciality_name}</p>
+            <p className="text-blue-100">{profile.speciality?.name || 'Specialty not specified'}</p>
             <div className="flex items-center space-x-4 mt-2">
               <div className="flex items-center">
                 <StarIcon className="h-4 w-4 text-yellow-300 mr-1" />
-                <span>{profile.rating.toFixed(1)}</span>
+                <span>{profile.average_rating ? profile.average_rating.toString() : '0.0'}</span>
               </div>
               <div className="flex items-center">
                 <UsersIcon className="h-4 w-4 text-blue-200 mr-1" />
@@ -306,7 +310,7 @@ export default function DoctorProfilePage() {
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 License Number
               </label>
-              <EditableField field="license_number" value={profile.license_number} />
+              <EditableField field="medical_license_number" value={profile.medical_license_number} />
             </div>
 
             <div>
@@ -327,7 +331,7 @@ export default function DoctorProfilePage() {
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Bio
               </label>
-              <EditableField field="bio" value={profile.bio} multiline />
+              <EditableField field="bio" value={profile.bio || ''} multiline />
             </div>
           </CardContent>
         </Card>
@@ -347,15 +351,15 @@ export default function DoctorProfilePage() {
               </label>
               <div className="flex items-center">
                 <PhoneIcon className="h-4 w-4 text-gray-400 mr-2" />
-                <EditableField field="mobile_number" value={user?.mobile_number} />
+                <EditableField field="mobile_number" value={profile.mobile_number || user?.mobile_number} />
               </div>
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Clinic Address
+                Practice Address
               </label>
-              <EditableField field="clinic_address" value={profile.clinic_address} multiline />
+              <EditableField field="practice_address" value={typeof profile.practice_address === 'string' ? profile.practice_address : JSON.stringify(profile.practice_address || {})} multiline />
             </div>
 
             <div>
@@ -363,7 +367,7 @@ export default function DoctorProfilePage() {
                 Languages
               </label>
               <div className="flex flex-wrap gap-2">
-                {profile.languages.map((language, index) => (
+                {(profile.languages_spoken || []).map((language, index) => (
                   <span
                     key={index}
                     className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
@@ -386,7 +390,7 @@ export default function DoctorProfilePage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {profile.education.map((edu, index) => (
+              {(profile.qualification_details || []).map((edu, index) => (
                 <div key={index} className="border-l-4 border-blue-500 pl-4">
                   <h4 className="font-medium text-gray-900">{edu.degree}</h4>
                   <p className="text-sm text-gray-600">{edu.institution}</p>
@@ -407,11 +411,9 @@ export default function DoctorProfilePage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {profile.certifications.map((cert, index) => (
+              {(profile.board_certifications || []).map((cert, index) => (
                 <div key={index} className="border rounded-lg p-3">
-                  <h4 className="font-medium text-gray-900">{cert.name}</h4>
-                  <p className="text-sm text-gray-600">{cert.issuer}</p>
-                  <p className="text-xs text-gray-500">{cert.year}</p>
+                  <h4 className="font-medium text-gray-900">{cert}</h4>
                 </div>
               ))}
             </div>
@@ -429,10 +431,10 @@ export default function DoctorProfilePage() {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-7 gap-4">
-            {Object.entries(profile.availability).map(([day, schedule]) => (
+            {Object.entries(profile.availability_schedule || {}).map(([day, schedule]) => (
               <div key={day} className="border rounded-lg p-3">
                 <h4 className="font-medium text-gray-900 capitalize">{day}</h4>
-                {schedule.available ? (
+                {schedule?.available ? (
                   <div className="mt-2">
                     <p className="text-xs text-gray-600">
                       {schedule.start} - {schedule.end}
