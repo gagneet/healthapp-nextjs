@@ -193,7 +193,7 @@ The emergency contact functionality has been successfully implemented with both 
 
 ## Secondary Doctor association
 
-Adding one or many Secondary Doctor(s) from the system, who may be under a different Provider as a Specialist or from the same Provider (if the Doctor is working with a Provider, that linkage also needs to be looked into). If the Doctor is not under a Provider, the Doctor can have a Clinic (with or without being under a Provider), the details of which should also updated for the Doctor. 
+Adding one or many Secondary Doctor(s) from the system, who may be under a different Provider as a Specialist or from the same Provider (if the Doctor is working with a Provider, that linkage also needs to be looked into). If the Doctor is not under a Provider, the Doctor can have a Clinic (with or without being under a Provider), the details of which should also updated for the Doctor.
 
 The logic for a Secondary Doctor is that one or many Doctors can be added to a single Patient, while the Primary Doctor remains the same who created/added the patient to the application/system:
 
