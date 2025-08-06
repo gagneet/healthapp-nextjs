@@ -373,7 +373,7 @@ export default function DoctorDashboard() {
                       </div>
                     </div>
                     <p className="text-xs text-gray-500">
-                      Last visit: {formatDate(patient.last_visit)}
+                      Last visit: {patient.last_visit ? formatDate(patient.last_visit) : 'No visits yet'}
                     </p>
                   </div>
                   <div className="ml-3 flex items-center space-x-2">

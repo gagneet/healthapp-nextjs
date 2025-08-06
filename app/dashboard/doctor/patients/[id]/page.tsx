@@ -480,7 +480,7 @@ export default function PatientDetailsPage() {
               <div>
                 <p className="text-sm font-medium text-gray-600">Next Appointment</p>
                 <p className="text-lg font-bold text-gray-900">
-                  {formatDate(patient.next_appointment)}
+                  {patient.next_appointment ? formatDate(patient.next_appointment) : 'No appointments scheduled'}
                 </p>
               </div>
               <div className="p-3 rounded-full bg-blue-100">
