@@ -19,6 +19,7 @@ This comprehensive guide covers deploying the Healthcare Application Management 
 ### System Requirements
 
 **Minimum (Development):**
+
 - CPU: 2 cores
 - RAM: 4GB
 - Storage: 20GB
@@ -26,6 +27,7 @@ This comprehensive guide covers deploying the Healthcare Application Management 
 - Docker Swarm: Single node
 
 **Recommended (Production):**
+
 - CPU: 8+ cores per node
 - RAM: 16GB+ per node
 - Storage: 100GB+ SSD
@@ -291,6 +293,7 @@ docker service ls --format "table {{.Name}}\\t{{.Replicas}}\\t{{.Image}}"
 ### Performance Scaling Examples
 
 **High Traffic Scaling:**
+
 ```bash
 # Scale for high traffic scenarios
 docker service scale healthapp_backend=20      # More API capacity
@@ -299,6 +302,7 @@ docker service scale healthapp_nginx=3         # Load balancer redundancy
 ```
 
 **Resource-Optimized Scaling:**
+
 ```bash
 # Development/testing environment
 docker service scale healthapp_backend=2
@@ -384,10 +388,12 @@ docker service logs healthapp_backend -f --raw
 ### Grafana Dashboard Access
 
 Access monitoring dashboard at `https://monitoring.healthcareapp.com`:
+
 - Username: `admin`
 - Password: `${GRAFANA_PASSWORD}`
 
 Pre-configured dashboards include:
+
 - Application performance metrics
 - Database query performance
 - System resource utilization
@@ -399,6 +405,7 @@ Pre-configured dashboards include:
 ### Automated Backup Service
 
 The stack includes an automated backup service that:
+
 - Creates daily PostgreSQL dumps
 - Backs up Redis data snapshots
 - Stores configuration files
@@ -455,6 +462,7 @@ docker service ls --format "table {{.Name}}\\t{{.Replicas}}\\t{{.Image}}"
 ### Common Issues & Solutions
 
 **Service Won't Start:**
+
 ```bash
 # Check service logs for errors
 docker service logs healthapp_backend --tail 100
@@ -468,6 +476,7 @@ docker service inspect healthapp_backend | grep -A 10 Placement
 ```
 
 **Database Connection Issues:**
+
 ```bash
 # Test database connectivity
 docker exec $(docker ps -q -f name=healthapp_postgres) \
@@ -481,6 +490,7 @@ docker network inspect healthapp-backend
 ```
 
 **Scaling Issues:**
+
 ```bash
 # Check node capacity for scaling
 docker node ls --format "table {{.Hostname}}\\t{{.Status}}\\t{{.Availability}}"
@@ -495,6 +505,7 @@ docker service ps healthapp_backend
 ### Performance Troubleshooting
 
 **High Memory Usage:**
+
 ```bash
 # Identify memory-intensive services
 docker stats --no-stream --format "table {{.Container}}\\t{{.CPUPerc}}\\t{{.MemUsage}}"
@@ -507,6 +518,7 @@ docker service update --force healthapp_backend
 ```
 
 **Network Performance Issues:**
+
 ```bash
 # Test inter-service connectivity
 docker exec $(docker ps -q -f name=healthapp_backend) nslookup postgres
