@@ -528,464 +528,195 @@ function DoctorFormModal({ isOpen, onClose, doctor, specialities, onSubmit, isSu
   if (!isOpen) return null
 
   return (
-    <div className=\"fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4\">
-      <div className=\"bg-white rounded-lg w-full max-w-4xl max-h-[90vh] overflow-hidden\">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-lg w-full max-w-4xl max-h-[90vh] overflow-hidden">
         {/* Header */}
-        <div className=\"flex items-center justify-between p-6 border-b\">
-          <h2 className=\"text-2xl font-bold text-gray-900\">
+        <div className="flex items-center justify-between p-6 border-b">
+          <h2 className="text-2xl font-bold text-gray-900">
             {doctor ? 'Edit Doctor' : 'Add New Doctor'}
           </h2>
           <button
             onClick={onClose}
             disabled={isSubmitting}
-            className=\"p-2 hover:bg-gray-100 rounded-full\"
+            className="p-2 hover:bg-gray-100 rounded-full"
           >
-            <XMarkIcon className=\"h-5 w-5\" />
+            <XMarkIcon className="h-5 w-5" />
           </button>
         </div>
 
         {/* Form Content */}
-        <div className=\"overflow-y-auto max-h-[calc(90vh-140px)]\">
-          <form onSubmit={handleSubmit} className=\"p-6 space-y-8\">
+        <div className="overflow-y-auto max-h-[calc(90vh-140px)]">
+          <form onSubmit={handleSubmit} className="p-6 space-y-8">
             {/* Basic Information */}
-            <div className=\"space-y-4\">
-              <h3 className=\"text-lg font-semibold text-gray-900 border-b pb-2\">Basic Information</h3>
-              <div className=\"grid grid-cols-1 md:grid-cols-2 gap-4\">
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold text-gray-900 border-b pb-2">Basic Information</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className=\"block text-sm font-medium text-gray-700 mb-1\">First Name *</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">First Name *</label>
                   <input
-                    type=\"text\"
+                    type="text"
                     required
                     value={formData.first_name}
                     onChange={(e) => setFormData({...formData, first_name: e.target.value})}
-                    className=\"w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent\"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
                 </div>
                 <div>
-                  <label className=\"block text-sm font-medium text-gray-700 mb-1\">Last Name *</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Last Name *</label>
                   <input
-                    type=\"text\"
+                    type="text"
                     required
                     value={formData.last_name}
                     onChange={(e) => setFormData({...formData, last_name: e.target.value})}
-                    className=\"w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent\"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
                 </div>
                 <div>
-                  <label className=\"block text-sm font-medium text-gray-700 mb-1\">Middle Name</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Middle Name</label>
                   <input
-                    type=\"text\"
+                    type="text"
                     value={formData.middle_name}
                     onChange={(e) => setFormData({...formData, middle_name: e.target.value})}
-                    className=\"w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent\"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
                 </div>
                 <div>
-                  <label className=\"block text-sm font-medium text-gray-700 mb-1\">Gender</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Gender</label>
                   <select
                     value={formData.gender}
                     onChange={(e) => setFormData({...formData, gender: e.target.value})}
-                    className=\"w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent\"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   >
-                    <option value=\"\">Select Gender</option>
-                    <option value=\"male\">Male</option>
-                    <option value=\"female\">Female</option>
-                    <option value=\"other\">Other</option>
+                    <option value="">Select Gender</option>
+                    <option value="male">Male</option>
+                    <option value="female">Female</option>
+                    <option value="other">Other</option>
                   </select>
                 </div>
                 <div>
-                  <label className=\"block text-sm font-medium text-gray-700 mb-1\">Email *</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Email *</label>
                   <input
-                    type=\"email\"
+                    type="email"
                     required
                     value={formData.email}
                     onChange={(e) => setFormData({...formData, email: e.target.value})}
-                    className=\"w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent\"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
                 </div>
                 <div>
-                  <label className=\"block text-sm font-medium text-gray-700 mb-1\">Mobile Number</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Mobile Number</label>
                   <input
-                    type=\"tel\"
+                    type="tel"
                     value={formData.mobile_number}
                     onChange={(e) => setFormData({...formData, mobile_number: e.target.value})}
-                    className=\"w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent\"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
                 </div>
               </div>
               {!doctor && (
                 <div>
-                  <label className=\"block text-sm font-medium text-gray-700 mb-1\">Temporary Password</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Temporary Password</label>
                   <input
-                    type=\"password\"
+                    type="password"
                     value={formData.password}
                     onChange={(e) => setFormData({...formData, password: e.target.value})}
-                    placeholder=\"Leave empty for system-generated password\"
-                    className=\"w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent\"
+                    placeholder="Leave empty for system-generated password"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
-                  <p className=\"text-xs text-gray-500 mt-1\">If left empty, a temporary password will be generated</p>
+                  <p className="text-xs text-gray-500 mt-1">If left empty, a temporary password will be generated</p>
                 </div>
               )}
             </div>
 
             {/* Professional Details */}
-            <div className=\"space-y-4\">
-              <h3 className=\"text-lg font-semibold text-gray-900 border-b pb-2\">Professional Details</h3>
-              <div className=\"grid grid-cols-1 md:grid-cols-2 gap-4\">
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold text-gray-900 border-b pb-2">Professional Details</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className=\"block text-sm font-medium text-gray-700 mb-1\">Medical License Number *</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Medical License Number *</label>
                   <input
-                    type=\"text\"
+                    type="text"
                     required
                     value={formData.medical_license_number}
                     onChange={(e) => setFormData({...formData, medical_license_number: e.target.value})}
-                    className=\"w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent\"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
                 </div>
                 <div>
-                  <label className=\"block text-sm font-medium text-gray-700 mb-1\">NPI Number</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">NPI Number</label>
                   <input
-                    type=\"text\"
+                    type="text"
                     value={formData.npi_number}
                     onChange={(e) => setFormData({...formData, npi_number: e.target.value})}
-                    className=\"w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent\"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
                 </div>
                 <div>
-                  <label className=\"block text-sm font-medium text-gray-700 mb-1\">Primary Speciality</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Primary Speciality</label>
                   <select
                     value={formData.speciality_id}
                     onChange={(e) => setFormData({...formData, speciality_id: e.target.value})}
-                    className=\"w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent\"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   >
-                    <option value=\"\">Select Speciality</option>
+                    <option value="">Select Speciality</option>
                     {specialities.map((spec) => (
                       <option key={spec.id} value={spec.id}>{spec.name}</option>
                     ))}
                   </select>
                 </div>
                 <div>
-                  <label className=\"block text-sm font-medium text-gray-700 mb-1\">Years of Experience</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Years of Experience</label>
                   <input
-                    type=\"number\"
-                    min=\"0\"
+                    type="number"
+                    min="0"
                     value={formData.years_of_experience}
                     onChange={(e) => setFormData({...formData, years_of_experience: parseInt(e.target.value) || 0})}
-                    className=\"w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent\"
-                  />
-                </div>\n              </div>\n            </div>\n\n            {/* Practice Information */}\n            <div className=\"space-y-4\">\n              <h3 className=\"text-lg font-semibold text-gray-900 border-b pb-2\">Practice Information</h3>\n              <div className=\"grid grid-cols-1 md:grid-cols-2 gap-4\">\n                <div>\n                  <label className=\"block text-sm font-medium text-gray-700 mb-1\">Practice Name</label>\n                  <input\n                    type=\"text\"\n                    value={formData.practice_name}\n                    onChange={(e) => setFormData({...formData, practice_name: e.target.value})}\n                    className=\"w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent\"\n                  />\n                </div>\n                <div>\n                  <label className=\"block text-sm font-medium text-gray-700 mb-1\">Practice Phone</label>\n                  <input\n                    type=\"tel\"\n                    value={formData.practice_phone}\n                    onChange={(e) => setFormData({...formData, practice_phone: e.target.value})}\n                    className=\"w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent\"\n                  />\n                </div>\n                <div>\n                  <label className=\"block text-sm font-medium text-gray-700 mb-1\">Consultation Fee</label>\n                  <input\n                    type=\"number\"\n                    min=\"0\"\n                    step=\"0.01\"\n                    value={formData.consultation_fee}\n                    onChange={(e) => setFormData({...formData, consultation_fee: parseFloat(e.target.value) || 0})}\n                    className=\"w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent\"\n                  />\n                </div>\n                <div>\n                  <label className=\"block text-sm font-medium text-gray-700 mb-1\">Medical School</label>\n                  <input\n                    type=\"text\"\n                    value={formData.medical_school}\n                    onChange={(e) => setFormData({...formData, medical_school: e.target.value})}\n                    className=\"w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent\"\n                  />\n                </div>\n              </div>\n            </div>\n\n            {/* Initial Clinic Information (for new doctors only) */}\n            {!doctor && (\n              <div className=\"space-y-4\">\n                <h3 className=\"text-lg font-semibold text-gray-900 border-b pb-2\">Initial Clinic Information (Optional)</h3>\n                <div className=\"grid grid-cols-1 md:grid-cols-2 gap-4\">\n                  <div>\n                    <label className=\"block text-sm font-medium text-gray-700 mb-1\">Clinic Name</label>\n                    <input\n                      type=\"text\"\n                      value={formData.clinic_name}\n                      onChange={(e) => setFormData({...formData, clinic_name: e.target.value})}\n                      className=\"w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent\"\n                    />\n                  </div>\n                  <div>\n                    <label className=\"block text-sm font-medium text-gray-700 mb-1\">Clinic Phone</label>\n                    <input\n                      type=\"tel\"\n                      value={formData.clinic_phone}\n                      onChange={(e) => setFormData({...formData, clinic_phone: e.target.value})}\n                      className=\"w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent\"\n                    />\n                  </div>\n                  <div>\n                    <label className=\"block text-sm font-medium text-gray-700 mb-1\">Clinic Email</label>\n                    <input\n                      type=\"email\"\n                      value={formData.clinic_email}\n                      onChange={(e) => setFormData({...formData, clinic_email: e.target.value})}\n                      className=\"w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent\"\n                    />\n                  </div>\n                </div>\n              </div>\n            )}\n\n            {/* Form Actions */}\n            <div className=\"flex justify-end space-x-3 pt-6 border-t\">\n              <button\n                type=\"button\"\n                onClick={onClose}\n                disabled={isSubmitting}\n                className=\"px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 disabled:opacity-50\"\n              >\n                Cancel\n              </button>\n              <button\n                type=\"submit\"\n                disabled={isSubmitting}\n                className=\"px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 flex items-center\"\n              >\n                {isSubmitting && (\n                  <div className=\"animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2\"></div>\n                )}\n                {doctor ? 'Update Doctor' : 'Create Doctor'}\n              </button>\n            </div>\n          </form>\n        </div>\n      </div>\n    </div>\n  )\n}"}, {"new_string": "      )}
-    </div>
-  )
-}
-
-// Comprehensive Doctor Form Modal Component
-interface DoctorFormModalProps {
-  isOpen: boolean
-  onClose: () => void
-  doctor: Doctor | null
-  specialities: Speciality[]
-  onSubmit: (doctorData: any) => Promise<void>
-  isSubmitting: boolean
-}
-
-function DoctorFormModal({ isOpen, onClose, doctor, specialities, onSubmit, isSubmitting }: DoctorFormModalProps) {
-  const [formData, setFormData] = useState({
-    // Basic Information
-    full_name: '',
-    first_name: '',
-    middle_name: '',
-    last_name: '',
-    email: '',
-    mobile_number: '',
-    gender: '',
-    password: '',
-    
-    // Professional Details
-    medical_license_number: '',
-    npi_number: '',
-    speciality_id: '',
-    specialties: [] as string[],
-    sub_specialties: [] as string[],
-    years_of_experience: 0,
-    
-    // Qualification Details
-    medical_school: '',
-    board_certifications: [] as string[],
-    residency_programs: [] as string[],
-    
-    // Subscription Details
-    razorpay_account_id: '',
-    consultation_fee: 0,
-    
-    // Practice Information
-    practice_name: '',
-    practice_phone: '',
-    languages_spoken: ['en'],
-    
-    // Initial Clinic Information
-    clinic_name: '',
-    clinic_phone: '',
-    clinic_email: '',
-  })
-
-  useEffect(() => {
-    if (doctor) {
-      setFormData({
-        full_name: doctor.full_name || '',
-        first_name: doctor.first_name || '',
-        middle_name: doctor.middle_name || '',
-        last_name: doctor.last_name || '',
-        email: doctor.email || '',
-        mobile_number: doctor.mobile_number || '',
-        gender: doctor.gender || '',
-        password: '', // Never pre-fill password
-        medical_license_number: doctor.medical_license_number || '',
-        npi_number: doctor.npi_number || '',
-        speciality_id: doctor.speciality_id || '',
-        specialties: doctor.specialties || [],
-        sub_specialties: doctor.sub_specialties || [],
-        years_of_experience: doctor.years_of_experience || 0,
-        medical_school: doctor.medical_school || '',
-        board_certifications: doctor.board_certifications || [],
-        residency_programs: doctor.residency_programs || [],
-        razorpay_account_id: doctor.razorpay_account_id || '',
-        consultation_fee: doctor.consultation_fee || 0,
-        practice_name: doctor.practice_name || '',
-        practice_phone: doctor.practice_phone || '',
-        languages_spoken: doctor.languages_spoken || ['en'],
-        clinic_name: '',
-        clinic_phone: '',
-        clinic_email: '',
-      })
-    } else {
-      // Reset form for new doctor
-      setFormData({
-        full_name: '',
-        first_name: '',
-        middle_name: '',
-        last_name: '',
-        email: '',
-        mobile_number: '',
-        gender: '',
-        password: '',
-        medical_license_number: '',
-        npi_number: '',
-        speciality_id: '',
-        specialties: [],
-        sub_specialties: [],
-        years_of_experience: 0,
-        medical_school: '',
-        board_certifications: [],
-        residency_programs: [],
-        razorpay_account_id: '',
-        consultation_fee: 0,
-        practice_name: '',
-        practice_phone: '',
-        languages_spoken: ['en'],
-        clinic_name: '',
-        clinic_phone: '',
-        clinic_email: '',
-      })
-    }
-  }, [doctor])
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    await onSubmit(formData)
-  }
-
-  if (!isOpen) return null
-
-  return (
-    <div className=\"fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4\">
-      <div className=\"bg-white rounded-lg w-full max-w-4xl max-h-[90vh] overflow-hidden\">
-        {/* Header */}
-        <div className=\"flex items-center justify-between p-6 border-b\">
-          <h2 className=\"text-2xl font-bold text-gray-900\">
-            {doctor ? 'Edit Doctor' : 'Add New Doctor'}
-          </h2>
-          <button
-            onClick={onClose}
-            disabled={isSubmitting}
-            className=\"p-2 hover:bg-gray-100 rounded-full\"
-          >
-            <XMarkIcon className=\"h-5 w-5\" />
-          </button>
-        </div>
-
-        {/* Form Content */}
-        <div className=\"overflow-y-auto max-h-[calc(90vh-140px)]\">
-          <form onSubmit={handleSubmit} className=\"p-6 space-y-8\">
-            {/* Basic Information */}
-            <div className=\"space-y-4\">
-              <h3 className=\"text-lg font-semibold text-gray-900 border-b pb-2\">Basic Information</h3>
-              <div className=\"grid grid-cols-1 md:grid-cols-2 gap-4\">
-                <div>
-                  <label className=\"block text-sm font-medium text-gray-700 mb-1\">First Name *</label>
-                  <input
-                    type=\"text\"
-                    required
-                    value={formData.first_name}
-                    onChange={(e) => setFormData({...formData, first_name: e.target.value})}
-                    className=\"w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent\"
-                  />
-                </div>
-                <div>
-                  <label className=\"block text-sm font-medium text-gray-700 mb-1\">Last Name *</label>
-                  <input
-                    type=\"text\"
-                    required
-                    value={formData.last_name}
-                    onChange={(e) => setFormData({...formData, last_name: e.target.value})}
-                    className=\"w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent\"
-                  />
-                </div>
-                <div>
-                  <label className=\"block text-sm font-medium text-gray-700 mb-1\">Middle Name</label>
-                  <input
-                    type=\"text\"
-                    value={formData.middle_name}
-                    onChange={(e) => setFormData({...formData, middle_name: e.target.value})}
-                    className=\"w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent\"
-                  />
-                </div>
-                <div>
-                  <label className=\"block text-sm font-medium text-gray-700 mb-1\">Gender</label>
-                  <select
-                    value={formData.gender}
-                    onChange={(e) => setFormData({...formData, gender: e.target.value})}
-                    className=\"w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent\"
-                  >
-                    <option value=\"\">Select Gender</option>
-                    <option value=\"male\">Male</option>
-                    <option value=\"female\">Female</option>
-                    <option value=\"other\">Other</option>
-                  </select>
-                </div>
-                <div>
-                  <label className=\"block text-sm font-medium text-gray-700 mb-1\">Email *</label>
-                  <input
-                    type=\"email\"
-                    required
-                    value={formData.email}
-                    onChange={(e) => setFormData({...formData, email: e.target.value})}
-                    className=\"w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent\"
-                  />
-                </div>
-                <div>
-                  <label className=\"block text-sm font-medium text-gray-700 mb-1\">Mobile Number</label>
-                  <input
-                    type=\"tel\"
-                    value={formData.mobile_number}
-                    onChange={(e) => setFormData({...formData, mobile_number: e.target.value})}
-                    className=\"w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent\"
-                  />
-                </div>
-              </div>
-              {!doctor && (
-                <div>
-                  <label className=\"block text-sm font-medium text-gray-700 mb-1\">Temporary Password</label>
-                  <input
-                    type=\"password\"
-                    value={formData.password}
-                    onChange={(e) => setFormData({...formData, password: e.target.value})}
-                    placeholder=\"Leave empty for system-generated password\"
-                    className=\"w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent\"
-                  />
-                  <p className=\"text-xs text-gray-500 mt-1\">If left empty, a temporary password will be generated</p>
-                </div>
-              )}
-            </div>
-
-            {/* Professional Details */}
-            <div className=\"space-y-4\">
-              <h3 className=\"text-lg font-semibold text-gray-900 border-b pb-2\">Professional Details</h3>
-              <div className=\"grid grid-cols-1 md:grid-cols-2 gap-4\">
-                <div>
-                  <label className=\"block text-sm font-medium text-gray-700 mb-1\">Medical License Number *</label>
-                  <input
-                    type=\"text\"
-                    required
-                    value={formData.medical_license_number}
-                    onChange={(e) => setFormData({...formData, medical_license_number: e.target.value})}
-                    className=\"w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent\"
-                  />
-                </div>
-                <div>
-                  <label className=\"block text-sm font-medium text-gray-700 mb-1\">NPI Number</label>
-                  <input
-                    type=\"text\"
-                    value={formData.npi_number}
-                    onChange={(e) => setFormData({...formData, npi_number: e.target.value})}
-                    className=\"w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent\"
-                  />
-                </div>
-                <div>
-                  <label className=\"block text-sm font-medium text-gray-700 mb-1\">Primary Speciality</label>
-                  <select
-                    value={formData.speciality_id}
-                    onChange={(e) => setFormData({...formData, speciality_id: e.target.value})}
-                    className=\"w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent\"
-                  >
-                    <option value=\"\">Select Speciality</option>
-                    {specialities.map((spec) => (
-                      <option key={spec.id} value={spec.id}>{spec.name}</option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className=\"block text-sm font-medium text-gray-700 mb-1\">Years of Experience</label>
-                  <input
-                    type=\"number\"
-                    min=\"0\"
-                    value={formData.years_of_experience}
-                    onChange={(e) => setFormData({...formData, years_of_experience: parseInt(e.target.value) || 0})}
-                    className=\"w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent\"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
                 </div>
               </div>
             </div>
 
             {/* Practice Information */}
-            <div className=\"space-y-4\">
-              <h3 className=\"text-lg font-semibold text-gray-900 border-b pb-2\">Practice Information</h3>
-              <div className=\"grid grid-cols-1 md:grid-cols-2 gap-4\">
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold text-gray-900 border-b pb-2">Practice Information</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className=\"block text-sm font-medium text-gray-700 mb-1\">Practice Name</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Practice Name</label>
                   <input
-                    type=\"text\"
+                    type="text"
                     value={formData.practice_name}
                     onChange={(e) => setFormData({...formData, practice_name: e.target.value})}
-                    className=\"w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent\"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
                 </div>
                 <div>
-                  <label className=\"block text-sm font-medium text-gray-700 mb-1\">Practice Phone</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Practice Phone</label>
                   <input
-                    type=\"tel\"
+                    type="tel"
                     value={formData.practice_phone}
                     onChange={(e) => setFormData({...formData, practice_phone: e.target.value})}
-                    className=\"w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent\"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
                 </div>
                 <div>
-                  <label className=\"block text-sm font-medium text-gray-700 mb-1\">Consultation Fee</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Consultation Fee</label>
                   <input
-                    type=\"number\"
-                    min=\"0\"
-                    step=\"0.01\"
+                    type="number"
+                    min="0"
+                    step="0.01"
                     value={formData.consultation_fee}
                     onChange={(e) => setFormData({...formData, consultation_fee: parseFloat(e.target.value) || 0})}
-                    className=\"w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent\"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
                 </div>
                 <div>
-                  <label className=\"block text-sm font-medium text-gray-700 mb-1\">Medical School</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Medical School</label>
                   <input
-                    type=\"text\"
+                    type="text"
                     value={formData.medical_school}
                     onChange={(e) => setFormData({...formData, medical_school: e.target.value})}
-                    className=\"w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent\"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
                 </div>
               </div>
@@ -993,34 +724,34 @@ function DoctorFormModal({ isOpen, onClose, doctor, specialities, onSubmit, isSu
 
             {/* Initial Clinic Information (for new doctors only) */}
             {!doctor && (
-              <div className=\"space-y-4\">
-                <h3 className=\"text-lg font-semibold text-gray-900 border-b pb-2\">Initial Clinic Information (Optional)</h3>
-                <div className=\"grid grid-cols-1 md:grid-cols-2 gap-4\">
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-gray-900 border-b pb-2">Initial Clinic Information (Optional)</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className=\"block text-sm font-medium text-gray-700 mb-1\">Clinic Name</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Clinic Name</label>
                     <input
-                      type=\"text\"
+                      type="text"
                       value={formData.clinic_name}
                       onChange={(e) => setFormData({...formData, clinic_name: e.target.value})}
-                      className=\"w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent\"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     />
                   </div>
                   <div>
-                    <label className=\"block text-sm font-medium text-gray-700 mb-1\">Clinic Phone</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Clinic Phone</label>
                     <input
-                      type=\"tel\"
+                      type="tel"
                       value={formData.clinic_phone}
                       onChange={(e) => setFormData({...formData, clinic_phone: e.target.value})}
-                      className=\"w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent\"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     />
                   </div>
                   <div>
-                    <label className=\"block text-sm font-medium text-gray-700 mb-1\">Clinic Email</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Clinic Email</label>
                     <input
-                      type=\"email\"
+                      type="email"
                       value={formData.clinic_email}
                       onChange={(e) => setFormData({...formData, clinic_email: e.target.value})}
-                      className=\"w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent\"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     />
                   </div>
                 </div>
@@ -1028,22 +759,22 @@ function DoctorFormModal({ isOpen, onClose, doctor, specialities, onSubmit, isSu
             )}
 
             {/* Form Actions */}
-            <div className=\"flex justify-end space-x-3 pt-6 border-t\">
+            <div className="flex justify-end space-x-3 pt-6 border-t">
               <button
-                type=\"button\"
+                type="button"
                 onClick={onClose}
                 disabled={isSubmitting}
-                className=\"px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 disabled:opacity-50\"
+                className="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 disabled:opacity-50"
               >
                 Cancel
               </button>
               <button
-                type=\"submit\"
+                type="submit"
                 disabled={isSubmitting}
-                className=\"px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 flex items-center\"
+                className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 flex items-center"
               >
                 {isSubmitting && (
-                  <div className=\"animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2\"></div>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
                 )}
                 {doctor ? 'Update Doctor' : 'Create Doctor'}
               </button>
@@ -1053,4 +784,4 @@ function DoctorFormModal({ isOpen, onClose, doctor, specialities, onSubmit, isSu
       </div>
     </div>
   )
-}"}, "replace_all": false}]
+}
