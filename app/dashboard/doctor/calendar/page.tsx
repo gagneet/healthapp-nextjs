@@ -2,8 +2,9 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { CalendarIcon, Plus, Clock, User } from 'lucide-react'
+import { CalendarIcon, Plus, Clock, User, Users, Filter } from 'lucide-react'
 import { useState, useEffect } from 'react'
+import { DayPilotCalendar, DayPilot } from '@daypilot/daypilot-lite-react'
 
 interface Appointment {
   id: number
@@ -14,17 +15,44 @@ interface Appointment {
   type: 'consultation' | 'follow-up' | 'emergency'
 }
 
+interface Patient {
+  id: string
+  name: string
+  medical_record_number: string
+}
+
+interface DayPilotEvent {
+  id: string
+  text: string
+  start: string
+  end: string
+  backColor?: string
+  borderColor?: string
+  fontColor?: string
+  data?: any
+}
+
 export default function DoctorCalendarPage() {
   const [appointments, setAppointments] = useState<Appointment[]>([])
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0])
   const [isLoading, setIsLoading] = useState(true)
+  
+  // DayPilot Calendar state
+  const [calendarEvents, setCalendarEvents] = useState<DayPilotEvent[]>([])
+  const [patients, setPatients] = useState<Patient[]>([])
+  const [selectedPatient, setSelectedPatient] = useState<string>('all')
+  const [calendarConfig, setCalendarConfig] = useState({
+    viewType: 'Month',
+    startDate: new Date().toISOString().split('T')[0],
+    locale: 'en-us'
+  })
 
   useEffect(() => {
     // Simulate loading appointments - this would be replaced with actual API call
     setIsLoading(true)
     setTimeout(() => {
       // Mock data for demonstration
-      setAppointments([
+      const mockAppointments = [
         {
           id: 1,
           patient_name: 'John Doe',
@@ -49,10 +77,119 @@ export default function DoctorCalendarPage() {
           status: 'completed',
           type: 'consultation'
         }
-      ])
+      ]
+      setAppointments(mockAppointments)
       setIsLoading(false)
     }, 1000)
   }, [selectedDate])
+
+  // Load patients for dropdown (mock data - replace with API call)
+  useEffect(() => {
+    const mockPatients: Patient[] = [
+      { id: '1', name: 'John Doe', medical_record_number: 'MRN-001' },
+      { id: '2', name: 'Jane Smith', medical_record_number: 'MRN-002' },
+      { id: '3', name: 'Mike Johnson', medical_record_number: 'MRN-003' },
+      { id: '4', name: 'Sarah Wilson', medical_record_number: 'MRN-004' },
+      { id: '5', name: 'David Brown', medical_record_number: 'MRN-005' }
+    ]
+    setPatients(mockPatients)
+  }, [])
+
+  // Convert appointments to DayPilot events
+  useEffect(() => {
+    const convertAppointmentsToEvents = () => {
+      // Extended mock data for monthly view
+      const monthlyAppointments = [
+        // Current week
+        { id: 1, patient_name: 'John Doe', appointment_time: '09:00', appointment_date: selectedDate, status: 'scheduled', type: 'consultation' },
+        { id: 2, patient_name: 'Jane Smith', appointment_time: '10:30', appointment_date: selectedDate, status: 'scheduled', type: 'follow-up' },
+        // Add more appointments for the month
+        { id: 4, patient_name: 'Sarah Wilson', appointment_time: '14:00', appointment_date: getDateOffset(1), status: 'scheduled', type: 'consultation' },
+        { id: 5, patient_name: 'David Brown', appointment_time: '11:00', appointment_date: getDateOffset(3), status: 'completed', type: 'follow-up' },
+        { id: 6, patient_name: 'John Doe', appointment_time: '15:30', appointment_date: getDateOffset(7), status: 'scheduled', type: 'emergency' },
+        { id: 7, patient_name: 'Jane Smith', appointment_time: '09:30', appointment_date: getDateOffset(10), status: 'scheduled', type: 'consultation' },
+        { id: 8, patient_name: 'Mike Johnson', appointment_time: '13:00', appointment_date: getDateOffset(14), status: 'cancelled', type: 'follow-up' },
+      ]
+
+      const filteredAppointments = selectedPatient === 'all' 
+        ? monthlyAppointments 
+        : monthlyAppointments.filter(apt => {
+          const patient = patients.find(p => p.name === apt.patient_name)
+          return patient?.id === selectedPatient
+        })
+
+      const events: DayPilotEvent[] = filteredAppointments.map(appointment => {
+        const startDateTime = `${appointment.appointment_date}T${appointment.appointment_time}:00`
+        const endTime = addHours(appointment.appointment_time, 1)
+        const endDateTime = `${appointment.appointment_date}T${endTime}:00`
+
+        return {
+          id: appointment.id.toString(),
+          text: `${appointment.patient_name} - ${appointment.type}`,
+          start: startDateTime,
+          end: endDateTime,
+          backColor: getStatusBackColor(appointment.status),
+          borderColor: getStatusBorderColor(appointment.status),
+          fontColor: '#ffffff',
+          data: appointment
+        }
+      })
+
+      setCalendarEvents(events)
+    }
+
+    if (patients.length > 0) {
+      convertAppointmentsToEvents()
+    }
+  }, [appointments, selectedDate, selectedPatient, patients])
+
+  // Helper functions
+  const getDateOffset = (days: number) => {
+    const date = new Date()
+    date.setDate(date.getDate() + days)
+    return date.toISOString().split('T')[0]
+  }
+
+  const addHours = (time: string, hours: number) => {
+    const [hour, minute] = time.split(':').map(Number)
+    const newHour = hour + hours
+    return `${newHour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`
+  }
+
+  const getStatusBackColor = (status: string) => {
+    switch (status) {
+      case 'scheduled': return '#3b82f6'
+      case 'completed': return '#10b981'
+      case 'cancelled': return '#ef4444'
+      default: return '#6b7280'
+    }
+  }
+
+  const getStatusBorderColor = (status: string) => {
+    switch (status) {
+      case 'scheduled': return '#1d4ed8'
+      case 'completed': return '#059669'
+      case 'cancelled': return '#dc2626'
+      default: return '#374151'
+    }
+  }
+
+  // DayPilot event handlers
+  const handleEventClick = (args: any) => {
+    const appointment = args.e.data
+    // Navigate to patient appointment page - replace with actual routing
+    console.log('Navigate to patient appointment:', appointment)
+    // Example: router.push(`/dashboard/doctor/patients/${appointment.patient_id}/appointments/${appointment.id}`)
+    alert(`Clicked appointment: ${appointment.patient_name} - ${appointment.type}\\n\\nThis will navigate to the patient appointment page.`)
+  }
+
+  const handleTimeRangeSelected = (args: any) => {
+    // Handle new appointment creation
+    console.log('Create new appointment:', args.start, args.end)
+    // Example: Open appointment creation modal
+    alert(`Create new appointment from ${args.start} to ${args.end}`)
+    args.calendar.clearSelection()
+  }
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -193,7 +330,7 @@ export default function DoctorCalendarPage() {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Today's Appointments</p>
+                <p className="text-sm font-medium text-gray-600">Today&apos;s Appointments</p>
                 <p className="text-2xl font-bold text-gray-900">
                   {appointments.filter(a => a.status === 'scheduled').length}
                 </p>
@@ -230,6 +367,112 @@ export default function DoctorCalendarPage() {
               </div>
               <div className="h-8 w-8 bg-purple-100 rounded-full flex items-center justify-center">
                 <User className="h-4 w-4 text-purple-600" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* DayPilot Monthly Calendar Section */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-xl font-bold text-gray-900">Monthly Calendar View</h2>
+            <p className="text-gray-600">Click on appointments to view details or select empty slots to create new appointments</p>
+          </div>
+          
+          {/* Patient Filter Dropdown */}
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <Filter className="h-4 w-4 text-gray-500" />
+              <label htmlFor="patient-filter" className="text-sm font-medium text-gray-700">
+                Filter by Patient:
+              </label>
+              <select
+                id="patient-filter"
+                value={selectedPatient}
+                onChange={(e) => setSelectedPatient(e.target.value)}
+                className="px-3 py-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="all">All Patients</option>
+                {patients.map((patient) => (
+                  <option key={patient.id} value={patient.id}>
+                    {patient.name} ({patient.medical_record_number})
+                  </option>
+                ))}
+              </select>
+            </div>
+            <Button variant="outline" size="sm">
+              <Users className="h-4 w-4 mr-2" />
+              Manage Patients
+            </Button>
+          </div>
+        </div>
+
+        {/* DayPilot Calendar */}
+        <Card>
+          <CardContent className="p-6">
+            <div style={{ height: '600px' }}>
+              <DayPilotCalendar
+                {...calendarConfig}
+                events={calendarEvents}
+                onEventClick={handleEventClick}
+                onTimeRangeSelected={handleTimeRangeSelected}
+                style={{
+                  height: '100%'
+                }}
+                config={{
+                  viewType: 'Month',
+                  startDate: calendarConfig.startDate,
+                  locale: 'en-us',
+                  heightSpec: 'Fixed',
+                  height: 600,
+                  cellHeight: 80,
+                  eventHeight: 25,
+                  timeRangeSelectedHandling: 'Enabled',
+                  eventClickHandling: 'Enabled',
+                  selectMode: 'Day',
+                  showToolTip: false,
+                  eventBorderColor: '#1f2937',
+                  headerDateFormat: 'MMMM yyyy'
+                }}
+              />
+            </div>
+            
+            {/* Calendar Legend */}
+            <div className="mt-4 pt-4 border-t border-gray-200">
+              <div className="flex flex-wrap items-center gap-6">
+                <h4 className="text-sm font-medium text-gray-700">Legend:</h4>
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 bg-blue-500 rounded"></div>
+                  <span className="text-sm text-gray-600">Scheduled</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 bg-green-500 rounded"></div>
+                  <span className="text-sm text-gray-600">Completed</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 bg-red-500 rounded"></div>
+                  <span className="text-sm text-gray-600">Cancelled</span>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Future Enhancement Info */}
+        <Card className="bg-blue-50 border-blue-200">
+          <CardContent className="p-4">
+            <div className="flex items-start gap-3">
+              <div className="h-5 w-5 bg-blue-100 rounded-full flex items-center justify-center mt-0.5">
+                <CalendarIcon className="h-3 w-3 text-blue-600" />
+              </div>
+              <div>
+                <h4 className="font-medium text-blue-900 mb-1">Coming Soon: Enhanced Calendar Features</h4>
+                <p className="text-sm text-blue-700">
+                  Treatment plans and medication schedules will be overlaid on this calendar based on the selected patient. 
+                  This will provide a comprehensive view of all patient care activities in one place.
+                </p>
               </div>
             </div>
           </CardContent>
