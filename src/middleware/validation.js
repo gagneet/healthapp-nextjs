@@ -57,18 +57,18 @@ const schemas = {
   
   patientCreate: Joi.object({
     first_name: Joi.string().max(100).required(),
-    middle_name: Joi.string().max(100).optional(),
+    middle_name: Joi.string().max(100).optional().allow(''),
     last_name: Joi.string().max(100).required(),
-    email: Joi.string().email().optional(),
+    email: Joi.string().email().optional().allow(''),
     mobile_number: Joi.string().pattern(/^\+?[1-9]\d{1,14}$/).required(),
     gender: Joi.string().valid('m', 'f', 'o', '').optional(),
-    dob: Joi.date().optional(),
-    address: Joi.string().max(500).optional(),
+    dob: Joi.date().required(),
+    address: Joi.string().max(500).optional().allow(''),
     height_cm: Joi.number().min(0).max(300).optional().allow(null, ''),
     weight_kg: Joi.number().min(0).max(1000).optional().allow(null, ''),
-    comorbidities: Joi.string().optional(),
-    allergies: Joi.string().optional(),
-    medical_record_number: Joi.string().max(100).optional(), // Allow custom patient ID in any format
+    comorbidities: Joi.string().optional().allow(''),
+    allergies: Joi.string().optional().allow(''),
+    medical_record_number: Joi.string().max(100).optional().allow(''), // Allow custom patient ID in any format
     emergency_contacts: Joi.array().items(
       Joi.object({
         contact_number: Joi.string().optional().allow(''), // Allow any format for emergency contact numbers
@@ -114,10 +114,10 @@ const schemas = {
       notes: Joi.string().max(1000).optional().allow('')
     }).optional().allow(null),
     
-    // Clinical/Treatment Plan fields (for care plan creation)
-    symptoms: Joi.array().items(Joi.string().max(200)).optional().allow(null),
-    diagnosis: Joi.array().items(Joi.string().max(200)).optional().allow(null),
-    treatment: Joi.string().max(200).optional().allow(''),
+    // Clinical/Treatment Plan fields (for care plan creation) - now making these required based on user request
+    symptoms: Joi.array().items(Joi.string().max(200)).required(),
+    diagnosis: Joi.array().items(Joi.string().max(200)).required(),
+    treatment: Joi.string().max(200).required(),
     clinical_notes: Joi.string().max(5000).optional().allow(''),
     condition: Joi.string().max(500).optional().allow(''),
     severity: Joi.string().valid('Mild', 'Moderate', 'Severe', '').optional().allow('')
