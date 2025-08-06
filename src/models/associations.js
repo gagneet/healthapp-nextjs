@@ -758,25 +758,28 @@ export default (db) => {
     });
   }
 
-  // Service Plan associations
+  // Service Plan associations (duplicate - skip)
   if (ServicePlan && HealthcareProvider) {
+    // Already defined above, skip to avoid duplicate alias
+    /*
     HealthcareProvider.hasMany(ServicePlan, {
       foreignKey: 'provider_id',
       as: 'servicePlans'
     });
-    ServicePlan.belongsTo(HealthcareProvider, {
-      foreignKey: 'provider_id',
-      as: 'provider'
-    });
+    */
+    // ServicePlan.belongsTo(HealthcareProvider, { ... }) - Skip duplicate
   }
 
-  // Patient Subscription associations
+  // Patient Subscription associations (DUPLICATE - SKIP)
   if (PatientSubscription) {
     if (Patient) {
+      // Skip duplicate association
+      /*
       Patient.hasMany(PatientSubscription, {
         foreignKey: 'patient_id',
         as: 'subscriptions'
       });
+      */
       PatientSubscription.belongsTo(Patient, {
         foreignKey: 'patient_id',
         as: 'patient'

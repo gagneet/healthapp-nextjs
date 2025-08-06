@@ -8,6 +8,36 @@ import { USER_CATEGORIES } from '../config/constants.js';
 
 const router = express.Router();
 
+// Dashboard Routes
+
+// GET /api/doctors/dashboard (Get dashboard statistics)
+router.get('/dashboard',
+  authenticate,
+  authorize(USER_CATEGORIES.DOCTOR),
+  doctorController.getDashboardData
+);
+
+// GET /api/doctors/recent-patients (Get recent patients)
+router.get('/recent-patients',
+  authenticate,
+  authorize(USER_CATEGORIES.DOCTOR),
+  doctorController.getRecentPatients
+);
+
+// GET /api/doctors/critical-alerts (Get critical alerts)
+router.get('/critical-alerts',
+  authenticate,
+  authorize(USER_CATEGORIES.DOCTOR),
+  doctorController.getCriticalAlerts
+);
+
+// GET /api/doctors/adherence-analytics (Get adherence analytics)
+router.get('/adherence-analytics',
+  authenticate,
+  authorize(USER_CATEGORIES.DOCTOR),
+  doctorController.getAdherenceAnalytics
+);
+
 // Profile Management Routes
 
 // GET /api/doctors/profile (Current doctor's comprehensive profile)

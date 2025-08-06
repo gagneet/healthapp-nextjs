@@ -18,116 +18,98 @@ import { formatDate, getAdherenceColor, getInitials } from '@/lib/utils'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts'
 import PatientQuickView from '@/components/dashboard/patient-quick-view'
 
-// Mock data - replace with actual API calls
-const mockStats: DashboardStats = {
-  total_patients: 147,
-  active_patients: 132,
-  critical_alerts: 8,
-  appointments_today: 12,
-  medication_adherence: 87,
-  vital_readings_pending: 23,
+// API Response types  
+interface APIResponse<T> {
+  status: boolean
+  statusCode: number
+  payload: {
+    data: T
+    message: string
+  }
 }
 
-const mockPatients: Patient[] = [
-  {
-    id: '1',
-    user_id: 'user1',
-    first_name: 'John',
-    last_name: 'Doe',
-    email: 'john.doe@email.com',
-    phone: '+1-555-0123',
-    date_of_birth: '1980-05-15',
-    gender: 'MALE',
-    medical_record_number: 'MRN001',
-    last_visit: '2024-01-15',
-    next_appointment: '2024-02-01',
-    adherence_rate: 92,
-    critical_alerts: 0,
-    status: 'active',
-    created_at: '2024-01-01',
-  },
-  {
-    id: '2',
-    user_id: 'user2',
-    first_name: 'Jane',
-    last_name: 'Smith',
-    email: 'jane.smith@email.com',
-    phone: '+1-555-0124',
-    date_of_birth: '1975-09-22',
-    gender: 'FEMALE',
-    medical_record_number: 'MRN002',
-    last_visit: '2024-01-18',
-    next_appointment: '2024-01-25',
-    adherence_rate: 65,
-    critical_alerts: 2,
-    status: 'active',
-    created_at: '2024-01-01',
-  },
-  {
-    id: '3',
-    user_id: 'user3',
-    first_name: 'Michael',
-    last_name: 'Johnson',
-    email: 'michael.j@email.com',
-    phone: '+1-555-0125',
-    date_of_birth: '1988-12-10',
-    gender: 'MALE',
-    medical_record_number: 'MRN003',
-    last_visit: '2024-01-20',
-    next_appointment: '2024-01-30',
-    adherence_rate: 78,
-    critical_alerts: 1,
-    status: 'active',
-    created_at: '2024-01-01',
-  },
-]
+interface DashboardAPIStats {
+  stats: DashboardStats
+}
 
-const mockCriticalAlerts: CriticalAlert[] = [
-  {
-    id: '1',
-    patient_id: '2',
-    patient_name: 'Jane Smith',
-    type: 'medication',
-    severity: 'critical',
-    message: 'Missed 3 consecutive blood pressure medications',
-    created_at: '2024-01-22T10:30:00Z',
-    acknowledged: false,
-  },
-  {
-    id: '2',
-    patient_id: '3',
-    patient_name: 'Michael Johnson',
-    type: 'vital',
-    severity: 'high',
-    message: 'Blood pressure reading above critical threshold',
-    created_at: '2024-01-22T09:15:00Z',
-    acknowledged: false,
-  },
-]
+interface RecentPatientsAPI {
+  patients: Patient[]
+}
 
-const adherenceChartData = [
-  { name: 'Medications', value: 87, color: '#10B981' },
-  { name: 'Appointments', value: 94, color: '#3B82F6' },
-  { name: 'Vitals', value: 82, color: '#F59E0B' },
-  { name: 'Exercise', value: 76, color: '#EF4444' },
-]
+interface CriticalAlertsAPI {
+  alerts: CriticalAlert[]
+}
 
-const monthlyAdherenceData = [
-  { month: 'Jan', medications: 85, appointments: 92, vitals: 78 },
-  { month: 'Feb', medications: 88, appointments: 94, vitals: 82 },
-  { month: 'Mar', medications: 87, appointments: 96, vitals: 85 },
-  { month: 'Apr', medications: 90, appointments: 95, vitals: 88 },
-]
+interface AdherenceAnalyticsAPI {
+  adherence_overview: { name: string; value: number; color: string }[]
+  monthly_trends: { month: string; medications: number; appointments: number; vitals: number }[]
+}
 
 export default function DoctorDashboard() {
   const { user } = useAuth()
   const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null)
   const [quickViewOpen, setQuickViewOpen] = useState(false)
 
+  // Data state
+  const [dashboardStats, setDashboardStats] = useState<DashboardStats | null>(null)
+  const [recentPatients, setRecentPatients] = useState<Patient[]>([])
+  const [criticalAlerts, setCriticalAlerts] = useState<CriticalAlert[]>([])
+  const [adherenceChartData, setAdherenceChartData] = useState<{ name: string; value: number; color: string }[]>([])
+  const [monthlyAdherenceData, setMonthlyAdherenceData] = useState<{ month: string; medications: number; appointments: number; vitals: number }[]>([])
+
+  const fetchDashboardData = async () => {
+    try {
+      setIsLoading(true)
+      setError(null)
+      
+      const token = localStorage.getItem('token')
+      if (!token) {
+        throw new Error('No authentication token found')
+      }
+
+      const headers = {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      }
+
+      // Fetch all dashboard data concurrently
+      const [statsRes, patientsRes, alertsRes, analyticsRes] = await Promise.all([
+        fetch('/api/doctors/dashboard', { headers }),
+        fetch('/api/doctors/recent-patients?limit=5', { headers }),
+        fetch('/api/doctors/critical-alerts?limit=5', { headers }),
+        fetch('/api/doctors/adherence-analytics', { headers })
+      ])
+
+      // Check all responses
+      if (!statsRes.ok || !patientsRes.ok || !alertsRes.ok || !analyticsRes.ok) {
+        throw new Error('Failed to fetch dashboard data')
+      }
+
+      // Parse responses
+      const statsData: APIResponse<DashboardAPIStats> = await statsRes.json()
+      const patientsData: APIResponse<RecentPatientsAPI> = await patientsRes.json()
+      const alertsData: APIResponse<CriticalAlertsAPI> = await alertsRes.json()
+      const analyticsData: APIResponse<AdherenceAnalyticsAPI> = await analyticsRes.json()
+
+      // Update state
+      setDashboardStats(statsData.payload.data.stats)
+      setRecentPatients(patientsData.payload.data.patients)
+      setCriticalAlerts(alertsData.payload.data.alerts)
+      setAdherenceChartData(analyticsData.payload.data.adherence_overview)
+      setMonthlyAdherenceData(analyticsData.payload.data.monthly_trends)
+
+    } catch (err) {
+      console.error('Dashboard fetch error:', err)
+      setError(err instanceof Error ? err.message : 'Failed to load dashboard data')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   useEffect(() => {
-    // Simulate loading
-    setTimeout(() => setIsLoading(false), 1000)
+    fetchDashboardData()
   }, [])
 
   const handlePatientQuickView = (patient: Patient) => {
@@ -139,6 +121,30 @@ export default function DoctorDashboard() {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="bg-red-50 border border-red-200 rounded-md p-4">
+        <div className="flex">
+          <ExclamationTriangleIcon className="h-5 w-5 text-red-400 mr-2" />
+          <div>
+            <h3 className="text-sm font-medium text-red-800">Error loading dashboard</h3>
+            <div className="mt-2 text-sm text-red-700">
+              <p>{error}</p>
+            </div>
+            <div className="mt-4">
+              <button
+                onClick={fetchDashboardData}
+                className="bg-red-100 px-3 py-2 rounded-md text-sm font-medium text-red-800 hover:bg-red-200"
+              >
+                Try again
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
     )
   }
@@ -171,28 +177,28 @@ export default function DoctorDashboard() {
         {[
           {
             title: 'Total Patients',
-            value: mockStats.total_patients,
+            value: dashboardStats?.total_patients || 0,
             icon: UsersIcon,
             color: 'text-blue-600',
             bgColor: 'bg-blue-100',
           },
           {
             title: 'Critical Alerts',
-            value: mockStats.critical_alerts,
+            value: dashboardStats?.critical_alerts || 0,
             icon: ExclamationTriangleIcon,
             color: 'text-red-600',
             bgColor: 'bg-red-100',
           },
           {
             title: 'Today\'s Appointments',
-            value: mockStats.appointments_today,
+            value: dashboardStats?.appointments_today || 0,
             icon: CalendarIcon,
             color: 'text-green-600',
             bgColor: 'bg-green-100',
           },
           {
             title: 'Avg. Adherence',
-            value: `${mockStats.medication_adherence}%`,
+            value: `${dashboardStats?.medication_adherence || 0}%`,
             icon: ChartBarIcon,
             color: 'text-purple-600',
             bgColor: 'bg-purple-100',
@@ -293,12 +299,12 @@ export default function DoctorDashboard() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {mockCriticalAlerts.length === 0 ? (
+              {criticalAlerts.length === 0 ? (
                 <p className="text-gray-500 text-center py-4">
                   No critical alerts at this time
                 </p>
               ) : (
-                mockCriticalAlerts.map((alert) => (
+                criticalAlerts.map((alert) => (
                   <div
                     key={alert.id}
                     className="flex items-start p-3 bg-red-50 border border-red-200 rounded-lg"
@@ -336,7 +342,7 @@ export default function DoctorDashboard() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {mockPatients.slice(0, 5).map((patient) => (
+              {recentPatients.map((patient) => (
                 <div
                   key={patient.id}
                   className="flex items-center p-3 hover:bg-gray-50 rounded-lg transition-colors"
