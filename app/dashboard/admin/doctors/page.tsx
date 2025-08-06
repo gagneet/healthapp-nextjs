@@ -2,9 +2,6 @@
 
 import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Badge } from '@/components/ui/badge'
 import { 
   UserPlusIcon, 
   MagnifyingGlassIcon, 
@@ -16,7 +13,6 @@ import {
   CheckCircleIcon,
   XCircleIcon
 } from '@heroicons/react/24/outline'
-import toast from 'react-hot-toast'
 
 interface Doctor {
   id: string
@@ -72,7 +68,7 @@ export default function AdminDoctorsPage() {
       }, 1000)
     } catch (error) {
       console.error('Failed to fetch doctors:', error)
-      toast.error('Failed to fetch doctors')
+      alert('Failed to fetch doctors')
       setIsLoading(false)
     }
   }
@@ -98,10 +94,10 @@ export default function AdminDoctorsPage() {
         // await fetch(`/api/admin/doctors/${doctorId}`, { method: 'DELETE' })
         
         setDoctors(doctors.filter(d => d.id !== doctorId))
-        toast.success('Doctor deleted successfully')
+        alert('Doctor deleted successfully')
       } catch (error) {
         console.error('Failed to delete doctor:', error)
-        toast.error('Failed to delete doctor')
+        alert('Failed to delete doctor')
       }
     }
   }
@@ -114,10 +110,10 @@ export default function AdminDoctorsPage() {
       setDoctors(doctors.map(d => 
         d.id === doctorId ? { ...d, is_verified: true } : d
       ))
-      toast.success('Doctor verified successfully')
+      alert('Doctor verified successfully')
     } catch (error) {
       console.error('Failed to verify doctor:', error)
-      toast.error('Failed to verify doctor')
+      alert('Failed to verify doctor')
     }
   }
 
@@ -140,10 +136,13 @@ export default function AdminDoctorsPage() {
           <h1 className="text-2xl font-bold text-gray-900">Doctor Management</h1>
           <p className="text-gray-600">Manage doctor accounts and verification</p>
         </div>
-        <Button onClick={handleCreateDoctor} className="flex items-center gap-2">
+        <button
+          onClick={handleCreateDoctor}
+          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+        >
           <UserPlusIcon className="h-4 w-4" />
           Add New Doctor
-        </Button>
+        </button>
       </div>
 
       {/* Search and filters */}
@@ -152,22 +151,23 @@ export default function AdminDoctorsPage() {
           <div className="flex items-center space-x-4">
             <div className="relative flex-1">
               <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-              <Input
+              <input
+                type="text"
                 placeholder="Search doctors by name, email, or license number..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10"
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
             <div className="flex items-center space-x-2">
-              <Badge variant="outline" className="text-green-600 border-green-200">
+              <div className="flex items-center px-3 py-1 text-sm text-green-600 border border-green-200 rounded-full">
                 <CheckCircleIcon className="h-3 w-3 mr-1" />
                 {doctors.filter(d => d.is_verified).length} Verified
-              </Badge>
-              <Badge variant="outline" className="text-yellow-600 border-yellow-200">
+              </div>
+              <div className="flex items-center px-3 py-1 text-sm text-yellow-600 border border-yellow-200 rounded-full">
                 <XCircleIcon className="h-3 w-3 mr-1" />
                 {doctors.filter(d => !d.is_verified).length} Pending
-              </Badge>
+              </div>
             </div>
           </div>
         </CardContent>
@@ -203,15 +203,15 @@ export default function AdminDoctorsPage() {
                           {doctor.first_name} {doctor.last_name}
                         </h3>
                         {doctor.is_verified ? (
-                          <Badge className="bg-green-100 text-green-800 border-green-200">
+                          <div className="flex items-center px-2 py-1 text-xs bg-green-100 text-green-800 border border-green-200 rounded-full">
                             <CheckCircleIcon className="h-3 w-3 mr-1" />
                             Verified
-                          </Badge>
+                          </div>
                         ) : (
-                          <Badge variant="outline" className="text-yellow-600 border-yellow-200">
+                          <div className="flex items-center px-2 py-1 text-xs text-yellow-600 border border-yellow-200 rounded-full">
                             <XCircleIcon className="h-3 w-3 mr-1" />
                             Pending Verification
-                          </Badge>
+                          </div>
                         )}
                       </div>
                       
@@ -252,32 +252,28 @@ export default function AdminDoctorsPage() {
 
                   <div className="flex items-center space-x-2">
                     {!doctor.is_verified && (
-                      <Button
+                      <button
                         onClick={() => handleVerifyDoctor(doctor.id)}
-                        size="sm"
-                        className="bg-green-600 hover:bg-green-700"
+                        className="flex items-center px-3 py-1 text-sm bg-green-600 text-white rounded hover:bg-green-700"
                       >
                         <CheckCircleIcon className="h-4 w-4 mr-1" />
                         Verify
-                      </Button>
+                      </button>
                     )}
-                    <Button
+                    <button
                       onClick={() => handleEditDoctor(doctor.id)}
-                      size="sm"
-                      variant="outline"
+                      className="flex items-center px-3 py-1 text-sm border border-gray-300 text-gray-700 rounded hover:bg-gray-50"
                     >
                       <PencilIcon className="h-4 w-4 mr-1" />
                       Edit
-                    </Button>
-                    <Button
+                    </button>
+                    <button
                       onClick={() => handleDeleteDoctor(doctor.id)}
-                      size="sm"
-                      variant="outline"
-                      className="text-red-600 border-red-200 hover:bg-red-50"
+                      className="flex items-center px-3 py-1 text-sm text-red-600 border border-red-200 rounded hover:bg-red-50"
                     >
                       <TrashIcon className="h-4 w-4 mr-1" />
                       Delete
-                    </Button>
+                    </button>
                   </div>
                 </div>
               </CardContent>
@@ -293,15 +289,18 @@ export default function AdminDoctorsPage() {
             <h2 className="text-xl font-bold mb-4">Add New Doctor</h2>
             <p className="text-gray-600 mb-4">Create doctor functionality will be implemented here.</p>
             <div className="flex justify-end space-x-2">
-              <Button
+              <button
                 onClick={() => setShowCreateModal(false)}
-                variant="outline"
+                className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
               >
                 Cancel
-              </Button>
-              <Button onClick={() => setShowCreateModal(false)}>
+              </button>
+              <button
+                onClick={() => setShowCreateModal(false)}
+                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+              >
                 Create Doctor
-              </Button>
+              </button>
             </div>
           </div>
         </div>
