@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { CalendarIcon, Plus, Clock, User, Users, Filter } from 'lucide-react'
+import { CalendarIcon, Plus, Clock, User, Users, Filter, ChevronDown } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { DayPilotCalendar, DayPilot } from '@daypilot/daypilot-lite-react'
 
@@ -32,6 +32,8 @@ interface DayPilotEvent {
   data?: any
 }
 
+type ViewType = 'Month' | 'Week' | 'Days'
+
 export default function DoctorCalendarPage() {
   const [appointments, setAppointments] = useState<Appointment[]>([])
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0])
@@ -41,8 +43,9 @@ export default function DoctorCalendarPage() {
   const [calendarEvents, setCalendarEvents] = useState<DayPilotEvent[]>([])
   const [patients, setPatients] = useState<Patient[]>([])
   const [selectedPatient, setSelectedPatient] = useState<string>('all')
+  const [viewType, setViewType] = useState<ViewType>('Week')
   const [calendarConfig, setCalendarConfig] = useState({
-    viewType: 'Month',
+    viewType: 'Week' as ViewType,
     startDate: new Date().toISOString().split('T')[0],
     locale: 'en-us'
   })
@@ -172,6 +175,30 @@ export default function DoctorCalendarPage() {
       case 'cancelled': return '#dc2626'
       default: return '#374151'
     }
+  }
+
+  // Handle view type change
+  const handleViewTypeChange = (newViewType: ViewType) => {
+    setViewType(newViewType)
+    setCalendarConfig(prev => ({
+      ...prev,
+      viewType: newViewType
+    }))
+  }
+
+  // Get calendar height based on view type
+  const getCalendarHeight = () => {
+    switch (viewType) {
+      case 'Month': return 600
+      case 'Week': return 700
+      case 'Days': return 800
+      default: return 600
+    }
+  }
+
+  // Get days count for daily view
+  const getDaysCount = () => {
+    return viewType === 'Days' ? 1 : 7
   }
 
   // DayPilot event handlers
@@ -373,16 +400,36 @@ export default function DoctorCalendarPage() {
         </Card>
       </div>
 
-      {/* DayPilot Monthly Calendar Section */}
+      {/* DayPilot Calendar Section */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-xl font-bold text-gray-900">Monthly Calendar View</h2>
+            <h2 className="text-xl font-bold text-gray-900">
+              {viewType === 'Month' ? 'Monthly' : viewType === 'Week' ? 'Weekly' : 'Daily'} Calendar View
+            </h2>
             <p className="text-gray-600">Click on appointments to view details or select empty slots to create new appointments</p>
           </div>
           
-          {/* Patient Filter Dropdown */}
+          {/* View As Dropdown and Patient Filter */}
           <div className="flex items-center gap-4">
+            {/* View As Dropdown */}
+            <div className="flex items-center gap-2">
+              <label className="text-sm font-medium text-gray-700">View as:</label>
+              <div className="relative">
+                <select
+                  value={viewType}
+                  onChange={(e) => handleViewTypeChange(e.target.value as ViewType)}
+                  className="appearance-none bg-white border border-gray-300 rounded-md px-3 py-2 pr-8 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                  <option value="Days">Daily</option>
+                  <option value="Week">Weekly</option>
+                  <option value="Month">Monthly</option>
+                </select>
+                <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+              </div>
+            </div>
+
+            {/* Patient Filter Dropdown */}
             <div className="flex items-center gap-2">
               <Filter className="h-4 w-4 text-gray-500" />
               <label htmlFor="patient-filter" className="text-sm font-medium text-gray-700">
@@ -412,7 +459,7 @@ export default function DoctorCalendarPage() {
         {/* DayPilot Calendar */}
         <Card>
           <CardContent className="p-6">
-            <div style={{ height: '600px' }}>
+            <div style={{ height: `${getCalendarHeight()}px` }}>
               <DayPilotCalendar
                 {...calendarConfig}
                 events={calendarEvents}
@@ -422,19 +469,24 @@ export default function DoctorCalendarPage() {
                   height: '100%'
                 }}
                 config={{
-                  viewType: 'Month',
+                  viewType: viewType,
                   startDate: calendarConfig.startDate,
                   locale: 'en-us',
                   heightSpec: 'Fixed',
-                  height: 600,
-                  cellHeight: 80,
+                  height: getCalendarHeight(),
+                  days: viewType === 'Days' ? getDaysCount() : undefined,
+                  cellHeight: viewType === 'Month' ? 80 : viewType === 'Week' ? 60 : 40,
                   eventHeight: 25,
                   timeRangeSelectedHandling: 'Enabled',
                   eventClickHandling: 'Enabled',
-                  selectMode: 'Day',
+                  selectMode: viewType === 'Days' ? 'Hour' : 'Day',
                   showToolTip: false,
                   eventBorderColor: '#1f2937',
-                  headerDateFormat: 'MMMM yyyy'
+                  headerDateFormat: viewType === 'Month' ? 'MMMM yyyy' : viewType === 'Week' ? 'MMMM yyyy' : 'MMMM d, yyyy',
+                  hourWidth: viewType === 'Days' ? 60 : undefined,
+                  businessHoursStart: '07:00',
+                  businessHoursEnd: '20:00',
+                  showNonBusiness: true
                 }}
               />
             </div>
@@ -460,18 +512,19 @@ export default function DoctorCalendarPage() {
           </CardContent>
         </Card>
 
-        {/* Future Enhancement Info */}
-        <Card className="bg-blue-50 border-blue-200">
+        {/* Enhanced Features Info */}
+        <Card className="bg-green-50 border-green-200">
           <CardContent className="p-4">
             <div className="flex items-start gap-3">
-              <div className="h-5 w-5 bg-blue-100 rounded-full flex items-center justify-center mt-0.5">
-                <CalendarIcon className="h-3 w-3 text-blue-600" />
+              <div className="h-5 w-5 bg-green-100 rounded-full flex items-center justify-center mt-0.5">
+                <CalendarIcon className="h-3 w-3 text-green-600" />
               </div>
               <div>
-                <h4 className="font-medium text-blue-900 mb-1">Coming Soon: Enhanced Calendar Features</h4>
-                <p className="text-sm text-blue-700">
-                  Treatment plans and medication schedules will be overlaid on this calendar based on the selected patient. 
-                  This will provide a comprehensive view of all patient care activities in one place.
+                <h4 className="font-medium text-green-900 mb-1">Enhanced Calendar Views Available</h4>
+                <p className="text-sm text-green-700">
+                  Switch between Daily, Weekly, and Monthly views using the "View as" dropdown. 
+                  Filter by specific patients and click on appointments to view details or select empty slots to create new appointments.
+                  Treatment plans and medication schedules integration coming soon.
                 </p>
               </div>
             </div>

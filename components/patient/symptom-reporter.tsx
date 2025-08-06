@@ -1,9 +1,10 @@
 'use client'
 
 import { useState, useRef } from 'react'
-import { X, MapPin, Save, AlertTriangle } from 'lucide-react'
+import { X, MapPin, Save, AlertTriangle, Mic } from 'lucide-react'
 import BodyDiagramEnhanced from '@/components/ui/body-diagram-enhanced'
 import { BODY_PARTS, BODY_PART_LABELS, BODY_PART_CATEGORIES, detectBodyPartFromCoordinates, getBodyPartLabel } from '@/lib/body-parts'
+import SpeechToText from '@/components/common/speech-to-text'
 
 interface SymptomReporterProps {
   patientId?: string
@@ -57,6 +58,8 @@ export default function SymptomReporter({
 
   const [selectedFromDiagram, setSelectedFromDiagram] = useState(false)
   const [showBodyPartForm, setShowBodyPartForm] = useState(true)
+  const [showSpeechForName, setShowSpeechForName] = useState(false)
+  const [showSpeechForDescription, setShowSpeechForDescription] = useState(false)
 
   const handleBodyPartSelection = (bodyPart: string, position?: { x: number, y: number, z?: number }) => {
     setFormData(prev => ({
@@ -111,6 +114,16 @@ export default function SymptomReporter({
     })
     setSelectedFromDiagram(false)
     setShowBodyPartForm(true)
+    setShowSpeechForName(false)
+    setShowSpeechForDescription(false)
+  }
+
+  const handleSpeechTranscriptName = (text: string, language: string) => {
+    setFormData(prev => ({ ...prev, symptomName: text }))
+  }
+
+  const handleSpeechTranscriptDescription = (text: string, language: string) => {
+    setFormData(prev => ({ ...prev, description: text }))
   }
 
   if (!isOpen) return null
@@ -206,17 +219,47 @@ export default function SymptomReporter({
 
               {/* Symptom Name */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  What are you experiencing? *
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={formData.symptomName}
-                  onChange={(e) => setFormData(prev => ({ ...prev, symptomName: e.target.value }))}
-                  placeholder="e.g., Pain, Ache, Burning, Tingling, etc."
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
+                <div className="flex items-center justify-between mb-2">
+                  <label className="block text-sm font-medium text-gray-700">
+                    What are you experiencing? *
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setShowSpeechForName(!showSpeechForName)}
+                    className="flex items-center space-x-1 text-sm text-blue-600 hover:text-blue-700"
+                  >
+                    <Mic className="h-4 w-4" />
+                    <span>{showSpeechForName ? 'Hide Voice' : 'Use Voice'}</span>
+                  </button>
+                </div>
+                
+                {showSpeechForName ? (
+                  <div className="space-y-3">
+                    <SpeechToText
+                      onTranscript={handleSpeechTranscriptName}
+                      language="auto"
+                      placeholder="Click microphone and describe your symptom..."
+                      className="w-full"
+                    />
+                    <input
+                      type="text"
+                      required
+                      value={formData.symptomName}
+                      onChange={(e) => setFormData(prev => ({ ...prev, symptomName: e.target.value }))}
+                      placeholder="e.g., Pain, Ache, Burning, Tingling, etc."
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+                ) : (
+                  <input
+                    type="text"
+                    required
+                    value={formData.symptomName}
+                    onChange={(e) => setFormData(prev => ({ ...prev, symptomName: e.target.value }))}
+                    placeholder="e.g., Pain, Ache, Burning, Tingling, etc."
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                )}
               </div>
 
               {/* Pain/Severity Level */}
@@ -247,17 +290,47 @@ export default function SymptomReporter({
 
               {/* Description */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Describe your symptoms in detail *
-                </label>
-                <textarea
-                  required
-                  rows={4}
-                  value={formData.description}
-                  onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                  placeholder="Describe how it feels, when it happens, what makes it better or worse..."
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
+                <div className="flex items-center justify-between mb-2">
+                  <label className="block text-sm font-medium text-gray-700">
+                    Describe your symptoms in detail *
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setShowSpeechForDescription(!showSpeechForDescription)}
+                    className="flex items-center space-x-1 text-sm text-blue-600 hover:text-blue-700"
+                  >
+                    <Mic className="h-4 w-4" />
+                    <span>{showSpeechForDescription ? 'Hide Voice' : 'Use Voice'}</span>
+                  </button>
+                </div>
+                
+                {showSpeechForDescription ? (
+                  <div className="space-y-3">
+                    <SpeechToText
+                      onTranscript={handleSpeechTranscriptDescription}
+                      language="auto"
+                      placeholder="Click microphone and describe your symptoms in detail..."
+                      className="w-full"
+                    />
+                    <textarea
+                      required
+                      rows={4}
+                      value={formData.description}
+                      onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                      placeholder="Describe how it feels, when it happens, what makes it better or worse..."
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+                ) : (
+                  <textarea
+                    required
+                    rows={4}
+                    value={formData.description}
+                    onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                    placeholder="Describe how it feels, when it happens, what makes it better or worse..."
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                )}
               </div>
 
               {/* Duration */}
