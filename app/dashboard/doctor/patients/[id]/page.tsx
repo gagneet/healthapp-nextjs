@@ -22,7 +22,7 @@ import {
 } from '@/types/dashboard'
 import { formatDate, formatDateTime, getInitials, getAdherenceColor, getPriorityColor } from '@/lib/utils'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
-import BodyDiagram from '@/components/ui/body-diagram'
+import BodyDiagramEnhanced from '@/components/ui/body-diagram-enhanced'
 import SymptomsTimeline from '@/components/ui/symptoms-timeline'
 
 // Mock data - replace with actual API calls
@@ -144,8 +144,9 @@ const mockSymptoms = [
     description: 'Persistent headache, especially in the morning',
     onset_time: '2024-01-20T06:00:00Z',
     recorded_at: '2024-01-20T08:00:00Z',
-    x: 50, // Head position
+    x: 50, // Head position (2D)
     y: 8,
+    z: 0, // Front of head (3D)
     body_part: 'Head',
     status: 'active'
   },
@@ -156,8 +157,9 @@ const mockSymptoms = [
     description: 'Sharp chest pain, worse with deep breathing',
     onset_time: '2024-01-19T14:30:00Z',
     recorded_at: '2024-01-19T15:00:00Z',
-    x: 50, // Chest position
+    x: 50, // Chest position (2D)
     y: 25,
+    z: 0.2, // Front of chest (3D)
     body_part: 'Chest',
     status: 'worsening'
   },
@@ -168,8 +170,9 @@ const mockSymptoms = [
     description: 'Lower back pain, aching sensation',
     onset_time: '2024-01-18T10:00:00Z',
     recorded_at: '2024-01-18T10:15:00Z',
-    x: 50, // Back position (will show on back view)
+    x: 50, // Back position (2D)
     y: 40,
+    z: -0.3, // Back of torso (3D)
     body_part: 'Lower Back',
     status: 'improving'
   },
@@ -180,8 +183,9 @@ const mockSymptoms = [
     description: 'Right knee pain when walking',
     onset_time: '2024-01-17T16:20:00Z',
     recorded_at: '2024-01-17T18:00:00Z',
-    x: 60, // Right knee position
+    x: 60, // Right knee position (2D)
     y: 80,
+    z: 0.1, // Right side (3D)
     body_part: 'Right Knee',
     status: 'active'
   },
@@ -192,8 +196,9 @@ const mockSymptoms = [
     description: 'Left shoulder stiffness and mild pain',
     onset_time: '2024-01-16T09:15:00Z',
     recorded_at: '2024-01-16T11:30:00Z',
-    x: 35, // Left shoulder position
+    x: 35, // Left shoulder position (2D)
     y: 22,
+    z: 0.1, // Left side (3D)
     body_part: 'Left Shoulder',
     status: 'resolved'
   },
@@ -204,8 +209,9 @@ const mockSymptoms = [
     description: 'Sharp abdominal pain in upper right quadrant',
     onset_time: '2024-01-15T12:45:00Z',
     recorded_at: '2024-01-15T13:00:00Z',
-    x: 55, // Abdomen position
+    x: 55, // Abdomen position (2D)
     y: 45,
+    z: 0.2, // Front of abdomen (3D)
     body_part: 'Abdomen',
     status: 'resolved'
   }
@@ -959,17 +965,18 @@ export default function PatientDetailsPage() {
                   </p>
                 </CardHeader>
                 <CardContent>
-                  <BodyDiagram
+                  <BodyDiagramEnhanced
                     symptoms={mockSymptoms}
                     view={bodyView}
                     onViewChange={setBodyView}
                     highlightedSymptom={highlightedSymptom}
                     interactive={true}
+                    gender={patient?.gender === 'F' ? 'female' : 'male'}
                     onSymptomClick={(symptom) => {
                       setHighlightedSymptom(symptom.id === highlightedSymptom ? null : symptom.id)
                     }}
-                    onBodyClick={(x, y) => {
-                      console.log('Clicked body at:', x, y)
+                    onBodyClick={(x, y, z) => {
+                      console.log('Clicked body at:', x, y, z)
                       // Could open a modal to add new symptom at this position
                     }}
                   />
