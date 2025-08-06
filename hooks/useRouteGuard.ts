@@ -11,6 +11,8 @@ const logger = createLogger('RouteGuard')
 const IMPLEMENTED_ROUTES = {
   DOCTOR: [
     '/dashboard/doctor',
+    '/dashboard/doctor/profile',
+    '/dashboard/doctor/calendar',
     '/dashboard/doctor/patients',
     '/dashboard/doctor/patients/new',
     '/dashboard/doctor/patients/[id]',

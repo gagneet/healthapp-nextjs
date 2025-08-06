@@ -8,6 +8,13 @@ import { USER_CATEGORIES } from '../config/constants.js';
 
 const router = express.Router();
 
+// GET /api/doctors/profile (Current doctor's profile)
+router.get('/profile',
+  authenticate,
+  authorize(USER_CATEGORIES.DOCTOR),
+  doctorController.getProfile
+);
+
 // GET /api/doctors/:doctorId
 router.get('/:doctorId',
   authenticate,

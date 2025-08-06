@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { useAuth } from '@/lib/auth-context'
 import {
   Bars3Icon,
   XMarkIcon,
@@ -11,7 +12,9 @@ import {
   BeakerIcon,
   ClipboardDocumentListIcon,
   CogIcon,
-  ChartBarIcon
+  ChartBarIcon,
+  ArrowRightOnRectangleIcon,
+  UserIcon
 } from '@heroicons/react/24/outline'
 
 const navigation = [
@@ -30,6 +33,7 @@ export default function AdminLayout({
 }) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const pathname = usePathname()
+  const { user, logout } = useAuth()
 
   return (
     <div className="h-screen flex overflow-hidden bg-gray-100">
@@ -73,6 +77,28 @@ export default function AdminLayout({
                 )
               })}
             </nav>
+            
+            {/* User info and logout - Mobile */}
+            <div className="border-t border-gray-200 p-4">
+              <div className="flex items-center space-x-3 mb-4">
+                <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                  <UserIcon className="w-4 h-4 text-blue-600" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-gray-900">
+                    {user?.first_name} {user?.last_name}
+                  </p>
+                  <p className="text-xs text-gray-500">{user?.email}</p>
+                </div>
+              </div>
+              <button
+                onClick={logout}
+                className="flex items-center space-x-2 w-full text-left text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-md px-2 py-2 transition-colors"
+              >
+                <ArrowRightOnRectangleIcon className="w-4 h-4" />
+                <span>Sign Out</span>
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -108,6 +134,30 @@ export default function AdminLayout({
                   )
                 })}
               </nav>
+              
+              {/* User info and logout - Desktop */}
+              <div className="border-t border-gray-200 p-4">
+                <div className="flex items-center space-x-3 mb-4">
+                  <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                    <span className="text-sm font-medium text-blue-600">
+                      {user?.first_name?.[0]}{user?.last_name?.[0]}
+                    </span>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-900">
+                      {user?.first_name} {user?.last_name}
+                    </p>
+                    <p className="text-xs text-gray-500">{user?.email}</p>
+                  </div>
+                </div>
+                <button
+                  onClick={logout}
+                  className="flex items-center space-x-2 w-full text-left text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-md px-2 py-2 transition-colors"
+                >
+                  <ArrowRightOnRectangleIcon className="w-4 h-4" />
+                  <span>Sign Out</span>
+                </button>
+              </div>
             </div>
           </div>
         </div>
