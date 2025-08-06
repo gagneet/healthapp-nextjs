@@ -25,82 +25,129 @@ interface BodyDiagram3DProps {
   highlightedSymptom?: string | null
 }
 
-// 3D Human Body Model Component
+// 3D Human Body Model Component  
 function HumanBodyModel({ gender, onBodyClick, interactive }: {
   gender: 'male' | 'female'
   onBodyClick?: (position: THREE.Vector3) => void
   interactive?: boolean
 }) {
   const meshRef = useRef<THREE.Mesh>(null)
+  const groupRef = useRef<THREE.Group>(null)
   
-  // Create a basic human-shaped geometry
-  const geometry = useMemo(() => {
-    const shape = new THREE.Shape()
-    
-    // Head (circle at top)
-    const headRadius = 0.8
-    const headCenter = new THREE.Vector2(0, 4)
-    shape.moveTo(headRadius, 4)
-    shape.absarc(headCenter.x, headCenter.y, headRadius, 0, Math.PI * 2, false)
-    
-    // Body outline
-    shape.moveTo(-1.2, 3) // Left shoulder
-    shape.lineTo(-1.2, 1) // Left side
-    shape.lineTo(-0.8, -1) // Left hip
-    shape.lineTo(-0.6, -3.5) // Left leg
-    shape.lineTo(-0.2, -3.5) // Left foot
-    shape.lineTo(0.2, -3.5) // Right foot  
-    shape.lineTo(0.6, -3.5) // Right leg
-    shape.lineTo(0.8, -1) // Right hip
-    shape.lineTo(1.2, 1) // Right side
-    shape.lineTo(1.2, 3) // Right shoulder
-    shape.lineTo(0.8, 3.2) // Neck right
-    shape.lineTo(-0.8, 3.2) // Neck left
-    shape.lineTo(-1.2, 3) // Close to left shoulder
-
-    const extrudeSettings = {
-      depth: 0.3,
-      bevelEnabled: true,
-      bevelSegments: 2,
-      steps: 2,
-      bevelSize: 0.1,
-      bevelThickness: 0.1
-    }
-
-    return new THREE.ExtrudeGeometry(shape, extrudeSettings)
-  }, [])
-
-  const handleClick = (event: THREE.Event) => {
+  const handleBodyPartClick = (event: THREE.Event, bodyPartName: string) => {
     if (!interactive || !onBodyClick) return
     
     event.stopPropagation()
     const intersect = event.intersections?.[0]
     if (intersect?.point) {
-      onBodyClick(intersect.point)
+      // Add body part information to the click event
+      const position = new THREE.Vector3()
+      position.copy(intersect.point)
+      position.bodyPart = bodyPartName // Add custom property for body part identification
+      onBodyClick(position)
     }
   }
 
   // Different colors for male/female
   const bodyColor = gender === 'female' ? '#fce7f3' : '#e0f2fe'
-  const outlineColor = gender === 'female' ? '#ec4899' : '#0284c7'
+  const skinColor = gender === 'female' ? '#f3d5d1' : '#e8c5a0'
 
   return (
-    <mesh
-      ref={meshRef}
-      geometry={geometry}
-      onClick={handleClick}
-      position={[0, 0, 0]}
-    >
-      <meshStandardMaterial 
-        color={bodyColor}
-        transparent
-        opacity={0.8}
-      />
-      <lineSegments>
-        <edgesGeometry args={[geometry]} />
-        <lineBasicMaterial color={outlineColor} linewidth={2} />
-      </lineSegments>
-    </mesh>
+    <group ref={groupRef}>
+      {/* Head */}
+      <mesh position={[0, 3.5, 0]} onClick={(e) => handleBodyPartClick(e, 'head')}>
+        <sphereGeometry args={[0.6, 16, 16]} />
+        <meshStandardMaterial color={skinColor} />
+      </mesh>
+      
+      {/* Neck */}
+      <mesh position={[0, 2.8, 0]} onClick={(e) => handleBodyPartClick(e, 'neck')}>
+        <cylinderGeometry args={[0.3, 0.4, 0.6, 8]} />
+        <meshStandardMaterial color={skinColor} />
+      </mesh>
+      
+      {/* Torso */}
+      <mesh position={[0, 1.2, 0]} onClick={(e) => handleBodyPartClick(e, 'chest')}>
+        <boxGeometry args={[1.8, 2.4, 0.8]} />
+        <meshStandardMaterial color={bodyColor} />
+      </mesh>
+      
+      {/* Arms */}
+      <mesh position={[-1.2, 1.8, 0]} onClick={(e) => handleBodyPartClick(e, 'left_arm')}>
+        <cylinderGeometry args={[0.2, 0.25, 1.4, 8]} />
+        <meshStandardMaterial color={skinColor} />
+      </mesh>
+      <mesh position={[1.2, 1.8, 0]} onClick={(e) => handleBodyPartClick(e, 'right_arm')}>
+        <cylinderGeometry args={[0.2, 0.25, 1.4, 8]} />
+        <meshStandardMaterial color={skinColor} />
+      </mesh>
+      
+      {/* Forearms */}
+      <mesh position={[-1.2, 0.6, 0]}>
+        <cylinderGeometry args={[0.15, 0.2, 1.0, 8]} />
+        <meshStandardMaterial color={skinColor} />
+      </mesh>
+      <mesh position={[1.2, 0.6, 0]}>
+        <cylinderGeometry args={[0.15, 0.2, 1.0, 8]} />
+        <meshStandardMaterial color={skinColor} />
+      </mesh>
+      
+      {/* Hands */}
+      <mesh position={[-1.2, 0.0, 0]}>
+        <sphereGeometry args={[0.15, 8, 8]} />
+        <meshStandardMaterial color={skinColor} />
+      </mesh>
+      <mesh position={[1.2, 0.0, 0]}>
+        <sphereGeometry args={[0.15, 8, 8]} />
+        <meshStandardMaterial color={skinColor} />
+      </mesh>
+      
+      {/* Hips/Pelvis */}
+      <mesh position={[0, -0.2, 0]}>
+        <cylinderGeometry args={[0.8, 0.9, 0.6, 8]} />
+        <meshStandardMaterial color={bodyColor} />
+      </mesh>
+      
+      {/* Thighs */}
+      <mesh position={[-0.4, -1.2, 0]}>
+        <cylinderGeometry args={[0.25, 0.35, 1.6, 8]} />
+        <meshStandardMaterial color={bodyColor} />
+      </mesh>
+      <mesh position={[0.4, -1.2, 0]}>
+        <cylinderGeometry args={[0.25, 0.35, 1.6, 8]} />
+        <meshStandardMaterial color={bodyColor} />
+      </mesh>
+      
+      {/* Knees */}
+      <mesh position={[-0.4, -2.1, 0]}>
+        <sphereGeometry args={[0.3, 8, 8]} />
+        <meshStandardMaterial color={skinColor} />
+      </mesh>
+      <mesh position={[0.4, -2.1, 0]}>
+        <sphereGeometry args={[0.3, 8, 8]} />
+        <meshStandardMaterial color={skinColor} />
+      </mesh>
+      
+      {/* Shins */}
+      <mesh position={[-0.4, -3.0, 0]}>
+        <cylinderGeometry args={[0.2, 0.25, 1.4, 8]} />
+        <meshStandardMaterial color={skinColor} />
+      </mesh>
+      <mesh position={[0.4, -3.0, 0]}>
+        <cylinderGeometry args={[0.2, 0.25, 1.4, 8]} />
+        <meshStandardMaterial color={skinColor} />
+      </mesh>
+      
+      {/* Feet */}
+      <mesh position={[-0.4, -3.9, 0.1]}>
+        <boxGeometry args={[0.3, 0.2, 0.6]} />
+        <meshStandardMaterial color={skinColor} />
+      </mesh>
+      <mesh position={[0.4, -3.9, 0.1]}>
+        <boxGeometry args={[0.3, 0.2, 0.6]} />
+        <meshStandardMaterial color={skinColor} />
+      </mesh>
+    </group>
   )
 }
 
@@ -142,8 +189,13 @@ function SymptomMarker({
     onClick?.(symptom)
   }
 
+  // Convert 2D coordinates to 3D body coordinates
+  const convertedX = (symptom.x / 100 - 0.5) * 3 // Map 0-100 to body width
+  const convertedY = (symptom.y / 100 - 0.5) * -7 + 0.5 // Map 0-100 to body height (inverted Y)
+  const convertedZ = symptom.z + 0.5 // Add offset from body surface
+
   return (
-    <group position={[symptom.x * 2, symptom.y * 2, symptom.z * 2 + 0.5]}>
+    <group position={[convertedX, convertedY, convertedZ]}>
       {/* Highlight ring for selected symptom */}
       {isHighlighted && (
         <mesh>

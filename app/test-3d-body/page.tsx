@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import BodyDiagram3D from '@/components/ui/body-diagram-3d'
+import SymptomReporter from '@/components/patient/symptom-reporter'
 
 // Sample symptom data for testing
 const sampleSymptoms = [
@@ -51,6 +52,7 @@ export default function Test3DBodyPage() {
   const [symptoms, setSymptoms] = useState(sampleSymptoms)
   const [highlightedSymptom, setHighlightedSymptom] = useState<string | null>(null)
   const [gender, setGender] = useState<'male' | 'female'>('male')
+  const [showSymptomReporter, setShowSymptomReporter] = useState(false)
 
   const handleSymptomClick = (symptom: any) => {
     console.log('Symptom clicked:', symptom)
@@ -83,6 +85,12 @@ export default function Test3DBodyPage() {
   const resetToSample = () => {
     setSymptoms(sampleSymptoms)
     setHighlightedSymptom(null)
+  }
+
+  const handleSymptomSubmit = (symptomData: any) => {
+    console.log('New symptom submitted:', symptomData)
+    setSymptoms(prev => [...prev, symptomData])
+    setShowSymptomReporter(false)
   }
 
   return (
@@ -134,6 +142,13 @@ export default function Test3DBodyPage() {
               className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 text-sm"
             >
               Clear All Symptoms
+            </button>
+
+            <button
+              onClick={() => setShowSymptomReporter(true)}
+              className="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700 text-sm"
+            >
+              Test Symptom Reporter
             </button>
           </div>
         </div>
@@ -214,6 +229,15 @@ export default function Test3DBodyPage() {
             <li>• <strong>Hover:</strong> Hover over symptom markers to see tooltips</li>
           </ul>
         </div>
+
+        {/* Symptom Reporter Modal */}
+        <SymptomReporter
+          isOpen={showSymptomReporter}
+          onClose={() => setShowSymptomReporter(false)}
+          onSymptomSubmit={handleSymptomSubmit}
+          patientId="test-patient"
+          gender={gender}
+        />
       </div>
     </div>
   )

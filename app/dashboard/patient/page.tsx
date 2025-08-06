@@ -21,6 +21,7 @@ import { useAuth } from '@/lib/auth-context'
 import { formatDate, formatDateTime } from '@/lib/utils'
 import { createLogger } from '@/lib/logger'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts'
+import SymptomReporter from '@/components/patient/symptom-reporter'
 
 interface PatientDashboardStats {
   medications_due_today: number
@@ -183,6 +184,8 @@ export default function PatientDashboard() {
   const { user } = useAuth()
   const [isLoading, setIsLoading] = useState(true)
   const [selectedTab, setSelectedTab] = useState('overview')
+  const [showSymptomReporter, setShowSymptomReporter] = useState(false)
+  const [patientSymptoms, setPatientSymptoms] = useState<any[]>([])
 
   useEffect(() => {
     setTimeout(() => setIsLoading(false), 1000)
@@ -196,6 +199,16 @@ export default function PatientDashboard() {
   const recordVital = (vitalType: string) => {
     // In real app, this would open a modal or navigate to recording page
     logger.info('Recording vital:', vitalType)
+  }
+
+  const handleSymptomSubmit = (symptomData: any) => {
+    // In real app, this would call an API to save the symptom
+    logger.info('Submitting symptom:', symptomData)
+    setPatientSymptoms(prev => [...prev, symptomData])
+    setShowSymptomReporter(false)
+    
+    // Show success message (you could use a toast notification here)
+    alert('Symptom reported successfully! Your doctor will be notified.')
   }
 
   if (isLoading) {
@@ -463,18 +476,21 @@ export default function PatientDashboard() {
               <UserIcon className="h-5 w-5 mr-2" />
               Recent Symptoms
             </CardTitle>
-            <button className="text-sm text-blue-600 hover:text-blue-700">
+            <button 
+              onClick={() => setShowSymptomReporter(true)}
+              className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+            >
               Report Symptom
             </button>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {mockSymptoms.length === 0 ? (
+              {patientSymptoms.length === 0 ? (
                 <p className="text-gray-500 text-center py-4">
                   No symptoms reported recently
                 </p>
               ) : (
-                mockSymptoms.map((symptom) => (
+                patientSymptoms.map((symptom) => (
                   <div key={symptom.id} className="p-3 rounded-lg border border-gray-200 bg-gray-50">
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
@@ -549,6 +565,15 @@ export default function PatientDashboard() {
           </CardContent>
         </Card>
       )}
+
+      {/* Symptom Reporter Modal */}
+      <SymptomReporter
+        isOpen={showSymptomReporter}
+        onClose={() => setShowSymptomReporter(false)}
+        onSymptomSubmit={handleSymptomSubmit}
+        patientId={user?.id}
+        gender={user?.gender === 'F' ? 'female' : 'male'}
+      />
     </div>
   )
 }

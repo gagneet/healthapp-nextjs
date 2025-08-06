@@ -15,7 +15,7 @@ interface Symptom {
 interface BodyDiagramProps {
   symptoms: Symptom[]
   onSymptomClick?: (symptom: Symptom) => void
-  onBodyClick?: (x: number, y: number) => void
+  onBodyClick?: (x: number, y: number, z?: number) => void
   interactive?: boolean
   view?: 'front' | 'back' | 'left' | 'right'
   onViewChange?: (view: 'front' | 'back' | 'left' | 'right') => void
@@ -40,7 +40,7 @@ export default function BodyDiagram({
     const x = ((event.clientX - rect.left) / rect.width) * 100
     const y = ((event.clientY - rect.top) / rect.height) * 100
     
-    onBodyClick(x, y)
+    onBodyClick(x, y, 0) // Add Z coordinate for compatibility
   }
 
   const getSeverityColor = (severity: number) => {
