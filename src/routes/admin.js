@@ -7,12 +7,41 @@ import { USER_CATEGORIES } from '../config/constants.js';
 
 const router = express.Router();
 
+// Doctor Management
 // GET /api/admin/doctors
 router.get('/doctors',
   authenticate,
   authorize(USER_CATEGORIES.ADMIN),
   validateQuery(schemas.pagination),
   adminController.getDoctors
+);
+
+// POST /api/admin/doctors (Create new doctor)
+router.post('/doctors',
+  authenticate,
+  authorize(USER_CATEGORIES.ADMIN),
+  adminController.createDoctor
+);
+
+// GET /api/admin/doctors/:doctorId (Get single doctor)
+router.get('/doctors/:doctorId',
+  authenticate,
+  authorize(USER_CATEGORIES.ADMIN),
+  adminController.getDoctor
+);
+
+// PUT /api/admin/doctors/:doctorId (Update doctor)
+router.put('/doctors/:doctorId',
+  authenticate,
+  authorize(USER_CATEGORIES.ADMIN),
+  adminController.updateDoctor
+);
+
+// DELETE /api/admin/doctors/:doctorId (Soft delete doctor)
+router.delete('/doctors/:doctorId',
+  authenticate,
+  authorize(USER_CATEGORIES.ADMIN),
+  adminController.deleteDoctor
 );
 
 // Medicine Management

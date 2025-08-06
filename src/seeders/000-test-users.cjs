@@ -104,6 +104,14 @@ module.exports = {
         id: uuidv4(),
         user_id: user.id,
         medical_license_number: user.email === 'doctor@healthapp.com' ? 'LIC-12345-TEST' : `LIC-${Math.random().toString(36).substr(2, 9).toUpperCase()}`,
+        speciality_id: 3, // General Medicine
+        specialties: ['general medicine'],
+        years_of_experience: 10,
+        is_verified: true,
+        verification_date: new Date(),
+        practice_name: user.email === 'doctor@healthapp.com' ? 'Dr. John Doe Family Practice' : 'Medical Practice',
+        medical_school: 'University of Medicine',
+        board_certifications: ['internal medicine'],
         created_at: new Date(),
         updated_at: new Date(),
       }));
@@ -112,6 +120,47 @@ module.exports = {
       console.log(`✅ Doctor profiles created for ${existingDoctorUsers.length} users: ${existingDoctorUsers.map(u => u.email).join(', ')}`);
     } else {
       console.log('ℹ️ All doctor users already have corresponding doctor profiles');
+    }
+
+    // Update existing doctor records with missing profile information
+    console.log('🩺 Updating existing doctor profiles with complete information...');
+    
+    const existingDoctorsToUpdate = await queryInterface.sequelize.query(
+      `SELECT d.id, d.user_id, u.email FROM doctors d 
+       JOIN users u ON d.user_id = u.id 
+       WHERE u.role = 'DOCTOR' AND (d.speciality_id IS NULL OR d.specialties = '{}' OR d.is_verified = false)`,
+      { type: Sequelize.QueryTypes.SELECT }
+    );
+
+    if (existingDoctorsToUpdate.length > 0) {
+      for (const doctor of existingDoctorsToUpdate) {
+        await queryInterface.sequelize.query(
+          `UPDATE doctors SET 
+           speciality_id = 3,
+           specialties = ARRAY['general medicine'],
+           years_of_experience = 10,
+           is_verified = true,
+           verification_date = NOW(),
+           practice_name = CASE 
+             WHEN :email = 'doctor@healthapp.com' THEN 'Dr. John Doe Family Practice'
+             ELSE 'Medical Practice'
+           END,
+           medical_school = 'University of Medicine',
+           board_certifications = ARRAY['internal medicine'],
+           updated_at = NOW()
+           WHERE id = :doctorId`,
+          {
+            replacements: { 
+              doctorId: doctor.id,
+              email: doctor.email
+            },
+            type: Sequelize.QueryTypes.UPDATE
+          }
+        );
+      }
+      console.log(`✅ Updated ${existingDoctorsToUpdate.length} existing doctor profiles: ${existingDoctorsToUpdate.map(d => d.email).join(', ')}`);
+    } else {
+      console.log('ℹ️ All existing doctor profiles are already complete');
     }
 
     // Create corresponding patient records for patient role users (idempotent)

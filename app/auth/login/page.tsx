@@ -61,13 +61,32 @@ const roleConfig = {
 
 const logger = createLogger('LoginPage')
 
+// Function to get redirect path based on user role
+const getRedirectPathForRole = (role: string): string => {
+  switch (role) {
+    case 'DOCTOR':
+      return '/dashboard/doctor'
+    case 'PATIENT': 
+      return '/dashboard/patient'
+    case 'HOSPITAL_ADMIN':
+      return '/dashboard/hospital'
+    case 'SYSTEM_ADMIN':
+    case 'ADMIN':
+      return '/dashboard/admin'
+    case 'HSP':
+      return '/dashboard/hsp'
+    default:
+      return '/dashboard'
+  }
+}
+
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [isClient, setIsClient] = useState(false)
   const router = useRouter()
   const searchParams = useSearchParams()
-  const { login, isAuthenticated } = useAuth()
+  const { login, isAuthenticated, user } = useAuth()
   
   useEffect(() => {
     setIsClient(true)
@@ -94,12 +113,13 @@ export default function LoginPage() {
 
   // Redirect if already authenticated
   useEffect(() => {
-    logger.debug('Auth state changed:', { isAuthenticated, redirectPath: config.redirectPath })
-    if (isAuthenticated) {
-      logger.info('User is authenticated, redirecting to:', config.redirectPath)
-      router.push(config.redirectPath)
+    if (isAuthenticated && user) {
+      const redirectPath = getRedirectPathForRole(user.role)
+      logger.debug('Auth state changed:', { isAuthenticated, userRole: user.role, redirectPath })
+      logger.info('User is authenticated, redirecting to:', redirectPath)
+      router.push(redirectPath)
     }
-  }, [isAuthenticated, router, config.redirectPath])
+  }, [isAuthenticated, user, router])
 
   const onSubmit = async (data: LoginFormData) => {
     setIsLoading(true)
@@ -110,12 +130,9 @@ export default function LoginPage() {
       logger.debug('Login result:', success)
       
       if (success) {
-        logger.info('Login successful, will redirect to:', config.redirectPath)
-        // Small delay to show success message
-        setTimeout(() => {
-          logger.info('Executing redirect to:', config.redirectPath)
-          router.push(config.redirectPath)
-        }, 1000)
+        // The auth context will handle the redirect based on the user's actual role
+        // We don't need to manually redirect here anymore since useEffect will handle it
+        logger.info('Login successful, auth context will handle redirect')
       }
     } catch (error) {
       logger.error('Login error:', error)
