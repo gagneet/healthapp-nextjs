@@ -56,7 +56,7 @@ export default function AddressInputWithGeocoding({
     setGeocodeStatus('idle')
 
     try {
-      const token = localStorage.getItem('token')
+      const token = localStorage.getItem('authToken')
       const response = await fetch('/api/doctors/reverse-geocode', {
         method: 'POST',
         headers: {

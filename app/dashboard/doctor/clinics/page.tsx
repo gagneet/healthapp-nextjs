@@ -84,7 +84,7 @@ export default function ClinicsPage() {
   const fetchClinics = async () => {
     try {
       setLoading(true)
-      const token = localStorage.getItem('token')
+      const token = localStorage.getItem('authToken')
       
       const response = await fetch('/api/doctors/clinics', {
         headers: {
@@ -117,7 +117,7 @@ export default function ClinicsPage() {
     
     try {
       setFormLoading(true)
-      const token = localStorage.getItem('token')
+      const token = localStorage.getItem('authToken')
       
       const submitData = {
         ...formData,
@@ -206,7 +206,7 @@ export default function ClinicsPage() {
     if (!confirm('Are you sure you want to delete this clinic?')) return
 
     try {
-      const token = localStorage.getItem('token')
+      const token = localStorage.getItem('authToken')
       
       const response = await fetch(`/api/doctors/clinics/${clinicId}`, {
         method: 'DELETE',
@@ -231,7 +231,7 @@ export default function ClinicsPage() {
   // Geocode clinic manually
   const handleGeocode = async (clinicId: string) => {
     try {
-      const token = localStorage.getItem('token')
+      const token = localStorage.getItem('authToken')
       
       const response = await fetch(`/api/doctors/clinics/${clinicId}/geocode`, {
         method: 'POST',

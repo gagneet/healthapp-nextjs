@@ -26,7 +26,7 @@ class PatientController {
         include: [
           {
             model: Patient,
-            as: 'patient',
+            as: 'patientProfile',
             required: true,
             include: [
               {
@@ -53,9 +53,9 @@ class PatientController {
       // Modern response formatting with the normalized data
       const responseData = {
         patients: {
-          [user.patient.id]: {
+          [user.patientProfile.id]: {
             basic_info: {
-              id: user.patient.id.toString(),
+              id: user.patientProfile.id.toString(),
               user_id: user.id.toString(),
               
               // Common fields from User model
@@ -79,39 +79,39 @@ class PatientController {
               email: user.email,
               
               // Patient-specific fields
-              medical_record_number: user.patient.medical_record_number,
-              blood_group: user.patient.blood_group,
-              height_cm: user.patient.height_cm,
-              weight_kg: user.patient.weight_kg,
-              bmi: user.patient.bmi, // Virtual field
+              medical_record_number: user.patientProfile.medical_record_number,
+              blood_group: user.patientProfile.blood_group,
+              height_cm: user.patientProfile.height_cm,
+              weight_kg: user.patientProfile.weight_kg,
+              bmi: user.patientProfile.bmi, // Virtual field
             },
             
             // Medical information
             medical_info: {
-              allergies: user.patient.allergies || [],
-              chronic_conditions: user.patient.chronic_conditions || [],
-              current_medications: user.patient.current_medications || [],
-              family_medical_history: user.patient.family_medical_history || {},
-              emergency_contact: user.patient.emergency_contact || {},
-              insurance_info: user.patient.insurance_info || {}
+              allergies: user.patientProfile.allergies || [],
+              chronic_conditions: user.patientProfile.chronic_conditions || [],
+              current_medications: user.patientProfile.current_medications || [],
+              family_medical_history: user.patientProfile.family_medical_history || {},
+              emergency_contact: user.patientProfile.emergency_contact || {},
+              insurance_info: user.patientProfile.insurance_info || {}
             },
             
             // System fields
-            consent_given: user.patient.consent_given,
-            data_sharing_consent: user.patient.data_sharing_consent,
+            consent_given: user.patientProfile.consent_given,
+            data_sharing_consent: user.patientProfile.data_sharing_consent,
             activated_on: user.activated_on,
             created_at: user.created_at,
             updated_at: user.updated_at,
             
             // Relationships
-            primary_doctor: user.patient.primaryCareDoctor ? {
-              id: user.patient.primaryCareDoctor.id,
-              name: user.patient.primaryCareDoctor.user.full_name,
-              email: user.patient.primaryCareDoctor.user.email
+            primary_doctor: user.patientProfile.primaryCareDoctor ? {
+              id: user.patientProfile.primaryCareDoctor.id,
+              name: user.patientProfile.primaryCareDoctor.user.full_name,
+              email: user.patientProfile.primaryCareDoctor.user.email
             } : null,
             
             // Integration fields
-            feedId: Buffer.from(`patient_${user.patient.id}`).toString('base64'),
+            feedId: Buffer.from(`patient_${user.patientProfile.id}`).toString('base64'),
             notificationToken: 'getstream_token' // Implement GetStream integration
           }
         }
@@ -257,7 +257,7 @@ class PatientController {
           { first_name: { [Op.like]: `%${search}%` } },
           { last_name: { [Op.like]: `%${search}%` } },
           { email: { [Op.like]: `%${search}%` } },
-          { '$patient.medical_record_number$': { [Op.like]: `%${search}%` } }
+          { '$patientProfile.medical_record_number$': { [Op.like]: `%${search}%` } }
         ];
       }
 
@@ -269,16 +269,16 @@ class PatientController {
         });
         
         if (doctorRecord) {
-          whereClause['$patient.primary_care_doctor_id$'] = doctorRecord.id;
+          whereClause['$patientProfile.primary_care_doctor_id$'] = doctorRecord.id;
         } else {
           // If no doctor record exists, return empty results
-          whereClause['$patient.primary_care_doctor_id$'] = null;
+          whereClause['$patientProfile.primary_care_doctor_id$'] = null;
         }
       }
 
 
       if (filter.gender) whereClause.gender = filter.gender;
-      if (filter.blood_group) whereClause['$patient.blood_group$'] = filter.blood_group;
+      if (filter.blood_group) whereClause['$patientProfile.blood_group$'] = filter.blood_group;
 
 
       const { count, rows: users } = await User.findAndCountAll({
@@ -286,7 +286,7 @@ class PatientController {
         include: [
           {
             model: Patient,
-            as: 'patient',
+            as: 'patientProfile',
             required: true,
             include: [
               {
@@ -313,9 +313,9 @@ class PatientController {
       // Modern response formatting
       const responseData = {
         patients: users.reduce((acc, user) => {
-          acc[user.patient.id] = {
+          acc[user.patientProfile.id] = {
             basic_info: {
-              id: user.patient.id.toString(),
+              id: user.patientProfile.id.toString(),
               user_id: user.id.toString(),
               full_name: user.full_name,
               first_name: user.first_name,
@@ -323,8 +323,8 @@ class PatientController {
               current_age: user.current_age,
               gender: user.gender,
               mobile_number: user.mobile_number,
-              medical_record_number: user.patient.medical_record_number,
-              primary_doctor: user.patient.primaryCareDoctor?.user?.full_name || null
+              medical_record_number: user.patientProfile.medical_record_number,
+              primary_doctor: user.patientProfile.primaryCareDoctor?.user?.full_name || null
             }
           };
           return acc;

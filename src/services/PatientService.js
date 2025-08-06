@@ -210,18 +210,18 @@ class PatientService {
         },
         include: [{
           model: Patient,
-          as: 'patient',
+          as: 'patientProfile',
           required: true
         }],
         order: [['created_at', 'DESC']] // Return most recent if multiple matches
       });
 
-      if (user && user.patient) {
+      if (user && user.patientProfile) {
         return {
           exists: true,
           patient: {
-            id: user.patient.id,
-            patient_id: user.patient.patient_id,
+            id: user.patientProfile.id,
+            patient_id: user.patientProfile.patient_id,
             user_id: user.id,
             first_name: user.first_name,
             middle_name: user.middle_name,

@@ -162,7 +162,7 @@ export default function SignatureUpload({
       formData.append('signature_image', blob, 'signature.png')
 
       // Upload to server
-      const token = localStorage.getItem('token')
+      const token = localStorage.getItem('authToken')
       const uploadResponse = await fetch('/api/doctors/profile/images', {
         method: 'POST',
         headers: {
@@ -219,7 +219,7 @@ export default function SignatureUpload({
       const formData = new FormData()
       formData.append('signature_image', file)
 
-      const token = localStorage.getItem('token')
+      const token = localStorage.getItem('authToken')
       const response = await fetch('/api/doctors/profile/images', {
         method: 'POST',
         headers: {

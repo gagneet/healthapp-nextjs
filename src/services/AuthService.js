@@ -48,7 +48,7 @@ class AuthService {
       },
       include: [
         { model: Doctor, as: 'doctor' },
-        { model: Patient, as: 'patient' },
+        { model: Patient, as: 'patientProfile' },
         { model: UserRole, as: 'roles' }
       ]
     });
