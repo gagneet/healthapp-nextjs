@@ -17,6 +17,7 @@ This Healthcare Application now uses **Docker Swarm exclusively** for deployment
 ### If You Were Using Docker Compose
 
 **Old Commands:**
+
 ```bash
 # OLD - No longer supported
 docker-compose up -d
@@ -26,6 +27,7 @@ docker-compose scale backend=3
 ```
 
 **New Docker Swarm Commands:**
+
 ```bash
 # NEW - Docker Swarm approach
 ./scripts/docker-swarm-init.sh          # One-time setup

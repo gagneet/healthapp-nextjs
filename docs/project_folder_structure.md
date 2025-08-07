@@ -4,7 +4,7 @@
 
 This document outlines the current project structure for the Healthcare Management Platform, which uses a hybrid architecture combining NextJS frontend with Node.js Express API backend.
 
-```
+```text
 healthapp-nextjs/
 ├── 📂 docker/                           # Docker Configuration Files
 │   ├── Dockerfile                       # NextJS frontend container
@@ -205,6 +205,7 @@ healthapp-nextjs/
 ## 🏗️ Architecture Overview
 
 ### Frontend Architecture (NextJS 14)
+
 - **App Router**: Modern NextJS routing with layouts
 - **TypeScript**: Full type safety across the application
 - **TailwindCSS**: Utility-first CSS framework
@@ -212,6 +213,7 @@ healthapp-nextjs/
 - **Role-based Layouts**: Separate dashboards for doctors, patients, and hospitals
 
 ### Backend Architecture (Node.js + Express)
+
 - **RESTful API**: Well-structured API endpoints
 - **Sequelize ORM**: Database abstraction with PostgreSQL
 - **Service Layer**: Business logic separation
@@ -219,6 +221,7 @@ healthapp-nextjs/
 - **Modern ES Modules**: Full ES6+ module support
 
 ### Recent Improvements ✅
+
 - **Secondary Doctor Management**: Complete system for managing multiple doctors per patient with consent workflows
 - **Interactive UI Components**: Body diagram with 4-view rotation and symptoms timeline
 - **Enhanced Patient Management**: Comprehensive patient detail pages with 11 specialized tabs
@@ -229,6 +232,7 @@ healthapp-nextjs/
 - **Clean Architecture**: Organized root directory structure
 
 ### Database Layer
+
 - **PostgreSQL**: Primary database with connection pooling
 - **Redis**: Caching and session management
 - **Migrations**: Version-controlled schema changes
@@ -236,6 +240,7 @@ healthapp-nextjs/
 - **HIPAA Compliance**: Secure data handling patterns
 
 ### Infrastructure
+
 - **Docker**: Containerized deployment with multi-stage builds
 - **NGINX**: Reverse proxy with SSL termination
 - **Monitoring**: Prometheus + Grafana stack
@@ -245,6 +250,7 @@ healthapp-nextjs/
 ## 🎯 Key Features Implemented
 
 ### Healthcare Domain
+
 - **Patient Management**: Complete patient lifecycle management
 - **Medication Tracking**: Adherence monitoring and reminders
 - **Care Plans**: Templated and customized care management
@@ -253,6 +259,7 @@ healthapp-nextjs/
 - **Prescription Management**: Digital prescription generation
 
 ### Technical Features
+
 - **Authentication**: JWT-based with role-based access control
 - **Real-time**: Socket.io ready for notifications
 - **Cloud Storage**: AWS S3 integration for file uploads

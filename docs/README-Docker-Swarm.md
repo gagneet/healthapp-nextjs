@@ -5,16 +5,19 @@ This application is designed for **Docker Swarm** deployment with horizontal sca
 ## Quick Start
 
 ### 1. Initialize Docker Swarm (One-time setup)
+
 ```bash
 ./scripts/docker-swarm-init.sh [IP_ADDRESS]
 ```
 
 ### 2. Deploy Development Environment
+
 ```bash
 ./scripts/deploy-stack.sh dev [IP_ADDRESS] [--auto-yes]
 ```
 
 ### 3. Deploy Production Environment
+
 ```bash
 ./scripts/deploy-stack.sh prod [IP_ADDRESS] [--auto-yes]
 ```
@@ -22,6 +25,7 @@ This application is designed for **Docker Swarm** deployment with horizontal sca
 ## Architecture Overview
 
 ### Docker Swarm Services
+
 - **PostgreSQL Database**: Single instance with placement constraints
 - **Redis Cache**: Single instance for session/data caching
 - **Backend API**: Horizontally scalable (default: 5 replicas)
@@ -32,6 +36,7 @@ This application is designed for **Docker Swarm** deployment with horizontal sca
 - **Backup Service**: Automated database backups
 
 ### Key Features
+
 - **Horizontal Scaling**: Easy scaling with `docker service scale`
 - **Rolling Updates**: Zero-downtime deployments
 - **Health Checks**: Comprehensive service monitoring
@@ -43,16 +48,19 @@ This application is designed for **Docker Swarm** deployment with horizontal sca
 ## Scaling Operations
 
 ### Scale Backend Service
+
 ```bash
 docker service scale healthapp_backend=10
 ```
 
 ### Scale Frontend Service
+
 ```bash
 docker service scale healthapp_frontend=5
 ```
 
 ### Scale During Deployment
+
 ```bash
 ./scripts/deploy-stack.sh dev --scale-backend=8 --scale-frontend=4
 ```
@@ -60,22 +68,26 @@ docker service scale healthapp_frontend=5
 ## Service Management
 
 ### View All Services
+
 ```bash
 docker stack services healthapp
 ```
 
 ### View Service Logs
+
 ```bash
 docker service logs healthapp_backend -f
 docker service logs healthapp_frontend -f
 ```
 
 ### Update Service Configuration
+
 ```bash
 docker service update --env-add NEW_VAR=value healthapp_backend
 ```
 
 ### Rolling Update
+
 ```bash
 docker service update --image healthapp-backend:new-version healthapp_backend
 ```
@@ -83,6 +95,7 @@ docker service update --image healthapp-backend:new-version healthapp_backend
 ## Node Management
 
 ### Add Worker Nodes
+
 ```bash
 # On manager node, get join token
 docker swarm join-token worker
@@ -92,6 +105,7 @@ docker swarm join --token SWMTKN-xxx manager-ip:2377
 ```
 
 ### Label Nodes for Service Placement
+
 ```bash
 # Database nodes
 docker node update --label-add database=true worker-1
@@ -108,12 +122,14 @@ docker node update --label-add frontend=true worker-3
 The stack supports multiple deployment modes:
 
 ### Development Mode
+
 - Hot-reload enabled
 - Debug logging
 - Development database
 - Simplified security
 
 ### Production Mode
+
 - Optimized builds
 - Production database
 - SSL/TLS enabled
@@ -137,25 +153,28 @@ The stack supports multiple deployment modes:
 
 | Role | Email | Password |
 |------|-------|----------|
-| Doctor | doctor@healthapp.com | password123 |
-| Admin | admin@healthapp.com | password123 |
-| HSP | hsp@healthapp.com | password123 |
-| Hospital Admin | hospital.admin@healthapp.com | password123 |
-| Patient | patient@healthapp.com | password123 |
+| Doctor | <doctor@healthapp.com> | password123 |
+| Admin | <admin@healthapp.com> | password123 |
+| HSP | <hsp@healthapp.com> | password123 |
+| Hospital Admin | <hospital.admin@healthapp.com> | password123 |
+| Patient | <patient@healthapp.com> | password123 |
 
 ## Troubleshooting
 
 ### View Service Status
+
 ```bash
 docker service ps healthapp_backend --no-trunc
 ```
 
 ### Check Service Health
+
 ```bash
 curl http://IP_ADDRESS:3001/health
 ```
 
 ### Remove and Redeploy Stack
+
 ```bash
 docker stack rm healthapp
 sleep 30
@@ -163,6 +182,7 @@ sleep 30
 ```
 
 ### Database Issues
+
 ```bash
 # Check PostgreSQL logs
 docker service logs healthapp_postgres
@@ -174,6 +194,7 @@ docker exec -it $(docker ps -q -f name=healthapp_postgres) psql -U healthapp_use
 ## Kubernetes Migration Ready
 
 This Docker Swarm setup is designed to be easily portable to Kubernetes:
+
 - Service definitions map to Kubernetes Services
 - Deployment configurations map to Kubernetes Deployments
 - ConfigMaps and Secrets are compatible

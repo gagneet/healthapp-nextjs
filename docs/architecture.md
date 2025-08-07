@@ -6,7 +6,7 @@ The Healthcare Management Platform uses a modern hybrid architecture combining N
 
 ## 📐 Architecture Diagram
 
-```
+```text
 ┌─────────────────────────────────────────────────────────────────┐
 │                        Load Balancer (NGINX)                   │
 │                     SSL Termination & Proxy                    │
@@ -54,19 +54,22 @@ The Healthcare Management Platform uses a modern hybrid architecture combining N
 ## 🎯 Core Architecture Principles
 
 ### 1. **Hybrid Frontend-Backend Architecture**
+
 - **Frontend**: NextJS 14 with App Router for modern React development
 - **Backend**: Node.js Express API with Sequelize ORM
 - **Communication**: RESTful APIs with JSON responses
 - **Authentication**: JWT-based with role-based access control
 
 ### 2. **Microservices-Ready Design**
+
 - **Service Layer**: Business logic separated from controllers
 - **Modular Structure**: Clear separation of concerns
 - **API-First**: Backend designed as headless API
 - **Scalable**: Easy to split into microservices when needed
 
 ### 3. **Data Architecture**
-```
+
+```text
 ┌─────────────────────────────────────┐
 │            Data Layer               │
 ├─────────────────────────────────────┤
@@ -98,6 +101,7 @@ The Healthcare Management Platform uses a modern hybrid architecture combining N
 ## 🔧 Technology Stack
 
 ### **Frontend (NextJS 14)**
+
 ```typescript
 // Modern React with TypeScript
 - NextJS 14 with App Router
@@ -110,6 +114,7 @@ The Healthcare Management Platform uses a modern hybrid architecture combining N
 ```
 
 ### **Backend (Node.js + Express)**
+
 ```javascript
 // Modern ES Modules with comprehensive middleware
 - Node.js 18+ with ES Modules
@@ -123,6 +128,7 @@ The Healthcare Management Platform uses a modern hybrid architecture combining N
 ```
 
 ### **Database & Cache**
+
 ```sql
 -- PostgreSQL with optimized configuration
 - PostgreSQL 15+ (primary database)
@@ -133,6 +139,7 @@ The Healthcare Management Platform uses a modern hybrid architecture combining N
 ```
 
 ### **Infrastructure & DevOps**
+
 ```yaml
 # Docker-based deployment
 - Docker containers with multi-stage builds
@@ -145,7 +152,7 @@ The Healthcare Management Platform uses a modern hybrid architecture combining N
 
 ## 📂 Current Project Structure
 
-```
+```text
 healthapp-nextjs/
 ├── 🐳 docker/                    # ✅ All Docker configurations
 ├── 🎨 app/                      # NextJS App Router
@@ -172,6 +179,7 @@ healthapp-nextjs/
 ## 🔐 Security Architecture
 
 ### **Authentication & Authorization**
+
 ```typescript
 // JWT-based authentication with role-based access
 interface UserRole {
@@ -186,6 +194,7 @@ app.use('/api/doctors', authenticate, authorize(['doctor']), doctorRoutes)
 ```
 
 ### **HIPAA Compliance Features**
+
 - **Audit Logging**: All data access logged with user, timestamp, and action
 - **Encryption**: Data encrypted at rest and in transit
 - **Access Controls**: Role-based permissions with principle of least privilege
@@ -193,6 +202,7 @@ app.use('/api/doctors', authenticate, authorize(['doctor']), doctorRoutes)
 - **Data Anonymization**: PII handling with proper anonymization
 
 ### **Security Middleware Stack**
+
 ```javascript
 // Comprehensive security headers and protection
 app.use(helmet())                    // Security headers
@@ -205,8 +215,9 @@ app.use(compression())             // Response compression
 ## 🔄 API Architecture
 
 ### **RESTful API Design**
-```
-/api/auth                                    # Authentication endpoints
+
+```text
+/api/auth                                 # Authentication endpoints
 /api/patients                             # Patient management
   └── /patients/:id/secondary-doctors     # Secondary doctor assignments ✅ New
 /api/doctors                              # Doctor operations  
@@ -223,6 +234,7 @@ app.use(compression())             // Response compression
 ```
 
 ### **Response Format Standardization**
+
 ```typescript
 interface APIResponse<T> {
   status: boolean
@@ -241,12 +253,14 @@ interface APIResponse<T> {
 ## 📱 Mobile & Accessibility
 
 ### **Responsive Design**
+
 - **Mobile-First**: Optimized for mobile devices
-- **Responsive Sidebars**: Collapsible navigation ✅ 
+- **Responsive Sidebars**: Collapsible navigation ✅
 - **Touch-Friendly**: Appropriate touch targets
 - **Progressive Enhancement**: Works without JavaScript
 
 ### **Accessibility Compliance** ✅
+
 - **WCAG 2.1 AA**: Web Content Accessibility Guidelines compliance
 - **Screen Readers**: All interactive elements have proper labels
 - **Keyboard Navigation**: Full keyboard accessibility
@@ -256,6 +270,7 @@ interface APIResponse<T> {
 ## 🚀 Deployment Architecture
 
 ### **Development Environment**
+
 ```bash
 # Single command deployment
 ./scripts/deploy-dev.sh
@@ -269,6 +284,7 @@ interface APIResponse<T> {
 ```
 
 ### **Production Environment**
+
 ```bash
 # Docker Swarm deployment
 ./scripts/deploy-prod.sh
@@ -285,7 +301,8 @@ interface APIResponse<T> {
 ## 📊 Data Flow Architecture
 
 ### **User Request Flow**
-```
+
+```text
 1. User Request → NGINX Load Balancer
 2. NGINX → NextJS Frontend (Static/SSR)
 3. Frontend → API Gateway (Rate limiting, Auth)  
@@ -296,7 +313,8 @@ interface APIResponse<T> {
 ```
 
 ### **Real-time Notifications**
-```
+
+```text
 1. Event Trigger (missed medication, vital alert)
 2. Background Job Queue (Redis)
 3. Notification Service
@@ -307,18 +325,21 @@ interface APIResponse<T> {
 ## 🎯 Recent Architecture Improvements ✅
 
 ### **Healthcare-Specific Enhancements**
+
 - **Secondary Doctor Management**: Complete system for managing multiple doctors per patient with consent workflows
 - **Interactive UI Components**: Body diagram with 4-view rotation and symptoms timeline with bi-directional highlighting
 - **Enhanced Patient Management**: 11 specialized tabs covering all healthcare domains
 - **Comprehensive API**: 50+ endpoints with secondary doctor assignment management
 
 ### **Code Organization**
+
 - **Docker Cleanup**: All Docker files moved to `docker/` folder
 - **Script Updates**: All deployment scripts updated with new paths
 - **Accessibility**: Full WCAG compliance with proper ARIA labels
 - **Icon Standardization**: Migrated to Heroicons v2 compatible icons
 
 ### **Performance Optimizations**  
+
 - **Database Connection Pooling**: Optimized database connections
 - **Redis Caching**: Strategic caching for frequently accessed data
 - **Static Asset Optimization**: Optimized images and bundling
@@ -327,12 +348,14 @@ interface APIResponse<T> {
 ## 🔮 Future Architecture Considerations
 
 ### **Microservices Evolution**
+
 - **Service Extraction**: Ready to extract services as separate containers
 - **API Gateway**: Centralized routing and authentication
 - **Event Sourcing**: For audit trails and compliance
 - **GraphQL**: Consider for complex data fetching needs
 
 ### **Scalability Enhancements**
+
 - **Database Sharding**: For large patient populations
 - **CDN Integration**: For static asset delivery
 - **Message Queues**: For asynchronous processing

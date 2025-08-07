@@ -182,7 +182,7 @@ The integration is complete and the application builds successfully! The DayPilo
 - Consistent styling: Dropdown matches the existing patient filter design
 - Enhanced legend: Updated info card to reflect the new capabilities
 
-### Key Features
+### Key Features for Enhanced Calendar
 
 1. Preserved Layout: All existing UI elements remain in their original positions
 2. Seamless Integration: The dropdown fits naturally with the existing patient filter

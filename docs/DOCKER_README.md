@@ -4,9 +4,10 @@
 
 ## Use Docker Swarm Instead
 
-This application now uses **Docker Swarm** exclusively for deployment. 
+This application now uses **Docker Swarm** exclusively for deployment.
 
 Please refer to:
+
 - **[README-Docker-Swarm.md](./README-Docker-Swarm.md)** - Complete Docker Swarm deployment guide
 - **[scripts/deploy-stack.sh](./scripts/deploy-stack.sh)** - Main deployment script
 - **[scripts/docker-swarm-init.sh](./scripts/docker-swarm-init.sh)** - Swarm initialization
@@ -44,6 +45,7 @@ If you were using the old Docker Compose setup:
 3. **Deploy with Swarm**: `./scripts/deploy-stack.sh dev`
 
 The new Docker Swarm setup provides:
+
 - Better scalability
 - Production-ready orchestration
 - Built-in load balancing

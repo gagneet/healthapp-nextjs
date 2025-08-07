@@ -16,6 +16,7 @@ The Secondary Doctor Management System enables healthcare organizations to assig
 4. **Transferred**: Requires patient OTP consent, full access after consent
 
 **Key Features:**
+
 - Granular permission system with automatic permission assignment based on type
 - OTP consent verification system (6-digit, 30-minute expiration)
 - Organization-based access controls for substitute doctors
@@ -25,6 +26,7 @@ The Secondary Doctor Management System enables healthcare organizations to assig
 ### Service Layer (SecondaryDoctorService.js) ✅ COMPLETED
 
 **Complete business logic implementation:**
+
 - **Assignment Operations**: Create, read, update, deactivate assignments
 - **Permission Validation**: Automatic permission assignment based on doctor type
 - **Consent Workflows**: OTP generation, verification, and status management
@@ -32,6 +34,7 @@ The Secondary Doctor Management System enables healthcare organizations to assig
 - **Organization Validation**: Same-organization requirements for substitute doctors
 
 **Key Methods:**
+
 - `assignSecondaryDoctor()` - Create new doctor assignments with all validations
 - `getPatientDoctorAssignments()` - Retrieve all assignments for a patient
 - `verifyPatientConsent()` - Handle OTP verification process
@@ -41,6 +44,7 @@ The Secondary Doctor Management System enables healthcare organizations to assig
 ### Controller Layer (secondaryDoctorController.js) ✅ COMPLETED
 
 **RESTful API endpoints with comprehensive validation:**
+
 - Authentication and authorization middleware integration
 - Input validation using express-validator
 - Standardized error handling and response formatting
@@ -49,6 +53,7 @@ The Secondary Doctor Management System enables healthcare organizations to assig
 ### Routes (secondaryDoctorRoutes.js) ✅ COMPLETED
 
 **Full API route definitions with validation middleware:**
+
 - CRUD operations for doctor assignments
 - Patient consent request and verification endpoints
 - Doctor access verification endpoints
@@ -57,6 +62,7 @@ The Secondary Doctor Management System enables healthcare organizations to assig
 ### Database Integration ✅ COMPLETED
 
 **Complete database integration:**
+
 - Model associations updated in `associations.js`
 - Added to model exports in `index.js`
 - Comprehensive migration file `20250105120000-create-patient-doctor-assignments.js`
@@ -66,6 +72,7 @@ The Secondary Doctor Management System enables healthcare organizations to assig
 ### API Integration ✅ COMPLETED
 
 **Routes integrated into main application:**
+
 - Added to main router in `src/routes/index.js`
 - All endpoints follow established response patterns
 - Consistent with existing API architecture
@@ -73,26 +80,30 @@ The Secondary Doctor Management System enables healthcare organizations to assig
 ## API Endpoints
 
 ### Patient Secondary Doctor Management
-```
+
+```api
 POST   /api/patients/:patientId/secondary-doctors
 GET    /api/patients/:patientId/secondary-doctors
 ```
 
-### Assignment Management  
-```
+### Assignment Management
+
+```api
 GET    /api/assignments/:assignmentId
 PUT    /api/assignments/:assignmentId/permissions
 DELETE /api/assignments/:assignmentId
 ```
 
 ### Consent Management
-```
+
+```api
 POST   /api/assignments/:assignmentId/request-consent
 POST   /api/assignments/:assignmentId/verify-consent
 ```
 
 ### Access Verification
-```
+
+```api
 GET    /api/doctors/:doctorId/patient-access/:patientId
 GET    /api/doctors/available-for-assignment
 ```
@@ -110,7 +121,8 @@ GET    /api/doctors/available-for-assignment
 
 ## Consent Workflow
 
-### Transfer Doctor Assignment Process:
+### Transfer Doctor Assignment Process
+
 1. **Primary doctor** initiates transfer request
 2. **System** generates 6-digit OTP (30-minute expiration)
 3. **Patient** receives OTP via SMS/Email
@@ -121,6 +133,7 @@ GET    /api/doctors/available-for-assignment
 ## Integration Status
 
 ### ✅ Fully Implemented
+
 - **Database Layer**: Complete model with relationships and constraints
 - **Service Layer**: All business logic and validation methods
 - **API Layer**: RESTful endpoints with comprehensive validation
@@ -129,6 +142,7 @@ GET    /api/doctors/available-for-assignment
 - **Organization Controls**: Same-organization validation for substitute doctors
 
 ### 🔄 Pending Integration Tasks
+
 1. **SMS/Email OTP Delivery**: Integration with notification service
 2. **Frontend UI Components**: Doctor assignment management interface
 3. **Provider Onboarding**: Doctor-organization assignment during onboarding
@@ -137,6 +151,7 @@ GET    /api/doctors/available-for-assignment
 ## Usage Examples
 
 ### Assign a Specialist Doctor
+
 ```javascript
 const assignment = await SecondaryDoctorService.assignSecondaryDoctor({
   patientId: 'patient-uuid',
@@ -150,6 +165,7 @@ const assignment = await SecondaryDoctorService.assignSecondaryDoctor({
 ```
 
 ### Verify Patient Consent
+
 ```javascript
 const result = await SecondaryDoctorService.verifyPatientConsent(
   'assignment-uuid',
@@ -158,6 +174,7 @@ const result = await SecondaryDoctorService.verifyPatientConsent(
 ```
 
 ### Check Doctor Access
+
 ```javascript
 const access = await SecondaryDoctorService.canDoctorAccessPatient(
   'doctor-uuid', 
@@ -169,6 +186,7 @@ console.log(access.canAccess); // true/false
 ## Security & Compliance
 
 ### HIPAA Compliance Features
+
 - **Audit Logging**: All assignment operations logged with user, timestamp, and action
 - **Access Controls**: Role-based permissions with principle of least privilege  
 - **Consent Management**: Patient consent tracking for sensitive operations
@@ -176,6 +194,7 @@ console.log(access.canAccess); // true/false
 - **Session Management**: Secure session handling for all operations
 
 ### Security Validations
+
 - **Permission Validation**: Real-time access verification before any operation
 - **Organization Validation**: Same-organization requirements enforced
 - **Consent Validation**: OTP verification with expiration handling

@@ -6,12 +6,12 @@ This guide provides comprehensive instructions for setting up and running the He
 
 ## 📋 Table of Contents
 
-1. [Recommendation: WSL2 vs Native Windows](#recommendation-wsl2-vs-native-windows)
-2. [WSL2 Setup (Recommended)](#wsl2-setup-recommended)
-3. [Native Windows Setup](#native-windows-setup)
-4. [Docker Desktop Configuration](#docker-desktop-configuration)
-5. [Development Workflow](#development-workflow)
-6. [Troubleshooting](#troubleshooting)
+1. [Recommendation: WSL2 vs Native Windows](#-recommendation-wsl2-vs-native-windows)
+2. [WSL2 Setup (Recommended)](#-wsl2-setup-recommended)
+3. [Native Windows Setup](#%EF%B8%8F-native-windows-setup)
+4. [Docker Desktop Configuration](#-docker-desktop-configuration)
+5. [Development Workflow](#-development-workflow)
+6. [Troubleshooting](#-troubleshooting)
 
 ## 🎯 Recommendation: WSL2 vs Native Windows
 
@@ -29,11 +29,13 @@ This guide provides comprehensive instructions for setting up and running the He
 ### **Native Windows (Functional but Limited) ⚠️**
 
 **When to use native Windows:**
+
 - Corporate restrictions preventing WSL2 installation
 - Preference for Windows-native tooling
 - Integration with Windows-specific development tools
 
 **Limitations:**
+
 - Slower file system performance
 - Some Linux-specific features may not work
 - More complex path handling
@@ -57,27 +59,31 @@ wsl --install
 
 #### **For older Windows 10 versions:**
 
-1. **Enable WSL and Virtual Machine Platform:**
+##### $**Enable WSL and Virtual Machine Platform:**
+
 ```powershell
 # Run as Administrator
 dism.exe /online /enable-feature /featurename:Microsoft-Windows-Subsystem-Linux /all /norestart
 dism.exe /online /enable-feature /featurename:VirtualMachinePlatform /all /norestart
 ```
 
-2. **Download and install WSL2 kernel update:**
-   - Download from: https://aka.ms/wsl2kernel
-   - Install the MSI package
+##### **Download and install WSL2 kernel update:**
 
-3. **Set WSL2 as default:**
+- Download from: [https://aka.ms/wsl2kernel](https://aka.ms/wsl2kernel)
+- Install the MSI package
+
+##### **Set WSL2 as default:**
+
 ```powershell
 wsl --set-default-version 2
 ```
 
-4. **Install Ubuntu from Microsoft Store**
+##### **Install Ubuntu from Microsoft Store**
 
 ### **Step 2: Configure WSL2 for Development**
 
-1. **Launch Ubuntu and complete initial setup:**
+#### **Launch Ubuntu and complete initial setup:**
+
 ```bash
 # Update system
 sudo apt update && sudo apt upgrade -y
@@ -86,7 +92,8 @@ sudo apt update && sudo apt upgrade -y
 sudo apt install -y curl wget git build-essential
 ```
 
-2. **Install Node.js 18+ (recommended via NodeSource):**
+#### **Install Node.js 18+ (recommended via NodeSource):**
+
 ```bash
 # Add NodeSource repository
 curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
@@ -99,7 +106,8 @@ node --version
 npm --version
 ```
 
-3. **Install Docker Engine (if not using Docker Desktop):**
+#### **Install Docker Engine (if not using Docker Desktop):**
+
 ```bash
 # Add Docker's official GPG key
 curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
@@ -137,11 +145,12 @@ chmod +x scripts/*.sh
 
 ### **Step 4: Access from Windows**
 
-- **Frontend**: http://localhost:3000
-- **Backend API**: http://localhost:3001
-- **pgAdmin**: http://localhost:5050
+- **Frontend**: [http://localhost:3000](http://localhost:3000)
+- **Backend API**: [http://localhost:3001](http://localhost:3001)
+- **pgAdmin**: [http://localhost:5050](http://localhost:5050)
 
 **VS Code Integration:**
+
 1. Install "Remote - WSL" extension
 2. Open project: `code .` from WSL2 terminal
 3. VS Code automatically connects to WSL2
@@ -151,15 +160,15 @@ chmod +x scripts/*.sh
 ### **Prerequisites**
 
 1. **Docker Desktop for Windows**
-   - Download: https://www.docker.com/products/docker-desktop
+   - Download: [https://www.docker.com/products/docker-desktop](https://www.docker.com/products/docker-desktop)
    - Ensure WSL2 backend is enabled (even for native Windows)
 
 2. **Git for Windows**
-   - Download: https://git-scm.com/download/win
+   - Download: [https://git-scm.com/download/win](https://git-scm.com/download/win)
    - Choose "Git Bash" option during installation
 
 3. **Node.js 18+ for Windows**
-   - Download: https://nodejs.org/
+   - Download: [https://nodejs.org/](https://nodejs.org/)
    - Choose LTS version
 
 ### **Windows-Specific Scripts Created**
@@ -172,6 +181,7 @@ scripts\deploy-dev.bat
 ```
 
 **Features:**
+
 - ✅ Windows-compatible path handling
 - ✅ Proper error checking and colorized output
 - ✅ Service health verification
@@ -200,7 +210,8 @@ scripts\reset-dev.bat
 
 ### **Windows Development Workflow**
 
-1. **Initial Setup:**
+#### **Initial Setup:**
+
 ```batch
 # Clone repository
 git clone <your-repository-url>
@@ -213,7 +224,8 @@ copy .env.development.example .env.development
 notepad .env.development
 ```
 
-2. **Start Development:**
+#### **Start Development:**
+
 ```batch
 # Start all services
 scripts\deploy-dev.bat
@@ -222,7 +234,8 @@ scripts\deploy-dev.bat
 docker-compose -f docker\docker-compose.dev.yml logs -f
 ```
 
-3. **Stop Services:**
+#### **Stop Services:**
+
 ```batch
 # Stop all services
 docker-compose -f docker\docker-compose.dev.yml down
@@ -251,6 +264,7 @@ scripts\reset-dev.bat
 ### **Performance Optimization**
 
 #### **For WSL2:**
+
 ```bash
 # Create .wslconfig in Windows user directory
 # C:\Users\<username>\.wslconfig
@@ -263,6 +277,7 @@ localhostForwarding=true
 ```
 
 #### **For Native Windows:**
+
 - Store project files on fastest drive (SSD recommended)
 - Exclude Docker directories from Windows Defender scanning
 - Use Docker's BuildKit for faster builds
@@ -274,17 +289,20 @@ localhostForwarding=true
 #### **VS Code (Recommended)**
 
 **For WSL2:**
+
 1. Install "Remote - WSL" extension
 2. Open terminal in WSL2: `wsl`
 3. Navigate to project: `cd ~/healthapp-nextjs`
 4. Open VS Code: `code .`
 
 **For Native Windows:**
+
 1. Open VS Code in project directory
 2. Install "Docker" extension
 3. Configure integrated terminal to use Git Bash
 
 **Essential Extensions:**
+
 - ES7+ React/Redux/React-Native snippets
 - TypeScript and JavaScript Language Features
 - Tailwind CSS IntelliSense
@@ -297,20 +315,22 @@ Both WSL2 and native Windows automatically forward these ports:
 
 | Service | Port | URL |
 |---------|------|-----|
-| Frontend | 3000 | http://localhost:3000 |
-| Backend API | 3001 | http://localhost:3001 |
-| PostgreSQL | 5432 | localhost:5432 |
-| Redis | 6379 | localhost:6379 |
-| pgAdmin | 5050 | http://localhost:5050 |
+| Frontend | 3000 | [http://localhost:3000](http://localhost:3000) |
+| Backend API | 3001 | [http://localhost:3001](http://localhost:3001) |
+| PostgreSQL | 5432 | [localhost:5432](localhost:5432) |
+| Redis | 6379 | [localhost:6379](localhost:6379) |
+| pgAdmin | 5050 | [http://localhost:5050](http://localhost:5050) |
 
 ### **File System Considerations**
 
 #### **WSL2 Best Practices:**
+
 - Store project files in WSL2 filesystem (`~/projects/`)
 - Access Windows files via `/mnt/c/` if needed
 - Use WSL2 terminal for all development commands
 
 #### **Native Windows Best Practices:**
+
 - Use Git Bash for command-line operations
 - Be mindful of path separators (`\` vs `/`)
 - Use PowerShell for advanced scripting
@@ -320,12 +340,14 @@ Both WSL2 and native Windows automatically forward these ports:
 ### **Common WSL2 Issues**
 
 #### **"WSL 2 requires an update to its kernel component"**
+
 ```powershell
 # Download and install WSL2 kernel update
 # https://aka.ms/wsl2kernel
 ```
 
 #### **Docker not accessible in WSL2**
+
 ```bash
 # Check Docker service status
 sudo service docker status
@@ -337,6 +359,7 @@ sudo service docker start
 ```
 
 #### **Slow file performance**
+
 ```bash
 # Ensure project is in WSL2 filesystem, not Windows mount
 pwd
@@ -349,6 +372,7 @@ mv /mnt/c/projects/healthapp-nextjs ~/healthapp-nextjs
 ### **Common Native Windows Issues**
 
 #### **Path separator issues**
+
 ```batch
 REM Use backslashes in batch files
 docker-compose -f docker\docker-compose.dev.yml up
@@ -358,12 +382,14 @@ docker-compose -f docker/docker-compose.dev.yml up
 ```
 
 #### **Permission errors**
+
 ```batch
 REM Run Command Prompt or PowerShell as Administrator
 REM Or adjust Docker Desktop settings for file sharing
 ```
 
 #### **Service not accessible**
+
 ```batch
 REM Check Windows Firewall
 REM Check Docker Desktop port forwarding
@@ -374,6 +400,7 @@ docker-compose -f docker\docker-compose.dev.yml ps
 ### **Database Connection Issues**
 
 #### **PostgreSQL connection fails**
+
 ```bash
 # Check if PostgreSQL container is running
 docker-compose -f docker/docker-compose.dev.yml ps postgres
@@ -386,6 +413,7 @@ docker-compose -f docker/docker-compose.dev.yml exec postgres psql -U healthapp_
 ```
 
 #### **Redis connection fails**
+
 ```bash
 # Test Redis connection
 docker-compose -f docker/docker-compose.dev.yml exec redis redis-cli ping
@@ -395,6 +423,7 @@ docker-compose -f docker/docker-compose.dev.yml exec redis redis-cli ping
 ### **Build Failures**
 
 #### **Out of disk space**
+
 ```bash
 # Clean up Docker
 docker system prune -a
@@ -404,6 +433,7 @@ docker system df
 ```
 
 #### **Memory issues**
+
 ```bash
 # Increase Docker Desktop memory allocation
 # Or use Docker Compose resource limits
@@ -433,6 +463,7 @@ docker system df
 ## 🎉 Recommendation Summary
 
 ### **For New Projects: Use WSL2**
+
 1. Install WSL2 with Ubuntu
 2. Install Docker Desktop with WSL2 integration
 3. Clone project in WSL2 filesystem
@@ -440,6 +471,7 @@ docker system df
 5. Develop with VS Code + Remote WSL extension
 
 ### **For Existing Windows Setup: Hybrid Approach**
+
 1. Keep Docker Desktop on Windows
 2. Use provided Windows scripts (`.bat` and `.ps1`)
 3. Consider migrating to WSL2 when convenient

@@ -7,12 +7,14 @@ The HealthApp deployment has been **migrated to Docker Swarm exclusively**. This
 ## ✅ **What's New**
 
 ### Docker Swarm Architecture
+
 - **Docker Swarm orchestration** for production-grade scaling and reliability
 - **Enterprise-grade load balancing** with automatic service discovery
 - **Zero-downtime updates** with rolling deployments
 - **Multi-replica services** with automatic failover and recovery
 
 ### Enhanced Deployment Script
+
 - **`./scripts/deploy-stack.sh`** - Complete Docker Swarm deployment solution
 - **Database migration support** with `--migrate` flag
 - **Database seeding support** with `--seed` flag  
