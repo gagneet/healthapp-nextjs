@@ -45,6 +45,6 @@ router.post('/logout', (req, res) => {
 });
 
 // Mount enhanced authentication routes
-// router.use('/enhanced', enhancedAuthRoutes);
+router.use('/enhanced', enhancedAuthRoutes);
 
 export default router;
