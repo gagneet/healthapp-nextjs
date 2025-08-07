@@ -1,9 +1,9 @@
-// 008-comprehensive-patient-data.cjs - Comprehensive patient data seeder for dashboard testing
+// 008-comprehensive-patient-data.ts - Comprehensive patient data seeder for dashboard testing
 'use strict';
 
-const { v4: uuidv4 } = require('uuid');
+import { v4 as uuidv4 } from 'uuid';
 
-module.exports = {
+export default {
   async up(queryInterface, Sequelize) {
     const transaction = await queryInterface.sequelize.transaction();
 

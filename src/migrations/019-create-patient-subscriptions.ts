@@ -1,7 +1,7 @@
 // src/migrations/019-create-patient-subscriptions.js
 'use strict';
 
-module.exports = {
+export default {
   up: async (queryInterface, Sequelize) => {
     // Check if table already exists
     const tableExists = await queryInterface.tableExists('patient_subscriptions');

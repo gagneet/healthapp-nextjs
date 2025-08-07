@@ -1,7 +1,7 @@
 // src/seeders/004-symptoms-conditions.cjs
 'use strict';
 
-module.exports = {
+export default {
   up: async (queryInterface, Sequelize) => {
     console.log('🩺 Seeding symptoms/conditions database (idempotent)...');
     

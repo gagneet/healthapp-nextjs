@@ -1,7 +1,7 @@
 // src/migrations/005-create-patient-provider-assignments.js
 'use strict';
 
-module.exports = {
+export default {
   up: async (queryInterface, Sequelize) => {
     // Check if table already exists
     const tableExists = await queryInterface.tableExists('patient_provider_assignments');

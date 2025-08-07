@@ -1,10 +1,10 @@
-// src/seeders/007-complete-test-profiles.cjs
+// src/seeders/007-complete-test-profiles.ts
 'use strict';
 
-const bcrypt = require('bcryptjs');
-const { v4: uuidv4 } = require('uuid');
+import bcrypt from 'bcryptjs';
+import { v4 as uuidv4 } from 'uuid';
 
-module.exports = {
+export default {
   up: async (queryInterface, Sequelize) => {
     console.log('🏥 Creating complete test profiles (Patient, Doctor, Admin)...');
     

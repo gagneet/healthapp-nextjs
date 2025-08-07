@@ -1,7 +1,7 @@
 'use strict';
 
 /** @type {import('sequelize-cli').Migration} */
-module.exports = {
+export default {
   async up (queryInterface, Sequelize) {
     // Check if secondary_doctor_assignments table already exists
     const tableExists = await queryInterface.tableExists('secondary_doctor_assignments');

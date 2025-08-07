@@ -1,7 +1,7 @@
 // Migration: Create patient_doctor_assignments table
 'use strict';
 
-module.exports = {
+export default {
   up: async (queryInterface, Sequelize) => {
     // Check if patient_doctor_assignments table already exists
     const tableExists = await queryInterface.tableExists('patient_doctor_assignments');

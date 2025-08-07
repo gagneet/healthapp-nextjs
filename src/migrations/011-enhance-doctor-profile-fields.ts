@@ -1,7 +1,7 @@
 // src/migrations/011-enhance-doctor-profile-fields.js
 'use strict';
 
-module.exports = {
+export default {
   up: async (queryInterface, Sequelize) => {
     console.log('👨‍⚕️ Enhancing doctor profile fields...');
     

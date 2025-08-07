@@ -1,7 +1,7 @@
 // src/seeders/005-treatments.cjs
 'use strict';
 
-module.exports = {
+export default {
   up: async (queryInterface, Sequelize) => {
     console.log('💉 Seeding treatments database (idempotent)...');
     

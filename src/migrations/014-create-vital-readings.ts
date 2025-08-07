@@ -1,7 +1,7 @@
 // src/migrations/014-create-vital-readings.js
 'use strict';
 
-module.exports = {
+export default {
   up: async (queryInterface, Sequelize) => {
     // Check if table already exists
     const tableExists = await queryInterface.tableExists('vital_readings');

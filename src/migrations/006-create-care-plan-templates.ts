@@ -1,7 +1,7 @@
 // src/migrations/006-create-care-plan-templates.js
 'use strict';
 
-module.exports = {
+export default {
   up: async (queryInterface, Sequelize) => {
     // Check if table already exists
     const tableExists = await queryInterface.tableExists('care_plan_templates');

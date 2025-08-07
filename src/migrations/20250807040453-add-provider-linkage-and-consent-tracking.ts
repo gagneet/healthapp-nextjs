@@ -1,7 +1,7 @@
 'use strict';
 
 /** @type {import('sequelize-cli').Migration} */
-module.exports = {
+export default {
   async up (queryInterface, Sequelize) {
     // Add provider linkage fields to patients table
     await queryInterface.addColumn('patients', 'linked_provider_id', {

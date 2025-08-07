@@ -1,7 +1,7 @@
 // Migration: Add performance indexes for scalability
 'use strict';
 
-module.exports = {
+export default {
   up: async (queryInterface, Sequelize) => {
     console.log('🚀 Adding performance indexes for healthcare application scalability (idempotent)...');
 

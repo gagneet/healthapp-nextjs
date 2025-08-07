@@ -1,6 +1,6 @@
 'use strict';
 
-module.exports = {
+export default {
   up: async (queryInterface, Sequelize) => {
     // Check if column already exists
     const tableDescription = await queryInterface.describeTable('patients');

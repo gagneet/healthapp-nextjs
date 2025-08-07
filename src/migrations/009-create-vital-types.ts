@@ -1,7 +1,7 @@
 // src/migrations/009-create-vital-types.js
 'use strict';
 
-module.exports = {
+export default {
   up: async (queryInterface, Sequelize) => {
     // Check if table already exists
     const tableExists = await queryInterface.tableExists('vital_types');

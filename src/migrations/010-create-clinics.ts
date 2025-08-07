@@ -1,7 +1,7 @@
 // src/migrations/010-create-clinics.js
 'use strict';
 
-module.exports = {
+export default {
   up: async (queryInterface, Sequelize) => {
     console.log('🏥 Creating clinics table...');
     

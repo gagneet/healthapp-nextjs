@@ -1,6 +1,6 @@
 'use strict';
 
-module.exports = {
+export default {
   up: async (queryInterface, Sequelize) => {
     // Check if slot_id column already exists
     const columnExists = await queryInterface.sequelize.query(

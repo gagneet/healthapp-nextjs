@@ -1,8 +1,8 @@
 'use strict';
 
-const bcrypt = require('bcryptjs');
+import bcrypt from 'bcryptjs';
 
-module.exports = {
+export default {
   up: async (queryInterface, Sequelize) => {
     const transaction = await queryInterface.sequelize.transaction();
     

@@ -1,7 +1,7 @@
 // src/migrations/022-create-views.js
 'use strict';
 
-module.exports = {
+export default {
   up: async (queryInterface, Sequelize) => {
     // Drop existing views first to ensure clean recreation
     await queryInterface.sequelize.query('DROP VIEW IF EXISTS v_active_care_plans CASCADE;');

@@ -1,7 +1,7 @@
 // src/migrations/015-create-symptoms.js
 'use strict';
 
-module.exports = {
+export default {
   up: async (queryInterface, Sequelize) => {
     // Check if table already exists
     const tableExists = await queryInterface.tableExists('symptoms');
