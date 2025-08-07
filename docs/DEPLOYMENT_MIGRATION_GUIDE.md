@@ -2,158 +2,179 @@
 
 ## Overview
 
-The HealthApp Docker deployment has been **standardized and improved**. This guide explains the changes and how to migrate from the old scripts.
+The HealthApp deployment has been **migrated to Docker Swarm exclusively**. This guide explains the migration from Docker Compose to Docker Swarm and the enhanced deployment capabilities.
 
 ## ✅ **What's New**
 
-### Unified Deployment System
-- **Single docker-compose.yml** for all environments
-- **Environment-specific config files** (`.env.docker.development`, `.env.docker.production`)
-- **Unified deployment script** (`./scripts/deploy.sh`)
-- **Standardized Docker containers** with multi-stage builds
+### Docker Swarm Architecture
+- **Docker Swarm orchestration** for production-grade scaling and reliability
+- **Enterprise-grade load balancing** with automatic service discovery
+- **Zero-downtime updates** with rolling deployments
+- **Multi-replica services** with automatic failover and recovery
 
-### Improved Scripts
-- **`./scripts/deploy.sh`** - New unified deployment (RECOMMENDED)
-- **`./scripts/docker-cleanup.sh`** - Enhanced cleanup with safety options
-- **Legacy scripts updated** - Still work but redirect to new system
+### Enhanced Deployment Script
+- **`./scripts/deploy-stack.sh`** - Complete Docker Swarm deployment solution
+- **Database migration support** with `--migrate` flag
+- **Database seeding support** with `--seed` flag  
+- **Auto-scaling capabilities** with `--scale-backend=N --scale-frontend=N`
+- **Intelligent health monitoring** with automatic recovery
 
 ## 🔄 **Migration Guide**
 
-### For Development
+### From Docker Compose to Docker Swarm
 
-**OLD WAY:**
+**OLD WAY (Docker Compose - DEPRECATED):**
 ```bash
+# These scripts have been removed
 ./scripts/deploy-dev.sh
-```
-
-**NEW WAY (RECOMMENDED):**
-```bash
-./scripts/deploy.sh development --build --migrate --seed
-```
-
-### For Production
-
-**OLD WAY:**
-```bash
 ./scripts/deploy-prod.sh
-./scripts/deploy-stack.sh prod 192.168.1.100
+./scripts/deploy.sh development --migrate --seed
 ```
 
-**NEW WAY (RECOMMENDED):**
+**NEW WAY (Docker Swarm - CURRENT):**
 ```bash
-# Configure production environment first
-cp .env.docker.production .env.production.local
-# Edit .env.production.local with secure values
+# Development deployment with migrations and test data
+./scripts/deploy-stack.sh dev --migrate --seed
 
-# Deploy
-./scripts/deploy.sh production --build --migrate
+# Production deployment with migrations
+./scripts/deploy-stack.sh prod 192.168.0.100 --migrate --auto-yes
+
+# Scaled deployment
+./scripts/deploy-stack.sh dev --scale-backend=3 --scale-frontend=2 --migrate
 ```
 
-### For Docker Swarm
+### Quick Migration Examples
 
-**OLD WAY:**
+**Development Environment:**
 ```bash
-./scripts/deploy-stack.sh dev 192.168.1.100 --scale-backend=2
+# Old command equivalent
+# ./scripts/deploy.sh development --build --migrate --seed
+# 
+# New Docker Swarm command:
+./scripts/deploy-stack.sh dev --migrate --seed
 ```
 
-**NEW WAY:**
+**Production Environment:**
 ```bash
-# Swarm mode with existing stack files
-docker stack deploy -c docker/docker-stack.yml healthapp
-
-# Or use the updated deploy-stack.sh (still works)
-./scripts/deploy-stack.sh dev 192.168.1.100 --scale-backend=2
+# Old command equivalent  
+# ./scripts/deploy.sh production --build --migrate
+#
+# New Docker Swarm command:
+./scripts/deploy-stack.sh prod 192.168.1.100 --migrate --auto-yes
 ```
 
-## 📁 **File Changes**
+### Advanced Deployment Scenarios
+```bash
+# High-availability production with database migrations
+./scripts/deploy-stack.sh prod 192.168.1.100 --scale-backend=5 --scale-frontend=3 --migrate --auto-yes
 
-### New Files
-```
-├── docker-compose.yml              # Unified compose file
-├── .env.docker.development         # Development environment
-├── .env.docker.production          # Production environment template
-├── scripts/deploy.sh              # New unified deployment script
-├── scripts/docker-cleanup.sh      # Enhanced cleanup script
-└── DOCKER_README.md               # Comprehensive Docker guide
-```
+# Development with custom scaling
+./scripts/deploy-stack.sh dev --scale-backend=2 --scale-frontend=1 --migrate --seed
 
-### Moved Files
-```
-docker/legacy/                     # Old Docker files moved here
-├── docker-compose.dev.yml         # Legacy development compose
-├── docker-compose.prod.yml        # Legacy production compose
-└── docker-stack-prod.yml          # Legacy production stack
+# Production deployment on specific IP with seeders (testing environment)
+./scripts/deploy-stack.sh prod 10.0.1.50 --migrate --seed --auto-yes
 ```
 
-### Updated Files
+## 📁 **Architecture Changes**
+
+### Current Docker Swarm Structure
 ```
-scripts/deploy-dev.sh              # Updated to use new system (with fallback)
-scripts/deploy-prod.sh             # Updated to use new system
-scripts/deploy-stack.sh            # Updated to use unified stack files
+├── docker/
+│   ├── Dockerfile                  # Production frontend build
+│   ├── Dockerfile.backend          # Backend Node.js application  
+│   ├── Dockerfile.dev              # Development frontend build
+│   └── docker-stack.yml           # Unified Docker Swarm stack
+├── scripts/
+│   ├── deploy-stack.sh             # ✅ CURRENT - Docker Swarm deployment
+│   ├── docker-swarm-init.sh        # Docker Swarm initialization
+│   └── docker-cleanup.sh           # System cleanup utilities
+└── env_files/                      # Environment configurations
+    ├── .env.development.example
+    └── .env.production.example
 ```
 
-## 🚀 **Recommended Migration Steps**
+### Removed Files (Clean Architecture)
+```
+❌ REMOVED:
+├── scripts/deploy.sh               # Replaced by deploy-stack.sh
+├── scripts/deploy-dev.sh           # Replaced by deploy-stack.sh dev
+├── scripts/deploy-prod.sh          # Replaced by deploy-stack.sh prod  
+├── docker/legacy/                  # All legacy Docker Compose files
+└── docker-compose.*.yml            # All Docker Compose configurations
+```
 
-### 1. Update Development Workflow
+## 🚀 **Migration Steps**
+
+### 1. Migrate Development Workflow
 
 ```bash
-# Stop old development environment
-docker-compose -f docker/legacy/docker-compose.dev.yml down
+# Stop any existing Docker Compose deployments
+docker-compose down  # If you were using docker-compose
+docker stack rm healthapp  # If you had previous swarm deployment
 
-# Use new deployment
-./scripts/deploy.sh development --build --migrate --seed
+# Initialize Docker Swarm (one-time setup)
+./scripts/docker-swarm-init.sh
+
+# Deploy with new Docker Swarm approach
+./scripts/deploy-stack.sh dev --migrate --seed
 
 # Access application
 # Frontend: http://localhost:3002
-# Backend: http://localhost:3001
+# Backend API: http://localhost:3001
 # pgAdmin: http://localhost:5050
 ```
 
-### 2. Update Production Workflow
+### 2. Migrate Production Workflow
 
 ```bash
-# Create production environment file
-cp .env.docker.production .env.production.local
+# Initialize Docker Swarm on production server (one-time setup)
+./scripts/docker-swarm-init.sh
 
-# Edit with secure values
-vim .env.production.local
+# Deploy production with migrations
+./scripts/deploy-stack.sh prod 192.168.1.100 --migrate --auto-yes
 
-# Deploy with new script
-./scripts/deploy.sh production --build --migrate
+# For high-availability production:
+./scripts/deploy-stack.sh prod 192.168.1.100 --scale-backend=5 --scale-frontend=3 --migrate --auto-yes
 ```
 
 ### 3. Clean Up Old Resources (Optional)
 
 ```bash
-# Clean up old Docker resources
-./scripts/docker-cleanup.sh --images
+# Remove any old Docker Compose resources
+docker-compose down --volumes --remove-orphans 2>/dev/null || true
 
-# Remove old containers and volumes (WARNING: Data loss!)
-./scripts/docker-cleanup.sh --full
+# Clean up unused Docker resources
+./scripts/docker-cleanup.sh
+
+# Remove old volumes (WARNING: Data loss!)
+docker volume prune -f
 ```
 
-## ⚡ **Key Benefits**
+## ⚡ **Key Benefits of Docker Swarm Migration**
 
-### Unified Configuration
-- **Single source of truth** for Docker configuration
-- **Environment-specific settings** without code duplication
-- **Consistent naming** across all deployments
+### Enterprise-Grade Scaling
+- **Horizontal scaling** from 1 to 50+ replicas per service
+- **Load balancing** automatically distributes traffic across replicas  
+- **Auto-recovery** restarts failed containers automatically
+- **Rolling updates** with zero downtime deployments
 
-### Better Development Experience
-- **Faster builds** with multi-stage Docker builds
-- **Hot reload** support maintained
-- **Better debugging** with standardized logging
+### Enhanced Database Operations
+- **Migration support** with `--migrate` flag ensures schema consistency
+- **Seeding support** with `--seed` flag for consistent test data
+- **Transaction safety** with proper error handling and rollback capabilities  
+- **Environment isolation** between dev/prod database operations
 
-### Production Ready
-- **Security hardened** containers
-- **Health checks** for all services
-- **Proper resource limits** and scaling support
-- **SSL/TLS ready** configurations
+### Production Reliability
+- **Health monitoring** with automatic service recovery
+- **Resource management** with memory and CPU limits
+- **Service discovery** eliminates manual container coordination
+- **Persistent volumes** ensure data survives container restarts
 
-### Easier Maintenance
-- **Centralized scripts** reduce complexity
-- **Better error handling** and recovery
-- **Comprehensive documentation** with troubleshooting
+### Developer Experience  
+- **Single command deployment** replaces complex multi-step processes
+- **Intelligent defaults** with override capabilities for advanced users
+- **Comprehensive logging** with structured error messages and troubleshooting
+- **Interactive prompts** with auto-yes override for CI/CD integration
 
 ## 🔧 **Compatibility**
 

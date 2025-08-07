@@ -1850,7 +1850,11 @@ All issues have been resolved and the new unified Docker deployment script is no
 - New unified deployment script
 
 ```bash
+# HISTORICAL - This has been further updated to Docker Swarm
 ./scripts/deploy.sh development --build --migrate --seed
+
+# CURRENT - Docker Swarm deployment
+./scripts/deploy-stack.sh dev --migrate --seed
 ```
 
 #### Results from deployment script run

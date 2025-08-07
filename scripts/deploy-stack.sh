@@ -21,6 +21,8 @@ AUTO_YES=false
 SCALE_BACKEND=1
 SCALE_FRONTEND=1
 BRANCH="master"
+RUN_MIGRATIONS=false
+RUN_SEEDERS=false
 
 # Docker configuration
 DOCKER_STACK_NAME="healthapp"
@@ -59,6 +61,8 @@ show_usage() {
     echo "  --scale-backend=N Scale backend service to N replicas (default: 1)"
     echo "  --scale-frontend=N Scale frontend service to N replicas (default: 1)"
     echo "  --branch=BRANCH   Git branch to deploy (default: master)"
+    echo "  --migrate         Run database migrations after deployment"
+    echo "  --seed            Run database seeders after deployment"
     echo "  --help            Show this help message"
     echo ""
     echo "EXAMPLES:"
@@ -66,6 +70,8 @@ show_usage() {
     echo "  $0 dev 192.168.0.148                     # Deploy dev with specific IP"
     echo "  $0 prod 10.0.0.100 --auto-yes            # Deploy prod with auto-confirmation"
     echo "  $0 dev --scale-backend=3 --scale-frontend=2  # Deploy with scaling"
+    echo "  $0 dev --migrate --seed                   # Deploy with migrations and seeders"
+    echo "  $0 prod 10.0.0.100 --migrate --auto-yes  # Production with migrations"
     echo ""
 }
 
@@ -111,6 +117,14 @@ parse_arguments() {
                 ;;
             --branch=*)
                 BRANCH="${1#*=}"
+                shift
+                ;;
+            --migrate)
+                RUN_MIGRATIONS=true
+                shift
+                ;;
+            --seed)
+                RUN_SEEDERS=true
                 shift
                 ;;
             --help)
@@ -672,14 +686,40 @@ initialize_database() {
         local container_id=$(docker inspect --format='{{.Status.ContainerStatus.ContainerID}}' "$task_id" 2>/dev/null | head -c12)
         
         if [ -n "$container_id" ]; then
-            print_status "Running database seeders in container: $container_id"
+            print_status "Running database operations in container: $container_id"
             
-            # Run seeders to populate test data
-            if prompt_user "Do you want to populate the database with test data (recommended for dev environment)?"; then
-                docker exec "$container_id" npm run seed 2>/dev/null || {
-                    print_warning "Seeder execution failed. Database schema will be auto-created by sequelize.sync()"
-                }
-                print_status "Database test data populated successfully"
+            # Run migrations if requested
+            if [ "$RUN_MIGRATIONS" = true ]; then
+                print_status "Running database migrations..."
+                if docker exec "$container_id" npm run migrate 2>/dev/null; then
+                    print_status "✅ Database migrations completed successfully"
+                else
+                    print_error "❌ Database migration failed!"
+                    print_warning "This may cause issues with the application. Please check the backend logs."
+                    print_status "Backend logs: docker service logs ${DOCKER_STACK_NAME}_backend -f"
+                fi
+            else
+                print_status "Skipping migrations. Database schema will be auto-created by sequelize.sync()"
+            fi
+            
+            # Run seeders if requested or prompt in interactive mode
+            if [ "$RUN_SEEDERS" = true ]; then
+                print_status "Running database seeders..."
+                if docker exec "$container_id" npm run seed 2>/dev/null; then
+                    print_status "✅ Database test data populated successfully"
+                else
+                    print_warning "⚠️ Seeder execution failed, but continuing..."
+                fi
+            elif [ "$AUTO_YES" != true ] && [ "$MODE" = "dev" ]; then
+                # Interactive prompt for dev mode only (not for production or auto-yes)
+                if prompt_user "Do you want to populate the database with test data (recommended for dev environment)?"; then
+                    docker exec "$container_id" npm run seed 2>/dev/null || {
+                        print_warning "Seeder execution failed. Database schema will be auto-created by sequelize.sync()"
+                    }
+                    print_status "Database test data populated successfully"
+                else
+                    print_status "Skipping database seeding. Database schema will be auto-created by sequelize.sync()"
+                fi
             else
                 print_status "Skipping database seeding. Database schema will be auto-created by sequelize.sync()"
             fi
@@ -706,6 +746,8 @@ show_deployment_summary() {
     echo "   Stack Name:     $DOCKER_STACK_NAME"
     echo "   Backend Scale:  $SCALE_BACKEND replicas"
     echo "   Frontend Scale: $SCALE_FRONTEND replicas"
+    echo "   Migrations:     $([ "$RUN_MIGRATIONS" = true ] && echo "✅ Executed" || echo "⏭️ Skipped")"
+    echo "   Seeders:        $([ "$RUN_SEEDERS" = true ] && echo "✅ Executed" || echo "⏭️ Skipped")"
     echo ""
     echo "📋 Access URLs:"
     echo "   Frontend:       http://$IP_ADDRESS:3002"
@@ -766,6 +808,8 @@ main() {
     echo "  IP Address: $IP_ADDRESS"
     echo "  Backend Replicas: $SCALE_BACKEND"
     echo "  Frontend Replicas: $SCALE_FRONTEND"
+    echo "  Run Migrations: $RUN_MIGRATIONS"
+    echo "  Run Seeders: $RUN_SEEDERS"
     echo ""
     
     # Confirm deployment if not auto-confirmed

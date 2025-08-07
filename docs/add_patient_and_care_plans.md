@@ -479,7 +479,7 @@ The system now provides a comprehensive healthcare management platform with intu
 - Created .env.docker.development and .env.docker.production templates
 - Eliminated hardcoded values and security issues
 - ✅ Deployment Automation:
-- Built comprehensive deploy.sh script for automated deployments
+- Built comprehensive deploy-stack.sh script for Docker Swarm automated deployments
 - Created docker-cleanup.sh for maintenance operations
 - Added proper error handling and validation
 - ✅ Conflict Resolution:
