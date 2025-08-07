@@ -16,20 +16,21 @@ import consentRoutes from './consent.js';
 
 const router = express.Router();
 
-// Mount routes
+// Mount routes - Testing individual routes
 router.use('/auth', authRoutes);
-router.use('/patients', patientRoutes);
-router.use('/doctors', doctorRoutes);
-router.use('/medications', medicationRoutes);
-router.use('/appointments', appointmentRoutes);
-router.use('/careplan', carePlanRoutes);
-router.use('/vitals', vitalsRoutes);
-router.use('/admin', adminRoutes);
-router.use('/search', searchRoutes);
-router.use('/symptoms', symptomsRoutes);
-router.use('/subscriptions', subscriptionRoutes);
-router.use('/consent', consentRoutes);
-router.use('/', secondaryDoctorRoutes);
+// router.use('/patients', patientRoutes);
+// router.use('/doctors', doctorRoutes);
+// router.use('/medications', medicationRoutes);
+// router.use('/appointments', appointmentRoutes);
+// router.use('/careplan', carePlanRoutes);
+// Temporarily disable second half to isolate issue
+// router.use('/vitals', vitalsRoutes);
+// router.use('/admin', adminRoutes);
+// router.use('/search', searchRoutes);
+// router.use('/symptoms', symptomsRoutes);
+// router.use('/subscriptions', subscriptionRoutes);
+// router.use('/consent', consentRoutes);
+// router.use('/assignments', secondaryDoctorRoutes);
 
 // API info endpoint
 router.get('/', (req, res) => {

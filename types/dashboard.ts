@@ -1,4 +1,13 @@
 // types/dashboard.ts
+
+export type ConsentStatus = 
+  | 'not_required' 
+  | 'pending' 
+  | 'requested' 
+  | 'granted' 
+  | 'denied' 
+  | 'expired'
+
 export interface User {
   id: string
   first_name: string
@@ -18,6 +27,21 @@ export interface Patient {
   organization_id?: string
   medical_record_number?: string
   patient_id?: string
+  
+  // Consent workflow fields
+  patient_type?: 'M' | 'R' // Main/Primary or Referred/Secondary
+  patient_type_label?: string
+  access_type?: 'primary' | 'secondary'
+  requires_consent?: boolean
+  consent_status?: ConsentStatus
+  access_granted?: boolean
+  can_view?: boolean
+  same_provider?: boolean
+  assignment_id?: string
+  assignment_reason?: string
+  specialty_focus?: string[]
+  primary_doctor_provider?: string
+  secondary_doctor_provider?: string
   emergency_contacts: Array<{
     name: string
     relationship: string
@@ -89,6 +113,17 @@ export interface Patient {
   assigned_doctor?: string
   assigned_hsp?: string
   department?: string
+  
+  // Legacy fields for compatibility
+  first_name?: string
+  last_name?: string
+  email?: string
+  phone?: string
+  adherence_rate?: number
+  critical_alerts?: number
+  status?: string
+  last_visit?: string
+  next_appointment?: string
 }
 
 export interface AdherenceMetrics {

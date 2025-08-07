@@ -34,20 +34,20 @@ router.get('/slots/available',
 );
 
 // GET /api/appointments/calendar/doctor/:doctorId?startDate=2023-01-01&endDate=2023-01-31
-router.get('/calendar/doctor/:doctorId?',
+router.get('/calendar/doctor/:doctorId',
   authenticate,
   authorize(USER_CATEGORIES.DOCTOR, USER_CATEGORIES.HSP, USER_CATEGORIES.ADMIN),
   appointmentController.getDoctorCalendar
 );
 
 // GET /api/appointments/calendar/patient/:patientId?startDate=2023-01-01&endDate=2023-01-31
-router.get('/calendar/patient/:patientId?',
+router.get('/calendar/patient/:patientId',
   authenticate,
   appointmentController.getPatientCalendar
 );
 
 // POST /api/appointments/availability/doctor/:doctorId
-router.post('/availability/doctor/:doctorId?',
+router.post('/availability/doctor/:doctorId',
   authenticate,
   authorize(USER_CATEGORIES.DOCTOR, USER_CATEGORIES.HSP, USER_CATEGORIES.ADMIN),
   validateRequest(schemas.doctorAvailability),

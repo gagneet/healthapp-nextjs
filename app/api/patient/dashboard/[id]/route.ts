@@ -1,281 +1,335 @@
+// app/api/patient/dashboard/[patientId]/route.ts
 import { NextRequest, NextResponse } from 'next/server'
-import jwt from 'jsonwebtoken'
+import { Op } from 'sequelize'
+import db from '@/src/models'
 
-// This would normally connect to your adherelive-be backend
-// For now, we'll create a proper structure that can be easily connected
+const {
+  Patient,
+  User,
+  ScheduledEvent,
+  AdherenceRecord,
+  VitalReading,
+  Symptom,
+  Medication,
+  Medicine,
+  Appointment
+} = db
 
-interface PatientDashboardData {
-  adherence_summary: {
-    today: {
-      medications_due: number
-      medications_taken: number
-      vitals_due: number
-      vitals_recorded: number
-      exercises_due: number
-      exercises_completed: number
-    }
-    weekly: {
-      adherence_rate: number
-      missed_medications: number
-      completed_activities: number
-    }
-    monthly: {
-      overall_score: number
-      trend: 'improving' | 'declining' | 'stable'
-    }
-  }
-  upcoming_events: Array<{
-    id: string
-    event_type: 'MEDICATION' | 'VITAL_CHECK' | 'EXERCISE' | 'DIET_LOG' | 'APPOINTMENT'
-    title: string
-    description?: string
-    scheduled_for: string
-    priority: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL'
-    status: 'SCHEDULED' | 'PENDING' | 'COMPLETED' | 'MISSED'
-    event_data: any
-  }>
-  overdue_items: Array<{
-    id: string
-    type: string
-    title: string
-    due_date: string
-    hours_overdue: number
-    priority: string
-  }>
-  recent_activities: Array<{
-    id: string
-    type: string
-    title: string
-    completed_at: string
-    result: any
-  }>
-  health_metrics: {
-    weight: { value: number; date: string; trend: 'up' | 'down' | 'stable' }
-    blood_pressure: { systolic: number; diastolic: number; date: string }
-    heart_rate: { value: number; date: string }
-    blood_sugar: { value: number; date: string }
-  }
-  alerts: Array<{
-    id: string
-    type: 'warning' | 'error' | 'info' | 'success'
-    title: string
-    message: string
-    action_required: boolean
-    created_at: string
-  }>
-}
-
-function verifyToken(request: NextRequest): { userId: string } | null {
-  try {
-    const authHeader = request.headers.get('authorization')
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return null
-    }
-
-    const token = authHeader.substring(7)
-    const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key'
-    const decoded = jwt.verify(token, JWT_SECRET) as any
-    
-    return { userId: decoded.id || decoded.userId }
-  } catch (error) {
-    console.error('Token verification failed:', error)
-    return null
-  }
-}
-
-async function calculatePatientDashboard(patientId: string): Promise<PatientDashboardData> {
-  // TODO: Replace with actual database queries to calculate real patient data
-  // These calculations should be moved to adherelive-be backend
-  
-  /*
-  // Example SQL queries for real data calculations:
-  
-  // 1. Today's medication adherence
-  const todaysMeds = await db.query(`
-    SELECT 
-      COUNT(*) as medications_due,
-      COUNT(ml.taken_at) as medications_taken
-    FROM medications m
-    LEFT JOIN medication_logs ml ON m.id = ml.medication_id 
-      AND DATE(ml.scheduled_at) = CURDATE()
-    WHERE m.patient_id = ?
-      AND m.status = 'active'
-  `, [patientId])
-
-  // 2. Weekly adherence rates  
-  const weeklyStats = await db.query(`
-    SELECT 
-      ROUND(AVG(CASE WHEN ml.taken_at IS NOT NULL THEN 100 ELSE 0 END), 1) as adherence_rate,
-      COUNT(CASE WHEN ml.taken_at IS NULL AND ml.scheduled_at < NOW() THEN 1 END) as missed_medications,
-      COUNT(CASE WHEN ml.taken_at IS NOT NULL THEN 1 END) as completed_activities
-    FROM medication_logs ml
-    JOIN medications m ON ml.medication_id = m.id
-    WHERE m.patient_id = ?
-      AND ml.scheduled_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)
-  `, [patientId])
-
-  // 3. Latest vital readings with trend analysis
-  const latestVitals = await db.query(`
-    SELECT 
-      vr1.vital_type,
-      vr1.value,
-      vr1.systolic, 
-      vr1.diastolic,
-      vr1.created_at,
-      CASE 
-        WHEN vr1.value > COALESCE(vr2.value, 0) THEN 'up'
-        WHEN vr1.value < COALESCE(vr2.value, 0) THEN 'down' 
-        ELSE 'stable'
-      END as trend
-    FROM vital_readings vr1
-    LEFT JOIN vital_readings vr2 ON vr1.patient_id = vr2.patient_id
-      AND vr1.vital_type = vr2.vital_type
-      AND vr2.created_at < vr1.created_at
-    WHERE vr1.patient_id = ?
-      AND vr1.created_at IN (
-        SELECT MAX(created_at)
-        FROM vital_readings vr3  
-        WHERE vr3.patient_id = ? AND vr3.vital_type = vr1.vital_type
-      )
-  `, [patientId, patientId])
-
-  // 4. Upcoming events from schedules
-  const upcomingEvents = await db.query(`
-    SELECT * FROM (
-      SELECT 
-        CONCAT('med_', ml.id) as id,
-        'MEDICATION' as event_type,
-        CONCAT('Take ', m.name, ' ', m.dosage) as title,
-        m.instructions as description,
-        ml.scheduled_at as scheduled_for,
-        CASE WHEN m.is_critical THEN 'HIGH' ELSE 'MEDIUM' END as priority,
-        'SCHEDULED' as status,
-        JSON_OBJECT('medication_id', m.id) as event_data
-      FROM medication_logs ml
-      JOIN medications m ON ml.medication_id = m.id
-      WHERE m.patient_id = ? 
-        AND ml.taken_at IS NULL
-        AND ml.scheduled_at > NOW()
-        AND ml.scheduled_at <= DATE_ADD(NOW(), INTERVAL 24 HOUR)
-    UNION ALL
-      SELECT
-        CONCAT('appt_', a.id) as id,
-        'APPOINTMENT' as event_type,
-        a.title,
-        a.notes as description,
-        a.appointment_date as scheduled_for,
-        'HIGH' as priority,
-        a.status,
-        JSON_OBJECT('appointment_id', a.id) as event_data  
-      FROM appointments a
-      WHERE a.patient_id = ?
-        AND a.appointment_date > NOW()
-        AND a.appointment_date <= DATE_ADD(NOW(), INTERVAL 7 DAY)
-    ) events
-    ORDER BY scheduled_for ASC
-  `, [patientId, patientId])
-  */
-
-  // Return structure with placeholders - replace with real calculations
-  return {
-    adherence_summary: {
-      today: {
-        medications_due: 0, // From today's medication schedule
-        medications_taken: 0, // From completed medication logs  
-        vitals_due: 0, // From vital requirements
-        vitals_recorded: 0, // From today's vital readings
-        exercises_due: 0, // From exercise schedule
-        exercises_completed: 0 // From exercise logs
-      },
-      weekly: {
-        adherence_rate: 0, // Weekly medication adherence percentage
-        missed_medications: 0, // Count of missed medications this week
-        completed_activities: 0 // All completed health activities
-      },
-      monthly: {
-        overall_score: 0, // Composite health score based on all metrics
-        trend: 'stable' // Compare with previous month
-      }
-    },
-    upcoming_events: [], // Upcoming medication times, appointments, etc
-    overdue_items: [], // Overdue medications, missed appointments
-    recent_activities: [], // Recently completed activities
-    health_metrics: {
-      weight: { value: 0, date: new Date().toISOString(), trend: 'stable' },
-      blood_pressure: { systolic: 0, diastolic: 0, date: new Date().toISOString() },
-      heart_rate: { value: 0, date: new Date().toISOString() },
-      blood_sugar: { value: 0, date: new Date().toISOString() }
-    },
-    alerts: [] // Active health alerts
-  }
+interface DashboardParams {
+  id: string
 }
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: DashboardParams }
 ) {
   try {
-    // Verify authentication
-    const auth = verifyToken(request)
-    if (!auth) {
-      return NextResponse.json(
-        { 
-          status: false, 
-          statusCode: 401, 
-          payload: { 
-            error: { 
-              status: 'error', 
-              message: 'Unauthorized access' 
-            } 
-          } 
-        },
-        { status: 401 }
-      )
+    const { id: patientId } = params
+
+    // Find patient by user ID or patient ID
+    const patient = await Patient.findOne({
+      where: {
+        [Op.or]: [
+          { user_id: patientId },
+          { id: patientId },
+          { patient_id: patientId }
+        ]
+      },
+      include: [
+        {
+          model: User,
+          as: 'user',
+          attributes: ['id', 'first_name', 'last_name', 'email', 'gender']
+        }
+      ]
+    })
+
+    if (!patient) {
+      return NextResponse.json({
+        status: false,
+        statusCode: 404,
+        payload: {
+          error: {
+            status: 'error',
+            message: 'Patient not found'
+          }
+        }
+      }, { status: 404 })
     }
 
-    const patientId = params.id
+    const currentDate = new Date()
+    const todayStart = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate())
+    const todayEnd = new Date(todayStart.getTime() + 24 * 60 * 60 * 1000)
+    const weekStart = new Date(currentDate.getTime() - 7 * 24 * 60 * 60 * 1000)
+    const monthStart = new Date(currentDate.getTime() - 30 * 24 * 60 * 60 * 1000)
 
-    // TODO: Replace with actual API call to adherelive-be
-    // const response = await fetch(`${process.env.ADHERELIVE_BE_URL}/api/patients/${patientId}/dashboard`, {
-    //   headers: {
-    //     'Authorization': request.headers.get('authorization')!,
-    //     'Content-Type': 'application/json'
-    //   }
-    // })
-    // 
-    // if (!response.ok) {
-    //   throw new Error('Failed to fetch data from adherelive-be')
-    // }
-    // 
-    // const data = await response.json()
-    // return NextResponse.json(data)
+    // Get today's events
+    const todayEvents = await ScheduledEvent.findAll({
+      where: {
+        patient_id: patient.id,
+        scheduled_for: {
+          [Op.between]: [todayStart, todayEnd]
+        }
+      },
+      order: [['scheduled_for', 'ASC']]
+    })
 
-    // Calculate patient dashboard data
-    const dashboardData = await calculatePatientDashboard(patientId)
+    // Get upcoming events (next 7 days)
+    const upcomingEvents = await ScheduledEvent.findAll({
+      where: {
+        patient_id: patient.id,
+        scheduled_for: {
+          [Op.between]: [currentDate, new Date(currentDate.getTime() + 7 * 24 * 60 * 60 * 1000)]
+        },
+        status: {
+          [Op.in]: ['SCHEDULED', 'PENDING']
+        }
+      },
+      order: [['scheduled_for', 'ASC']],
+      limit: 10
+    })
+
+    // Get overdue events
+    const overdueEvents = await ScheduledEvent.findAll({
+      where: {
+        patient_id: patient.id,
+        scheduled_for: {
+          [Op.lt]: currentDate
+        },
+        status: {
+          [Op.notIn]: ['COMPLETED', 'CANCELLED', 'MISSED']
+        }
+      },
+      order: [['scheduled_for', 'ASC']]
+    })
+
+    // Get recent completed activities
+    const recentActivities = await ScheduledEvent.findAll({
+      where: {
+        patient_id: patient.id,
+        status: 'COMPLETED',
+        completed_at: {
+          [Op.gte]: weekStart
+        }
+      },
+      order: [['completed_at', 'DESC']],
+      limit: 10
+    })
+
+    // Get adherence records for calculations
+    const weeklyAdherence = await AdherenceRecord.findAll({
+      where: {
+        patient_id: patient.id,
+        due_at: {
+          [Op.gte]: weekStart
+        }
+      }
+    })
+
+    const monthlyAdherence = await AdherenceRecord.findAll({
+      where: {
+        patient_id: patient.id,
+        due_at: {
+          [Op.gte]: monthStart
+        }
+      }
+    })
+
+    // Get recent vitals
+    const recentVitals = await VitalReading.findAll({
+      where: {
+        patient_id: patient.id,
+        reading_time: {
+          [Op.gte]: new Date(currentDate.getTime() - 7 * 24 * 60 * 60 * 1000)
+        }
+      },
+      order: [['reading_time', 'DESC']],
+      limit: 20
+    })
+
+    // Get recent symptoms
+    const recentSymptoms = await Symptom.findAll({
+      where: {
+        patient_id: patient.id,
+        created_at: {
+          [Op.gte]: monthStart
+        }
+      },
+      order: [['created_at', 'DESC']],
+      limit: 10
+    })
+
+    // Calculate today's summary
+    const todayMedications = todayEvents.filter(e => e.event_type === 'MEDICATION')
+    const todayVitals = todayEvents.filter(e => e.event_type === 'VITAL_CHECK')
+    const todayExercises = todayEvents.filter(e => e.event_type === 'EXERCISE')
+
+    const todaySummary = {
+      medications_due: todayMedications.length,
+      medications_taken: todayMedications.filter(e => e.status === 'COMPLETED').length,
+      vitals_due: todayVitals.length,
+      vitals_recorded: todayVitals.filter(e => e.status === 'COMPLETED').length,
+      exercises_due: todayExercises.length,
+      exercises_completed: todayExercises.filter(e => e.status === 'COMPLETED').length
+    }
+
+    // Calculate weekly adherence
+    const weeklyTotal = weeklyAdherence.length
+    const weeklyCompleted = weeklyAdherence.filter(r => r.is_completed).length
+    const weeklyMissed = weeklyAdherence.filter(r => r.is_missed).length
+    const weeklyRate = weeklyTotal > 0 ? Math.round((weeklyCompleted / weeklyTotal) * 100) : 100
+
+    // Calculate monthly score
+    const monthlyTotal = monthlyAdherence.length
+    const monthlyCompleted = monthlyAdherence.filter(r => r.is_completed).length
+    const monthlyScore = monthlyTotal > 0 ? Math.round((monthlyCompleted / monthlyTotal) * 100) : 100
+
+    // Process health metrics from recent vitals
+    const latestWeight = recentVitals
+      .filter(v => v.vital_type === 'weight')
+      .sort((a, b) => new Date(b.reading_time).getTime() - new Date(a.reading_time).getTime())[0]
+
+    const latestBP = recentVitals
+      .filter(v => v.vital_type === 'blood_pressure')
+      .sort((a, b) => new Date(b.reading_time).getTime() - new Date(a.reading_time).getTime())[0]
+
+    const latestGlucose = recentVitals
+      .filter(v => v.vital_type === 'blood_glucose')
+      .sort((a, b) => new Date(b.reading_time).getTime() - new Date(a.reading_time).getTime())[0]
+
+    // Generate alerts based on data
+    const alerts = []
+
+    // Check for overdue medications
+    const overdueMedications = overdueEvents.filter(e => e.event_type === 'MEDICATION')
+    if (overdueMedications.length > 0) {
+      alerts.push({
+        id: 'overdue_meds',
+        type: 'warning' as const,
+        title: 'Medications Overdue',
+        message: `You have ${overdueMedications.length} overdue medication${overdueMedications.length > 1 ? 's' : ''}. Please take them now or contact your healthcare provider.`,
+        action_required: true,
+        created_at: new Date().toISOString()
+      })
+    }
+
+    // Check for low adherence
+    if (weeklyRate < 80) {
+      alerts.push({
+        id: 'low_adherence',
+        type: 'error' as const,
+        title: 'Low Medication Adherence',
+        message: `Your weekly adherence rate is ${weeklyRate}%. Consistent medication taking is important for your health.`,
+        action_required: true,
+        created_at: new Date().toISOString()
+      })
+    }
+
+    // Check for high blood pressure
+    if (latestBP && (latestBP.systolic_value > 140 || latestBP.diastolic_value > 90)) {
+      alerts.push({
+        id: 'high_bp',
+        type: 'warning' as const,
+        title: 'Elevated Blood Pressure',
+        message: `Your latest reading was ${latestBP.systolic_value}/${latestBP.diastolic_value}. Consider contacting your healthcare provider.`,
+        action_required: false,
+        created_at: new Date().toISOString()
+      })
+    }
+
+    // Process overdue items with hours calculation
+    const overdueItems = overdueEvents.map(event => {
+      const hoursOverdue = Math.floor((currentDate.getTime() - new Date(event.scheduled_for).getTime()) / (1000 * 60 * 60))
+      return {
+        id: event.id,
+        type: event.event_type,
+        title: event.title,
+        due_date: event.scheduled_for,
+        hours_overdue: hoursOverdue,
+        priority: event.priority
+      }
+    })
+
+    // Format response data
+    const dashboardData = {
+      adherence_summary: {
+        today: todaySummary,
+        weekly: {
+          adherence_rate: weeklyRate,
+          missed_medications: weeklyMissed,
+          completed_activities: weeklyCompleted
+        },
+        monthly: {
+          overall_score: monthlyScore,
+          trend: monthlyScore > 85 ? 'improving' : monthlyScore < 70 ? 'declining' : 'stable'
+        }
+      },
+      upcoming_events: upcomingEvents.map(event => ({
+        id: event.id,
+        event_type: event.event_type,
+        title: event.title,
+        description: event.description,
+        scheduled_for: event.scheduled_for,
+        priority: event.priority,
+        status: event.status,
+        event_data: event.event_data
+      })),
+      overdue_items: overdueItems,
+      recent_activities: recentActivities.map(activity => ({
+        id: activity.id,
+        type: activity.event_type,
+        title: activity.title,
+        completed_at: activity.completed_at,
+        result: activity.event_data
+      })),
+      health_metrics: {
+        weight: latestWeight ? {
+          value: latestWeight.numeric_value,
+          date: latestWeight.reading_time,
+          trend: 'stable' as const // Could calculate trend from historical data
+        } : null,
+        blood_pressure: latestBP ? {
+          systolic: latestBP.systolic_value,
+          diastolic: latestBP.diastolic_value,
+          date: latestBP.reading_time
+        } : null,
+        heart_rate: null, // No heart rate data in current schema
+        blood_sugar: latestGlucose ? {
+          value: latestGlucose.numeric_value,
+          date: latestGlucose.reading_time
+        } : null
+      },
+      alerts,
+      patient_info: {
+        id: patient.id,
+        user_id: patient.user_id,
+        name: `${patient.user.first_name} ${patient.user.last_name}`,
+        gender: patient.user.gender,
+        adherence_score: patient.overall_adherence_score
+      }
+    }
 
     return NextResponse.json({
       status: true,
       statusCode: 200,
       payload: {
         data: dashboardData,
-        message: 'Patient dashboard data retrieved successfully'
+        message: 'Dashboard data retrieved successfully'
       }
     })
 
   } catch (error) {
-    console.error('Error fetching patient dashboard:', error)
-    return NextResponse.json(
-      {
-        status: false,
-        statusCode: 500,
-        payload: {
-          error: {
-            status: 'error',
-            message: 'Internal server error'
-          }
+    console.error('Error fetching patient dashboard data:', error)
+    
+    return NextResponse.json({
+      status: false,
+      statusCode: 500,
+      payload: {
+        error: {
+          status: 'error',
+          message: 'Failed to fetch dashboard data'
         }
-      },
-      { status: 500 }
-    )
+      }
+    }, { status: 500 })
   }
 }

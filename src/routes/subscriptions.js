@@ -9,7 +9,7 @@ const router = express.Router();
 
 // Service Plan Management Routes
 // POST /api/subscriptions/plans/provider/:providerId
-router.post('/plans/provider/:providerId?',
+router.post('/plans/provider/:providerId',
   authenticate,
   authorize(USER_CATEGORIES.HSP, USER_CATEGORIES.ADMIN),
   validateRequest(schemas.servicePlanCreate),
@@ -17,7 +17,7 @@ router.post('/plans/provider/:providerId?',
 );
 
 // GET /api/subscriptions/plans/provider/:providerId
-router.get('/plans/provider/:providerId?',
+router.get('/plans/provider/:providerId',
   authenticate,
   subscriptionController.getServicePlans
 );
@@ -46,13 +46,13 @@ router.post('/',
 );
 
 // GET /api/subscriptions/patient/:patientId
-router.get('/patient/:patientId?',
+router.get('/patient/:patientId',
   authenticate,
   subscriptionController.getPatientSubscriptions
 );
 
 // GET /api/subscriptions/provider/:providerId
-router.get('/provider/:providerId?',
+router.get('/provider/:providerId',
   authenticate,
   authorize(USER_CATEGORIES.HSP, USER_CATEGORIES.ADMIN),
   subscriptionController.getProviderSubscriptions
@@ -73,14 +73,14 @@ router.put('/:subscriptionId/reactivate',
 
 // Payment Method Management Routes
 // POST /api/subscriptions/payment-methods/patient/:patientId
-router.post('/payment-methods/patient/:patientId?',
+router.post('/payment-methods/patient/:patientId',
   authenticate,
   validateRequest(schemas.paymentMethodAdd),
   subscriptionController.addPaymentMethod
 );
 
 // GET /api/subscriptions/payment-methods/patient/:patientId
-router.get('/payment-methods/patient/:patientId?',
+router.get('/payment-methods/patient/:patientId',
   authenticate,
   subscriptionController.getPaymentMethods
 );
@@ -100,7 +100,7 @@ router.post('/:subscriptionId/process-payment',
 );
 
 // GET /api/subscriptions/payments/patient/:patientId
-router.get('/payments/patient/:patientId?',
+router.get('/payments/patient/:patientId',
   authenticate,
   subscriptionController.getPaymentHistory
 );

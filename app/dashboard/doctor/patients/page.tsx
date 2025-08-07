@@ -10,10 +10,15 @@ import {
   ExclamationTriangleIcon,
   PhoneIcon,
   EnvelopeIcon,
+  ShieldCheckIcon,
+  ClockIcon,
+  ExclamationCircleIcon,
+  CheckCircleIcon,
 } from '@heroicons/react/24/outline'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import OtpVerificationModal from '@/components/ui/OtpVerificationModal'
 import { apiRequest } from '@/lib/api'
-import { Patient } from '@/types/dashboard'
+import { Patient, ConsentStatus } from '@/types/dashboard'
 import { formatDate, getAdherenceColor, getInitials, getStatusColor } from '@/lib/utils'
 
 // Helper functions for displaying missing data with user-friendly messages
@@ -48,6 +53,124 @@ const displayAdherenceRate = (rate: number | null | undefined) => {
     )
   }
   return `${rate}%`
+}
+
+// Helper function to get patient type badge
+const getPatientTypeBadge = (patient: Patient) => {
+  if (patient.patient_type === 'M' || patient.access_type === 'primary') {
+    return (
+      <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-blue-100 text-blue-800">
+        <span className="font-bold mr-1">M</span> Primary
+      </span>
+    )
+  } else if (patient.patient_type === 'R' || patient.access_type === 'secondary') {
+    return (
+      <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-purple-100 text-purple-800">
+        <span className="font-bold mr-1">R</span> Referred
+      </span>
+    )
+  }
+  return null
+}
+
+// Helper function to get consent status badge
+const getConsentStatusBadge = (patient: Patient) => {
+  if (!patient.requires_consent) {
+    return (
+      <div className="flex items-center text-xs text-green-600">
+        <CheckCircleIcon className="h-4 w-4 mr-1" />
+        <span>No consent required</span>
+      </div>
+    )
+  }
+
+  switch (patient.consent_status) {
+    case 'granted':
+      return (
+        <div className="flex items-center text-xs text-green-600">
+          <ShieldCheckIcon className="h-4 w-4 mr-1" />
+          <span>Consent granted</span>
+        </div>
+      )
+    case 'requested':
+      return (
+        <div className="flex items-center text-xs text-yellow-600">
+          <ClockIcon className="h-4 w-4 mr-1" />
+          <span>OTP sent</span>
+        </div>
+      )
+    case 'pending':
+      return (
+        <div className="flex items-center text-xs text-orange-600">
+          <ExclamationCircleIcon className="h-4 w-4 mr-1" />
+          <span>Consent needed</span>
+        </div>
+      )
+    case 'expired':
+      return (
+        <div className="flex items-center text-xs text-red-600">
+          <ExclamationTriangleIcon className="h-4 w-4 mr-1" />
+          <span>Consent expired</span>
+        </div>
+      )
+    case 'denied':
+      return (
+        <div className="flex items-center text-xs text-red-600">
+          <ExclamationTriangleIcon className="h-4 w-4 mr-1" />
+          <span>Consent denied</span>
+        </div>
+      )
+    default:
+      return (
+        <div className="flex items-center text-xs text-gray-500">
+          <ClockIcon className="h-4 w-4 mr-1" />
+          <span>Status unknown</span>
+        </div>
+      )
+  }
+}
+
+// Helper function to get action buttons for consent workflow
+const getConsentActionButtons = (patient: Patient, onRequestConsent: (patient: Patient) => void) => {
+  if (!patient.requires_consent || patient.consent_status === 'granted') {
+    return (
+      <Link
+        href={`/dashboard/doctor/patients/${patient.id}`}
+        className="text-blue-600 hover:text-blue-900 inline-flex items-center"
+      >
+        <EyeIcon className="h-4 w-4 mr-1" />
+        View
+      </Link>
+    )
+  }
+
+  if (patient.consent_status === 'pending' || patient.consent_status === 'expired') {
+    return (
+      <button
+        onClick={() => onRequestConsent(patient)}
+        className="text-orange-600 hover:text-orange-900 inline-flex items-center mr-3"
+      >
+        <ShieldCheckIcon className="h-4 w-4 mr-1" />
+        Request Consent
+      </button>
+    )
+  }
+
+  if (patient.consent_status === 'requested') {
+    return (
+      <button
+        onClick={() => onRequestConsent(patient)}
+        className="text-yellow-600 hover:text-yellow-900 inline-flex items-center mr-3"
+      >
+        <ClockIcon className="h-4 w-4 mr-1" />
+        Verify OTP
+      </button>
+    )
+  }
+
+  return (
+    <span className="text-gray-400 text-sm">No access</span>
+  )
 }
 
 // Mock data removed - using real API data only
@@ -181,6 +304,8 @@ export default function PatientsPage() {
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null)
   const [isDrawerOpen, setIsDrawerOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
+  const [selectedPatientForConsent, setSelectedPatientForConsent] = useState<Patient | null>(null)
+  const [isOtpModalOpen, setIsOtpModalOpen] = useState(false)
 
   useEffect(() => {
     fetchPatients()
@@ -198,25 +323,40 @@ export default function PatientsPage() {
         const result = await apiRequest.get(endpoint)
         
         if (result.status && result.payload?.data?.patients) {
-          // Convert the patients object to an array
+          // Convert the patients object to an array with consent workflow fields
           const patientsArray = Object.values(result.payload.data.patients).map((patient: any) => ({
-            id: patient.basic_info.id,
-            user_id: patient.basic_info.user_id,
-            first_name: patient.basic_info.first_name,
-            last_name: patient.basic_info.last_name,
-            email: patient.basic_info.email,
-            phone: patient.basic_info.mobile_number,
-            date_of_birth: patient.basic_info.date_of_birth,
-            gender: patient.basic_info.gender,
-            medical_record_number: patient.basic_info.patient_id,
-            last_visit: patient.medical_info?.last_visit || null,
-            next_appointment: patient.medical_info?.next_appointment || null,
-            adherence_rate: patient.medical_info?.adherence_rate ?? 0,
-            critical_alerts: patient.medical_info?.critical_alerts ?? 0,
-            total_appointments: patient.medical_info?.total_appointments ?? 0,
-            active_care_plans: patient.medical_info?.active_care_plans ?? 0,
-            status: patient.basic_info.status || 'active',
-            created_at: patient.basic_info.created_at
+            id: patient.basic_info?.id || patient.id,
+            user_id: patient.basic_info?.user_id || patient.user_id,
+            first_name: patient.basic_info?.first_name || patient.first_name,
+            last_name: patient.basic_info?.last_name || patient.last_name,
+            email: patient.basic_info?.email || patient.email,
+            phone: patient.basic_info?.mobile_number || patient.phone,
+            date_of_birth: patient.basic_info?.date_of_birth || patient.date_of_birth,
+            gender: patient.basic_info?.gender || patient.gender,
+            medical_record_number: patient.basic_info?.patient_id || patient.medical_record_number,
+            last_visit: patient.medical_info?.last_visit || patient.last_visit || null,
+            next_appointment: patient.medical_info?.next_appointment || patient.next_appointment || null,
+            adherence_rate: patient.medical_info?.adherence_rate ?? patient.adherence_rate ?? 0,
+            critical_alerts: patient.medical_info?.critical_alerts ?? patient.critical_alerts ?? 0,
+            total_appointments: patient.medical_info?.total_appointments ?? patient.total_appointments ?? 0,
+            active_care_plans: patient.medical_info?.active_care_plans ?? patient.active_care_plans ?? 0,
+            status: patient.basic_info?.status || patient.status || 'active',
+            created_at: patient.basic_info?.created_at || patient.created_at,
+            
+            // Consent workflow fields
+            patient_type: patient.patient_type || 'M',
+            patient_type_label: patient.patient_type_label || 'Primary Patient',
+            access_type: patient.access_type || 'primary',
+            requires_consent: patient.requires_consent || false,
+            consent_status: patient.consent_status || 'not_required',
+            access_granted: patient.access_granted ?? true,
+            can_view: patient.can_view ?? true,
+            same_provider: patient.same_provider || false,
+            assignment_id: patient.assignment_id || null,
+            assignment_reason: patient.assignment_reason || null,
+            specialty_focus: patient.specialty_focus || [],
+            primary_doctor_provider: patient.primary_doctor_provider || null,
+            secondary_doctor_provider: patient.secondary_doctor_provider || null
           }))
           setPatients(patientsArray)
           return
@@ -247,6 +387,11 @@ export default function PatientsPage() {
     setIsDrawerOpen(true)
   }
 
+  const handleRequestConsent = (patient: Patient) => {
+    setSelectedPatientForConsent(patient)
+    setIsOtpModalOpen(true)
+  }
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -263,7 +408,7 @@ export default function PatientsPage() {
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Patients</h1>
             <p className="text-gray-600 mt-1">
-              Manage and monitor your patients' health journey
+              Manage and monitor your patients&apos; health journey
             </p>
           </div>
           <div className="mt-4 sm:mt-0">
@@ -351,22 +496,22 @@ export default function PatientsPage() {
                       Patient
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Type
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Contact
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Last Visit
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Next Appointment
+                      Consent Status
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Adherence
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Alerts
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Status
                     </th>
                     <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Actions
@@ -396,14 +541,17 @@ export default function PatientsPage() {
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
+                        {getPatientTypeBadge(patient)}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm text-gray-900">{patient.email}</div>
                         <div className="text-sm text-gray-500">{patient.phone}</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {formatDate(patient.last_visit)}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {formatDate(patient.next_appointment)}
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        {getConsentStatusBadge(patient)}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getAdherenceColor(patient.adherence_rate)}`}>
@@ -424,11 +572,6 @@ export default function PatientsPage() {
                           <span className="text-sm text-gray-500">None</span>
                         )}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium capitalize ${getStatusColor(patient.status)}`}>
-                          {patient.status}
-                        </span>
-                      </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <button
                           onClick={() => handlePatientClick(patient)}
@@ -436,12 +579,7 @@ export default function PatientsPage() {
                         >
                           <EyeIcon className="h-4 w-4" />
                         </button>
-                        <Link
-                          href={`/dashboard/doctor/patients/${patient.id}`}
-                          className="text-blue-600 hover:text-blue-900"
-                        >
-                          View
-                        </Link>
+                        {getConsentActionButtons(patient, handleRequestConsent)}
                       </td>
                     </tr>
                   ))}
@@ -468,6 +606,20 @@ export default function PatientsPage() {
         patient={selectedPatient}
         isOpen={isDrawerOpen}
         onClose={() => setIsDrawerOpen(false)}
+      />
+
+      {/* OTP Verification Modal */}
+      <OtpVerificationModal
+        isOpen={isOtpModalOpen}
+        onClose={() => {
+          setIsOtpModalOpen(false)
+          setSelectedPatientForConsent(null)
+        }}
+        patient={selectedPatientForConsent}
+        onSuccess={(patient) => {
+          // Refresh patient list to show updated consent status
+          fetchPatients(searchTerm)
+        }}
       />
     </>
   )
