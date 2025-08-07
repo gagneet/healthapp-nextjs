@@ -189,16 +189,7 @@ const symptoms = [
   }
 ]
 
-const vitalsChartData = [
-  { date: '2024-01-15', bp_systolic: 135, bp_diastolic: 85, glucose: 118 },
-  { date: '2024-01-16', bp_systolic: 138, bp_diastolic: 88, glucose: 122 },
-  { date: '2024-01-17', bp_systolic: 142, bp_diastolic: 90, glucose: 125 },
-  { date: '2024-01-18', bp_systolic: 140, bp_diastolic: 87, glucose: 120 },
-  { date: '2024-01-19', bp_systolic: 136, bp_diastolic: 84, glucose: 115 },
-  { date: '2024-01-20', bp_systolic: 139, bp_diastolic: 86, glucose: 128 },
-  { date: '2024-01-21', bp_systolic: 141, bp_diastolic: 89, glucose: 124 },
-  { date: '2024-01-22', bp_systolic: 140, bp_diastolic: 88, glucose: 125 },
-]
+// Vital signs chart data will be generated from real vital readings
 
 const tabs = [
   { id: 'overview', name: 'Overview' },

@@ -1,7 +1,6 @@
 // types/dashboard.ts
-export interface Patient {
+export interface User {
   id: string
-  user_id: string
   first_name: string
   last_name: string
   email: string
@@ -9,13 +8,78 @@ export interface Patient {
   date_of_birth?: string
   gender?: string
   profile_picture_url?: string
-  medical_record_number?: string
-  last_visit?: string
-  next_appointment?: string
-  adherence_rate: number
-  critical_alerts: number
-  status: 'active' | 'inactive' | 'pending'
   created_at: string
+  updated_at: string
+}
+
+export interface Patient {
+  id: string
+  user_id: string
+  organization_id?: string
+  medical_record_number?: string
+  patient_id?: string
+  emergency_contacts: Array<{
+    name: string
+    relationship: string
+    phone: string
+    email?: string
+    primary?: boolean
+  }>
+  insurance_information: Record<string, any>
+  medical_history: Array<{
+    condition: string
+    diagnosed_date?: string
+    status: 'active' | 'resolved' | 'chronic'
+    notes?: string
+  }>
+  allergies: Array<{
+    name: string
+    allergen: string
+    reaction?: string
+    severity: 'mild' | 'moderate' | 'severe'
+  }>
+  current_medications: Array<Record<string, any>>
+  height_cm?: number
+  weight_kg?: number
+  blood_type?: string
+  primary_language: string
+  risk_level: 'low' | 'medium' | 'high' | 'critical'
+  risk_factors: Array<string>
+  communication_preferences: {
+    preferred_contact_method: 'email' | 'phone' | 'sms'
+    appointment_reminders: boolean
+    medication_reminders: boolean
+    health_tips: boolean
+    research_participation: boolean
+    language: string
+    time_zone: string
+  }
+  privacy_settings: {
+    share_with_family: boolean
+    share_for_research: boolean
+    marketing_communications: boolean
+    data_sharing_consent: boolean
+    provider_directory_listing: boolean
+  }
+  primary_care_doctor_id?: string
+  primary_care_hsp_id?: string
+  care_coordinator_id?: string
+  care_coordinator_type?: 'doctor' | 'hsp'
+  overall_adherence_score?: number
+  last_adherence_calculation?: string
+  total_appointments: number
+  missed_appointments: number
+  last_visit_date?: string
+  next_appointment_date?: string
+  bmi?: number
+  is_active: boolean
+  requires_interpreter: boolean
+  has_mobility_issues: boolean
+  created_at: string
+  updated_at: string
+  deleted_at?: string
+  // Navigation/computed fields for frontend
+  user?: User
   assigned_doctor?: string
   assigned_hsp?: string
   department?: string
@@ -78,15 +142,53 @@ export interface CarePlan {
   appointments_count: number
 }
 
-export interface Medication {
+export interface Medicine {
   id: string
   name: string
-  dosage: string
-  frequency: string
-  start_date: string
+  generic_name?: string
+  brand_names: string[]
+  strength?: string
+  form: string
+  route_of_administration: string[]
+  therapeutic_class?: string
+  contraindications: string[]
+  side_effects: string[]
+  interactions: string[]
+  storage_instructions?: string
+  is_prescription: boolean
+  controlled_substance?: boolean
+  created_at: string
+  updated_at: string
+}
+
+export interface Medication {
+  id: string
+  participant_id: string
+  organizer_type?: 'doctor' | 'patient' | 'care_taker' | 'hsp' | 'provider' | 'admin'
+  organizer_id: string
+  medicine_id: string
+  description?: string
+  start_date?: string
   end_date?: string
-  is_critical: boolean
-  adherence_rate: number
+  rr_rule?: string
+  details: {
+    dosage?: string
+    frequency?: string
+    instructions?: string
+    route?: string
+    [key: string]: any
+  }
+  frequency?: string // Virtual field from details.frequency
+  created_at: string
+  updated_at: string
+  deleted_at?: string
+  // Relations for frontend
+  medicine?: Medicine
+  // Computed fields for compatibility
+  name?: string
+  dosage?: string
+  is_critical?: boolean
+  adherence_rate?: number
   last_taken?: string
   next_due?: string
 }

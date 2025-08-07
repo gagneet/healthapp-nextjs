@@ -83,6 +83,133 @@ function verifyToken(request: NextRequest): { userId: string } | null {
   }
 }
 
+async function calculatePatientDashboard(patientId: string): Promise<PatientDashboardData> {
+  // TODO: Replace with actual database queries to calculate real patient data
+  // These calculations should be moved to adherelive-be backend
+  
+  /*
+  // Example SQL queries for real data calculations:
+  
+  // 1. Today's medication adherence
+  const todaysMeds = await db.query(`
+    SELECT 
+      COUNT(*) as medications_due,
+      COUNT(ml.taken_at) as medications_taken
+    FROM medications m
+    LEFT JOIN medication_logs ml ON m.id = ml.medication_id 
+      AND DATE(ml.scheduled_at) = CURDATE()
+    WHERE m.patient_id = ?
+      AND m.status = 'active'
+  `, [patientId])
+
+  // 2. Weekly adherence rates  
+  const weeklyStats = await db.query(`
+    SELECT 
+      ROUND(AVG(CASE WHEN ml.taken_at IS NOT NULL THEN 100 ELSE 0 END), 1) as adherence_rate,
+      COUNT(CASE WHEN ml.taken_at IS NULL AND ml.scheduled_at < NOW() THEN 1 END) as missed_medications,
+      COUNT(CASE WHEN ml.taken_at IS NOT NULL THEN 1 END) as completed_activities
+    FROM medication_logs ml
+    JOIN medications m ON ml.medication_id = m.id
+    WHERE m.patient_id = ?
+      AND ml.scheduled_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)
+  `, [patientId])
+
+  // 3. Latest vital readings with trend analysis
+  const latestVitals = await db.query(`
+    SELECT 
+      vr1.vital_type,
+      vr1.value,
+      vr1.systolic, 
+      vr1.diastolic,
+      vr1.created_at,
+      CASE 
+        WHEN vr1.value > COALESCE(vr2.value, 0) THEN 'up'
+        WHEN vr1.value < COALESCE(vr2.value, 0) THEN 'down' 
+        ELSE 'stable'
+      END as trend
+    FROM vital_readings vr1
+    LEFT JOIN vital_readings vr2 ON vr1.patient_id = vr2.patient_id
+      AND vr1.vital_type = vr2.vital_type
+      AND vr2.created_at < vr1.created_at
+    WHERE vr1.patient_id = ?
+      AND vr1.created_at IN (
+        SELECT MAX(created_at)
+        FROM vital_readings vr3  
+        WHERE vr3.patient_id = ? AND vr3.vital_type = vr1.vital_type
+      )
+  `, [patientId, patientId])
+
+  // 4. Upcoming events from schedules
+  const upcomingEvents = await db.query(`
+    SELECT * FROM (
+      SELECT 
+        CONCAT('med_', ml.id) as id,
+        'MEDICATION' as event_type,
+        CONCAT('Take ', m.name, ' ', m.dosage) as title,
+        m.instructions as description,
+        ml.scheduled_at as scheduled_for,
+        CASE WHEN m.is_critical THEN 'HIGH' ELSE 'MEDIUM' END as priority,
+        'SCHEDULED' as status,
+        JSON_OBJECT('medication_id', m.id) as event_data
+      FROM medication_logs ml
+      JOIN medications m ON ml.medication_id = m.id
+      WHERE m.patient_id = ? 
+        AND ml.taken_at IS NULL
+        AND ml.scheduled_at > NOW()
+        AND ml.scheduled_at <= DATE_ADD(NOW(), INTERVAL 24 HOUR)
+    UNION ALL
+      SELECT
+        CONCAT('appt_', a.id) as id,
+        'APPOINTMENT' as event_type,
+        a.title,
+        a.notes as description,
+        a.appointment_date as scheduled_for,
+        'HIGH' as priority,
+        a.status,
+        JSON_OBJECT('appointment_id', a.id) as event_data  
+      FROM appointments a
+      WHERE a.patient_id = ?
+        AND a.appointment_date > NOW()
+        AND a.appointment_date <= DATE_ADD(NOW(), INTERVAL 7 DAY)
+    ) events
+    ORDER BY scheduled_for ASC
+  `, [patientId, patientId])
+  */
+
+  // Return structure with placeholders - replace with real calculations
+  return {
+    adherence_summary: {
+      today: {
+        medications_due: 0, // From today's medication schedule
+        medications_taken: 0, // From completed medication logs  
+        vitals_due: 0, // From vital requirements
+        vitals_recorded: 0, // From today's vital readings
+        exercises_due: 0, // From exercise schedule
+        exercises_completed: 0 // From exercise logs
+      },
+      weekly: {
+        adherence_rate: 0, // Weekly medication adherence percentage
+        missed_medications: 0, // Count of missed medications this week
+        completed_activities: 0 // All completed health activities
+      },
+      monthly: {
+        overall_score: 0, // Composite health score based on all metrics
+        trend: 'stable' // Compare with previous month
+      }
+    },
+    upcoming_events: [], // Upcoming medication times, appointments, etc
+    overdue_items: [], // Overdue medications, missed appointments
+    recent_activities: [], // Recently completed activities
+    health_metrics: {
+      weight: { value: 0, date: new Date().toISOString(), trend: 'stable' },
+      blood_pressure: { systolic: 0, diastolic: 0, date: new Date().toISOString() },
+      heart_rate: { value: 0, date: new Date().toISOString() },
+      blood_sugar: { value: 0, date: new Date().toISOString() }
+    },
+    alerts: [] // Active health alerts
+  }
+}
+
 export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
@@ -123,39 +250,8 @@ export async function GET(
     // const data = await response.json()
     // return NextResponse.json(data)
 
-    // For now, return a structured response that matches the expected format
-    // This should be replaced with actual data from adherelive-be backend
-    const dashboardData: PatientDashboardData = {
-      adherence_summary: {
-        today: {
-          medications_due: 0,
-          medications_taken: 0,
-          vitals_due: 0,
-          vitals_recorded: 0,
-          exercises_due: 0,
-          exercises_completed: 0
-        },
-        weekly: {
-          adherence_rate: 0,
-          missed_medications: 0,
-          completed_activities: 0
-        },
-        monthly: {
-          overall_score: 0,
-          trend: 'stable'
-        }
-      },
-      upcoming_events: [],
-      overdue_items: [],
-      recent_activities: [],
-      health_metrics: {
-        weight: { value: 0, date: new Date().toISOString(), trend: 'stable' },
-        blood_pressure: { systolic: 0, diastolic: 0, date: new Date().toISOString() },
-        heart_rate: { value: 0, date: new Date().toISOString() },
-        blood_sugar: { value: 0, date: new Date().toISOString() }
-      },
-      alerts: []
-    }
+    // Calculate patient dashboard data
+    const dashboardData = await calculatePatientDashboard(patientId)
 
     return NextResponse.json({
       status: true,
