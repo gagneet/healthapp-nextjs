@@ -25,13 +25,15 @@ DB_PASSWORD=your_db_password
 
 ### 1. Patient Management
 
-#### `/api/patients/pagination` 
+#### `/api/patients/pagination`
+
 - **Method**: GET
 - **Purpose**: Get paginated list of patients for doctors
 - **Maps to**: `${ADHERELIVE_BE_URL}/api/patients/pagination`
 - **Query params**: `page`, `limit`, `search`
 
 #### `/api/patients/[id]`
+
 - **Method**: GET  
 - **Purpose**: Get detailed patient information
 - **Maps to**: `${ADHERELIVE_BE_URL}/api/patients/{id}`
@@ -39,6 +41,7 @@ DB_PASSWORD=your_db_password
 ### 2. Patient Dashboard
 
 #### `/api/patient/dashboard/[id]`
+
 - **Method**: GET
 - **Purpose**: Get patient dashboard data (adherence, events, metrics)
 - **Maps to**: `${ADHERELIVE_BE_URL}/api/patients/{id}/dashboard`
@@ -46,15 +49,17 @@ DB_PASSWORD=your_db_password
 ### 3. Care Team Management with OTP
 
 #### `/api/patients/[id]/consents/request`
+
 - **Method**: POST
 - **Purpose**: Request consent to add doctor/HSP to care team
 - **Maps to**: `${ADHERELIVE_BE_URL}/api/patients/{id}/consents/request`
-- **Features**: 
+- **Features**:
   - Sends OTP to patient phone
   - Email notification to doctor
   - Permission-based access control
 
 #### `/api/patients/consents/verify`
+
 - **Method**: POST
 - **Purpose**: Verify OTP and grant care team access
 - **Maps to**: `${ADHERELIVE_BE_URL}/api/patients/consents/verify`
@@ -62,11 +67,13 @@ DB_PASSWORD=your_db_password
 ### 4. Health Data Management
 
 #### `/api/symptoms`
+
 - **Method**: POST, GET
 - **Purpose**: Create and retrieve patient symptoms
 - **Maps to**: `${ADHERELIVE_BE_URL}/api/symptoms/`
 
 #### `/api/medications`  
+
 - **Method**: POST, GET
 - **Purpose**: Manage patient medications
 - **Maps to**: `${ADHERELIVE_BE_URL}/api/medications/`
@@ -74,34 +81,40 @@ DB_PASSWORD=your_db_password
 ## Updated Components
 
 ### 1. Patient List (`/app/dashboard/doctor/patients/page.tsx`)
+
 - ✅ Removed all mock data
 - ✅ Uses real API calls with proper error handling
 - ✅ Authentication with JWT tokens
 - ✅ Search and pagination support
 
 ### 2. Patient Details (`/app/dashboard/doctor/patients/[id]/page.tsx`)
+
 - ✅ Real API calls for patient data
 - ✅ Removed mock symptoms, medications, appointments
 - ✅ Uses state variables populated from API
 - ✅ Proper loading and error states
 
 ### 3. Patient Dashboard (`/app/dashboard/patient/page.tsx`)
+
 - ✅ Removed `generateMockData()` function
 - ✅ Real API calls with authentication
 - ✅ Proper error handling when data unavailable
 - ✅ Dynamic imports for complex components
 
 ### 4. Doctor Dashboard (`/app/dashboard/doctor/page.tsx`)
+
 - ✅ Already using real API calls
 - ✅ No mock data fallbacks
 - ✅ Comprehensive error handling
 
 ### 5. Symptom Reporter (`/components/patient/symptom-reporter.tsx`)
+
 - ✅ Now submits to `/api/symptoms` endpoint
 - ✅ Proper error handling and user feedback
 - ✅ JWT authentication
 
 ### 6. Care Team Management (`/components/care-team/AddCareTeamModal.tsx`)
+
 - ✅ Complete OTP workflow implementation
 - ✅ Doctor search functionality
 - ✅ Permission-based access control
@@ -169,18 +182,21 @@ function verifyToken(request: NextRequest): { userId: string } | null {
 ## Features Implemented
 
 ### ✅ Real Data Flow
+
 - No more mock data anywhere in the application
 - All API calls use proper authentication
 - Error handling with user-friendly messages
 - Loading states and empty data handling
 
 ### ✅ Care Team Management
+
 - Complete OTP consent workflow
 - Doctor/HSP search functionality  
 - Permission-based access control
 - SMS/Email notification system ready
 
 ### ✅ Health Data Management
+
 - Symptom reporting with body diagram integration
 - Medication management
 - Vital signs tracking
@@ -188,6 +204,7 @@ function verifyToken(request: NextRequest): { userId: string } | null {
 - Care plan management
 
 ### ✅ Security & Authentication
+
 - JWT token verification on all endpoints
 - Role-based access control
 - Secure consent management
@@ -203,7 +220,7 @@ function verifyToken(request: NextRequest): { userId: string } | null {
 
 ## File Structure
 
-```
+```text
 app/api/
 ├── patients/
 │   ├── [id]/

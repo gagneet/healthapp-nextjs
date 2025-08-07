@@ -3,9 +3,11 @@
 ## 🛡️ **MANDATORY NULL SAFETY RULES**
 
 ### Rule 1: Always Use Null Safety Checks
+
 **REQUIRED**: Every property access that could be `null` or `undefined` MUST use null safety.
 
 ❌ **NEVER DO:**
+
 ```typescript
 const rating = profile.average_rating.toFixed(1)  // CRASHES if null
 const name = doctor.basic_info.first_name         // CRASHES if basic_info is null
@@ -13,6 +15,7 @@ const count = data.adherence_summary.today.medications_taken  // CRASHES if nest
 ```
 
 ✅ **ALWAYS DO:**
+
 ```typescript
 const rating = profile.average_rating ? profile.average_rating.toFixed(1) : '0.0'
 const name = doctor.basic_info?.first_name || 'Unknown'
@@ -20,15 +23,18 @@ const count = data?.adherence_summary?.today?.medications_taken ?? 0
 ```
 
 ### Rule 2: Provide User-Friendly Messages for Missing Data
+
 **REQUIRED**: When data is missing, show helpful messages to users, not just empty fields.
 
 ❌ **NEVER DO:**
+
 ```tsx
 <span>{patient.last_visit}</span>  // Shows nothing if null
 <span>{formatDate(date)}</span>    // Shows "N/A" - not helpful
 ```
 
 ✅ **ALWAYS DO:**
+
 ```tsx
 <span>
   {patient.last_visit ? formatDate(patient.last_visit) : (
@@ -44,9 +50,11 @@ const count = data?.adherence_summary?.today?.medications_taken ?? 0
 ```
 
 ### Rule 3: Use Early Returns/Guards for Component Protection
+
 **REQUIRED**: Protect entire components from null data using guard clauses.
 
 ✅ **ALWAYS DO:**
+
 ```typescript
 const ComponentPage = () => {
   const [data, setData] = useState(null)
@@ -77,9 +85,11 @@ const ComponentPage = () => {
 ## 🔄 **FIELD CONSISTENCY RULES**
 
 ### Rule 4: Frontend-Backend Field Mapping Must Match
+
 **REQUIRED**: Field names between frontend interfaces and backend responses MUST be consistent.
 
 ❌ **PROBLEMATIC PATTERN:**
+
 ```typescript
 // Frontend Interface
 interface DoctorProfile {
@@ -95,6 +105,7 @@ interface DoctorProfile {
 ```
 
 ✅ **CORRECT PATTERN:**
+
 ```typescript
 // Frontend Interface - Match Backend Exactly
 interface DoctorProfile {
@@ -110,9 +121,11 @@ interface DoctorProfile {
 ```
 
 ### Rule 5: Database-Backend-Frontend Alignment
+
 **REQUIRED**: Field names must be consistent across all three layers.
 
 ✅ **ALIGNMENT EXAMPLE:**
+
 ```sql
 -- Database Schema
 CREATE TABLE doctors (
@@ -138,15 +151,18 @@ interface DoctorProfile {
 ```
 
 ### Rule 6: Type Safety in Comparisons
+
 **REQUIRED**: Ensure type-safe comparisons, especially with IDs.
 
 ❌ **NEVER DO:**
+
 ```typescript
 const selectedId: string = '123'
 const patient = patients.find(p => p.id === selectedId)  // ❌ Type mismatch if id is number
 ```
 
 ✅ **ALWAYS DO:**
+
 ```typescript
 const selectedId: string = '123'
 const patient = patients.find(p => String(p.id) === selectedId)  // ✅ Type-safe
@@ -158,6 +174,7 @@ const patient = patients.find(p => String(p.id) === selectedId)  // ✅ Type-saf
 ## 📝 **CODE CREATION RULES**
 
 ### Rule 7: New Component Checklist
+
 **REQUIRED**: Every new component/page MUST include:
 
 1. **Null Safety Guards**:
@@ -176,9 +193,11 @@ const patient = patients.find(p => String(p.id) === selectedId)  // ✅ Type-saf
    - Safe array access with fallbacks
 
 ### Rule 8: API Integration Requirements
+
 **REQUIRED**: When creating new API integrations:
 
 1. **Backend Response Structure**:
+
    ```javascript
    // Always include null safety in backend
    const responseData = {
@@ -188,6 +207,7 @@ const patient = patients.find(p => String(p.id) === selectedId)  // ✅ Type-saf
    ```
 
 2. **Frontend API Consumption**:
+
    ```typescript
    // Always check response structure
    const response = await apiRequest.get('/endpoint')
@@ -200,6 +220,7 @@ const patient = patients.find(p => String(p.id) === selectedId)  // ✅ Type-saf
    ```
 
 ### Rule 9: Error Boundaries & Logging
+
 **REQUIRED**: For debugging purposes:
 
 ```typescript
@@ -221,6 +242,7 @@ const ComponentWithErrorBoundary = () => (
 ## 🎯 **SPECIFIC HEALTHCARE APP PATTERNS**
 
 ### Rule 10: Medical Data Safety
+
 **REQUIRED**: Medical data has special requirements:
 
 ```typescript
@@ -242,6 +264,7 @@ const displayMedicalValue = (value: any, medicalContext: string) => {
 ```
 
 ### Rule 11: Healthcare Entity Relationships
+
 **REQUIRED**: Always verify relationships exist before accessing:
 
 ```typescript
@@ -264,7 +287,8 @@ const medications = patient.carePlans
 
 ## ✅ **IMPLEMENTATION CHECKLIST**
 
-### Before Creating Any New Component:
+### Before Creating Any New Component
+
 - [ ] Added TypeScript strict null checks: `strictNullChecks: true`
 - [ ] Created interfaces that match backend response exactly
 - [ ] Added loading and error states
@@ -274,14 +298,16 @@ const medications = patient.carePlans
 - [ ] Added type-safe comparisons for IDs and other mixed types
 - [ ] Tested with null/undefined data scenarios
 
-### Before API Integration:
+### Before API Integration
+
 - [ ] Backend provides all fields expected by frontend
 - [ ] Backend includes null safety for all data access
 - [ ] Frontend handles missing/null response data gracefully
 - [ ] Field names are consistent across all layers
 - [ ] Added appropriate user feedback for API failures
 
-### Code Review Checklist:
+### Code Review Checklist
+
 - [ ] No direct property access without null checks
 - [ ] All missing data shows user-friendly messages
 - [ ] Type-safe comparisons throughout
