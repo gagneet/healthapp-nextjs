@@ -414,7 +414,7 @@ export default (sequelize) => {
     this.outcome_measures[measure].push({
       value,
       date: new Date(),
-      id: require('crypto').randomUUID()
+      id: crypto.randomUUID()
     });
     
     return this.save();
