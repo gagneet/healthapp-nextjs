@@ -9,19 +9,19 @@ class Helpers {
     return `${prefix}${timestamp}${random}`;
   }
 
-  static calculateAge(birthDate) {
+  static calculateAge(birthDate: string | Date): number {
     return moment().diff(moment(birthDate), 'years');
   }
 
-  static formatDate(date, format = 'YYYY-MM-DD') {
+  static formatDate(date: string | Date, format: string = 'YYYY-MM-DD'): string {
     return moment(date).format(format);
   }
 
-  static generateHash(data) {
+  static generateHash(data: string): string {
     return crypto.createHash('md5').update(data).digest('hex');
   }
 
-  static maskSensitiveData(data, fields = ['password', 'ssn', 'card_number']) {
+  static maskSensitiveData(data: Record<string, any>, fields: string[] = ['password', 'ssn', 'card_number']): Record<string, any> {
     const masked = { ...data };
     fields.forEach(field => {
       if (masked[field]) {
@@ -40,7 +40,7 @@ class Helpers {
     return otp;
   }
 
-  static isValidJSON(str) {
+  static isValidJSON(str: string): boolean {
     try {
       JSON.parse(str);
       return true;
@@ -49,24 +49,24 @@ class Helpers {
     }
   }
 
-  static deepClone(obj) {
+  static deepClone<T>(obj: T): T {
     return JSON.parse(JSON.stringify(obj));
   }
 
-  static sleep(ms) {
+  static sleep(ms: number): Promise<void> {
     return new Promise(resolve => setTimeout(resolve, ms));
   }
 
-  static chunk(array, size) {
-    const chunks = [];
+  static chunk<T>(array: T[], size: number): T[][] {
+    const chunks: T[][] = [];
     for (let i = 0; i < array.length; i += size) {
       chunks.push(array.slice(i, i + size));
     }
     return chunks;
   }
 
-  static generateScheduleTimes(repeatType, startDate, endDate) {
-    const times = [];
+  static generateScheduleTimes(repeatType: string, startDate: string | Date, endDate: string | Date): Date[] {
+    const times: Date[] = [];
     const start = moment(startDate);
     const end = moment(endDate);
 

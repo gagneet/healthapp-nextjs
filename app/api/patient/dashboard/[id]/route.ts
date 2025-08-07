@@ -160,48 +160,48 @@ export async function GET(
     })
 
     // Calculate today's summary
-    const todayMedications = todayEvents.filter(e => e.event_type === 'MEDICATION')
-    const todayVitals = todayEvents.filter(e => e.event_type === 'VITAL_CHECK')
-    const todayExercises = todayEvents.filter(e => e.event_type === 'EXERCISE')
+    const todayMedications = todayEvents.filter((e: any) => e.event_type === 'MEDICATION')
+    const todayVitals = todayEvents.filter((e: any) => e.event_type === 'VITAL_CHECK')
+    const todayExercises = todayEvents.filter((e: any) => e.event_type === 'EXERCISE')
 
     const todaySummary = {
       medications_due: todayMedications.length,
-      medications_taken: todayMedications.filter(e => e.status === 'COMPLETED').length,
+      medications_taken: todayMedications.filter((e: any) => e.status === 'COMPLETED').length,
       vitals_due: todayVitals.length,
-      vitals_recorded: todayVitals.filter(e => e.status === 'COMPLETED').length,
+      vitals_recorded: todayVitals.filter((e: any) => e.status === 'COMPLETED').length,
       exercises_due: todayExercises.length,
-      exercises_completed: todayExercises.filter(e => e.status === 'COMPLETED').length
+      exercises_completed: todayExercises.filter((e: any) => e.status === 'COMPLETED').length
     }
 
     // Calculate weekly adherence
     const weeklyTotal = weeklyAdherence.length
-    const weeklyCompleted = weeklyAdherence.filter(r => r.is_completed).length
-    const weeklyMissed = weeklyAdherence.filter(r => r.is_missed).length
+    const weeklyCompleted = weeklyAdherence.filter((r: any) => r.is_completed).length
+    const weeklyMissed = weeklyAdherence.filter((r: any) => r.is_missed).length
     const weeklyRate = weeklyTotal > 0 ? Math.round((weeklyCompleted / weeklyTotal) * 100) : 100
 
     // Calculate monthly score
     const monthlyTotal = monthlyAdherence.length
-    const monthlyCompleted = monthlyAdherence.filter(r => r.is_completed).length
+    const monthlyCompleted = monthlyAdherence.filter((r: any) => r.is_completed).length
     const monthlyScore = monthlyTotal > 0 ? Math.round((monthlyCompleted / monthlyTotal) * 100) : 100
 
     // Process health metrics from recent vitals
     const latestWeight = recentVitals
-      .filter(v => v.vital_type === 'weight')
-      .sort((a, b) => new Date(b.reading_time).getTime() - new Date(a.reading_time).getTime())[0]
+      .filter((v: any) => v.vital_type === 'weight')
+      .sort((a: any, b: any) => new Date(b.reading_time).getTime() - new Date(a.reading_time).getTime())[0]
 
     const latestBP = recentVitals
-      .filter(v => v.vital_type === 'blood_pressure')
-      .sort((a, b) => new Date(b.reading_time).getTime() - new Date(a.reading_time).getTime())[0]
+      .filter((v: any) => v.vital_type === 'blood_pressure')
+      .sort((a: any, b: any) => new Date(b.reading_time).getTime() - new Date(a.reading_time).getTime())[0]
 
     const latestGlucose = recentVitals
-      .filter(v => v.vital_type === 'blood_glucose')
-      .sort((a, b) => new Date(b.reading_time).getTime() - new Date(a.reading_time).getTime())[0]
+      .filter((v: any) => v.vital_type === 'blood_glucose')
+      .sort((a: any, b: any) => new Date(b.reading_time).getTime() - new Date(a.reading_time).getTime())[0]
 
     // Generate alerts based on data
-    const alerts = []
+    const alerts: any[] = []
 
     // Check for overdue medications
-    const overdueMedications = overdueEvents.filter(e => e.event_type === 'MEDICATION')
+    const overdueMedications = overdueEvents.filter((e: any) => e.event_type === 'MEDICATION')
     if (overdueMedications.length > 0) {
       alerts.push({
         id: 'overdue_meds',
@@ -238,7 +238,7 @@ export async function GET(
     }
 
     // Process overdue items with hours calculation
-    const overdueItems = overdueEvents.map(event => {
+    const overdueItems = overdueEvents.map((event: any) => {
       const hoursOverdue = Math.floor((currentDate.getTime() - new Date(event.scheduled_for).getTime()) / (1000 * 60 * 60))
       return {
         id: event.id,
@@ -264,7 +264,7 @@ export async function GET(
           trend: monthlyScore > 85 ? 'improving' : monthlyScore < 70 ? 'declining' : 'stable'
         }
       },
-      upcoming_events: upcomingEvents.map(event => ({
+      upcoming_events: upcomingEvents.map((event: any) => ({
         id: event.id,
         event_type: event.event_type,
         title: event.title,
@@ -275,7 +275,7 @@ export async function GET(
         event_data: event.event_data
       })),
       overdue_items: overdueItems,
-      recent_activities: recentActivities.map(activity => ({
+      recent_activities: recentActivities.map((activity: any) => ({
         id: activity.id,
         type: activity.event_type,
         title: activity.title,

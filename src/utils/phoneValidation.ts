@@ -1,7 +1,15 @@
 // src/utils/phoneValidation.js - Phone validation with country code support
 
 // Country codes with phone number digit requirements
-export const COUNTRY_CODES = {
+interface CountryCode {
+  code: string;
+  name: string;
+  digits: number;
+  format: string;
+  placeholder: string;
+}
+
+export const COUNTRY_CODES: Record<string, CountryCode> = {
   US: {
     code: '+1',
     name: 'United States',
@@ -157,7 +165,7 @@ export const COUNTRY_CODES = {
  * @param {string} countryCode - The country code (e.g., 'US', 'IN')
  * @returns {Object} Validation result
  */
-export function validatePhoneNumber(phoneNumber, countryCode = 'US') {
+export function validatePhoneNumber(phoneNumber: string, countryCode: string = 'US') {
   try {
     if (!phoneNumber || !countryCode) {
       return {
@@ -271,7 +279,7 @@ export function validatePhoneNumber(phoneNumber, countryCode = 'US') {
  * @param {string} countryCode - Country code
  * @returns {string} Formatted phone number
  */
-export function formatPhoneInput(value, countryCode = 'US') {
+export function formatPhoneInput(value: string, countryCode: string = 'US') {
   const country = COUNTRY_CODES[countryCode];
   if (!country || !value) return value;
 
@@ -310,7 +318,7 @@ export function formatPhoneInput(value, countryCode = 'US') {
  * @param {string} countryCode - Country code
  * @returns {Object|null} Country information
  */
-export function getCountryInfo(countryCode) {
+export function getCountryInfo(countryCode: string) {
   return COUNTRY_CODES[countryCode] || null;
 }
 
@@ -318,11 +326,10 @@ export function getCountryInfo(countryCode) {
  * Get all countries for dropdown
  * @returns {Array} Array of country objects
  */
-export function getAllCountries() {
-  return Object.keys(COUNTRY_CODES).map(code => ({
-    code,
-    ...COUNTRY_CODES[code]
-  })).sort((a, b) => a.name.localeCompare(b.name));
+export function getAllCountries(): CountryCode[] {
+  return Object.keys(COUNTRY_CODES).map(countryKey => 
+    COUNTRY_CODES[countryKey]
+  ).sort((a, b) => a.name.localeCompare(b.name));
 }
 
 /**
@@ -331,7 +338,7 @@ export function getAllCountries() {
  * @param {string} countryCode - Country code
  * @returns {Array} Array of possible phone number formats for search
  */
-export function getPhoneSearchFormats(phoneNumber, countryCode = 'US') {
+export function getPhoneSearchFormats(phoneNumber: string, countryCode: string = 'US') {
   const validation = validatePhoneNumber(phoneNumber, countryCode);
   
   if (!validation.isValid) {
@@ -352,7 +359,7 @@ export function getPhoneSearchFormats(phoneNumber, countryCode = 'US') {
  * @param {string} phoneNumber - Full phone number with country code
  * @returns {string|null} Country code or null
  */
-export function extractCountryCode(phoneNumber) {
+export function extractCountryCode(phoneNumber: string) {
   try {
     if (!phoneNumber) return null;
     
@@ -378,7 +385,7 @@ export function extractCountryCode(phoneNumber) {
  * @param {string} countryCode - Country code (e.g., 'US', 'IN')
  * @returns {string} Random phone number
  */
-export function generateRandomPhoneNumber(countryCode = 'US') {
+export function generateRandomPhoneNumber(countryCode: string = 'US') {
   const country = COUNTRY_CODES[countryCode];
   if (!country) {
     throw new Error('Invalid country code');
@@ -441,7 +448,7 @@ export function generateRandomPhoneNumber(countryCode = 'US') {
  * @param {number} maxAttempts - Maximum attempts to generate unique number
  * @returns {Promise<string>} Unique random phone number
  */
-export async function generateUniquePhoneNumber(countryCode = 'US', checkExistence, maxAttempts = 10) {
+export async function generateUniquePhoneNumber(countryCode: string = 'US', checkExistence: (phone: string, country: string) => Promise<boolean>, maxAttempts: number = 10) {
   let attempts = 0;
   
   while (attempts < maxAttempts) {
@@ -467,8 +474,8 @@ export async function generateUniquePhoneNumber(countryCode = 'US', checkExisten
  * @param {string} countryCode - Country code
  * @returns {Array} Array of test phone numbers
  */
-export function getTestPhoneNumbers(countryCode = 'US') {
-  const testNumbers = {
+export function getTestPhoneNumbers(countryCode: string = 'US') {
+  const testNumbers: Record<string, string[]> = {
     US: ['+1 (555) 123-4567', '+1 (555) 987-6543', '+1 (555) 111-2222'],
     IN: ['+91 98765 43210', '+91 87654 32109', '+91 76543 21098'],
     GB: ['+44 7911 123456', '+44 7922 234567', '+44 7933 345678'],

@@ -73,7 +73,7 @@ export function generatePasswordResetToken() {
  * @param {string} patientId - Patient identifier
  * @returns {string} Care plan ID
  */
-export function generateCarePlanId(patientId) {
+export function generateCarePlanId(patientId: string): string {
   const timestamp = Date.now().toString(36);
   const random = crypto.randomBytes(2).toString('hex').toUpperCase();
   return `CP-${patientId}-${timestamp}-${random}`;

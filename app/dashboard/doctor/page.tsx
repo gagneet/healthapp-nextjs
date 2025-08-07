@@ -348,10 +348,10 @@ export default function DoctorDashboard() {
                   className="flex items-center p-3 hover:bg-gray-50 rounded-lg transition-colors"
                 >
                   <div className="flex-shrink-0">
-                    {patient.profile_picture_url ? (
+                    {(patient as any).profile_picture_url ? (
                       <img
                         className="h-10 w-10 rounded-full"
-                        src={patient.profile_picture_url}
+                        src={(patient as any).profile_picture_url}
                         alt={`${patient.first_name} ${patient.last_name}`}
                       />
                     ) : (
@@ -368,13 +368,13 @@ export default function DoctorDashboard() {
                         {patient.first_name} {patient.last_name}
                       </p>
                       <div className="flex items-center space-x-2">
-                        {patient.critical_alerts > 0 && (
+                        {((patient as any).critical_alerts || 0) > 0 && (
                           <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                            {patient.critical_alerts} alert{patient.critical_alerts > 1 ? 's' : ''}
+                            {(patient as any).critical_alerts} alert{((patient as any).critical_alerts || 0) > 1 ? 's' : ''}
                           </span>
                         )}
-                        <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getAdherenceColor(patient.adherence_rate)}`}>
-                          {patient.adherence_rate}%
+                        <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getAdherenceColor((patient as any).adherence_rate || 0)}`}>
+                          {(patient as any).adherence_rate || 0}%
                         </span>
                       </div>
                     </div>

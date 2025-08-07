@@ -4,7 +4,7 @@
 /**
  * Gender value mappings
  */
-export const GENDER_MAPPINGS = {
+export const GENDER_MAPPINGS: Record<string, string> = {
   // Frontend to Backend
   'm': 'MALE',
   'f': 'FEMALE',
@@ -21,7 +21,7 @@ export const GENDER_MAPPINGS = {
 /**
  * Event status mappings (database uses lowercase, enums use uppercase)
  */
-export const EVENT_STATUS_MAPPINGS = {
+export const EVENT_STATUS_MAPPINGS: Record<string, string> = {
   // Frontend/Enum to Database
   'SCHEDULED': 'scheduled',
   'PENDING': 'pending', 
@@ -44,7 +44,7 @@ export const EVENT_STATUS_MAPPINGS = {
 /**
  * Event type mappings
  */
-export const EVENT_TYPE_MAPPINGS = {
+export const EVENT_TYPE_MAPPINGS: Record<string, string> = {
   // Frontend/Enum to Database
   'MEDICATION': 'medication-reminder',
   'APPOINTMENT': 'appointment',
@@ -66,7 +66,7 @@ export const EVENT_TYPE_MAPPINGS = {
 /**
  * Field name mappings between frontend and backend
  */
-export const FIELD_MAPPINGS = {
+export const FIELD_MAPPINGS: Record<string, string> = {
   // Frontend to Backend User fields
   'dob': 'date_of_birth',
   'mobile_number': 'phone',
@@ -88,7 +88,7 @@ export const FIELD_MAPPINGS = {
 /**
  * Role/Category mappings
  */
-export const ROLE_MAPPINGS = {
+export const ROLE_MAPPINGS: Record<string, string> = {
   // Frontend to Database
   'patient': 'PATIENT',
   'doctor': 'DOCTOR', 
@@ -108,7 +108,7 @@ export const ROLE_MAPPINGS = {
 /**
  * Account status mappings
  */
-export const ACCOUNT_STATUS_MAPPINGS = {
+export const ACCOUNT_STATUS_MAPPINGS: Record<string, string> = {
   // Various frontend formats to database
   'pending_verification': 'PENDING_VERIFICATION',
   'active': 'ACTIVE',
@@ -146,21 +146,21 @@ export const mapEventType = (value, toDatabase = true) => {
     : EVENT_TYPE_MAPPINGS[value.toLowerCase()] || value.toUpperCase();
 };
 
-export const mapFieldName = (fieldName, toBackend = true) => {
+export const mapFieldName = (fieldName: string, toBackend: boolean = true): string => {
   if (!fieldName) return fieldName;
   return toBackend 
     ? FIELD_MAPPINGS[fieldName] || fieldName
     : Object.keys(FIELD_MAPPINGS).find(key => FIELD_MAPPINGS[key] === fieldName) || fieldName;
 };
 
-export const mapRole = (value, toDatabase = true) => {
+export const mapRole = (value: string, toDatabase: boolean = true): string | null => {
   if (!value) return null;
   return toDatabase
     ? ROLE_MAPPINGS[value.toLowerCase()] || value.toUpperCase()  
     : ROLE_MAPPINGS[value.toUpperCase()] || value.toLowerCase();
 };
 
-export const mapAccountStatus = (value, toDatabase = true) => {
+export const mapAccountStatus = (value: string, toDatabase: boolean = true): string | null => {
   if (!value) return null;
   return toDatabase
     ? ACCOUNT_STATUS_MAPPINGS[value.toLowerCase()] || value.toUpperCase()
@@ -170,8 +170,8 @@ export const mapAccountStatus = (value, toDatabase = true) => {
 /**
  * Transform object keys and values using mappings
  */
-export const transformRequestData = (data) => {
-  const transformed = {};
+export const transformRequestData = (data: Record<string, any>): Record<string, any> => {
+  const transformed: Record<string, any> = {};
   
   Object.keys(data).forEach(key => {
     const mappedKey = mapFieldName(key, true);
@@ -200,8 +200,8 @@ export const transformRequestData = (data) => {
   return transformed;
 };
 
-export const transformResponseData = (data) => {
-  const transformed = {};
+export const transformResponseData = (data: Record<string, any>): Record<string, any> => {
+  const transformed: Record<string, any> = {};
   
   Object.keys(data).forEach(key => {
     const mappedKey = mapFieldName(key, false);

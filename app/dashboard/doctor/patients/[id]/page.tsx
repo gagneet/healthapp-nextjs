@@ -269,7 +269,7 @@ export default function PatientDetailsPage() {
           last_name: patientData.basic_info.last_name || '',
           email: patientData.basic_info.email || '',
           phone: patientData.basic_info.mobile_number || '',
-          date_of_birth: '', // This might not be in the response
+          // date_of_birth not available in Patient type
           gender: patientData.basic_info.gender || '',
           medical_record_number: patientData.basic_info.medical_record_number || '',
           last_visit: '', // This might need to be calculated

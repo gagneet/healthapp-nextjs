@@ -189,12 +189,23 @@ export default function ClinicsPage() {
     setEditingClinic(clinic)
     setFormData({
       name: clinic.name,
-      address: clinic.address,
+      address: {
+        ...clinic.address,
+        formatted_address: clinic.address.formatted_address || ''
+      },
       phone: clinic.phone || '',
       email: clinic.email || '',
       website: clinic.website || '',
       consultation_fee: clinic.consultation_fee?.toString() || '',
-      operating_hours: clinic.operating_hours || formData.operating_hours,
+      operating_hours: clinic.operating_hours || {
+        monday: { open: '09:00', close: '17:00', closed: false },
+        tuesday: { open: '09:00', close: '17:00', closed: false },
+        wednesday: { open: '09:00', close: '17:00', closed: false },
+        thursday: { open: '09:00', close: '17:00', closed: false },
+        friday: { open: '09:00', close: '17:00', closed: false },
+        saturday: { open: '10:00', close: '14:00', closed: false },
+        sunday: { open: '10:00', close: '14:00', closed: true }
+      },
       services_offered: clinic.services_offered || [],
       is_primary: clinic.is_primary
     })
@@ -394,7 +405,13 @@ export default function ClinicsPage() {
               {/* Address with Geo-location */}
               <AddressInputWithGeocoding
                 address={formData.address}
-                onAddressChange={(address) => setFormData({ ...formData, address })}
+                onAddressChange={(address) => setFormData({ 
+                  ...formData, 
+                  address: {
+                    ...address,
+                    formatted_address: address.formatted_address || ''
+                  }
+                })}
                 onGeocodeSuccess={(data) => {
                   console.log('Geocoding success:', data)
                 }}
