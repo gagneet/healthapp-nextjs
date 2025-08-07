@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import {
@@ -25,7 +25,41 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import BodyDiagramEnhanced from '@/components/ui/body-diagram-enhanced'
 import SymptomsTimeline from '@/components/ui/symptoms-timeline'
 
-// Mock data - replace with actual API calls
+// API Response types for patient data
+interface PatientAPIResponse {
+  patients: {
+    [key: string]: {
+      basic_info: {
+        id: string
+        user_id: string
+        first_name: string
+        last_name: string
+        email?: string
+        gender?: string
+        medical_record_number?: string
+        mobile_number?: string
+        current_age?: number
+      }
+      medical_info?: {
+        allergies?: string[]
+        chronic_conditions?: string[]
+        current_medications?: string[]
+        family_medical_history?: any
+        emergency_contact?: any
+        insurance_info?: any
+      }
+      primary_doctor?: {
+        id: string
+        name: string
+        email: string
+      } | null
+      created_at: string
+      updated_at: string
+    }
+  }
+}
+
+// Legacy mock data structure for fallback display
 const mockPatient: Patient = {
   id: '1',
   user_id: 'user1',
@@ -243,6 +277,21 @@ export default function PatientDetailsPage() {
   const [activeTab, setActiveTab] = useState('overview')
   const [patient, setPatient] = useState<Patient | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  
+  // Data states for different sections
+  const [medications, setMedications] = useState<Medication[]>([])
+  const [vitals, setVitals] = useState<VitalReading[]>([])
+  const [appointments, setAppointments] = useState<Appointment[]>([])
+  const [carePlans, setCarePlans] = useState<CarePlan[]>([])
+  const [symptoms, setSymptoms] = useState<any[]>([])
+  const [loadingStates, setLoadingStates] = useState({
+    medications: false,
+    vitals: false,
+    appointments: false,
+    carePlans: false,
+    symptoms: false
+  })
   
   // Modal states for comprehensive functionality
   const [showMedicationModal, setShowMedicationModal] = useState(false)
@@ -260,18 +309,216 @@ export default function PatientDetailsPage() {
   const [bodyView, setBodyView] = useState<'front' | 'back' | 'left' | 'right'>('front')
   const [highlightedSymptom, setHighlightedSymptom] = useState<string | null>(null)
 
-  useEffect(() => {
-    // Simulate loading patient data
-    setTimeout(() => {
-      setPatient(mockPatient)
-      setIsLoading(false)
-    }, 1000)
+  // API call functions
+  const fetchPatientData = useCallback(async () => {
+    try {
+      const token = localStorage.getItem('authToken')
+      if (!token) {
+        throw new Error('No authentication token found')
+      }
+
+      const response = await fetch(`/api/patients/${patientId}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        }
+      })
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch patient data: ${response.statusText}`)
+      }
+
+      const data: { payload: { data: PatientAPIResponse } } = await response.json()
+      const patientData = Object.values(data.payload.data.patients)[0]
+      
+      if (patientData) {
+        // Transform API response to match frontend Patient type
+        const transformedPatient: Patient = {
+          id: patientData.basic_info.id,
+          user_id: patientData.basic_info.user_id,
+          first_name: patientData.basic_info.first_name || '',
+          last_name: patientData.basic_info.last_name || '',
+          email: patientData.basic_info.email || '',
+          phone: patientData.basic_info.mobile_number || '',
+          date_of_birth: '', // This might not be in the response
+          gender: patientData.basic_info.gender || '',
+          medical_record_number: patientData.basic_info.medical_record_number || '',
+          last_visit: '', // This might need to be calculated
+          next_appointment: '', // This will come from appointments API
+          adherence_rate: 85, // This will need to be calculated
+          critical_alerts: 0, // This will need to be calculated
+          status: 'active',
+          created_at: patientData.created_at,
+          profile_picture_url: ''
+        }
+        setPatient(transformedPatient)
+      }
+    } catch (err) {
+      console.error('Error fetching patient data:', err)
+      setError(err instanceof Error ? err.message : 'Failed to load patient data')
+    }
   }, [patientId])
+
+  const fetchMedications = useCallback(async () => {
+    try {
+      setLoadingStates(prev => ({ ...prev, medications: true }))
+      const token = localStorage.getItem('authToken')
+      const response = await fetch(`/api/medications/${patientId}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        }
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        // Transform the API response to match expected format
+        if (data.payload?.data?.medications) {
+          setMedications(Object.values(data.payload.data.medications))
+        }
+      }
+    } catch (err) {
+      console.error('Error fetching medications:', err)
+      // Keep empty array as fallback
+    } finally {
+      setLoadingStates(prev => ({ ...prev, medications: false }))
+    }
+  }, [patientId])
+
+  const fetchVitals = useCallback(async () => {
+    try {
+      setLoadingStates(prev => ({ ...prev, vitals: true }))
+      const token = localStorage.getItem('authToken')
+      const response = await fetch(`/api/vitals/${patientId}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        }
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        if (data.payload?.data?.vitals) {
+          setVitals(Object.values(data.payload.data.vitals))
+        }
+      }
+    } catch (err) {
+      console.error('Error fetching vitals:', err)
+    } finally {
+      setLoadingStates(prev => ({ ...prev, vitals: false }))
+    }
+  }, [patientId])
+
+  const fetchAppointments = useCallback(async () => {
+    try {
+      setLoadingStates(prev => ({ ...prev, appointments: true }))
+      const token = localStorage.getItem('authToken')
+      const response = await fetch(`/api/appointments/${patientId}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        }
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        if (data.payload?.data?.appointments) {
+          setAppointments(Object.values(data.payload.data.appointments))
+        }
+      }
+    } catch (err) {
+      console.error('Error fetching appointments:', err)
+    } finally {
+      setLoadingStates(prev => ({ ...prev, appointments: false }))
+    }
+  }, [patientId])
+
+  const fetchCarePlans = useCallback(async () => {
+    try {
+      setLoadingStates(prev => ({ ...prev, carePlans: true }))
+      const token = localStorage.getItem('authToken')
+      const response = await fetch(`/api/patients/${patientId}/careplan-details`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        }
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        if (data.payload?.data?.careplans) {
+          setCarePlans(Object.values(data.payload.data.careplans))
+        }
+      }
+    } catch (err) {
+      console.error('Error fetching care plans:', err)
+    } finally {
+      setLoadingStates(prev => ({ ...prev, carePlans: false }))
+    }
+  }, [patientId])
+
+  useEffect(() => {
+    const loadAllData = async () => {
+      setIsLoading(true)
+      setError(null)
+      
+      try {
+        await fetchPatientData()
+        // Load additional data in parallel
+        await Promise.allSettled([
+          fetchMedications(),
+          fetchVitals(),
+          fetchAppointments(),
+          fetchCarePlans()
+        ])
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load data')
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    if (patientId) {
+      loadAllData()
+    }
+  }, [patientId, fetchPatientData, fetchMedications, fetchVitals, fetchAppointments, fetchCarePlans])
 
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <p className="ml-4 text-gray-600">Loading patient data...</p>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="bg-red-50 border border-red-200 rounded-md p-4">
+        <div className="flex">
+          <ExclamationTriangleIcon className="h-5 w-5 text-red-400 mr-2" />
+          <div>
+            <h3 className="text-sm font-medium text-red-800">Error loading patient data</h3>
+            <div className="mt-2 text-sm text-red-700">
+              <p>{error}</p>
+            </div>
+            <div className="mt-4 space-x-3">
+              <button
+                onClick={() => window.location.reload()}
+                className="bg-red-100 px-3 py-2 rounded-md text-sm font-medium text-red-800 hover:bg-red-200"
+              >
+                Try again
+              </button>
+              <Link
+                href="/dashboard/doctor/patients"
+                className="inline-flex items-center text-red-600 hover:text-red-700 text-sm"
+              >
+                <ArrowLeftIcon className="h-4 w-4 mr-2" />
+                Back to Patients
+              </Link>
+            </div>
+          </div>
+        </div>
       </div>
     )
   }
@@ -280,7 +527,12 @@ export default function PatientDetailsPage() {
     return (
       <div className="text-center py-12">
         <h2 className="text-xl font-semibold text-gray-900">Patient not found</h2>
-        <p className="text-gray-600 mt-2">The patient you're looking for doesn't exist.</p>
+        <p className="text-gray-600 mt-2">
+          {patientId ? 
+            `The patient you're looking for doesn't exist or you don't have permission to view them.` :
+            `No patient ID provided.`
+          }
+        </p>
         <Link
           href="/dashboard/doctor/patients"
           className="mt-4 inline-flex items-center text-blue-600 hover:text-blue-700"
@@ -471,7 +723,13 @@ export default function PatientDetailsPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Active Medications</p>
-                <p className="text-3xl font-bold text-gray-900">{mockMedications.length}</p>
+                <p className="text-3xl font-bold text-gray-900">
+                  {loadingStates.medications ? (
+                    <span className="text-sm text-gray-500">Loading...</span>
+                  ) : (
+                    medications.length
+                  )}
+                </p>
               </div>
               <div className="p-3 rounded-full bg-green-100">
                 <ClockIcon className="h-6 w-6 text-green-600" />
@@ -486,7 +744,9 @@ export default function PatientDetailsPage() {
               <div>
                 <p className="text-sm font-medium text-gray-600">Next Appointment</p>
                 <p className="text-lg font-bold text-gray-900">
-                  {patient.next_appointment ? formatDate(patient.next_appointment) : 'No appointments scheduled'}
+                  {patient.next_appointment ? formatDate(patient.next_appointment) : (
+                    <span className="text-sm text-gray-500 font-normal">No appointments scheduled</span>
+                  )}
                 </p>
               </div>
               <div className="p-3 rounded-full bg-blue-100">
@@ -554,7 +814,12 @@ export default function PatientDetailsPage() {
                 <dl className="space-y-4">
                   <div>
                     <dt className="text-sm font-medium text-gray-500">Date of Birth</dt>
-                    <dd className="mt-1 text-sm text-gray-900">{formatDate(patient.date_of_birth || '')}</dd>
+                    <dd className="mt-1 text-sm text-gray-900">
+                      {patient.date_of_birth ? 
+                        formatDate(patient.date_of_birth) : 
+                        <span className="text-gray-400 italic">Not provided</span>
+                      }
+                    </dd>
                   </div>
                   <div>
                     <dt className="text-sm font-medium text-gray-500">Gender</dt>
@@ -566,7 +831,21 @@ export default function PatientDetailsPage() {
                   </div>
                   <div>
                     <dt className="text-sm font-medium text-gray-500">Phone</dt>
-                    <dd className="mt-1 text-sm text-gray-900">{patient.phone}</dd>
+                    <dd className="mt-1 text-sm text-gray-900">
+                      {patient.phone || <span className="text-gray-400 italic">Not provided</span>}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="text-sm font-medium text-gray-500">Email</dt>
+                    <dd className="mt-1 text-sm text-gray-900">
+                      {patient.email || <span className="text-gray-400 italic">Not provided</span>}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="text-sm font-medium text-gray-500">Medical Record Number</dt>
+                    <dd className="mt-1 text-sm text-gray-900">
+                      {patient.medical_record_number || <span className="text-gray-400 italic">Not assigned</span>}
+                    </dd>
                   </div>
                   <div>
                     <dt className="text-sm font-medium text-gray-500">Status</dt>
@@ -612,13 +891,26 @@ export default function PatientDetailsPage() {
                 </button>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  {mockMedications.map((medication) => (
+                {loadingStates.medications ? (
+                  <div className="flex items-center justify-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                    <p className="ml-3 text-gray-600">Loading medications...</p>
+                  </div>
+                ) : medications.length === 0 ? (
+                  <div className="text-center py-8">
+                    <p className="text-gray-500">No medications found for this patient.</p>
+                    <p className="text-sm text-gray-400 mt-1">Click Add Medication to get started.</p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {medications.map((medication) => (
                     <div key={medication.id} className="border border-gray-200 rounded-lg p-4">
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
                           <div className="flex items-center space-x-2">
-                            <h3 className="text-lg font-medium text-gray-900">{medication.name}</h3>
+                            <h3 className="text-lg font-medium text-gray-900">
+                              {medication.name || 'Unknown Medication'}
+                            </h3>
                             {medication.is_critical && (
                               <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
                                 Critical
@@ -626,31 +918,45 @@ export default function PatientDetailsPage() {
                             )}
                           </div>
                           <p className="text-sm text-gray-600">
-                            {medication.dosage} • {medication.frequency}
+                            {medication.dosage || 'Dosage not specified'} • {medication.frequency || 'Frequency not specified'}
                           </p>
                           <p className="text-sm text-gray-500">
-                            Started: {formatDate(medication.start_date)}
+                            Started: {medication.start_date ? formatDate(medication.start_date) : 'Date not specified'}
                           </p>
-                          {medication.last_taken && (
+                          {medication.last_taken ? (
                             <p className="text-sm text-gray-500">
                               Last taken: {formatDateTime(medication.last_taken)}
                             </p>
+                          ) : (
+                            <p className="text-sm text-gray-400 italic">
+                              No recorded doses yet
+                            </p>
                           )}
-                          {medication.next_due && (
+                          {medication.next_due ? (
                             <p className="text-sm text-blue-600">
                               Next due: {formatDateTime(medication.next_due)}
+                            </p>
+                          ) : (
+                            <p className="text-sm text-gray-400 italic">
+                              No upcoming doses scheduled
                             </p>
                           )}
                         </div>
                         <div className="text-right">
-                          <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-sm font-medium ${getAdherenceColor(medication.adherence_rate)}`}>
-                            {medication.adherence_rate}% adherence
+                          <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-sm font-medium ${
+                            medication.adherence_rate !== undefined ? getAdherenceColor(medication.adherence_rate) : 'bg-gray-100 text-gray-800'
+                          }`}>
+                            {medication.adherence_rate !== undefined ? 
+                              `${medication.adherence_rate}% adherence` : 
+                              'No data'
+                            }
+                          </div>
                           </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>
@@ -904,18 +1210,35 @@ export default function PatientDetailsPage() {
                 </button>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  {mockAppointments.map((appointment) => (
+                {loadingStates.appointments ? (
+                  <div className="flex items-center justify-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                    <p className="ml-3 text-gray-600">Loading appointments...</p>
+                  </div>
+                ) : appointments.length === 0 ? (
+                  <div className="text-center py-8">
+                    <p className="text-gray-500">No appointments scheduled for this patient.</p>
+                    <p className="text-sm text-gray-400 mt-1">Click Schedule Appointment to create one.</p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {appointments.map((appointment) => (
                     <div key={appointment.id} className="border border-gray-200 rounded-lg p-4">
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
-                          <h3 className="text-lg font-medium text-gray-900">{appointment.title}</h3>
-                          <p className="text-sm text-gray-600 capitalize">{appointment.type}</p>
-                          <p className="text-sm text-gray-500">
-                            {formatDateTime(appointment.start_time)} - {formatDateTime(appointment.end_time)}
+                          <h3 className="text-lg font-medium text-gray-900">
+                            {appointment.title || 'Untitled Appointment'}
+                          </h3>
+                          <p className="text-sm text-gray-600 capitalize">
+                            {appointment.type || 'General consultation'}
                           </p>
-                          {appointment.notes && (
+                          <p className="text-sm text-gray-500">
+                            {appointment.start_time ? formatDateTime(appointment.start_time) : 'Time not set'} - {appointment.end_time ? formatDateTime(appointment.end_time) : 'End time not set'}
+                          </p>
+                          {appointment.notes ? (
                             <p className="text-sm text-gray-600 mt-2">{appointment.notes}</p>
+                          ) : (
+                            <p className="text-sm text-gray-400 italic mt-2">No notes added</p>
                           )}
                           <div className="flex items-center mt-2 space-x-2">
                             <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium capitalize ${
@@ -923,7 +1246,7 @@ export default function PatientDetailsPage() {
                               appointment.status === 'confirmed' ? 'bg-green-100 text-green-800' :
                               'bg-gray-100 text-gray-800'
                             }`}>
-                              {appointment.status}
+                              {appointment.status || 'pending'}
                             </span>
                             {appointment.is_virtual && (
                               <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
@@ -932,10 +1255,11 @@ export default function PatientDetailsPage() {
                             )}
                           </div>
                         </div>
+                        </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>
@@ -1093,24 +1417,39 @@ export default function PatientDetailsPage() {
                 </Link>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  {mockCarePlans.map((carePlan) => (
+                {loadingStates.carePlans ? (
+                  <div className="flex items-center justify-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                    <p className="ml-3 text-gray-600">Loading care plans...</p>
+                  </div>
+                ) : carePlans.length === 0 ? (
+                  <div className="text-center py-8">
+                    <p className="text-gray-500">No care plans found for this patient.</p>
+                    <p className="text-sm text-gray-400 mt-1">Click Create Care Plan to create one.</p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {carePlans.map((carePlan) => (
                     <div key={carePlan.id} className="border border-gray-200 rounded-lg p-4">
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
                           <div className="flex items-center space-x-2">
-                            <h3 className="text-lg font-medium text-gray-900">{carePlan.name}</h3>
-                            <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium capitalize ${getPriorityColor(carePlan.priority)}`}>
-                              {carePlan.priority}
-                            </span>
+                            <h3 className="text-lg font-medium text-gray-900">
+                              {carePlan.name || 'Unnamed Care Plan'}
+                            </h3>
+                            {carePlan.priority && (
+                              <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium capitalize ${getPriorityColor(carePlan.priority)}`}>
+                                {carePlan.priority}
+                              </span>
+                            )}
                           </div>
                           <p className="text-sm text-gray-600">
-                            {formatDate(carePlan.start_date)} - {carePlan.end_date ? formatDate(carePlan.end_date) : 'Ongoing'}
+                            {carePlan.start_date ? formatDate(carePlan.start_date) : 'Start date not set'} - {carePlan.end_date ? formatDate(carePlan.end_date) : 'Ongoing'}
                           </p>
                           <div className="flex items-center space-x-4 mt-2 text-sm text-gray-500">
-                            <span>{carePlan.medications_count} medications</span>
-                            <span>{carePlan.vitals_count} vitals</span>
-                            <span>{carePlan.appointments_count} appointments</span>
+                            <span>{carePlan.medications_count || 0} medications</span>
+                            <span>{carePlan.vitals_count || 0} vitals</span>
+                            <span>{carePlan.appointments_count || 0} appointments</span>
                           </div>
                         </div>
                         <div>
@@ -1119,13 +1458,14 @@ export default function PatientDetailsPage() {
                             carePlan.status === 'draft' ? 'bg-gray-100 text-gray-800' :
                             'bg-yellow-100 text-yellow-800'
                           }`}>
-                            {carePlan.status}
+                            {carePlan.status || 'draft'}
                           </span>
                         </div>
+                        </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>
