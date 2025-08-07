@@ -336,11 +336,11 @@ export default (sequelize) => {
     return this.retention_date && new Date() > this.retention_date;
   };
   
-  AuditLog.prototype.getDecryptedData = function() {
+  AuditLog.prototype.getDecryptedData = async function() {
     if (!this.encrypted_data) return null;
     
     try {
-      const { PHIEncryption } = require('../middleware/hipaaCompliance.js');
+      const { PHIEncryption } = await import('../middleware/hipaaCompliance.js');
       return PHIEncryption.decrypt(this.encrypted_data);
     } catch (error) {
       logger.error('Error decrypting audit data:', error);

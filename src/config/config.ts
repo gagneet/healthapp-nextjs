@@ -1,11 +1,10 @@
-// src/config/config.cjs - Sequelize CLI Configuration (CommonJS)
-// This file is specifically for Sequelize CLI which requires CommonJS format
-const { config } = require('dotenv');
+// src/config/config.ts - Sequelize CLI Configuration (ES Modules)
+import { config } from 'dotenv';
 
 // Load environment variables
 config();
 
-module.exports = {
+export default {
   development: {
     username: process.env.POSTGRES_USER || 'postgres',
     password: process.env.POSTGRES_PASSWORD || '',

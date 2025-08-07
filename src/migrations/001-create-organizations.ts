@@ -1,7 +1,7 @@
-// src/migrations/001-create-organizations.js
+// src/migrations/001-create-organizations.ts
 'use strict';
 
-module.exports = {
+export default {
   up: async (queryInterface, Sequelize) => {
     // Check if organizations table already exists
     const tableExists = await queryInterface.tableExists('organizations');

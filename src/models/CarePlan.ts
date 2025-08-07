@@ -1,4 +1,5 @@
-// src/models/CarePlan.js - Long-term care plans for chronic conditions (PostgreSQL)
+// src/models/CarePlan.ts - Long-term care plans for chronic conditions (PostgreSQL)
+import crypto from 'crypto';
 import { DataTypes } from 'sequelize';
 import { PLAN_TYPES, CARE_PLAN_STATUS, PRIORITY_LEVEL } from '../config/enums.js';
 
@@ -396,7 +397,7 @@ export default (sequelize) => {
   CarePlan.prototype.addProgressNote = function(note, authorId, authorType) {
     if (!this.progress_notes) this.progress_notes = [];
     this.progress_notes.push({
-      id: require('crypto').randomUUID(),
+      id: crypto.randomUUID(),
       note,
       author_id: authorId,
       author_type: authorType, // 'doctor' or 'hsp'

@@ -1,7 +1,7 @@
-// src/migrations/002-create-users.js
+// src/migrations/002-create-users.ts
 'use strict';
 
-module.exports = {
+export default {
   up: async (queryInterface, Sequelize) => {
     // Check if users table already exists
     const tableExists = await queryInterface.tableExists('users');

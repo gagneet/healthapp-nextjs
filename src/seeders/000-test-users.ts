@@ -1,10 +1,10 @@
-// src/seeders/000-test-users.cjs
+// src/seeders/000-test-users.ts
 'use strict';
 
-const bcrypt = require('bcryptjs');
-const { v4: uuidv4 } = require('uuid');
+import bcrypt from 'bcryptjs';
+import { v4 as uuidv4 } from 'uuid';
 
-module.exports = {
+export default {
   up: async (queryInterface, Sequelize) => {
     console.log('👥 Seeding test users (idempotent)...');
     

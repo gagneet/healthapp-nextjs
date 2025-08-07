@@ -1,4 +1,5 @@
-// src/models/TreatmentPlan.js - Short-term, acute treatment plans for outpatient visits
+// src/models/TreatmentPlan.ts - Short-term, acute treatment plans for outpatient visits
+import crypto from 'crypto';
 import { DataTypes } from 'sequelize';
 import { PLAN_TYPES, CARE_PLAN_STATUS, PRIORITY_LEVEL } from '../config/enums.js';
 
@@ -333,7 +334,7 @@ export default (sequelize) => {
   TreatmentPlan.prototype.addProgressNote = function(note, authorId) {
     if (!this.progress_notes) this.progress_notes = [];
     this.progress_notes.push({
-      id: require('crypto').randomUUID(),
+      id: crypto.randomUUID(),
       note,
       author_id: authorId,
       timestamp: new Date(),

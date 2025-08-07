@@ -82,7 +82,7 @@ export class HIPAAAuditLog {
   static async storeAuditEntry(entry) {
     // In production, store in a separate, secure audit database
     // For now, we'll use the main database with encryption
-    const { AuditLog } = require('../models').default;
+    const { AuditLog } = (await import('../models/index.js')).default;
     
     if (AuditLog) {
       await AuditLog.create({
