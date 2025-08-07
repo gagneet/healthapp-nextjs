@@ -1,4 +1,5 @@
-// src/controllers/secondaryDoctorController.js - API endpoints for Secondary Doctor Management
+// src/controllers/secondaryDoctorController.ts - API endpoints for Secondary Doctor Management
+import { Request, Response, NextFunction } from 'express';
 import SecondaryDoctorService from '../services/SecondaryDoctorService.js';
 import responseFormatter from '../utils/responseFormatter.js';
 import { createLogger } from '../middleware/logger.js';
@@ -11,7 +12,7 @@ export class SecondaryDoctorController {
    * Assign a secondary doctor to patient
    * POST /api/patients/:patientId/secondary-doctors
    */
-  static async assignSecondaryDoctor(req, res) {
+  static async assignSecondaryDoctor(req: Request, res: Response): Promise<void | Response> {
     try {
       // Check validation errors
       const errors = validationResult(req);
@@ -55,9 +56,10 @@ export class SecondaryDoctorController {
       });
 
       return responseFormatter.success(res, assignment, 'Secondary doctor assigned successfully', 201);
-    } catch (error) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       logger.error('Error in assignSecondaryDoctor:', error);
-      return responseFormatter.error(res, error.message, 400);
+      return responseFormatter.error(res, errorMessage, 400);
     }
   }
 
@@ -65,7 +67,7 @@ export class SecondaryDoctorController {
    * Get all doctor assignments for a patient
    * GET /api/patients/:patientId/secondary-doctors
    */
-  static async getPatientDoctorAssignments(req, res) {
+  static async getPatientDoctorAssignments(req: Request, res: Response): Promise<void | Response> {
     try {
       const { patientId } = req.params;
       const { includeInactive = 'false' } = req.query;
@@ -87,9 +89,10 @@ export class SecondaryDoctorController {
       );
 
       return responseFormatter.success(res, assignments, 'Doctor assignments retrieved successfully');
-    } catch (error) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       logger.error('Error in getPatientDoctorAssignments:', error);
-      return responseFormatter.error(res, error.message, 400);
+      return responseFormatter.error(res, errorMessage, 400);
     }
   }
 
@@ -97,7 +100,7 @@ export class SecondaryDoctorController {
    * Get specific assignment details
    * GET /api/assignments/:assignmentId
    */
-  static async getAssignmentDetails(req, res) {
+  static async getAssignmentDetails(req: Request, res: Response): Promise<void | Response> {
     try {
       const { assignmentId } = req.params;
 
@@ -116,9 +119,10 @@ export class SecondaryDoctorController {
       }
 
       return responseFormatter.success(res, assignment, 'Assignment details retrieved successfully');
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error('Error in getAssignmentDetails:', error);
-      return responseFormatter.error(res, error.message, 400);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      return responseFormatter.error(res, errorMessage, 400);
     }
   }
 
@@ -126,7 +130,7 @@ export class SecondaryDoctorController {
    * Send consent request to patient
    * POST /api/assignments/:assignmentId/request-consent
    */
-  static async requestPatientConsent(req, res) {
+  static async requestPatientConsent(req: Request, res: Response): Promise<void | Response> {
     try {
       const { assignmentId } = req.params;
       const { consentMethod = 'sms_otp' } = req.body;
@@ -148,9 +152,10 @@ export class SecondaryDoctorController {
       });
 
       return responseFormatter.success(res, result, 'Consent request sent successfully');
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error('Error in requestPatientConsent:', error);
-      return responseFormatter.error(res, error.message, 400);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      return responseFormatter.error(res, errorMessage, 400);
     }
   }
 
@@ -158,7 +163,7 @@ export class SecondaryDoctorController {
    * Verify patient consent OTP
    * POST /api/assignments/:assignmentId/verify-consent
    */
-  static async verifyPatientConsent(req, res) {
+  static async verifyPatientConsent(req: Request, res: Response): Promise<void | Response> {
     try {
       const { assignmentId } = req.params;
       const { otp } = req.body;
@@ -178,9 +183,10 @@ export class SecondaryDoctorController {
       });
 
       return responseFormatter.success(res, result, 'Patient consent verified successfully');
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error('Error in verifyPatientConsent:', error);
-      return responseFormatter.error(res, error.message, 400);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      return responseFormatter.error(res, errorMessage, 400);
     }
   }
 
@@ -188,7 +194,7 @@ export class SecondaryDoctorController {
    * Update assignment permissions
    * PUT /api/assignments/:assignmentId/permissions
    */
-  static async updateAssignmentPermissions(req, res) {
+  static async updateAssignmentPermissions(req: Request, res: Response): Promise<void | Response> {
     try {
       const { assignmentId } = req.params;
       const { permissions } = req.body;
@@ -210,9 +216,10 @@ export class SecondaryDoctorController {
       });
 
       return responseFormatter.success(res, assignment, 'Permissions updated successfully');
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error('Error in updateAssignmentPermissions:', error);
-      return responseFormatter.error(res, error.message, 400);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      return responseFormatter.error(res, errorMessage, 400);
     }
   }
 
@@ -220,7 +227,7 @@ export class SecondaryDoctorController {
    * Deactivate doctor assignment
    * DELETE /api/assignments/:assignmentId
    */
-  static async deactivateAssignment(req, res) {
+  static async deactivateAssignment(req: Request, res: Response): Promise<void | Response> {
     try {
       const { assignmentId } = req.params;
       const { reason = 'Assignment ended by primary doctor' } = req.body;
@@ -242,9 +249,10 @@ export class SecondaryDoctorController {
       });
 
       return responseFormatter.success(res, result, 'Assignment deactivated successfully');
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error('Error in deactivateAssignment:', error);
-      return responseFormatter.error(res, error.message, 400);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      return responseFormatter.error(res, errorMessage, 400);
     }
   }
 
@@ -252,7 +260,7 @@ export class SecondaryDoctorController {
    * Check doctor access to patient
    * GET /api/doctors/:doctorId/patient-access/:patientId
    */
-  static async checkDoctorPatientAccess(req, res) {
+  static async checkDoctorPatientAccess(req: Request, res: Response): Promise<void | Response> {
     try {
       const { doctorId, patientId } = req.params;
 
@@ -265,9 +273,10 @@ export class SecondaryDoctorController {
       const access = await SecondaryDoctorService.canDoctorAccessPatient(doctorId, patientId);
 
       return responseFormatter.success(res, access, 'Access check completed');
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error('Error in checkDoctorPatientAccess:', error);
-      return responseFormatter.error(res, error.message, 400);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      return responseFormatter.error(res, errorMessage, 400);
     }
   }
 
@@ -275,7 +284,7 @@ export class SecondaryDoctorController {
    * Get available doctors for assignment
    * GET /api/doctors/available-for-assignment
    */
-  static async getAvailableDoctors(req, res) {
+  static async getAvailableDoctors(req: Request, res: Response): Promise<void | Response> {
     try {
       const { 
         specialty, 
@@ -294,9 +303,10 @@ export class SecondaryDoctorController {
       const availableDoctors = [];
 
       return responseFormatter.success(res, availableDoctors, 'Available doctors retrieved');
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error('Error in getAvailableDoctors:', error);
-      return responseFormatter.error(res, error.message, 400);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      return responseFormatter.error(res, errorMessage, 400);
     }
   }
 }

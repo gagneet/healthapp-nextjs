@@ -1,10 +1,11 @@
-// src/controllers/appointmentController.js
+// src/controllers/appointmentController.ts
+import { Request, Response, NextFunction } from 'express';
 import { Appointment, Patient, Doctor, User, ScheduleEvent, AppointmentSlot } from '../models/index.js';
 import { Op } from 'sequelize';
 import CalendarService from '../services/CalendarService.js';
 
 class AppointmentController {
-  async createAppointment(req, res, next) {
+  async createAppointment(req: Request, res: Response, next: NextFunction): Promise<void | Response> {
     try {
       const {
         patient_id,
@@ -50,14 +51,15 @@ class AppointmentController {
       if (slot_id) {
         try {
           await CalendarService.bookAppointmentSlot(slot_id, null);
-        } catch (error) {
+        } catch (error: unknown) {
+          const errorMessage = error instanceof Error ? error.message : 'Unknown error';
           return res.status(400).json({
             status: false,
             statusCode: 400,
             payload: {
               error: {
                 status: 'SLOT_UNAVAILABLE',
-                message: error.message
+                message: errorMessage
               }
             }
           });
@@ -101,12 +103,12 @@ class AppointmentController {
           message: 'Appointment created successfully'
         }
       });
-    } catch (error) {
+    } catch (error: unknown) {
       next(error);
     }
   }
 
-  async getPatientAppointments(req, res, next) {
+  async getPatientAppointments(req: Request, res: Response, next: NextFunction): Promise<void | Response> {
     try {
       const { patientId } = req.params;
 
@@ -175,12 +177,12 @@ class AppointmentController {
           message: 'Appointments retrieved successfully'
         }
       });
-    } catch (error) {
+    } catch (error: unknown) {
       next(error);
     }
   }
 
-  async getAppointmentsByDate(req, res, next) {
+  async getAppointmentsByDate(req: Request, res: Response, next: NextFunction): Promise<void | Response> {
     try {
       const { date } = req.query;
       
@@ -242,13 +244,13 @@ class AppointmentController {
           message: 'Daily appointments retrieved successfully'
         }
       });
-    } catch (error) {
+    } catch (error: unknown) {
       next(error);
     }
   }
 
   // Helper methods
-  async getOrganizerDetails(organizerType, organizerId) {
+  async getOrganizerDetails(organizerType: string, organizerId: number): Promise<{ name: string } | null> {
     if (organizerType === 'doctor') {
       const doctor = await Doctor.findByPk(organizerId, {
         include: [{ model: User, as: 'user' }]
@@ -261,7 +263,7 @@ class AppointmentController {
     return null;
   }
 
-  async getParticipantDetails(participantType, participantId) {
+  async getParticipantDetails(participantType: string, participantId: number): Promise<{ name: string } | null> {
     if (participantType === 'patient') {
       const patient = await Patient.findByPk(participantId);
       return { name: `${patient?.first_name} ${patient?.last_name}` };
@@ -272,7 +274,7 @@ class AppointmentController {
     return null;
   }
 
-  generateRRule(repeatType) {
+  generateRRule(repeatType: string): string | null {
     switch (repeatType) {
       case 'daily':
         return 'FREQ=DAILY;INTERVAL=1';
@@ -285,7 +287,7 @@ class AppointmentController {
     }
   }
 
-  async createAppointmentSchedule(appointment, repeatCount = 1) {
+  async createAppointmentSchedule(appointment: any, repeatCount = 1): Promise<void> {
     // Create schedule events for appointments
     for (let i = 0; i < repeatCount; i++) {
       const eventDate = new Date(appointment.start_time);
@@ -312,7 +314,7 @@ class AppointmentController {
   }
 
   // New calendar and availability methods
-  async getDoctorAvailableSlots(req, res, next) {
+  async getDoctorAvailableSlots(req: Request, res: Response, next: NextFunction): Promise<void | Response> {
     try {
       const { doctorId, date, appointmentType } = req.query;
 
@@ -339,12 +341,12 @@ class AppointmentController {
           message: 'Available slots retrieved successfully'
         }
       });
-    } catch (error) {
+    } catch (error: unknown) {
       next(error);
     }
   }
 
-  async getDoctorCalendar(req, res, next) {
+  async getDoctorCalendar(req: Request, res: Response, next: NextFunction): Promise<void | Response> {
     try {
       const { doctorId } = req.params;
       const { startDate, endDate } = req.query;
@@ -378,12 +380,12 @@ class AppointmentController {
           message: 'Doctor calendar retrieved successfully'
         }
       });
-    } catch (error) {
+    } catch (error: unknown) {
       next(error);
     }
   }
 
-  async getPatientCalendar(req, res, next) {
+  async getPatientCalendar(req: Request, res: Response, next: NextFunction): Promise<void | Response> {
     try {
       const { patientId } = req.params;
       const { startDate, endDate } = req.query;
@@ -417,12 +419,12 @@ class AppointmentController {
           message: 'Patient calendar retrieved successfully'
         }
       });
-    } catch (error) {
+    } catch (error: unknown) {
       next(error);
     }
   }
 
-  async setDoctorAvailability(req, res, next) {
+  async setDoctorAvailability(req: Request, res: Response, next: NextFunction): Promise<void | Response> {
     try {
       const { doctorId } = req.params;
       const availabilityData = req.body;
@@ -453,12 +455,12 @@ class AppointmentController {
           message: 'Doctor availability updated successfully'
         }
       });
-    } catch (error) {
+    } catch (error: unknown) {
       next(error);
     }
   }
 
-  async rescheduleAppointment(req, res, next) {
+  async rescheduleAppointment(req: Request, res: Response, next: NextFunction): Promise<void | Response> {
     try {
       const { appointmentId } = req.params;
       const { start_time, end_time, slot_id } = req.body;
@@ -492,14 +494,15 @@ class AppointmentController {
         }
       });
     } catch (error) {
-      if (error.message.includes('conflict')) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      if (errorMessage.includes('conflict')) {
         return res.status(409).json({
           status: false,
           statusCode: 409,
           payload: {
             error: {
               status: 'CONFLICT',
-              message: error.message
+              message: errorMessage
             }
           }
         });
@@ -508,7 +511,7 @@ class AppointmentController {
     }
   }
 
-  async updateAppointment(req, res, next) {
+  async updateAppointment(req: Request, res: Response, next: NextFunction): Promise<void | Response> {
     try {
       const { appointmentId } = req.params;
       const updateData = req.body;
@@ -547,12 +550,12 @@ class AppointmentController {
           message: 'Appointment updated successfully'
         }
       });
-    } catch (error) {
+    } catch (error: unknown) {
       next(error);
     }
   }
 
-  async cancelAppointment(req, res, next) {
+  async cancelAppointment(req: Request, res: Response, next: NextFunction): Promise<void | Response> {
     try {
       const { appointmentId } = req.params;
       const { cancellation_reason } = req.body;
@@ -606,7 +609,7 @@ class AppointmentController {
           message: 'Appointment cancelled successfully'
         }
       });
-    } catch (error) {
+    } catch (error: unknown) {
       next(error);
     }
   }

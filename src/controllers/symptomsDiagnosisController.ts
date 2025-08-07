@@ -1,4 +1,5 @@
-// src/controllers/symptomsDiagnosisController.js - Symptoms and Diagnosis management
+// src/controllers/symptomsDiagnosisController.ts - Symptoms and Diagnosis management
+import { Request, Response, NextFunction } from 'express';
 import { SymptomsDatabase, TreatmentDatabase, sequelize } from '../models/index.js';
 import { Op } from 'sequelize';
 import ResponseFormatter from '../utils/responseFormatter.js';
@@ -8,7 +9,7 @@ class SymptomsDiagnosisController {
   /**
    * Get all symptoms from the database
    */
-  async getAllSymptoms(req, res, next) {
+  async getAllSymptoms(req: Request, res: Response, next: NextFunction): Promise<void | Response> {
     try {
       const symptoms = await SymptomsDatabase.getAllSymptoms();
 
@@ -17,7 +18,7 @@ class SymptomsDiagnosisController {
         'Symptoms retrieved successfully'
       ));
 
-    } catch (error) {
+    } catch (error: unknown) {
       next(error);
     }
   }
@@ -25,7 +26,7 @@ class SymptomsDiagnosisController {
   /**
    * Search symptoms by query
    */
-  async searchSymptoms(req, res, next) {
+  async searchSymptoms(req: Request, res: Response, next: NextFunction): Promise<void | Response> {
     try {
       const { query } = req.query;
 
@@ -46,7 +47,7 @@ class SymptomsDiagnosisController {
         'Symptoms search completed'
       ));
 
-    } catch (error) {
+    } catch (error: unknown) {
       next(error);
     }
   }
@@ -54,7 +55,7 @@ class SymptomsDiagnosisController {
   /**
    * Get all diagnoses
    */
-  async getAllDiagnoses(req, res, next) {
+  async getAllDiagnoses(req: Request, res: Response, next: NextFunction): Promise<void | Response> {
     try {
       const diagnoses = await SymptomsDatabase.findAll({
         where: { is_active: true },
@@ -74,7 +75,7 @@ class SymptomsDiagnosisController {
         'Diagnoses retrieved successfully'
       ));
 
-    } catch (error) {
+    } catch (error: unknown) {
       next(error);
     }
   }
@@ -82,7 +83,7 @@ class SymptomsDiagnosisController {
   /**
    * Search diagnoses by query
    */
-  async searchDiagnoses(req, res, next) {
+  async searchDiagnoses(req: Request, res: Response, next: NextFunction): Promise<void | Response> {
     try {
       const { query } = req.query;
 
@@ -107,7 +108,7 @@ class SymptomsDiagnosisController {
         'Diagnoses search completed'
       ));
 
-    } catch (error) {
+    } catch (error: unknown) {
       next(error);
     }
   }
@@ -115,7 +116,7 @@ class SymptomsDiagnosisController {
   /**
    * Find diagnoses based on symptoms
    */
-  async findDiagnosesBySymptoms(req, res, next) {
+  async findDiagnosesBySymptoms(req: Request, res: Response, next: NextFunction): Promise<void | Response> {
     try {
       const { symptoms } = req.body;
 
@@ -175,7 +176,7 @@ class SymptomsDiagnosisController {
         'Diagnosis suggestions retrieved successfully'
       ));
 
-    } catch (error) {
+    } catch (error: unknown) {
       next(error);
     }
   }
@@ -183,7 +184,7 @@ class SymptomsDiagnosisController {
   /**
    * Get all treatments
    */
-  async getAllTreatments(req, res, next) {
+  async getAllTreatments(req: Request, res: Response, next: NextFunction): Promise<void | Response> {
     try {
       const { condition, category, severity } = req.query;
       const whereClause = { is_active: true };
@@ -220,7 +221,7 @@ class SymptomsDiagnosisController {
         'Treatments retrieved successfully'
       ));
 
-    } catch (error) {
+    } catch (error: unknown) {
       next(error);
     }
   }
@@ -228,7 +229,7 @@ class SymptomsDiagnosisController {
   /**
    * Search treatments by query
    */
-  async searchTreatments(req, res, next) {
+  async searchTreatments(req: Request, res: Response, next: NextFunction): Promise<void | Response> {
     try {
       const { query } = req.query;
 
@@ -246,7 +247,7 @@ class SymptomsDiagnosisController {
         'Treatments search completed'
       ));
 
-    } catch (error) {
+    } catch (error: unknown) {
       next(error);
     }
   }
@@ -254,7 +255,7 @@ class SymptomsDiagnosisController {
   /**
    * Find treatments for specific conditions/diagnoses
    */
-  async getTreatmentsForConditions(req, res, next) {
+  async getTreatmentsForConditions(req: Request, res: Response, next: NextFunction): Promise<void | Response> {
     try {
       const { conditions, severity } = req.body;
 
@@ -297,7 +298,7 @@ class SymptomsDiagnosisController {
         'Treatments for conditions retrieved successfully'
       ));
 
-    } catch (error) {
+    } catch (error: unknown) {
       next(error);
     }
   }
@@ -305,7 +306,7 @@ class SymptomsDiagnosisController {
   /**
    * Add custom symptom to database
    */
-  async addCustomSymptom(req, res, next) {
+  async addCustomSymptom(req: Request, res: Response, next: NextFunction): Promise<void | Response> {
     try {
       const { symptomName, diagnosisName, category } = req.body;
 
@@ -344,7 +345,7 @@ class SymptomsDiagnosisController {
         created ? 'New diagnosis created with symptom' : 'Symptom added to existing diagnosis'
       ));
 
-    } catch (error) {
+    } catch (error: unknown) {
       next(error);
     }
   }
@@ -352,7 +353,7 @@ class SymptomsDiagnosisController {
   /**
    * Add custom diagnosis
    */
-  async addCustomDiagnosis(req, res, next) {
+  async addCustomDiagnosis(req: Request, res: Response, next: NextFunction): Promise<void | Response> {
     try {
       const { diagnosisName, symptoms, category } = req.body;
 
@@ -404,7 +405,7 @@ class SymptomsDiagnosisController {
         201
       ));
 
-    } catch (error) {
+    } catch (error: unknown) {
       next(error);
     }
   }

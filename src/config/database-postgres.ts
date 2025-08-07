@@ -1,5 +1,5 @@
-// src/config/database-postgres.js
-import { Sequelize } from 'sequelize';
+// src/config/database-postgres.ts
+import { Sequelize, Options } from 'sequelize';
 import { config } from 'dotenv';
 import { createLogger } from '../middleware/logger.js';
 
@@ -7,12 +7,12 @@ const logger = createLogger(import.meta.url);
 
 config();
 
-const sequelize = new Sequelize({
+const databaseConfig: Options = {
   database: process.env.POSTGRES_DB || 'healthapp',
   username: process.env.POSTGRES_USER || 'postgres',
   password: process.env.POSTGRES_PASSWORD || '',
   host: process.env.POSTGRES_HOST || 'localhost',
-  port: process.env.POSTGRES_PORT || 5432,
+  port: parseInt(process.env.POSTGRES_PORT || '5432'),
   dialect: 'postgres',
   
   dialectOptions: {
@@ -28,13 +28,12 @@ const sequelize = new Sequelize({
   logging: process.env.NODE_ENV === 'development' ? (msg) => logger.debug(msg) : false,
   
   pool: {
-    max: parseInt(process.env.DB_POOL_MAX) || 150,     // Increased for 500+ concurrent doctors
-    min: parseInt(process.env.DB_POOL_MIN) || 30,      // Higher baseline for consistent performance
-    acquire: 60000,                                    // Longer timeout for complex healthcare queries
-    idle: 120000,                                      // Extended idle time for healthcare workflows
-    evict: 10000,                                      // Connection health check interval
-    handleDisconnects: true,                           // Automatic reconnection
-    maxUses: 1000,                                     // Max uses before connection refresh
+    max: parseInt(process.env.DB_POOL_MAX || '150'),     // Increased for 500+ concurrent doctors
+    min: parseInt(process.env.DB_POOL_MIN || '30'),      // Higher baseline for consistent performance
+    acquire: 60000,                                      // Longer timeout for complex healthcare queries
+    idle: 120000,                                        // Extended idle time for healthcare workflows
+    evict: 10000,                                        // Connection health check interval
+    maxUses: 1000,                                       // Max uses before connection refresh
   },
   
   define: {
@@ -50,7 +49,9 @@ const sequelize = new Sequelize({
   // HIPAA Compliance: Enable query logging for audit
   benchmark: true,
   logQueryParameters: process.env.NODE_ENV === 'development',
-});
+};
+
+const sequelize = new Sequelize(databaseConfig);
 
 // Test connection and log status
 const testConnection = async () => {
@@ -63,8 +64,9 @@ const testConnection = async () => {
     logger.info(`🌐 Host: ${sequelize.config.host}:${sequelize.config.port}`);
     logger.info(`👤 User: ${sequelize.config.username}`);
     logger.info(`🔧 Environment: ${process.env.NODE_ENV || 'development'}`);
-  } catch (error) {
-    logger.error('❌ Unable to connect to PostgreSQL database:', error.message);
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown database connection error';
+    logger.error('❌ Unable to connect to PostgreSQL database:', errorMessage);
     throw error;
   }
 };

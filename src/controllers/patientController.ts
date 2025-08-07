@@ -1,4 +1,5 @@
 // src/controllers/PatientController.js - Modern ES Module Pattern
+import { Request, Response, NextFunction } from 'express';
 import { User, Doctor, Patient, CarePlan } from '../models/index.js';
 import { Op } from 'sequelize';
 import { PAGINATION, USER_CATEGORIES } from '../config/constants.js';
@@ -14,7 +15,7 @@ class PatientController {
    * @param {Response} res - Express response object
    * @param {Function} next - Express next middleware function
    */
-  async getPatient(req, res, next) {
+  async getPatient(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const { patientId } = req.params;
 
@@ -123,7 +124,7 @@ class PatientController {
         'Patient details retrieved successfully'
       ));
 
-    } catch (error) {
+    } catch (error: unknown) {
       next(error);
     }
   }
@@ -131,7 +132,7 @@ class PatientController {
   /**
    * Create a new patient with modern validation and service layer
    */
-  async createPatient(req, res, next) {
+  async createPatient(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const patientData = req.body;
       
@@ -150,7 +151,7 @@ class PatientController {
         201
       ));
 
-    } catch (error) {
+    } catch (error: unknown) {
       next(error);
     }
   }
@@ -158,7 +159,7 @@ class PatientController {
   /**
    * Search patient by phone number
    */
-  async searchPatientByPhone(req, res, next) {
+  async searchPatientByPhone(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const { phoneNumber, countryCode = 'US' } = req.body;
 
@@ -176,7 +177,7 @@ class PatientController {
         result.exists ? 'Patient found' : 'No patient found with this phone number'
       ));
 
-    } catch (error) {
+    } catch (error: unknown) {
       next(error);
     }
   }
@@ -184,7 +185,7 @@ class PatientController {
   /**
    * Validate patient phone number
    */
-  async validatePatientPhone(req, res, next) {
+  async validatePatientPhone(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const { phoneNumber, countryCode = 'US' } = req.body;
 
@@ -202,7 +203,7 @@ class PatientController {
         'Phone number validation completed'
       ));
 
-    } catch (error) {
+    } catch (error: unknown) {
       next(error);
     }
   }
@@ -210,7 +211,7 @@ class PatientController {
   /**
    * Generate patient ID preview
    */
-  async generatePatientId(req, res, next) {
+  async generatePatientId(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const { doctorName } = req.body;
       
@@ -228,7 +229,7 @@ class PatientController {
         'Patient ID generated successfully'
       ));
 
-    } catch (error) {
+    } catch (error: unknown) {
       next(error);
     }
   }
@@ -236,7 +237,7 @@ class PatientController {
   /**
    * Get patients with consent workflow support (primary + secondary)
    */
-  async getPatients(req, res, next) {
+  async getPatients(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const {
         page = PAGINATION.DEFAULT_PAGE,
@@ -427,7 +428,7 @@ class PatientController {
         'Patients retrieved successfully'
       ));
 
-    } catch (error) {
+    } catch (error: unknown) {
       next(error);
     }
   }
@@ -435,7 +436,7 @@ class PatientController {
   /**
    * Update patient with partial updates and validation
    */
-  async updatePatient(req, res, next) {
+  async updatePatient(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const { patientId } = req.params;
       const updateData = req.body;
@@ -451,7 +452,7 @@ class PatientController {
         'Patient updated successfully'
       ));
 
-    } catch (error) {
+    } catch (error: unknown) {
       next(error);
     }
   }
@@ -459,7 +460,7 @@ class PatientController {
   /**
    * Soft delete patient (deactivate instead of hard delete)
    */
-  async deletePatient(req, res, next) {
+  async deletePatient(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const { patientId } = req.params;
       
@@ -495,7 +496,7 @@ class PatientController {
         'Patient account deactivated successfully'
       ));
 
-    } catch (error) {
+    } catch (error: unknown) {
       next(error);
     }
   }
@@ -514,7 +515,7 @@ class PatientController {
     };
   }
 
-  async buildFilterClause(filter, userCategory, userId) {
+  async buildFilterClause(filter: any, userCategory: string, userId: number): Promise<any> {
     const clause = {};
 
     // Doctor can only see their patients

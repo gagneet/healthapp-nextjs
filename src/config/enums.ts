@@ -92,10 +92,10 @@ export const SUBSCRIPTION_STATUS = {
 };
 
 // Helper function to get all values of an enum
-export const getEnumValues = (enumObject) => Object.values(enumObject);
+export const getEnumValues = (enumObject: any) => Object.values(enumObject);
 
 // Helper function to validate enum value
-export const isValidEnumValue = (enumObject, value) => {
+export const isValidEnumValue = (enumObject: any, value: any) => {
   return Object.values(enumObject).includes(value);
 };
 

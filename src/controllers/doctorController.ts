@@ -1,4 +1,5 @@
-// src/controllers/doctorController.js
+// src/controllers/doctorController.ts
+import { Request, Response, NextFunction } from 'express';
 import { Doctor, User, Speciality, Patient, CarePlan, Clinic, Appointment } from '../models/index.js';
 import { Op } from 'sequelize';
 import multer from 'multer';
@@ -41,7 +42,7 @@ const upload = multer({
 
 class DoctorController {
   // Get comprehensive doctor profile
-  async getProfile(req, res, next) {
+  async getProfile(req: Request, res: Response, next: NextFunction): Promise<void | Response> {
     try {
       const userId = req.user.id;
 
@@ -184,13 +185,13 @@ class DoctorController {
           message: 'Doctor profile retrieved successfully'
         }
       });
-    } catch (error) {
+    } catch (error: unknown) {
       next(error);
     }
   }
 
   // Update comprehensive doctor profile
-  async updateProfile(req, res, next) {
+  async updateProfile(req: Request, res: Response, next: NextFunction): Promise<void | Response> {
     const transaction = await Doctor.sequelize.transaction();
     
     try {
@@ -323,7 +324,7 @@ class DoctorController {
   }
 
   // Upload profile images (profile picture, banner, signature)
-  async uploadImages(req, res, next) {
+  async uploadImages(req: Request, res: Response, next: NextFunction): Promise<void | Response> {
     try {
       const userId = req.user.id;
       const uploadFields = upload.fields([
@@ -386,13 +387,13 @@ class DoctorController {
           }
         });
       });
-    } catch (error) {
+    } catch (error: unknown) {
       next(error);
     }
   }
 
   // Get doctor by ID (for admin/other users)
-  async getDoctor(req, res, next) {
+  async getDoctor(req: Request, res: Response, next: NextFunction): Promise<void | Response> {
     try {
       const { doctorId } = req.params;
 
@@ -469,13 +470,13 @@ class DoctorController {
           message: 'Doctor details retrieved successfully'
         }
       });
-    } catch (error) {
+    } catch (error: unknown) {
       next(error);
     }
   }
 
   // Get doctor's patients
-  async getDoctorPatients(req, res, next) {
+  async getDoctorPatients(req: Request, res: Response, next: NextFunction): Promise<void | Response> {
     try {
       const { doctorId } = req.params;
       const { page = 1, limit = 20 } = req.query;
@@ -494,7 +495,9 @@ class DoctorController {
         });
       }
 
-      const offset = (page - 1) * limit;
+      const pageNum = parseInt(String(page)) || 1;
+      const limitNum = parseInt(String(limit)) || 20;
+      const offset = (pageNum - 1) * limitNum;
       const { count, rows: patients } = await Patient.findAndCountAll({
         where: { primary_care_doctor_id: doctor.id },
         include: [
@@ -524,7 +527,7 @@ class DoctorController {
           }
         ],
         offset,
-        limit: parseInt(limit),
+        limit: limitNum,
         order: [['created_at', 'DESC']]
       });
 
@@ -593,15 +596,15 @@ class DoctorController {
         payload: {
           data: responseData,
           pagination: {
-            page: parseInt(page),
-            limit: parseInt(limit),
+            page: pageNum,
+            limit: limitNum,
             total: count,
-            total_pages: Math.ceil(count / limit)
+            total_pages: Math.ceil(count / limitNum)
           },
           message: 'Doctor patients retrieved successfully'
         }
       });
-    } catch (error) {
+    } catch (error: unknown) {
       next(error);
     }
   }
@@ -609,7 +612,7 @@ class DoctorController {
   // Clinic Management Methods
 
   // Get doctor's clinics
-  async getClinics(req, res, next) {
+  async getClinics(req: Request, res: Response, next: NextFunction): Promise<void | Response> {
     try {
       const userId = req.user.id;
 
@@ -640,13 +643,13 @@ class DoctorController {
           message: 'Doctor clinics retrieved successfully'
         }
       });
-    } catch (error) {
+    } catch (error: unknown) {
       next(error);
     }
   }
 
   // Create new clinic with geo-location support
-  async createClinic(req, res, next) {
+  async createClinic(req: Request, res: Response, next: NextFunction): Promise<void | Response> {
     try {
       const userId = req.user.id;
       const clinicData = req.body;
@@ -717,13 +720,13 @@ class DoctorController {
           message: 'Clinic created successfully'
         }
       });
-    } catch (error) {
+    } catch (error: unknown) {
       next(error);
     }
   }
 
   // Update clinic with geo-location support
-  async updateClinic(req, res, next) {
+  async updateClinic(req: Request, res: Response, next: NextFunction): Promise<void | Response> {
     try {
       const { clinicId } = req.params;
       const updateData = req.body;
@@ -820,13 +823,13 @@ class DoctorController {
           message: 'Clinic updated successfully'
         }
       });
-    } catch (error) {
+    } catch (error: unknown) {
       next(error);
     }
   }
 
   // Delete clinic (soft delete)
-  async deleteClinic(req, res, next) {
+  async deleteClinic(req: Request, res: Response, next: NextFunction): Promise<void | Response> {
     try {
       const { clinicId } = req.params;
       const userId = req.user.id;
@@ -871,13 +874,13 @@ class DoctorController {
           message: 'Clinic deleted successfully'
         }
       });
-    } catch (error) {
+    } catch (error: unknown) {
       next(error);
     }
   }
 
   // Get Doctor Dashboard Data
-  async getDashboardData(req, res, next) {
+  async getDashboardData(req: Request, res: Response, next: NextFunction): Promise<void | Response> {
     try {
       const userId = req.user.id;
 
@@ -971,13 +974,13 @@ class DoctorController {
           message: 'Dashboard data retrieved successfully'
         }
       });
-    } catch (error) {
+    } catch (error: unknown) {
       next(error);
     }
   }
 
   // Get Doctor's Recent Patients
-  async getRecentPatients(req, res, next) {
+  async getRecentPatients(req: Request, res: Response, next: NextFunction): Promise<void | Response> {
     try {
       const userId = req.user.id;
       const { limit = 5 } = req.query;
@@ -1006,7 +1009,7 @@ class DoctorController {
           }
         ],
         order: [['updated_at', 'DESC']],
-        limit: parseInt(limit)
+        limit: parseInt(String(limit)) || 5
       });
 
       const recentPatients = patients.map(patient => ({
@@ -1036,13 +1039,13 @@ class DoctorController {
           message: 'Recent patients retrieved successfully'
         }
       });
-    } catch (error) {
+    } catch (error: unknown) {
       next(error);
     }
   }
 
   // Get Doctor's Critical Alerts
-  async getCriticalAlerts(req, res, next) {
+  async getCriticalAlerts(req: Request, res: Response, next: NextFunction): Promise<void | Response> {
     try {
       const userId = req.user.id;
       const { limit = 10 } = req.query;
@@ -1075,7 +1078,7 @@ class DoctorController {
           }
         ],
         order: [['updated_at', 'DESC']],
-        limit: parseInt(limit)
+        limit: parseInt(String(limit)) || 5
       });
 
       // Mock critical alerts based on patient data
@@ -1106,13 +1109,13 @@ class DoctorController {
           message: 'Critical alerts retrieved successfully'
         }
       });
-    } catch (error) {
+    } catch (error: unknown) {
       next(error);
     }
   }
 
   // Get Adherence Analytics
-  async getAdherenceAnalytics(req, res, next) {
+  async getAdherenceAnalytics(req: Request, res: Response, next: NextFunction): Promise<void | Response> {
     try {
       const userId = req.user.id;
 
@@ -1156,13 +1159,13 @@ class DoctorController {
           message: 'Adherence analytics retrieved successfully'
         }
       });
-    } catch (error) {
+    } catch (error: unknown) {
       next(error);
     }
   }
 
   // Geocode clinic address manually
-  async geocodeClinicAddress(req, res, next) {
+  async geocodeClinicAddress(req: Request, res: Response, next: NextFunction): Promise<void | Response> {
     try {
       const { clinicId } = req.params;
       const userId = req.user.id;
@@ -1250,13 +1253,13 @@ class DoctorController {
         });
       }
 
-    } catch (error) {
+    } catch (error: unknown) {
       next(error);
     }
   }
 
   // Find nearby clinics based on coordinates
-  async findNearbyClinics(req, res, next) {
+  async findNearbyClinics(req: Request, res: Response, next: NextFunction): Promise<void | Response> {
     try {
       const { latitude, longitude, radius = 10 } = req.query;
 
@@ -1322,13 +1325,13 @@ class DoctorController {
         }
       });
 
-    } catch (error) {
+    } catch (error: unknown) {
       next(error);
     }
   }
 
   // Reverse geocode coordinates to get address
-  async reverseGeocodeLocation(req, res, next) {
+  async reverseGeocodeLocation(req: Request, res: Response, next: NextFunction): Promise<void | Response> {
     try {
       const { latitude, longitude } = req.body;
 
@@ -1375,13 +1378,13 @@ class DoctorController {
         });
       }
 
-    } catch (error) {
+    } catch (error: unknown) {
       next(error);
     }
   }
 
   // Legacy update method for backward compatibility
-  async updateDoctor(req, res, next) {
+  async updateDoctor(req: Request, res: Response, next: NextFunction): Promise<void | Response> {
     try {
       const { doctorId } = req.params;
       const updateData = req.body;
@@ -1414,7 +1417,7 @@ class DoctorController {
           message: 'Doctor updated successfully'
         }
       });
-    } catch (error) {
+    } catch (error: unknown) {
       next(error);
     }
   }

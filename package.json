@@ -3,15 +3,17 @@
   "version": "4.0.0",
   "description": "HealthApp Healthcare Management Platform using NextJS, Node.js, Express, Sequelize, and PostgreSQL",
   "type": "module",
-  "main": "src/server.js",
+  "main": "src/server.ts",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
     "type-check": "tsc --noEmit",
-    "backend:dev": "nodemon src/server.js",
-    "backend:start": "node src/server.js",
+    "backend:build": "tsc -p tsconfig.backend.json",
+    "backend:dev": "nodemon src/server.ts",
+    "backend:start": "node --loader ts-node/esm src/server.ts",
+    "backend:prod": "npm run backend:build && node dist/server.js",
     "test": "jest --detectOpenHandles",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
@@ -21,10 +23,10 @@
     "seed:undo": "npx sequelize-cli db:seed:undo:all",
     "lint:backend": "eslint src/",
     "lint:fix": "eslint src/ --fix",
-    "db:test": "node scripts/test-database-setup.js",
-    "db:compare": "node scripts/compare-with-target-schema.js",
+    "db:test": "node --loader ts-node/esm scripts/test-database-setup.ts",
+    "db:compare": "node --loader ts-node/esm scripts/compare-with-target-schema.ts",
     "db:setup": "npm run migrate && npm run seed",
-    "test:node": "node scripts/test-node-compatibility.js"
+    "test:node": "node --loader ts-node/esm scripts/test-node-compatibility.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.525.0",
@@ -99,6 +101,7 @@
     "nodemon": "^3.1.0",
     "sequelize-cli": "^6.6.2",
     "supertest": "^6.3.4",
+    "ts-node": "^10.9.2",
     "typescript": "^5.4.0"
   },
   "engines": {

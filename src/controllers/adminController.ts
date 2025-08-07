@@ -1,16 +1,19 @@
-// src/controllers/adminController.js
+// src/controllers/adminController.ts
+import { Request, Response, NextFunction } from 'express';
 import { Doctor, Patient, User, Medicine, Speciality, Medication, Appointment, SymptomsDatabase, TreatmentDatabase, Clinic, UserRole } from '../models/index.js';
 import { Op } from 'sequelize';
 import bcrypt from 'bcryptjs';
 import { USER_CATEGORIES } from '../config/constants.js';
 
 class AdminController {
-  async getDoctors(req, res, next) {
+  async getDoctors(req: Request, res: Response, next: NextFunction): Promise<void | Response> {
     try {
       const { page = 1, limit = 20, search } = req.query;
-      const offset = (page - 1) * limit;
+      const pageNum = parseInt(String(page)) || 1;
+      const limitNum = parseInt(String(limit)) || 20;
+      const offset = (pageNum - 1) * limitNum;
 
-      const whereClause = {};
+      const whereClause: any = {};
       if (search) {
         whereClause[Op.or] = [
           { first_name: { [Op.like]: `%${search}%` } },
@@ -32,7 +35,7 @@ class AdminController {
           }
         ],
         offset,
-        limit: parseInt(limit),
+        limit: parseInt(limit as string),
         order: [['created_at', 'DESC']]
       });
 
@@ -44,7 +47,7 @@ class AdminController {
           where: { assigned_doctor_id: doctor.user_id }
         });
 
-        responseData.doctors[doctor.id] = {
+        (responseData.doctors as any)[doctor.id] = {
           basic_info: {
             id: doctor.id.toString(),
             first_name: doctor.first_name,
@@ -81,12 +84,14 @@ class AdminController {
     }
   }
 
-  async getMedicines(req, res, next) {
+  async getMedicines(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const { page = 1, limit = 20, search } = req.query;
-      const offset = (page - 1) * limit;
+      const pageNum = parseInt(String(page)) || 1;
+      const limitNum = parseInt(String(limit)) || 20;
+      const offset = (pageNum - 1) * limitNum;
 
-      const whereClause = {};
+      const whereClause: any = {};
       if (search) {
         whereClause.name = { [Op.like]: `%${search}%` };
       }
@@ -94,7 +99,7 @@ class AdminController {
       const { count, rows: medicines } = await Medicine.findAndCountAll({
         where: whereClause,
         offset,
-        limit: parseInt(limit),
+        limit: limitNum,
         order: [['created_at', 'DESC']]
       });
 
@@ -113,7 +118,7 @@ class AdminController {
           }
         });
 
-        responseData.medicines[medicine.id] = {
+        (responseData.medicines as any)[medicine.id] = {
           basic_info: {
             id: medicine.id.toString(),
             name: medicine.name,
@@ -136,10 +141,10 @@ class AdminController {
         payload: {
           data: responseData,
           pagination: {
-            page: parseInt(page),
-            limit: parseInt(limit),
+            page: pageNum,
+            limit: limitNum,
             total: count,
-            total_pages: Math.ceil(count / limit)
+            total_pages: Math.ceil(count / limitNum)
           },
           message: 'Medicines retrieved successfully'
         }
@@ -149,7 +154,7 @@ class AdminController {
     }
   }
 
-  async getSystemStats(req, res, next) {
+  async getSystemStats(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       // Get overall system statistics
       const totalDoctors = await Doctor.count();
@@ -199,7 +204,7 @@ class AdminController {
   }
 
   // Comprehensive Doctor Creation
-  async createDoctor(req, res, next) {
+  async createDoctor(req: Request, res: Response, next: NextFunction) {
     const transaction = await User.sequelize.transaction();
     
     try {
@@ -293,7 +298,7 @@ class AdminController {
         user_category: USER_CATEGORIES.DOCTOR,
         account_status: 'active',
         email_verified: false,
-        created_by: req.user.id
+        created_by: (req as any).user.id
       }, { transaction });
 
       // Create UserRole
@@ -387,7 +392,7 @@ class AdminController {
   }
 
   // Comprehensive Doctor Update
-  async updateDoctor(req, res, next) {
+  async updateDoctor(req: Request, res: Response, next: NextFunction) {
     const transaction = await User.sequelize.transaction();
     
     try {
@@ -543,7 +548,7 @@ class AdminController {
     }
   }
 
-  async updateDoctorStatus(req, res, next) {
+  async updateDoctorStatus(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const { doctorId } = req.params;
       const { status, verification_status } = req.body;
@@ -578,7 +583,7 @@ class AdminController {
         doctorUpdateData.is_verified = verification_status === 'verified';
         if (verification_status === 'verified') {
           doctorUpdateData.verification_date = new Date();
-          doctorUpdateData.verified_by = req.user.id;
+          doctorUpdateData.verified_by = (req as any).user.id;
         }
       }
 
@@ -600,7 +605,7 @@ class AdminController {
   }
 
   // Get single doctor by ID
-  async getDoctor(req, res, next) {
+  async getDoctor(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const { doctorId } = req.params;
 
@@ -738,7 +743,7 @@ class AdminController {
   }
 
   // Delete doctor (soft delete)
-  async deleteDoctor(req, res, next) {
+  async deleteDoctor(req: Request, res: Response, next: NextFunction): Promise<void> {
     const transaction = await User.sequelize.transaction();
     
     try {
@@ -814,7 +819,7 @@ class AdminController {
   }
 
   // Medicine CRUD Operations
-  async createMedicine(req, res, next) {
+  async createMedicine(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const { name, type, strength, generic_name, description, public_medicine = true } = req.body;
 
@@ -827,7 +832,7 @@ class AdminController {
         },
         description,
         public_medicine,
-        creator_id: req.user.id
+        creator_id: (req as any).user.id
       });
 
       res.status(201).json({
@@ -843,7 +848,7 @@ class AdminController {
     }
   }
 
-  async updateMedicine(req, res, next) {
+  async updateMedicine(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const { medicineId } = req.params;
       const { name, type, strength, generic_name, description, public_medicine } = req.body;
@@ -886,7 +891,7 @@ class AdminController {
     }
   }
 
-  async deleteMedicine(req, res, next) {
+  async deleteMedicine(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const { medicineId } = req.params;
 
@@ -940,12 +945,14 @@ class AdminController {
   }
 
   // Condition Management using SymptomsDatabase
-  async getConditions(req, res, next) {
+  async getConditions(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const { page = 1, limit = 20, search } = req.query;
-      const offset = (page - 1) * limit;
+      const pageNum = parseInt(String(page)) || 1;
+      const limitNum = parseInt(String(limit)) || 20;
+      const offset = (pageNum - 1) * limitNum;
 
-      const whereClause = { is_active: true };
+      const whereClause: any = { is_active: true };
       if (search) {
         whereClause.diagnosis_name = { [Op.like]: `%${search}%` };
       }
@@ -953,14 +960,14 @@ class AdminController {
       const { count, rows: conditions } = await SymptomsDatabase.findAndCountAll({
         where: whereClause,
         offset,
-        limit: parseInt(limit),
+        limit: limitNum,
         order: [['created_at', 'DESC']]
       });
 
       const responseData = { conditions: {} };
 
       for (const condition of conditions) {
-        responseData.conditions[condition.id] = {
+        (responseData.conditions as any)[condition.id] = {
           basic_info: {
             id: condition.id.toString(),
             diagnosis_name: condition.diagnosis_name,
@@ -985,10 +992,10 @@ class AdminController {
         payload: {
           data: responseData,
           pagination: {
-            page: parseInt(page),
-            limit: parseInt(limit),
+            page: pageNum,
+            limit: limitNum,
             total: count,
-            total_pages: Math.ceil(count / limit)
+            total_pages: Math.ceil(count / limitNum)
           },
           message: 'Conditions retrieved successfully'
         }
@@ -998,7 +1005,7 @@ class AdminController {
     }
   }
 
-  async createCondition(req, res, next) {
+  async createCondition(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const { 
         diagnosis_name, 
@@ -1017,7 +1024,7 @@ class AdminController {
         common_age_groups: Array.isArray(common_age_groups) ? common_age_groups : JSON.parse(common_age_groups || '[]'),
         gender_specific,
         is_active: true,
-        created_by: req.user.id
+        created_by: (req as any).user.id
       });
 
       res.status(201).json({
@@ -1033,7 +1040,7 @@ class AdminController {
     }
   }
 
-  async updateCondition(req, res, next) {
+  async updateCondition(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const { conditionId } = req.params;
       const { 
@@ -1083,7 +1090,7 @@ class AdminController {
     }
   }
 
-  async deleteCondition(req, res, next) {
+  async deleteCondition(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const { conditionId } = req.params;
 
@@ -1117,12 +1124,14 @@ class AdminController {
   }
 
   // Treatment Management using TreatmentDatabase
-  async getTreatments(req, res, next) {
+  async getTreatments(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const { page = 1, limit = 20, search } = req.query;
-      const offset = (page - 1) * limit;
+      const pageNum = parseInt(String(page)) || 1;
+      const limitNum = parseInt(String(limit)) || 20;
+      const offset = (pageNum - 1) * limitNum;
 
-      const whereClause = { is_active: true };
+      const whereClause: any = { is_active: true };
       if (search) {
         whereClause.treatment_name = { [Op.like]: `%${search}%` };
       }
@@ -1130,14 +1139,14 @@ class AdminController {
       const { count, rows: treatments } = await TreatmentDatabase.findAndCountAll({
         where: whereClause,
         offset,
-        limit: parseInt(limit),
+        limit: limitNum,
         order: [['created_at', 'DESC']]
       });
 
       const responseData = { treatments: {} };
 
       for (const treatment of treatments) {
-        responseData.treatments[treatment.id] = {
+        (responseData.treatments as any)[treatment.id] = {
           basic_info: {
             id: treatment.id.toString(),
             treatment_name: treatment.treatment_name,
@@ -1173,10 +1182,10 @@ class AdminController {
         payload: {
           data: responseData,
           pagination: {
-            page: parseInt(page),
-            limit: parseInt(limit),
+            page: pageNum,
+            limit: limitNum,
             total: count,
-            total_pages: Math.ceil(count / limit)
+            total_pages: Math.ceil(count / limitNum)
           },
           message: 'Treatments retrieved successfully'
         }
@@ -1186,7 +1195,7 @@ class AdminController {
     }
   }
 
-  async createTreatment(req, res, next) {
+  async createTreatment(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const { 
         treatment_name, 
@@ -1223,7 +1232,7 @@ class AdminController {
         requires_specialist,
         prescription_required,
         is_active: true,
-        created_by: req.user.id
+        created_by: (req as any).user.id
       });
 
       res.status(201).json({
@@ -1239,7 +1248,7 @@ class AdminController {
     }
   }
 
-  async updateTreatment(req, res, next) {
+  async updateTreatment(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const { treatmentId } = req.params;
       const { 
@@ -1307,7 +1316,7 @@ class AdminController {
     }
   }
 
-  async deleteTreatment(req, res, next) {
+  async deleteTreatment(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const { treatmentId } = req.params;
 

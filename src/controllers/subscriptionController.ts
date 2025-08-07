@@ -1,11 +1,12 @@
-// src/controllers/subscriptionController.js
+// src/controllers/subscriptionController.ts
+import { Request, Response, NextFunction } from 'express';
 import { ServicePlan, PatientSubscription, Payment, PaymentMethod, Patient, HealthcareProvider } from '../models/index.js';
 import { Op } from 'sequelize';
 import SubscriptionService from '../services/SubscriptionService.js';
 
 class SubscriptionController {
   // Service Plan Management
-  async createServicePlan(req, res, next) {
+  async createServicePlan(req: Request, res: Response, next: NextFunction): Promise<void | Response> {
     try {
       const { providerId } = req.params;
       const planData = req.body;
@@ -36,15 +37,17 @@ class SubscriptionController {
           message: 'Service plan created successfully'
         }
       });
-    } catch (error) {
+    } catch (error: unknown) {
       next(error);
     }
   }
 
-  async getServicePlans(req, res, next) {
+  async getServicePlans(req: Request, res: Response, next: NextFunction): Promise<void | Response> {
     try {
       const { providerId } = req.params;
       const { is_active, limit, offset } = req.query;
+      const limitNum = parseInt(String(limit)) || 10;
+      const offsetNum = parseInt(String(offset)) || 0;
 
       const targetProviderId = providerId || (req.userCategory === 'hsp' ? req.user.provider_id : null);
 
@@ -75,12 +78,12 @@ class SubscriptionController {
           message: 'Service plans retrieved successfully'
         }
       });
-    } catch (error) {
+    } catch (error: unknown) {
       next(error);
     }
   }
 
-  async updateServicePlan(req, res, next) {
+  async updateServicePlan(req: Request, res: Response, next: NextFunction): Promise<void | Response> {
     try {
       const { planId } = req.params;
       const updateData = req.body;
@@ -112,7 +115,7 @@ class SubscriptionController {
     }
   }
 
-  async deleteServicePlan(req, res, next) {
+  async deleteServicePlan(req: Request, res: Response, next: NextFunction): Promise<void | Response> {
     try {
       const { planId } = req.params;
 
@@ -160,13 +163,13 @@ class SubscriptionController {
           message: 'Service plan deleted successfully'
         }
       });
-    } catch (error) {
+    } catch (error: unknown) {
       next(error);
     }
   }
 
   // Subscription Management
-  async createSubscription(req, res, next) {
+  async createSubscription(req: Request, res: Response, next: NextFunction): Promise<void | Response> {
     try {
       const { patientId, providerId, servicePlanId, paymentMethodId } = req.body;
 
@@ -214,7 +217,7 @@ class SubscriptionController {
     }
   }
 
-  async getPatientSubscriptions(req, res, next) {
+  async getPatientSubscriptions(req: Request, res: Response, next: NextFunction): Promise<void | Response> {
     try {
       const { patientId } = req.params;
       const { status, limit, offset } = req.query;
@@ -264,12 +267,12 @@ class SubscriptionController {
           message: 'Subscriptions retrieved successfully'
         }
       });
-    } catch (error) {
+    } catch (error: unknown) {
       next(error);
     }
   }
 
-  async getProviderSubscriptions(req, res, next) {
+  async getProviderSubscriptions(req: Request, res: Response, next: NextFunction): Promise<void | Response> {
     try {
       const { providerId } = req.params;
       const { status, limit, offset } = req.query;
@@ -319,12 +322,12 @@ class SubscriptionController {
           message: 'Provider subscriptions retrieved successfully'
         }
       });
-    } catch (error) {
+    } catch (error: unknown) {
       next(error);
     }
   }
 
-  async cancelSubscription(req, res, next) {
+  async cancelSubscription(req: Request, res: Response, next: NextFunction): Promise<void | Response> {
     try {
       const { subscriptionId } = req.params;
       const { cancelReason, cancelAtPeriodEnd = true } = req.body;
@@ -360,7 +363,7 @@ class SubscriptionController {
     }
   }
 
-  async reactivateSubscription(req, res, next) {
+  async reactivateSubscription(req: Request, res: Response, next: NextFunction): Promise<void | Response> {
     try {
       const { subscriptionId } = req.params;
 
@@ -392,7 +395,7 @@ class SubscriptionController {
   }
 
   // Payment Method Management
-  async addPaymentMethod(req, res, next) {
+  async addPaymentMethod(req: Request, res: Response, next: NextFunction): Promise<void | Response> {
     try {
       const { patientId } = req.params;
       const { stripePaymentMethodId, setAsDefault = false } = req.body;
@@ -443,7 +446,7 @@ class SubscriptionController {
     }
   }
 
-  async getPaymentMethods(req, res, next) {
+  async getPaymentMethods(req: Request, res: Response, next: NextFunction): Promise<void | Response> {
     try {
       const { patientId } = req.params;
 
@@ -478,12 +481,12 @@ class SubscriptionController {
           message: 'Payment methods retrieved successfully'
         }
       });
-    } catch (error) {
+    } catch (error: unknown) {
       next(error);
     }
   }
 
-  async removePaymentMethod(req, res, next) {
+  async removePaymentMethod(req: Request, res: Response, next: NextFunction): Promise<void | Response> {
     try {
       const { paymentMethodId } = req.params;
 
@@ -514,7 +517,7 @@ class SubscriptionController {
   }
 
   // Payment Processing
-  async processPayment(req, res, next) {
+  async processPayment(req: Request, res: Response, next: NextFunction): Promise<void | Response> {
     try {
       const { subscriptionId } = req.params;
       const { amount, paymentMethodId } = req.body;
@@ -559,7 +562,7 @@ class SubscriptionController {
     }
   }
 
-  async getPaymentHistory(req, res, next) {
+  async getPaymentHistory(req: Request, res: Response, next: NextFunction): Promise<void | Response> {
     try {
       const { patientId } = req.params;
       const { limit, offset, status } = req.query;
@@ -611,13 +614,13 @@ class SubscriptionController {
           message: 'Payment history retrieved successfully'
         }
       });
-    } catch (error) {
+    } catch (error: unknown) {
       next(error);
     }
   }
 
   // Webhook endpoint for Stripe
-  async handleStripeWebhook(req, res, next) {
+  async handleStripeWebhook(req: Request, res: Response, next: NextFunction): Promise<void | Response> {
     try {
       const sig = req.headers['stripe-signature'];
       const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;

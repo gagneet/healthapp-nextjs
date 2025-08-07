@@ -1,6 +1,6 @@
-// src/utils/responseFormatter.js
+// src/utils/responseFormatter.ts
 class ResponseFormatter {
-  static success(data, message = 'Operation completed successfully', statusCode = 200) {
+  static success(data: any, message: string = 'Operation completed successfully', statusCode: number = 200) {
     return {
       status: true,
       statusCode,
@@ -11,7 +11,7 @@ class ResponseFormatter {
     };
   }
 
-  static error(message, statusCode = 400, errorStatus = 'ERROR') {
+  static error(message: string, statusCode: number = 400, errorStatus: string = 'ERROR') {
     return {
       status: false,
       statusCode,
@@ -24,7 +24,7 @@ class ResponseFormatter {
     };
   }
 
-  static paginated(data, pagination, message = 'Data retrieved successfully') {
+  static paginated(data: any, pagination: any, message: string = 'Data retrieved successfully') {
     return {
       status: true,
       statusCode: 200,
@@ -36,7 +36,7 @@ class ResponseFormatter {
     };
   }
 
-  static formatPatientResponse(patient) {
+  static formatPatientResponse(patient: any) {
     return {
       [patient.id]: {
         basic_info: {
@@ -74,7 +74,7 @@ class ResponseFormatter {
     };
   }
 
-  static formatDoctorResponse(doctor) {
+  static formatDoctorResponse(doctor: any) {
     return {
       [doctor.id]: {
         basic_info: {

@@ -1,9 +1,10 @@
-// src/controllers/vitalsController.js
+// src/controllers/vitalsController.ts
+import { Request, Response, NextFunction } from 'express';
 import { Vital, VitalTemplate, CarePlan, ScheduleEvent } from '../models/index.js';
 import { Op } from 'sequelize';
 
 class VitalsController {
-  async createVital(req, res, next) {
+  async createVital(req: Request, res: Response, next: NextFunction): Promise<void | Response> {
     try {
       const {
         patient_id,
@@ -40,12 +41,12 @@ class VitalsController {
           message: 'Vital monitoring created successfully'
         }
       });
-    } catch (error) {
+    } catch (error: unknown) {
       next(error);
     }
   }
 
-  async getPatientVitals(req, res, next) {
+  async getPatientVitals(req: Request, res: Response, next: NextFunction): Promise<void | Response> {
     try {
       const { patientId } = req.params;
 
@@ -114,12 +115,12 @@ class VitalsController {
           message: 'Vitals retrieved successfully'
         }
       });
-    } catch (error) {
+    } catch (error: unknown) {
       next(error);
     }
   }
 
-  async getVitalTimeline(req, res, next) {
+  async getVitalTimeline(req: Request, res: Response, next: NextFunction): Promise<void | Response> {
     try {
       const { vitalId } = req.params;
 
@@ -195,7 +196,7 @@ class VitalsController {
           message: 'Vital timeline retrieved successfully'
         }
       });
-    } catch (error) {
+    } catch (error: unknown) {
       next(error);
     }
   }

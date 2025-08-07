@@ -1,9 +1,10 @@
-// src/controllers/medicationController.js
+// src/controllers/medicationController.ts
+import { Request, Response, NextFunction } from 'express';
 import { Medication, Medicine, Patient, User, ScheduleEvent } from '../models/index.js';
 import { Op } from 'sequelize';
 
 class MedicationController {
-  async getPatientMedications(req, res, next) {
+  async getPatientMedications(req: Request, res: Response, next: NextFunction): Promise<void | Response> {
     try {
       const { patientId } = req.params;
 
@@ -82,12 +83,12 @@ class MedicationController {
           message: 'Medications retrieved successfully'
         }
       });
-    } catch (error) {
+    } catch (error: unknown) {
       next(error);
     }
   }
 
-  async createMedication(req, res, next) {
+  async createMedication(req: Request, res: Response, next: NextFunction): Promise<void | Response> {
     try {
       const { patientId, carePlanId } = req.params;
       const {
@@ -132,12 +133,12 @@ class MedicationController {
           message: 'Medication added successfully'
         }
       });
-    } catch (error) {
+    } catch (error: unknown) {
       next(error);
     }
   }
 
-  async getMedicationTimeline(req, res, next) {
+  async getMedicationTimeline(req: Request, res: Response, next: NextFunction): Promise<void | Response> {
     try {
       const { medicationId } = req.params;
 
@@ -193,13 +194,13 @@ class MedicationController {
           message: 'Medication timeline retrieved successfully'
         }
       });
-    } catch (error) {
+    } catch (error: unknown) {
       next(error);
     }
   }
 
   // Helper methods
-  calculateRemaining(medication) {
+  calculateRemaining(medication: any): number {
     // Calculate remaining doses based on schedule
     const now = new Date();
     const endDate = new Date(medication.end_date);
@@ -207,14 +208,14 @@ class MedicationController {
     return Math.max(0, daysDiff);
   }
 
-  calculateTotal(medication) {
+  calculateTotal(medication: any): number {
     // Calculate total doses
     const startDate = new Date(medication.start_date);
     const endDate = new Date(medication.end_date);
     return Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
   }
 
-  generateRRule(repeatType, startDate) {
+  generateRRule(repeatType: string, startDate: string): string {
     // Generate RRule string based on repeat type
     switch (repeatType) {
       case 'daily':
@@ -228,7 +229,7 @@ class MedicationController {
     }
   }
 
-  async createMedicationSchedule(medication) {
+  async createMedicationSchedule(medication: any): Promise<void> {
     // Create schedule events based on medication schedule
     // This would implement recurring event creation logic
     // For now, create a simple daily schedule

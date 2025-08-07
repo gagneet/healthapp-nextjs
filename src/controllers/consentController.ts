@@ -1,4 +1,5 @@
-// src/controllers/consentController.js - Patient Consent Workflow Controller
+// src/controllers/consentController.ts - Patient Consent Workflow Controller
+import { Request, Response, NextFunction } from 'express';
 import { Op } from 'sequelize';
 import PatientAccessService from '../services/PatientAccessService.js';
 import { Doctor, Patient, HSP, User, Speciality } from '../models/index.js';
@@ -12,14 +13,16 @@ class ConsentController {
    * Get secondary patients for the current doctor with consent status
    * GET /api/doctors/patients/secondary
    */
-  async getSecondaryPatients(req, res, next) {
+  async getSecondaryPatients(req: Request, res: Response, next: NextFunction): Promise<void | Response> {
     try {
       const doctorUserId = req.user.id;
       const { page = 1, limit = 20, search } = req.query;
+      const pageNum = parseInt(String(page)) || 1;
+      const limitNum = parseInt(String(limit)) || 20;
 
       const options = {
-        limit: parseInt(limit),
-        offset: (page - 1) * parseInt(limit),
+        limit: limitNum,
+        offset: (pageNum - 1) * limitNum,
         search
       };
 
@@ -30,15 +33,15 @@ class ConsentController {
           secondary_patients: result.secondary_patients,
           doctor_info: result.doctor_info,
           pagination: {
-            page: parseInt(page),
-            limit: parseInt(limit),
+            page: pageNum,
+            limit: limitNum,
             total: result.secondary_patients.length
           }
         },
         'Secondary patients retrieved successfully'
       ));
 
-    } catch (error) {
+    } catch (error: unknown) {
       next(error);
     }
   }
@@ -47,7 +50,7 @@ class ConsentController {
    * Assign a secondary doctor to a patient
    * POST /api/doctors/patients/:patientId/assign-secondary
    */
-  async assignSecondaryDoctor(req, res, next) {
+  async assignSecondaryDoctor(req: Request, res: Response, next: NextFunction): Promise<void | Response> {
     try {
       const { patientId } = req.params;
       const { 
@@ -129,7 +132,7 @@ class ConsentController {
           'Secondary doctor assigned successfully. Patient consent required.'
       ));
 
-    } catch (error) {
+    } catch (error: unknown) {
       next(error);
     }
   }
@@ -138,7 +141,7 @@ class ConsentController {
    * Request patient consent by generating OTP
    * POST /api/doctors/patients/:patientId/request-consent
    */
-  async requestConsent(req, res, next) {
+  async requestConsent(req: Request, res: Response, next: NextFunction): Promise<void | Response> {
     try {
       const { patientId } = req.params;
       const requestingUserId = req.user.id;
@@ -188,7 +191,7 @@ class ConsentController {
           'OTP generated and sent to patient'
       ));
 
-    } catch (error) {
+    } catch (error: unknown) {
       next(error);
     }
   }
@@ -197,7 +200,7 @@ class ConsentController {
    * Verify patient consent OTP
    * POST /api/doctors/patients/:patientId/verify-consent
    */
-  async verifyConsent(req, res, next) {
+  async verifyConsent(req: Request, res: Response, next: NextFunction): Promise<void | Response> {
     try {
       const { patientId } = req.params;
       const { otp_code } = req.body;
@@ -241,7 +244,7 @@ class ConsentController {
         ));
       }
 
-    } catch (error) {
+    } catch (error: unknown) {
       next(error);
     }
   }
@@ -250,7 +253,7 @@ class ConsentController {
    * Resend OTP for patient consent
    * POST /api/doctors/patients/:patientId/resend-otp
    */
-  async resendOtp(req, res, next) {
+  async resendOtp(req: Request, res: Response, next: NextFunction): Promise<void | Response> {
     try {
       const { patientId } = req.params;
       const requestingUserId = req.user.id;
@@ -289,7 +292,7 @@ class ConsentController {
         'New OTP generated and sent to patient'
       ));
 
-    } catch (error) {
+    } catch (error: unknown) {
       next(error);
     }
   }
@@ -298,7 +301,7 @@ class ConsentController {
    * Check consent status for a patient
    * GET /api/doctors/patients/:patientId/consent-status
    */
-  async getConsentStatus(req, res, next) {
+  async getConsentStatus(req: Request, res: Response, next: NextFunction): Promise<void | Response> {
     try {
       const { patientId } = req.params;
       const requestingUserId = req.user.id;
@@ -317,7 +320,7 @@ class ConsentController {
         'Consent status retrieved successfully'
       ));
 
-    } catch (error) {
+    } catch (error: unknown) {
       next(error);
     }
   }
@@ -325,7 +328,7 @@ class ConsentController {
   /**
    * Get user-friendly error messages for OTP errors
    */
-  getOtpErrorMessage(errorCode) {
+  getOtpErrorMessage(errorCode: string): string {
     const errorMessages = {
       'OTP_EXPIRED': 'OTP has expired. Please request a new one.',
       'OTP_BLOCKED': 'OTP is blocked due to too many attempts. Please request a new one.',
@@ -342,9 +345,10 @@ class ConsentController {
    * Search for doctors/HSPs for assignment
    * GET /api/doctors/search-providers
    */
-  async searchProviders(req, res, next) {
+  async searchProviders(req: Request, res: Response, next: NextFunction): Promise<void | Response> {
     try {
       const { query, type = 'both', limit = 10 } = req.query;
+      const limitNum = parseInt(String(limit)) || 10;
 
       if (!query || query.trim().length < 2) {
         throw new ValidationError('Search query must be at least 2 characters');
@@ -374,7 +378,7 @@ class ConsentController {
               attributes: ['id', 'name']
             }
           ],
-          limit: parseInt(limit),
+          limit: limitNum,
           attributes: ['id', 'medical_license_number']
         });
       }
@@ -396,7 +400,7 @@ class ConsentController {
               attributes: ['id', 'first_name', 'last_name', 'email']
             }
           ],
-          limit: parseInt(limit),
+          limit: limitNum,
           attributes: ['id', 'license_number']
         });
       }
@@ -422,7 +426,7 @@ class ConsentController {
         'Provider search completed'
       ));
 
-    } catch (error) {
+    } catch (error: unknown) {
       next(error);
     }
   }

@@ -1,11 +1,14 @@
-// src/controllers/authController.js
+// src/controllers/authController.ts
 import bcrypt from 'bcryptjs';
+import { Request, Response, NextFunction } from 'express';
+import { JwtPayload } from 'jsonwebtoken';
 import { User, Doctor, Patient, UserRole, Speciality } from '../models/index.js';
 import { generateToken, generateRefreshToken, verifyToken } from '../config/jwt.js';
 import { USER_CATEGORIES, ACCOUNT_STATUS } from '../config/constants.js';
+import { ControllerFunction } from '../types/express.js';
 
 class AuthController {
-  async signIn(req, res, next) {
+  async signIn(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const { email, password } = req.body;
 
@@ -121,7 +124,7 @@ class AuthController {
     }
   }
 
-  async signUp(req, res, next) {
+  async signUp(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const {
         email,
@@ -208,7 +211,7 @@ class AuthController {
     }
   }
 
-  async verify(req, res, next) {
+  async verify(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       // req.user is populated by authenticate middleware
       const user = req.user;
@@ -270,7 +273,7 @@ class AuthController {
     }
   }
 
-  async refreshToken(req, res, next) {
+  async refreshToken(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const { refresh_token } = req.body;
       
@@ -287,7 +290,7 @@ class AuthController {
         });
       }
 
-      const decoded = verifyToken(refresh_token);
+      const decoded = verifyToken(refresh_token) as JwtPayload & { userId: string };
       const user = await User.findByPk(decoded.userId);
 
       if (!user || user.account_status !== ACCOUNT_STATUS.ACTIVE) {

@@ -1,9 +1,10 @@
-// src/controllers/carePlanController.js
+// src/controllers/carePlanController.ts
+import { Request, Response, NextFunction } from 'express';
 import { CarePlan, Patient, Doctor, User, Medication, Appointment, Vital } from '../models/index.js';
 import { Op } from 'sequelize';
 
 class CarePlanController {
-  async getPatientCarePlan(req, res, next) {
+  async getPatientCarePlan(req: Request, res: Response, next: NextFunction): Promise<void | Response> {
     try {
       const { patientId } = req.params;
 
@@ -120,12 +121,12 @@ class CarePlanController {
           message: 'Care plan details retrieved successfully'
         }
       });
-    } catch (error) {
+    } catch (error: unknown) {
       next(error);
     }
   }
 
-  async createCarePlan(req, res, next) {
+  async createCarePlan(req: Request, res: Response, next: NextFunction): Promise<void | Response> {
     try {
       const { patientId } = req.params;
       const {
@@ -177,12 +178,12 @@ class CarePlanController {
           message: 'Care plan created successfully'
         }
       });
-    } catch (error) {
+    } catch (error: unknown) {
       next(error);
     }
   }
 
-  async updateCarePlan(req, res, next) {
+  async updateCarePlan(req: Request, res: Response, next: NextFunction): Promise<void | Response> {
     try {
       const { carePlanId } = req.params;
       const updateData = req.body;
@@ -213,7 +214,7 @@ class CarePlanController {
           message: 'Care plan updated successfully'
         }
       });
-    } catch (error) {
+    } catch (error: unknown) {
       next(error);
     }
   }

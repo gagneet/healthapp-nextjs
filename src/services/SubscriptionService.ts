@@ -1,17 +1,30 @@
-// src/services/SubscriptionService.js
+// src/services/SubscriptionService.ts
 import { ServicePlan, PatientSubscription, Payment, PaymentMethod, Patient, HealthcareProvider } from '../models/index.js';
 import { Op } from 'sequelize';
 import Stripe from 'stripe';
 
+interface ServicePlanData {
+  name: string;
+  description: string;
+  price: number;
+  billing_cycle: string;
+  features: any;
+  patient_limit: number;
+  trial_period_days?: number;
+  setup_fee?: number;
+}
+
 class SubscriptionService {
+  private stripe: Stripe;
+
   constructor() {
-    this.stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+    this.stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
       apiVersion: '2023-10-16',
     });
   }
 
   // Service Plan Management
-  async createServicePlan(providerId, planData) {
+  async createServicePlan(providerId: string, planData: ServicePlanData): Promise<any> {
     const { name, description, price, billing_cycle, features, patient_limit, trial_period_days, setup_fee } = planData;
 
     // Create Stripe price if stripe integration is enabled
