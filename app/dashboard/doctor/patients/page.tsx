@@ -50,94 +50,7 @@ const displayAdherenceRate = (rate: number | null | undefined) => {
   return `${rate}%`
 }
 
-// Mock data - replace with actual API calls
-const mockPatients: Patient[] = [
-  {
-    id: '1',
-    user_id: 'user1',
-    first_name: 'John',
-    last_name: 'Doe',
-    email: 'john.doe@email.com',
-    phone: '+1-555-0123',
-    date_of_birth: '1980-05-15',
-    gender: 'MALE',
-    medical_record_number: 'MRN001',
-    last_visit: '2024-01-15',
-    next_appointment: '2024-02-01',
-    adherence_rate: 92,
-    critical_alerts: 0,
-    status: 'active',
-    created_at: '2024-01-01',
-  },
-  {
-    id: '2',
-    user_id: 'user2',
-    first_name: 'Jane',
-    last_name: 'Smith',
-    email: 'jane.smith@email.com',
-    phone: '+1-555-0124',
-    date_of_birth: '1975-09-22',
-    gender: 'FEMALE',
-    medical_record_number: 'MRN002',
-    last_visit: '2024-01-18',
-    next_appointment: '2024-01-25',
-    adherence_rate: 65,
-    critical_alerts: 2,
-    status: 'active',
-    created_at: '2024-01-01',
-  },
-  {
-    id: '3',
-    user_id: 'user3',
-    first_name: 'Michael',
-    last_name: 'Johnson',
-    email: 'michael.j@email.com',
-    phone: '+1-555-0125',
-    date_of_birth: '1988-12-10',
-    gender: 'MALE',
-    medical_record_number: 'MRN003',
-    last_visit: '2024-01-20',
-    next_appointment: '2024-01-30',
-    adherence_rate: 78,
-    critical_alerts: 1,
-    status: 'active',
-    created_at: '2024-01-01',
-  },
-  {
-    id: '4',
-    user_id: 'user4',
-    first_name: 'Sarah',
-    last_name: 'Williams',
-    email: 'sarah.w@email.com',
-    phone: '+1-555-0126',
-    date_of_birth: '1990-03-14',
-    gender: 'FEMALE',
-    medical_record_number: 'MRN004',
-    last_visit: '2024-01-12',
-    next_appointment: '2024-02-05',
-    adherence_rate: 95,
-    critical_alerts: 0,
-    status: 'active',
-    created_at: '2024-01-01',
-  },
-  {
-    id: '5',
-    user_id: 'user5',
-    first_name: 'Robert',
-    last_name: 'Davis',
-    email: 'robert.d@email.com',
-    phone: '+1-555-0127',
-    date_of_birth: '1965-11-28',
-    gender: 'MALE',
-    medical_record_number: 'MRN005',
-    last_visit: '2024-01-10',
-    next_appointment: '2024-01-28',
-    adherence_rate: 58,
-    critical_alerts: 3,
-    status: 'active',
-    created_at: '2024-01-01',
-  },
-]
+// Mock data removed - using real API data only
 
 interface PatientDrawerProps {
   patient: Patient | null
@@ -309,25 +222,10 @@ export default function PatientsPage() {
           return
         }
       } catch (apiError) {
-        console.warn('API call failed, using mock data:', apiError)
+        console.error('API call failed:', apiError)
+        setPatients([])
+        // Don't throw - let component handle gracefully
       }
-      
-      // Fallback to mock data if API fails
-      let filteredMockPatients = mockPatients
-      if (searchQuery) {
-        const query = searchQuery.toLowerCase()
-        filteredMockPatients = mockPatients.filter(patient =>
-          patient.first_name.toLowerCase().includes(query) ||
-          patient.last_name.toLowerCase().includes(query) ||
-          patient.email.toLowerCase().includes(query) ||
-          patient.medical_record_number.toLowerCase().includes(query)
-        )
-      }
-      setPatients(filteredMockPatients)
-    } catch (error) {
-      console.error('Error in fetchPatients:', error)
-      // Use mock data as final fallback
-      setPatients(mockPatients)
     } finally {
       setIsLoading(false)
     }

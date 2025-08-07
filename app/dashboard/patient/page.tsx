@@ -133,117 +133,28 @@ export default function PatientDashboard() {
     setIsLoading(true)
     try {
       // This would normally be an API call to your backend
-      const response = await fetch(`/api/patient/dashboard/${user.id}`)
+      const response = await fetch(`/api/patient/dashboard/${user.id}`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+          'Content-Type': 'application/json'
+        }
+      })
       if (response.ok) {
         const data = await response.json()
         setDashboardData(data.payload.data)
       } else {
-        // Mock data for development
-        setDashboardData(generateMockData())
+        console.error('API response not OK:', response.statusText)
+        setDashboardData(null)
       }
     } catch (error) {
       console.error('Failed to fetch dashboard data:', error)
-      // Use mock data on error
-      setDashboardData(generateMockData())
+      setDashboardData(null)
     } finally {
       setIsLoading(false)
     }
   }
 
-  const generateMockData = (): PatientDashboardData => ({
-    adherence_summary: {
-      today: {
-        medications_due: 4,
-        medications_taken: 3,
-        vitals_due: 2,
-        vitals_recorded: 1,
-        exercises_due: 1,
-        exercises_completed: 0
-      },
-      weekly: {
-        adherence_rate: 85,
-        missed_medications: 3,
-        completed_activities: 18
-      },
-      monthly: {
-        overall_score: 82,
-        trend: 'improving'
-      }
-    },
-    upcoming_events: [
-      {
-        id: '1',
-        event_type: 'MEDICATION',
-        title: 'Take Metformin',
-        description: '500mg with dinner',
-        scheduled_for: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
-        priority: 'HIGH',
-        status: 'SCHEDULED',
-        event_data: { dosage: '500mg', instructions: 'Take with food' }
-      },
-      {
-        id: '2',
-        event_type: 'VITAL_CHECK',
-        title: 'Check Blood Pressure',
-        scheduled_for: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(),
-        priority: 'MEDIUM',
-        status: 'SCHEDULED',
-        event_data: {}
-      },
-      {
-        id: '3',
-        event_type: 'EXERCISE',
-        title: '20-minute Walk',
-        description: 'Light cardio exercise',
-        scheduled_for: new Date(Date.now() + 4 * 60 * 60 * 1000).toISOString(),
-        priority: 'MEDIUM',
-        status: 'SCHEDULED',
-        event_data: { duration: 20, type: 'walking' }
-      }
-    ],
-    overdue_items: [
-      {
-        id: '1',
-        type: 'MEDICATION',
-        title: 'Morning Lisinopril',
-        due_date: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-        hours_overdue: 2,
-        priority: 'HIGH'
-      }
-    ],
-    recent_activities: [
-      {
-        id: '1',
-        type: 'MEDICATION',
-        title: 'Took Metformin',
-        completed_at: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(),
-        result: { taken: true, notes: 'Taken with lunch' }
-      },
-      {
-        id: '2',
-        type: 'VITAL_CHECK',
-        title: 'Recorded Weight',
-        completed_at: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString(),
-        result: { weight: 75.2, unit: 'kg' }
-      }
-    ],
-    health_metrics: {
-      weight: { value: 75.2, date: new Date().toISOString(), trend: 'down' },
-      blood_pressure: { systolic: 128, diastolic: 82, date: new Date().toISOString() },
-      heart_rate: { value: 72, date: new Date().toISOString() },
-      blood_sugar: { value: 105, date: new Date().toISOString() }
-    },
-    alerts: [
-      {
-        id: '1',
-        type: 'warning',
-        title: 'Medication Missed',
-        message: 'You missed your morning Lisinopril. Please take it now or contact your doctor.',
-        action_required: true,
-        created_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString()
-      }
-    ]
-  })
+  // Mock data generation removed - using real API data only
 
   const handleCompleteEvent = async (eventId: string) => {
     try {

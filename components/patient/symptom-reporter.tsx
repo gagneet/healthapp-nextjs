@@ -77,28 +77,54 @@ export default function SymptomReporter({
     handleBodyPartSelection(detectedPart, { x, y, z })
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
     const symptomData = {
-      id: `symptom_${Date.now()}`,
       name: formData.symptomName,
       severity: formData.severity,
       description: formData.description,
       body_part: formData.bodyPartCustom,
       onset_time: new Date().toISOString(),
-      recorded_at: new Date().toISOString(),
       x: formData.position.x,
       y: formData.position.y,
       z: formData.position.z || 0,
-      status: 'active',
+      status: 'active' as const,
       duration: formData.duration,
       triggers: formData.triggers,
-      patient_id: patientId
+      patient_id: patientId || ''
     }
 
-    onSymptomSubmit?.(symptomData)
-    handleReset()
+    try {
+      const response = await fetch('/api/symptoms', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(symptomData)
+      })
+
+      if (response.ok) {
+        const result = await response.json()
+        onSymptomSubmit?.(result.payload.data)
+        handleReset()
+        // Show success message
+        if (typeof window !== 'undefined' && window.alert) {
+          window.alert('Symptom recorded successfully!')
+        }
+      } else {
+        console.error('Failed to submit symptom:', response.statusText)
+        if (typeof window !== 'undefined' && window.alert) {
+          window.alert('Failed to record symptom. Please try again.')
+        }
+      }
+    } catch (error) {
+      console.error('Error submitting symptom:', error)
+      if (typeof window !== 'undefined' && window.alert) {
+        window.alert('Network error. Please check your connection and try again.')
+      }
+    }
   }
 
   const handleReset = () => {

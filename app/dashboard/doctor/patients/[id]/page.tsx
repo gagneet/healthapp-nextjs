@@ -59,73 +59,11 @@ interface PatientAPIResponse {
   }
 }
 
-// Legacy mock data structure for fallback display
-const mockPatient: Patient = {
-  id: '1',
-  user_id: 'user1',
-  first_name: 'John',
-  last_name: 'Doe',
-  email: 'john.doe@email.com',
-  phone: '+1-555-0123',
-  date_of_birth: '1980-05-15',
-  gender: 'MALE',
-  medical_record_number: 'MRN001',
-  last_visit: '2024-01-15',
-  next_appointment: '2024-02-01',
-  adherence_rate: 92,
-  critical_alerts: 0,
-  status: 'active',
-  created_at: '2024-01-01',
-}
+// Mock data removed - using real API data only
 
-const mockCarePlans: CarePlan[] = [
-  {
-    id: '1',
-    name: 'Hypertension Management',
-    status: 'active',
-    priority: 'high',
-    start_date: '2024-01-01',
-    end_date: '2024-06-01',
-    medications_count: 3,
-    vitals_count: 2,
-    appointments_count: 4,
-  },
-  {
-    id: '2',
-    name: 'Diabetes Care Plan',
-    status: 'active',
-    priority: 'critical',
-    start_date: '2024-01-15',
-    medications_count: 2,
-    vitals_count: 3,
-    appointments_count: 2,
-  },
-]
+// Mock data removed - using real API data from carePlans state
 
-const mockMedications: Medication[] = [
-  {
-    id: '1',
-    name: 'Lisinopril',
-    dosage: '10mg',
-    frequency: 'Once daily',
-    start_date: '2024-01-01',
-    is_critical: true,
-    adherence_rate: 95,
-    last_taken: '2024-01-22T08:00:00Z',
-    next_due: '2024-01-23T08:00:00Z',
-  },
-  {
-    id: '2',
-    name: 'Metformin',
-    dosage: '500mg',
-    frequency: 'Twice daily',
-    start_date: '2024-01-15',
-    is_critical: true,
-    adherence_rate: 88,
-    last_taken: '2024-01-22T12:00:00Z',
-    next_due: '2024-01-22T20:00:00Z',
-  },
-]
+// Mock data removed - using real API data from medications state
 
 const mockVitalReadings: VitalReading[] = [
   {
@@ -170,7 +108,7 @@ const mockAppointments: Appointment[] = [
   },
 ]
 
-const mockSymptoms = [
+const symptoms = [
   {
     id: '1',
     name: 'Headache',
@@ -1294,7 +1232,7 @@ export default function PatientDetailsPage() {
                 </CardHeader>
                 <CardContent>
                   <BodyDiagramEnhanced
-                    symptoms={mockSymptoms}
+                    symptoms={symptoms}
                     view={bodyView}
                     onViewChange={setBodyView}
                     highlightedSymptom={highlightedSymptom}
@@ -1321,7 +1259,7 @@ export default function PatientDetailsPage() {
                 </CardHeader>
                 <CardContent>
                   <SymptomsTimeline
-                    symptoms={mockSymptoms}
+                    symptoms={symptoms}
                     highlightedSymptom={highlightedSymptom}
                     onSymptomClick={(symptom) => {
                       setHighlightedSymptom(symptom.id === highlightedSymptom ? null : symptom.id)
@@ -1348,7 +1286,7 @@ export default function PatientDetailsPage() {
                     <div>
                       <p className="text-sm text-gray-600">Most Severe</p>
                       <p className="text-lg font-bold text-red-600">
-                        {Math.max(...mockSymptoms.map(s => s.severity))}/10
+                        {Math.max(...symptoms.map(s => s.severity))}/10
                       </p>
                     </div>
                     <div className="text-2xl">🚨</div>
@@ -1362,7 +1300,7 @@ export default function PatientDetailsPage() {
                     <div>
                       <p className="text-sm text-gray-600">Active Symptoms</p>
                       <p className="text-lg font-bold text-orange-600">
-                        {mockSymptoms.filter(s => s.status === 'active').length}
+                        {symptoms.filter(s => s.status === 'active').length}
                       </p>
                     </div>
                     <div className="text-2xl">⚡</div>
@@ -1376,7 +1314,7 @@ export default function PatientDetailsPage() {
                     <div>
                       <p className="text-sm text-gray-600">Resolved</p>
                       <p className="text-lg font-bold text-green-600">
-                        {mockSymptoms.filter(s => s.status === 'resolved').length}
+                        {symptoms.filter(s => s.status === 'resolved').length}
                       </p>
                     </div>
                     <div className="text-2xl">✅</div>
