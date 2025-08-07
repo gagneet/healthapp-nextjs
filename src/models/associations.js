@@ -6,6 +6,7 @@ export default function defineAssociations(models) {
     // Core models
     User,
     Doctor,
+    HSP,
     Patient,
     Speciality,
     Clinic,
@@ -43,7 +44,11 @@ export default function defineAssociations(models) {
     // New chart analytics models
     MedicationLog,
     PatientAlert,
-    DashboardMetric
+    DashboardMetric,
+    
+    // New consent workflow models
+    SecondaryDoctorAssignment,
+    PatientConsentOtp
   } = models;
 
   // ====== CORE USER ASSOCIATIONS ======
@@ -374,5 +379,149 @@ export default function defineAssociations(models) {
     });
   }
 
-  console.log('✅ All associations (including chart analytics) defined successfully');
+  // ====== CONSENT WORKFLOW ASSOCIATIONS ======
+  
+  // Secondary Doctor Assignment associations
+  if (SecondaryDoctorAssignment) {
+    // Patient relationships
+    if (Patient) {
+      SecondaryDoctorAssignment.belongsTo(Patient, {
+        foreignKey: 'patient_id',
+        as: 'patient'
+      });
+      Patient.hasMany(SecondaryDoctorAssignment, {
+        foreignKey: 'patient_id',
+        as: 'secondaryDoctorAssignments'
+      });
+    }
+    
+    // Primary Doctor relationships
+    if (Doctor) {
+      SecondaryDoctorAssignment.belongsTo(Doctor, {
+        foreignKey: 'primary_doctor_id',
+        as: 'primaryDoctor'
+      });
+      Doctor.hasMany(SecondaryDoctorAssignment, {
+        foreignKey: 'primary_doctor_id',
+        as: 'primaryDoctorAssignments'
+      });
+      
+      // Secondary Doctor relationships
+      SecondaryDoctorAssignment.belongsTo(Doctor, {
+        foreignKey: 'secondary_doctor_id',
+        as: 'secondaryDoctor'
+      });
+      Doctor.hasMany(SecondaryDoctorAssignment, {
+        foreignKey: 'secondary_doctor_id',
+        as: 'secondaryDoctorAssignments'
+      });
+    }
+    
+    // HSP relationships
+    if (HSP) {
+      SecondaryDoctorAssignment.belongsTo(HSP, {
+        foreignKey: 'secondary_hsp_id',
+        as: 'secondaryHsp'
+      });
+      HSP.hasMany(SecondaryDoctorAssignment, {
+        foreignKey: 'secondary_hsp_id',
+        as: 'secondaryHspAssignments'
+      });
+    }
+    
+    // Provider organization relationships
+    if (Organization) {
+      SecondaryDoctorAssignment.belongsTo(Organization, {
+        foreignKey: 'primary_doctor_provider_id',
+        as: 'primaryDoctorProvider'
+      });
+      SecondaryDoctorAssignment.belongsTo(Organization, {
+        foreignKey: 'secondary_doctor_provider_id',
+        as: 'secondaryDoctorProvider'
+      });
+      
+      Organization.hasMany(SecondaryDoctorAssignment, {
+        foreignKey: 'primary_doctor_provider_id',
+        as: 'primaryDoctorProviderAssignments'
+      });
+      Organization.hasMany(SecondaryDoctorAssignment, {
+        foreignKey: 'secondary_doctor_provider_id',
+        as: 'secondaryDoctorProviderAssignments'
+      });
+    }
+  }
+
+  // Patient Consent OTP associations
+  if (PatientConsentOtp) {
+    // Secondary Assignment relationship
+    if (SecondaryDoctorAssignment) {
+      PatientConsentOtp.belongsTo(SecondaryDoctorAssignment, {
+        foreignKey: 'secondary_assignment_id',
+        as: 'secondaryAssignment'
+      });
+      SecondaryDoctorAssignment.hasMany(PatientConsentOtp, {
+        foreignKey: 'secondary_assignment_id',
+        as: 'consentOtps'
+      });
+    }
+    
+    // Patient relationship
+    if (Patient) {
+      PatientConsentOtp.belongsTo(Patient, {
+        foreignKey: 'patient_id',
+        as: 'patient'
+      });
+      Patient.hasMany(PatientConsentOtp, {
+        foreignKey: 'patient_id',
+        as: 'consentOtps'
+      });
+    }
+    
+    // Doctor relationships
+    if (Doctor) {
+      PatientConsentOtp.belongsTo(Doctor, {
+        foreignKey: 'primary_doctor_id',
+        as: 'primaryDoctor'
+      });
+      PatientConsentOtp.belongsTo(Doctor, {
+        foreignKey: 'secondary_doctor_id',
+        as: 'secondaryDoctor'
+      });
+      
+      Doctor.hasMany(PatientConsentOtp, {
+        foreignKey: 'primary_doctor_id',
+        as: 'primaryDoctorOtps'
+      });
+      Doctor.hasMany(PatientConsentOtp, {
+        foreignKey: 'secondary_doctor_id',
+        as: 'secondaryDoctorOtps'
+      });
+    }
+    
+    // HSP relationship
+    if (HSP) {
+      PatientConsentOtp.belongsTo(HSP, {
+        foreignKey: 'secondary_hsp_id',
+        as: 'secondaryHsp'
+      });
+      HSP.hasMany(PatientConsentOtp, {
+        foreignKey: 'secondary_hsp_id',
+        as: 'secondaryHspOtps'
+      });
+    }
+    
+    // User relationship for request tracking
+    if (User) {
+      PatientConsentOtp.belongsTo(User, {
+        foreignKey: 'requested_by_user_id',
+        as: 'requestedByUser'
+      });
+      User.hasMany(PatientConsentOtp, {
+        foreignKey: 'requested_by_user_id',
+        as: 'requestedOtps'
+      });
+    }
+  }
+
+  console.log('✅ All associations (including consent workflow) defined successfully');
 }

@@ -46,6 +46,10 @@ import MedicationLogModel from './MedicationLog.js';
 import PatientAlertModel from './PatientAlert.js';
 import DashboardMetricModel from './DashboardMetric.js';
 
+// Import new consent workflow models
+import SecondaryDoctorAssignmentModel from './SecondaryDoctorAssignment.js';
+import PatientConsentOtpModel from './PatientConsentOtp.js';
+
 // Initialize models with new ES modules format
 const User = UserModel(sequelize);
 const UserRole = UserRoleModel(sequelize, Sequelize.DataTypes);
@@ -90,6 +94,10 @@ const MedicationLog = MedicationLogModel(sequelize);
 const PatientAlert = PatientAlertModel(sequelize);
 const DashboardMetric = DashboardMetricModel(sequelize);
 
+// Initialize new consent workflow models
+const SecondaryDoctorAssignment = SecondaryDoctorAssignmentModel(sequelize);
+const PatientConsentOtp = PatientConsentOtpModel(sequelize);
+
 const db = {
   sequelize,
   Sequelize,
@@ -133,7 +141,10 @@ const db = {
   // New chart analytics models
   MedicationLog,
   PatientAlert,
-  DashboardMetric
+  DashboardMetric,
+  // New consent workflow models
+  SecondaryDoctorAssignment,
+  PatientConsentOtp
 };
 
 // Set up associations
@@ -182,6 +193,8 @@ export {
   PaymentMethod,
   MedicationLog,
   PatientAlert,
-  DashboardMetric
+  DashboardMetric,
+  SecondaryDoctorAssignment,
+  PatientConsentOtp
 };
 export default db;

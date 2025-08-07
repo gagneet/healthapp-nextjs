@@ -2,6 +2,7 @@
 import express from 'express';
 import doctorController from '../controllers/doctorController.js';
 import patientController from '../controllers/patientController.js';
+import consentController from '../controllers/consentController.js';
 import { authenticate, authorize } from '../middleware/auth.js';
 import { validateRequest, schemas } from '../middleware/validation.js';
 import { USER_CATEGORIES } from '../config/constants.js';
@@ -144,6 +145,57 @@ router.post('/patients',
   authorize(USER_CATEGORIES.DOCTOR, USER_CATEGORIES.ADMIN),
   validateRequest(schemas.patientCreate),
   patientController.createPatient
+);
+
+// ====== CONSENT WORKFLOW ROUTES ======
+
+// GET /api/doctors/patients/secondary (Get secondary patients with consent status)
+router.get('/patients/secondary',
+  authenticate,
+  authorize(USER_CATEGORIES.DOCTOR, USER_CATEGORIES.HSP),
+  consentController.getSecondaryPatients
+);
+
+// POST /api/doctors/patients/:patientId/assign-secondary (Assign secondary doctor/HSP)
+router.post('/patients/:patientId/assign-secondary',
+  authenticate,
+  authorize(USER_CATEGORIES.DOCTOR, USER_CATEGORIES.HSP, USER_CATEGORIES.ADMIN),
+  consentController.assignSecondaryDoctor
+);
+
+// GET /api/doctors/patients/:patientId/consent-status (Check consent status)
+router.get('/patients/:patientId/consent-status',
+  authenticate,
+  authorize(USER_CATEGORIES.DOCTOR, USER_CATEGORIES.HSP),
+  consentController.getConsentStatus
+);
+
+// POST /api/doctors/patients/:patientId/request-consent (Generate OTP for consent)
+router.post('/patients/:patientId/request-consent',
+  authenticate,
+  authorize(USER_CATEGORIES.DOCTOR, USER_CATEGORIES.HSP),
+  consentController.requestConsent
+);
+
+// POST /api/doctors/patients/:patientId/verify-consent (Verify OTP)
+router.post('/patients/:patientId/verify-consent',
+  authenticate,
+  authorize(USER_CATEGORIES.DOCTOR, USER_CATEGORIES.HSP),
+  consentController.verifyConsent
+);
+
+// POST /api/doctors/patients/:patientId/resend-otp (Resend OTP)
+router.post('/patients/:patientId/resend-otp',
+  authenticate,
+  authorize(USER_CATEGORIES.DOCTOR, USER_CATEGORIES.HSP),
+  consentController.resendOtp
+);
+
+// GET /api/doctors/search-providers (Search for doctors/HSPs for assignment)
+router.get('/search-providers',
+  authenticate,
+  authorize(USER_CATEGORIES.DOCTOR, USER_CATEGORIES.HSP, USER_CATEGORIES.ADMIN),
+  consentController.searchProviders
 );
 
 export default router;

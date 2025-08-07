@@ -4,6 +4,7 @@ import { Op } from 'sequelize';
 import { PAGINATION, USER_CATEGORIES } from '../config/constants.js';
 import ResponseFormatter from '../utils/responseFormatter.js';
 import PatientService from '../services/PatientService.js';
+import PatientAccessService from '../services/PatientAccessService.js';
 import { ValidationError, NotFoundError } from '../utils/errors.js';
 
 class PatientController {
