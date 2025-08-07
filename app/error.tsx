@@ -21,8 +21,36 @@ export default function Error({
   }, [error])
 
   const handleGoToDashboard = () => {
-    // Navigate to dashboard based on user role or fallback to general dashboard
-    router.push('/dashboard')
+    // Navigate to appropriate dashboard based on user role
+    if (typeof window !== 'undefined') {
+      try {
+        const userString = localStorage.getItem('user')
+        if (userString) {
+          const user = JSON.parse(userString)
+          const role = user.role?.toUpperCase()
+          switch (role) {
+            case 'DOCTOR':
+              router.push('/dashboard/doctor')
+              break
+            case 'PATIENT':
+              router.push('/dashboard/patient')
+              break
+            case 'ADMIN':
+              router.push('/dashboard/admin')
+              break
+            case 'HOSPITAL':
+              router.push('/dashboard/hospital')
+              break
+            default:
+              router.push('/')
+          }
+        } else {
+          router.push('/')
+        }
+      } catch (error) {
+        router.push('/')
+      }
+    }
   }
 
   const handleRetry = () => {

@@ -38,8 +38,24 @@ export default function NotFound() {
   }
 
   const handleGoToDashboard = () => {
-    if (isAuthenticated) {
-      router.push('/dashboard')
+    if (isAuthenticated && user) {
+      const role = user.role?.toUpperCase()
+      switch (role) {
+        case 'DOCTOR':
+          router.push('/dashboard/doctor')
+          break
+        case 'PATIENT':
+          router.push('/dashboard/patient')
+          break
+        case 'ADMIN':
+          router.push('/dashboard/admin')
+          break
+        case 'HOSPITAL':
+          router.push('/dashboard/hospital')
+          break
+        default:
+          router.push('/')
+      }
     } else {
       router.push('/auth/login')
     }

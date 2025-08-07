@@ -34,10 +34,39 @@ class ErrorBoundary extends Component<Props, State> {
   }
 
   private handleGoToDashboard = () => {
-    // Clear error state and redirect
+    // Clear error state and redirect to appropriate dashboard based on user
     this.setState({ hasError: false, error: null })
     if (typeof window !== 'undefined') {
-      window.location.href = '/dashboard'
+      // Try to get user from localStorage to determine appropriate redirect
+      try {
+        const userString = localStorage.getItem('user')
+        if (userString) {
+          const user = JSON.parse(userString)
+          const role = user.role?.toUpperCase()
+          switch (role) {
+            case 'DOCTOR':
+              window.location.href = '/dashboard/doctor'
+              break
+            case 'PATIENT':
+              window.location.href = '/dashboard/patient'
+              break
+            case 'ADMIN':
+              window.location.href = '/dashboard/admin'
+              break
+            case 'HOSPITAL':
+              window.location.href = '/dashboard/hospital'
+              break
+            default:
+              window.location.href = '/'
+          }
+        } else {
+          // No user found, redirect to home
+          window.location.href = '/'
+        }
+      } catch (error) {
+        // Error parsing user, redirect to home
+        window.location.href = '/'
+      }
     }
   }
 

@@ -15,7 +15,7 @@ import {
   TrashIcon
 } from '@heroicons/react/24/outline'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { useEnhancedAuth } from '@/lib/enhancedAuth'
+import { useAuth } from '@/lib/auth-context'
 import { apiRequest } from '@/lib/api'
 import toast from 'react-hot-toast'
 
@@ -58,7 +58,7 @@ interface ActiveSession {
 }
 
 export default function DoctorSettingsPage() {
-  const { user, getActiveSessions, changePassword, logout } = useEnhancedAuth()
+  const { user, logout } = useAuth()
   const [settings, setSettings] = useState<UserSettings | null>(null)
   const [activeSessions, setActiveSessions] = useState<ActiveSession[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -119,8 +119,11 @@ export default function DoctorSettingsPage() {
 
   const fetchActiveSessions = async () => {
     try {
-      const sessions = await getActiveSessions()
-      setActiveSessions(sessions)
+      // Basic implementation since enhanced auth is not available
+      const response = await apiRequest.get('/auth/sessions')
+      if (response.status && response.payload?.data) {
+        setActiveSessions(response.payload.data.sessions || [])
+      }
     } catch (error) {
       console.error('Failed to fetch sessions:', error)
     }
@@ -190,18 +193,25 @@ export default function DoctorSettingsPage() {
       return
     }
 
-    const success = await changePassword(
-      passwordData.currentPassword,
-      passwordData.newPassword,
-      false
-    )
-
-    if (success) {
-      setPasswordData({
-        currentPassword: '',
-        newPassword: '',
-        confirmPassword: ''
+    try {
+      const response = await apiRequest.post('/auth/change-password', {
+        currentPassword: passwordData.currentPassword,
+        newPassword: passwordData.newPassword
       })
+
+      if (response.status) {
+        toast.success('Password changed successfully')
+        setPasswordData({
+          currentPassword: '',
+          newPassword: '',
+          confirmPassword: ''
+        })
+      } else {
+        toast.error(response.payload?.message || 'Password change failed')
+      }
+    } catch (error) {
+      console.error('Password change error:', error)
+      toast.error('Network error occurred')
     }
   }
 
@@ -220,7 +230,13 @@ export default function DoctorSettingsPage() {
 
   const logoutAllDevices = async () => {
     if (confirm('Are you sure you want to logout from all devices? You will need to login again.')) {
-      await logout(true)
+      try {
+        await apiRequest.post('/auth/logout-all')
+        await logout()
+      } catch (error) {
+        console.error('Logout all devices error:', error)
+        toast.error('Failed to logout from all devices')
+      }
     }
   }
 
