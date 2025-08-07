@@ -41,6 +41,11 @@ import PatientSubscriptionModel from './PatientSubscription.js';
 import PaymentModel from './Payment.js';
 import PaymentMethodModel from './PaymentMethod.js';
 
+// Import new chart analytics models
+import MedicationLogModel from './MedicationLog.js';
+import PatientAlertModel from './PatientAlert.js';
+import DashboardMetricModel from './DashboardMetric.js';
+
 // Initialize models with new ES modules format
 const User = UserModel(sequelize);
 const UserRole = UserRoleModel(sequelize, Sequelize.DataTypes);
@@ -79,6 +84,11 @@ const ServicePlan = ServicePlanModel(sequelize, Sequelize.DataTypes);
 const PatientSubscription = PatientSubscriptionModel(sequelize, Sequelize.DataTypes);
 const Payment = PaymentModel(sequelize, Sequelize.DataTypes);
 const PaymentMethod = PaymentMethodModel(sequelize, Sequelize.DataTypes);
+
+// Initialize new chart analytics models
+const MedicationLog = MedicationLogModel(sequelize);
+const PatientAlert = PatientAlertModel(sequelize);
+const DashboardMetric = DashboardMetricModel(sequelize);
 
 const db = {
   sequelize,
@@ -119,7 +129,11 @@ const db = {
   ServicePlan,
   PatientSubscription,
   Payment,
-  PaymentMethod
+  PaymentMethod,
+  // New chart analytics models
+  MedicationLog,
+  PatientAlert,
+  DashboardMetric
 };
 
 // Set up associations
@@ -165,6 +179,9 @@ export {
   ServicePlan,
   PatientSubscription,
   Payment,
-  PaymentMethod
+  PaymentMethod,
+  MedicationLog,
+  PatientAlert,
+  DashboardMetric
 };
 export default db;

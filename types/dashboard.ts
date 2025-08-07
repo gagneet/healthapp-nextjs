@@ -78,6 +78,12 @@ export interface Patient {
   created_at: string
   updated_at: string
   deleted_at?: string
+  // Provider linkage and consent tracking
+  linked_provider_id?: string
+  provider_linked_at?: string
+  provider_consent_given: boolean
+  provider_consent_given_at?: string
+  provider_consent_method?: 'sms' | 'email' | 'in_person' | 'phone' | 'automatic'
   // Navigation/computed fields for frontend
   user?: User
   assigned_doctor?: string
@@ -225,4 +231,95 @@ export interface Symptom {
   onset_time?: string
   recorded_at: string
   body_location?: Record<string, any>
+}
+
+export interface MedicationLog {
+  id: string
+  medication_id: string
+  patient_id: string
+  scheduled_at: string
+  taken_at?: string
+  dosage_taken?: string
+  notes?: string
+  adherence_status: 'taken' | 'missed' | 'late' | 'partial'
+  reminder_sent: boolean
+  created_at: string
+  updated_at: string
+  // Relations
+  medication?: Medication
+  patient?: Patient
+}
+
+export interface PatientAlert {
+  id: string
+  patient_id: string
+  alert_type: 'medication' | 'vital' | 'appointment' | 'symptom' | 'system'
+  severity: 'critical' | 'high' | 'medium' | 'low'
+  title: string
+  message: string
+  action_required: boolean
+  acknowledged: boolean
+  acknowledged_at?: string
+  acknowledged_by?: string
+  resolved: boolean
+  resolved_at?: string
+  metadata: Record<string, any>
+  created_at: string
+  updated_at: string
+  // Relations
+  patient?: Patient
+}
+
+export interface DashboardMetric {
+  id: string
+  entity_type: 'patient' | 'doctor' | 'organization' | 'system'
+  entity_id: string
+  metric_type: string
+  metric_data: Record<string, any>
+  calculated_at: string
+  valid_until?: string
+  created_at: string
+  updated_at: string
+}
+
+export interface PatientProviderConsentHistory {
+  id: string
+  patient_id: string
+  previous_provider_id?: string
+  new_provider_id: string
+  doctor_id?: string
+  hsp_id?: string
+  consent_required: boolean
+  consent_requested: boolean
+  consent_requested_at?: string
+  consent_given: boolean
+  consent_given_at?: string
+  consent_method?: 'sms' | 'email' | 'in_person' | 'phone' | 'automatic'
+  consent_token?: string
+  consent_token_expires_at?: string
+  consent_verified: boolean
+  consent_denied: boolean
+  consent_denied_at?: string
+  reason?: string
+  initiated_by?: string
+  status: 'pending' | 'consent_requested' | 'approved' | 'denied' | 'expired' | 'completed'
+  metadata: Record<string, any>
+  created_at: string
+  updated_at: string
+}
+
+export interface ProviderChangeHistory {
+  id: string
+  practitioner_type: 'doctor' | 'hsp'
+  practitioner_id: string
+  previous_provider_id?: string
+  new_provider_id: string
+  change_date: string
+  affected_patients_count: number
+  consent_required_count: number
+  consent_obtained_count: number
+  reason?: string
+  status: 'active' | 'processing' | 'completed'
+  created_at: string
+  updated_at: string
 }

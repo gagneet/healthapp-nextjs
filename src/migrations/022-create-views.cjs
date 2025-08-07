@@ -26,18 +26,20 @@ module.exports = {
           u_patient.email as patient_email,
           
           -- Provider info
-          hp.id as provider_id,
-          u_provider.first_name as provider_first_name,
-          u_provider.last_name as provider_last_name,
-          u_provider.email as provider_email,
+          COALESCE(hp.id, d.id) as provider_id,
+          COALESCE(u_provider.first_name, u_doctor.first_name) as provider_first_name,
+          COALESCE(u_provider.last_name, u_doctor.last_name) as provider_last_name,
+          COALESCE(u_provider.email, u_doctor.email) as provider_email,
           
           cp.created_at,
           cp.updated_at
       FROM care_plans cp
       JOIN patients p ON cp.patient_id = p.id
       JOIN users u_patient ON p.user_id = u_patient.id
-      LEFT JOIN healthcare_providers hp ON cp.provider_id = hp.id
+      LEFT JOIN healthcare_providers hp ON cp.created_by_hsp_id = hp.id
       LEFT JOIN users u_provider ON hp.user_id = u_provider.id
+      LEFT JOIN doctors d ON cp.created_by_doctor_id = d.id
+      LEFT JOIN users u_doctor ON d.user_id = u_doctor.id
       WHERE cp.deleted_at IS NULL 
           AND p.deleted_at IS NULL 
           AND u_patient.deleted_at IS NULL
@@ -95,17 +97,19 @@ module.exports = {
           u_patient.last_name as patient_last_name,
           
           -- Provider info (from care plan)
-          hp.id as provider_id,
-          u_provider.first_name as provider_first_name,
-          u_provider.last_name as provider_last_name,
+          COALESCE(hp.id, d2.id) as provider_id,
+          COALESCE(u_provider.first_name, u_doctor2.first_name) as provider_first_name,
+          COALESCE(u_provider.last_name, u_doctor2.last_name) as provider_last_name,
           
           se.created_at
       FROM scheduled_events se
       JOIN patients p ON se.patient_id = p.id
       JOIN users u_patient ON p.user_id = u_patient.id
       LEFT JOIN care_plans cp ON se.care_plan_id = cp.id
-      LEFT JOIN healthcare_providers hp ON cp.provider_id = hp.id
+      LEFT JOIN healthcare_providers hp ON cp.created_by_hsp_id = hp.id
       LEFT JOIN users u_provider ON hp.user_id = u_provider.id
+      LEFT JOIN doctors d2 ON cp.created_by_doctor_id = d2.id
+      LEFT JOIN users u_doctor2 ON d2.user_id = u_doctor2.id
       WHERE se.deleted_at IS NULL 
           AND p.deleted_at IS NULL 
           AND u_patient.deleted_at IS NULL

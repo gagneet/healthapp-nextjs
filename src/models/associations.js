@@ -38,7 +38,12 @@ export default function defineAssociations(models) {
     AdherenceRecord,
     VitalReading,
     Symptom,
-    VitalRequirement
+    VitalRequirement,
+    
+    // New chart analytics models
+    MedicationLog,
+    PatientAlert,
+    DashboardMetric
   } = models;
 
   // ====== CORE USER ASSOCIATIONS ======
@@ -308,5 +313,66 @@ export default function defineAssociations(models) {
     });
   }
 
-  console.log('✅ Associations defined successfully');
+  // ====== NEW CHART ANALYTICS ASSOCIATIONS ======
+
+  // MedicationLog associations
+  if (MedicationLog && Medication) {
+    MedicationLog.belongsTo(Medication, {
+      foreignKey: 'medication_id',
+      as: 'medication'
+    });
+    Medication.hasMany(MedicationLog, {
+      foreignKey: 'medication_id',
+      as: 'logs'
+    });
+  }
+
+  if (MedicationLog && Patient) {
+    MedicationLog.belongsTo(Patient, {
+      foreignKey: 'patient_id',
+      as: 'patient'
+    });
+    Patient.hasMany(MedicationLog, {
+      foreignKey: 'patient_id',
+      as: 'medicationLogs'
+    });
+  }
+
+  // PatientAlert associations
+  if (PatientAlert && Patient) {
+    PatientAlert.belongsTo(Patient, {
+      foreignKey: 'patient_id',
+      as: 'patient'
+    });
+    Patient.hasMany(PatientAlert, {
+      foreignKey: 'patient_id',
+      as: 'alerts'
+    });
+  }
+
+  // VitalReading associations (if not already defined)
+  if (VitalReading && Patient) {
+    VitalReading.belongsTo(Patient, {
+      foreignKey: 'patient_id',
+      as: 'patient'
+    });
+    Patient.hasMany(VitalReading, {
+      foreignKey: 'patient_id',
+      as: 'vitalReadings'
+    });
+  }
+
+  // Additional Patient associations for provider linkage
+  if (Patient && Organization) {
+    Patient.belongsTo(Organization, {
+      foreignKey: 'linked_provider_id',
+      as: 'linkedProvider'
+    });
+    Organization.hasMany(Patient, {
+      foreignKey: 'linked_provider_id',
+      as: 'linkedPatients'
+    });
+  }
+
+  console.log('✅ All associations (including chart analytics) defined successfully');
 }

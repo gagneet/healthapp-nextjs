@@ -2,9 +2,9 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { CalendarIcon, Plus, Clock, User, Users, Filter, ChevronDown } from 'lucide-react'
+import { CalendarIcon, Plus, Clock, User, Users, Filter, ChevronDown, ChevronLeft, ChevronRight, Home } from 'lucide-react'
 import { useState, useEffect } from 'react'
-import { DayPilotCalendar, DayPilot } from '@daypilot/daypilot-lite-react'
+import { DayPilotCalendar, DayPilotMonth, DayPilot } from '@daypilot/daypilot-lite-react'
 
 interface Appointment {
   id: number
@@ -187,6 +187,52 @@ export default function DoctorCalendarPage() {
     }))
   }
 
+  // Navigation handlers
+  const handlePreviousClick = () => {
+    const currentDate = new Date(calendarConfig.startDate)
+    
+    if (viewType === 'Month') {
+      currentDate.setMonth(currentDate.getMonth() - 1)
+    } else if (viewType === 'Week') {
+      currentDate.setDate(currentDate.getDate() - 7)
+    } else {
+      currentDate.setDate(currentDate.getDate() - 1)
+    }
+    
+    setCalendarConfig(prev => ({
+      ...prev,
+      startDate: currentDate.toISOString().split('T')[0]
+    }))
+    setSelectedDate(currentDate.toISOString().split('T')[0])
+  }
+
+  const handleNextClick = () => {
+    const currentDate = new Date(calendarConfig.startDate)
+    
+    if (viewType === 'Month') {
+      currentDate.setMonth(currentDate.getMonth() + 1)
+    } else if (viewType === 'Week') {
+      currentDate.setDate(currentDate.getDate() + 7)
+    } else {
+      currentDate.setDate(currentDate.getDate() + 1)
+    }
+    
+    setCalendarConfig(prev => ({
+      ...prev,
+      startDate: currentDate.toISOString().split('T')[0]
+    }))
+    setSelectedDate(currentDate.toISOString().split('T')[0])
+  }
+
+  const handleTodayClick = () => {
+    const today = new Date().toISOString().split('T')[0]
+    setCalendarConfig(prev => ({
+      ...prev,
+      startDate: today
+    }))
+    setSelectedDate(today)
+  }
+
   // Get calendar height based on view type
   const getCalendarHeight = () => {
     switch (viewType) {
@@ -215,8 +261,26 @@ export default function DoctorCalendarPage() {
     // Handle new appointment creation
     console.log('Create new appointment:', args.start, args.end)
     // Example: Open appointment creation modal
-    alert(`Create new appointment from ${args.start} to ${args.end}`)
-    args.calendar.clearSelection()
+    
+    const startDate = new Date(args.start)
+    const endDate = new Date(args.end)
+    
+    if (viewType === 'Month') {
+      // For monthly view, show day-level appointment creation
+      alert(`Create new appointment on ${startDate.toDateString()}`)
+      // Clear selection for monthly view
+      if (args.calendar && args.calendar.clearSelection) {
+        args.calendar.clearSelection()
+      }
+    } else {
+      // For weekly/daily view, show time-specific appointment creation
+      const timeRange = `${startDate.toLocaleTimeString()} - ${endDate.toLocaleTimeString()}`
+      alert(`Create new appointment from ${timeRange} on ${startDate.toDateString()}`)
+      // Clear selection for calendar view
+      if (args.calendar && args.calendar.clearSelection) {
+        args.calendar.clearSelection()
+      }
+    }
   }
 
   const getStatusColor = (status: string) => {
@@ -460,36 +524,91 @@ export default function DoctorCalendarPage() {
         {/* DayPilot Calendar */}
         <Card>
           <CardContent className="p-6">
+            {/* Calendar Navigation Controls */}
+            <div className="flex items-center justify-between mb-4 pb-4 border-b">
+              <div className="flex items-center gap-2">
+                <Button variant="outline" size="sm" onClick={handlePreviousClick}>
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                <Button variant="outline" size="sm" onClick={handleTodayClick}>
+                  <Home className="h-4 w-4 mr-1" />
+                  Today
+                </Button>
+                <Button variant="outline" size="sm" onClick={handleNextClick}>
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
+              <div className="text-lg font-semibold text-gray-900">
+                {new Date(calendarConfig.startDate).toLocaleDateString('en-US', {
+                  year: 'numeric',
+                  month: 'long',
+                  ...(viewType !== 'Month' && { day: 'numeric' })
+                })}
+              </div>
+            </div>
             <div style={{ height: `${getCalendarHeight()}px` }}>
-              <DayPilotCalendar
-                {...calendarConfig}
-                events={calendarEvents}
-                onEventClick={handleEventClick}
-                onTimeRangeSelected={handleTimeRangeSelected}
-                style={{
-                  height: '100%'
-                }}
-                config={{
-                  viewType: viewType,
-                  startDate: calendarConfig.startDate,
-                  locale: 'en-us',
-                  heightSpec: 'Fixed',
-                  height: getCalendarHeight(),
-                  days: viewType === 'Days' ? getDaysCount() : undefined,
-                  cellHeight: viewType === 'Month' ? 80 : viewType === 'Week' ? 60 : 40,
-                  eventHeight: 25,
-                  timeRangeSelectedHandling: 'Enabled',
-                  eventClickHandling: 'Enabled',
-                  selectMode: viewType === 'Days' ? 'Hour' : 'Day',
-                  showToolTip: false,
-                  eventBorderColor: '#1f2937',
-                  headerDateFormat: viewType === 'Month' ? 'MMMM yyyy' : viewType === 'Week' ? 'MMMM yyyy' : 'MMMM d, yyyy',
-                  hourWidth: viewType === 'Days' ? 60 : undefined,
-                  businessHoursStart: '07:00',
-                  businessHoursEnd: '20:00',
-                  showNonBusiness: true
-                }}
-              />
+              {viewType === 'Month' ? (
+                <DayPilotMonth
+                  startDate={calendarConfig.startDate}
+                  events={calendarEvents}
+                  onEventClick={handleEventClick}
+                  onTimeRangeSelected={handleTimeRangeSelected}
+                  style={{
+                    height: '100%'
+                  }}
+                  config={{
+                    startDate: calendarConfig.startDate,
+                    locale: 'en-us',
+                    heightSpec: 'Fixed',
+                    height: getCalendarHeight(),
+                    cellHeight: 80,
+                    eventHeight: 25,
+                    timeRangeSelectedHandling: 'Enabled',
+                    eventClickHandling: 'Enabled',
+                    showToolTip: false,
+                    eventBorderColor: '#1f2937',
+                    headerDateFormat: 'MMMM yyyy',
+                    dayHeaderHeight: 30,
+                    weekStarts: 0, // Sunday = 0, Monday = 1
+                    showWeekNumbers: false,
+                    businessBeginsHour: 7,
+                    businessEndsHour: 20,
+                    eventStackingLineHeight: 20
+                  }}
+                />
+              ) : (
+                <DayPilotCalendar
+                  {...calendarConfig}
+                  events={calendarEvents}
+                  onEventClick={handleEventClick}
+                  onTimeRangeSelected={handleTimeRangeSelected}
+                  style={{
+                    height: '100%'
+                  }}
+                  config={{
+                    viewType: viewType === 'Days' ? 'Days' : 'Week',
+                    startDate: calendarConfig.startDate,
+                    locale: 'en-us',
+                    heightSpec: 'Fixed',
+                    height: getCalendarHeight(),
+                    days: viewType === 'Days' ? 1 : 7,
+                    cellHeight: viewType === 'Week' ? 60 : 40,
+                    eventHeight: 25,
+                    timeRangeSelectedHandling: 'Enabled',
+                    eventClickHandling: 'Enabled',
+                    selectMode: 'Hour',
+                    showToolTip: false,
+                    eventBorderColor: '#1f2937',
+                    headerDateFormat: viewType === 'Week' ? 'MMMM yyyy' : 'MMMM d, yyyy',
+                    hourWidth: 60,
+                    businessHoursStart: '07:00',
+                    businessHoursEnd: '20:00',
+                    showNonBusiness: true,
+                    timeFormat: 'Clock12Hours',
+                    eventRightClickHandling: 'ContextMenu'
+                  }}
+                />
+              )}
             </div>
             
             {/* Calendar Legend */}
@@ -523,7 +642,7 @@ export default function DoctorCalendarPage() {
               <div>
                 <h4 className="font-medium text-green-900 mb-1">Enhanced Calendar Views Available</h4>
                 <p className="text-sm text-green-700">
-                  Switch between Daily, Weekly, and Monthly views using the "View as" dropdown. 
+                  Switch between Daily, Weekly, and Monthly views using the &quot;View as&quot; dropdown. 
                   Filter by specific patients and click on appointments to view details or select empty slots to create new appointments.
                   Treatment plans and medication schedules integration coming soon.
                 </p>

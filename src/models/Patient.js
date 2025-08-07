@@ -288,6 +288,41 @@ export default (sequelize) => {
     deleted_at: {
       type: DataTypes.DATE,
       allowNull: true
+    },
+    
+    // Provider linkage and consent tracking
+    linked_provider_id: {
+      type: DataTypes.UUID,
+      allowNull: true,
+      references: {
+        model: 'organizations',
+        key: 'id'
+      },
+      comment: 'Current provider organization linked to this patient'
+    },
+    
+    provider_linked_at: {
+      type: DataTypes.DATE,
+      allowNull: true,
+      comment: 'When the patient was linked to the current provider'
+    },
+    
+    provider_consent_given: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+      comment: 'Whether patient gave consent for current provider linkage'
+    },
+    
+    provider_consent_given_at: {
+      type: DataTypes.DATE,
+      allowNull: true,
+      comment: 'When consent was given for current provider linkage'
+    },
+    
+    provider_consent_method: {
+      type: DataTypes.ENUM('sms', 'email', 'in_person', 'phone', 'automatic'),
+      allowNull: true,
+      comment: 'Method used to obtain consent for provider linkage'
     }
     
   }, {
