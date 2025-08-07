@@ -4,20 +4,29 @@ import { Doctor, Patient, User, Medicine, Speciality, Medication, Appointment, S
 import { Op } from 'sequelize';
 import bcrypt from 'bcryptjs';
 import { USER_CATEGORIES } from '../config/constants.js';
+import { parseQueryParam, parseQueryParamAsNumber } from '../utils/queryHelpers.js';
 
 class AdminController {
-  async getDoctors(req: Request, res: Response, next: NextFunction): Promise<void | Response> {
+  async getDoctors(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { page = 1, limit = 20, search } = req.query;
-      const pageNum = parseInt(String(page)) || 1;
-      const limitNum = parseInt(String(limit)) || 20;
+      const { page, limit, search } = req.query;
+      const pageNum = parseQueryParamAsNumber(page, 1);
+      const limitNum = parseQueryParamAsNumber(limit, 20);
       const offset = (pageNum - 1) * limitNum;
 
-      const whereClause: any = {};
+      interface WhereClause {
+        [Op.or]?: Array<{
+          first_name?: { [Op.like]: string };
+          last_name?: { [Op.like]: string };
+        }>;
+      }
+      
+      const whereClause: WhereClause = {};
       if (search) {
+        const searchString = parseQueryParam(search);
         whereClause[Op.or] = [
-          { first_name: { [Op.like]: `%${search}%` } },
-          { last_name: { [Op.like]: `%${search}%` } }
+          { first_name: { [Op.like]: `%${searchString}%` } },
+          { last_name: { [Op.like]: `%${searchString}%` } }
         ];
       }
 
@@ -35,11 +44,11 @@ class AdminController {
           }
         ],
         offset,
-        limit: parseInt(limit as string),
+        limit: limitNum,
         order: [['created_at', 'DESC']]
       });
 
-      const responseData = { doctors: {} };
+      const responseData: { doctors: Record<string, any> } = { doctors: {} };
 
       for (const doctor of doctors) {
         // Get patient count
@@ -47,7 +56,7 @@ class AdminController {
           where: { assigned_doctor_id: doctor.user_id }
         });
 
-        (responseData.doctors as any)[doctor.id] = {
+        responseData.doctors[doctor.id] = {
           basic_info: {
             id: doctor.id.toString(),
             first_name: doctor.first_name,
@@ -71,10 +80,10 @@ class AdminController {
         payload: {
           data: responseData,
           pagination: {
-            page: parseInt(page),
-            limit: parseInt(limit),
+            page: pageNum,
+            limit: limitNum,
             total: count,
-            total_pages: Math.ceil(count / limit)
+            total_pages: Math.ceil(count / limitNum)
           },
           message: 'Doctors retrieved successfully'
         }
@@ -86,14 +95,19 @@ class AdminController {
 
   async getMedicines(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { page = 1, limit = 20, search } = req.query;
-      const pageNum = parseInt(String(page)) || 1;
-      const limitNum = parseInt(String(limit)) || 20;
+      const { page, limit, search } = req.query;
+      const pageNum = parseQueryParamAsNumber(page, 1);
+      const limitNum = parseQueryParamAsNumber(limit, 20);
       const offset = (pageNum - 1) * limitNum;
 
-      const whereClause: any = {};
+      interface MedicineWhereClause {
+        name?: { [Op.like]: string };
+      }
+      
+      const whereClause: MedicineWhereClause = {};
       if (search) {
-        whereClause.name = { [Op.like]: `%${search}%` };
+        const searchString = parseQueryParam(search);
+        whereClause.name = { [Op.like]: `%${searchString}%` };
       }
 
       const { count, rows: medicines } = await Medicine.findAndCountAll({
@@ -103,7 +117,7 @@ class AdminController {
         order: [['created_at', 'DESC']]
       });
 
-      const responseData = { medicines: {} };
+      const responseData: { medicines: Record<string, any> } = { medicines: {} };
 
       for (const medicine of medicines) {
         // Get usage statistics
@@ -118,7 +132,7 @@ class AdminController {
           }
         });
 
-        (responseData.medicines as any)[medicine.id] = {
+        responseData.medicines[medicine.id] = {
           basic_info: {
             id: medicine.id.toString(),
             name: medicine.name,
@@ -204,7 +218,7 @@ class AdminController {
   }
 
   // Comprehensive Doctor Creation
-  async createDoctor(req: Request, res: Response, next: NextFunction) {
+  async createDoctor(req: Request, res: Response, next: NextFunction): Promise<void> {
     const transaction = await User.sequelize.transaction();
     
     try {
@@ -298,7 +312,7 @@ class AdminController {
         user_category: USER_CATEGORIES.DOCTOR,
         account_status: 'active',
         email_verified: false,
-        created_by: (req as any).user.id
+        created_by: req.user?.userId
       }, { transaction });
 
       // Create UserRole
@@ -392,7 +406,7 @@ class AdminController {
   }
 
   // Comprehensive Doctor Update
-  async updateDoctor(req: Request, res: Response, next: NextFunction) {
+  async updateDoctor(req: Request, res: Response, next: NextFunction): Promise<void> {
     const transaction = await User.sequelize.transaction();
     
     try {
@@ -462,22 +476,22 @@ class AdminController {
       }
 
       // Update User table (basic info)
-      const userUpdateData = {};
+      const userUpdateData: Record<string, any> = {};
       if (full_name) {
         // Split full name into components (don't store full_name as it's not a real field)
         const nameParts = full_name.trim().split(' ');
-        if (nameParts.length >= 1) userUpdateData.first_name = nameParts[0];
-        if (nameParts.length >= 2) userUpdateData.last_name = nameParts[nameParts.length - 1];
+        if (nameParts.length >= 1) (userUpdateData as any).first_name = nameParts[0];
+        if (nameParts.length >= 2) (userUpdateData as any).last_name = nameParts[nameParts.length - 1];
         if (nameParts.length >= 3) {
-          userUpdateData.middle_name = nameParts.slice(1, -1).join(' ');
+          (userUpdateData as any).middle_name = nameParts.slice(1, -1).join(' ');
         }
       }
-      if (first_name) userUpdateData.first_name = first_name;
-      if (middle_name) userUpdateData.middle_name = middle_name;
-      if (last_name) userUpdateData.last_name = last_name;
-      if (email) userUpdateData.email = email;
-      if (gender) userUpdateData.gender = gender;
-      if (mobile_number) userUpdateData.phone = mobile_number;
+      if (first_name) (userUpdateData as any).first_name = first_name;
+      if (middle_name) (userUpdateData as any).middle_name = middle_name;
+      if (last_name) (userUpdateData as any).last_name = last_name;
+      if (email) (userUpdateData as any).email = email;
+      if (gender) (userUpdateData as any).gender = gender;
+      if (mobile_number) (userUpdateData as any).phone = mobile_number;
 
       if (Object.keys(userUpdateData).length > 0) {
         await doctor.user.update(userUpdateData, { transaction });
@@ -571,19 +585,19 @@ class AdminController {
       }
 
       // Update user status
-      const userUpdateData = {};
-      if (status) userUpdateData.account_status = status;
-      if (verification_status !== undefined) userUpdateData.email_verified = verification_status === 'verified';
+      const userUpdateData: Record<string, any> = {};
+      if (status) (userUpdateData as any).account_status = status;
+      if (verification_status !== undefined) (userUpdateData as any).email_verified = verification_status === 'verified';
 
       await doctor.user.update(userUpdateData);
 
       // Update doctor verification status
-      const doctorUpdateData = {};
+      const doctorUpdateData: Record<string, any> = {};
       if (verification_status !== undefined) {
-        doctorUpdateData.is_verified = verification_status === 'verified';
+        (doctorUpdateData as any).is_verified = verification_status === 'verified';
         if (verification_status === 'verified') {
-          doctorUpdateData.verification_date = new Date();
-          doctorUpdateData.verified_by = (req as any).user.id;
+          (doctorUpdateData as any).verification_date = new Date();
+          (doctorUpdateData as any).verified_by = req.user?.userId;
         }
       }
 
@@ -832,7 +846,7 @@ class AdminController {
         },
         description,
         public_medicine,
-        creator_id: (req as any).user.id
+        creator_id: req.user?.userId
       });
 
       res.status(201).json({
@@ -947,14 +961,20 @@ class AdminController {
   // Condition Management using SymptomsDatabase
   async getConditions(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { page = 1, limit = 20, search } = req.query;
-      const pageNum = parseInt(String(page)) || 1;
-      const limitNum = parseInt(String(limit)) || 20;
+      const { page, limit, search } = req.query;
+      const pageNum = parseQueryParamAsNumber(page, 1);
+      const limitNum = parseQueryParamAsNumber(limit, 20);
       const offset = (pageNum - 1) * limitNum;
 
-      const whereClause: any = { is_active: true };
+      interface ConditionWhereClause {
+        is_active: boolean;
+        diagnosis_name?: { [Op.like]: string };
+      }
+      
+      const whereClause: ConditionWhereClause = { is_active: true };
       if (search) {
-        whereClause.diagnosis_name = { [Op.like]: `%${search}%` };
+        const searchString = parseQueryParam(search);
+        whereClause.diagnosis_name = { [Op.like]: `%${searchString}%` };
       }
 
       const { count, rows: conditions } = await SymptomsDatabase.findAndCountAll({
@@ -964,10 +984,10 @@ class AdminController {
         order: [['created_at', 'DESC']]
       });
 
-      const responseData = { conditions: {} };
+      const responseData: { conditions: Record<string, any> } = { conditions: {} };
 
       for (const condition of conditions) {
-        (responseData.conditions as any)[condition.id] = {
+        responseData.conditions[condition.id] = {
           basic_info: {
             id: condition.id.toString(),
             diagnosis_name: condition.diagnosis_name,
@@ -1024,7 +1044,7 @@ class AdminController {
         common_age_groups: Array.isArray(common_age_groups) ? common_age_groups : JSON.parse(common_age_groups || '[]'),
         gender_specific,
         is_active: true,
-        created_by: (req as any).user.id
+        created_by: req.user?.userId
       });
 
       res.status(201).json({
@@ -1126,14 +1146,20 @@ class AdminController {
   // Treatment Management using TreatmentDatabase
   async getTreatments(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { page = 1, limit = 20, search } = req.query;
-      const pageNum = parseInt(String(page)) || 1;
-      const limitNum = parseInt(String(limit)) || 20;
+      const { page, limit, search } = req.query;
+      const pageNum = parseQueryParamAsNumber(page, 1);
+      const limitNum = parseQueryParamAsNumber(limit, 20);
       const offset = (pageNum - 1) * limitNum;
 
-      const whereClause: any = { is_active: true };
+      interface TreatmentWhereClause {
+        is_active: boolean;
+        treatment_name?: { [Op.like]: string };
+      }
+      
+      const whereClause: TreatmentWhereClause = { is_active: true };
       if (search) {
-        whereClause.treatment_name = { [Op.like]: `%${search}%` };
+        const searchString = parseQueryParam(search);
+        whereClause.treatment_name = { [Op.like]: `%${searchString}%` };
       }
 
       const { count, rows: treatments } = await TreatmentDatabase.findAndCountAll({
@@ -1143,10 +1169,10 @@ class AdminController {
         order: [['created_at', 'DESC']]
       });
 
-      const responseData = { treatments: {} };
+      const responseData: { treatments: Record<string, any> } = { treatments: {} };
 
       for (const treatment of treatments) {
-        (responseData.treatments as any)[treatment.id] = {
+        responseData.treatments[treatment.id] = {
           basic_info: {
             id: treatment.id.toString(),
             treatment_name: treatment.treatment_name,
@@ -1232,7 +1258,7 @@ class AdminController {
         requires_specialist,
         prescription_required,
         is_active: true,
-        created_by: (req as any).user.id
+        created_by: req.user?.userId
       });
 
       res.status(201).json({

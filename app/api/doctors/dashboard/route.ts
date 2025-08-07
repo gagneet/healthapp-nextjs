@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import jwt from 'jsonwebtoken'
+import { Op } from 'sequelize'
 import db from '../../../../src/models/index.js'
 
 interface DashboardStats {
@@ -50,7 +51,7 @@ async function calculateDashboardStats(doctorUserId: string): Promise<DashboardS
         entity_id: doctor.id,
         metric_type: 'dashboard_summary',
         valid_until: {
-          [db.Sequelize.Op.gt]: new Date()
+          [Op.gt]: new Date()
         }
       }
     })
@@ -75,7 +76,7 @@ async function calculateDashboardStats(doctorUserId: string): Promise<DashboardS
     // 1. Count total patients assigned to this doctor
     const totalPatients = await db.Patient.count({
       where: {
-        [db.Sequelize.Op.or]: [
+        [Op.or]: [
           { primary_care_doctor_id: doctor.id },
           { 
             care_coordinator_id: doctor.id,
@@ -92,7 +93,7 @@ async function calculateDashboardStats(doctorUserId: string): Promise<DashboardS
     
     const activePatients = await db.Patient.count({
       where: {
-        [db.Sequelize.Op.or]: [
+        [Op.or]: [
           { primary_care_doctor_id: doctor.id },
           { 
             care_coordinator_id: doctor.id,
@@ -101,7 +102,7 @@ async function calculateDashboardStats(doctorUserId: string): Promise<DashboardS
         ],
         is_active: true,
         updated_at: {
-          [db.Sequelize.Op.gte]: thirtyDaysAgo
+          [Op.gte]: thirtyDaysAgo
         }
       }
     })
@@ -112,7 +113,7 @@ async function calculateDashboardStats(doctorUserId: string): Promise<DashboardS
         model: db.Patient,
         as: 'patient',
         where: {
-          [db.Sequelize.Op.or]: [
+          [Op.or]: [
             { primary_care_doctor_id: doctor.id },
             { 
               care_coordinator_id: doctor.id,
@@ -137,7 +138,7 @@ async function calculateDashboardStats(doctorUserId: string): Promise<DashboardS
         model: db.Patient,
         as: 'patient',
         where: {
-          [db.Sequelize.Op.or]: [
+          [Op.or]: [
             { primary_care_doctor_id: doctor.id },
             { 
               care_coordinator_id: doctor.id,
@@ -148,7 +149,7 @@ async function calculateDashboardStats(doctorUserId: string): Promise<DashboardS
       }],
       where: {
         scheduled_at: {
-          [db.Sequelize.Op.gte]: thirtyDaysAgo
+          [Op.gte]: thirtyDaysAgo
         }
       },
       raw: true
@@ -164,7 +165,7 @@ async function calculateDashboardStats(doctorUserId: string): Promise<DashboardS
         model: db.Patient,
         as: 'patient',
         where: {
-          [db.Sequelize.Op.or]: [
+          [Op.or]: [
             { primary_care_doctor_id: doctor.id },
             { 
               care_coordinator_id: doctor.id,
@@ -176,9 +177,9 @@ async function calculateDashboardStats(doctorUserId: string): Promise<DashboardS
       where: {
         organizer_type: 'doctor',
         organizer_id: doctor.id,
-        [db.Sequelize.Op.or]: [
+        [Op.or]: [
           { end_date: null },
-          { end_date: { [db.Sequelize.Op.gt]: new Date() } }
+          { end_date: { [Op.gt]: new Date() } }
         ]
       }
     })

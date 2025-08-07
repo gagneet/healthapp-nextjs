@@ -4,7 +4,7 @@ import { Vital, VitalTemplate, CarePlan, ScheduleEvent } from '../models/index.j
 import { Op } from 'sequelize';
 
 class VitalsController {
-  async createVital(req: Request, res: Response, next: NextFunction): Promise<void | Response> {
+  async createVital(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const {
         patient_id,
@@ -46,7 +46,7 @@ class VitalsController {
     }
   }
 
-  async getPatientVitals(req: Request, res: Response, next: NextFunction): Promise<void | Response> {
+  async getPatientVitals(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const { patientId } = req.params;
 
@@ -70,7 +70,10 @@ class VitalsController {
         order: [['created_at', 'DESC']]
       });
 
-      const responseData = {
+      const responseData: {
+        vitals: Record<string, any>;
+        vital_templates: Record<string, any>;
+      } = {
         vitals: {},
         vital_templates: {}
       };
@@ -120,7 +123,7 @@ class VitalsController {
     }
   }
 
-  async getVitalTimeline(req: Request, res: Response, next: NextFunction): Promise<void | Response> {
+  async getVitalTimeline(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const { vitalId } = req.params;
 
@@ -129,7 +132,7 @@ class VitalsController {
       });
 
       if (!vital) {
-        return res.status(404).json({
+        res.status(404).json({
           status: false,
           statusCode: 404,
           payload: {
@@ -139,6 +142,7 @@ class VitalsController {
             }
           }
         });
+        return;
       }
 
       // Get schedule events for this vital
@@ -169,7 +173,7 @@ class VitalsController {
         .map(e => e.details?.measurements)
         .filter(m => m && Object.keys(m).length > 0);
 
-      const statistics = {};
+      const statistics: Record<string, any> = {};
       if (measurements.length > 0) {
         // Calculate averages for numeric measurements
         const keys = Object.keys(measurements[0]);
@@ -179,10 +183,10 @@ class VitalsController {
             .filter(v => !isNaN(v));
           
           if (values.length > 0) {
-            statistics[`average_${key}`] = (values.reduce((a, b) => a + b, 0) / values.length).toFixed(1);
+            (statistics as any)[`average_${key}`] = (values.reduce((a, b) => a + b, 0) / values.length).toFixed(1);
           }
         });
-        statistics.trend = 'stable'; // Implement trend calculation
+        (statistics as any).trend = 'stable'; // Implement trend calculation
       }
 
       res.status(200).json({
@@ -202,20 +206,20 @@ class VitalsController {
   }
 
   // Helper methods
-  calculateRemaining(vital) {
+  calculateRemaining(vital: any): number {
     const now = new Date();
     const endDate = new Date(vital.end_date);
     const daysDiff = Math.ceil((endDate - now) / (1000 * 60 * 60 * 24));
     return Math.max(0, daysDiff);
   }
 
-  calculateTotal(vital) {
+  calculateTotal(vital: any): number {
     const startDate = new Date(vital.start_date);
     const endDate = new Date(vital.end_date);
     return Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
   }
 
-  async createVitalSchedule(vital, repeatDays) {
+  async createVitalSchedule(vital: any, repeatDays: number[]): Promise<void> {
     // Create schedule events for vital monitoring
     const startDate = new Date(vital.start_date);
     const endDate = new Date(vital.end_date);

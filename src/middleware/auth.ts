@@ -1,16 +1,17 @@
 // src/middleware/auth.js
 import jwt from 'jsonwebtoken';
-import { verifyToken } from '../config/jwt.js';
+import { verifyToken, TokenPayload } from '../config/jwt.js';
 import { User, UserRole, Doctor, Patient } from '../models/index.js';
 import { USER_CATEGORIES, ACCOUNT_STATUS } from '../config/constants.js';
 import cacheService from '../services/CacheService.js';
+import { Request, Response, NextFunction } from 'express';
 
-const authenticate = async (req, res, next) => {
+const authenticate = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const authHeader = req.headers.authorization;
     
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return res.status(401).json({
+      res.status(401).json({
         status: false,
         statusCode: 401,
         payload: {
@@ -20,13 +21,14 @@ const authenticate = async (req, res, next) => {
           }
         }
       });
+      return;
     }
 
     const token = authHeader.substring(7);
-    const decoded = verifyToken(token);
+    const decoded: TokenPayload = verifyToken(token);
     
     // Check cache first for performance optimization (gracefully handle Redis failures)
-    let user = null;
+    let user: any = null;
     try {
       user = await cacheService.getCachedUser(decoded.userId);
     } catch (cacheError) {
@@ -56,7 +58,7 @@ const authenticate = async (req, res, next) => {
     }
 
     if (!user || user.account_status !== ACCOUNT_STATUS.ACTIVE) {
-      return res.status(401).json({
+      res.status(401).json({
         status: false,
         statusCode: 401,
         payload: {
@@ -66,16 +68,23 @@ const authenticate = async (req, res, next) => {
           }
         }
       });
+      return;
     }
 
-    req.user = user;
+    req.user = {
+      userId: user.id,
+      email: user.email,
+      userCategory: decoded.userCategory || user.role,
+      userRoleId: decoded.userRoleId,
+      permissions: decoded.permissions || []
+    };
     req.userCategory = decoded.userCategory || user.role;
-    req.userRoleId = decoded.userRoleId;
     next();
-  } catch (error) {
-    console.error('Auth middleware error:', error.message);
-    console.error('Token verification failed:', error.name);
-    return res.status(401).json({
+  } catch (error: unknown) {
+    const err = error as Error;
+    console.error('Auth middleware error:', err.message);
+    console.error('Token verification failed:', err.name);
+    res.status(401).json({
       status: false,
       statusCode: 401,
       payload: {
@@ -85,13 +94,14 @@ const authenticate = async (req, res, next) => {
         }
       }
     });
+    return;
   }
 };
 
-const authorize = (...categories) => {
-  return (req, res, next) => {
+const authorize = (...categories: string[]) => {
+  return (req: Request, res: Response, next: NextFunction): void => {
     if (!req.user) {
-      return res.status(401).json({
+      res.status(401).json({
         status: false,
         statusCode: 401,
         payload: {
@@ -101,10 +111,11 @@ const authorize = (...categories) => {
           }
         }
       });
+      return;
     }
 
-    if (!categories.includes(req.userCategory)) {
-      return res.status(403).json({
+    if (!categories.includes(req.userCategory as string)) {
+      res.status(403).json({
         status: false,
         statusCode: 403,
         payload: {
@@ -114,6 +125,7 @@ const authorize = (...categories) => {
           }
         }
       });
+      return;
     }
 
     next();
@@ -124,11 +136,11 @@ const authorize = (...categories) => {
  * Enhanced authorization that validates role-specific profile completeness
  * Use this for routes that require complete doctor/patient profiles
  */
-const authorizeWithProfile = (...categories) => {
-  return async (req, res, next) => {
+const authorizeWithProfile = (...categories: string[]) => {
+  return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       if (!req.user) {
-        return res.status(401).json({
+        res.status(401).json({
           status: false,
           statusCode: 401,
           payload: {
@@ -138,10 +150,11 @@ const authorizeWithProfile = (...categories) => {
             }
           }
         });
+        return;
       }
 
-      if (!categories.includes(req.userCategory)) {
-        return res.status(403).json({
+      if (!categories.includes(req.userCategory as string)) {
+        res.status(403).json({
           status: false,
           statusCode: 403,
           payload: {
@@ -151,16 +164,17 @@ const authorizeWithProfile = (...categories) => {
             }
           }
         });
+        return;
       }
 
       // Validate role-specific profiles
       if (req.userCategory === USER_CATEGORIES.DOCTOR) {
         const doctorRecord = await Doctor.findOne({
-          where: { user_id: req.user.id }
+          where: { user_id: req.user.userId }
         });
 
         if (!doctorRecord) {
-          return res.status(403).json({
+          res.status(403).json({
             status: false,
             statusCode: 403,
             payload: {
@@ -170,19 +184,20 @@ const authorizeWithProfile = (...categories) => {
               }
             }
           });
+          return;
         }
 
         // Attach doctor record to request for downstream use
-        req.doctorProfile = doctorRecord;
+        (req as any).doctorProfile = doctorRecord;
       }
 
       if (req.userCategory === USER_CATEGORIES.PATIENT) {
         const patientRecord = await Patient.findOne({
-          where: { user_id: req.user.id }
+          where: { user_id: req.user.userId }
         });
 
         if (!patientRecord) {
-          return res.status(403).json({
+          res.status(403).json({
             status: false,
             statusCode: 403,
             payload: {
@@ -192,16 +207,17 @@ const authorizeWithProfile = (...categories) => {
               }
             }
           });
+          return;
         }
 
         // Attach patient record to request for downstream use
-        req.patientProfile = patientRecord;
+        (req as any).patientProfile = patientRecord;
       }
 
       next();
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Profile validation error:', error);
-      return res.status(500).json({
+      res.status(500).json({
         status: false,
         statusCode: 500,
         payload: {
@@ -211,6 +227,7 @@ const authorizeWithProfile = (...categories) => {
           }
         }
       });
+      return;
     }
   };
 };
