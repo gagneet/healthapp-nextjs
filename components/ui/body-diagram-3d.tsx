@@ -355,6 +355,19 @@ export default function BodyDiagram3D({
             <Canvas
               camera={{ position: [0, 0, 8], fov: 50 }}
               style={{ background: 'linear-gradient(to bottom, #f8fafc, #e2e8f0)' }}
+              gl={{ 
+                preserveDrawingBuffer: true,
+                antialias: true,
+                alpha: false,
+                powerPreference: 'high-performance'
+              }}
+              onContextLost={(e) => {
+                console.warn('WebGL context lost, preventing default behavior')
+                e.preventDefault()
+              }}
+              onContextRestore={() => {
+                console.log('WebGL context restored')
+              }}
             >
               <Scene
                 symptoms={symptoms}

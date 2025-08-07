@@ -1,8 +1,21 @@
 'use client'
 
 import { useState } from 'react'
+import dynamic from 'next/dynamic'
 import BodyDiagram from './body-diagram'
-import BodyDiagram3D from './body-diagram-3d'
+
+// Dynamically import 3D component to prevent SSR issues with Three.js
+const BodyDiagram3D = dynamic(() => import('./body-diagram-3d'), {
+  ssr: false,
+  loading: () => (
+    <div className="flex items-center justify-center h-64 bg-gray-50 rounded-lg">
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
+        <p className="text-gray-500">Loading 3D body diagram...</p>
+      </div>
+    </div>
+  )
+})
 
 interface Symptom {
   id: string
