@@ -502,6 +502,25 @@ class DoctorController {
             model: User,
             as: 'user',
             attributes: ['email', 'phone', 'first_name', 'middle_name', 'last_name']
+          },
+          {
+            model: Appointment,
+            as: 'patientAppointments',
+            attributes: ['id', 'appointment_date', 'status'],
+            limit: 5,
+            order: [['appointment_date', 'DESC']]
+          },
+          {
+            model: CarePlan,
+            as: 'carePlans',
+            attributes: ['id', 'status', 'created_at'],
+            include: [
+              {
+                model: Medication,
+                as: 'medicationPrescriptions',
+                attributes: ['id', 'status']
+              }
+            ]
           }
         ],
         offset,
@@ -510,20 +529,63 @@ class DoctorController {
       });
 
       const responseData = { patients: {} };
-      patients.forEach(patient => {
+      
+      for (const patient of patients) {
+        // Calculate medical_info with null safety
+        const appointments = patient.patientAppointments || [];
+        const carePlans = patient.carePlans || [];
+        
+        // Get last visit (most recent completed appointment)
+        const completedAppointments = appointments.filter(apt => apt.status === 'completed');
+        const lastVisit = completedAppointments.length > 0 ? completedAppointments[0].appointment_date : null;
+        
+        // Get next appointment (earliest scheduled appointment)
+        const upcomingAppointments = appointments.filter(apt => 
+          apt.status === 'scheduled' && new Date(apt.appointment_date) > new Date()
+        );
+        const nextAppointment = upcomingAppointments.length > 0 ? upcomingAppointments[0].appointment_date : null;
+        
+        // Calculate adherence rate (from active medications)
+        const activeMedications = carePlans
+          .filter(cp => cp.status === 'active')
+          .flatMap(cp => cp.medicationPrescriptions || [])
+          .filter(med => med.status === 'active');
+        
+        const adherenceRate = activeMedications.length > 0 
+          ? Math.round(activeMedications.filter(med => med.status === 'active').length / activeMedications.length * 100)
+          : 0;
+        
+        // Count critical alerts (overdue medications, missed appointments, etc.)
+        const overdueAppointments = appointments.filter(apt => 
+          apt.status === 'scheduled' && new Date(apt.appointment_date) < new Date()
+        ).length;
+        
+        const criticalAlerts = overdueAppointments;
+        
         responseData.patients[patient.id] = {
           basic_info: {
-            id: patient.id.toString(),
-            first_name: patient.first_name,
-            last_name: patient.last_name,
-            full_name: `${patient.user?.first_name || ''} ${patient.user?.middle_name || ''} ${patient.user?.last_name || ''}`.replace(/\s+/g, ' ').trim(),
-            current_age: patient.current_age,
-            gender: patient.gender,
-            mobile_number: patient.user?.phone,
-            email: patient.user?.email
+            id: patient.id?.toString() || '',
+            first_name: patient.first_name || '',
+            last_name: patient.last_name || '',
+            full_name: `${patient.user?.first_name || ''} ${patient.user?.middle_name || ''} ${patient.user?.last_name || ''}`.replace(/\s+/g, ' ').trim() || 'Unknown Patient',
+            current_age: patient.current_age || null,
+            gender: patient.gender || null,
+            mobile_number: patient.user?.phone || null,
+            email: patient.user?.email || null,
+            status: patient.status || 'active',
+            created_at: patient.created_at || new Date().toISOString()
+          },
+          medical_info: {
+            last_visit: lastVisit,
+            next_appointment: nextAppointment,
+            adherence_rate: adherenceRate,
+            critical_alerts: criticalAlerts,
+            total_appointments: appointments.length,
+            active_care_plans: carePlans.filter(cp => cp.status === 'active').length,
+            total_medications: activeMedications.length
           }
         };
-      });
+      }
 
       res.status(200).json({
         status: true,

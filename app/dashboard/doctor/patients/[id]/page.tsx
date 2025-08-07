@@ -558,7 +558,11 @@ export default function PatientDetailsPage() {
                   </div>
                   <div>
                     <dt className="text-sm font-medium text-gray-500">Gender</dt>
-                    <dd className="mt-1 text-sm text-gray-900 capitalize">{patient.gender?.toLowerCase()}</dd>
+                    <dd className="mt-1 text-sm text-gray-900 capitalize">
+                      {patient.gender ? patient.gender.toLowerCase() : (
+                        <span className="text-gray-400 italic">Not specified</span>
+                      )}
+                    </dd>
                   </div>
                   <div>
                     <dt className="text-sm font-medium text-gray-500">Phone</dt>

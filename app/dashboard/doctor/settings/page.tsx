@@ -107,7 +107,7 @@ export default function DoctorSettingsPage() {
             session_timeout: 24
           }
         }
-        setSettings(response.payload.data.settings || defaultSettings)
+        setSettings(response.payload.data?.settings || defaultSettings)
       }
     } catch (error) {
       console.error('Failed to fetch settings:', error)
@@ -124,6 +124,36 @@ export default function DoctorSettingsPage() {
     } catch (error) {
       console.error('Failed to fetch sessions:', error)
     }
+  }
+
+  // Safe getter for settings with fallback
+  const getSetting = (section: keyof UserSettings, key: string, fallback: any = '') => {
+    return settings?.[section]?.[key as keyof typeof settings[typeof section]] ?? fallback
+  }
+
+  // Show loading state or error if settings are not available
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    )
+  }
+
+  if (!settings) {
+    return (
+      <div className="text-center py-12">
+        <div className="text-gray-500">
+          <p>Unable to load settings</p>
+          <button 
+            onClick={fetchSettings}
+            className="mt-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    )
   }
 
   const updateSettings = async (section: keyof UserSettings, key: string, value: any) => {
@@ -289,7 +319,7 @@ export default function DoctorSettingsPage() {
                     Language
                   </label>
                   <select
-                    value={settings.preferences.language}
+                    value={getSetting('preferences', 'language', 'en')}
                     onChange={(e) => updateSettings('preferences', 'language', e.target.value)}
                     className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                   >

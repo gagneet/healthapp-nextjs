@@ -312,10 +312,14 @@ export default function PatientDashboard() {
     )
   }
 
-  // Prepare chart data
+  // Prepare chart data with null safety
+  const adherenceToday = dashboardData?.adherence_summary?.today || {}
+  const medicationsTaken = adherenceToday.medications_taken || 0
+  const medicationsDue = adherenceToday.medications_due || 0
+  
   const adherenceChartData = [
-    { name: 'Taken', value: dashboardData.adherence_summary.today.medications_taken, color: COLORS.success },
-    { name: 'Due', value: dashboardData.adherence_summary.today.medications_due - dashboardData.adherence_summary.today.medications_taken, color: COLORS.warning },
+    { name: 'Taken', value: medicationsTaken, color: COLORS.success },
+    { name: 'Due', value: Math.max(0, medicationsDue - medicationsTaken), color: COLORS.warning },
   ]
 
   return (
@@ -415,8 +419,8 @@ export default function PatientDashboard() {
                   <div className="ml-4">
                     <p className="text-sm font-medium text-gray-600">Medications</p>
                     <p className="text-2xl font-bold text-gray-900">
-                      {dashboardData.adherence_summary.today.medications_taken}/
-                      {dashboardData.adherence_summary.today.medications_due}
+                      {adherenceToday.medications_taken || 0}/
+                      {adherenceToday.medications_due || 0}
                     </p>
                   </div>
                 </div>
@@ -430,8 +434,8 @@ export default function PatientDashboard() {
                   <div className="ml-4">
                     <p className="text-sm font-medium text-gray-600">Vitals</p>
                     <p className="text-2xl font-bold text-gray-900">
-                      {dashboardData.adherence_summary.today.vitals_recorded}/
-                      {dashboardData.adherence_summary.today.vitals_due}
+                      {adherenceToday.vitals_recorded || 0}/
+                      {adherenceToday.vitals_due || 0}
                     </p>
                   </div>
                 </div>
@@ -445,8 +449,8 @@ export default function PatientDashboard() {
                   <div className="ml-4">
                     <p className="text-sm font-medium text-gray-600">Exercise</p>
                     <p className="text-2xl font-bold text-gray-900">
-                      {dashboardData.adherence_summary.today.exercises_completed}/
-                      {dashboardData.adherence_summary.today.exercises_due}
+                      {adherenceToday.exercises_completed || 0}/
+                      {adherenceToday.exercises_due || 0}
                     </p>
                   </div>
                 </div>
@@ -460,7 +464,7 @@ export default function PatientDashboard() {
                   <div className="ml-4">
                     <p className="text-sm font-medium text-gray-600">Score</p>
                     <p className="text-2xl font-bold text-gray-900">
-                      {dashboardData.adherence_summary.monthly.overall_score}%
+                      {dashboardData?.adherence_summary?.monthly?.overall_score || 0}%
                     </p>
                   </div>
                 </div>

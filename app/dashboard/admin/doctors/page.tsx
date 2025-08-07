@@ -87,23 +87,34 @@ export default function AdminDoctorsPage() {
       const data = await response.json()
       
       if (data.status) {
-        // Convert the doctors object to array
-        const doctorsArray = Object.values(data.payload.data.doctors).map((doctor: any) => ({
-          id: doctor.basic_info.id,
-          user_id: doctor.basic_info.user_id || doctor.basic_info.id,
-          first_name: doctor.basic_info.first_name,
-          last_name: doctor.basic_info.last_name,
-          full_name: doctor.basic_info.first_name + ' ' + doctor.basic_info.last_name,
-          email: doctor.basic_info.email,
-          mobile_number: doctor.basic_info.mobile_number,
-          medical_license_number: doctor.basic_info.medical_license_number || 'N/A',
-          specialties: doctor.basic_info.speciality ? [doctor.basic_info.speciality] : [],
-          years_of_experience: doctor.basic_info.years_of_experience || 0,
-          is_verified: doctor.basic_info.verification_status === 'verified',
-          practice_name: doctor.basic_info.practice_name,
-          account_status: doctor.basic_info.account_status,
-          created_at: doctor.basic_info.created_at || new Date().toISOString()
-        }))
+        // Convert the doctors object to array with null safety
+        // Note: basic_info should always exist if doctor profile is complete
+        // This defensive check prevents crashes from incomplete doctor profiles
+        const doctorsArray = Object.values(data.payload.data.doctors).map((doctor: any) => {
+          const basicInfo = doctor.basic_info || {}
+          
+          // Log warning if basic_info is missing (should be rare)
+          if (!doctor.basic_info) {
+            console.warn(`Doctor profile incomplete - missing basic_info for doctor ID: ${doctor.id}`)
+          }
+          
+          return {
+            id: basicInfo.id || doctor.id || '',
+            user_id: basicInfo.user_id || basicInfo.id || doctor.user_id || '',
+            first_name: basicInfo.first_name || '',
+            last_name: basicInfo.last_name || '',
+            full_name: `${basicInfo.first_name || ''} ${basicInfo.last_name || ''}`.trim() || 'Incomplete Profile',
+            email: basicInfo.email || doctor.email || '',
+            mobile_number: basicInfo.mobile_number || doctor.mobile_number || '',
+            medical_license_number: basicInfo.medical_license_number || 'N/A',
+            specialties: basicInfo.speciality ? [basicInfo.speciality] : [],
+            years_of_experience: basicInfo.years_of_experience || 0,
+            is_verified: basicInfo.verification_status === 'verified',
+            practice_name: basicInfo.practice_name || '',
+            account_status: basicInfo.account_status || 'pending',
+            created_at: basicInfo.created_at || new Date().toISOString()
+          }
+        })
         setDoctors(doctorsArray)
       }
       setIsLoading(false)

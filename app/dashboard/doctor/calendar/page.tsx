@@ -118,7 +118,8 @@ export default function DoctorCalendarPage() {
         ? monthlyAppointments 
         : monthlyAppointments.filter(apt => {
           const patient = patients.find(p => p.name === apt.patient_name)
-          return patient?.id === selectedPatient
+          // Ensure type-safe comparison between patient ID and selectedPatient
+          return patient?.id && String(patient.id) === selectedPatient
         })
 
       const events: DayPilotEvent[] = filteredAppointments.map(appointment => {

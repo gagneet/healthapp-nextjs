@@ -16,6 +16,40 @@ import { apiRequest } from '@/lib/api'
 import { Patient } from '@/types/dashboard'
 import { formatDate, getAdherenceColor, getInitials, getStatusColor } from '@/lib/utils'
 
+// Helper functions for displaying missing data with user-friendly messages
+const displayMedicalInfo = (value: any, fallbackMessage: string) => {
+  if (value === null || value === undefined || value === '') {
+    return (
+      <span className="text-gray-400 italic text-sm">
+        {fallbackMessage}
+      </span>
+    )
+  }
+  return value
+}
+
+const displayDateInfo = (dateString: string | null, fallbackMessage: string) => {
+  if (!dateString) {
+    return (
+      <span className="text-gray-400 italic text-sm">
+        {fallbackMessage}
+      </span>
+    )
+  }
+  return formatDate(dateString)
+}
+
+const displayAdherenceRate = (rate: number | null | undefined) => {
+  if (rate === null || rate === undefined) {
+    return (
+      <span className="text-gray-400 italic text-sm">
+        No medication data
+      </span>
+    )
+  }
+  return `${rate}%`
+}
+
 // Mock data - replace with actual API calls
 const mockPatients: Patient[] = [
   {
@@ -151,7 +185,9 @@ function PatientDrawer({ patient, isOpen, onClose }: PatientDrawerProps) {
               {/* Critical & Non-Critical Boxes */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-center">
-                  <div className="text-2xl font-bold text-red-600">{patient.critical_alerts}</div>
+                  <div className="text-2xl font-bold text-red-600">
+                    {patient.critical_alerts ?? 'N/A'}
+                  </div>
                   <div className="text-sm text-red-800">Critical Alerts</div>
                 </div>
                 <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-center">
@@ -195,8 +231,8 @@ function PatientDrawer({ patient, isOpen, onClose }: PatientDrawerProps) {
               <div className="space-y-3">
                 <h4 className="text-sm font-medium text-gray-900">Recent Activity</h4>
                 <div className="space-y-2 text-sm text-gray-600">
-                  <div>Last visit: {formatDate(patient.last_visit)}</div>
-                  <div>Next appointment: {formatDate(patient.next_appointment)}</div>
+                  <div>Last visit: {displayDateInfo(patient.last_visit, 'No previous visits')}</div>
+                  <div>Next appointment: {displayDateInfo(patient.next_appointment, 'No upcoming appointments')}</div>
                 </div>
               </div>
 
@@ -262,8 +298,10 @@ export default function PatientsPage() {
             medical_record_number: patient.basic_info.patient_id,
             last_visit: patient.medical_info?.last_visit || null,
             next_appointment: patient.medical_info?.next_appointment || null,
-            adherence_rate: patient.medical_info?.adherence_rate || 0,
-            critical_alerts: patient.medical_info?.critical_alerts || 0,
+            adherence_rate: patient.medical_info?.adherence_rate ?? 0,
+            critical_alerts: patient.medical_info?.critical_alerts ?? 0,
+            total_appointments: patient.medical_info?.total_appointments ?? 0,
+            active_care_plans: patient.medical_info?.active_care_plans ?? 0,
             status: patient.basic_info.status || 'active',
             created_at: patient.basic_info.created_at
           }))
@@ -475,7 +513,9 @@ export default function PatientsPage() {
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        {patient.critical_alerts > 0 ? (
+                        {patient.critical_alerts === null || patient.critical_alerts === undefined ? (
+                          <span className="text-gray-400 italic text-sm">No alert data</span>
+                        ) : patient.critical_alerts > 0 ? (
                           <div className="flex items-center">
                             <ExclamationTriangleIcon className="h-4 w-4 text-red-500 mr-1" />
                             <span className="text-sm text-red-600">
