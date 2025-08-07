@@ -234,7 +234,7 @@ class PatientController {
   }
 
   /**
-   * Get patients with advanced filtering and search
+   * Get patients with consent workflow support (primary + secondary)
    */
   async getPatients(req, res, next) {
     try {
@@ -247,12 +247,106 @@ class PatientController {
         sortOrder = 'desc'
       } = req.query;
 
-      // Build dynamic where clause
+      // Use PatientAccessService for provider-aware patient access
+      if (req.userCategory === USER_CATEGORIES.DOCTOR || req.userCategory === USER_CATEGORIES.HSP) {
+        const options = {
+          limit: parseInt(limit),
+          offset: (parseInt(page) - 1) * parseInt(limit),
+          search
+        };
+
+        const accessiblePatients = await PatientAccessService.getAccessiblePatients(req.user.id, options);
+
+        // Combine primary and secondary patients
+        const allPatients = [];
+
+        // Add primary patients with 'M' indicator
+        accessiblePatients.primary_patients.forEach(patient => {
+          allPatients.push({
+            ...patient,
+            patient_type: 'M', // Main/Primary
+            patient_type_label: 'Primary Patient',
+            requires_consent: false,
+            consent_status: 'not_required',
+            access_granted: true,
+            can_view: true
+          });
+        });
+
+        // Add secondary patients with 'R' indicator
+        accessiblePatients.secondary_patients.forEach(patient => {
+          allPatients.push({
+            ...patient,
+            patient_type: 'R', // Referred/Secondary
+            patient_type_label: 'Secondary Patient',
+            can_view: patient.access_granted
+          });
+        });
+
+        // Format response data
+        const responseData = {
+          patients: allPatients.reduce((acc, patient) => {
+            // Mask contact information for display
+            const maskedPhone = patient.user?.phone ? 
+              `****${patient.user.phone.slice(-4)}` : null;
+            const maskedEmail = patient.user?.email ? 
+              `${patient.user.email.substring(0, 3)}...@${patient.user.email.split('@')[1]?.substring(0, 2)}...${patient.user.email.split('.').pop()}` : null;
+
+            acc[patient.id] = {
+              basic_info: {
+                id: patient.id.toString(),
+                user_id: patient.user_id?.toString() || patient.user?.id?.toString(),
+                full_name: `${patient.user?.first_name || patient.first_name || ''} ${patient.user?.last_name || patient.last_name || ''}`.trim(),
+                first_name: patient.user?.first_name || patient.first_name,
+                last_name: patient.user?.last_name || patient.last_name,
+                current_age: patient.current_age,
+                gender: patient.gender,
+                mobile_number: maskedPhone,
+                masked_email: maskedEmail,
+                medical_record_number: patient.medical_record_number,
+                primary_doctor: patient.primary_doctor
+              },
+              // Consent workflow fields
+              patient_type: patient.patient_type,
+              patient_type_label: patient.patient_type_label,
+              access_type: patient.access_type,
+              requires_consent: patient.requires_consent,
+              consent_status: patient.consent_status || 'not_required',
+              access_granted: patient.access_granted,
+              can_view: patient.can_view,
+              same_provider: patient.same_provider || false,
+              assignment_id: patient.assignment_id || null,
+              assignment_reason: patient.assignment_reason || null,
+              specialty_focus: patient.specialty_focus || [],
+              // Provider information
+              primary_doctor_provider: patient.primary_doctor_provider || null,
+              secondary_doctor_provider: patient.secondary_doctor_provider || null
+            };
+            return acc;
+          }, {})
+        };
+
+        const pagination = {
+          page: parseInt(page),
+          limit: parseInt(limit),
+          total: allPatients.length,
+          total_pages: Math.ceil(allPatients.length / parseInt(limit)),
+          has_next: parseInt(page) < Math.ceil(allPatients.length / parseInt(limit)),
+          has_prev: parseInt(page) > 1
+        };
+
+        return res.status(200).json(ResponseFormatter.paginated(
+          responseData,
+          pagination,
+          'Patients retrieved successfully with consent status'
+        ));
+      }
+
+      // Fallback for non-doctor users - original logic
       let whereClause = {
         role: USER_CATEGORIES.PATIENT
       };
 
-      // Add search clause
       if (search) {
         whereClause[Op.or] = [
           { first_name: { [Op.like]: `%${search}%` } },
@@ -262,25 +356,8 @@ class PatientController {
         ];
       }
 
-      // Add filter clauses
-      if (req.userCategory === USER_CATEGORIES.DOCTOR) {
-        // Get the doctor record ID for the current user
-        const doctorRecord = await Doctor.findOne({
-          where: { user_id: req.user.id }
-        });
-        
-        if (doctorRecord) {
-          whereClause['$patientProfile.primary_care_doctor_id$'] = doctorRecord.id;
-        } else {
-          // If no doctor record exists, return empty results
-          whereClause['$patientProfile.primary_care_doctor_id$'] = null;
-        }
-      }
-
-
       if (filter.gender) whereClause.gender = filter.gender;
       if (filter.blood_group) whereClause['$patientProfile.blood_group$'] = filter.blood_group;
-
 
       const { count, rows: users } = await User.findAndCountAll({
         where: whereClause,
@@ -305,13 +382,12 @@ class PatientController {
             ]
           }
         ],
-        offset: (page - 1) * limit,
+        offset: (parseInt(page) - 1) * parseInt(limit),
         limit: parseInt(limit),
         order: [[sortBy, sortOrder.toUpperCase()]],
-        distinct: true // Important for accurate count with joins
+        distinct: true
       });
 
-      // Modern response formatting
       const responseData = {
         patients: users.reduce((acc, user) => {
           acc[user.patientProfile.id] = {
@@ -325,8 +401,12 @@ class PatientController {
               gender: user.gender,
               mobile_number: user.mobile_number,
               medical_record_number: user.patientProfile.medical_record_number,
-              primary_doctor: user.patientProfile.primaryCareDoctor?.user ? `${user.patientProfile.primaryCareDoctor.user.first_name || ''} ${user.patientProfile.primaryCareDoctor.user.middle_name || ''} ${user.patientProfile.primaryCareDoctor.user.last_name || ''}`.replace(/\s+/g, ' ').trim() : null
-            }
+              primary_doctor: user.patientProfile.primaryCareDoctor?.user ? 
+                `${user.patientProfile.primaryCareDoctor.user.first_name || ''} ${user.patientProfile.primaryCareDoctor.user.last_name || ''}`.trim() : null
+            },
+            patient_type: 'M',
+            access_granted: true,
+            can_view: true
           };
           return acc;
         }, {})
@@ -336,9 +416,9 @@ class PatientController {
         page: parseInt(page),
         limit: parseInt(limit),
         total: count,
-        total_pages: Math.ceil(count / limit),
-        has_next: page < Math.ceil(count / limit),
-        has_prev: page > 1
+        total_pages: Math.ceil(count / parseInt(limit)),
+        has_next: parseInt(page) < Math.ceil(count / parseInt(limit)),
+        has_prev: parseInt(page) > 1
       };
 
       res.status(200).json(ResponseFormatter.paginated(

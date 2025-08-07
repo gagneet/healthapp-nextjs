@@ -2,7 +2,6 @@
 import express from 'express';
 import doctorController from '../controllers/doctorController.js';
 import patientController from '../controllers/patientController.js';
-import consentController from '../controllers/consentController.js';
 import { authenticate, authorize } from '../middleware/auth.js';
 import { validateRequest, schemas } from '../middleware/validation.js';
 import { USER_CATEGORIES } from '../config/constants.js';
@@ -148,7 +147,9 @@ router.post('/patients',
 );
 
 // ====== CONSENT WORKFLOW ROUTES ======
+// Temporarily commented out for debugging
 
+/*
 // GET /api/doctors/patients/secondary (Get secondary patients with consent status)
 router.get('/patients/secondary',
   authenticate,
@@ -197,5 +198,6 @@ router.get('/search-providers',
   authorize(USER_CATEGORIES.DOCTOR, USER_CATEGORIES.HSP, USER_CATEGORIES.ADMIN),
   consentController.searchProviders
 );
+*/
 
 export default router;

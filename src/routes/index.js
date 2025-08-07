@@ -12,6 +12,7 @@ import searchRoutes from './search.js';
 import symptomsRoutes from './symptoms.js';
 import secondaryDoctorRoutes from './secondaryDoctorRoutes.js';
 import subscriptionRoutes from './subscriptions.js';
+import consentRoutes from './consent.js';
 
 const router = express.Router();
 
@@ -27,6 +28,7 @@ router.use('/admin', adminRoutes);
 router.use('/search', searchRoutes);
 router.use('/symptoms', symptomsRoutes);
 router.use('/subscriptions', subscriptionRoutes);
+router.use('/consent', consentRoutes);
 router.use('/', secondaryDoctorRoutes);
 
 // API info endpoint
@@ -48,6 +50,7 @@ router.get('/', (req, res) => {
           '/careplan - Care plan management',
           '/vitals - Vital signs management',
           '/admin - Administrative functions',
+          '/consent - Patient consent workflow',
           '/search - Search functionality',
           '/symptoms - Symptoms and diagnosis management',
           '/assignments - Secondary doctor assignments',

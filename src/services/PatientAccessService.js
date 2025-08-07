@@ -10,6 +10,7 @@ import {
 } from '../models/index.js';
 import { Op } from 'sequelize';
 import { USER_CATEGORIES } from '../config/constants.js';
+import NotificationService from './NotificationService.js';
 
 class PatientAccessService {
   
@@ -357,6 +358,37 @@ class PatientAccessService {
         request_user_agent: requestInfo.userAgent
       });
 
+      // Get patient and doctor names for personalized messages
+      const patientName = `${assignment.patient.user?.first_name || ''} ${assignment.patient.user?.last_name || ''}`.trim();
+      let doctorName = 'Healthcare Provider';
+      
+      // Get doctor name from assignment
+      if (assignment.secondary_doctor_id) {
+        const secondaryDoctor = await Doctor.findByPk(assignment.secondary_doctor_id, {
+          include: [{
+            model: User,
+            as: 'user',
+            attributes: ['first_name', 'last_name']
+          }]
+        });
+        if (secondaryDoctor) {
+          doctorName = `${secondaryDoctor.user.first_name || ''} ${secondaryDoctor.user.last_name || ''}`.trim();
+        }
+      }
+
+      // Send OTP via SMS and/or Email
+      const deliveryResult = await NotificationService.sendBothOtp(
+        assignment.patient.user.phone,
+        assignment.patient.user.email,
+        otp.otp_code,
+        patientName,
+        doctorName
+      );
+
+      // Update OTP record with delivery status
+      await otp.markAsSent('sms', deliveryResult.sms.success, deliveryResult.sms.error);
+      await otp.markAsSent('email', deliveryResult.email.success, deliveryResult.email.error);
+
       // Update assignment status
       assignment.consent_status = 'requested';
       assignment.recordAccessAttempt();
@@ -367,7 +399,12 @@ class PatientAccessService {
         otp_id: otp.id,
         expires_at: otp.expires_at,
         remaining_time: otp.getRemainingTime(),
-        delivery_methods: this.getDeliveryMethods(assignment.patient.user)
+        delivery_methods: this.getDeliveryMethods(assignment.patient.user),
+        delivery_status: {
+          sms_sent: deliveryResult.sms.success,
+          email_sent: deliveryResult.email.success,
+          overall_success: deliveryResult.overall_success
+        }
       };
 
     } catch (error) {
