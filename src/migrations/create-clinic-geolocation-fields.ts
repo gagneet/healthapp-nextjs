@@ -5,41 +5,64 @@ export default {
     const transaction = await queryInterface.sequelize.transaction();
     
     try {
-      // Add geo-location columns to clinics table
-      await queryInterface.addColumn('clinics', 'latitude', {
-        type: Sequelize.DECIMAL(10, 8),
-        allowNull: true,
-        comment: 'Latitude coordinate for maps and location services'
-      }, { transaction });
+      // Check if columns already exist (idempotent)
+      const tableDescription = await queryInterface.describeTable('clinics');
+      
+      // Add geo-location columns to clinics table (idempotent)
+      if (!tableDescription.latitude) {
+        await queryInterface.addColumn('clinics', 'latitude', {
+          type: Sequelize.DECIMAL(10, 8),
+          allowNull: true,
+          comment: 'Latitude coordinate for maps and location services'
+        }, { transaction });
+      }
 
-      await queryInterface.addColumn('clinics', 'longitude', {
-        type: Sequelize.DECIMAL(11, 8),
-        allowNull: true, 
-        comment: 'Longitude coordinate for maps and location services'
-      }, { transaction });
+      if (!tableDescription.longitude) {
+        await queryInterface.addColumn('clinics', 'longitude', {
+          type: Sequelize.DECIMAL(11, 8),
+          allowNull: true, 
+          comment: 'Longitude coordinate for maps and location services'
+        }, { transaction });
+      }
 
-      await queryInterface.addColumn('clinics', 'location_verified', {
-        type: Sequelize.BOOLEAN,
-        defaultValue: false,
-        comment: 'Whether the location has been verified via geocoding'
-      }, { transaction });
+      if (!tableDescription.location_verified) {
+        await queryInterface.addColumn('clinics', 'location_verified', {
+          type: Sequelize.BOOLEAN,
+          defaultValue: false,
+          comment: 'Whether the location has been verified via geocoding'
+        }, { transaction });
+      }
 
-      await queryInterface.addColumn('clinics', 'location_accuracy', {
-        type: Sequelize.STRING(20),
-        allowNull: true,
-        comment: 'Geocoding accuracy level (ROOFTOP, RANGE_INTERPOLATED, GEOMETRIC_CENTER, APPROXIMATE)'
-      }, { transaction });
+      if (!tableDescription.location_accuracy) {
+        await queryInterface.addColumn('clinics', 'location_accuracy', {
+          type: Sequelize.STRING(20),
+          allowNull: true,
+          comment: 'Geocoding accuracy level (ROOFTOP, RANGE_INTERPOLATED, GEOMETRIC_CENTER, APPROXIMATE)'
+        }, { transaction });
+      }
 
-      // Add indexes for efficient geo-spatial queries
-      await queryInterface.addIndex('clinics', ['latitude', 'longitude'], {
-        name: 'idx_clinics_coordinates',
-        transaction
-      });
+      // Add indexes for efficient geo-spatial queries (idempotent)
+      try {
+        await queryInterface.addIndex('clinics', ['latitude', 'longitude'], {
+          name: 'idx_clinics_coordinates',
+          transaction
+        });
+      } catch (indexError: any) {
+        if (!indexError.message.includes('already exists')) {
+          throw indexError;
+        }
+      }
 
-      await queryInterface.addIndex('clinics', ['location_verified'], {
-        name: 'idx_clinics_location_verified', 
-        transaction
-      });
+      try {
+        await queryInterface.addIndex('clinics', ['location_verified'], {
+          name: 'idx_clinics_location_verified', 
+          transaction
+        });
+      } catch (indexError: any) {
+        if (!indexError.message.includes('already exists')) {
+          throw indexError;
+        }
+      }
 
       await transaction.commit();
       console.log('✅ Successfully added geo-location fields to clinics table');

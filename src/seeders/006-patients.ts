@@ -4,9 +4,23 @@ import bcrypt from 'bcryptjs';
 
 export default {
   up: async (queryInterface: any, Sequelize: any) => {
+    console.log('👥 Seeding patient test data (idempotent)...');
+    
     const transaction = await queryInterface.sequelize.transaction();
     
     try {
+      // Check if test patient users already exist (idempotent)
+      const existingPatients = await queryInterface.sequelize.query(
+        "SELECT email FROM users WHERE email IN ('john.doe@healthapp.com', 'jane.smith@healthapp.com', 'michael.johnson@healthapp.com', 'sarah.brown@healthapp.com', 'david.wilson@healthapp.com')",
+        { type: Sequelize.QueryTypes.SELECT, transaction }
+      );
+      
+      if (existingPatients.length > 0) {
+        console.log(`ℹ️ Patient test users already exist (${existingPatients.length} found), skipping seeding`);
+        await transaction.rollback();
+        return;
+      }
+
       // First, let's find a doctor to assign patients to
       const doctors = await queryInterface.sequelize.query(
         'SELECT id FROM doctors LIMIT 1',
@@ -105,11 +119,11 @@ export default {
           created_at: new Date(),
           updated_at: new Date()
         }
-      ], { transaction, returning: true });
+      ], { transaction, returning: true, ignoreDuplicates: true });
 
       // Users already have role field, so user_roles not needed for basic functionality
 
-      // Create patient records
+      // Create patient records (idempotent)
       await queryInterface.bulkInsert('patients', [
         {
           id: '550e8400-e29b-41d4-a716-446655440030',
@@ -256,12 +270,12 @@ export default {
           created_at: new Date(),
           updated_at: new Date()
         }
-      ], { transaction });
+      ], { transaction, ignoreDuplicates: true });
 
       // Skip appointments seeding for now - will handle separately
 
       await transaction.commit();
-      console.log('✅ Successfully seeded patients data');
+      console.log('✅ Successfully seeded patient test data (idempotent)');
       
     } catch (error) {
       await transaction.rollback();
