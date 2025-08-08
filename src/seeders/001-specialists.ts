@@ -2,7 +2,7 @@
 'use strict';
 
 export default {
-  up: async (queryInterface, Sequelize) => {
+  up: async (queryInterface: any, Sequelize: any) => {
     console.log('🎩 Seeding medical specialities (idempotent)...');
     
     // Check if specialities already exist
@@ -57,7 +57,7 @@ export default {
     console.log('✅ Medical specialities seeded successfully');
   },
 
-  down: async (queryInterface, Sequelize) => {
+  down: async (queryInterface: any, Sequelize: any) => {
     await queryInterface.bulkDelete('specialities', null, {});
   }
 };

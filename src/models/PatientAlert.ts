@@ -1,7 +1,7 @@
 // src/models/PatientAlert.js
 import { DataTypes } from 'sequelize';
 
-export default (sequelize) => {
+export default (sequelize: any) => {
   const PatientAlert = sequelize.define('PatientAlert', {
     id: {
       type: DataTypes.UUID,

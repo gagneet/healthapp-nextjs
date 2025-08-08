@@ -41,12 +41,12 @@ async function debugJWT() {
         console.log('Verified payload:', verified);
         break;
       } catch (error) {
-        console.log(`❌ FAILED with secret: ${secret.substring(0, 20)}... - ${error.message}`);
+        console.log(`❌ FAILED with secret: ${secret.substring(0, 20)}... - ${(error as any).message}`);
       }
     }
     
   } catch (error) {
-    console.error('Debug failed:', error.message);
+    console.(error as any)('Debug failed:', (error as any).message);
   }
 }
 

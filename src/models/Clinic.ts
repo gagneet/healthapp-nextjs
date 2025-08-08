@@ -1,7 +1,7 @@
 // src/models/Clinic.js
 import { DataTypes } from 'sequelize';
 
-const Clinic = (sequelize) => {
+const Clinic = (sequelize: any) => {
   const ClinicModel = sequelize.define('Clinic', {
     id: {
       type: DataTypes.UUID,
@@ -38,7 +38,7 @@ const Clinic = (sequelize) => {
       defaultValue: {},
       allowNull: false,
       validate: {
-        isValidAddress(value) {
+        isValidAddress(value: any) {
           if (typeof value !== 'object') {
             throw new Error('Address must be a valid JSON object');
           }
@@ -83,7 +83,7 @@ const Clinic = (sequelize) => {
       type: DataTypes.STRING(20),
       allowNull: true,
       validate: {
-        isValidPhone(value) {
+        isValidPhone(value: any) {
           if (value && !/^[\+]?[\d\-\s\(\)]{10,15}$/.test(value)) {
             throw new Error('Phone number must be valid');
           }
@@ -198,7 +198,7 @@ const Clinic = (sequelize) => {
       }
     ],
     hooks: {
-      beforeCreate: async (clinic) => {
+      beforeCreate: async (clinic: any) => {
         // Ensure only one primary clinic per doctor
         if (clinic.is_primary) {
           await ClinicModel.update(
@@ -212,7 +212,7 @@ const Clinic = (sequelize) => {
           );
         }
       },
-      beforeUpdate: async (clinic) => {
+      beforeUpdate: async (clinic: any) => {
         // Ensure only one primary clinic per doctor
         if (clinic.is_primary && clinic.changed('is_primary')) {
           await ClinicModel.update(

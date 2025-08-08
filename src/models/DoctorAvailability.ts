@@ -1,5 +1,5 @@
 // src/models/DoctorAvailability.js
-export default (sequelize, DataTypes) => {
+export default (sequelize: any, DataTypes: any) => {
   const DoctorAvailability = sequelize.define('DoctorAvailability', {
     id: {
       type: DataTypes.UUID,

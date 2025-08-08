@@ -2,7 +2,7 @@
 
 /** @type {import('sequelize-cli').Migration} */
 export default {
-  async up (queryInterface, Sequelize) {
+  async up (queryInterface: any, Sequelize: any) {
     // Check if patient_consent_otp table already exists
     const tableExists = await queryInterface.tableExists('patient_consent_otp');
     if (tableExists) {
@@ -245,7 +245,7 @@ export default {
       try {
         await queryInterface.addIndex('patient_consent_otp', index.fields, { name: index.name });
       } catch (error) {
-        if (!error.message.includes('already exists')) throw error;
+        if (!(error as any).message.includes('already exists')) throw (error as any);
       }
     }
     
@@ -262,7 +262,7 @@ export default {
         name: 'unique_active_otp_per_assignment'
       });
     } catch (error) {
-      if (!error.message.includes('already exists')) throw error;
+      if (!(error as any).message.includes('already exists')) throw (error as any);
     }
 
     // Add check constraints
@@ -278,7 +278,7 @@ export default {
         name: 'valid_otp_method'
       });
     } catch (error) {
-      if (!error.message.includes('already exists')) throw error;
+      if (!(error as any).message.includes('already exists')) throw (error as any);
     }
 
     // Ensure either secondary_doctor_id or secondary_hsp_id is provided
@@ -290,7 +290,7 @@ export default {
         name: 'otp_has_secondary_doctor_or_hsp'
       });
     } catch (error) {
-      if (!error.message.includes('already exists')) throw error;
+      if (!(error as any).message.includes('already exists')) throw (error as any);
     }
 
     // Ensure OTP code is 6 digits
@@ -302,7 +302,7 @@ export default {
         name: 'otp_code_format'
       });
     } catch (error) {
-      if (!error.message.includes('already exists')) throw error;
+      if (!(error as any).message.includes('already exists')) throw (error as any);
     }
 
     // Ensure max attempts is reasonable
@@ -318,11 +318,11 @@ export default {
         name: 'reasonable_max_attempts'
       });
     } catch (error) {
-      if (!error.message.includes('already exists')) throw error;
+      if (!(error as any).message.includes('already exists')) throw (error as any);
     }
   },
 
-  async down (queryInterface, Sequelize) {
+  async down (queryInterface: any, Sequelize: any) {
     await queryInterface.dropTable('patient_consent_otp');
   }
 };

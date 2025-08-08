@@ -1,7 +1,7 @@
 // src/models/PatientDoctorAssignment.js - Managing Doctor-Patient Relationships
 import { DataTypes } from 'sequelize';
 
-export default (sequelize) => {
+export default (sequelize: any) => {
   const PatientDoctorAssignment = sequelize.define('PatientDoctorAssignment', {
     id: {
       type: DataTypes.UUID,
@@ -205,18 +205,18 @@ export default (sequelize) => {
     
     validate: {
       validateConsentRequirements() {
-        if (this.assignment_type === 'transferred' && !this.patient_consent_required) {
+        if ((this as any).assignment_type === 'transferred' && !(this as any).patient_consent_required) {
           throw new Error('Transferred assignments must require patient consent');
         }
         
-        if (this.patient_consent_required && this.patient_consent_status === 'pending' && !this.consent_otp) {
+        if ((this as any).patient_consent_required && (this as any).patient_consent_status === 'pending' && !(this as any).consent_otp) {
           throw new Error('Pending consent assignments must have OTP');
         }
       },
       
       validatePermissions() {
-        const type = this.assignment_type;
-        const perms = this.permissions;
+        const type = (this as any).assignment_type;
+        const perms = (this as any).permissions;
         
         // Set default permissions based on assignment type
         if (type === 'primary') {
@@ -251,7 +251,7 @@ export default (sequelize) => {
           });
         } else if (type === 'transferred') {
           // Transferred doctors have full access after consent
-          if (this.patient_consent_status === 'granted') {
+          if ((this as any).patient_consent_status === 'granted') {
             Object.assign(perms, {
               can_view_patient: true,
               can_create_care_plans: true,
@@ -275,11 +275,11 @@ export default (sequelize) => {
     },
     
     hooks: {
-      beforeValidate: (assignment) => {
+      beforeValidate: (assignment: any) => {
         assignment.validatePermissions();
       },
       
-      beforeCreate: (assignment) => {
+      beforeCreate: (assignment: any) => {
         // Generate OTP if consent is required
         if (assignment.patient_consent_required && assignment.patient_consent_status === 'pending') {
           assignment.consent_otp = Math.floor(100000 + Math.random() * 900000).toString();
@@ -315,7 +315,7 @@ export default (sequelize) => {
     return this.save();
   };
   
-  PatientDoctorAssignment.prototype.verifyConsentOTP = function(providedOTP) {
+  PatientDoctorAssignment.prototype.verifyConsentOTP = function(providedOTP: any) {
     if (!this.consent_otp || !this.consent_otp_expires_at) {
       return false;
     }

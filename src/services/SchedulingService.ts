@@ -3,14 +3,14 @@ import { ScheduleEvent, Appointment, Medication, Vital } from '../models/index.j
 import { Op } from 'sequelize';
 
 class SchedulingService {
-  async getMissedEvents(patientId, eventType = null) {
+  async getMissedEvents(patientId: any, eventType = null) {
     const whereClause = {
       status: 'expired',
       start_time: { [Op.lt]: new Date() }
     };
 
     if (eventType) {
-      whereClause.event_type = eventType;
+      (whereClause as any).event_type = eventType;
     }
 
     // Get events for this patient through their appointments/medications
@@ -43,7 +43,7 @@ class SchedulingService {
       vitals: []
     };
 
-    events.forEach(event => {
+    events.forEach((event: any) => {
       const eventData = {
         event_id: `evt_${event.id}`,
         scheduled_time: event.start_time,
@@ -85,7 +85,7 @@ class SchedulingService {
     return { missedEvents, statistics };
   }
 
-  async completeEvent(eventId, completionData) {
+  async completeEvent(eventId: any, completionData: any) {
     const event = await ScheduleEvent.findByPk(eventId);
     
     if (!event) {
@@ -109,7 +109,7 @@ class SchedulingService {
     return event;
   }
 
-  async getUpcomingEvents(userId, userCategory, days = 7) {
+  async getUpcomingEvents(userId: any, userCategory: any, days = 7) {
     const futureDate = new Date();
     futureDate.setDate(futureDate.getDate() + days);
 

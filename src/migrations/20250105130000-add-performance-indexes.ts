@@ -2,11 +2,11 @@
 'use strict';
 
 export default {
-  up: async (queryInterface, Sequelize) => {
+  up: async (queryInterface: any, Sequelize: any) => {
     console.log('🚀 Adding performance indexes for healthcare application scalability (idempotent)...');
 
     // Helper function to add index with idempotent check
-    const addIndexSafely = async (tableName, indexConfig) => {
+    const addIndexSafely = async (tableName: any, indexConfig: any) => {
       try {
         await queryInterface.addIndex(tableName, indexConfig.fields || indexConfig[0], {
           name: indexConfig.name,
@@ -15,10 +15,10 @@ export default {
         });
         console.log(`✓ Added index: ${indexConfig.name}`);
       } catch (error) {
-        if (error.message.includes('already exists')) {
+        if ((error as any).message.includes('already exists')) {
           console.log(`ℹ️ Index already exists: ${indexConfig.name}`);
         } else {
-          console.warn(`⚠️ Failed to add index ${indexConfig.name}: ${error.message}`);
+          console.warn(`⚠️ Failed to add index ${indexConfig.name}: ${(error as any).message}`);
         }
       }
     };
@@ -303,19 +303,19 @@ export default {
     console.log('✅ Performance indexes processing completed for enterprise scalability');
   },
 
-  down: async (queryInterface, Sequelize) => {
+  down: async (queryInterface: any, Sequelize: any) => {
     console.log('🗑️ Removing performance indexes...');
 
     // Helper function to remove index with idempotent check
-    const removeIndexSafely = async (tableName, indexName) => {
+    const removeIndexSafely = async (tableName: any, indexName: any) => {
       try {
         await queryInterface.removeIndex(tableName, indexName);
         console.log(`✓ Removed index: ${indexName}`);
       } catch (error) {
-        if (error.message.includes('does not exist')) {
+        if ((error as any).message.includes('does not exist')) {
           console.log(`ℹ️ Index does not exist: ${indexName}`);
         } else {
-          console.warn(`⚠️ Failed to remove index ${indexName}: ${error.message}`);
+          console.warn(`⚠️ Failed to remove index ${indexName}: ${(error as any).message}`);
         }
       }
     };

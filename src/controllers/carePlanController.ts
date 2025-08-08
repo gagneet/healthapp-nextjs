@@ -65,7 +65,7 @@ class CarePlanController {
           where: { care_plan_id: carePlan.id }
         });
 
-        responseData.care_plans[carePlan.id] = {
+        (responseData as any).care_plans[carePlan.id] = {
           basic_info: {
             id: carePlan.id.toString(),
             patient_id: carePlan.patient_id.toString(),
@@ -94,7 +94,7 @@ class CarePlanController {
 
         // Add treatment and condition info if available
         if (carePlan.treatment_id) {
-          responseData.treatments[carePlan.treatment_id] = {
+          (responseData as any).treatments[carePlan.treatment_id] = {
             basic_info: {
               id: carePlan.treatment_id.toString(),
               name: carePlan.details?.treatment_name || 'Treatment Plan',
@@ -104,7 +104,7 @@ class CarePlanController {
         }
 
         if (carePlan.details?.condition_id) {
-          responseData.conditions[carePlan.details.condition_id] = {
+          (responseData as any).conditions[carePlan.details.condition_id] = {
             basic_info: {
               id: carePlan.details.condition_id.toString(),
               name: carePlan.details?.condition_name || 'Medical Condition',

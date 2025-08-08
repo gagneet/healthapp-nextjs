@@ -11,7 +11,7 @@ const router = express.Router();
 // POST /api/subscriptions/plans/provider/:providerId
 router.post('/plans/provider/:providerId',
   authenticate,
-  authorize(USER_CATEGORIES.HSP, USER_CATEGORIES.ADMIN),
+  authorize(USER_CATEGORIES.HSP, (USER_CATEGORIES as any).ADMIN),
   validateRequest(schemas.servicePlanCreate),
   subscriptionController.createServicePlan
 );
@@ -25,7 +25,7 @@ router.get('/plans/provider/:providerId',
 // PUT /api/subscriptions/plans/:planId
 router.put('/plans/:planId',
   authenticate,
-  authorize(USER_CATEGORIES.HSP, USER_CATEGORIES.ADMIN),
+  authorize(USER_CATEGORIES.HSP, (USER_CATEGORIES as any).ADMIN),
   validateRequest(schemas.servicePlanUpdate),
   subscriptionController.updateServicePlan
 );
@@ -33,7 +33,7 @@ router.put('/plans/:planId',
 // DELETE /api/subscriptions/plans/:planId
 router.delete('/plans/:planId',
   authenticate,
-  authorize(USER_CATEGORIES.HSP, USER_CATEGORIES.ADMIN),
+  authorize(USER_CATEGORIES.HSP, (USER_CATEGORIES as any).ADMIN),
   subscriptionController.deleteServicePlan
 );
 
@@ -54,7 +54,7 @@ router.get('/patient/:patientId',
 // GET /api/subscriptions/provider/:providerId
 router.get('/provider/:providerId',
   authenticate,
-  authorize(USER_CATEGORIES.HSP, USER_CATEGORIES.ADMIN),
+  authorize(USER_CATEGORIES.HSP, (USER_CATEGORIES as any).ADMIN),
   subscriptionController.getProviderSubscriptions
 );
 

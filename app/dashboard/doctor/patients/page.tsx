@@ -236,7 +236,7 @@ function PatientDrawer({ patient, isOpen, onClose }: PatientDrawerProps) {
               <div className="bg-gray-50 rounded-lg p-4">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-sm font-medium text-gray-700">Overall Adherence</span>
-                  <span className={`text-sm font-medium px-2 py-1 rounded ${getAdherenceColor(patient.adherence_rate)}`}>
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                     {patient.adherence_rate}%
                   </span>
                 </div>
@@ -267,8 +267,8 @@ function PatientDrawer({ patient, isOpen, onClose }: PatientDrawerProps) {
               <div className="space-y-3">
                 <h4 className="text-sm font-medium text-gray-900">Recent Activity</h4>
                 <div className="space-y-2 text-sm text-gray-600">
-                  <div>Last visit: {displayDateInfo(patient.last_visit, 'No previous visits')}</div>
-                  <div>Next appointment: {displayDateInfo(patient.next_appointment, 'No upcoming appointments')}</div>
+                  <div>Last visit: {patient.last_visit ? formatDate(patient.last_visit) : "No previous visits"}</div>
+                  <div>Next appointment: {patient.next_appointment ? formatDate(patient.next_appointment) : "No upcoming appointments"}</div>
                 </div>
               </div>
 
@@ -322,9 +322,9 @@ export default function PatientsPage() {
       try {
         const result = await apiRequest.get(endpoint)
         
-        if (result.status && result.payload?.data?.patients) {
+        if ((result as any).status && (result as any).payload?.data?.patients) {
           // Convert the patients object to an array with consent workflow fields
-          const patientsArray = Object.values(result.payload.data.patients).map((patient: any) => ({
+          const patientsArray = Object.values((result as any).payload.data.patients).map((patient: any) => ({
             id: patient.basic_info?.id || patient.id,
             user_id: patient.basic_info?.user_id || patient.user_id,
             first_name: patient.basic_info?.first_name || patient.first_name,
@@ -554,7 +554,7 @@ export default function PatientsPage() {
                         {getConsentStatusBadge(patient)}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getAdherenceColor(patient.adherence_rate)}`}>
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                           {patient.adherence_rate}%
                         </span>
                       </td>

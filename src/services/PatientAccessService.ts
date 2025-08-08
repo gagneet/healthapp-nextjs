@@ -20,7 +20,7 @@ class PatientAccessService {
    * @param {Object} options - Query options (pagination, filters, etc.)
    * @returns {Object} - Accessible patients with access status
    */
-  async getAccessiblePatients(doctorUserId, options = {}) {
+  async getAccessiblePatients(doctorUserId: any, options = {}) {
     try {
       // Get the doctor record
       const doctorRecord = await Doctor.findOne({
@@ -68,18 +68,18 @@ class PatientAccessService {
   /**
    * Get primary patients (direct care responsibility)
    */
-  async getPrimaryPatients(doctorRecord, options = {}) {
+  async getPrimaryPatients(doctorRecord: any, options = {}) {
     const whereClause = {
       primary_care_doctor_id: doctorRecord.id,
       is_active: true
     };
 
     // Add search filters if provided
-    if (options.search) {
-      whereClause[Op.or] = [
-        { '$user.first_name$': { [Op.iLike]: `%${options.search}%` } },
-        { '$user.last_name$': { [Op.iLike]: `%${options.search}%` } },
-        { medical_record_number: { [Op.iLike]: `%${options.search}%` } }
+    if ((options as any).search) {
+      (whereClause as any)[Op.or] = [
+        { '$user.first_name$': { [Op.iLike]: `%${(options as any).search}%` } },
+        { '$user.last_name$': { [Op.iLike]: `%${(options as any).search}%` } },
+        { medical_record_number: { [Op.iLike]: `%${(options as any).search}%` } }
       ];
     }
 
@@ -92,12 +92,12 @@ class PatientAccessService {
           attributes: ['id', 'first_name', 'last_name', 'email', 'phone']
         }
       ],
-      limit: options.limit || 50,
-      offset: options.offset || 0,
+      limit: (options as any).limit || 50,
+      offset: (options as any).offset || 0,
       order: [['created_at', 'DESC']]
     });
 
-    return patients.map(patient => ({
+    return patients.map((patient: any) => ({
       ...patient.toJSON(),
       access_type: 'primary',
       access_granted: true,
@@ -108,7 +108,7 @@ class PatientAccessService {
   /**
    * Get secondary patients with provider-aware access logic
    */
-  async getSecondaryPatients(doctorRecord, options = {}) {
+  async getSecondaryPatients(doctorRecord: any, options = {}) {
     // Find all secondary assignments for this doctor
     const assignments = await SecondaryDoctorAssignment.findAll({
       where: {
@@ -151,7 +151,7 @@ class PatientAccessService {
       ]
     });
 
-    return assignments.map(assignment => {
+    return assignments.map((assignment: any) => {
       const isSameProvider = this.checkSameProvider(assignment);
       const requiresConsent = !isSameProvider;
       
@@ -177,7 +177,7 @@ class PatientAccessService {
   /**
    * Check if primary and secondary doctors are from the same provider
    */
-  checkSameProvider(assignment) {
+  checkSameProvider(assignment: any) {
     return assignment.primary_doctor_provider_id && 
            assignment.secondary_doctor_provider_id &&
            assignment.primary_doctor_provider_id === assignment.secondary_doctor_provider_id;
@@ -186,7 +186,7 @@ class PatientAccessService {
   /**
    * Create a secondary doctor assignment with provider-aware consent logic
    */
-  async assignSecondaryDoctor(primaryDoctorId, patientId, secondaryDoctorId, assignmentData = {}) {
+  async assignSecondaryDoctor(primaryDoctorId: any, patientId: any, secondaryDoctorId: any, assignmentData = {}) {
     try {
       // Get provider information for both doctors
       const [primaryDoctor, secondaryDoctor] = await Promise.all([
@@ -218,9 +218,9 @@ class PatientAccessService {
         consent_status: isSameProvider ? 'granted' : 'pending',
         access_granted: isSameProvider,
         access_granted_at: isSameProvider ? new Date() : null,
-        assignment_reason: assignmentData.reason || 'Secondary care assignment',
-        specialty_focus: assignmentData.specialty_focus || [],
-        care_plan_ids: assignmentData.care_plan_ids || []
+        assignment_reason: (assignmentData as any).reason || 'Secondary care assignment',
+        specialty_focus: (assignmentData as any).specialty_focus || [],
+        care_plan_ids: (assignmentData as any).care_plan_ids || []
       });
 
       // Auto-update patient_provider_consent_history for same provider
@@ -243,7 +243,7 @@ class PatientAccessService {
   /**
    * Check if a doctor can access a specific patient
    */
-  async canAccessPatient(doctorUserId, patientId) {
+  async canAccessPatient(doctorUserId: any, patientId: any) {
     try {
       const doctorRecord = await Doctor.findOne({
         where: { user_id: doctorUserId }
@@ -307,7 +307,7 @@ class PatientAccessService {
   /**
    * Generate OTP for patient consent
    */
-  async generateConsentOtp(assignmentId, requestedByUserId, requestInfo = {}) {
+  async generateConsentOtp(assignmentId: any, requestedByUserId: any, requestInfo = {}) {
     try {
       // Get assignment details
       const assignment = await SecondaryDoctorAssignment.findByPk(assignmentId, {
@@ -354,8 +354,8 @@ class PatientAccessService {
         patient_phone: assignment.patient.user.phone,
         patient_email: assignment.patient.user.email,
         requested_by_user_id: requestedByUserId,
-        request_ip_address: requestInfo.ip,
-        request_user_agent: requestInfo.userAgent
+        request_ip_address: (requestInfo as any).ip,
+        request_user_agent: (requestInfo as any).userAgent
       });
 
       // Get patient and doctor names for personalized messages
@@ -416,7 +416,7 @@ class PatientAccessService {
   /**
    * Verify OTP and grant access
    */
-  async verifyConsentOtp(assignmentId, otpCode, verifiedByUserId) {
+  async verifyConsentOtp(assignmentId: any, otpCode: any, verifiedByUserId: any) {
     try {
       const otp = await PatientConsentOtp.findActiveByAssignment(assignmentId);
       
@@ -455,7 +455,7 @@ class PatientAccessService {
   /**
    * Record automatic consent for same provider assignments
    */
-  async recordAutomaticConsent(assignment) {
+  async recordAutomaticConsent(assignment: any) {
     try {
       // This would integrate with patient_provider_consent_history
       // Implementation depends on the existing consent history structure
@@ -479,7 +479,7 @@ class PatientAccessService {
   /**
    * Record OTP-based consent in history
    */
-  async recordConsentGiven(assignment, otp, verifiedByUserId) {
+  async recordConsentGiven(assignment: any, otp: any, verifiedByUserId: any) {
     try {
       // This would integrate with patient_provider_consent_history
       console.log(`OTP consent granted for assignment ${assignment.id}`);
@@ -503,7 +503,7 @@ class PatientAccessService {
   /**
    * Get available delivery methods for OTP
    */
-  getDeliveryMethods(user) {
+  getDeliveryMethods(user: any) {
     const methods = [];
     
     if (user.phone) {

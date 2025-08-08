@@ -1,5 +1,5 @@
 // src/models/PatientSubscription.js
-export default (sequelize, DataTypes) => {
+export default (sequelize: any, DataTypes: any) => {
   const PatientSubscription = sequelize.define('PatientSubscription', {
     id: {
       type: DataTypes.UUID,

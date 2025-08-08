@@ -36,7 +36,7 @@ router.get('/slots/available',
 // GET /api/appointments/calendar/doctor/:doctorId?startDate=2023-01-01&endDate=2023-01-31
 router.get('/calendar/doctor/:doctorId',
   authenticate,
-  authorize(USER_CATEGORIES.DOCTOR, USER_CATEGORIES.HSP, USER_CATEGORIES.ADMIN),
+  authorize(USER_CATEGORIES.DOCTOR, USER_CATEGORIES.HSP, (USER_CATEGORIES as any).ADMIN),
   appointmentController.getDoctorCalendar
 );
 
@@ -49,7 +49,7 @@ router.get('/calendar/patient/:patientId',
 // POST /api/appointments/availability/doctor/:doctorId
 router.post('/availability/doctor/:doctorId',
   authenticate,
-  authorize(USER_CATEGORIES.DOCTOR, USER_CATEGORIES.HSP, USER_CATEGORIES.ADMIN),
+  authorize(USER_CATEGORIES.DOCTOR, USER_CATEGORIES.HSP, (USER_CATEGORIES as any).ADMIN),
   validateRequest(schemas.doctorAvailability),
   appointmentController.setDoctorAvailability
 );

@@ -1,7 +1,7 @@
 // src/models/AdherenceLog.js - Track medication adherence and care plan compliance
 import { DataTypes } from 'sequelize';
 
-export default (sequelize) => {
+export default (sequelize: any) => {
   const AdherenceLog = sequelize.define('AdherenceLog', {
     id: {
       type: DataTypes.UUID,
@@ -343,7 +343,7 @@ export default (sequelize) => {
     ],
     
     hooks: {
-      beforeCreate: (log, options) => {
+      beforeCreate: (log: any, options: any) => {
         // Calculate delay if both scheduled and actual times are present
         if (log.scheduled_datetime && log.actual_datetime) {
           const scheduledTime = new Date(log.scheduled_datetime);
@@ -359,7 +359,7 @@ export default (sequelize) => {
         }
       },
       
-      beforeUpdate: (log, options) => {
+      beforeUpdate: (log: any, options: any) => {
         // Recalculate delay if times changed
         if (log.changed('scheduled_datetime') || log.changed('actual_datetime')) {
           if (log.scheduled_datetime && log.actual_datetime) {
@@ -373,7 +373,7 @@ export default (sequelize) => {
   });
   
   // Class methods
-  AdherenceLog.calculateMedicationAdherence = async function(patientId, medicationId, startDate, endDate) {
+  AdherenceLog.calculateMedicationAdherence = async function(patientId: any, medicationId: any, startDate: any, endDate: any) {
     const logs = await this.findAll({
       where: {
         patient_id: patientId,
@@ -386,26 +386,26 @@ export default (sequelize) => {
     });
     
     const totalScheduled = logs.length;
-    const completed = logs.filter(log => log.status === 'completed').length;
-    const partial = logs.filter(log => log.status === 'partial');
+    const completed = logs.filter((log: any) => log.status === 'completed').length;
+    const partial = logs.filter((log: any) => log.status === 'partial');
     
     let adherencePercentage = 0;
     if (totalScheduled > 0) {
-      const partialCompliance = partial.reduce((sum, log) => sum + (log.completion_percentage / 100), 0);
+      const partialCompliance = partial.reduce((sum: any, log: any) => sum + (log.completion_percentage / 100), 0);
       adherencePercentage = ((completed + partialCompliance) / totalScheduled) * 100;
     }
     
     return {
       total_scheduled: totalScheduled,
       completed: completed,
-      missed: logs.filter(log => log.status === 'missed').length,
+      missed: logs.filter((log: any) => log.status === 'missed').length,
       partial: partial.length,
       adherence_percentage: Math.round(adherencePercentage * 100) / 100,
       period: { start: startDate, end: endDate }
     };
   };
   
-  AdherenceLog.getPatientAdherenceProfile = async function(patientId, days = 30) {
+  AdherenceLog.getPatientAdherenceProfile = async function(patientId: any, days = 30) {
     const endDate = new Date();
     const startDate = new Date(endDate.getTime() - (days * 24 * 60 * 60 * 1000));
     
@@ -429,25 +429,25 @@ export default (sequelize) => {
     };
     
     // Group by type and status
-    logs.forEach(log => {
-      profile.by_type[log.adherence_type] = (profile.by_type[log.adherence_type] || 0) + 1;
-      profile.by_status[log.status] = (profile.by_status[log.status] || 0) + 1;
+    logs.forEach((log: any) => {
+      (profile as any).by_type[log.adherence_type] = ((profile as any).by_type[log.adherence_type] || 0) + 1;
+      (profile as any).by_status[log.status] = ((profile as any).by_status[log.status] || 0) + 1;
       
       if (log.missed_reason) {
-        profile.common_missed_reasons[log.missed_reason] = (profile.common_missed_reasons[log.missed_reason] || 0) + 1;
+        (profile as any).common_missed_reasons[log.missed_reason] = ((profile as any).common_missed_reasons[log.missed_reason] || 0) + 1;
       }
     });
     
     // Calculate average delay
-    const delayLogs = logs.filter(log => log.delay_minutes !== null);
+    const delayLogs = logs.filter((log: any) => log.delay_minutes !== null);
     if (delayLogs.length > 0) {
-      profile.average_delay = delayLogs.reduce((sum, log) => sum + log.delay_minutes, 0) / delayLogs.length;
+      profile.average_delay = delayLogs.reduce((sum: any, log: any) => sum + log.delay_minutes, 0) / delayLogs.length;
     }
     
     return profile;
   };
   
-  AdherenceLog.findPatternsOfNonAdherence = async function(patientId, medicationId = null) {
+  AdherenceLog.findPatternsOfNonAdherence = async function(patientId: any, medicationId = null) {
     const where = {
       patient_id: patientId,
       status: 'missed',
@@ -457,7 +457,7 @@ export default (sequelize) => {
     };
     
     if (medicationId) {
-      where.related_medication_id = medicationId;
+      (where as any).related_medication_id = medicationId;
     }
     
     const missedLogs = await this.findAll({
@@ -477,16 +477,16 @@ export default (sequelize) => {
     let currentStreak = 0;
     let maxStreak = 0;
     
-    missedLogs.forEach((log, index) => {
+    missedLogs.forEach((log: any, index: any) => {
       const scheduledTime = new Date(log.scheduled_datetime);
       const hour = scheduledTime.getHours();
       const dayOfWeek = scheduledTime.getDay();
       
-      patterns.time_of_day[hour] = (patterns.time_of_day[hour] || 0) + 1;
-      patterns.day_of_week[dayOfWeek] = (patterns.day_of_week[dayOfWeek] || 0) + 1;
+      (patterns as any).time_of_day[hour] = ((patterns as any).time_of_day[hour] || 0) + 1;
+      (patterns as any).day_of_week[dayOfWeek] = ((patterns as any).day_of_week[dayOfWeek] || 0) + 1;
       
       if (log.missed_reason) {
-        patterns.reasons[log.missed_reason] = (patterns.reasons[log.missed_reason] || 0) + 1;
+        (patterns as any).reasons[log.missed_reason] = ((patterns as any).reasons[log.missed_reason] || 0) + 1;
       }
       
       // Check for consecutive misses

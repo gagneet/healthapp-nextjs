@@ -3,7 +3,7 @@ import crypto from 'crypto';
 import { DataTypes } from 'sequelize';
 import { PLAN_TYPES, CARE_PLAN_STATUS, PRIORITY_LEVEL } from '../config/enums.js';
 
-export default (sequelize) => {
+export default (sequelize: any) => {
   const CarePlan = sequelize.define('CarePlan', {
     id: {
       type: DataTypes.UUID,
@@ -339,14 +339,14 @@ export default (sequelize) => {
     
     validate: {
       mustHaveCreator() {
-        if (!this.created_by_doctor_id && !this.created_by_hsp_id) {
+        if (!(this as any).created_by_doctor_id && !(this as any).created_by_hsp_id) {
           throw new Error('Care plan must be created by either a doctor or HSP');
         }
       }
     },
     
     hooks: {
-      beforeValidate: (plan, options) => {
+      beforeValidate: (plan: any, options: any) => {
         // Auto-generate title if not provided
         if (!plan.title && plan.chronic_conditions.length > 0) {
           plan.title = `Care Plan for ${plan.chronic_conditions.join(', ')}`;
@@ -360,12 +360,12 @@ export default (sequelize) => {
         }
       },
       
-      beforeCreate: (plan, options) => {
+      beforeCreate: (plan: any, options: any) => {
         // Validate creator has capability to create care plans
         // This would be checked in the service layer
       },
       
-      afterUpdate: (plan, options) => {
+      afterUpdate: (plan: any, options: any) => {
         // Update next review date if review frequency changed
         if (plan.changed('review_frequency_months')) {
           const nextReview = new Date();
@@ -394,7 +394,7 @@ export default (sequelize) => {
     return null;
   };
   
-  CarePlan.prototype.addProgressNote = function(note, authorId, authorType) {
+  CarePlan.prototype.addProgressNote = function(note: any, authorId: any, authorType: any) {
     if (!this.progress_notes) this.progress_notes = [];
     this.progress_notes.push({
       id: crypto.randomUUID(),
@@ -407,7 +407,7 @@ export default (sequelize) => {
     return this.save();
   };
   
-  CarePlan.prototype.updateOutcomeMeasure = function(measure, value) {
+  CarePlan.prototype.updateOutcomeMeasure = function(measure: any, value: any) {
     if (!this.outcome_measures) this.outcome_measures = {};
     if (!this.outcome_measures[measure]) this.outcome_measures[measure] = [];
     

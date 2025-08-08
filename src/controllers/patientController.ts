@@ -265,7 +265,7 @@ class PatientController {
         const allPatients = [];
 
         // Add primary patients with 'M' indicator
-        accessiblePatients.primary_patients.forEach(patient => {
+        accessiblePatients.primary_patients.forEach((patient: any) => {
           allPatients.push({
             ...patient,
             patient_type: 'M', // Main/Primary
@@ -278,7 +278,7 @@ class PatientController {
         });
 
         // Add secondary patients with 'R' indicator
-        accessiblePatients.secondary_patients.forEach(patient => {
+        accessiblePatients.secondary_patients.forEach((patient: any) => {
           allPatients.push({
             ...patient,
             patient_type: 'R', // Referred/Secondary
@@ -353,7 +353,7 @@ class PatientController {
       };
 
       if (search) {
-        whereClause[Op.or] = [
+        (whereClause as any)[Op.or] = [
           { first_name: { [Op.like]: `%${search}%` } },
           { last_name: { [Op.like]: `%${search}%` } },
           { email: { [Op.like]: `%${search}%` } },
@@ -361,8 +361,8 @@ class PatientController {
         ];
       }
 
-      if (filter.gender) whereClause.gender = filter.gender;
-      if (filter.blood_group) whereClause['$patientProfile.blood_group$'] = filter.blood_group;
+      if ((filter as any).gender) (whereClause as any).gender = (filter as any).gender;
+      if ((filter as any).blood_group) (whereClause as any)['($patientProfile as any).blood_group$'] = (filter as any).blood_group;
 
       const { count, rows: users } = await User.findAndCountAll({
         where: whereClause,
@@ -389,12 +389,12 @@ class PatientController {
         ],
         offset: (parseInt(page) - 1) * parseInt(limit),
         limit: parseInt(limit),
-        order: [[sortBy, sortOrder.toUpperCase()]],
+        order: [[sortBy, (sortOrder as any).toUpperCase()]],
         distinct: true
       });
 
       const responseData = {
-        patients: users.reduce((acc, user) => {
+        patients: users.reduce((acc: any, user: any) => {
           acc[user.patientProfile.id] = {
             basic_info: {
               id: user.patientProfile.id.toString(),
@@ -506,7 +506,7 @@ class PatientController {
   }
 
   // Helper methods using modern ES6+ features
-  buildSearchClause(search) {
+  buildSearchClause(search: any) {
     if (!search) return {};
     
     return {
@@ -530,28 +530,28 @@ class PatientController {
       });
       
       if (doctorRecord) {
-        clause['$patient.primary_care_doctor_id$'] = doctorRecord.id;
+        (clause as any)['$patient.primary_care_doctor_id$'] = doctorRecord.id;
       } else {
         // If no doctor record exists, return empty results
-        clause['$patient.primary_care_doctor_id$'] = null;
+        (clause as any)['$patient.primary_care_doctor_id$'] = null;
       }
     }
 
     // Additional filters
-    if (filter.gender) clause.gender = filter.gender;
-    if (filter.blood_group) clause['$patient.blood_group$'] = filter.blood_group;
+    if ((filter as any).gender) (clause as any).gender = (filter as any).gender;
+    if (filter.blood_group) (clause as any)['$patient.blood_group$'] = filter.blood_group;
     if (filter.age_min || filter.age_max) {
       // Date calculation for age filtering
       const currentYear = new Date().getFullYear();
       if (filter.age_min) {
-        clause.date_of_birth = {
-          ...clause.date_of_birth,
+        (clause as any).date_of_birth = {
+          ...(clause as any).date_of_birth,
           [Op.lte]: new Date(currentYear - filter.age_min, 11, 31)
         };
       }
       if (filter.age_max) {
-        clause.date_of_birth = {
-          ...clause.date_of_birth,
+        (clause as any).date_of_birth = {
+          ...(clause as any).date_of_birth,
           [Op.gte]: new Date(currentYear - filter.age_max, 0, 1)
         };
       }

@@ -1,8 +1,8 @@
 // src/middleware/validation.js
 import Joi from 'joi';
 
-const validateRequest = (schema) => {
-  return (req, res, next) => {
+const validateRequest = (schema: any) => {
+  return (req: any, res: any, next: any) => {
     const { error } = schema.validate(req.body);
     
     if (error) {
@@ -24,8 +24,8 @@ const validateRequest = (schema) => {
   };
 };
 
-const validateQuery = (schema) => {
-  return (req, res, next) => {
+const validateQuery = (schema: any) => {
+  return (req: any, res: any, next: any) => {
     const { error } = schema.validate(req.query);
     
     if (error) {

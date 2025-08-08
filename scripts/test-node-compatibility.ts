@@ -21,7 +21,7 @@ try {
   console.log(`   Package name: ${pkg.name}`);
   console.log('   ✓ ES Modules working');
 } catch (error) {
-  console.error('   ❌ ES Modules failed:', error.message);
+  console.(error as any)('   ❌ ES Modules failed:', (error as any).message);
 }
 
 // Test 2: Import assertions (if used)
@@ -32,7 +32,7 @@ try {
   console.log(`   Hash generated: ${hash.substring(0, 16)}...`);
   console.log('   ✓ Dynamic imports working');
 } catch (error) {
-  console.error('   ❌ Dynamic imports failed:', error.message);
+  console.(error as any)('   ❌ Dynamic imports failed:', (error as any).message);
 }
 
 // Test 3: Fetch API (available in Node.js 18+)
@@ -45,7 +45,7 @@ try {
     console.log('   ⚠️  Fetch API not available (may need polyfill)');
   }
 } catch (error) {
-  console.error('   ❌ Fetch API test failed:', error.message);
+  console.(error as any)('   ❌ Fetch API test failed:', (error as any).message);
 }
 
 // Test 4: Worker Threads
@@ -56,7 +56,7 @@ try {
     console.log('   ✓ Worker Threads available');
   }
 } catch (error) {
-  console.error('   ❌ Worker Threads failed:', error.message);
+  console.(error as any)('   ❌ Worker Threads failed:', (error as any).message);
 }
 
 // Test 5: AbortController
@@ -65,7 +65,7 @@ try {
   const controller = new AbortController();
   console.log('   ✓ AbortController available');
 } catch (error) {
-  console.error('   ❌ AbortController failed:', error.message);
+  console.(error as any)('   ❌ AbortController failed:', (error as any).message);
 }
 
 // Test 6: Buffer and Stream compatibility
@@ -75,7 +75,7 @@ try {
   console.log(`   Buffer created: ${buffer.length} bytes`);
   console.log('   ✓ Buffer API working');
 } catch (error) {
-  console.error('   ❌ Buffer API failed:', error.message);
+  console.(error as any)('   ❌ Buffer API failed:', (error as any).message);
 }
 
 // Test 7: Check key dependencies compatibility

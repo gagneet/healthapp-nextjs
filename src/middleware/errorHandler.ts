@@ -3,7 +3,7 @@ import { createLogger } from './logger.js';
 
 const logger = createLogger(import.meta.url);
 
-const errorHandler = (err, req, res, next) => {
+const errorHandler = (err: any, req: any, res: any, next: any) => {
   let error = { ...err };
   error.message = err.message;
 
@@ -27,7 +27,7 @@ const errorHandler = (err, req, res, next) => {
 
   // Sequelize validation error
   if (err.name === 'SequelizeValidationError') {
-    const message = err.errors.map(val => val.message).join(', ');
+    const message = err.errors.map((val: any) => val.message).join(', ');
     error = {
       status: false,
       statusCode: 400,

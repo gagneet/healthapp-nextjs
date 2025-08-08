@@ -2,7 +2,7 @@
 'use strict';
 
 export default {
-  up: async (queryInterface, Sequelize) => {
+  up: async (queryInterface: any, Sequelize: any) => {
     // Check if table already exists
     const tableExists = await queryInterface.tableExists('audit_logs');
     if (tableExists) {
@@ -87,7 +87,7 @@ export default {
       try {
         await queryInterface.addIndex('audit_logs', index.fields, { name: index.name });
       } catch (error) {
-        if (!error.message.includes('already exists')) {
+        if (!(error as any).message.includes('already exists')) {
           throw error;
         }
         console.log(`Index ${index.name} already exists, skipping`);
@@ -95,7 +95,7 @@ export default {
     }
   },
 
-  down: async (queryInterface, Sequelize) => {
+  down: async (queryInterface: any, Sequelize: any) => {
     await queryInterface.dropTable('audit_logs');
   }
 };

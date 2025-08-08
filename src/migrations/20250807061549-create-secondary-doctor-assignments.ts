@@ -2,7 +2,7 @@
 
 /** @type {import('sequelize-cli').Migration} */
 export default {
-  async up (queryInterface, Sequelize) {
+  async up (queryInterface: any, Sequelize: any) {
     // Check if secondary_doctor_assignments table already exists
     const tableExists = await queryInterface.tableExists('secondary_doctor_assignments');
     if (tableExists) {
@@ -195,7 +195,7 @@ export default {
       try {
         await queryInterface.addIndex('secondary_doctor_assignments', index.fields, { name: index.name });
       } catch (error) {
-        if (!error.message.includes('already exists')) throw error;
+        if (!(error as any).message.includes('already exists')) throw (error as any);
       }
     }
     
@@ -210,7 +210,7 @@ export default {
         name: 'unique_active_secondary_assignment'
       });
     } catch (error) {
-      if (!error.message.includes('already exists')) throw error;
+      if (!(error as any).message.includes('already exists')) throw (error as any);
     }
 
     // Add check constraints
@@ -226,7 +226,7 @@ export default {
         name: 'valid_secondary_consent_status'
       });
     } catch (error) {
-      if (!error.message.includes('already exists')) throw error;
+      if (!(error as any).message.includes('already exists')) throw (error as any);
     }
 
     // Ensure either secondary_doctor_id or secondary_hsp_id is provided
@@ -238,11 +238,11 @@ export default {
         name: 'secondary_assignment_has_doctor_or_hsp'
       });
     } catch (error) {
-      if (!error.message.includes('already exists')) throw error;
+      if (!(error as any).message.includes('already exists')) throw (error as any);
     }
   },
 
-  async down (queryInterface, Sequelize) {
+  async down (queryInterface: any, Sequelize: any) {
     await queryInterface.dropTable('secondary_doctor_assignments');
   }
 };

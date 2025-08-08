@@ -2,7 +2,7 @@
 'use strict';
 
 export default {
-  up: async (queryInterface, Sequelize) => {
+  up: async (queryInterface: any, Sequelize: any) => {
     console.log('👨‍⚕️ Enhancing doctor profile fields...');
     
     const transaction = await queryInterface.sequelize.transaction();
@@ -122,7 +122,7 @@ export default {
     }
   },
 
-  down: async (queryInterface, Sequelize) => {
+  down: async (queryInterface: any, Sequelize: any) => {
     const transaction = await queryInterface.sequelize.transaction();
     
     try {

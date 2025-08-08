@@ -1,5 +1,5 @@
 // src/models/Provider.js
-export default (sequelize, DataTypes) => {
+export default (sequelize: any, DataTypes: any) => {
   const Provider = sequelize.define('Provider', {
     id: {
       type: DataTypes.UUID,

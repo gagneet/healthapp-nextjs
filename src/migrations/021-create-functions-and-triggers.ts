@@ -2,7 +2,7 @@
 'use strict';
 
 export default {
-  up: async (queryInterface, Sequelize) => {
+  up: async (queryInterface: any, Sequelize: any) => {
     // Create extensions (these are idempotent by default with IF NOT EXISTS)
     await queryInterface.sequelize.query('CREATE EXTENSION IF NOT EXISTS "uuid-ossp";');
     await queryInterface.sequelize.query('CREATE EXTENSION IF NOT EXISTS "pgcrypto";');
@@ -46,7 +46,7 @@ export default {
           FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
         `);
       } catch (error) {
-        if (!error.message.includes('already exists')) {
+        if (!(error as any).message.includes('already exists')) {
           throw error;
         }
         console.log(`Trigger update_${table}_updated_at already exists, skipping`);
@@ -54,7 +54,7 @@ export default {
     }
   },
 
-  down: async (queryInterface, Sequelize) => {
+  down: async (queryInterface: any, Sequelize: any) => {
     // Drop triggers
     const tables = [
       'users',

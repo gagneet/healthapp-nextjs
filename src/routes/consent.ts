@@ -18,7 +18,7 @@ router.get('/secondary-patients',
 // POST /api/consent/:patientId/assign-secondary (Assign secondary doctor/HSP)
 router.post('/:patientId/assign-secondary',
   authenticate,
-  authorize(USER_CATEGORIES.DOCTOR, USER_CATEGORIES.HSP, USER_CATEGORIES.ADMIN),
+  authorize(USER_CATEGORIES.DOCTOR, USER_CATEGORIES.HSP, (USER_CATEGORIES as any).ADMIN),
   consentController.assignSecondaryDoctor
 );
 
@@ -53,7 +53,7 @@ router.post('/:patientId/resend-otp',
 // GET /api/consent/search-providers (Search for doctors/HSPs for assignment)
 router.get('/search-providers',
   authenticate,
-  authorize(USER_CATEGORIES.DOCTOR, USER_CATEGORIES.HSP, USER_CATEGORIES.ADMIN),
+  authorize(USER_CATEGORIES.DOCTOR, USER_CATEGORIES.HSP, (USER_CATEGORIES as any).ADMIN),
   consentController.searchProviders
 );
 

@@ -1,7 +1,7 @@
 // src/middleware/rateLimiter.js
 import rateLimit from 'express-rate-limit';
 
-const createRateLimiter = (windowMs, max, message) => {
+const createRateLimiter = (windowMs: any, max: any, message: any) => {
   return rateLimit({
     windowMs,
     max,

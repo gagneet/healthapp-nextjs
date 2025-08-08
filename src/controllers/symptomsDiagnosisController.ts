@@ -39,8 +39,8 @@ class SymptomsDiagnosisController {
       }
 
       const symptoms = await SymptomsDatabase.getAllSymptoms();
-      const filteredSymptoms = symptoms.filter(symptom =>
-        symptom.toLowerCase().includes(query.toLowerCase())
+      const filteredSymptoms = symptoms.filter((symptom: any) =>
+        (symptom as any).toLowerCase().includes((query as any).toLowerCase())
       );
 
       res.status(200).json(ResponseFormatter.success(
@@ -64,7 +64,7 @@ class SymptomsDiagnosisController {
         order: [['diagnosis_name', 'ASC']]
       });
 
-      const formattedDiagnoses = diagnoses.map(diagnosis => ({
+      const formattedDiagnoses = diagnoses.map((diagnosis: any) => ({
         id: diagnosis.id,
         name: diagnosis.diagnosis_name,
         category: diagnosis.category,
@@ -97,7 +97,7 @@ class SymptomsDiagnosisController {
 
       const diagnoses = await SymptomsDatabase.searchDiagnosis(query);
 
-      const formattedDiagnoses = diagnoses.map(diagnosis => ({
+      const formattedDiagnoses = diagnoses.map((diagnosis: any) => ({
         id: diagnosis.id,
         name: diagnosis.diagnosis_name,
         category: diagnosis.category,
@@ -138,8 +138,8 @@ class SymptomsDiagnosisController {
       // Remove duplicates and score by symptom match count
       const diagnosisScores = {};
       matchingDiagnoses.forEach(diagnosis => {
-        if (!diagnosisScores[diagnosis.id]) {
-          diagnosisScores[diagnosis.id] = {
+        if (!(diagnosisScores as any)[diagnosis.id]) {
+          (diagnosisScores as any)[diagnosis.id] = {
             diagnosis,
             matchedSymptoms: 0,
             matchedSymptomsNames: []
@@ -148,9 +148,9 @@ class SymptomsDiagnosisController {
         
         symptoms.forEach(symptom => {
           if (diagnosis.hasSymptom(symptom)) {
-            diagnosisScores[diagnosis.id].matchedSymptoms++;
-            if (!diagnosisScores[diagnosis.id].matchedSymptomsNames.includes(symptom)) {
-              diagnosisScores[diagnosis.id].matchedSymptomsNames.push(symptom);
+            (diagnosisScores as any)[diagnosis.id].matchedSymptoms++;
+            if (!(diagnosisScores as any)[diagnosis.id].matchedSymptomsNames.includes(symptom)) {
+              (diagnosisScores as any)[diagnosis.id].matchedSymptomsNames.push(symptom);
             }
           }
         });
@@ -158,15 +158,15 @@ class SymptomsDiagnosisController {
 
       // Sort by best match (most symptoms matched)
       const sortedDiagnoses = Object.values(diagnosisScores)
-        .sort((a, b) => b.matchedSymptoms - a.matchedSymptoms)
+        .sort((a, b) => (b as any).matchedSymptoms - (a as any).matchedSymptoms)
         .map(item => ({
-          id: item.diagnosis.id,
-          name: item.diagnosis.diagnosis_name,
-          category: item.diagnosis.category,
-          matchedSymptoms: item.matchedSymptoms,
-          matchedSymptomsNames: item.matchedSymptomsNames,
-          totalSymptoms: item.diagnosis.getSymptomList().length,
-          matchScore: item.matchedSymptoms / item.diagnosis.getSymptomList().length
+          id: (item as any).diagnosis.id,
+          name: (item as any).diagnosis.diagnosis_name,
+          category: (item as any).diagnosis.category,
+          matchedSymptoms: (item as any).matchedSymptoms,
+          matchedSymptomsNames: (item as any).matchedSymptomsNames,
+          totalSymptoms: (item as any).diagnosis.getSymptomList().length,
+          matchScore: (item as any).matchedSymptoms / (item as any).diagnosis.getSymptomList().length
         }));
 
       res.status(200).json(ResponseFormatter.success(
@@ -191,17 +191,17 @@ class SymptomsDiagnosisController {
       const whereClause = { is_active: true };
 
       if (condition) {
-        whereClause.applicable_conditions = {
+        (whereClause as any).applicable_conditions = {
           [Op.contains]: [condition]
         };
       }
 
       if (category) {
-        whereClause.category = category;
+        (whereClause as any).category = category;
       }
 
       if (severity) {
-        whereClause[Op.or] = [
+        (whereClause as any)[Op.or] = [
           { severity_level: severity },
           { severity_level: 'all' }
         ];
@@ -276,7 +276,7 @@ class SymptomsDiagnosisController {
 
       // Remove duplicates
       const uniqueTreatments = allTreatments.reduce((unique, treatment) => {
-        if (!unique.find(t => t.id === treatment.id)) {
+        if (!unique.find((t: any) => t.id === treatment.id)) {
           unique.push(treatment);
         }
         return unique;
@@ -285,7 +285,7 @@ class SymptomsDiagnosisController {
       // Filter by severity if provided
       let filteredTreatments = uniqueTreatments;
       if (severity) {
-        filteredTreatments = uniqueTreatments.filter(treatment =>
+        filteredTreatments = uniqueTreatments.filter((treatment: any) =>
           treatment.severity_level === severity || treatment.severity_level === 'all'
         );
       }
@@ -381,7 +381,7 @@ class SymptomsDiagnosisController {
       const symptomsObj = {};
       if (symptoms && Array.isArray(symptoms)) {
         symptoms.forEach(symptom => {
-          symptomsObj[symptom] = true;
+          (symptomsObj as any)[symptom] = true;
         });
       }
 

@@ -2,7 +2,7 @@
 'use strict';
 
 export default {
-  up: async (queryInterface, Sequelize) => {
+  up: async (queryInterface: any, Sequelize: any) => {
     console.log('🏥 Creating clinics table...');
     
     // Check if clinics table already exists
@@ -151,7 +151,7 @@ export default {
     console.log('✅ Clinics table created successfully');
   },
 
-  down: async (queryInterface, Sequelize) => {
+  down: async (queryInterface: any, Sequelize: any) => {
     await queryInterface.dropTable('clinics');
   }
 };

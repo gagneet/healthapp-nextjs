@@ -173,7 +173,7 @@ class SubscriptionService {
     return subscription;
   }
 
-  async cancelSubscription(subscriptionId, cancelReason = null, cancelAtPeriodEnd = true) {
+  async cancelSubscription(subscriptionId: any, cancelReason = null, cancelAtPeriodEnd = true) {
     const subscription = await PatientSubscription.findByPk(subscriptionId);
     if (!subscription) {
       throw new Error('Subscription not found');
@@ -208,14 +208,14 @@ class SubscriptionService {
     };
 
     if (!cancelAtPeriodEnd) {
-      updateData.current_period_end = new Date().toISOString().split('T')[0];
+      (updateData as any).current_period_end = new Date().toISOString().split('T')[0];
     }
 
     await subscription.update(updateData);
     return subscription;
   }
 
-  async reactivateSubscription(subscriptionId) {
+  async reactivateSubscription(subscriptionId: any) {
     const subscription = await PatientSubscription.findByPk(subscriptionId);
     if (!subscription) {
       throw new Error('Subscription not found');
@@ -249,7 +249,7 @@ class SubscriptionService {
   }
 
   // Payment Method Management
-  async addPaymentMethod(patientId, stripePaymentMethodId, setAsDefault = false) {
+  async addPaymentMethod(patientId: any, stripePaymentMethodId: any, setAsDefault = false) {
     const patient = await Patient.findByPk(patientId);
     if (!patient) {
       throw new Error('Patient not found');
@@ -288,7 +288,7 @@ class SubscriptionService {
     return paymentMethod;
   }
 
-  async removePaymentMethod(paymentMethodId) {
+  async removePaymentMethod(paymentMethodId: any) {
     const paymentMethod = await PaymentMethod.findByPk(paymentMethodId);
     if (!paymentMethod) {
       throw new Error('Payment method not found');
@@ -306,7 +306,7 @@ class SubscriptionService {
   }
 
   // Payment Processing
-  async processPayment(subscriptionId, amount, paymentMethodId = null) {
+  async processPayment(subscriptionId: any, amount: any, paymentMethodId = null) {
     const subscription = await PatientSubscription.findByPk(subscriptionId, {
       include: [
         { model: Patient, as: 'patient' },
@@ -367,8 +367,8 @@ class SubscriptionService {
     } catch (error) {
       await payment.update({
         status: 'failed',
-        failure_code: error.code,
-        failure_message: error.message,
+        failure_code: (error as any).code,
+        failure_message: (error as any).message,
         processed_at: new Date(),
       });
 
@@ -382,7 +382,7 @@ class SubscriptionService {
   }
 
   // Webhook handling
-  async handleStripeWebhook(event) {
+  async handleStripeWebhook(event: any) {
     switch (event.type) {
       case 'invoice.payment_succeeded':
         await this.handlePaymentSucceeded(event.data.object);
@@ -406,7 +406,7 @@ class SubscriptionService {
   }
 
   // Helper Methods
-  async getOrCreateStripeCustomer(patient) {
+  async getOrCreateStripeCustomer(patient: any) {
     // Try to find existing customer
     const existingSubscription = await PatientSubscription.findOne({
       where: { 
@@ -434,7 +434,7 @@ class SubscriptionService {
     });
   }
 
-  calculatePeriodEnd(startDate, billingCycle) {
+  calculatePeriodEnd(startDate: any, billingCycle: any) {
     const endDate = new Date(startDate);
     
     switch (billingCycle) {
@@ -454,7 +454,7 @@ class SubscriptionService {
     return endDate;
   }
 
-  async handlePaymentSucceeded(invoice) {
+  async handlePaymentSucceeded(invoice: any) {
     const subscription = await PatientSubscription.findOne({
       where: { stripe_subscription_id: invoice.subscription }
     });
@@ -469,7 +469,7 @@ class SubscriptionService {
     }
   }
 
-  async handlePaymentFailed(invoice) {
+  async handlePaymentFailed(invoice: any) {
     const subscription = await PatientSubscription.findOne({
       where: { stripe_subscription_id: invoice.subscription }
     });
@@ -482,7 +482,7 @@ class SubscriptionService {
     }
   }
 
-  async handleSubscriptionUpdated(stripeSubscription) {
+  async handleSubscriptionUpdated(stripeSubscription: any) {
     const subscription = await PatientSubscription.findOne({
       where: { stripe_subscription_id: stripeSubscription.id }
     });
@@ -496,7 +496,7 @@ class SubscriptionService {
     }
   }
 
-  async handleSubscriptionDeleted(stripeSubscription) {
+  async handleSubscriptionDeleted(stripeSubscription: any) {
     const subscription = await PatientSubscription.findOne({
       where: { stripe_subscription_id: stripeSubscription.id }
     });

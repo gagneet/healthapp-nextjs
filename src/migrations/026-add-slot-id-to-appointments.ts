@@ -1,7 +1,7 @@
 'use strict';
 
 export default {
-  up: async (queryInterface, Sequelize) => {
+  up: async (queryInterface: any, Sequelize: any) => {
     // Check if slot_id column already exists
     const columnExists = await queryInterface.sequelize.query(
       "SELECT column_name FROM information_schema.columns WHERE table_name = 'appointments' AND column_name = 'slot_id'",
@@ -29,7 +29,7 @@ export default {
     await queryInterface.addIndex('appointments', ['slot_id']);
   },
 
-  down: async (queryInterface, Sequelize) => {
+  down: async (queryInterface: any, Sequelize: any) => {
     await queryInterface.removeColumn('appointments', 'slot_id');
   }
 };

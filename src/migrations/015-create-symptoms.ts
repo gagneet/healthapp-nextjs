@@ -2,7 +2,7 @@
 'use strict';
 
 export default {
-  up: async (queryInterface, Sequelize) => {
+  up: async (queryInterface: any, Sequelize: any) => {
     // Check if table already exists
     const tableExists = await queryInterface.tableExists('symptoms');
     if (tableExists) {
@@ -106,7 +106,7 @@ export default {
         CHECK (severity >= 1 AND severity <= 10);
       `);
     } catch (error) {
-      if (!error.message.includes('already exists') && !error.message.includes('duplicate key')) {
+      if (!(error as any).message.includes('already exists') && !(error as any).message.includes('duplicate key')) {
         throw error;
       }
       console.log('Constraint check_severity_range already exists, skipping');
@@ -126,7 +126,7 @@ export default {
       try {
         await queryInterface.addIndex('symptoms', index.fields, { name: index.name });
       } catch (error) {
-        if (!error.message.includes('already exists')) {
+        if (!(error as any).message.includes('already exists')) {
           throw error;
         }
         console.log(`Index ${index.name} already exists, skipping`);
@@ -134,7 +134,7 @@ export default {
     }
   },
 
-  down: async (queryInterface, Sequelize) => {
+  down: async (queryInterface: any, Sequelize: any) => {
     await queryInterface.dropTable('symptoms');
   }
 };

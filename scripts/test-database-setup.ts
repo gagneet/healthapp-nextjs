@@ -55,9 +55,9 @@ async function testDatabaseSetup() {
     try {
       const extensions = await sequelize.query(
         "SELECT extname FROM pg_extension WHERE extname IN ('uuid-ossp', 'pgcrypto', 'pg_trgm');",
-        { type: sequelize.QueryTypes.SELECT }
+        { type: (sequelize as any).QueryTypes.SELECT }
       );
-      console.log(`✅ PostgreSQL extensions available: ${extensions.map(e => e.extname).join(', ')}`);
+      console.log(`✅ PostgreSQL extensions available: ${extensions.map(e => (e as any).extname).join(', ')}`);
     } catch (error) {
       console.log('⚠️  Could not check extensions (might need to run migrations first)');
     }
@@ -70,9 +70,9 @@ async function testDatabaseSetup() {
         `SELECT typname FROM pg_type WHERE typtype = 'e' AND typname IN 
          ('user_role', 'account_status', 'gender', 'appointment_status', 'care_plan_status', 
           'priority_level', 'event_status', 'event_type', 'notification_channel', 'subscription_status');`,
-        { type: sequelize.QueryTypes.SELECT }
+        { type: (sequelize as any).QueryTypes.SELECT }
       );
-      console.log(`✅ Custom ENUM types: ${enums.map(e => e.typname).join(', ')}`);
+      console.log(`✅ Custom ENUM types: ${enums.map(e => (e as any).typname).join(', ')}`);
     } catch (error) {
       console.log('⚠️  Could not check ENUM types (might need to run migrations first)');
     }
@@ -101,7 +101,7 @@ async function testDatabaseSetup() {
         }
       }
     } catch (error) {
-      console.log('⚠️  Could not test data operations:', error.message);
+      console.log('⚠️  Could not test data operations:', (error as any).message);
     }
     console.log('');
     
@@ -109,12 +109,12 @@ async function testDatabaseSetup() {
     console.log('\n📋 Summary:');
     console.log(`   - Database: ${sequelize.config.database}`);
     console.log(`   - Host: ${sequelize.config.host}:${sequelize.config.port}`);
-    console.log(`   - Dialect: ${sequelize.config.dialect}`);
+    console.log(`   - Dialect: ${sequelize.(config as any).dialect}`);
     console.log(`   - Models loaded: ${models.length}`);
     console.log(`   - Tables found: ${tables.length}`);
     
   } catch (error) {
-    console.error('❌ Database setup test failed:', error.message);
+    console.(error as any)('❌ Database setup test failed:', (error as any).message);
     console.error('\n🛠️  Troubleshooting:');
     console.error('   1. Make sure PostgreSQL is running');
     console.error('   2. Check database connection parameters in .env');

@@ -2,7 +2,7 @@
 'use strict';
 
 export default {
-  up: async (queryInterface, Sequelize) => {
+  up: async (queryInterface: any, Sequelize: any) => {
     console.log('🩺 Seeding symptoms/conditions database (idempotent)...');
     
     // Check if conditions already exist
@@ -138,7 +138,7 @@ export default {
     console.log('✅ Symptoms/conditions database seeded successfully');
   },
 
-  down: async (queryInterface, Sequelize) => {
+  down: async (queryInterface: any, Sequelize: any) => {
     await queryInterface.bulkDelete('symptoms_database', null, {});
   }
 };

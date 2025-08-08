@@ -1,7 +1,7 @@
 // src/models/VitalType.js
 import { DataTypes } from 'sequelize';
 
-export default (sequelize) => {
+export default (sequelize: any) => {
   const VitalType = sequelize.define('VitalType', {
     id: {
       type: DataTypes.UUID,
@@ -43,7 +43,7 @@ export default (sequelize) => {
       type: DataTypes.JSONB,
       defaultValue: {},
       validate: {
-        isValidRules(value) {
+        isValidRules(value: any) {
           if (value && typeof value !== 'object') {
             throw new Error('Validation rules must be a valid JSON object');
           }
@@ -79,19 +79,19 @@ export default (sequelize) => {
     // Instance methods
     instanceMethods: {
       // Check if value is within normal range
-      isNormalValue(value) {
-        if (!this.normal_range_min && !this.normal_range_max) {
+      isNormalValue(value: any) {
+        if (!(this as any).normal_range_min && !(this as any).normal_range_max) {
           return true; // No range defined
         }
         
         const numValue = parseFloat(value);
         if (isNaN(numValue)) return false;
         
-        if (this.normal_range_min && numValue < this.normal_range_min) {
+        if ((this as any).normal_range_min && numValue < (this as any).normal_range_min) {
           return false;
         }
         
-        if (this.normal_range_max && numValue > this.normal_range_max) {
+        if ((this as any).normal_range_max && numValue > (this as any).normal_range_max) {
           return false;
         }
         
@@ -100,15 +100,15 @@ export default (sequelize) => {
       
       // Get display name with unit
       getDisplayName() {
-        return this.unit ? `${this.name} (${this.unit})` : this.name;
+        return (this as any).unit ? `${(this as any).name} (${(this as any).unit})` : (this as any).name;
       }
     },
     
     // Class methods
     classMethods: {
       // Find by name
-      findByName(name) {
-        return this.findOne({
+      findByName(name: any) {
+        return (this as any).findOne({
           where: {
             name: name
           }
@@ -127,7 +127,7 @@ export default (sequelize) => {
           'Oxygen Saturation'
         ];
         
-        return this.findAll({
+        return (this as any).findAll({
           where: {
             name: {
               [sequelize.Sequelize.Op.in]: commonTypes

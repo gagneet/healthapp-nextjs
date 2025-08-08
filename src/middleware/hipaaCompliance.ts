@@ -9,7 +9,7 @@ const logger = createLogger(import.meta.url);
  * HIPAA Audit Log Entry
  */
 export class HIPAAAuditLog {
-  static async logAccess(req, res, next) {
+  static async logAccess(req: any, res: any, next: any) {
     try {
       const auditEntry = {
         id: crypto.randomUUID(),
@@ -42,7 +42,7 @@ export class HIPAAAuditLog {
     }
   }
 
-  static async logAccessDenied(req, reason) {
+  static async logAccessDenied(req: any, reason: any) {
     try {
       const auditEntry = {
         id: crypto.randomUUID(),
@@ -68,7 +68,7 @@ export class HIPAAAuditLog {
     }
   }
 
-  static containsPHI(req) {
+  static containsPHI(req: any) {
     const phiFields = [
       'name', 'first_name', 'last_name', 'email', 'phone', 'address',
       'date_of_birth', 'ssn', 'medical_record_number', 'diagnosis',
@@ -79,7 +79,7 @@ export class HIPAAAuditLog {
     return phiFields.some(field => requestData.includes(field));
   }
 
-  static async storeAuditEntry(entry) {
+  static async storeAuditEntry(entry: any) {
     // In production, store in a separate, secure audit database
     // For now, we'll use the main database with encryption
     const { AuditLog } = (await import('../models/index.js')).default;
@@ -95,7 +95,7 @@ export class HIPAAAuditLog {
     }
   }
 
-  static encryptAuditData(data) {
+  static encryptAuditData(data: any) {
     const algorithm = 'aes-256-gcm';
     const key = process.env.HIPAA_AUDIT_ENCRYPTION_KEY || crypto.randomBytes(32);
     const iv = crypto.randomBytes(16);
@@ -115,7 +115,7 @@ export class HIPAAAuditLog {
 /**
  * HIPAA Authorization Middleware
  */
-export const requireHIPAAConsent = async (req, res, next) => {
+export const requireHIPAAConsent = async (req: any, res: any, next: any) => {
   try {
     const user = req.user;
     
@@ -166,7 +166,7 @@ export const requireHIPAAConsent = async (req, res, next) => {
 /**
  * Business Associate Agreement (BAA) Validation
  */
-export const requireBAA = async (req, res, next) => {
+export const requireBAA = async (req: any, res: any, next: any) => {
   try {
     const organizationId = req.user?.organization_id || req.provider?.organization_id;
     
@@ -228,10 +228,10 @@ export const requireBAA = async (req, res, next) => {
  * Data Minimization Middleware
  */
 export const enforceDataMinimization = (allowedFields = []) => {
-  return (req, res, next) => {
+  return (req: any, res: any, next: any) => {
     const originalSend = res.send;
     
-    res.send = function(data) {
+    res.send = function(data: any) {
       try {
         if (typeof data === 'string') {
           data = JSON.parse(data);
@@ -252,7 +252,7 @@ export const enforceDataMinimization = (allowedFields = []) => {
   };
 };
 
-function minimizeData(data, allowedFields, userRole) {
+function minimizeData(data: any, allowedFields: any, userRole: any) {
   if (Array.isArray(data)) {
     return data.map(item => minimizeData(item, allowedFields, userRole));
   }
@@ -288,7 +288,7 @@ function minimizeData(data, allowedFields, userRole) {
     
     for (const [key, value] of Object.entries(data)) {
       if (combinedAllowed.includes(key) || combinedAllowed.includes('*')) {
-        minimized[key] = typeof value === 'object' ? minimizeData(value, allowedFields, userRole) : value;
+        (minimized as any)[key] = typeof value === 'object' ? minimizeData(value, allowedFields, userRole) : value;
       }
     }
     
@@ -302,7 +302,7 @@ function minimizeData(data, allowedFields, userRole) {
  * Encryption Utilities for PHI
  */
 export class PHIEncryption {
-  static encrypt(data) {
+  static encrypt(data: any) {
     const algorithm = 'aes-256-gcm';
     const key = Buffer.from(process.env.PHI_ENCRYPTION_KEY || crypto.randomBytes(32).toString('hex'), 'hex');
     const iv = crypto.randomBytes(16);
@@ -321,7 +321,7 @@ export class PHIEncryption {
     };
   }
   
-  static decrypt(encryptedData) {
+  static decrypt(encryptedData: any) {
     const algorithm = encryptedData.algorithm || 'aes-256-gcm';
     const key = Buffer.from(process.env.PHI_ENCRYPTION_KEY || crypto.randomBytes(32).toString('hex'), 'hex');
     const iv = Buffer.from(encryptedData.iv, 'hex');
@@ -342,7 +342,7 @@ export class PHIEncryption {
  * HIPAA Breach Detection
  */
 export class BreachDetection {
-  static async detectUnusualAccess(req, res, next) {
+  static async detectUnusualAccess(req: any, res: any, next: any) {
     try {
       const user = req.user;
       const patientId = req.params.patientId || req.body.patient_id;
@@ -375,7 +375,7 @@ export class BreachDetection {
         });
         
         // For high-risk alerts, require additional verification
-        const highRiskAlerts = alerts.filter(alert => alert.risk_level === 'high');
+        const highRiskAlerts = alerts.filter(alert => (alert as any).risk_level === 'high');
         if (highRiskAlerts.length > 0) {
           return res.status(403).json({
             success: false,
@@ -394,7 +394,7 @@ export class BreachDetection {
     }
   }
   
-  static async checkOffHoursAccess(user, req) {
+  static async checkOffHoursAccess(user: any, req: any) {
     const now = new Date();
     const hour = now.getHours();
     
@@ -411,24 +411,24 @@ export class BreachDetection {
     return { alert: false };
   }
   
-  static async checkBulkAccess(user, req) {
+  static async checkBulkAccess(user: any, req: any) {
     // Implementation would check for rapid successive patient record access
     // This is a simplified version
     return { alert: false };
   }
   
-  static async checkUnauthorizedPatient(user, patientId) {
+  static async checkUnauthorizedPatient(user: any, patientId: any) {
     // Check if user has legitimate access to this patient
     // Implementation would verify provider-patient relationships
     return { alert: false };
   }
   
-  static async checkSuspiciousIP(req) {
+  static async checkSuspiciousIP(req: any) {
     // Check against known suspicious IP addresses or unusual locations
     return { alert: false };
   }
   
-  static async logSecurityAlert(alertData) {
+  static async logSecurityAlert(alertData: any) {
     // Log security alerts to secure monitoring system
     logger.warn('HIPAA SECURITY ALERT:', JSON.stringify(alertData, null, 2));
     
@@ -459,7 +459,7 @@ export class DataRetention {
     }
   }
   
-  static async archiveOldData(dataType, policy) {
+  static async archiveOldData(dataType: any, policy: any) {
     // Implementation would move old data to secure archive storage
     logger.info(`Enforcing retention policy for ${dataType}:`, policy);
   }

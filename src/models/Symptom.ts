@@ -1,7 +1,7 @@
 // src/models/Symptom.js
 import { DataTypes } from 'sequelize';
 
-export default (sequelize) => {
+export default (sequelize: any) => {
   const Symptom = sequelize.define('Symptom', {
     id: {
       type: DataTypes.UUID,
@@ -55,7 +55,7 @@ export default (sequelize) => {
       type: DataTypes.JSONB,
       defaultValue: {},
       validate: {
-        isValidLocation(value) {
+        isValidLocation(value: any) {
           if (value && typeof value !== 'object') {
             throw new Error('Body location must be a valid JSON object');
           }
@@ -79,7 +79,7 @@ export default (sequelize) => {
       type: DataTypes.JSONB,
       defaultValue: [],
       validate: {
-        isValidTriggers(value) {
+        isValidTriggers(value: any) {
           if (value && !Array.isArray(value)) {
             throw new Error('Triggers must be an array');
           }
@@ -91,7 +91,7 @@ export default (sequelize) => {
       type: DataTypes.JSONB,
       defaultValue: [],
       validate: {
-        isValidFactors(value) {
+        isValidFactors(value: any) {
           if (value && !Array.isArray(value)) {
             throw new Error('Relieving factors must be an array');
           }
@@ -103,7 +103,7 @@ export default (sequelize) => {
       type: DataTypes.JSONB,
       defaultValue: [],
       validate: {
-        isValidSymptoms(value) {
+        isValidSymptoms(value: any) {
           if (value && !Array.isArray(value)) {
             throw new Error('Associated symptoms must be an array');
           }
@@ -116,7 +116,7 @@ export default (sequelize) => {
       type: DataTypes.JSONB,
       defaultValue: [],
       validate: {
-        isValidAttachments(value) {
+        isValidAttachments(value: any) {
           if (value && !Array.isArray(value)) {
             throw new Error('Attachments must be an array');
           }
@@ -168,7 +168,7 @@ export default (sequelize) => {
     instanceMethods: {
       // Get severity description
       getSeverityDescription() {
-        if (!this.severity) return 'Not specified';
+        if (!(this as any).severity) return 'Not specified';
         
         const descriptions = {
           1: 'Very Mild',
@@ -183,19 +183,19 @@ export default (sequelize) => {
           10: 'Worst Possible'
         };
         
-        return descriptions[this.severity] || 'Unknown';
+        return (descriptions as any)[(this as any).severity] || 'Unknown';
       },
       
       // Check if symptom is severe
       isSevere() {
-        return this.severity && this.severity >= 7;
+        return (this as any).severity && (this as any).severity >= 7;
       },
       
       // Get duration if onset time is available
       getDuration() {
-        if (!this.onset_time) return null;
+        if (!(this as any).onset_time) return null;
         
-        const duration = new Date(this.recorded_at) - new Date(this.onset_time);
+        const duration = new Date((this as any).recorded_at) - new Date((this as any).onset_time);
         const hours = Math.floor(duration / (1000 * 60 * 60));
         const days = Math.floor(hours / 24);
         
@@ -213,8 +213,8 @@ export default (sequelize) => {
     // Class methods
     classMethods: {
       // Find symptoms for patient
-      findForPatient(patientId, limit = 20) {
-        return this.findAll({
+      findForPatient(patientId: any, limit = 20) {
+        return (this as any).findAll({
           where: {
             patient_id: patientId
           },
@@ -225,7 +225,7 @@ export default (sequelize) => {
       
       // Find severe symptoms
       findSevere(minimumSeverity = 7) {
-        return this.findAll({
+        return (this as any).findAll({
           where: {
             severity: {
               [sequelize.Sequelize.Op.gte]: minimumSeverity
@@ -236,11 +236,11 @@ export default (sequelize) => {
       },
       
       // Get symptom patterns for patient
-      async getPatterns(patientId, days = 30) {
+      async getPatterns(patientId: any, days = 30) {
         const startDate = new Date();
         startDate.setDate(startDate.getDate() - days);
         
-        const symptoms = await this.findAll({
+        const symptoms = await (this as any).findAll({
           where: {
             patient_id: patientId,
             recorded_at: {
@@ -260,8 +260,8 @@ export default (sequelize) => {
       },
       
       // Search symptoms by name
-      searchByName(query) {
-        return this.findAll({
+      searchByName(query: any) {
+        return (this as any).findAll({
           where: {
             symptom_name: {
               [sequelize.Sequelize.Op.iLike]: `%${query}%`

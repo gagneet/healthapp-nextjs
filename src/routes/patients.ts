@@ -10,7 +10,7 @@ const router = express.Router();
 // GET /api/patients/pagination
 router.get('/pagination',
   authenticate,
-  authorize(USER_CATEGORIES.DOCTOR, USER_CATEGORIES.ADMIN, USER_CATEGORIES.HSP),
+  authorize(USER_CATEGORIES.DOCTOR, (USER_CATEGORIES as any).ADMIN, USER_CATEGORIES.HSP),
   validateQuery(schemas.pagination),
   patientController.getPatients
 );
@@ -24,7 +24,7 @@ router.get('/:patientId',
 // POST /api/doctors/patients (Create patient under doctor)
 router.post('/',
   authenticate,
-  authorize(USER_CATEGORIES.DOCTOR, USER_CATEGORIES.ADMIN),
+  authorize(USER_CATEGORIES.DOCTOR, (USER_CATEGORIES as any).ADMIN),
   validateRequest(schemas.patientCreate),
   patientController.createPatient
 );
@@ -38,28 +38,28 @@ router.put('/:patientId',
 // DELETE /api/patients/:patientId
 router.delete('/:patientId',
   authenticate,
-  authorize(USER_CATEGORIES.DOCTOR, USER_CATEGORIES.ADMIN),
+  authorize(USER_CATEGORIES.DOCTOR, (USER_CATEGORIES as any).ADMIN),
   patientController.deletePatient
 );
 
 // POST /api/patients/search-by-phone - Search patient by phone number
 router.post('/search-by-phone',
   authenticate,
-  authorize(USER_CATEGORIES.DOCTOR, USER_CATEGORIES.ADMIN, USER_CATEGORIES.HSP),
+  authorize(USER_CATEGORIES.DOCTOR, (USER_CATEGORIES as any).ADMIN, USER_CATEGORIES.HSP),
   patientController.searchPatientByPhone
 );
 
 // POST /api/patients/validate-phone - Validate patient phone number
 router.post('/validate-phone',
   authenticate,
-  authorize(USER_CATEGORIES.DOCTOR, USER_CATEGORIES.ADMIN, USER_CATEGORIES.HSP),
+  authorize(USER_CATEGORIES.DOCTOR, (USER_CATEGORIES as any).ADMIN, USER_CATEGORIES.HSP),
   patientController.validatePatientPhone
 );
 
 // POST /api/patients/generate-id - Generate patient ID preview
 router.post('/generate-id',
   authenticate,
-  authorize(USER_CATEGORIES.DOCTOR, USER_CATEGORIES.ADMIN),
+  authorize(USER_CATEGORIES.DOCTOR, (USER_CATEGORIES as any).ADMIN),
   patientController.generatePatientId
 );
 

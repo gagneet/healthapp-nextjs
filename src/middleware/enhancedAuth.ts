@@ -11,7 +11,7 @@ const refreshTokens = new Map(); // Store refresh tokens with user info
 const activeSessions = new Map(); // Track active sessions
 
 // Enhanced token generation with refresh token support
-export const generateTokens = async (user, userRole, deviceInfo = {}) => {
+export const generateTokens = async (user: any, userRole: any, deviceInfo = {}) => {
   const currentTime = Math.floor(Date.now() / 1000);
   
   const payload = {
@@ -23,8 +23,8 @@ export const generateTokens = async (user, userRole, deviceInfo = {}) => {
     iat: currentTime,
     // Security context
     deviceInfo: {
-      ip: deviceInfo.ip,
-      userAgent: deviceInfo.userAgent?.substring(0, 200) // Limit size
+      ip: (deviceInfo as any).ip,
+      userAgent: (deviceInfo as any).userAgent?.substring(0, 200) // Limit size
     }
   };
   
@@ -76,7 +76,7 @@ export const generateTokens = async (user, userRole, deviceInfo = {}) => {
 };
 
 // Enhanced authentication middleware
-export const enhancedAuthenticate = async (req, res, next) => {
+export const enhancedAuthenticate = async (req: any, res: any, next: any) => {
   try {
     const authHeader = req.headers.authorization;
     
@@ -113,10 +113,10 @@ export const enhancedAuthenticate = async (req, res, next) => {
       let errorCode = 'INVALID_TOKEN';
       let message = 'Invalid token';
       
-      if (jwtError.name === 'TokenExpiredError') {
+      if ((jwtError as any).name === 'TokenExpiredError') {
         errorCode = 'TOKEN_EXPIRED';
         message = 'Token has expired';
-      } else if (jwtError.name === 'JsonWebTokenError') {
+      } else if ((jwtError as any).name === 'JsonWebTokenError') {
         errorCode = 'MALFORMED_TOKEN';
         message = 'Malformed token';
       }
@@ -201,7 +201,7 @@ export const enhancedAuthenticate = async (req, res, next) => {
 };
 
 // Refresh token endpoint handler
-export const refreshTokenHandler = async (req, res) => {
+export const refreshTokenHandler = async (req: any, res: any) => {
   try {
     const { refreshToken } = req.body;
     
@@ -329,7 +329,7 @@ export const refreshTokenHandler = async (req, res) => {
 };
 
 // Enhanced logout with token revocation
-export const enhancedLogout = async (req, res) => {
+export const enhancedLogout = async (req: any, res: any) => {
   try {
     const token = req.currentToken;
     const { refreshToken, logoutAll = false } = req.body;
@@ -392,7 +392,7 @@ export const enhancedLogout = async (req, res) => {
 };
 
 // Token validation endpoint
-export const validateToken = async (req, res) => {
+export const validateToken = async (req: any, res: any) => {
   try {
     // If we reach here, token is valid (middleware passed)
     const user = req.user;
@@ -431,7 +431,7 @@ export const validateToken = async (req, res) => {
 };
 
 // Get active sessions
-export const getActiveSessions = async (req, res) => {
+export const getActiveSessions = async (req: any, res: any) => {
   try {
     const userId = req.user.id;
     const userSessions = [];
@@ -466,7 +466,7 @@ export const getActiveSessions = async (req, res) => {
 };
 
 // Simple audit logging (in production, use proper logging service)
-const logAuthEvent = (event, data) => {
+const logAuthEvent = (event: any, data: any) => {
   try {
     console.log('AUTH_EVENT:', {
       event,

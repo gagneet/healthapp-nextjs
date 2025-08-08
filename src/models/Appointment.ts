@@ -1,5 +1,5 @@
 // src/models/Appointment.js
-export default (sequelize, DataTypes) => {
+export default (sequelize: any, DataTypes: any) => {
   const Appointment = sequelize.define('Appointment', {
     id: {
       type: DataTypes.UUID,
@@ -73,13 +73,13 @@ export default (sequelize, DataTypes) => {
     appointment_type: {
       type: DataTypes.VIRTUAL,
       get() {
-        return this.details?.type || null;
+        return (this as any).details?.type || null;
       },
     },
     appointment_status: {
       type: DataTypes.VIRTUAL,
       get() {
-        return this.details?.status || null;
+        return (this as any).details?.status || null;
       },
     },
     created_at: {

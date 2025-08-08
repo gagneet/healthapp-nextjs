@@ -2,7 +2,7 @@
 'use strict';
 
 export default {
-  up: async (queryInterface, Sequelize) => {
+  up: async (queryInterface: any, Sequelize: any) => {
     // Check if table already exists
     const tableExists = await queryInterface.tableExists('medications');
     if (tableExists) {
@@ -113,7 +113,7 @@ export default {
       try {
         await queryInterface.addIndex('medications', index.fields, index.options);
       } catch (error) {
-        if (!error.message.includes('already exists')) {
+        if (!(error as any).message.includes('already exists')) {
           throw error;
         }
         console.log(`Index ${index.options.name} already exists, skipping`);
@@ -127,14 +127,14 @@ export default {
         USING GIN(to_tsvector('english', medication_name));
       `);
     } catch (error) {
-      if (!error.message.includes('already exists')) {
+      if (!(error as any).message.includes('already exists')) {
         throw error;
       }
       console.log('Index idx_medications_name_search already exists, skipping');
     }
   },
 
-  down: async (queryInterface, Sequelize) => {
+  down: async (queryInterface: any, Sequelize: any) => {
     await queryInterface.dropTable('medications');
   }
 };

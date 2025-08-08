@@ -9,8 +9,8 @@ const logger = createLogger(import.meta.url);
  * @param {string} requiredCapability - The capability required (from PROVIDER_CAPABILITIES enum)
  * @returns {Function} Express middleware function
  */
-export const requireCapability = (requiredCapability) => {
-  return async (req, res, next) => {
+export const requireCapability = (requiredCapability: any) => {
+  return async (req: any, res: any, next: any) => {
     try {
       const user = req.user;
       
@@ -105,10 +105,10 @@ export const requireCapability = (requiredCapability) => {
 /**
  * Middleware to require prescription capability with additional validation
  */
-export const requirePrescriptionCapability = async (req, res, next) => {
+export const requirePrescriptionCapability = async (req: any, res: any, next: any) => {
   const capabilityCheck = requireCapability(PROVIDER_CAPABILITIES.PRESCRIBE_MEDICATIONS);
   
-  return capabilityCheck(req, res, async (err) => {
+  return capabilityCheck(req, res, async (err: any) => {
     if (err) return next(err);
     
     try {
@@ -173,7 +173,7 @@ export const requireCarePlanCapability = requireCapability(PROVIDER_CAPABILITIES
  * @param {string} patientIdParam - The request parameter containing patient ID (default: 'patientId')
  */
 export const requirePatientAccess = (patientIdParam = 'patientId') => {
-  return async (req, res, next) => {
+  return async (req: any, res: any, next: any) => {
     try {
       const patientId = req.params[patientIdParam];
       const provider = req.provider;
@@ -221,10 +221,10 @@ export const requirePatientAccess = (patientIdParam = 'patientId') => {
           }
         });
         
-        hasAccess = carePlans.some(plan => 
+        hasAccess = carePlans.some((plan: any) => 
           (providerType === 'doctor' && plan.created_by_doctor_id === provider.id) ||
           (providerType === 'hsp' && plan.created_by_hsp_id === provider.id) ||
-          plan.care_team_members.some(member => 
+          plan.care_team_members.some((member: any) => 
             member.id === provider.id && member.type === providerType
           )
         );
@@ -252,7 +252,7 @@ export const requirePatientAccess = (patientIdParam = 'patientId') => {
 /**
  * Middleware to validate organization access (multi-tenant)
  */
-export const requireOrganizationAccess = async (req, res, next) => {
+export const requireOrganizationAccess = async (req: any, res: any, next: any) => {
   try {
     const user = req.user;
     const provider = req.provider;

@@ -1,7 +1,7 @@
 // src/models/PatientProviderAssignment.js
 import { DataTypes } from 'sequelize';
 
-export default (sequelize) => {
+export default (sequelize: any) => {
   const PatientProviderAssignment = sequelize.define('PatientProviderAssignment', {
     id: {
       type: DataTypes.UUID,
@@ -88,21 +88,21 @@ export default (sequelize) => {
     instanceMethods: {
       // Check if assignment is active
       isActive() {
-        return !this.ended_at;
+        return !(this as any).ended_at;
       },
       
       // End assignment
       async endAssignment() {
-        this.ended_at = new Date();
-        await this.save();
+        (this as any).ended_at = new Date();
+        await (this as any).save();
       }
     },
     
     // Class methods
     classMethods: {
       // Find active assignments for patient
-      findActiveForPatient(patientId) {
-        return this.findAll({
+      findActiveForPatient(patientId: any) {
+        return (this as any).findAll({
           where: {
             patient_id: patientId,
             ended_at: null
@@ -111,8 +111,8 @@ export default (sequelize) => {
       },
       
       // Find active assignments for provider
-      findActiveForProvider(providerId) {
-        return this.findAll({
+      findActiveForProvider(providerId: any) {
+        return (this as any).findAll({
           where: {
             provider_id: providerId,
             ended_at: null

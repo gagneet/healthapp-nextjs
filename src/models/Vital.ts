@@ -1,5 +1,5 @@
 // src/models/Vital.js
-export default (sequelize, DataTypes) => {
+export default (sequelize: any, DataTypes: any) => {
   const Vital = sequelize.define('Vital', {
     id: {
       type: DataTypes.UUID,

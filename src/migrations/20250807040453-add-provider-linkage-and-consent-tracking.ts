@@ -2,7 +2,7 @@
 
 /** @type {import('sequelize-cli').Migration} */
 export default {
-  async up (queryInterface, Sequelize) {
+  async up (queryInterface: any, Sequelize: any) {
     // Add provider linkage fields to patients table
     await queryInterface.addColumn('patients', 'linked_provider_id', {
       type: Sequelize.UUID,
@@ -275,7 +275,7 @@ export default {
     await queryInterface.addIndex('provider_change_history', ['status']);
   },
 
-  async down (queryInterface, Sequelize) {
+  async down (queryInterface: any, Sequelize: any) {
     // Drop tables
     await queryInterface.dropTable('provider_change_history');
     await queryInterface.dropTable('patient_provider_consent_history');

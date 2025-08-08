@@ -1,7 +1,7 @@
 // src/models/UserDevice.js
 import { DataTypes } from 'sequelize';
 
-export default (sequelize) => {
+export default (sequelize: any) => {
   const UserDevice = sequelize.define('UserDevice', {
     id: {
       type: DataTypes.UUID,
@@ -54,7 +54,7 @@ export default (sequelize) => {
         emergency: true
       },
       validate: {
-        isValidSettings(value) {
+        isValidSettings(value: any) {
           if (value && typeof value !== 'object') {
             throw new Error('Notification settings must be a valid JSON object');
           }
@@ -109,36 +109,36 @@ export default (sequelize) => {
     instanceMethods: {
       // Update last used time
       async updateLastUsed() {
-        this.last_used_at = new Date();
-        await this.save();
+        (this as any).last_used_at = new Date();
+        await (this as any).save();
       },
       
       // Deactivate device
       async deactivate() {
-        this.is_active = false;
-        await this.save();
+        (this as any).is_active = false;
+        await (this as any).save();
       },
       
       // Check if device supports notification type
-      supportsNotification(type) {
+      supportsNotification(type: any) {
         return this.notification_settings && this.notification_settings[type] === true;
       },
       
       // Update notification settings
-      async updateNotificationSettings(settings) {
+      async updateNotificationSettings(settings: any) {
         this.notification_settings = {
           ...this.notification_settings,
           ...settings
         };
-        await this.save();
+        await (this as any).save();
       }
     },
     
     // Class methods
     classMethods: {
       // Find active devices for user
-      findActiveForUser(userId) {
-        return this.findAll({
+      findActiveForUser(userId: any) {
+        return (this as any).findAll({
           where: {
             user_id: userId,
             is_active: true
@@ -148,8 +148,8 @@ export default (sequelize) => {
       },
       
       // Find by push token
-      findByPushToken(pushToken) {
-        return this.findOne({
+      findByPushToken(pushToken: any) {
+        return (this as any).findOne({
           where: {
             push_token: pushToken,
             is_active: true
@@ -162,7 +162,7 @@ export default (sequelize) => {
         const cutoffDate = new Date();
         cutoffDate.setDate(cutoffDate.getDate() - daysInactive);
         
-        return this.update(
+        return (this as any).update(
           { is_active: false },
           {
             where: {
@@ -176,8 +176,8 @@ export default (sequelize) => {
       },
       
       // Get devices by type
-      findByType(deviceType) {
-        return this.findAll({
+      findByType(deviceType: any) {
+        return (this as any).findAll({
           where: {
             device_type: deviceType,
             is_active: true

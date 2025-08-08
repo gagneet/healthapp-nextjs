@@ -4,7 +4,7 @@
 import { v4 as uuidv4 } from 'uuid';
 
 export default {
-  async up(queryInterface, Sequelize) {
+  async up(queryInterface: any, Sequelize: any) {
     const transaction = await queryInterface.sequelize.transaction();
 
     try {
@@ -565,7 +565,7 @@ export default {
     }
   },
 
-  async down(queryInterface, Sequelize) {
+  async down(queryInterface: any, Sequelize: any) {
     const transaction = await queryInterface.sequelize.transaction();
 
     try {
@@ -577,7 +577,7 @@ export default {
             replacements: ['PAT-2024-001', 'PAT-2024-002'],
             type: Sequelize.QueryTypes.SELECT 
           }
-        ).then(results => results.map(r => r.id)) }
+        ).then((results: any) => results.map((r: any) => r.id)) }
       }, { transaction });
 
       await queryInterface.bulkDelete('symptoms', {
@@ -587,7 +587,7 @@ export default {
             replacements: ['PAT-2024-001', 'PAT-2024-002'],
             type: Sequelize.QueryTypes.SELECT 
           }
-        ).then(results => results.map(r => r.id)) }
+        ).then((results: any) => results.map((r: any) => r.id)) }
       }, { transaction });
 
       await queryInterface.bulkDelete('vital_readings', {
@@ -597,7 +597,7 @@ export default {
             replacements: ['PAT-2024-001', 'PAT-2024-002'],
             type: Sequelize.QueryTypes.SELECT 
           }
-        ).then(results => results.map(r => r.id)) }
+        ).then((results: any) => results.map((r: any) => r.id)) }
       }, { transaction });
 
       await queryInterface.bulkDelete('adherence_records', {
@@ -607,7 +607,7 @@ export default {
             replacements: ['PAT-2024-001', 'PAT-2024-002'],
             type: Sequelize.QueryTypes.SELECT 
           }
-        ).then(results => results.map(r => r.id)) }
+        ).then((results: any) => results.map((r: any) => r.id)) }
       }, { transaction });
 
       await queryInterface.bulkDelete('scheduled_events', {
@@ -617,7 +617,7 @@ export default {
             replacements: ['PAT-2024-001', 'PAT-2024-002'],
             type: Sequelize.QueryTypes.SELECT 
           }
-        ).then(results => results.map(r => r.id)) }
+        ).then((results: any) => results.map((r: any) => r.id)) }
       }, { transaction });
 
       await queryInterface.bulkDelete('medications', {
@@ -627,7 +627,7 @@ export default {
             replacements: ['PAT-2024-001', 'PAT-2024-002'],
             type: Sequelize.QueryTypes.SELECT 
           }
-        ).then(results => results.map(r => r.id)) }
+        ).then((results: any) => results.map((r: any) => r.id)) }
       }, { transaction });
 
       await queryInterface.bulkDelete('doctors', {
@@ -637,7 +637,7 @@ export default {
             replacements: ['doctor1@healthapp.com'],
             type: Sequelize.QueryTypes.SELECT 
           }
-        ).then(results => results.map(r => r.id)) }
+        ).then((results: any) => results.map((r: any) => r.id)) }
       }, { transaction });
 
       await queryInterface.bulkDelete('patients', { 
@@ -651,7 +651,7 @@ export default {
             replacements: ['patient1@healthapp.com', 'patient2@healthapp.com', 'doctor1@healthapp.com'],
             type: Sequelize.QueryTypes.SELECT 
           }
-        ).then(results => results.map(r => r.id)) }
+        ).then((results: any) => results.map((r: any) => r.id)) }
       }, { transaction });
 
       await queryInterface.bulkDelete('users', {

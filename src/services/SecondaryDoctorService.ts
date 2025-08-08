@@ -107,7 +107,7 @@ export class SecondaryDoctorService {
             assigningDoctor.organization_id !== doctor.organization_id) {
           throw new Error('Substitute doctors must be from the same organization as the primary doctor');
         }
-        assignmentData.requires_same_organization = true;
+        (assignmentData as any).requires_same_organization = true;
       }
 
       // Create the assignment
@@ -189,7 +189,7 @@ export class SecondaryDoctorService {
     try {
       const whereClause = { patient_id: patientId };
       if (!includeInactive) {
-        whereClause.is_active = true;
+        (whereClause as any).is_active = true;
       }
 
       const assignments = await PatientDoctorAssignment.findAll({
@@ -215,7 +215,7 @@ export class SecondaryDoctorService {
         ]
       });
 
-      return assignments.map(assignment => ({
+      return assignments.map((assignment: any) => ({
         id: assignment.id,
         assignmentType: assignment.assignment_type,
         doctor: {

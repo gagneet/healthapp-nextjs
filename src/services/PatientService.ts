@@ -10,7 +10,7 @@ class PatientService {
   /**
    * Create patient with user account in a transaction
    */
-  async createPatientWithUser(patientData, creatorId) {
+  async createPatientWithUser(patientData: any, creatorId: any) {
     const transaction = await sequelize.transaction();
     
     try {
@@ -64,7 +64,7 @@ class PatientService {
         'prefer_not_to_say': 'PREFER_NOT_TO_SAY'
       };
       
-      const mappedGender = gender ? genderMapping[gender.toLowerCase()] || gender.toUpperCase() : null;
+      const mappedGender = gender ? (genderMapping as any)[gender.toLowerCase()] || gender.toUpperCase() : null;
 
       // Create user with common fields
       const user = await User.create({
@@ -144,7 +144,7 @@ class PatientService {
   /**
    * Update patient data with proper validation
    */
-  async updatePatientData(patientId, updateData, updatorId) {
+  async updatePatientData(patientId: any, updateData: any, updatorId: any) {
     const transaction = await sequelize.transaction();
     
     try {
@@ -189,7 +189,7 @@ class PatientService {
    * @param {string} countryCode - Country code (e.g., 'US', 'IN')
    * @returns {Object|null} Patient data if found
    */
-  async findPatientByPhone(phoneNumber, countryCode = 'US') {
+  async findPatientByPhone(phoneNumber: any, countryCode = 'US') {
     try {
       if (!phoneNumber) {
         return null;
@@ -261,7 +261,7 @@ class PatientService {
    * @param {string} countryCode - Country code
    * @returns {Object} Validation result with formatted number
    */
-  async validatePatientPhone(phoneNumber, countryCode = 'US') {
+  async validatePatientPhone(phoneNumber: any, countryCode = 'US') {
     const validation = validatePhoneNumber(phoneNumber, countryCode);
     
     if (!validation.isValid) {
@@ -283,12 +283,12 @@ class PatientService {
    * @param {string} doctorName - Doctor's name for prefix
    * @returns {string} Generated patient ID
    */
-  async generatePatientID(doctorName) {
+  async generatePatientID(doctorName: any) {
     try {
       // Extract 3-character prefix from doctor name
       const namePrefix = doctorName
         .split(' ')
-        .map(name => name.charAt(0).toUpperCase())
+        .map((name: any) => name.charAt(0).toUpperCase())
         .join('')
         .substring(0, 3)
         .padEnd(3, 'X');
@@ -328,7 +328,7 @@ class PatientService {
     }
   }
 
-  separateUpdateFields(updateData) {
+  separateUpdateFields(updateData: any) {
     const userFields = {};
     const patientFields = {};
 
@@ -347,9 +347,9 @@ class PatientService {
 
     Object.keys(updateData).forEach(key => {
       if (userFieldNames.includes(key)) {
-        userFields[key] = updateData[key];
+        (userFields as any)[key] = (updateData as any)[key];
       } else if (patientFieldNames.includes(key)) {
-        patientFields[key] = updateData[key];
+        (patientFields as any)[key] = (updateData as any)[key];
       }
     });
 

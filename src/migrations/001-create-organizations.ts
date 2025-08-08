@@ -2,7 +2,7 @@
 'use strict';
 
 export default {
-  up: async (queryInterface, Sequelize) => {
+  up: async (queryInterface: any, Sequelize: any) => {
     // Check if organizations table already exists
     const tableExists = await queryInterface.tableExists('organizations');
     if (tableExists) {
@@ -65,23 +65,23 @@ export default {
     try {
       await queryInterface.addIndex('organizations', ['name'], { name: 'idx_organizations_name' });
     } catch (error) {
-      if (!error.message.includes('already exists')) throw error;
+      if (!(error as any).message.includes('already exists')) throw (error as any);
     }
     
     try {
       await queryInterface.addIndex('organizations', ['type'], { name: 'idx_organizations_type' });
     } catch (error) {
-      if (!error.message.includes('already exists')) throw error;
+      if (!(error as any).message.includes('already exists')) throw (error as any);
     }
     
     try {
       await queryInterface.addIndex('organizations', ['is_active'], { name: 'idx_organizations_is_active' });
     } catch (error) {
-      if (!error.message.includes('already exists')) throw error;
+      if (!(error as any).message.includes('already exists')) throw (error as any);
     }
   },
 
-  down: async (queryInterface, Sequelize) => {
+  down: async (queryInterface: any, Sequelize: any) => {
     await queryInterface.dropTable('organizations');
   }
 };

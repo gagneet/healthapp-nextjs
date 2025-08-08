@@ -89,9 +89,9 @@ async function compareWithTargetSchema() {
     try {
       const currentEnums = await sequelize.query(
         "SELECT typname FROM pg_type WHERE typtype = 'e' ORDER BY typname;",
-        { type: sequelize.QueryTypes.SELECT }
+        { type: (sequelize as any).QueryTypes.SELECT }
       );
-      const currentEnumNames = currentEnums.map(e => e.typname);
+      const currentEnumNames = currentEnums.map(e => (e as any).typname);
       
       const missingEnums = targetEnums.filter(enumType => !currentEnumNames.includes(enumType));
       const extraEnums = currentEnumNames.filter(enumType => !targetEnums.includes(enumType));
@@ -117,9 +117,9 @@ async function compareWithTargetSchema() {
     try {
       const currentViews = await sequelize.query(
         "SELECT viewname FROM pg_views WHERE schemaname = 'public' ORDER BY viewname;",
-        { type: sequelize.QueryTypes.SELECT }
+        { type: (sequelize as any).QueryTypes.SELECT }
       );
-      const currentViewNames = currentViews.map(v => v.viewname);
+      const currentViewNames = currentViews.map(v => (v as any).viewname);
       
       const missingViews = targetViews.filter(view => !currentViewNames.includes(view));
       const extraViews = currentViewNames.filter(view => !targetViews.includes(view));
@@ -148,9 +148,9 @@ async function compareWithTargetSchema() {
          WHERE pronamespace = (SELECT oid FROM pg_namespace WHERE nspname = 'public')
          AND proname IN ('${targetFunctions.join("','")}')
          ORDER BY proname;`,
-        { type: sequelize.QueryTypes.SELECT }
+        { type: (sequelize as any).QueryTypes.SELECT }
       );
-      const currentFunctionNames = currentFunctions.map(f => f.proname);
+      const currentFunctionNames = currentFunctions.map(f => (f as any).proname);
       
       const missingFunctions = targetFunctions.filter(func => !currentFunctionNames.includes(func));
       
@@ -171,9 +171,9 @@ async function compareWithTargetSchema() {
     try {
       const extensions = await sequelize.query(
         "SELECT extname FROM pg_extension WHERE extname IN ('uuid-ossp', 'pgcrypto', 'pg_trgm');",
-        { type: sequelize.QueryTypes.SELECT }
+        { type: (sequelize as any).QueryTypes.SELECT }
       );
-      const extensionNames = extensions.map(e => e.extname);
+      const extensionNames = extensions.map(e => (e as any).extname);
       const targetExtensions = ['uuid-ossp', 'pgcrypto', 'pg_trgm'];
       
       console.log(`   Target extensions: ${targetExtensions.length}`);
@@ -214,9 +214,9 @@ async function compareWithTargetSchema() {
     console.log('   3. Test the application: npm run dev');
     
   } catch (error) {
-    console.error('❌ Comparison failed:', error.message);
+    console.(error as any)('❌ Comparison failed:', (error as any).message);
     
-    if (error.message.includes('database') && error.message.includes('does not exist')) {
+    if ((error as any).message.includes('database') && (error as any).message.includes('does not exist')) {
       console.log('\n🛠️  Database does not exist. Create it first:');
       console.log('   1. Connect to PostgreSQL: psql -U postgres');
       console.log('   2. Create database: CREATE DATABASE healthapp;');

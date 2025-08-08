@@ -2,7 +2,7 @@
 'use strict';
 
 export default {
-  up: async (queryInterface, Sequelize) => {
+  up: async (queryInterface: any, Sequelize: any) => {
     // Check if table already exists
     const tableExists = await queryInterface.tableExists('scheduled_events');
     if (tableExists) {
@@ -24,7 +24,7 @@ export default {
         );
       `);
     } catch (error) {
-      if (!error.message.includes('already exists')) {
+      if (!(error as any).message.includes('already exists')) {
         throw error;
       }
       console.log('Enum event_status already exists, skipping');
@@ -43,7 +43,7 @@ export default {
         );
       `);
     } catch (error) {
-      if (!error.message.includes('already exists')) {
+      if (!(error as any).message.includes('already exists')) {
         throw error;
       }
       console.log('Enum event_type already exists, skipping');
@@ -161,7 +161,7 @@ export default {
       try {
         await queryInterface.addIndex('scheduled_events', index.fields, index.options);
       } catch (error) {
-        if (!error.message.includes('already exists')) {
+        if (!(error as any).message.includes('already exists')) {
           throw error;
         }
         console.log(`Index ${index.options.name} already exists, skipping`);
@@ -169,7 +169,7 @@ export default {
     }
   },
 
-  down: async (queryInterface, Sequelize) => {
+  down: async (queryInterface: any, Sequelize: any) => {
     await queryInterface.dropTable('scheduled_events');
     await queryInterface.sequelize.query('DROP TYPE IF EXISTS event_status CASCADE;');
     await queryInterface.sequelize.query('DROP TYPE IF EXISTS event_type CASCADE;');

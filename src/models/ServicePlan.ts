@@ -1,5 +1,5 @@
 // src/models/ServicePlan.js
-export default (sequelize, DataTypes) => {
+export default (sequelize: any, DataTypes: any) => {
   const ServicePlan = sequelize.define('ServicePlan', {
     id: {
       type: DataTypes.UUID,

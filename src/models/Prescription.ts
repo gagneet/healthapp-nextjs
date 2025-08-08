@@ -1,7 +1,7 @@
 // src/models/Prescription.js - Electronic Prescription Management
 import { DataTypes } from 'sequelize';
 
-export default (sequelize) => {
+export default (sequelize: any) => {
   const Prescription = sequelize.define('Prescription', {
     id: {
       type: DataTypes.UUID,
@@ -449,20 +449,20 @@ export default (sequelize) => {
     
     validate: {
       mustHavePrescriber() {
-        if (!this.prescribing_doctor_id && !this.prescribing_hsp_id) {
+        if (!(this as any).prescribing_doctor_id && !(this as any).prescribing_hsp_id) {
           throw new Error('Prescription must have either a prescribing doctor or HSP');
         }
       },
       
       controlledSubstanceValidation() {
-        if (this.is_controlled_substance && !this.prescriber_dea) {
+        if ((this as any).is_controlled_substance && !(this as any).prescriber_dea) {
           throw new Error('DEA number required for controlled substances');
         }
       }
     },
     
     hooks: {
-      beforeCreate: (prescription, options) => {
+      beforeCreate: (prescription: any, options: any) => {
         // Generate prescription number if not provided
         if (!prescription.prescription_number) {
           const timestamp = Date.now().toString();
@@ -494,7 +494,7 @@ export default (sequelize) => {
         }
       },
       
-      beforeUpdate: (prescription, options) => {
+      beforeUpdate: (prescription: any, options: any) => {
         // Update status based on expiration
         if (prescription.expiration_date && 
             new Date() > prescription.expiration_date && 
@@ -506,7 +506,7 @@ export default (sequelize) => {
   });
   
   // Class methods
-  Prescription.findActiveForPatient = async function(patientId) {
+  Prescription.findActiveForPatient = async function(patientId: any) {
     return await this.findAll({
       where: {
         patient_id: patientId,
@@ -534,16 +534,16 @@ export default (sequelize) => {
     });
   };
   
-  Prescription.findControlledSubstances = async function(providerId, providerType) {
+  Prescription.findControlledSubstances = async function(providerId: any, providerType: any) {
     const where = {
       is_controlled_substance: true,
       status: 'active'
     };
     
     if (providerType === 'doctor') {
-      where.prescribing_doctor_id = providerId;
+      (where as any).prescribing_doctor_id = providerId;
     } else if (providerType === 'hsp') {
-      where.prescribing_hsp_id = providerId;
+      (where as any).prescribing_hsp_id = providerId;
     }
     
     return await this.findAll({
@@ -581,7 +581,7 @@ export default (sequelize) => {
     return this.save();
   };
   
-  Prescription.prototype.discontinue = function(reason) {
+  Prescription.prototype.discontinue = function(reason: any) {
     this.status = 'discontinued';
     this.discontinuation_reason = reason;
     return this.save();

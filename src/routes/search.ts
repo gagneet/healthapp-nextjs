@@ -37,8 +37,8 @@ router.get('/medicines',
 
       const responseData = { medicines: {} };
 
-      medicines.forEach(medicine => {
-        responseData.medicines[medicine.id] = {
+      medicines.forEach((medicine: any) => {
+        (responseData as any).medicines[medicine.id] = {
           basic_info: {
             id: medicine.id.toString(),
             name: medicine.name,
@@ -75,8 +75,8 @@ router.get('/specialities',
 
       const responseData = { specialities: {} };
 
-      specialities.forEach(speciality => {
-        responseData.specialities[speciality.id] = {
+      specialities.forEach((speciality: any) => {
+        (responseData as any).specialities[speciality.id] = {
           basic_info: {
             id: speciality.id.toString(),
             name: speciality.name,

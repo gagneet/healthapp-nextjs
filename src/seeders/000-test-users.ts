@@ -5,7 +5,7 @@ import bcrypt from 'bcryptjs';
 import { v4 as uuidv4 } from 'uuid';
 
 export default {
-  up: async (queryInterface, Sequelize) => {
+  up: async (queryInterface: any, Sequelize: any) => {
     console.log('👥 Seeding test users (idempotent)...');
     
     // Check if test users already exist
@@ -100,7 +100,7 @@ export default {
     );
 
     if (existingDoctorUsers.length > 0) {
-      const doctorRecords = existingDoctorUsers.map(user => ({
+      const doctorRecords = existingDoctorUsers.map((user: any) => ({
         id: uuidv4(),
         user_id: user.id,
         medical_license_number: user.email === 'doctor@healthapp.com' ? 'LIC-12345-TEST' : `LIC-${Math.random().toString(36).substr(2, 9).toUpperCase()}`,
@@ -117,7 +117,7 @@ export default {
       }));
 
       await queryInterface.bulkInsert('doctors', doctorRecords, { ignoreDuplicates: true });
-      console.log(`✅ Doctor profiles created for ${existingDoctorUsers.length} users: ${existingDoctorUsers.map(u => u.email).join(', ')}`);
+      console.log(`✅ Doctor profiles created for ${existingDoctorUsers.length} users: ${existingDoctorUsers.map((u: any) => u.email).join(', ')}`);
     } else {
       console.log('ℹ️ All doctor users already have corresponding doctor profiles');
     }
@@ -158,7 +158,7 @@ export default {
           }
         );
       }
-      console.log(`✅ Updated ${existingDoctorsToUpdate.length} existing doctor profiles: ${existingDoctorsToUpdate.map(d => d.email).join(', ')}`);
+      console.log(`✅ Updated ${existingDoctorsToUpdate.length} existing doctor profiles: ${existingDoctorsToUpdate.map((d: any) => d.email).join(', ')}`);
     } else {
       console.log('ℹ️ All existing doctor profiles are already complete');
     }
@@ -175,7 +175,7 @@ export default {
     );
 
     if (existingPatientUsers.length > 0) {
-      const patientRecords = existingPatientUsers.map((user, index) => ({
+      const patientRecords = existingPatientUsers.map((user: any, index: any) => ({
         id: uuidv4(),
         user_id: user.id,
         medical_record_number: user.email === 'patient@healthapp.com' ? 'MRN-TEST-001' : `MRN-TEST-${String(index + 2).padStart(3, '0')}`,
@@ -184,7 +184,7 @@ export default {
       }));
 
       await queryInterface.bulkInsert('patients', patientRecords, { ignoreDuplicates: true });
-      console.log(`✅ Patient profiles created for ${existingPatientUsers.length} users: ${existingPatientUsers.map(u => u.email).join(', ')}`);
+      console.log(`✅ Patient profiles created for ${existingPatientUsers.length} users: ${existingPatientUsers.map((u: any) => u.email).join(', ')}`);
     } else {
       console.log('ℹ️ All patient users already have corresponding patient profiles');
     }
@@ -197,7 +197,7 @@ export default {
     console.log('📧 patient@healthapp.com (PATIENT) - password: password123');
   },
 
-  down: async (queryInterface, Sequelize) => {
+  down: async (queryInterface: any, Sequelize: any) => {
     // Delete doctor and patient records first (due to foreign key constraints)
     await queryInterface.bulkDelete('doctors', null, {});
     await queryInterface.bulkDelete('patients', null, {});

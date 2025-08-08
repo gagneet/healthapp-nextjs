@@ -2,7 +2,7 @@
 import { DataTypes } from 'sequelize';
 import { NOTIFICATION_CHANNEL, PRIORITY_LEVEL } from '../config/enums.js';
 
-export default (sequelize) => {
+export default (sequelize: any) => {
   const Notification = sequelize.define('Notification', {
     id: {
       type: DataTypes.UUID,
@@ -102,7 +102,7 @@ export default (sequelize) => {
       type: DataTypes.ARRAY(DataTypes.STRING),
       defaultValue: ['PUSH'],
       validate: {
-        isValidChannels(value) {
+        isValidChannels(value: any) {
           const validChannels = Object.values(NOTIFICATION_CHANNEL);
           if (!Array.isArray(value) || !value.every(channel => validChannels.includes(channel))) {
             throw new Error('Invalid notification channels');
@@ -315,7 +315,7 @@ export default (sequelize) => {
     ],
     
     hooks: {
-      beforeCreate: (notification, options) => {
+      beforeCreate: (notification: any, options: any) => {
         // Set default scheduled_for if not provided
         if (!notification.scheduled_for) {
           notification.scheduled_for = new Date();
@@ -329,7 +329,7 @@ export default (sequelize) => {
         }
       },
       
-      beforeUpdate: (notification, options) => {
+      beforeUpdate: (notification: any, options: any) => {
         // Mark as expired if past expiration date
         if (notification.expires_at && 
             new Date() > notification.expires_at && 
@@ -361,18 +361,18 @@ export default (sequelize) => {
     });
   };
   
-  Notification.findUserNotifications = async function(userId, userType, limit = 20) {
+  Notification.findUserNotifications = async function(userId: any, userType: any, limit = 20) {
     const whereCondition = {
       status: ['sent', 'delivered'],
       deleted_at: null
     };
     
     if (userType === 'patient') {
-      whereCondition.patient_id = userId;
+      (whereCondition as any).patient_id = userId;
     } else if (userType === 'doctor') {
-      whereCondition.doctor_id = userId;
+      (whereCondition as any).doctor_id = userId;
     } else if (userType === 'hsp') {
-      whereCondition.hsp_id = userId;
+      (whereCondition as any).hsp_id = userId;
     }
     
     return await this.findAll({
@@ -382,7 +382,7 @@ export default (sequelize) => {
     });
   };
   
-  Notification.createMedicationReminder = async function(patientId, medicationId, scheduledTime) {
+  Notification.createMedicationReminder = async function(patientId: any, medicationId: any, scheduledTime: any) {
     return await this.create({
       patient_id: patientId,
       related_medication_id: medicationId,
@@ -395,7 +395,7 @@ export default (sequelize) => {
     });
   };
   
-  Notification.createAppointmentReminder = async function(patientId, appointmentId, scheduledTime) {
+  Notification.createAppointmentReminder = async function(patientId: any, appointmentId: any, scheduledTime: any) {
     return await this.create({
       patient_id: patientId,
       related_appointment_id: appointmentId,
@@ -425,7 +425,7 @@ export default (sequelize) => {
     return this.save();
   };
   
-  Notification.prototype.updateDeliveryStatus = function(status, channel, details = {}) {
+  Notification.prototype.updateDeliveryStatus = function(status: any, channel: any, details = {}) {
     this.status = status;
     
     if (status === 'sent') {

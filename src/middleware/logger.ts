@@ -53,7 +53,7 @@ class TraceContext {
     // Extract baggage items
     const baggage = headers["baggage"];
     if (baggage) {
-      baggage.split(",").forEach((item) => {
+      baggage.split(",").forEach((item: any) => {
         const [key, value] = item.trim().split("=");
         context.baggage.set(key, value);
       });
@@ -73,13 +73,13 @@ class TraceContext {
     }
 
     // B3 Headers
-    if (this.traceId) headers["x-b3-traceid"] = this.traceId;
-    if (this.spanId) headers["x-b3-spanid"] = this.spanId;
-    if (this.parentId) headers["x-b3-parentspanid"] = this.parentId;
+    if (this.traceId) (headers as any)["x-b3-traceid"] = this.traceId;
+    if (this.spanId) (headers as any)["x-b3-spanid"] = this.spanId;
+    if (this.parentId) (headers as any)["x-b3-parentspanid"] = this.parentId;
 
     // Baggage
     if (this.baggage.size > 0) {
-      headers["baggage"] = Array.from(this.baggage.entries())
+      (headers as any)["baggage"] = Array.from(this.baggage.entries())
         .map(([key, value]) => `${key}=${value}`)
         .join(",");
     }
@@ -161,29 +161,29 @@ const CONFIG = {
 // Enhanced request context
 class LogContext {
   constructor() {
-    this.storage = new AsyncLocalStorage();
-    this.contextData = new Map();
+    (this as any).storage = new AsyncLocalStorage();
+    (this as any).contextData = new Map();
   }
 
-  set(key, value) {
-    const store = this.storage.getStore();
+  set(key: any, value: any) {
+    const store = (this as any).storage.getStore();
     if (store) {
       store.set(key, value);
     }
   }
 
-  get(key) {
-    const store = this.storage.getStore();
+  get(key: any) {
+    const store = (this as any).storage.getStore();
     return store ? store.get(key) : undefined;
   }
 
   getAll() {
-    const store = this.storage.getStore();
+    const store = (this as any).storage.getStore();
     return store ? Object.fromEntries(store) : {};
   }
 
-  run(context, callback) {
-    return this.storage.run(new Map(Object.entries(context)), callback);
+  run(context: any, callback: any) {
+    return (this as any).storage.run(new Map(Object.entries(context)), callback);
   }
 }
 
@@ -191,44 +191,44 @@ const logContext = new LogContext();
 
 // Enhanced error handling
 class LoggingError extends Error {
-  constructor(message, code, metadata = {}) {
+  constructor(message: any, code: any, metadata = {}) {
     super(message);
     this.name = "LoggingError";
-    this.code = code;
-    this.metadata = metadata;
-    this.timestamp = new Date().toISOString();
+    (this as any).code = code;
+    (this as any).metadata = metadata;
+    (this as any).timestamp = new Date().toISOString();
   }
 }
 
 // Rate limiting implementation
 class RateLimiter {
-  constructor(config) {
-    this.enabled = config.enabled;
-    this.maxLogs = config.maxLogs;
-    this.windowMs = config.windowMs;
-    this.logs = new Map(); // Store source -> array of timestamps
+  constructor(config: any) {
+    (this as any).enabled = (config as any).enabled;
+    (this as any).maxLogs = (config as any).maxLogs;
+    (this as any).windowMs = (config as any).windowMs;
+    (this as any).logs = new Map(); // Store source -> array of timestamps
 
     // Add LRU cache for very high traffic scenarios
-    this.maxSources = config.maxSources || 1000;
-    if (this.logs.size > this.maxSources) {
+    (this as any).maxSources = (config as any).maxSources || 1000;
+    if ((this as any).logs.size > (this as any).maxSources) {
       // Remove oldest source
-      const oldestSource = this.logs.keys().next().value;
-      this.logs.delete(oldestSource);
+      const oldestSource = (this as any).logs.keys().next().value;
+      (this as any).logs.delete(oldestSource);
     }
   }
 
-  shouldLog(source) {
-    if (!this.enabled) return true;
+  shouldLog(source: any) {
+    if (!(this as any).enabled) return true;
 
     const now = Date.now();
-    if (!this.logs.has(source)) {
-      this.logs.set(source, [now]);
+    if (!(this as any).logs.has(source)) {
+      (this as any).logs.set(source, [now]);
       return true;
     }
 
     // Get timestamps for this source and clean old ones
-    let timestamps = this.logs.get(source);
-    const windowStart = now - this.windowMs;
+    let timestamps = (this as any).logs.get(source);
+    const windowStart = now - (this as any).windowMs;
 
     // Remove timestamps outside the window
     // (efficient as array is naturally ordered)
@@ -237,7 +237,7 @@ class RateLimiter {
     }
 
     // Check if we're under the limit
-    if (timestamps.length < this.maxLogs) {
+    if (timestamps.length < (this as any).maxLogs) {
       timestamps.push(now);
       return true;
     }
@@ -248,16 +248,16 @@ class RateLimiter {
   // Clean up old entries periodically
   cleanup() {
     const now = Date.now();
-    const windowStart = now - this.windowMs;
+    const windowStart = now - (this as any).windowMs;
 
-    for (const [source, timestamps] of this.logs) {
+    for (const [source, timestamps] of (this as any).logs) {
       // Remove timestamps outside the window
       while (timestamps.length && timestamps[0] <= windowStart) {
         timestamps.shift();
       }
       // Remove empty sources
       if (timestamps.length === 0) {
-        this.logs.delete(source);
+        (this as any).logs.delete(source);
       }
     }
   }
@@ -267,12 +267,12 @@ class RateLimiter {
 class EnhancedWinstonLogger {
   static globalErrorHandlersAttached = false;
 
-  constructor(filename) {
-    this.source = filename;
-    this.rateLimiter = new RateLimiter(CONFIG.rateLimiting);
+  constructor(filename: any) {
+    (this as any).source = filename;
+    (this as any).rateLimiter = new RateLimiter(CONFIG.rateLimiting);
     // Run cleanup every minute
-    this.cleanupInterval = setInterval(() => {
-      this.rateLimiter.cleanup();
+    (this as any).cleanupInterval = setInterval(() => {
+      (this as any).rateLimiter.cleanup();
     }, 60000);
     this._setupLogger();
     this._setupErrorHandling();
@@ -280,15 +280,15 @@ class EnhancedWinstonLogger {
 
   // Don't forget to clear the interval when the logger is destroyed
   destroy() {
-    if (this.cleanupInterval) {
-      clearInterval(this.cleanupInterval);
+    if ((this as any).cleanupInterval) {
+      clearInterval((this as any).cleanupInterval);
     }
   }
 
   // Helper function for circular references
   _getCircularReplacer() {
     const seen = new WeakSet();
-    return (key, value) => {
+    return (key: any, value: any) => {
       if (key === "socket" || key === "parser") return "[Circular]";
       if (value === null || value === undefined) return value;
       if (value instanceof Error) return value.stack || value.message;
@@ -321,7 +321,7 @@ class EnhancedWinstonLogger {
   }
 
   // Helper function to process log arguments
-  _processLogArguments(message, args) {
+  _processLogArguments(message: any, args: any) {
     let additionalData;
     let error = null;
 
@@ -342,12 +342,12 @@ class EnhancedWinstonLogger {
               try {
                 const value = args[0][key];
                 if (typeof value !== "object" || value === null) {
-                  acc[key] = value;
+                  (acc as any)[key] = value;
                 } else {
-                  acc[key] = "[Complex Object]";
+                  (acc as any)[key] = "[Complex Object]";
                 }
               } catch (e) {
-                acc[key] = "[Unstringifiable]";
+                (acc as any)[key] = "[Unstringifiable]";
               }
               return acc;
             }, {});
@@ -361,7 +361,7 @@ class EnhancedWinstonLogger {
     return {
       additionalData,
       error,
-      source: this.source,
+      source: (this as any).source,
     };
   }
 
@@ -376,16 +376,16 @@ class EnhancedWinstonLogger {
 
     const transports = this._createTransports();
 
-    this.logger = winston.createLogger({
+    (this as any).logger = winston.createLogger({
       level: CONFIG.logLevel,
       format: enhancedFormat,
-      defaultMeta: { source: this.source },
+      defaultMeta: { source: (this as any).source },
       transports,
     });
   }
 
   _createLogFormatter() {
-    return (info) => {
+    return (info: any) => {
       const {
         level = "info",
         message = "",
@@ -396,12 +396,12 @@ class EnhancedWinstonLogger {
       } = info;
 
       // Get the source from either the metadata or the logger instance
-      const source = info.source || this.source || "unknown";
+      const source = (info as any).source || (this as any).source || "unknown";
 
       // Helper function to handle circular references
       const getCircularReplacer = () => {
         const seen = new WeakSet();
-        return (key, value) => {
+        return (key: any, value: any) => {
           // Handle special cases
           if (key === "socket" || key === "parser") return "[Circular]";
           if (value === null || value === undefined) return value;
@@ -502,7 +502,7 @@ class EnhancedWinstonLogger {
         return `[${source}]: {
                   "timestamp": "${timestamp}",
                   "level": "${level}",
-                  "message": "Error formatting log message: ${err.message}. Original message: ${message}"
+                  "message": "Error formatting log message: ${(err as any).message}. Original message: ${message}"
                   }`;
       }
     };
@@ -587,51 +587,51 @@ class EnhancedWinstonLogger {
   }
 
   // Implement all log levels
-  debug(message, ...args) {
+  debug(message: any, ...args) {
     if (!this._shouldSample()) return;
 
-    if (!this._debugRateLimitWarned) {
-      this._debugRateLimitWarned = {};
+    if (!(this as any)._debugRateLimitWarned) {
+      (this as any)._debugRateLimitWarned = {};
     }
 
-    if (!this.rateLimiter.shouldLog(this.source)) {
+    if (!(this as any).rateLimiter.shouldLog((this as any).source)) {
       // Optional: track dropped logs count
       this._incrementDroppedLogs();
       // Output a warning only if it hasn't been done for this source in this window
-      if (!this._debugRateLimitWarned[this.source]) {
-        this.warn("Rate limit exceeded for debug logs", { source: this.source });
-        this._debugRateLimitWarned[this.source] = true;
+      if (!(this as any)._debugRateLimitWarned[(this as any).source]) {
+        this.warn("Rate limit exceeded for debug logs", { source: (this as any).source });
+        (this as any)._debugRateLimitWarned[(this as any).source] = true;
       }
       return;
     } else {
       // Reset the warning flag for this source if logging is allowed again
-      if (this._debugRateLimitWarned[this.source]) {
-        this._debugRateLimitWarned[this.source] = false;
+      if ((this as any)._debugRateLimitWarned[(this as any).source]) {
+        (this as any)._debugRateLimitWarned[(this as any).source] = false;
       }
     }
 
     const processedArgs = this._processLogArguments(message, args);
-    this.logger.debug(message, processedArgs);
+    (this as any).logger.debug(message, processedArgs);
   }
 
-  info(message, ...args) {
+  info(message: any, ...args) {
     if (!this._shouldSample()) return;
     const processedArgs = this._processLogArguments(message, args);
-    this.logger.info(message, processedArgs);
+    (this as any).logger.info(message, processedArgs);
   }
 
-  warn(message, ...args) {
+  warn(message: any, ...args) {
     const processedArgs = this._processLogArguments(message, args);
-    this.logger.warn(message, processedArgs);
+    (this as any).logger.warn(message, processedArgs);
   }
 
-  error(message, ...args) {
+  error(message: any, ...args) {
     const processedArgs = this._processLogArguments(message, args);
-    this.logger.error(message, processedArgs);
+    (this as any).logger.error(message, processedArgs);
   }
 
   // New method for structured logging
-  structured(level, message, data = {}) {
+  structured(level: any, message: any, data = {}) {
     if (!CONFIG.structuredLogging.enabled) return;
 
     const structuredLog = {
@@ -640,15 +640,15 @@ class EnhancedWinstonLogger {
       message,
       data,
       context: logContext.getAll(),
-      source: this.source,
+      source: (this as any).source,
       environment: CONFIG.environment,
     };
 
-    this.logger.log(level, JSON.stringify(structuredLog));
+    (this as any).logger.log(level, JSON.stringify(structuredLog));
   }
 
   // New method for performance logging
-  performance(label, durationMs, metadata = {}) {
+  performance(label: any, durationMs: any, metadata = {}) {
     this.info(`Performance: ${label}`, {
       ...metadata,
       duration_ms: durationMs,
@@ -657,7 +657,7 @@ class EnhancedWinstonLogger {
   }
 
   // New method for audit logging
-  audit(action, details = {}) {
+  audit(action: any, details = {}) {
     this.info(`Audit: ${action}`, {
       ...details,
       type: "audit",
@@ -667,7 +667,7 @@ class EnhancedWinstonLogger {
   }
 
   // Trace-specific logging method
-  trace(message, span = {}, metadata = {}) {
+  trace(message: any, span = {}, metadata = {}) {
     if (!CONFIG.tracing.enabled) return;
 
     const context = logContext.getAll();
@@ -691,21 +691,21 @@ class EnhancedWinstonLogger {
 
   // Optional: Track dropped logs
   _incrementDroppedLogs() {
-    if (!this._droppedLogs) this._droppedLogs = 0;
-    this._droppedLogs++;
+    if (!(this as any)._droppedLogs) (this as any)._droppedLogs = 0;
+    (this as any)._droppedLogs++;
 
     // Log a summary every 1000 dropped logs
-    if (this._droppedLogs % 1000 === 0) {
+    if ((this as any)._droppedLogs % 1000 === 0) {
       this.warn(
-        `Dropped ${this._droppedLogs} debug logs due to rate limiting`,
+        `Dropped ${(this as any)._droppedLogs} debug logs due to rate limiting`,
         {
-          source: this.source,
+          source: (this as any).source,
         }
       );
     }
   }
 
-  async _sendToCollector(traceData) {
+  async _sendToCollector(traceData: any) {
     if (!CONFIG.tracing.collector.endpoint) return;
 
     const payload = {
@@ -731,7 +731,7 @@ class EnhancedWinstonLogger {
       }
     } catch (error) {
       throw new LoggingError("Trace collector error", "TRACE_COLLECTOR_ERROR", {
-        error: error.message,
+        error: (error as any).message,
         endpoint: CONFIG.tracing.collector.endpoint,
       });
     }
@@ -744,7 +744,7 @@ process.on("SIGTERM", () => {
 });
 
 // Middleware for request tracking
-export const requestMiddleware = (req, res, next) => {
+export const requestMiddleware = (req: any, res: any, next: any) => {
   const startTime = Date.now();
 
   try {
@@ -815,11 +815,11 @@ export const requestMiddleware = (req, res, next) => {
 };
 
 // Export factory function
-export const createLogger = (filename) => new EnhancedWinstonLogger(filename);
+export const createLogger = (filename: any) => new EnhancedWinstonLogger(filename);
 
 // Export context utilities
-export const setLogContext = (key, value) => logContext.set(key, value);
-export const getLogContext = (key) => logContext.get(key);
+export const setLogContext = (key: any, value: any) => logContext.set(key, value);
+export const getLogContext = (key: any) => logContext.get(key);
 export const getTraceContext = () => {
   const context = logContext.getAll();
   return {
@@ -847,8 +847,8 @@ export const trace = (...args) => globalLogger.trace(...args);
 export const logger = globalLogger;
 
 // Create a stream object for Morgan (compatibility with existing code)
-logger.stream = {
-  write: (message) => {
+(logger as any).stream = {
+  write: (message: any) => {
     globalLogger.info(message.trim());
   }
 };

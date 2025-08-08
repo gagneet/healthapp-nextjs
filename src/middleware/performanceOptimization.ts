@@ -20,10 +20,10 @@ export const advancedCompression = compression({
     // Don't compress images, videos, or already compressed data
     const contentType = res.getHeader('content-type');
     if (contentType && (
-      contentType.includes('image/') ||
-      contentType.includes('video/') ||
-      contentType.includes('application/zip') ||
-      contentType.includes('application/gzip')
+      (contentType as any).includes('image/') ||
+      (contentType as any).includes('video/') ||
+      (contentType as any).includes('application/zip') ||
+      (contentType as any).includes('application/gzip')
     )) {
       return false;
     }
@@ -85,11 +85,11 @@ export const dynamicRateLimit = (options = {}) => {
 export const responseCache = (options = {}) => {
   const {
     defaultTtl = 300, // 5 minutes
-    keyGenerator = (req) => `${req.method}:${req.originalUrl}`,
-    shouldCache = (req, res) => req.method === 'GET' && res.statusCode === 200
+    keyGenerator = (req: any) => `${req.method}:${req.originalUrl}`,
+    shouldCache = (req: any, res: any) => req.method === 'GET' && res.statusCode === 200
   } = options;
 
-  return async (req, res, next) => {
+  return async (req: any, res: any, next: any) => {
     // Skip caching for certain endpoints
     if (req.url.includes('/auth/') || req.method !== 'GET') {
       return next();
@@ -116,7 +116,7 @@ export const responseCache = (options = {}) => {
       const originalJson = res.json;
       
       // Override json method to cache response
-      res.json = function(data) {
+      res.json = function(data: any) {
         if (shouldCache(req, res)) {
           // Cache the response asynchronously
           setImmediate(async () => {
@@ -146,7 +146,7 @@ export const responseCache = (options = {}) => {
 };
 
 // Request optimization middleware
-export const requestOptimization = (req, res, next) => {
+export const requestOptimization = (req: any, res: any, next: any) => {
   // Add request start time for performance monitoring
   req.startTime = Date.now();
   
@@ -176,11 +176,11 @@ export const requestOptimization = (req, res, next) => {
 };
 
 // Response optimization middleware
-export const responseOptimization = (req, res, next) => {
+export const responseOptimization = (req: any, res: any, next: any) => {
   // Store original send method
   const originalSend = res.send;
   
-  res.send = function(data) {
+  res.send = function(data: any) {
     // Add performance headers
     const responseTime = Date.now() - req.startTime;
     res.set({
@@ -207,7 +207,7 @@ export const responseOptimization = (req, res, next) => {
 };
 
 // Memory optimization middleware
-export const memoryOptimization = (req, res, next) => {
+export const memoryOptimization = (req: any, res: any, next: any) => {
   // Force garbage collection for large responses (in development only)
   if (process.env.NODE_ENV === 'development') {
     const originalEnd = res.end;
@@ -255,7 +255,7 @@ export const securityOptimization = helmet({
 });
 
 // Database connection optimization middleware
-export const dbConnectionOptimization = async (req, res, next) => {
+export const dbConnectionOptimization = async (req: any, res: any, next: any) => {
   // Add database connection health check for critical operations
   if (req.url.includes('/patients') || req.url.includes('/doctors')) {
     try {
@@ -280,7 +280,7 @@ export const dbConnectionOptimization = async (req, res, next) => {
 };
 
 // Performance monitoring middleware
-export const performanceMonitoring = (req, res, next) => {
+export const performanceMonitoring = (req: any, res: any, next: any) => {
   const startTime = process.hrtime();
   const startUsage = process.cpuUsage();
   
@@ -312,7 +312,7 @@ export const performanceMonitoring = (req, res, next) => {
 };
 
 // Export all middleware as a combined function for easy setup
-export const setupPerformanceMiddleware = (app) => {
+export const setupPerformanceMiddleware = (app: any) => {
   // Security first
   app.use(securityOptimization);
   

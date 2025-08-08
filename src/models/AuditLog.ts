@@ -4,7 +4,7 @@ import { createLogger } from '../middleware/logger.js';
 
 const logger = createLogger(import.meta.url);
 
-export default (sequelize) => {
+export default (sequelize: any) => {
   const AuditLog = sequelize.define('AuditLog', {
     id: {
       type: DataTypes.UUID,
@@ -208,7 +208,7 @@ export default (sequelize) => {
     ],
     
     hooks: {
-      beforeCreate: (auditLog, options) => {
+      beforeCreate: (auditLog: any, options: any) => {
         // Set retention date (6 years from now for HIPAA compliance)
         const retentionDate = new Date();
         retentionDate.setFullYear(retentionDate.getFullYear() + 6);
@@ -223,7 +223,7 @@ export default (sequelize) => {
   });
   
   // Class methods for audit reporting
-  AuditLog.findPatientAccess = async function(patientId, startDate, endDate) {
+  AuditLog.findPatientAccess = async function(patientId: any, startDate: any, endDate: any) {
     return await this.findAll({
       where: {
         patient_id: patientId,
@@ -242,7 +242,7 @@ export default (sequelize) => {
     });
   };
   
-  AuditLog.findUserActivity = async function(userId, startDate, endDate) {
+  AuditLog.findUserActivity = async function(userId: any, startDate: any, endDate: any) {
     return await this.findAll({
       where: {
         user_id: userId,
@@ -280,7 +280,7 @@ export default (sequelize) => {
     };
     
     if (organizationId) {
-      where.organization_id = organizationId;
+      (where as any).organization_id = organizationId;
     }
     
     return await this.findAll({
@@ -289,7 +289,7 @@ export default (sequelize) => {
     });
   };
   
-  AuditLog.generateComplianceReport = async function(organizationId, startDate, endDate) {
+  AuditLog.generateComplianceReport = async function(organizationId: any, startDate: any, endDate: any) {
     const where = {
       timestamp: {
         [sequelize.Sequelize.Op.between]: [startDate, endDate]
@@ -297,7 +297,7 @@ export default (sequelize) => {
     };
     
     if (organizationId) {
-      where.organization_id = organizationId;
+      (where as any).organization_id = organizationId;
     }
     
     const [totalAccess, phiAccess, failedAccess, uniqueUsers, uniquePatients] = await Promise.all([

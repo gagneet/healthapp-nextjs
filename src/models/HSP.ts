@@ -5,7 +5,7 @@ import { HSP_TYPES, PROVIDER_CAPABILITIES } from '../config/enums.js';
 
 const logger = createLogger(import.meta.url);
 
-export default (sequelize) => {
+export default (sequelize: any) => {
   const HSP = sequelize.define('HSP', {
     id: {
       type: DataTypes.UUID,
@@ -296,22 +296,22 @@ export default (sequelize) => {
     ],
     
     hooks: {
-      beforeValidate: (hsp, options) => {
+      beforeValidate: (hsp: any, options: any) => {
         // Normalize arrays
         if (hsp.specializations) {
-          hsp.specializations = hsp.specializations.map(s => s.toLowerCase().trim());
+          hsp.specializations = hsp.specializations.map((s: any) => s.toLowerCase().trim());
         }
         
         if (hsp.departments) {
-          hsp.departments = hsp.departments.map(d => d.toLowerCase().trim());
+          hsp.departments = hsp.departments.map((d: any) => d.toLowerCase().trim());
         }
         
         if (hsp.certifications) {
-          hsp.certifications = hsp.certifications.map(c => c.toLowerCase().trim());
+          hsp.certifications = hsp.certifications.map((c: any) => c.toLowerCase().trim());
         }
       },
       
-      beforeCreate: (hsp, options) => {
+      beforeCreate: (hsp: any, options: any) => {
         // Set capabilities based on HSP type
         if (!hsp.capabilities || hsp.capabilities.length === 0) {
           hsp.capabilities = HSP.getCapabilitiesByType(hsp.hsp_type);
@@ -325,7 +325,7 @@ export default (sequelize) => {
         }
       },
       
-      afterUpdate: (hsp, options) => {
+      afterUpdate: (hsp: any, options: any) => {
         if (hsp.changed('is_verified')) {
           logger.info(`HSP ${hsp.id} verification status changed to: ${hsp.is_verified}`);
         }
@@ -334,7 +334,7 @@ export default (sequelize) => {
   });
   
   // Static method to get capabilities by HSP type
-  HSP.getCapabilitiesByType = function(hspType) {
+  HSP.getCapabilitiesByType = function(hspType: any) {
     const baseCapabilities = [
       PROVIDER_CAPABILITIES.MONITOR_VITALS,
       PROVIDER_CAPABILITIES.PATIENT_EDUCATION,
@@ -381,7 +381,7 @@ export default (sequelize) => {
   };
   
   // Instance methods
-  HSP.prototype.hasCapability = function(capability) {
+  HSP.prototype.hasCapability = function(capability: any) {
     return this.capabilities.includes(capability);
   };
   
@@ -403,7 +403,7 @@ export default (sequelize) => {
     return this.hasCapability(PROVIDER_CAPABILITIES.CREATE_CARE_PLANS) && this.is_verified;
   };
   
-  HSP.prototype.requiresSupervisionFor = function(action) {
+  HSP.prototype.requiresSupervisionFor = function(action: any) {
     if (!this.requires_supervision) return false;
     
     const supervisedActions = ['prescribe', 'diagnose', 'surgery'];

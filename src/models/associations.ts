@@ -1,7 +1,7 @@
 // src/models/associations.js
 // Essential associations for Doctor Dashboard functionality
 
-export default function defineAssociations(models) {
+export default function defineAssociations(models: any) {
   const {
     // Core models
     User,

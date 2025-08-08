@@ -34,7 +34,7 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(compression());
 
 // Logging
-app.use(morgan('combined', { stream: logger.stream }));
+app.use(morgan('combined', { stream: (logger as any).stream }));
 
 // Rate limiting
 app.use('/api', rateLimiter);
@@ -81,7 +81,7 @@ const connectWithRetry = async () => {
       logger.info('Database connection established successfully');
       return;
     } catch (error) {
-      logger.warn(`Database connection attempt ${attempt}/${maxRetries} failed: ${error.message}`);
+      logger.warn(`Database connection attempt ${attempt}/${maxRetries} failed: ${(error as any).message}`);
       
       if (attempt === maxRetries) {
         logger.error('Max database connection retries reached');

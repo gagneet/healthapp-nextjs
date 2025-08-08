@@ -28,8 +28,8 @@ class MedicationController {
         medicines: {}
       };
 
-      medications.forEach(medication => {
-        responseData.medication_reminders[medication.id] = {
+      medications.forEach((medication: any) => {
+        (responseData as any).medication_reminders[medication.id] = {
           basic_info: {
             id: medication.id.toString(),
             description: medication.description,
@@ -60,7 +60,7 @@ class MedicationController {
         };
 
         if (medication.medicine) {
-          responseData.medicines[medication.medicine.id] = {
+          (responseData as any).medicines[medication.medicine.id] = {
             basic_info: {
               id: medication.medicine.id.toString(),
               name: medication.medicine.name,
@@ -167,7 +167,7 @@ class MedicationController {
         limit: 30
       });
 
-      const timeline = events.map(event => ({
+      const timeline = events.map((event: any) => ({
         event_id: `evt_${event.id}`,
         scheduled_time: event.start_time,
         status: event.status,
@@ -175,7 +175,7 @@ class MedicationController {
         notes: event.details?.notes || null
       }));
 
-      const completedEvents = events.filter(e => e.status === 'completed').length;
+      const completedEvents = events.filter((e: any) => e.status === 'completed').length;
       const adherencePercentage = events.length > 0 ? 
         (completedEvents / events.length * 100).toFixed(2) : 0;
 
@@ -188,7 +188,7 @@ class MedicationController {
             adherence_stats: {
               total_scheduled: events.length,
               completed: completedEvents,
-              missed: events.filter(e => e.status === 'expired').length,
+              missed: events.filter((e: any) => e.status === 'expired').length,
               adherence_percentage: parseFloat(adherencePercentage)
             }
           },

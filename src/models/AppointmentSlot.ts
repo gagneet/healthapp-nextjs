@@ -1,5 +1,5 @@
 // src/models/AppointmentSlot.js
-export default (sequelize, DataTypes) => {
+export default (sequelize: any, DataTypes: any) => {
   const AppointmentSlot = sequelize.define('AppointmentSlot', {
     id: {
       type: DataTypes.UUID,

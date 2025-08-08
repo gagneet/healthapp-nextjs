@@ -1,5 +1,5 @@
 // src/models/UserRole.js
-export default (sequelize, DataTypes) => {
+export default (sequelize: any, DataTypes: any) => {
   const UserRole = sequelize.define('UserRole', {
     id: {
       type: DataTypes.UUID,

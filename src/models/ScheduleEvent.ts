@@ -1,5 +1,5 @@
 // src/models/ScheduleEvent.js
-export default (sequelize, DataTypes) => {
+export default (sequelize: any, DataTypes: any) => {
   const ScheduleEvent = sequelize.define('ScheduleEvent', {
     id: {
       type: DataTypes.UUID,
@@ -42,7 +42,7 @@ export default (sequelize, DataTypes) => {
     event_priority: {
       type: DataTypes.VIRTUAL,
       get() {
-        return this.details?.priority || null;
+        return (this as any).details?.priority || null;
       },
     },
     created_at: {

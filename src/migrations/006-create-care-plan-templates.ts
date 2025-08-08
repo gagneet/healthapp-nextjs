@@ -2,7 +2,7 @@
 'use strict';
 
 export default {
-  up: async (queryInterface, Sequelize) => {
+  up: async (queryInterface: any, Sequelize: any) => {
     // Check if table already exists
     const tableExists = await queryInterface.tableExists('care_plan_templates');
     if (tableExists) {
@@ -131,7 +131,7 @@ export default {
       try {
         await queryInterface.addIndex('care_plan_templates', index.fields, { name: index.name });
       } catch (error) {
-        if (!error.message.includes('already exists')) {
+        if (!(error as any).message.includes('already exists')) {
           throw error;
         }
         console.log(`Index ${index.name} already exists, skipping`);
@@ -151,7 +151,7 @@ export default {
           CREATE INDEX ${ginIndex.name} ON care_plan_templates USING GIN(${ginIndex.field});
         `);
       } catch (error) {
-        if (!error.message.includes('already exists')) {
+        if (!(error as any).message.includes('already exists')) {
           throw error;
         }
         console.log(`GIN Index ${ginIndex.name} already exists, skipping`);
@@ -159,7 +159,7 @@ export default {
     }
   },
 
-  down: async (queryInterface, Sequelize) => {
+  down: async (queryInterface: any, Sequelize: any) => {
     await queryInterface.dropTable('care_plan_templates');
   }
 };

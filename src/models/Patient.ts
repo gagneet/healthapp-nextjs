@@ -52,7 +52,7 @@ export default (sequelize: any) => {
       defaultValue: [],
       comment: 'Array of emergency contact objects',
       validate: {
-        isValidContacts(value) {
+        isValidContacts(value: any) {
           if (!Array.isArray(value)) {
             throw new Error('Emergency contacts must be an array');
           }
@@ -77,7 +77,7 @@ export default (sequelize: any) => {
       defaultValue: [],
       comment: 'Known allergies and reactions',
       validate: {
-        isValidAllergies(value) {
+        isValidAllergies(value: any) {
           if (!Array.isArray(value)) {
             throw new Error('Allergies must be an array');
           }
@@ -250,9 +250,9 @@ export default (sequelize: any) => {
     bmi: {
       type: DataTypes.VIRTUAL,
       get() {
-        if (this.height_cm && this.weight_kg) {
-          const heightInMeters = this.height_cm / 100;
-          return (this.weight_kg / (heightInMeters * heightInMeters)).toFixed(1);
+        if ((this as any).height_cm && (this as any).weight_kg) {
+          const heightInMeters = (this as any).height_cm / 100;
+          return ((this as any).weight_kg / (heightInMeters * heightInMeters)).toFixed(1);
         }
         return null;
       }
@@ -370,7 +370,7 @@ export default (sequelize: any) => {
     ],
     
     hooks: {
-      beforeValidate: (patient, options) => {
+      beforeValidate: (patient: any, options: any) => {
         // Generate medical record number if not provided
         if (!patient.medical_record_number && patient.organization_id) {
           const timestamp = Date.now().toString().slice(-6);
@@ -379,7 +379,7 @@ export default (sequelize: any) => {
         }
       },
       
-      beforeCreate: (patient, options) => {
+      beforeCreate: (patient: any, options: any) => {
         // Set default preferences
         if (!patient.communication_preferences) {
           patient.communication_preferences = Patient.rawAttributes.communication_preferences.defaultValue;
@@ -390,7 +390,7 @@ export default (sequelize: any) => {
         }
       },
       
-      afterUpdate: (patient, options) => {
+      afterUpdate: (patient: any, options: any) => {
         // Recalculate BMI if height or weight changed
         if (patient.changed('height_cm') || patient.changed('weight_kg')) {
           // BMI is calculated as virtual field, no action needed
@@ -408,7 +408,7 @@ export default (sequelize: any) => {
     instanceMethods: {
       // Get age from user's date of birth
       async getAge() {
-        const user = await this.getUser();
+        const user = await (this as any).getUser();
         if (!user || !user.date_of_birth) return null;
         
         const today = new Date();
@@ -424,8 +424,8 @@ export default (sequelize: any) => {
       },
       
       // Check if patient has specific allergy
-      hasAllergy(allergen) {
-        return this.allergies.some(allergy => 
+      hasAllergy(allergen: any) {
+        return (this as any).allergies.some((allergy: any) => 
           allergy.name?.toLowerCase().includes(allergen.toLowerCase()) ||
           allergy.allergen?.toLowerCase().includes(allergen.toLowerCase())
         );
@@ -433,7 +433,7 @@ export default (sequelize: any) => {
       
       // Get BMI category
       getBMICategory() {
-        const bmi = parseFloat(this.bmi);
+        const bmi = parseFloat((this as any).bmi);
         if (!bmi) return null;
         
         if (bmi < 18.5) return 'underweight';
@@ -444,71 +444,71 @@ export default (sequelize: any) => {
       
       // Calculate appointment adherence
       getAppointmentAdherence() {
-        if (this.total_appointments === 0) return null;
+        if ((this as any).total_appointments === 0) return null;
         
-        const attended = this.total_appointments - this.missed_appointments;
-        return ((attended / this.total_appointments) * 100).toFixed(1);
+        const attended = (this as any).total_appointments - (this as any).missed_appointments;
+        return ((attended / (this as any).total_appointments) * 100).toFixed(1);
       },
       
       // Check if patient is high risk
       isHighRisk() {
-        return ['high', 'critical'].includes(this.risk_level);
+        return ['high', 'critical'].includes((this as any).risk_level);
       },
       
       // Get primary emergency contact
       getPrimaryEmergencyContact() {
-        return this.emergency_contacts.find(contact => contact.primary) || 
-               this.emergency_contacts[0] || 
+        return (this as any).emergency_contacts.find((contact: any) => contact.primary) || 
+               (this as any).emergency_contacts[0] || 
                null;
       },
       
       // Check if patient needs interpreter
       needsInterpreter() {
-        return this.requires_interpreter || this.primary_language !== 'en';
+        return this.requires_interpreter || (this as any).primary_language !== 'en';
       },
       
       // Get preferred contact method
       getPreferredContactMethod() {
-        return this.communication_preferences?.preferred_contact_method || 'email';
+        return (this as any).communication_preferences?.preferred_contact_method || 'email';
       },
       
       // Format height for display
       getFormattedHeight() {
-        if (!this.height_cm) return null;
+        if (!(this as any).height_cm) return null;
         
-        const feet = Math.floor(this.height_cm / 30.48);
-        const inches = Math.round((this.height_cm / 2.54) % 12);
-        return `${feet}'${inches}" (${this.height_cm}cm)`;
+        const feet = Math.floor((this as any).height_cm / 30.48);
+        const inches = Math.round(((this as any).height_cm / 2.54) % 12);
+        return `${feet}'${inches}" (${(this as any).height_cm}cm)`;
       },
       
       // Format weight for display
       getFormattedWeight() {
-        if (!this.weight_kg) return null;
+        if (!(this as any).weight_kg) return null;
         
-        const pounds = Math.round(this.weight_kg * 2.20462);
-        return `${pounds} lbs (${this.weight_kg}kg)`;
+        const pounds = Math.round((this as any).weight_kg * 2.20462);
+        return `${pounds} lbs (${(this as any).weight_kg}kg)`;
       },
       
       // Get primary care provider (doctor or HSP)
       async getPrimaryCareProvider() {
-        if (this.primary_care_doctor_id) {
+        if ((this as any).primary_care_doctor_id) {
           const Doctor = sequelize.models.Doctor;
-          return await Doctor.findByPk(this.primary_care_doctor_id);
-        } else if (this.primary_care_hsp_id) {
+          return await Doctor.findByPk((this as any).primary_care_doctor_id);
+        } else if ((this as any).primary_care_hsp_id) {
           const HSP = sequelize.models.HSP;
-          return await HSP.findByPk(this.primary_care_hsp_id);
+          return await HSP.findByPk((this as any).primary_care_hsp_id);
         }
         return null;
       },
       
       // Get care coordinator
       async getCareCoordinator() {
-        if (!this.care_coordinator_id || !this.care_coordinator_type) return null;
+        if (!this.care_coordinator_id || !(this as any).care_coordinator_type) return null;
         
-        if (this.care_coordinator_type === 'doctor') {
+        if ((this as any).care_coordinator_type === 'doctor') {
           const Doctor = sequelize.models.Doctor;
           return await Doctor.findByPk(this.care_coordinator_id);
-        } else if (this.care_coordinator_type === 'hsp') {
+        } else if ((this as any).care_coordinator_type === 'hsp') {
           const HSP = sequelize.models.HSP;
           return await HSP.findByPk(this.care_coordinator_id);
         }
@@ -516,22 +516,22 @@ export default (sequelize: any) => {
       },
       
       // Set primary care provider
-      setPrimaryCareProvider(providerId, providerType) {
+      setPrimaryCareProvider(providerId: any, providerType: any) {
         if (providerType === 'doctor') {
-          this.primary_care_doctor_id = providerId;
-          this.primary_care_hsp_id = null;
+          (this as any).primary_care_doctor_id = providerId;
+          (this as any).primary_care_hsp_id = null;
         } else if (providerType === 'hsp') {
-          this.primary_care_hsp_id = providerId;
-          this.primary_care_doctor_id = null;
+          (this as any).primary_care_hsp_id = providerId;
+          (this as any).primary_care_doctor_id = null;
         }
-        return this.save();
+        return (this as any).save();
       },
       
       // Set care coordinator
-      setCareCoordinator(providerId, providerType) {
+      setCareCoordinator(providerId: any, providerType: any) {
         this.care_coordinator_id = providerId;
-        this.care_coordinator_type = providerType;
-        return this.save();
+        (this as any).care_coordinator_type = providerType;
+        return (this as any).save();
       }
     },
     
@@ -539,7 +539,7 @@ export default (sequelize: any) => {
     classMethods: {
       // Find active patients
       findActive() {
-        return this.findAll({
+        return (this as any).findAll({
           where: {
             is_active: true,
             deleted_at: null
@@ -549,7 +549,7 @@ export default (sequelize: any) => {
       
       // Find high-risk patients
       findHighRisk() {
-        return this.findAll({
+        return (this as any).findAll({
           where: {
             risk_level: ['high', 'critical'],
             deleted_at: null
@@ -558,8 +558,8 @@ export default (sequelize: any) => {
       },
       
       // Find by doctor provider
-      findByDoctor(doctorId) {
-        return this.findAll({
+      findByDoctor(doctorId: any) {
+        return (this as any).findAll({
           where: {
             [sequelize.Sequelize.Op.or]: [
               { primary_care_doctor_id: doctorId },
@@ -574,8 +574,8 @@ export default (sequelize: any) => {
       },
       
       // Find by HSP provider
-      findByHSP(hspId) {
-        return this.findAll({
+      findByHSP(hspId: any) {
+        return (this as any).findAll({
           where: {
             [sequelize.Sequelize.Op.or]: [
               { primary_care_hsp_id: hspId },
@@ -590,8 +590,8 @@ export default (sequelize: any) => {
       },
       
       // Search patients
-      searchPatients(query) {
-        return this.findAll({
+      searchPatients(query: any) {
+        return (this as any).findAll({
           include: [{
             model: sequelize.models.User,
             as: 'user',

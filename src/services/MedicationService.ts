@@ -3,7 +3,7 @@ import { Medication, Medicine, ScheduleEvent } from '../models/index.js';
 import { Op } from 'sequelize';
 
 class MedicationService {
-  async createMedicationWithSchedule(medicationData) {
+  async createMedicationWithSchedule(medicationData: any) {
     const {
       participant_id,
       organizer_type,
@@ -45,7 +45,7 @@ class MedicationService {
     return medication;
   }
 
-  async getMedicationAdherence(medicationId) {
+  async getMedicationAdherence(medicationId: any) {
     const events = await ScheduleEvent.findAll({
       where: {
         event_type: 'medication-reminder',
@@ -54,8 +54,8 @@ class MedicationService {
     });
 
     const totalEvents = events.length;
-    const completedEvents = events.filter(e => e.status === 'completed').length;
-    const missedEvents = events.filter(e => e.status === 'expired').length;
+    const completedEvents = events.filter((e: any) => e.status === 'completed').length;
+    const missedEvents = events.filter((e: any) => e.status === 'expired').length;
 
     const adherencePercentage = totalEvents > 0 ? 
       (completedEvents / totalEvents * 100).toFixed(2) : 0;
@@ -68,7 +68,7 @@ class MedicationService {
     };
   }
 
-  generateRRule(repeatType, startDate) {
+  generateRRule(repeatType: any, startDate: any) {
     switch (repeatType) {
       case 'daily':
         return 'FREQ=DAILY;INTERVAL=1';
@@ -85,7 +85,7 @@ class MedicationService {
     }
   }
 
-  async createMedicationSchedule(medication) {
+  async createMedicationSchedule(medication: any) {
     const startDate = new Date(medication.start_date);
     const endDate = new Date(medication.end_date);
     const whenToTake = medication.details?.when_to_take || 'after_breakfast';
@@ -101,7 +101,7 @@ class MedicationService {
       'bedtime': 21
     };
 
-    const scheduleHour = timeMap[whenToTake] || 9;
+    const scheduleHour = (timeMap as any)[whenToTake] || 9;
 
     for (let date = new Date(startDate); date <= endDate; date.setDate(date.getDate() + 1)) {
       const scheduleTime = new Date(date);

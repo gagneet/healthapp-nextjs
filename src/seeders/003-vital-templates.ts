@@ -2,7 +2,7 @@
 'use strict';
 
 export default {
-  up: async (queryInterface, Sequelize) => {
+  up: async (queryInterface: any, Sequelize: any) => {
     console.log('🩺 Seeding vital sign templates (idempotent)...');
     
     // Check if vital templates already exist
@@ -70,7 +70,7 @@ export default {
     console.log('✅ Vital sign templates seeded successfully');
   },
 
-  down: async (queryInterface, Sequelize) => {
+  down: async (queryInterface: any, Sequelize: any) => {
     await queryInterface.bulkDelete('vital_templates', null, {});
   }
 };

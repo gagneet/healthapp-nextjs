@@ -2,7 +2,7 @@
 'use strict';
 
 export default {
-  up: async (queryInterface, Sequelize) => {
+  up: async (queryInterface: any, Sequelize: any) => {
     // Check if table already exists
     const tableExists = await queryInterface.tableExists('care_plans');
     if (tableExists) {
@@ -22,7 +22,7 @@ export default {
         );
       `);
     } catch (error) {
-      if (!error.message.includes('already exists')) {
+      if (!(error as any).message.includes('already exists')) {
         throw error;
       }
       console.log('Enum care_plan_status already exists, skipping');
@@ -33,7 +33,7 @@ export default {
         CREATE TYPE priority_level AS ENUM ('LOW', 'MEDIUM', 'HIGH', 'CRITICAL');
       `);
     } catch (error) {
-      if (!error.message.includes('already exists')) {
+      if (!(error as any).message.includes('already exists')) {
         throw error;
       }
       console.log('Enum priority_level already exists, skipping');
@@ -148,7 +148,7 @@ export default {
       try {
         await queryInterface.addIndex('care_plans', index.fields, index.options);
       } catch (error) {
-        if (!error.message.includes('already exists')) {
+        if (!(error as any).message.includes('already exists')) {
           throw error;
         }
         console.log(`Index ${index.options.name} already exists, skipping`);
@@ -156,7 +156,7 @@ export default {
     }
   },
 
-  down: async (queryInterface, Sequelize) => {
+  down: async (queryInterface: any, Sequelize: any) => {
     await queryInterface.dropTable('care_plans');
     await queryInterface.sequelize.query('DROP TYPE IF EXISTS care_plan_status CASCADE;');
     await queryInterface.sequelize.query('DROP TYPE IF EXISTS priority_level CASCADE;');

@@ -1,7 +1,7 @@
 'use strict';
 
 export default {
-  up: async (queryInterface, Sequelize) => {
+  up: async (queryInterface: any, Sequelize: any) => {
     // Check if table already exists
     const tableExists = await queryInterface.sequelize.query(
       "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'payment_methods'",
@@ -102,7 +102,7 @@ export default {
     await queryInterface.addIndex('payment_methods', ['is_active']);
   },
 
-  down: async (queryInterface, Sequelize) => {
+  down: async (queryInterface: any, Sequelize: any) => {
     await queryInterface.dropTable('payment_methods');
   }
 };

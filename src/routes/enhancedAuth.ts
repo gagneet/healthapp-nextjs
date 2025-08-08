@@ -311,11 +311,11 @@ router.put('/profile', enhancedAuthenticate, async (req, res, next) => {
     
     // Update basic user information
     const updateData = {};
-    if (first_name !== undefined) updateData.first_name = first_name;
-    if (last_name !== undefined) updateData.last_name = last_name;
-    if (mobile_number !== undefined) updateData.mobile_number = mobile_number;
-    if (date_of_birth !== undefined) updateData.date_of_birth = date_of_birth;
-    if (gender !== undefined) updateData.gender = gender;
+    if (first_name !== undefined) (updateData as any).first_name = first_name;
+    if (last_name !== undefined) (updateData as any).last_name = last_name;
+    if (mobile_number !== undefined) (updateData as any).mobile_number = mobile_number;
+    if (date_of_birth !== undefined) (updateData as any).date_of_birth = date_of_birth;
+    if (gender !== undefined) (updateData as any).gender = gender;
     
     await user.update(updateData);
     

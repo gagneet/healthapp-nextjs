@@ -1,7 +1,7 @@
 'use strict';
 
 export default {
-  up: async (queryInterface, Sequelize) => {
+  up: async (queryInterface: any, Sequelize: any) => {
     // Check if column already exists
     const tableDescription = await queryInterface.describeTable('patients');
     if (tableDescription.patient_id) {
@@ -28,14 +28,14 @@ export default {
         }
       });
     } catch (error) {
-      if (!error.message.includes('already exists')) {
+      if (!(error as any).message.includes('already exists')) {
         throw error;
       }
       console.log('Index idx_patients_patient_id already exists, skipping');
     }
   },
 
-  down: async (queryInterface, Sequelize) => {
+  down: async (queryInterface: any, Sequelize: any) => {
     // Remove index first
     await queryInterface.removeIndex('patients', 'idx_patients_patient_id');
     

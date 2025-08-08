@@ -2,7 +2,7 @@
 import { DataTypes } from 'sequelize';
 import { ORGANIZATION_TYPES } from '../config/enums.js';
 
-export default (sequelize) => {
+export default (sequelize: any) => {
   const Organization = sequelize.define('Organization', {
     id: {
       type: DataTypes.UUID,
@@ -37,7 +37,7 @@ export default (sequelize) => {
       type: DataTypes.JSONB,
       defaultValue: {},
       validate: {
-        isValidContactInfo(value) {
+        isValidContactInfo(value: any) {
           if (value && typeof value !== 'object') {
             throw new Error('Contact info must be a valid JSON object');
           }
@@ -49,7 +49,7 @@ export default (sequelize) => {
       type: DataTypes.JSONB,
       defaultValue: {},
       validate: {
-        isValidAddress(value) {
+        isValidAddress(value: any) {
           if (value && typeof value !== 'object') {
             throw new Error('Address must be a valid JSON object');
           }
@@ -139,14 +139,14 @@ export default (sequelize) => {
     ],
     
     hooks: {
-      beforeValidate: (organization, options) => {
+      beforeValidate: (organization: any, options: any) => {
         // Ensure name is trimmed
         if (organization.name) {
           organization.name = organization.name.trim();
         }
       },
       
-      beforeCreate: (organization, options) => {
+      beforeCreate: (organization: any, options: any) => {
         // Set default settings if not provided
         if (!organization.settings) {
           organization.settings = Organization.rawAttributes.settings.defaultValue;
@@ -158,7 +158,7 @@ export default (sequelize) => {
     instanceMethods: {
       // Get formatted address
       getFormattedAddress() {
-        const addr = this.address;
+        const addr = (this as any).address;
         if (!addr) return '';
         
         return [addr.street, addr.city, addr.state, addr.zip]
@@ -168,12 +168,12 @@ export default (sequelize) => {
       
       // Check if organization is active
       isActive() {
-        return this.is_active && !this.deleted_at;
+        return this.is_active && !(this as any).deleted_at;
       },
       
       // Get organization timezone
       getTimezone() {
-        return this.settings?.timezone || 'UTC';
+        return (this as any).settings?.timezone || 'UTC';
       }
     },
     
@@ -181,7 +181,7 @@ export default (sequelize) => {
     classMethods: {
       // Find active organizations
       findActive() {
-        return this.findAll({
+        return (this as any).findAll({
           where: {
             is_active: true,
             deleted_at: null
@@ -190,8 +190,8 @@ export default (sequelize) => {
       },
       
       // Find by type
-      findByType(type) {
-        return this.findAll({
+      findByType(type: any) {
+        return (this as any).findAll({
           where: {
             type,
             is_active: true,

@@ -5,7 +5,7 @@ import db from '../models/index.js';
 
 class CalendarService {
   // Generate time slots for a doctor on a specific date
-  async generateDoctorSlots(doctorId, date) {
+  async generateDoctorSlots(doctorId: any, date: any) {
     const dayOfWeek = new Date(date).getDay();
     
     // Get doctor availability for this day
@@ -73,7 +73,7 @@ class CalendarService {
   }
 
   // Get available slots for a doctor on a specific date
-  async getAvailableSlots(doctorId, date, appointmentType = 'regular') {
+  async getAvailableSlots(doctorId: any, date: any, appointmentType = 'regular') {
     // First generate slots if they don't exist
     await this.generateDoctorSlots(doctorId, date);
 
@@ -82,12 +82,12 @@ class CalendarService {
         doctor_id: doctorId,
         date: date,
         is_available: true,
-        [Op.where]: db.sequelize.literal('booked_appointments < max_appointments')
+        [(Op as any).where]: db.sequelize.literal('booked_appointments < max_appointments')
       },
       order: [['start_time', 'ASC']]
     });
 
-    return slots.map(slot => ({
+    return slots.map((slot: any) => ({
       slot_id: slot.id,
       start_time: slot.start_time,
       end_time: slot.end_time,
@@ -97,7 +97,7 @@ class CalendarService {
   }
 
   // Book an appointment slot
-  async bookAppointmentSlot(slotId, appointmentId) {
+  async bookAppointmentSlot(slotId: any, appointmentId: any) {
     const slot = await AppointmentSlot.findByPk(slotId);
     
     if (!slot || !slot.is_available || slot.booked_appointments >= slot.max_appointments) {
@@ -114,7 +114,7 @@ class CalendarService {
   }
 
   // Release an appointment slot
-  async releaseAppointmentSlot(slotId) {
+  async releaseAppointmentSlot(slotId: any) {
     const slot = await AppointmentSlot.findByPk(slotId);
     
     if (!slot) {
@@ -130,7 +130,7 @@ class CalendarService {
   }
 
   // Get doctor's calendar for a date range
-  async getDoctorCalendar(doctorId, startDate, endDate) {
+  async getDoctorCalendar(doctorId: any, startDate: any, endDate: any) {
     const appointments = await Appointment.findAll({
       where: {
         [Op.or]: [
@@ -166,14 +166,14 @@ class CalendarService {
     });
 
     return {
-      appointments: appointments.map(apt => this.formatAppointment(apt)),
-      availability: availability.map(avail => this.formatAvailability(avail)),
-      slots: slots.map(slot => this.formatSlot(slot))
+      appointments: appointments.map((apt: any) => this.formatAppointment(apt)),
+      availability: availability.map((avail: any) => this.formatAvailability(avail)),
+      slots: slots.map((slot: any) => this.formatSlot(slot))
     };
   }
 
   // Get patient's appointments calendar
-  async getPatientCalendar(patientId, startDate, endDate) {
+  async getPatientCalendar(patientId: any, startDate: any, endDate: any) {
     const appointments = await Appointment.findAll({
       where: {
         [Op.or]: [
@@ -205,13 +205,13 @@ class CalendarService {
     });
 
     return {
-      appointments: appointments.map(apt => this.formatAppointment(apt)),
-      events: scheduleEvents.map(event => this.formatScheduleEvent(event))
+      appointments: appointments.map((apt: any) => this.formatAppointment(apt)),
+      events: scheduleEvents.map((event: any) => this.formatScheduleEvent(event))
     };
   }
 
   // Check for appointment conflicts
-  async checkConflicts(doctorId, startTime, endTime, excludeAppointmentId = null) {
+  async checkConflicts(doctorId: any, startTime: any, endTime: any, excludeAppointmentId = null) {
     const conflicts = await Appointment.findAll({
       where: {
         [Op.or]: [
@@ -240,7 +240,7 @@ class CalendarService {
   }
 
   // Reschedule appointment
-  async rescheduleAppointment(appointmentId, newStartTime, newEndTime, newSlotId = null) {
+  async rescheduleAppointment(appointmentId: any, newStartTime: any, newEndTime: any, newSlotId = null) {
     const appointment = await Appointment.findByPk(appointmentId);
     
     if (!appointment) {
@@ -303,7 +303,7 @@ class CalendarService {
   }
 
   // Set doctor availability
-  async setDoctorAvailability(doctorId, availabilityData) {
+  async setDoctorAvailability(doctorId: any, availabilityData: any) {
     const { day_of_week, start_time, end_time, slot_duration, max_appointments_per_slot, break_start_time, break_end_time } = availabilityData;
 
     const [availability, created] = await DoctorAvailability.findOrCreate({
@@ -338,18 +338,18 @@ class CalendarService {
   }
 
   // Helper methods
-  timeStringToMinutes(timeString) {
+  timeStringToMinutes(timeString: any) {
     const [hours, minutes] = timeString.split(':').map(Number);
     return hours * 60 + minutes;
   }
 
-  minutesToTimeString(minutes) {
+  minutesToTimeString(minutes: any) {
     const hours = Math.floor(minutes / 60);
     const mins = minutes % 60;
     return `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`;
   }
 
-  formatAppointment(appointment) {
+  formatAppointment(appointment: any) {
     return {
       id: appointment.id,
       description: appointment.description,
@@ -362,7 +362,7 @@ class CalendarService {
     };
   }
 
-  formatAvailability(availability) {
+  formatAvailability(availability: any) {
     return {
       day_of_week: availability.day_of_week,
       start_time: availability.start_time,
@@ -375,7 +375,7 @@ class CalendarService {
     };
   }
 
-  formatSlot(slot) {
+  formatSlot(slot: any) {
     return {
       id: slot.id,
       date: slot.date,
@@ -387,7 +387,7 @@ class CalendarService {
     };
   }
 
-  formatScheduleEvent(event) {
+  formatScheduleEvent(event: any) {
     return {
       id: event.id,
       type: event.event_type,

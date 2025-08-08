@@ -56,7 +56,7 @@ class VitalsController {
         where: { patient_id: patientId }
       });
 
-      const carePlanIds = carePlans.map(cp => cp.id);
+      const carePlanIds = carePlans.map((cp: any) => cp.id);
 
       const vitals = await Vital.findAll({
         where: { 
@@ -79,7 +79,7 @@ class VitalsController {
         vital_templates: {}
       };
 
-      vitals.forEach(vital => {
+      vitals.forEach((vital: any) => {
         responseData.vitals[vital.id] = {
           basic_info: {
             id: vital.id.toString(),
@@ -156,7 +156,7 @@ class VitalsController {
         limit: 30
       });
 
-      const timeline = events.map(event => {
+      const timeline = events.map((event: any) => {
         const measurements = event.details?.measurements || {};
         return {
           event_id: `evt_vital_${event.id}`,
@@ -169,10 +169,10 @@ class VitalsController {
       });
 
       // Calculate statistics
-      const completedEvents = events.filter(e => e.status === 'completed');
+      const completedEvents = events.filter((e: any) => e.status === 'completed');
       const measurements = completedEvents
-        .map(e => e.details?.measurements)
-        .filter(m => m && Object.keys(m).length > 0);
+        .map((e: any) => e.details?.measurements)
+        .filter((m: any) => m && Object.keys(m).length > 0);
 
       const statistics: Record<string, any> = {};
       if (measurements.length > 0) {
@@ -180,11 +180,11 @@ class VitalsController {
         const keys = Object.keys(measurements[0]);
         keys.forEach(key => {
           const values = measurements
-            .map(m => parseFloat(m[key]))
-            .filter(v => !isNaN(v));
+            .map((m: any) => parseFloat(m[key]))
+            .filter((v: any) => !isNaN(v));
           
           if (values.length > 0) {
-            (statistics as any)[`average_${key}`] = (values.reduce((a, b) => a + b, 0) / values.length).toFixed(1);
+            (statistics as any)[`average_${key}`] = (values.reduce((a: any, b: any) => a + b, 0) / values.length).toFixed(1);
           }
         });
         (statistics as any).trend = 'stable'; // Implement trend calculation

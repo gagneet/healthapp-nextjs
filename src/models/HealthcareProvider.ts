@@ -4,7 +4,7 @@ import { createLogger } from '../middleware/logger.js';
 
 const logger = createLogger(import.meta.url);
 
-export default (sequelize) => {
+export default (sequelize: any) => {
   const HealthcareProvider = sequelize.define('HealthcareProvider', {
     id: {
       type: DataTypes.UUID,
@@ -239,18 +239,18 @@ export default (sequelize) => {
     ],
     
     hooks: {
-      beforeValidate: (provider, options) => {
+      beforeValidate: (provider: any, options: any) => {
         // Normalize specialties to lowercase
         if (provider.specialties) {
-          provider.specialties = provider.specialties.map(s => s.toLowerCase().trim());
+          provider.specialties = provider.specialties.map((s: any) => s.toLowerCase().trim());
         }
         
         if (provider.sub_specialties) {
-          provider.sub_specialties = provider.sub_specialties.map(s => s.toLowerCase().trim());
+          provider.sub_specialties = provider.sub_specialties.map((s: any) => s.toLowerCase().trim());
         }
       },
       
-      beforeCreate: (provider, options) => {
+      beforeCreate: (provider: any, options: any) => {
         // Set default availability if not provided
         if (!provider.availability_schedule) {
           provider.availability_schedule = HealthcareProvider.rawAttributes.availability_schedule.defaultValue;
@@ -262,7 +262,7 @@ export default (sequelize) => {
         }
       },
       
-      afterUpdate: (provider, options) => {
+      afterUpdate: (provider: any, options: any) => {
         // Log verification status changes for audit
         if (provider.changed('is_verified')) {
           logger.info(`Provider ${provider.id} verification status changed to: ${provider.is_verified}`);
@@ -273,39 +273,39 @@ export default (sequelize) => {
     // Instance methods
     instanceMethods: {
       // Check if provider is available on a given day
-      isAvailableOnDay(dayOfWeek) {
+      isAvailableOnDay(dayOfWeek: any) {
         const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
         const day = days[dayOfWeek];
-        return this.availability_schedule?.[day]?.available || false;
+        return (this as any).availability_schedule?.[day]?.available || false;
       },
       
       // Get availability for a specific day
-      getDayAvailability(dayOfWeek) {
+      getDayAvailability(dayOfWeek: any) {
         const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
         const day = days[dayOfWeek];
-        return this.availability_schedule?.[day] || { available: false };
+        return (this as any).availability_schedule?.[day] || { available: false };
       },
       
       // Check if provider accepts new patients
       acceptsNewPatients() {
-        return this.is_verified && this.total_patients < 1000; // Configurable limit
+        return (this as any).is_verified && (this as any).total_patients < 1000; // Configurable limit
       },
       
       // Get primary specialty
       getPrimarySpecialty() {
-        return this.specialties?.[0] || 'General Practice';
+        return (this as any).specialties?.[0] || 'General Practice';
       },
       
       // Check if provider has specialty
-      hasSpecialty(specialty) {
-        return this.specialties?.some(s => 
+      hasSpecialty(specialty: any) {
+        return (this as any).specialties?.some((s: any) => 
           s.toLowerCase().includes(specialty.toLowerCase())
         );
       },
       
       // Get formatted practice address
       getFormattedAddress() {
-        const addr = this.practice_address;
+        const addr = (this as any).practice_address;
         if (!addr) return '';
         
         return [addr.street, addr.city, addr.state, addr.zip]
@@ -316,7 +316,7 @@ export default (sequelize) => {
       // Calculate workload percentage
       getWorkloadPercentage() {
         const maxPatients = 1000; // Configurable
-        return Math.round((this.total_patients / maxPatients) * 100);
+        return Math.round(((this as any).total_patients / maxPatients) * 100);
       }
     },
     
@@ -324,7 +324,7 @@ export default (sequelize) => {
     classMethods: {
       // Find verified providers
       findVerified() {
-        return this.findAll({
+        return (this as any).findAll({
           where: {
             is_verified: true,
             deleted_at: null
@@ -333,8 +333,8 @@ export default (sequelize) => {
       },
       
       // Find by specialty
-      findBySpecialty(specialty) {
-        return this.findAll({
+      findBySpecialty(specialty: any) {
+        return (this as any).findAll({
           where: {
             specialties: {
               [sequelize.Sequelize.Op.contains]: [specialty.toLowerCase()]
@@ -347,7 +347,7 @@ export default (sequelize) => {
       
       // Find available providers
       findAvailable() {
-        return this.findAll({
+        return (this as any).findAll({
           where: {
             is_verified: true,
             deleted_at: null
@@ -361,8 +361,8 @@ export default (sequelize) => {
       },
       
       // Search providers
-      searchProviders(query) {
-        return this.findAll({
+      searchProviders(query: any) {
+        return (this as any).findAll({
           include: [{
             model: sequelize.models.User,
             as: 'user',

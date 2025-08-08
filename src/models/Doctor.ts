@@ -5,7 +5,7 @@ import { PROVIDER_CAPABILITIES } from '../config/enums.js';
 
 const logger = createLogger(import.meta.url);
 
-export default (sequelize) => {
+export default (sequelize: any) => {
   const Doctor = sequelize.define('Doctor', {
     id: {
       type: DataTypes.UUID,
@@ -291,29 +291,29 @@ export default (sequelize) => {
     ],
     
     hooks: {
-      beforeValidate: (doctor, options) => {
+      beforeValidate: (doctor: any, options: any) => {
         // Normalize arrays to lowercase
         if (doctor.specialties) {
-          doctor.specialties = doctor.specialties.map(s => s.toLowerCase().trim());
+          doctor.specialties = doctor.specialties.map((s: any) => s.toLowerCase().trim());
         }
         
         if (doctor.sub_specialties) {
-          doctor.sub_specialties = doctor.sub_specialties.map(s => s.toLowerCase().trim());
+          doctor.sub_specialties = doctor.sub_specialties.map((s: any) => s.toLowerCase().trim());
         }
         
         if (doctor.board_certifications) {
-          doctor.board_certifications = doctor.board_certifications.map(c => c.toLowerCase().trim());
+          doctor.board_certifications = doctor.board_certifications.map((c: any) => c.toLowerCase().trim());
         }
       },
       
-      beforeCreate: (doctor, options) => {
+      beforeCreate: (doctor: any, options: any) => {
         // Set default capabilities if not provided
         if (!doctor.capabilities || doctor.capabilities.length === 0) {
           doctor.capabilities = Doctor.rawAttributes.capabilities.defaultValue;
         }
       },
       
-      afterUpdate: (doctor, options) => {
+      afterUpdate: (doctor: any, options: any) => {
         if (doctor.changed('is_verified')) {
           logger.info(`Doctor ${doctor.id} verification status changed to: ${doctor.is_verified}`);
         }
@@ -322,7 +322,7 @@ export default (sequelize) => {
   });
   
   // Instance methods
-  Doctor.prototype.hasCapability = function(capability) {
+  Doctor.prototype.hasCapability = function(capability: any) {
     return this.capabilities.includes(capability);
   };
   
@@ -346,8 +346,8 @@ export default (sequelize) => {
     return this.specialties?.[0] || 'General Practice';
   };
   
-  Doctor.prototype.hasSpecialty = function(specialty) {
-    return this.specialties?.some(s => 
+  Doctor.prototype.hasSpecialty = function(specialty: any) {
+    return this.specialties?.some((s: any) => 
       s.toLowerCase().includes(specialty.toLowerCase())
     );
   };
@@ -356,8 +356,8 @@ export default (sequelize) => {
     if (!specialty) {
       return this.board_certifications.length > 0;
     }
-    return this.board_certifications.some(cert => 
-      cert.toLowerCase().includes(specialty.toLowerCase())
+    return this.board_certifications.some((cert: any) => 
+      (cert as any).toLowerCase().includes((specialty as any).toLowerCase())
     );
   };
   

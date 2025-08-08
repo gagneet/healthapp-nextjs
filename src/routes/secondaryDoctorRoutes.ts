@@ -15,10 +15,10 @@ const validateAssignmentType = body('assignmentType')
   .isIn(['specialist', 'substitute', 'transferred'])
   .withMessage('Assignment type must be specialist, substitute, or transferred');
 
-const validateUUID = (field) => 
+const validateUUID = (field: any) => 
   param(field).isUUID().withMessage(`${field} must be a valid UUID`);
 
-const validateOptionalUUID = (field) =>
+const validateOptionalUUID = (field: any) =>
   body(field).optional().isUUID().withMessage(`${field} must be a valid UUID`);
 
 const validatePermissions = body('permissions')
@@ -42,7 +42,7 @@ router.post('/patients/:patientId/secondary-doctors',
 );
 
 router.get('/patients/:patientId/secondary-doctors',
-  authorize([USER_CATEGORIES.DOCTOR, USER_CATEGORIES.PROVIDER_ADMIN]),
+  authorize([USER_CATEGORIES.DOCTOR, (USER_CATEGORIES as any).PROVIDER_ADMIN]),
   validateUUID('patientId'),
   query('includeInactive').optional().isBoolean().withMessage('Include inactive must be boolean'),
   SecondaryDoctorController.getPatientDoctorAssignments
@@ -50,7 +50,7 @@ router.get('/patients/:patientId/secondary-doctors',
 
 // Assignment Management Routes
 router.get('/assignments/:assignmentId',
-  authorize([USER_CATEGORIES.DOCTOR, USER_CATEGORIES.PROVIDER_ADMIN]),
+  authorize([USER_CATEGORIES.DOCTOR, (USER_CATEGORIES as any).PROVIDER_ADMIN]),
   validateUUID('assignmentId'),
   SecondaryDoctorController.getAssignmentDetails
 );
@@ -91,7 +91,7 @@ router.delete('/assignments/:assignmentId',
 
 // Doctor Access Routes  
 router.get('/doctors/:doctorId/patient-access/:patientId',
-  authorize([USER_CATEGORIES.DOCTOR, USER_CATEGORIES.PROVIDER_ADMIN]),
+  authorize([USER_CATEGORIES.DOCTOR, (USER_CATEGORIES as any).PROVIDER_ADMIN]),
   validateUUID('doctorId'),
   validateUUID('patientId'),
   SecondaryDoctorController.checkDoctorPatientAccess

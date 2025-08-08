@@ -3,7 +3,7 @@
 import bcrypt from 'bcryptjs';
 
 export default {
-  up: async (queryInterface, Sequelize) => {
+  up: async (queryInterface: any, Sequelize: any) => {
     const transaction = await queryInterface.sequelize.transaction();
     
     try {
@@ -270,7 +270,7 @@ export default {
     }
   },
 
-  down: async (queryInterface, Sequelize) => {
+  down: async (queryInterface: any, Sequelize: any) => {
     const transaction = await queryInterface.sequelize.transaction();
     
     try {

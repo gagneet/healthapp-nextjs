@@ -191,26 +191,26 @@ class SubscriptionController {
         }
       });
     } catch (error) {
-      if (error.message.includes('not found')) {
+      if ((error as any).message.includes('not found')) {
         return res.status(404).json({
           status: false,
           statusCode: 404,
           payload: {
             error: {
               status: 'NOT_FOUND',
-              message: error.message
+              message: (error as any).message
             }
           }
         });
       }
-      if (error.message.includes('Payment processing failed')) {
+      if ((error as any).message.includes('Payment processing failed')) {
         return res.status(402).json({
           status: false,
           statusCode: 402,
           payload: {
             error: {
               status: 'PAYMENT_REQUIRED',
-              message: error.message
+              message: (error as any).message
             }
           }
         });
@@ -241,7 +241,7 @@ class SubscriptionController {
 
       const whereClause = { patient_id: targetPatientId };
       if (status) {
-        whereClause.status = status.toUpperCase();
+        (whereClause as any).status = (status as any).toUpperCase();
       }
 
       const subscriptions = await PatientSubscription.findAll({
@@ -296,7 +296,7 @@ class SubscriptionController {
 
       const whereClause = { provider_id: targetProviderId };
       if (status) {
-        whereClause.status = status.toUpperCase();
+        (whereClause as any).status = (status as any).toUpperCase();
       }
 
       const subscriptions = await PatientSubscription.findAll({
@@ -349,14 +349,14 @@ class SubscriptionController {
         }
       });
     } catch (error) {
-      if (error.message === 'Subscription not found') {
+      if ((error as any).message === 'Subscription not found') {
         return res.status(404).json({
           status: false,
           statusCode: 404,
           payload: {
             error: {
               status: 'NOT_FOUND',
-              message: error.message
+              message: (error as any).message
             }
           }
         });
@@ -380,14 +380,14 @@ class SubscriptionController {
         }
       });
     } catch (error) {
-      if (error.message.includes('not found') || error.message.includes('cannot be reactivated')) {
+      if ((error as any).message.includes('not found') || (error as any).message.includes('cannot be reactivated')) {
         return res.status(400).json({
           status: false,
           statusCode: 400,
           payload: {
             error: {
               status: 'VALIDATION_ERROR',
-              message: error.message
+              message: (error as any).message
             }
           }
         });
@@ -432,14 +432,14 @@ class SubscriptionController {
         }
       });
     } catch (error) {
-      if (error.message.includes('not found') || error.message.includes('Invalid')) {
+      if ((error as any).message.includes('not found') || (error as any).message.includes('Invalid')) {
         return res.status(400).json({
           status: false,
           statusCode: 400,
           payload: {
             error: {
               status: 'VALIDATION_ERROR',
-              message: error.message
+              message: (error as any).message
             }
           }
         });
@@ -502,14 +502,14 @@ class SubscriptionController {
         }
       });
     } catch (error) {
-      if (error.message === 'Payment method not found') {
+      if ((error as any).message === 'Payment method not found') {
         return res.status(404).json({
           status: false,
           statusCode: 404,
           payload: {
             error: {
               status: 'NOT_FOUND',
-              message: error.message
+              message: (error as any).message
             }
           }
         });
@@ -535,27 +535,27 @@ class SubscriptionController {
         }
       });
     } catch (error) {
-      if (error.message.includes('not found')) {
+      if ((error as any).message.includes('not found')) {
         return res.status(404).json({
           status: false,
           statusCode: 404,
           payload: {
             error: {
               status: 'NOT_FOUND',
-              message: error.message
+              message: (error as any).message
             }
           }
         });
       }
-      if (error.code && error.code.startsWith('card_')) {
+      if ((error as any).code && (error as any).code.startsWith('card_')) {
         return res.status(402).json({
           status: false,
           statusCode: 402,
           payload: {
             error: {
               status: 'PAYMENT_FAILED',
-              message: error.message,
-              code: error.code
+              message: (error as any).message,
+              code: (error as any).code
             }
           }
         });
@@ -586,7 +586,7 @@ class SubscriptionController {
 
       const whereClause = { patient_id: targetPatientId };
       if (status) {
-        whereClause.status = status;
+        (whereClause as any).status = status;
       }
 
       const payments = await Payment.findAll({
@@ -631,8 +631,8 @@ class SubscriptionController {
       try {
         event = stripe.webhooks.constructEvent(req.body, sig, endpointSecret);
       } catch (err) {
-        console.log(`Webhook signature verification failed.`, err.message);
-        return res.status(400).send(`Webhook Error: ${err.message}`);
+        console.log(`Webhook signature verification failed.`, (err as any).message);
+        return res.status(400).send(`Webhook Error: ${(err as any).message}`);
       }
 
       await SubscriptionService.handleStripeWebhook(event);

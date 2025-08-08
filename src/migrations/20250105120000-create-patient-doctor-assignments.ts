@@ -2,7 +2,7 @@
 'use strict';
 
 export default {
-  up: async (queryInterface, Sequelize) => {
+  up: async (queryInterface: any, Sequelize: any) => {
     // Check if patient_doctor_assignments table already exists
     const tableExists = await queryInterface.tableExists('patient_doctor_assignments');
     if (tableExists) {
@@ -185,7 +185,7 @@ export default {
       try {
         await queryInterface.addIndex('patient_doctor_assignments', index.fields, { name: index.name });
       } catch (error) {
-        if (!error.message.includes('already exists')) throw error;
+        if (!(error as any).message.includes('already exists')) throw (error as any);
       }
     }
     
@@ -201,7 +201,7 @@ export default {
         name: 'unique_primary_doctor_per_patient'
       });
     } catch (error) {
-      if (!error.message.includes('already exists')) throw error;
+      if (!(error as any).message.includes('already exists')) throw (error as any);
     }
 
     // Add check constraints (with idempotent checks)
@@ -217,7 +217,7 @@ export default {
         name: 'valid_assignment_type'
       });
     } catch (error) {
-      if (!error.message.includes('already exists')) throw error;
+      if (!(error as any).message.includes('already exists')) throw (error as any);
     }
 
     try {
@@ -232,7 +232,7 @@ export default {
         name: 'valid_consent_status'
       });
     } catch (error) {
-      if (!error.message.includes('already exists')) throw error;
+      if (!(error as any).message.includes('already exists')) throw (error as any);
     }
 
     try {
@@ -252,11 +252,11 @@ export default {
         name: 'valid_consent_method'
       });
     } catch (error) {
-      if (!error.message.includes('already exists')) throw error;
+      if (!(error as any).message.includes('already exists')) throw (error as any);
     }
   },
 
-  down: async (queryInterface, Sequelize) => {
+  down: async (queryInterface: any, Sequelize: any) => {
     await queryInterface.dropTable('patient_doctor_assignments');
   }
 };

@@ -1,7 +1,7 @@
 // src/models/DashboardMetric.js
 import { DataTypes } from 'sequelize';
 
-export default (sequelize) => {
+export default (sequelize: any) => {
   const DashboardMetric = sequelize.define('DashboardMetric', {
     id: {
       type: DataTypes.UUID,

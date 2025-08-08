@@ -2,7 +2,7 @@
 import { DataTypes } from 'sequelize';
 import { EVENT_TYPES, EVENT_STATUS, PRIORITY_LEVELS } from '../config/enums.js';
 
-export default (sequelize) => {
+export default (sequelize: any) => {
   const ScheduledEvent = sequelize.define('ScheduledEvent', {
     id: {
       type: DataTypes.UUID,
@@ -154,51 +154,51 @@ export default (sequelize) => {
     instanceMethods: {
       // Check if event is due
       isDue() {
-        return new Date() >= new Date(this.scheduled_for);
+        return new Date() >= new Date((this as any).scheduled_for);
       },
       
       // Check if event is overdue
       isOverdue() {
-        return new Date() > new Date(this.scheduled_for) && 
-               ![EVENT_STATUS.COMPLETED, EVENT_STATUS.CANCELLED].includes(this.status);
+        return new Date() > new Date((this as any).scheduled_for) && 
+               ![EVENT_STATUS.COMPLETED, EVENT_STATUS.CANCELLED].includes((this as any).status);
       },
       
       // Mark as completed
       async markCompleted(completedBy = null) {
-        this.status = EVENT_STATUS.COMPLETED;
-        this.completed_at = new Date();
+        (this as any).status = EVENT_STATUS.COMPLETED;
+        (this as any).completed_at = new Date();
         if (completedBy) {
-          this.completed_by = completedBy;
+          (this as any).completed_by = completedBy;
         }
-        await this.save();
+        await (this as any).save();
       },
       
       // Mark as missed
       async markMissed() {
-        this.status = EVENT_STATUS.MISSED;
-        await this.save();
+        (this as any).status = EVENT_STATUS.MISSED;
+        await (this as any).save();
       },
       
       // Cancel event
       async cancel() {
-        this.status = EVENT_STATUS.CANCELLED;
-        await this.save();
+        (this as any).status = EVENT_STATUS.CANCELLED;
+        await (this as any).save();
       },
       
       // Check if high priority
       isHighPriority() {
-        return [PRIORITY_LEVELS.HIGH, PRIORITY_LEVELS.CRITICAL].includes(this.priority);
+        return [PRIORITY_LEVELS.HIGH, PRIORITY_LEVELS.CRITICAL].includes((this as any).priority);
       }
     },
     
     // Class methods
     classMethods: {
       // Find upcoming events for patient
-      findUpcomingForPatient(patientId, hours = 24) {
+      findUpcomingForPatient(patientId: any, hours = 24) {
         const now = new Date();
         const endTime = new Date(now.getTime() + hours * 60 * 60 * 1000);
         
-        return this.findAll({
+        return (this as any).findAll({
           where: {
             patient_id: patientId,
             scheduled_for: {
@@ -215,7 +215,7 @@ export default (sequelize) => {
       
       // Find overdue events
       findOverdue() {
-        return this.findAll({
+        return (this as any).findAll({
           where: {
             scheduled_for: {
               [sequelize.Sequelize.Op.lt]: new Date()
@@ -229,8 +229,8 @@ export default (sequelize) => {
       },
       
       // Find events by type
-      findByType(eventType) {
-        return this.findAll({
+      findByType(eventType: any) {
+        return (this as any).findAll({
           where: {
             event_type: eventType,
             deleted_at: null
@@ -240,7 +240,7 @@ export default (sequelize) => {
       
       // Find high priority events
       findHighPriority() {
-        return this.findAll({
+        return (this as any).findAll({
           where: {
             priority: {
               [sequelize.Sequelize.Op.in]: [PRIORITY_LEVELS.HIGH, PRIORITY_LEVELS.CRITICAL]

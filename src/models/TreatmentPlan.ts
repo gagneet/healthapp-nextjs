@@ -3,7 +3,7 @@ import crypto from 'crypto';
 import { DataTypes } from 'sequelize';
 import { PLAN_TYPES, CARE_PLAN_STATUS, PRIORITY_LEVEL } from '../config/enums.js';
 
-export default (sequelize) => {
+export default (sequelize: any) => {
   const TreatmentPlan = sequelize.define('TreatmentPlan', {
     id: {
       type: DataTypes.UUID,
@@ -277,7 +277,7 @@ export default (sequelize) => {
     ],
     
     hooks: {
-      beforeValidate: (plan, options) => {
+      beforeValidate: (plan: any, options: any) => {
         // Auto-generate title if not provided
         if (!plan.title && plan.primary_diagnosis) {
           plan.title = `Treatment for ${plan.primary_diagnosis}`;
@@ -291,7 +291,7 @@ export default (sequelize) => {
         }
       },
       
-      beforeCreate: (plan, options) => {
+      beforeCreate: (plan: any, options: any) => {
         // Set default follow-up date (1 week from start)
         if (plan.follow_up_required && !plan.follow_up_date) {
           const followUpDate = new Date(plan.start_date);
@@ -300,7 +300,7 @@ export default (sequelize) => {
         }
       },
       
-      afterUpdate: (plan, options) => {
+      afterUpdate: (plan: any, options: any) => {
         // Auto-complete if end date passed
         if (plan.end_date && new Date() > plan.end_date && plan.status === 'ACTIVE') {
           plan.status = 'COMPLETED';
@@ -331,7 +331,7 @@ export default (sequelize) => {
     return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   };
   
-  TreatmentPlan.prototype.addProgressNote = function(note, authorId) {
+  TreatmentPlan.prototype.addProgressNote = function(note: any, authorId: any) {
     if (!this.progress_notes) this.progress_notes = [];
     this.progress_notes.push({
       id: crypto.randomUUID(),
@@ -343,7 +343,7 @@ export default (sequelize) => {
     return this.save();
   };
   
-  TreatmentPlan.prototype.updateProgress = function(percentage) {
+  TreatmentPlan.prototype.updateProgress = function(percentage: any) {
     this.completion_percentage = Math.min(100, Math.max(0, percentage));
     if (this.completion_percentage === 100) {
       this.status = 'COMPLETED';

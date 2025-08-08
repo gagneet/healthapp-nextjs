@@ -1,7 +1,7 @@
 // src/models/VitalRequirement.js
 import { DataTypes } from 'sequelize';
 
-export default (sequelize) => {
+export default (sequelize: any) => {
   const VitalRequirement = sequelize.define('VitalRequirement', {
     id: {
       type: DataTypes.UUID,
@@ -103,7 +103,7 @@ export default (sequelize) => {
         const now = new Date();
         const baseDate = lastReading ? new Date(lastReading) : now;
         
-        switch (this.frequency) {
+        switch ((this as any).frequency) {
           case 'hourly':
             return new Date(baseDate.getTime() + 60 * 60 * 1000);
           case 'every_4_hours':
@@ -133,8 +133,8 @@ export default (sequelize) => {
     // Class methods
     classMethods: {
       // Find by care plan
-      findByCarePlan(carePlanId) {
-        return this.findAll({
+      findByCarePlan(carePlanId: any) {
+        return (this as any).findAll({
           where: {
             care_plan_id: carePlanId,
             deleted_at: null
@@ -145,7 +145,7 @@ export default (sequelize) => {
       
       // Find critical requirements
       findCritical() {
-        return this.findAll({
+        return (this as any).findAll({
           where: {
             is_critical: true,
             deleted_at: null

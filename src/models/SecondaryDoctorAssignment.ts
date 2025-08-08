@@ -1,7 +1,7 @@
 // src/models/SecondaryDoctorAssignment.js - Secondary Doctor Assignment Model
 import { DataTypes } from 'sequelize';
 
-export default (sequelize) => {
+export default (sequelize: any) => {
   const SecondaryDoctorAssignment = sequelize.define('SecondaryDoctorAssignment', {
     id: {
       type: DataTypes.UUID,
@@ -186,27 +186,27 @@ export default (sequelize) => {
     
     validate: {
       mustHaveSecondaryProvider() {
-        if (!this.secondary_doctor_id && !this.secondary_hsp_id) {
+        if (!(this as any).secondary_doctor_id && !(this as any).secondary_hsp_id) {
           throw new Error('Assignment must have either secondary_doctor_id or secondary_hsp_id');
         }
       },
       
       validateConsentLogic() {
         // Same provider = no consent required
-        if (this.primary_doctor_provider_id && 
-            this.secondary_doctor_provider_id &&
-            this.primary_doctor_provider_id === this.secondary_doctor_provider_id) {
-          this.consent_required = false;
-          this.consent_status = 'granted';
-          this.access_granted = true;
+        if ((this as any).primary_doctor_provider_id && 
+            (this as any).secondary_doctor_provider_id &&
+            (this as any).primary_doctor_provider_id === (this as any).secondary_doctor_provider_id) {
+          (this as any).consent_required = false;
+          (this as any).consent_status = 'granted';
+          (this as any).access_granted = true;
           
-          if (!this.access_granted_at) {
-            this.access_granted_at = new Date();
+          if (!(this as any).access_granted_at) {
+            (this as any).access_granted_at = new Date();
           }
-        } else if (!this.primary_doctor_provider_id || !this.secondary_doctor_provider_id) {
+        } else if (!(this as any).primary_doctor_provider_id || !(this as any).secondary_doctor_provider_id) {
           // Different or no provider = consent required
-          this.consent_required = true;
-          if (this.consent_status === 'pending' && this.access_granted) {
+          (this as any).consent_required = true;
+          if ((this as any).consent_status === 'pending' && (this as any).access_granted) {
             throw new Error('Cannot grant access without consent for different providers');
           }
         }
@@ -214,7 +214,7 @@ export default (sequelize) => {
     },
     
     hooks: {
-      beforeValidate: (assignment) => {
+      beforeValidate: (assignment: any) => {
         // Set consent expiry if not already set
         if (assignment.consent_status === 'granted' && !assignment.consent_expires_at) {
           const expiryDate = new Date();
@@ -223,12 +223,12 @@ export default (sequelize) => {
         }
       },
       
-      beforeCreate: (assignment) => {
+      beforeCreate: (assignment: any) => {
         // Auto-determine provider context and consent requirements
         assignment.validateConsentLogic();
       },
       
-      beforeUpdate: (assignment) => {
+      beforeUpdate: (assignment: any) => {
         // Re-validate consent logic on updates
         assignment.validateConsentLogic();
       }

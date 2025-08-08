@@ -732,7 +732,7 @@ class AdminController {
         },
         
         // Clinics
-        clinics: doctor.clinics ? doctor.clinics.map(clinic => ({
+        clinics: doctor.clinics ? doctor.clinics.map((clinic: any) => ({
           id: clinic.id,
           name: clinic.name,
           address: clinic.address,

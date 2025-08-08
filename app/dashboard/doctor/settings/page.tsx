@@ -78,7 +78,7 @@ export default function DoctorSettingsPage() {
   const fetchSettings = async () => {
     try {
       const response = await apiRequest.get('/auth/enhanced/profile')
-      if (response.status && response.payload?.data) {
+      if ((response as any).status && (response as any).payload?.data) {
         // Initialize with default settings if not exists
         const defaultSettings: UserSettings = {
           notifications: {
@@ -107,7 +107,7 @@ export default function DoctorSettingsPage() {
             session_timeout: 24
           }
         }
-        setSettings(response.payload.data?.settings || defaultSettings)
+        setSettings((response as any).payload.data?.settings || defaultSettings)
       }
     } catch (error) {
       console.error('Failed to fetch settings:', error)
@@ -121,8 +121,8 @@ export default function DoctorSettingsPage() {
     try {
       // Basic implementation since enhanced auth is not available
       const response = await apiRequest.get('/auth/sessions')
-      if (response.status && response.payload?.data) {
-        setActiveSessions(response.payload.data.sessions || [])
+      if ((response as any).status && (response as any).payload?.data) {
+        setActiveSessions((response as any).payload.data.sessions || [])
       }
     } catch (error) {
       console.error('Failed to fetch sessions:', error)
@@ -172,7 +172,7 @@ export default function DoctorSettingsPage() {
 
     try {
       const response = await apiRequest.put('/doctors/settings', updatedSettings)
-      if (response.status) {
+      if ((response as any).status) {
         setSettings(updatedSettings)
         toast.success('Settings updated successfully')
       }
@@ -199,7 +199,7 @@ export default function DoctorSettingsPage() {
         newPassword: passwordData.newPassword
       })
 
-      if (response.status) {
+      if ((response as any).status) {
         toast.success('Password changed successfully')
         setPasswordData({
           currentPassword: '',
@@ -207,7 +207,7 @@ export default function DoctorSettingsPage() {
           confirmPassword: ''
         })
       } else {
-        toast.error(response.payload?.message || 'Password change failed')
+        toast.error((response as any).payload?.message || 'Password change failed')
       }
     } catch (error) {
       console.error('Password change error:', error)
@@ -218,7 +218,7 @@ export default function DoctorSettingsPage() {
   const revokeSession = async (sessionId: string) => {
     try {
       const response = await apiRequest.delete(`/auth/enhanced/sessions/${sessionId}`)
-      if (response.status) {
+      if ((response as any).status) {
         setActiveSessions(prev => prev.filter(s => s.sessionId !== sessionId))
         toast.success('Session revoked successfully')
       }

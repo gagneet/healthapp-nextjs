@@ -4,7 +4,7 @@ import { createLogger } from '../middleware/logger.js';
 
 const logger = createLogger(import.meta.url);
 
-export default (sequelize) => {
+export default (sequelize: any) => {
   const MedicalDevice = sequelize.define('MedicalDevice', {
     id: {
       type: DataTypes.UUID,
@@ -411,7 +411,7 @@ export default (sequelize) => {
     ],
     
     hooks: {
-      beforeCreate: (device, options) => {
+      beforeCreate: (device: any, options: any) => {
         // Set activation date if device is active
         if (device.status === 'active' && !device.activation_date) {
           device.activation_date = new Date();
@@ -425,7 +425,7 @@ export default (sequelize) => {
         }
       },
       
-      beforeUpdate: (device, options) => {
+      beforeUpdate: (device: any, options: any) => {
         // Update last sync when connection status changes
         if (device.changed('is_connected') && device.is_connected) {
           device.last_sync = new Date();
@@ -440,14 +440,14 @@ export default (sequelize) => {
   });
   
   // Class methods
-  MedicalDevice.findByPatient = async function(patientId, deviceType = null) {
+  MedicalDevice.findByPatient = async function(patientId: any, deviceType = null) {
     const where = {
       patient_id: patientId,
       status: 'active'
     };
     
     if (deviceType) {
-      where.device_type = deviceType;
+      (where as any).device_type = deviceType;
     }
     
     return await this.findAll({
@@ -463,7 +463,7 @@ export default (sequelize) => {
     };
     
     if (organizationId) {
-      where.organization_id = organizationId;
+      (where as any).organization_id = organizationId;
     }
     
     return await this.findAll({
@@ -539,7 +539,7 @@ export default (sequelize) => {
     return this.save();
   };
   
-  MedicalDevice.prototype.updateBatteryLevel = function(level) {
+  MedicalDevice.prototype.updateBatteryLevel = function(level: any) {
     this.battery_level = Math.max(0, Math.min(100, level));
     
     // Create alert if battery is low
@@ -551,7 +551,7 @@ export default (sequelize) => {
     return this.save();
   };
   
-  MedicalDevice.prototype.scheduleMaintenance = function(date, notes) {
+  MedicalDevice.prototype.scheduleMaintenance = function(date: any, notes: any) {
     this.next_maintenance = date;
     if (notes) {
       this.maintenance_notes = notes;
@@ -560,7 +560,7 @@ export default (sequelize) => {
     return this.save();
   };
   
-  MedicalDevice.prototype.completeMaintenance = function(notes) {
+  MedicalDevice.prototype.completeMaintenance = function(notes: any) {
     this.last_maintenance = new Date();
     
     // Schedule next maintenance (6 months default)
@@ -575,7 +575,7 @@ export default (sequelize) => {
     return this.save();
   };
   
-  MedicalDevice.prototype.assignToPatient = function(patientId, assignedBy, assignerType) {
+  MedicalDevice.prototype.assignToPatient = function(patientId: any, assignedBy: any, assignerType: any) {
     this.patient_id = patientId;
     this.assigned_date = new Date();
     

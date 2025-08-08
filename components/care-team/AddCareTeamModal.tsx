@@ -106,8 +106,8 @@ export default function AddCareTeamModal({
         permissions
       })
 
-      if (response.status) {
-        setConsentId(response.payload.data.consent_id)
+      if ((response as any).status) {
+        setConsentId((response as any).payload.data.consent_id)
         setStep('verify')
         toast.success('OTP sent to patient mobile number')
       } else {
@@ -132,12 +132,12 @@ export default function AddCareTeamModal({
         doctor_id: selectedDoctor.id
       })
 
-      if (response.status) {
+      if ((response as any).status) {
         setStep('success')
         toast.success('Care team member added successfully!')
         onSuccess?.()
       } else {
-        toast.error(response.payload?.error?.message || 'Invalid OTP')
+        toast.error((response as any).payload?.error?.message || 'Invalid OTP')
       }
     } catch (error) {
       toast.error('Failed to verify OTP')

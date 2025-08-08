@@ -339,7 +339,7 @@ class ConsentController {
       'OTP_INVALID_STATE': 'OTP is in invalid state. Please request a new one.'
     };
 
-    return errorMessages[errorCode] || 'OTP verification failed. Please try again.';
+    return (errorMessages as any)[errorCode] || 'OTP verification failed. Please try again.';
   }
 
   /**
@@ -351,7 +351,7 @@ class ConsentController {
       const { query, type = 'both', limit = 10 } = req.query;
       const limitNum = parseInt(String(limit)) || 10;
 
-      if (!query || query.trim().length < 2) {
+      if (!query || (query as any).trim().length < 2) {
         throw new ValidationError('Search query must be at least 2 characters');
       }
 
@@ -409,18 +409,18 @@ class ConsentController {
       res.status(200).json(ResponseFormatter.success(
         {
           doctors: results.doctors.map(doctor => ({
-            id: doctor.id,
-            name: `${doctor.user.first_name} ${doctor.user.last_name}`,
-            email: doctor.user.email,
-            speciality: doctor.speciality?.name || 'General',
-            license: doctor.medical_license_number,
+            id: (doctor as any).id,
+            name: `${(doctor as any).user.first_name} ${(doctor as any).user.last_name}`,
+            email: (doctor as any).user.email,
+            speciality: (doctor as any).speciality?.name || 'General',
+            license: (doctor as any).medical_license_number,
             type: 'doctor'
           })),
           hsps: results.hsps.map(hsp => ({
-            id: hsp.id,
-            name: `${hsp.user.first_name} ${hsp.user.last_name}`,
-            email: hsp.user.email,
-            license: hsp.license_number,
+            id: (hsp as any).id,
+            name: `${(hsp as any).user.first_name} ${(hsp as any).user.last_name}`,
+            email: (hsp as any).user.email,
+            license: (hsp as any).license_number,
             type: 'hsp'
           }))
         },

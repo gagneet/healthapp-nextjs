@@ -1,7 +1,7 @@
 // src/models/TreatmentDatabase.js - Treatment options database
 import { DataTypes } from 'sequelize';
 
-export default (sequelize) => {
+export default (sequelize: any) => {
   const TreatmentDatabase = sequelize.define('TreatmentDatabase', {
     id: {
       type: DataTypes.UUID,
@@ -167,11 +167,11 @@ export default (sequelize) => {
   });
 
   // Instance methods
-  TreatmentDatabase.prototype.isApplicableFor = function(condition) {
+  TreatmentDatabase.prototype.isApplicableFor = function(condition: any) {
     return this.applicable_conditions.includes(condition);
   };
 
-  TreatmentDatabase.prototype.addCondition = function(condition) {
+  TreatmentDatabase.prototype.addCondition = function(condition: any) {
     if (!this.applicable_conditions.includes(condition)) {
       this.applicable_conditions.push(condition);
       return this.save();
@@ -179,7 +179,7 @@ export default (sequelize) => {
     return Promise.resolve(this);
   };
 
-  TreatmentDatabase.prototype.removeCondition = function(condition) {
+  TreatmentDatabase.prototype.removeCondition = function(condition: any) {
     const index = this.applicable_conditions.indexOf(condition);
     if (index > -1) {
       this.applicable_conditions.splice(index, 1);
@@ -189,7 +189,7 @@ export default (sequelize) => {
   };
 
   // Class methods
-  TreatmentDatabase.findByCondition = function(condition) {
+  TreatmentDatabase.findByCondition = function(condition: any) {
     return this.findAll({
       where: {
         applicable_conditions: {
@@ -201,7 +201,7 @@ export default (sequelize) => {
     });
   };
 
-  TreatmentDatabase.findByType = function(treatmentType) {
+  TreatmentDatabase.findByType = function(treatmentType: any) {
     return this.findAll({
       where: {
         treatment_type: treatmentType,
@@ -211,7 +211,7 @@ export default (sequelize) => {
     });
   };
 
-  TreatmentDatabase.searchTreatments = function(query) {
+  TreatmentDatabase.searchTreatments = function(query: any) {
     return this.findAll({
       where: {
         [sequelize.Sequelize.Op.or]: [

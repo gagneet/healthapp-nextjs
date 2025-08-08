@@ -1,5 +1,5 @@
 // src/models/Medication.js
-export default (sequelize, DataTypes) => {
+export default (sequelize: any, DataTypes: any) => {
   const Medication = sequelize.define('Medication', {
     id: {
       type: DataTypes.UUID,
@@ -49,7 +49,7 @@ export default (sequelize, DataTypes) => {
     frequency: {
       type: DataTypes.VIRTUAL,
       get() {
-        return this.details?.frequency || null;
+        return (this as any).details?.frequency || null;
       },
     },
     created_at: {

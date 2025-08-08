@@ -2,11 +2,11 @@
 
 /** @type {import('sequelize-cli').Migration} */
 export default {
-  async up (queryInterface, Sequelize) {
+  async up (queryInterface: any, Sequelize: any) {
     console.log('🚀 Creating chart analytics tables (idempotent)...');
 
     // Helper function to check if table exists
-    async function tableExists(tableName) {
+    async function tableExists(tableName: any) {
       const result = await queryInterface.sequelize.query(
         `SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_schema = 'public' AND table_name = '${tableName}');`,
         { type: queryInterface.sequelize.QueryTypes.SELECT }
@@ -15,7 +15,7 @@ export default {
     }
 
     // Helper function to check if index exists
-    async function indexExists(indexName) {
+    async function indexExists(indexName: any) {
       try {
         const result = await queryInterface.sequelize.query(
           `SELECT EXISTS (SELECT FROM pg_indexes WHERE indexname = '${indexName}');`,
@@ -232,7 +232,7 @@ export default {
           await queryInterface.addIndex(index.table, index.columns, { name: index.name });
           console.log(`✓ Added index: ${index.name}`);
         } catch (error) {
-          console.log(`⚠️ Failed to add index ${index.name}: ${error.message}`);
+          console.log(`⚠️ Failed to add index ${index.name}: ${(error as any).message}`);
         }
       } else {
         console.log(`ℹ️ Index ${index.name} already exists, skipping`);
@@ -242,7 +242,7 @@ export default {
     console.log('✅ Chart analytics tables setup completed');
   },
 
-  async down (queryInterface, Sequelize) {
+  async down (queryInterface: any, Sequelize: any) {
     console.log('Dropping chart analytics tables...');
     
     // Drop tables in reverse order
@@ -253,7 +253,7 @@ export default {
         await queryInterface.dropTable(table);
         console.log(`✓ Dropped table: ${table}`);
       } catch (error) {
-        console.log(`⚠️ Failed to drop table ${table}: ${error.message}`);
+        console.log(`⚠️ Failed to drop table ${table}: ${(error as any).message}`);
       }
     }
     
@@ -270,7 +270,7 @@ export default {
         await queryInterface.sequelize.query(`DROP TYPE IF EXISTS "${enumName}" CASCADE;`);
         console.log(`✓ Dropped enum: ${enumName}`);
       } catch (error) {
-        console.log(`⚠️ Failed to drop enum ${enumName}: ${error.message}`);
+        console.log(`⚠️ Failed to drop enum ${enumName}: ${(error as any).message}`);
       }
     }
     

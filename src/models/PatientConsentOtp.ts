@@ -2,7 +2,7 @@
 import { DataTypes } from 'sequelize';
 import crypto from 'crypto';
 
-export default (sequelize) => {
+export default (sequelize: any) => {
   const PatientConsentOtp = sequelize.define('PatientConsentOtp', {
     id: {
       type: DataTypes.UUID,
@@ -237,32 +237,32 @@ export default (sequelize) => {
     
     validate: {
       mustHaveSecondaryProvider() {
-        if (!this.secondary_doctor_id && !this.secondary_hsp_id) {
+        if (!(this as any).secondary_doctor_id && !(this as any).secondary_hsp_id) {
           throw new Error('OTP must be for either secondary_doctor_id or secondary_hsp_id');
         }
       },
       
       validateOtpCode() {
-        if (!/^[0-9]{6}$/.test(this.otp_code)) {
+        if (!/^[0-9]{6}$/.test((this as any).otp_code)) {
           throw new Error('OTP code must be exactly 6 digits');
         }
       },
       
       validateExpiry() {
-        if (this.expires_at <= this.generated_at) {
+        if ((this as any).expires_at <= (this as any).generated_at) {
           throw new Error('OTP expiry time must be after generation time');
         }
       },
       
       validateMaxAttempts() {
-        if (this.max_attempts < 1 || this.max_attempts > 10) {
+        if ((this as any).max_attempts < 1 || (this as any).max_attempts > 10) {
           throw new Error('Max attempts must be between 1 and 10');
         }
       }
     },
     
     hooks: {
-      beforeCreate: (otp) => {
+      beforeCreate: (otp: any) => {
         // Generate 6-digit OTP if not provided
         if (!otp.otp_code) {
           otp.otp_code = Math.floor(100000 + Math.random() * 900000).toString();
@@ -274,7 +274,7 @@ export default (sequelize) => {
         }
       },
       
-      beforeUpdate: (otp) => {
+      beforeUpdate: (otp: any) => {
         // Check if OTP should be expired
         if (!otp.is_expired && new Date() > otp.expires_at) {
           otp.is_expired = true;
@@ -297,7 +297,7 @@ export default (sequelize) => {
     return String(num % 900000 + 100000).padStart(6, '0');
   };
   
-  PatientConsentOtp.findActiveByAssignment = function(assignmentId) {
+  PatientConsentOtp.findActiveByAssignment = function(assignmentId: any) {
     return this.findOne({
       where: {
         secondary_assignment_id: assignmentId,
@@ -322,7 +322,7 @@ export default (sequelize) => {
     return !this.is_verified && !this.isExpired() && !this.isBlocked();
   };
   
-  PatientConsentOtp.prototype.verify = function(providedOtp) {
+  PatientConsentOtp.prototype.verify = function(providedOtp: any) {
     // Check if verification is possible
     if (!this.canVerify()) {
       return {
@@ -360,7 +360,7 @@ export default (sequelize) => {
     }
   };
   
-  PatientConsentOtp.prototype.markAsSent = function(method, success, error = null) {
+  PatientConsentOtp.prototype.markAsSent = function(method: any, success: any, error = null) {
     const timestamp = new Date();
     
     if (method === 'sms' || method === 'both') {

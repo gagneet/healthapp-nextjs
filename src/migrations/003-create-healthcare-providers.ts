@@ -2,7 +2,7 @@
 'use strict';
 
 export default {
-  up: async (queryInterface, Sequelize) => {
+  up: async (queryInterface: any, Sequelize: any) => {
     // Check if table already exists
     const tableExists = await queryInterface.tableExists('healthcare_providers');
     if (tableExists) {
@@ -116,7 +116,7 @@ export default {
         name: 'idx_providers_user_id'
       });
     } catch (error) {
-      if (!error.message.includes('already exists')) {
+      if (!(error as any).message.includes('already exists')) {
         throw error;
       }
       console.log('Index idx_providers_user_id already exists, skipping');
@@ -128,7 +128,7 @@ export default {
         name: 'idx_providers_org'
       });
     } catch (error) {
-      if (!error.message.includes('already exists')) {
+      if (!(error as any).message.includes('already exists')) {
         throw error;
       }
       console.log('Index idx_providers_org already exists, skipping');
@@ -140,7 +140,7 @@ export default {
         name: 'idx_providers_verified'
       });
     } catch (error) {
-      if (!error.message.includes('already exists')) {
+      if (!(error as any).message.includes('already exists')) {
         throw error;
       }
       console.log('Index idx_providers_verified already exists, skipping');
@@ -152,14 +152,14 @@ export default {
         CREATE INDEX idx_providers_specialties ON healthcare_providers USING GIN(specialties);
       `);
     } catch (error) {
-      if (!error.message.includes('already exists')) {
+      if (!(error as any).message.includes('already exists')) {
         throw error;
       }
       console.log('Index idx_providers_specialties already exists, skipping');
     }
   },
 
-  down: async (queryInterface, Sequelize) => {
+  down: async (queryInterface: any, Sequelize: any) => {
     await queryInterface.dropTable('healthcare_providers');
   }
 };

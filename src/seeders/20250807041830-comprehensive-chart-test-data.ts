@@ -3,11 +3,11 @@
 import { v4 as uuidv4 } from 'uuid';
 
 export default {
-  async up(queryInterface, Sequelize) {
+  async up(queryInterface: any, Sequelize: any) {
     console.log('🚀 Seeding comprehensive chart test data...');
 
     // Helper to generate random date within range
-    const randomDate = (start, end) => {
+    const randomDate = (start: any, end: any) => {
       return new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime()));
     };
 
@@ -84,7 +84,7 @@ export default {
         };
         
         const frequency = JSON.parse(medicationsData[medicationsData.length - 1].details).frequency;
-        const dailyDoses = frequencyMap[frequency] || 1;
+        const dailyDoses = (frequencyMap as any)[frequency] || 1;
         
         for (let day = 0; day < 30; day++) {
           const dayDate = new Date(startDate.getTime() + (day * 24 * 60 * 60 * 1000));
@@ -331,7 +331,7 @@ export default {
     console.log(`  - ${dashboardMetricsData.length} dashboard metrics created`);
   },
 
-  async down(queryInterface, Sequelize) {
+  async down(queryInterface: any, Sequelize: any) {
     console.log('Removing comprehensive chart test data...');
     
     // Remove in reverse order of creation

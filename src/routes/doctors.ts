@@ -125,7 +125,7 @@ router.get('/:doctorId',
 // POST /api/doctors/:doctorId/update (Legacy update endpoint - kept for backward compatibility)
 router.post('/:doctorId/update',
   authenticate,
-  authorize(USER_CATEGORIES.DOCTOR, USER_CATEGORIES.ADMIN),
+  authorize(USER_CATEGORIES.DOCTOR, (USER_CATEGORIES as any).ADMIN),
   doctorController.updateDoctor
 );
 
@@ -134,14 +134,14 @@ router.post('/:doctorId/update',
 // GET /api/doctors/:doctorId/patients (Get doctor's patients)
 router.get('/:doctorId/patients',
   authenticate,
-  authorize(USER_CATEGORIES.DOCTOR, USER_CATEGORIES.ADMIN),
+  authorize(USER_CATEGORIES.DOCTOR, (USER_CATEGORIES as any).ADMIN),
   doctorController.getDoctorPatients
 );
 
 // POST /api/doctors/patients (Create patient under doctor)
 router.post('/patients',
   authenticate,
-  authorize(USER_CATEGORIES.DOCTOR, USER_CATEGORIES.ADMIN),
+  authorize(USER_CATEGORIES.DOCTOR, (USER_CATEGORIES as any).ADMIN),
   validateRequest(schemas.patientCreate),
   patientController.createPatient
 );

@@ -1,5 +1,5 @@
 // src/models/Payment.js
-export default (sequelize, DataTypes) => {
+export default (sequelize: any, DataTypes: any) => {
   const Payment = sequelize.define('Payment', {
     id: {
       type: DataTypes.UUID,

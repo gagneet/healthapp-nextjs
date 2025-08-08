@@ -37,7 +37,7 @@ async function testAuth() {
       console.log('✅ Token verification successful');
       console.log('Verify status:', verifyResponse.data.status);
     } catch (verifyError) {
-      console.error('❌ Token verification failed:', verifyError.response?.data || verifyError.message);
+      console.error('❌ Token verification failed:', (verifyError as any).response?.data || (verifyError as any).message);
     }
     
     // Step 3: Test patients endpoint
@@ -51,11 +51,11 @@ async function testAuth() {
       console.log('✅ Patients endpoint successful');
       console.log('Patients status:', patientsResponse.data.status);
     } catch (patientsError) {
-      console.error('❌ Patients endpoint failed:', patientsError.response?.data || patientsError.message);
+      console.error('❌ Patients endpoint failed:', (patientsError as any).response?.data || (patientsError as any).message);
     }
     
   } catch (error) {
-    console.error('❌ Login failed:', error.response?.data || error.message);
+    console.(error as any)('❌ Login failed:', (error as any).response?.data || (error as any).message);
   }
 }
 

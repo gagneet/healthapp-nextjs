@@ -1,7 +1,7 @@
 // src/models/SymptomsDatabase.js - Symptoms and Diagnosis relationship database
 import { DataTypes } from 'sequelize';
 
-export default (sequelize) => {
+export default (sequelize: any) => {
   const SymptomsDatabase = sequelize.define('SymptomsDatabase', {
     id: {
       type: DataTypes.UUID,
@@ -27,7 +27,7 @@ export default (sequelize) => {
       defaultValue: {},
       comment: 'Object with symptom names as keys and boolean values',
       validate: {
-        isValidSymptoms(value) {
+        isValidSymptoms(value: any) {
           if (typeof value !== 'object' || Array.isArray(value)) {
             throw new Error('Symptoms must be a valid object');
           }
@@ -114,22 +114,22 @@ export default (sequelize) => {
     return Object.keys(this.symptoms).filter(symptom => this.symptoms[symptom] === true);
   };
 
-  SymptomsDatabase.prototype.hasSymptom = function(symptomName) {
+  SymptomsDatabase.prototype.hasSymptom = function(symptomName: any) {
     return this.symptoms[symptomName] === true;
   };
 
-  SymptomsDatabase.prototype.addSymptom = function(symptomName) {
+  SymptomsDatabase.prototype.addSymptom = function(symptomName: any) {
     this.symptoms[symptomName] = true;
     return this.save();
   };
 
-  SymptomsDatabase.prototype.removeSymptom = function(symptomName) {
+  SymptomsDatabase.prototype.removeSymptom = function(symptomName: any) {
     delete this.symptoms[symptomName];
     return this.save();
   };
 
   // Class methods
-  SymptomsDatabase.findBySymptom = function(symptomName) {
+  SymptomsDatabase.findBySymptom = function(symptomName: any) {
     return this.findAll({
       where: {
         [`symptoms.${symptomName}`]: true,
@@ -138,7 +138,7 @@ export default (sequelize) => {
     });
   };
 
-  SymptomsDatabase.searchDiagnosis = function(query) {
+  SymptomsDatabase.searchDiagnosis = function(query: any) {
     return this.findAll({
       where: {
         diagnosis_name: {
@@ -158,7 +158,7 @@ export default (sequelize) => {
 
     const allSymptoms = new Set();
     
-    diagnoses.forEach(diagnosis => {
+    diagnoses.forEach((diagnosis: any) => {
       Object.keys(diagnosis.symptoms).forEach(symptom => {
         if (diagnosis.symptoms[symptom] === true) {
           allSymptoms.add(symptom);

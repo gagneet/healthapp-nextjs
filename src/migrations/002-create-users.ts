@@ -2,7 +2,7 @@
 'use strict';
 
 export default {
-  up: async (queryInterface, Sequelize) => {
+  up: async (queryInterface: any, Sequelize: any) => {
     // Check if users table already exists
     const tableExists = await queryInterface.tableExists('users');
     if (tableExists) {
@@ -24,7 +24,7 @@ export default {
         );
       `);
     } catch (error) {
-      if (!error.message.includes('already exists')) throw error;
+      if (!(error as any).message.includes('already exists')) throw (error as any);
     }
 
     try {
@@ -38,7 +38,7 @@ export default {
         );
       `);
     } catch (error) {
-      if (!error.message.includes('already exists')) throw error;
+      if (!(error as any).message.includes('already exists')) throw (error as any);
     }
 
     try {
@@ -46,7 +46,7 @@ export default {
         CREATE TYPE gender AS ENUM ('MALE', 'FEMALE', 'OTHER', 'PREFER_NOT_TO_SAY');
       `);
     } catch (error) {
-      if (!error.message.includes('already exists')) throw error;
+      if (!(error as any).message.includes('already exists')) throw (error as any);
     }
 
     // Create users table
@@ -180,7 +180,7 @@ export default {
         name: 'idx_users_email'
       });
     } catch (error) {
-      if (!error.message.includes('already exists')) throw error;
+      if (!(error as any).message.includes('already exists')) throw (error as any);
     }
     
     try {
@@ -189,7 +189,7 @@ export default {
         name: 'idx_users_role'
       });
     } catch (error) {
-      if (!error.message.includes('already exists')) throw error;
+      if (!(error as any).message.includes('already exists')) throw (error as any);
     }
     
     try {
@@ -198,7 +198,7 @@ export default {
         name: 'idx_users_status'
       });
     } catch (error) {
-      if (!error.message.includes('already exists')) throw error;
+      if (!(error as any).message.includes('already exists')) throw (error as any);
     }
     
     try {
@@ -207,7 +207,7 @@ export default {
         name: 'idx_users_phone'
       });
     } catch (error) {
-      if (!error.message.includes('already exists')) throw error;
+      if (!(error as any).message.includes('already exists')) throw (error as any);
     }
 
     // Full-text search index (with idempotent check)
@@ -217,11 +217,11 @@ export default {
         USING GIN(to_tsvector('english', COALESCE(first_name, '') || ' ' || COALESCE(last_name, '')));
       `);
     } catch (error) {
-      if (!error.message.includes('already exists')) throw error;
+      if (!(error as any).message.includes('already exists')) throw (error as any);
     }
   },
 
-  down: async (queryInterface, Sequelize) => {
+  down: async (queryInterface: any, Sequelize: any) => {
     await queryInterface.dropTable('users');
     await queryInterface.sequelize.query('DROP TYPE IF EXISTS user_role CASCADE;');
     await queryInterface.sequelize.query('DROP TYPE IF EXISTS account_status CASCADE;');

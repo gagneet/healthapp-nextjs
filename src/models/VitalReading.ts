@@ -1,7 +1,7 @@
 // src/models/VitalReading.js
 import { DataTypes } from 'sequelize';
 
-export default (sequelize) => {
+export default (sequelize: any) => {
   const VitalReading = sequelize.define('VitalReading', {
     id: {
       type: DataTypes.UUID,
@@ -61,7 +61,7 @@ export default (sequelize) => {
       type: DataTypes.JSONB,
       defaultValue: {},
       validate: {
-        isValidDeviceInfo(value) {
+        isValidDeviceInfo(value: any) {
           if (value && typeof value !== 'object') {
             throw new Error('Device info must be a valid JSON object');
           }
@@ -84,7 +84,7 @@ export default (sequelize) => {
       type: DataTypes.JSONB,
       defaultValue: [],
       validate: {
-        isValidAttachments(value) {
+        isValidAttachments(value: any) {
           if (value && !Array.isArray(value)) {
             throw new Error('Attachments must be an array');
           }
@@ -146,7 +146,7 @@ export default (sequelize) => {
     
     hooks: {
       // Auto-flag readings outside normal range
-      beforeSave: async (vitalReading, options) => {
+      beforeSave: async (vitalReading: any, options: any) => {
         if (vitalReading.changed('value') || vitalReading.isNewRecord) {
           // Get vital type to check normal range
           const VitalType = sequelize.models.VitalType;
@@ -164,35 +164,35 @@ export default (sequelize) => {
       // Check if reading is within normal range
       async isNormal() {
         const VitalType = sequelize.models.VitalType;
-        const vitalType = await VitalType.findByPk(this.vital_type_id);
-        return vitalType ? vitalType.isNormalValue(this.value) : true;
+        const vitalType = await VitalType.findByPk((this as any).vital_type_id);
+        return vitalType ? vitalType.isNormalValue((this as any).value) : true;
       },
       
       // Validate reading
-      async validate(validatedBy) {
+      async validate(validatedBy: any) {
         this.is_validated = true;
         this.validated_by = validatedBy;
-        await this.save();
+        await (this as any).save();
       },
       
       // Flag reading
       async flag(notes = null) {
-        this.is_flagged = true;
-        if (notes) this.notes = notes;
-        await this.save();
+        (this as any).is_flagged = true;
+        if (notes) (this as any).notes = notes;
+        await (this as any).save();
       },
       
       // Get formatted value with unit
       getFormattedValue() {
-        return this.unit ? `${this.value} ${this.unit}` : this.value.toString();
+        return (this as any).unit ? `${(this as any).value} ${(this as any).unit}` : (this as any).value.toString();
       }
     },
     
     // Class methods
     classMethods: {
       // Get readings for patient and vital type
-      findForPatientAndType(patientId, vitalTypeId, limit = 10) {
-        return this.findAll({
+      findForPatientAndType(patientId: any, vitalTypeId: any, limit = 10) {
+        return (this as any).findAll({
           where: {
             patient_id: patientId,
             vital_type_id: vitalTypeId
@@ -204,7 +204,7 @@ export default (sequelize) => {
       
       // Find flagged readings
       findFlagged() {
-        return this.findAll({
+        return (this as any).findAll({
           where: {
             is_flagged: true
           },
@@ -213,11 +213,11 @@ export default (sequelize) => {
       },
       
       // Get trend data for patient
-      async getTrendData(patientId, vitalTypeId, days = 30) {
+      async getTrendData(patientId: any, vitalTypeId: any, days = 30) {
         const startDate = new Date();
         startDate.setDate(startDate.getDate() - days);
         
-        return this.findAll({
+        return (this as any).findAll({
           where: {
             patient_id: patientId,
             vital_type_id: vitalTypeId,
@@ -231,8 +231,8 @@ export default (sequelize) => {
       },
       
       // Get latest reading for patient and type
-      getLatest(patientId, vitalTypeId) {
-        return this.findOne({
+      getLatest(patientId: any, vitalTypeId: any) {
+        return (this as any).findOne({
           where: {
             patient_id: patientId,
             vital_type_id: vitalTypeId

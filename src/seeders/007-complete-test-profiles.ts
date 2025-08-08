@@ -5,7 +5,7 @@ import bcrypt from 'bcryptjs';
 import { v4 as uuidv4 } from 'uuid';
 
 export default {
-  up: async (queryInterface, Sequelize) => {
+  up: async (queryInterface: any, Sequelize: any) => {
     console.log('🏥 Creating complete test profiles (Patient, Doctor, Admin)...');
     
     // First ensure specialities exist (idempotent)
@@ -54,7 +54,7 @@ export default {
     );
 
     // Create missing users
-    const existingEmails = users.map(u => u.email);
+    const existingEmails = users.map((u: any) => u.email);
     const usersToCreate = [];
 
     if (!existingEmails.includes('admin@healthapp.com')) {
@@ -122,9 +122,9 @@ export default {
       { type: Sequelize.QueryTypes.SELECT }
     );
 
-    const adminUser = users.find(u => u.email === 'admin@healthapp.com');
-    const doctorUser = users.find(u => u.email === 'doctor@healthapp.com');
-    const patientUser = users.find(u => u.email === 'patient@healthapp.com');
+    const adminUser = users.find((u: any) => u.email === 'admin@healthapp.com');
+    const doctorUser = users.find((u: any) => u.email === 'doctor@healthapp.com');
+    const patientUser = users.find((u: any) => u.email === 'patient@healthapp.com');
 
     // CREATE DOCTOR PROFILE
     if (doctorUser) {
@@ -394,7 +394,7 @@ export default {
     console.log('👨‍💼 Admin Profile: System administrator with full access');
   },
 
-  down: async (queryInterface, Sequelize) => {
+  down: async (queryInterface: any, Sequelize: any) => {
     // Delete in reverse order due to foreign key constraints
     await queryInterface.bulkDelete('clinics', {
       doctor_id: {

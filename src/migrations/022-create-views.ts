@@ -2,7 +2,7 @@
 'use strict';
 
 export default {
-  up: async (queryInterface, Sequelize) => {
+  up: async (queryInterface: any, Sequelize: any) => {
     // Drop existing views first to ensure clean recreation
     await queryInterface.sequelize.query('DROP VIEW IF EXISTS v_active_care_plans CASCADE;');
     await queryInterface.sequelize.query('DROP VIEW IF EXISTS v_patient_adherence_summary CASCADE;');
@@ -121,7 +121,7 @@ export default {
     console.log('✅ All database views created successfully');
   },
 
-  down: async (queryInterface, Sequelize) => {
+  down: async (queryInterface: any, Sequelize: any) => {
     await queryInterface.sequelize.query('DROP VIEW IF EXISTS v_active_care_plans CASCADE;');
     await queryInterface.sequelize.query('DROP VIEW IF EXISTS v_patient_adherence_summary CASCADE;');
     await queryInterface.sequelize.query('DROP VIEW IF EXISTS v_upcoming_events CASCADE;');

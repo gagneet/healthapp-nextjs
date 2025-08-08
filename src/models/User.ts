@@ -3,7 +3,7 @@ import { DataTypes } from 'sequelize';
 import { USER_ROLES, ACCOUNT_STATUS, GENDER } from '../config/enums.js';
 import bcrypt from 'bcryptjs';
 
-export default (sequelize) => {
+export default (sequelize: any) => {
   const User = sequelize.define('User', {
     id: {
       type: DataTypes.UUID,
@@ -241,7 +241,7 @@ export default (sequelize) => {
     ],
     
     hooks: {
-      beforeValidate: (user, options) => {
+      beforeValidate: (user: any, options: any) => {
         // Normalize email
         if (user.email) {
           user.email = user.email.toLowerCase().trim();
@@ -255,7 +255,7 @@ export default (sequelize) => {
         });
       },
       
-      beforeCreate: async (user, options) => {
+      beforeCreate: async (user: any, options: any) => {
         // Hash password if provided
         if (user.password && !user.password_hash) {
           user.password_hash = await bcrypt.hash(user.password, 12);
@@ -268,7 +268,7 @@ export default (sequelize) => {
         }
       },
       
-      beforeUpdate: async (user, options) => {
+      beforeUpdate: async (user: any, options: any) => {
         // Hash password if changed
         if (user.changed('password') && user.password) {
           user.password_hash = await bcrypt.hash(user.password, 12);
@@ -276,7 +276,7 @@ export default (sequelize) => {
         }
       },
       
-      afterUpdate: (user, options) => {
+      afterUpdate: (user: any, options: any) => {
         // Reset failed login attempts on successful login
         if (user.changed('last_login_at') && user.last_login_at) {
           user.failed_login_attempts = 0;
@@ -288,53 +288,53 @@ export default (sequelize) => {
     // Instance methods
     instanceMethods: {
       // Check password
-      async verifyPassword(password) {
-        return bcrypt.compare(password, this.password_hash);
+      async verifyPassword(password: any) {
+        return bcrypt.compare(password, (this as any).password_hash);
       },
       
       // Get full name
       getFullName() {
-        const parts = [this.first_name, this.middle_name, this.last_name]
+        const parts = [(this as any).first_name, (this as any).middle_name, (this as any).last_name]
           .filter(Boolean);
-        return parts.join(' ') || this.email;
+        return parts.join(' ') || (this as any).email;
       },
       
       // Check if account is locked
       isLocked() {
-        return this.locked_until && new Date() < this.locked_until;
+        return (this as any).locked_until && new Date() < (this as any).locked_until;
       },
       
       // Check if account is active
       isActive() {
-        return this.account_status === ACCOUNT_STATUS.ACTIVE && !this.isLocked();
+        return (this as any).account_status === ACCOUNT_STATUS.ACTIVE && !this.isLocked();
       },
       
       // Increment failed login attempts
       async incrementFailedLogins() {
-        this.failed_login_attempts += 1;
+        (this as any).failed_login_attempts += 1;
         
         // Lock account after 5 failed attempts
-        if (this.failed_login_attempts >= 5) {
-          this.locked_until = new Date(Date.now() + 30 * 60 * 1000); // 30 minutes
+        if ((this as any).failed_login_attempts >= 5) {
+          (this as any).locked_until = new Date(Date.now() + 30 * 60 * 1000); // 30 minutes
         }
         
-        await this.save();
+        await (this as any).save();
       },
       
       // Reset failed login attempts
       async resetFailedLogins() {
-        this.failed_login_attempts = 0;
-        this.locked_until = null;
-        this.last_login_at = new Date();
-        await this.save();
+        (this as any).failed_login_attempts = 0;
+        (this as any).locked_until = null;
+        (this as any).last_login_at = new Date();
+        await (this as any).save();
       },
       
       // Calculate age
       getAge() {
-        if (!this.date_of_birth) return null;
+        if (!(this as any).date_of_birth) return null;
         
         const today = new Date();
-        const birthDate = new Date(this.date_of_birth);
+        const birthDate = new Date((this as any).date_of_birth);
         let age = today.getFullYear() - birthDate.getFullYear();
         const monthDiff = today.getMonth() - birthDate.getMonth();
         
@@ -347,22 +347,22 @@ export default (sequelize) => {
       
       // Check HIPAA consent
       hasValidHipaaConsent() {
-        return this.hipaa_consent_date !== null;
+        return (this as any).hipaa_consent_date !== null;
       },
       
       // Get initials
       getInitials() {
-        const firstName = this.first_name?.[0] || '';
-        const lastName = this.last_name?.[0] || '';
-        return (firstName + lastName).toUpperCase() || this.email[0].toUpperCase();
+        const firstName = (this as any).first_name?.[0] || '';
+        const lastName = (this as any).last_name?.[0] || '';
+        return (firstName + lastName).toUpperCase() || (this as any).email[0].toUpperCase();
       }
     },
     
     // Class methods
     classMethods: {
       // Find by email
-      async findByEmail(email) {
-        return this.findOne({
+      async findByEmail(email: any) {
+        return (this as any).findOne({
           where: {
             email: email.toLowerCase().trim()
           }
@@ -371,7 +371,7 @@ export default (sequelize) => {
       
       // Find active users
       findActive() {
-        return this.findAll({
+        return (this as any).findAll({
           where: {
             account_status: ACCOUNT_STATUS.ACTIVE,
             deleted_at: null
@@ -380,8 +380,8 @@ export default (sequelize) => {
       },
       
       // Find by role
-      findByRole(role) {
-        return this.findAll({
+      findByRole(role: any) {
+        return (this as any).findAll({
           where: {
             role,
             deleted_at: null
@@ -390,8 +390,8 @@ export default (sequelize) => {
       },
       
       // Search users
-      searchUsers(query) {
-        return this.findAll({
+      searchUsers(query: any) {
+        return (this as any).findAll({
           where: {
             [sequelize.Sequelize.Op.or]: [
               { first_name: { [sequelize.Sequelize.Op.iLike]: `%${query}%` } },

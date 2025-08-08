@@ -140,13 +140,13 @@ export const EnhancedAuthProvider: React.FC<EnhancedAuthProviderProps> = ({ chil
           refreshToken
         })
 
-        if (response.status && response.payload?.data?.tokens) {
-          const { tokens, user } = response.payload.data
+        if ((response as any).status && (response as any).payload?.data?.tokens) {
+          const { tokens, user } = (response as any).payload.data
           storeTokens(tokens, user)
           logger.info('Token refreshed successfully')
           return true
         } else {
-          logger.warn('Token refresh failed:', response.payload?.message)
+          logger.warn('Token refresh failed:', (response as any).payload?.message)
           clearTokens()
           return false
         }
@@ -192,17 +192,17 @@ export const EnhancedAuthProvider: React.FC<EnhancedAuthProviderProps> = ({ chil
         deviceInfo
       })
       
-      if (response.status && response.payload?.data) {
-        const { tokens, user } = response.payload.data
+      if ((response as any).status && (response as any).payload?.data) {
+        const { tokens, user } = (response as any).payload.data
         storeTokens(tokens, user)
         
         logger.info('Enhanced login successful')
         toast.success(`Welcome back, ${user.first_name || user.email}!`)
         return true
       } else {
-        logger.warn('Login failed:', response.payload?.message)
+        logger.warn('Login failed:', (response as any).payload?.message)
         setState(prev => ({ ...prev, isLoading: false }))
-        toast.error(response.payload?.message || 'Login failed')
+        toast.error((response as any).payload?.message || 'Login failed')
         return false
       }
     } catch (error) {
@@ -242,8 +242,8 @@ export const EnhancedAuthProvider: React.FC<EnhancedAuthProviderProps> = ({ chil
 
       const response = await apiRequest.get('/auth/enhanced/validate-token')
       
-      if (response.status && response.payload?.data?.user) {
-        const userData = response.payload.data.user
+      if ((response as any).status && (response as any).payload?.data?.user) {
+        const userData = (response as any).payload.data.user
         setState(prev => ({
           ...prev,
           user: userData,
@@ -264,8 +264,8 @@ export const EnhancedAuthProvider: React.FC<EnhancedAuthProviderProps> = ({ chil
     try {
       const response = await apiRequest.get('/auth/enhanced/active-sessions')
       
-      if (response.status && response.payload?.data?.sessions) {
-        return response.payload.data.sessions
+      if ((response as any).status && (response as any).payload?.data?.sessions) {
+        return (response as any).payload.data.sessions
       }
       
       return []
@@ -280,20 +280,20 @@ export const EnhancedAuthProvider: React.FC<EnhancedAuthProviderProps> = ({ chil
     try {
       const response = await apiRequest.put('/auth/enhanced/profile', data)
       
-      if (response.status && response.payload?.data?.user) {
+      if ((response as any).status && (response as any).payload?.data?.user) {
         setState(prev => ({
           ...prev,
-          user: response.payload.data.user
+          user: (response as any).payload.data.user
         }))
         
         // Update stored user data
-        localStorage.setItem('user', JSON.stringify(response.payload.data.user))
+        localStorage.setItem('user', JSON.stringify((response as any).payload.data.user))
         
         toast.success('Profile updated successfully')
         return true
       }
       
-      toast.error(response.payload?.message || 'Profile update failed')
+      toast.error((response as any).payload?.message || 'Profile update failed')
       return false
     } catch (error) {
       logger.error('Profile update error:', error)
@@ -315,17 +315,17 @@ export const EnhancedAuthProvider: React.FC<EnhancedAuthProviderProps> = ({ chil
         logoutOtherSessions
       })
       
-      if (response.status) {
+      if ((response as any).status) {
         toast.success('Password changed successfully')
         
         if (logoutOtherSessions) {
-          toast.info('Other sessions have been logged out')
+          (toast as any).info('Other sessions have been logged out')
         }
         
         return true
       }
       
-      toast.error(response.payload?.message || 'Password change failed')
+      toast.error((response as any).payload?.message || 'Password change failed')
       return false
     } catch (error) {
       logger.error('Password change error:', error)

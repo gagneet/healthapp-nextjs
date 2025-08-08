@@ -1,7 +1,7 @@
 // src/models/LabResult.js - Laboratory Results and Diagnostic Tests
 import { DataTypes } from 'sequelize';
 
-export default (sequelize) => {
+export default (sequelize: any) => {
   const LabResult = sequelize.define('LabResult', {
     id: {
       type: DataTypes.UUID,
@@ -408,14 +408,14 @@ export default (sequelize) => {
     
     validate: {
       mustHaveOrderingProvider() {
-        if (!this.ordering_doctor_id && !this.ordering_hsp_id) {
+        if (!(this as any).ordering_doctor_id && !(this as any).ordering_hsp_id) {
           throw new Error('Lab result must have an ordering provider (doctor or HSP)');
         }
       }
     },
     
     hooks: {
-      beforeCreate: (labResult, options) => {
+      beforeCreate: (labResult: any, options: any) => {
         // Generate order number if not provided
         if (!labResult.order_number) {
           const timestamp = Date.now().toString();
@@ -424,7 +424,7 @@ export default (sequelize) => {
         }
       },
       
-      beforeUpdate: (labResult, options) => {
+      beforeUpdate: (labResult: any, options: any) => {
         // Auto-set resulted_datetime when status changes to completed
         if (labResult.changed('status') && labResult.status === 'completed' && !labResult.resulted_datetime) {
           labResult.resulted_datetime = new Date();
@@ -445,7 +445,7 @@ export default (sequelize) => {
     };
     
     if (organizationId) {
-      where.organization_id = organizationId;
+      (where as any).organization_id = organizationId;
     }
     
     return await this.findAll({
@@ -461,11 +461,11 @@ export default (sequelize) => {
     };
     
     if (notificationPending) {
-      where.patient_notified = false;
+      (where as any).patient_notified = false;
     }
     
     if (organizationId) {
-      where.organization_id = organizationId;
+      (where as any).organization_id = organizationId;
     }
     
     return await this.findAll({
@@ -481,14 +481,14 @@ export default (sequelize) => {
     });
   };
   
-  LabResult.findPatientResults = async function(patientId, testCategory = null, limit = 50) {
+  LabResult.findPatientResults = async function(patientId: any, testCategory = null, limit = 50) {
     const where = {
       patient_id: patientId,
       status: 'completed'
     };
     
     if (testCategory) {
-      where.test_category = testCategory;
+      (where as any).test_category = testCategory;
     }
     
     return await this.findAll({
@@ -498,7 +498,7 @@ export default (sequelize) => {
     });
   };
   
-  LabResult.generateLabSummary = async function(patientId, startDate, endDate) {
+  LabResult.generateLabSummary = async function(patientId: any, startDate: any, endDate: any) {
     const results = await this.findAll({
       where: {
         patient_id: patientId,
@@ -518,9 +518,9 @@ export default (sequelize) => {
       latest_results: []
     };
     
-    results.forEach(result => {
+    results.forEach((result: any) => {
       // Count by category
-      summary.by_category[result.test_category] = (summary.by_category[result.test_category] || 0) + 1;
+      (summary as any).by_category[result.test_category] = ((summary as any).by_category[result.test_category] || 0) + 1;
       
       // Count critical and abnormal
       if (result.has_critical_values) summary.critical_values++;
@@ -548,7 +548,7 @@ export default (sequelize) => {
     
     const criticalValues = [];
     
-    this.individual_results.forEach(result => {
+    this.individual_results.forEach((result: any) => {
       if (result.is_critical || result.flag === 'critical') {
         criticalValues.push({
           test_name: result.name,
@@ -565,7 +565,7 @@ export default (sequelize) => {
     return this.has_critical_values;
   };
   
-  LabResult.prototype.markReviewed = function(reviewerId, reviewerType) {
+  LabResult.prototype.markReviewed = function(reviewerId: any, reviewerType: any) {
     this.reviewed_datetime = new Date();
     
     if (reviewerType === 'doctor') {
@@ -577,7 +577,7 @@ export default (sequelize) => {
     return this.save();
   };
   
-  LabResult.prototype.notifyPatient = function(method) {
+  LabResult.prototype.notifyPatient = function(method: any) {
     this.patient_notified = true;
     this.patient_notification_date = new Date();
     this.patient_notification_method = method;
@@ -588,7 +588,7 @@ export default (sequelize) => {
   LabResult.prototype.getAbnormalResults = function() {
     if (!this.individual_results) return [];
     
-    return this.individual_results.filter(result => 
+    return this.individual_results.filter((result: any) => 
       result.flag && result.flag !== 'normal' && result.flag !== 'within_range'
     );
   };

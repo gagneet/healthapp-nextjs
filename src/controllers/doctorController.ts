@@ -162,7 +162,7 @@ class DoctorController {
         },
         
         // Clinics
-        clinics: doctor.clinics ? doctor.clinics.map(clinic => ({
+        clinics: doctor.clinics ? doctor.clinics.map((clinic: any) => ({
           id: clinic.id,
           name: clinic.name,
           address: clinic.address,
@@ -266,14 +266,14 @@ class DoctorController {
       if (full_name) {
         // Split full name into components (don't store full_name as it's not a real field)
         const nameParts = full_name.trim().split(' ');
-        if (nameParts.length >= 1) userUpdateData.first_name = nameParts[0];
-        if (nameParts.length >= 2) userUpdateData.last_name = nameParts[nameParts.length - 1];
+        if (nameParts.length >= 1) (userUpdateData as any).first_name = nameParts[0];
+        if (nameParts.length >= 2) (userUpdateData as any).last_name = nameParts[nameParts.length - 1];
         if (nameParts.length >= 3) {
-          userUpdateData.middle_name = nameParts.slice(1, -1).join(' ');
+          (userUpdateData as any).middle_name = nameParts.slice(1, -1).join(' ');
         }
       }
-      if (gender) userUpdateData.gender = gender;
-      if (mobile_number) userUpdateData.phone = mobile_number;
+      if (gender) (userUpdateData as any).gender = gender;
+      if (mobile_number) (userUpdateData as any).phone = mobile_number;
 
       if (Object.keys(userUpdateData).length > 0) {
         await doctor.user.update(userUpdateData, { transaction });
@@ -365,14 +365,14 @@ class DoctorController {
         const updateData = {};
         const baseUrl = `${req.protocol}://${req.get('host')}/uploads/doctors/`;
 
-        if (req.files.profile_picture) {
-          updateData.profile_picture_url = baseUrl + req.files.profile_picture[0].filename;
+        if ((req as any).files.profile_picture) {
+          (updateData as any).profile_picture_url = baseUrl + (req as any).files.profile_picture[0].filename;
         }
-        if (req.files.banner_image) {
-          updateData.banner_image_url = baseUrl + req.files.banner_image[0].filename;
+        if ((req as any).files.banner_image) {
+          (updateData as any).banner_image_url = baseUrl + (req as any).files.banner_image[0].filename;
         }
-        if (req.files.signature_image) {
-          updateData.signature_image_url = baseUrl + req.files.signature_image[0].filename;
+        if ((req as any).files.signature_image) {
+          (updateData as any).signature_image_url = baseUrl + (req as any).files.signature_image[0].filename;
         }
 
         await doctor.update(updateData);
@@ -540,33 +540,33 @@ class DoctorController {
         const carePlans = patient.carePlans || [];
         
         // Get last visit (most recent completed appointment)
-        const completedAppointments = appointments.filter(apt => apt.status === 'completed');
+        const completedAppointments = appointments.filter((apt: any) => apt.status === 'completed');
         const lastVisit = completedAppointments.length > 0 ? completedAppointments[0].appointment_date : null;
         
         // Get next appointment (earliest scheduled appointment)
-        const upcomingAppointments = appointments.filter(apt => 
+        const upcomingAppointments = appointments.filter((apt: any) => 
           apt.status === 'scheduled' && new Date(apt.appointment_date) > new Date()
         );
         const nextAppointment = upcomingAppointments.length > 0 ? upcomingAppointments[0].appointment_date : null;
         
         // Calculate adherence rate (from active medications)
         const activeMedications = carePlans
-          .filter(cp => cp.status === 'active')
-          .flatMap(cp => cp.medicationPrescriptions || [])
-          .filter(med => med.status === 'active');
+          .filter((cp: any) => cp.status === 'active')
+          .flatMap((cp: any) => cp.medicationPrescriptions || [])
+          .filter((med: any) => med.status === 'active');
         
         const adherenceRate = activeMedications.length > 0 
-          ? Math.round(activeMedications.filter(med => med.status === 'active').length / activeMedications.length * 100)
+          ? Math.round(activeMedications.filter((med: any) => med.status === 'active').length / activeMedications.length * 100)
           : 0;
         
         // Count critical alerts (overdue medications, missed appointments, etc.)
-        const overdueAppointments = appointments.filter(apt => 
+        const overdueAppointments = appointments.filter((apt: any) => 
           apt.status === 'scheduled' && new Date(apt.appointment_date) < new Date()
         ).length;
         
         const criticalAlerts = overdueAppointments;
         
-        responseData.patients[patient.id] = {
+        (responseData as any).patients[patient.id] = {
           basic_info: {
             id: patient.id?.toString() || '',
             first_name: patient.first_name || '',
@@ -585,7 +585,7 @@ class DoctorController {
             adherence_rate: adherenceRate,
             critical_alerts: criticalAlerts,
             total_appointments: appointments.length,
-            active_care_plans: carePlans.filter(cp => cp.status === 'active').length,
+            active_care_plans: carePlans.filter((cp: any) => cp.status === 'active').length,
             total_medications: activeMedications.length
           }
         };
@@ -1013,7 +1013,7 @@ class DoctorController {
         limit: parseInt(String(limit)) || 5
       });
 
-      const recentPatients = patients.map(patient => ({
+      const recentPatients = patients.map((patient: any) => ({
         id: patient.id.toString(),
         user_id: patient.user_id.toString(),
         first_name: patient.user?.first_name || '',
@@ -1085,7 +1085,7 @@ class DoctorController {
       // Mock critical alerts based on patient data
       const criticalAlerts = criticalPatients
         .filter(() => Math.random() > 0.7) // Simulate some patients having alerts
-        .map((patient, index) => ({
+        .map((patient: any, index: any) => ({
           id: `alert_${patient.id}_${index}`,
           patient_id: patient.id.toString(),
           patient_name: `${patient.user?.first_name || ''} ${patient.user?.middle_name || ''} ${patient.user?.last_name || ''}`.replace(/\s+/g, ' ').trim() || 'Unknown Patient',
@@ -1306,7 +1306,7 @@ class DoctorController {
         parseFloat(latitude),
         parseFloat(longitude),
         parseFloat(radius),
-        clinics.map(clinic => clinic.toJSON())
+        clinics.map((clinic: any) => clinic.toJSON())
       );
 
       res.status(200).json({

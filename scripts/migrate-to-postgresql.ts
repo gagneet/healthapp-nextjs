@@ -37,23 +37,23 @@ const pgConfig = {
 
 class DatabaseMigrator {
   constructor() {
-    this.mysqlConnection = null;
-    this.pgConnection = null;
-    this.uuidMap = new Map();
-    this.migrationLog = [];
-    this.startTime = new Date();
+    (this as any).mysqlConnection = null;
+    (this as any).pgConnection = null;
+    (this as any).uuidMap = new Map();
+    (this as any).migrationLog = [];
+    (this as any).startTime = new Date();
   }
 
   async initialize() {
     console.log('🚀 Initializing database connections...');
     
     // Connect to MySQL
-    this.mysqlConnection = await mysql.createConnection(mysqlConfig);
+    (this as any).mysqlConnection = await mysql.createConnection(mysqlConfig);
     console.log('✅ Connected to MySQL');
     
     // Connect to PostgreSQL
-    this.pgConnection = new Client(pgConfig);
-    await this.pgConnection.connect();
+    (this as any).pgConnection = new Client(pgConfig);
+    await (this as any).pgConnection.connect();
     console.log('✅ Connected to PostgreSQL');
   }
 
@@ -67,19 +67,19 @@ class DatabaseMigrator {
 
     for (const table of tables) {
       try {
-        const [rows] = await this.mysqlConnection.execute(`SELECT id FROM ${table}`);
+        const [rows] = await (this as any).mysqlConnection.execute(`SELECT id FROM ${table}`);
         
         rows.forEach(row => {
-          this.uuidMap.set(`${table}_${row.id}`, uuidv4());
+          (this as any).uuidMap.set(`${table}_${row.id}`, uuidv4());
         });
         
         console.log(`   Generated ${rows.length} UUIDs for ${table}`);
       } catch (error) {
-        console.warn(`   ⚠️  Table ${table} not found or empty: ${error.message}`);
+        console.warn(`   ⚠️  Table ${table} not found or empty: ${(error as any).message}`);
       }
     }
 
-    console.log(`✅ Generated ${this.uuidMap.size} UUID mappings`);
+    console.log(`✅ Generated ${(this as any).uuidMap.size} UUID mappings`);
   }
 
   async createPostgreSQLSchema() {
@@ -102,21 +102,21 @@ class DatabaseMigrator {
       CREATE TYPE notification_channel AS ENUM ('PUSH', 'SMS', 'EMAIL', 'VOICE_CALL');
     `;
 
-    await this.pgConnection.query(schemaSQL);
+    await (this as any).pgConnection.query(schemaSQL);
     console.log('✅ PostgreSQL schema created');
   }
 
   async migrateUsers() {
     console.log('👥 Migrating users...');
 
-    const [mysqlUsers] = await this.mysqlConnection.execute(`
+    const [mysqlUsers] = await (this as any).mysqlConnection.execute(`
       SELECT u.*, ur.role_name
       FROM users u
       LEFT JOIN user_roles ur ON u.id = ur.user_identity
     `);
 
     const pgUsers = mysqlUsers.map(user => ({
-      id: this.uuidMap.get(`users_${user.id}`),
+      id: (this as any).uuidMap.get(`users_${user.id}`),
       email: user.email,
       password_hash: user.password, // Already hashed in MySQL
       role: this.mapUserRole(user.role_name || 'PATIENT'),
@@ -152,7 +152,7 @@ class DatabaseMigrator {
     ]);
 
     console.log(`✅ Migrated ${pgUsers.length} users`);
-    this.migrationLog.push(`Users: ${pgUsers.length} records migrated`);
+    (this as any).migrationLog.push(`Users: ${pgUsers.length} records migrated`);
   }
 
   async migrateOrganizations() {
@@ -184,7 +184,7 @@ class DatabaseMigrator {
       updated_at: new Date()
     };
 
-    await this.pgConnection.query(`
+    await (this as any).pgConnection.query(`
       INSERT INTO organizations (id, name, type, contact_info, address, settings, is_active, hipaa_covered_entity, created_at, updated_at)
       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
     `, [
@@ -194,7 +194,7 @@ class DatabaseMigrator {
     ]);
 
     // Store default org ID for use in other migrations
-    this.defaultOrgId = defaultOrgId;
+    (this as any).defaultOrgId = defaultOrgId;
     console.log('✅ Default organization created');
   }
 
@@ -202,7 +202,7 @@ class DatabaseMigrator {
     console.log('👨‍⚕️ Migrating doctors and separating providers...');
 
     // Get all providers and doctors
-    const [mysqlProviders] = await this.mysqlConnection.execute(`
+    const [mysqlProviders] = await (this as any).mysqlConnection.execute(`
       SELECT p.*, u.*, s.name as specialty_name,
              CASE 
                WHEN p.license_type IN ('MD', 'DO') OR p.credentials LIKE '%MD%' OR p.credentials LIKE '%DO%' THEN 'doctor'
@@ -214,7 +214,7 @@ class DatabaseMigrator {
     `);
 
     // Also get direct doctor records
-    const [mysqlDoctors] = await this.mysqlConnection.execute(`
+    const [mysqlDoctors] = await (this as any).mysqlConnection.execute(`
       SELECT d.*, u.*, s.name as specialty_name, 'doctor' as provider_category
       FROM doctors d
       JOIN users u ON d.user_id = u.id
@@ -229,8 +229,8 @@ class DatabaseMigrator {
     allProviders.forEach(provider => {
       const baseData = {
         id: uuidv4(),
-        user_id: this.uuidMap.get(`users_${provider.user_id}`),
-        organization_id: this.defaultOrgId,
+        user_id: (this as any).uuidMap.get(`users_${provider.user_id}`),
+        organization_id: (this as any).defaultOrgId,
         years_of_experience: provider.years_of_experience,
         is_verified: provider.is_verified || false,
         verification_documents: JSON.stringify([]),
@@ -320,23 +320,23 @@ class DatabaseMigrator {
       console.log(`✅ Migrated ${hsps.length} HSPs`);
     }
 
-    this.migrationLog.push(`Doctors: ${doctors.length} records migrated`);
-    this.migrationLog.push(`HSPs: ${hsps.length} records migrated`);
+    (this as any).migrationLog.push(`Doctors: ${doctors.length} records migrated`);
+    (this as any).migrationLog.push(`HSPs: ${hsps.length} records migrated`);
   }
 
   async migratePatients() {
     console.log('🤒 Migrating patients...');
 
-    const [mysqlPatients] = await this.mysqlConnection.execute(`
+    const [mysqlPatients] = await (this as any).mysqlConnection.execute(`
       SELECT p.*, u.*
       FROM patients p
       JOIN users u ON p.user_id = u.id
     `);
 
     const pgPatients = mysqlPatients.map(patient => ({
-      id: this.uuidMap.get(`patients_${patient.id}`) || uuidv4(),
-      user_id: this.uuidMap.get(`users_${patient.user_id}`),
-      organization_id: this.defaultOrgId,
+      id: (this as any).uuidMap.get(`patients_${patient.id}`) || uuidv4(),
+      user_id: (this as any).uuidMap.get(`users_${patient.user_id}`),
+      organization_id: (this as any).defaultOrgId,
       medical_record_number: patient.medical_record_number,
       emergency_contacts: JSON.stringify(patient.emergency_contacts || []),
       insurance_information: JSON.stringify(patient.insurance_information || {}),
@@ -365,7 +365,7 @@ class DatabaseMigrator {
         data_sharing_consent: false,
         provider_directory_listing: true
       }),
-      primary_care_doctor_id: patient.assigned_doctor_id ? this.uuidMap.get(`users_${patient.assigned_doctor_id}`) : null,
+      primary_care_doctor_id: patient.assigned_doctor_id ? (this as any).uuidMap.get(`users_${patient.assigned_doctor_id}`) : null,
       overall_adherence_score: patient.overall_adherence_score,
       total_appointments: patient.total_appointments || 0,
       missed_appointments: patient.missed_appointments || 0,
@@ -381,23 +381,23 @@ class DatabaseMigrator {
     await this.batchInsertPatients(pgPatients);
 
     console.log(`✅ Migrated ${pgPatients.length} patients`);
-    this.migrationLog.push(`Patients: ${pgPatients.length} records migrated`);
+    (this as any).migrationLog.push(`Patients: ${pgPatients.length} records migrated`);
   }
 
   async migrateCarePlans() {
     console.log('📋 Migrating care plans...');
 
-    const [mysqlCarePlans] = await this.mysqlConnection.execute(`
+    const [mysqlCarePlans] = await (this as any).mysqlConnection.execute(`
       SELECT cp.*, p.user_id as patient_user_id
       FROM care_plans cp
       JOIN patients p ON cp.patient_id = p.id
     `);
 
     const pgCarePlans = mysqlCarePlans.map(plan => ({
-      id: this.uuidMap.get(`care_plans_${plan.id}`) || uuidv4(),
-      patient_id: this.uuidMap.get(`patients_${plan.patient_id}`),
-      created_by_doctor_id: plan.doctor_id ? this.uuidMap.get(`users_${plan.doctor_id}`) : null,
-      organization_id: this.defaultOrgId,
+      id: (this as any).uuidMap.get(`care_plans_${plan.id}`) || uuidv4(),
+      patient_id: (this as any).uuidMap.get(`patients_${plan.patient_id}`),
+      created_by_doctor_id: plan.doctor_id ? (this as any).uuidMap.get(`users_${plan.doctor_id}`) : null,
+      organization_id: (this as any).defaultOrgId,
       title: plan.details?.diagnosis || 'Care Plan',
       plan_type: 'care_plan',
       chronic_conditions: JSON.stringify([plan.details?.diagnosis].filter(Boolean)),
@@ -426,7 +426,7 @@ class DatabaseMigrator {
     await this.batchInsertCarePlans(pgCarePlans);
 
     console.log(`✅ Migrated ${pgCarePlans.length} care plans`);
-    this.migrationLog.push(`Care Plans: ${pgCarePlans.length} records migrated`);
+    (this as any).migrationLog.push(`Care Plans: ${pgCarePlans.length} records migrated`);
   }
 
   // Helper methods for batch inserts
@@ -443,7 +443,7 @@ class DatabaseMigrator {
       const values = batch.flatMap(row => columns.map(col => row[col]));
       const query = `INSERT INTO ${tableName} (${columns.join(', ')}) VALUES ${placeholders}`;
 
-      await this.pgConnection.query(query, values);
+      await (this as any).pgConnection.query(query, values);
     }
   }
 
@@ -517,7 +517,7 @@ class DatabaseMigrator {
       'patient': 'PATIENT',
       'caregiver': 'CAREGIVER'
     };
-    return roleMap[mysqlRole?.toLowerCase()] || 'PATIENT';
+    return (roleMap as any)[mysqlRole?.toLowerCase()] || 'PATIENT';
   }
 
   mapHSPType(credentials) {
@@ -555,9 +555,9 @@ class DatabaseMigrator {
 
     for (const query of indexQueries) {
       try {
-        await this.pgConnection.query(query);
+        await (this as any).pgConnection.query(query);
       } catch (error) {
-        console.warn(`   ⚠️  Index creation warning: ${error.message}`);
+        console.warn(`   ⚠️  Index creation warning: ${(error as any).message}`);
       }
     }
 
@@ -578,8 +578,8 @@ class DatabaseMigrator {
 
     for (const query of verificationQueries) {
       try {
-        const [mysqlResult] = await this.mysqlConnection.execute(query.mysql);
-        const pgResult = await this.pgConnection.query(query.postgres);
+        const [mysqlResult] = await (this as any).mysqlConnection.execute(query.mysql);
+        const pgResult = await (this as any).pgConnection.query(query.postgres);
 
         const mysqlCount = mysqlResult[0].count;
         const pgCount = parseInt(pgResult.rows[0].count);
@@ -592,8 +592,8 @@ class DatabaseMigrator {
           verificationResults.push({ table: query.name, status: 'error', mysql: mysqlCount, postgres: pgCount });
         }
       } catch (error) {
-        console.warn(`⚠️  ${query.name} verification failed: ${error.message}`);
-        verificationResults.push({ table: query.name, status: 'warning', error: error.message });
+        console.warn(`⚠️  ${query.name} verification failed: ${(error as any).message}`);
+        verificationResults.push({ table: query.name, status: 'warning', (error as any): (error as any).message });
       }
     }
 
@@ -602,13 +602,13 @@ class DatabaseMigrator {
 
   async generateMigrationReport() {
     const endTime = new Date();
-    const duration = Math.round((endTime - this.startTime) / 1000);
+    const duration = Math.round((endTime - (this as any).startTime) / 1000);
 
     const report = {
-      migration_date: this.startTime,
+      migration_date: (this as any).startTime,
       duration_seconds: duration,
-      tables_migrated: this.migrationLog,
-      uuid_mappings_generated: this.uuidMap.size,
+      tables_migrated: (this as any).migrationLog,
+      uuid_mappings_generated: (this as any).uuidMap.size,
       status: 'completed',
       verification_results: await this.verifyMigration()
     };
@@ -621,8 +621,8 @@ class DatabaseMigrator {
 
     console.log('\n📊 Migration Report:');
     console.log(`   Duration: ${duration} seconds`);
-    console.log(`   Tables migrated: ${this.migrationLog.length}`);
-    console.log(`   UUID mappings: ${this.uuidMap.size}`);
+    console.log(`   Tables migrated: ${(this as any).migrationLog.length}`);
+    console.log(`   UUID mappings: ${(this as any).uuidMap.size}`);
     console.log(`   Report saved to: migration-report.json`);
 
     return report;
@@ -631,12 +631,12 @@ class DatabaseMigrator {
   async cleanup() {
     console.log('🧹 Cleaning up connections...');
     
-    if (this.mysqlConnection) {
-      await this.mysqlConnection.end();
+    if ((this as any).mysqlConnection) {
+      await (this as any).mysqlConnection.end();
     }
     
-    if (this.pgConnection) {
-      await this.pgConnection.end();
+    if ((this as any).pgConnection) {
+      await (this as any).pgConnection.end();
     }
     
     console.log('✅ Cleanup completed');
@@ -645,7 +645,7 @@ class DatabaseMigrator {
   async migrate() {
     try {
       console.log('🚀 Starting MySQL to PostgreSQL migration...');
-      console.log(`   Start time: ${this.startTime}`);
+      console.log(`   Start time: ${(this as any).startTime}`);
 
       await this.initialize();
       await this.generateUUIDs();
