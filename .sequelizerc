@@ -1,9 +1,25 @@
 // .sequelizerc - Sequelize CLI Configuration
 const path = require('path');
+const fs = require('fs');
+
+// Determine if we're using compiled code (production) or source code (development)
+const distConfigExists = fs.existsSync(path.resolve('dist/config/config.js'));
+const srcConfigExists = fs.existsSync(path.resolve('src/config/config.cjs'));
+
+// Use dist (compiled) if available, otherwise use src (development)
+const useDistConfig = distConfigExists && !srcConfigExists;
 
 module.exports = {
-  'config': path.resolve('src/config', 'config.cjs'),
-  'models-path': path.resolve('src', 'models'),  
-  'seeders-path': path.resolve('src', 'seeders'),
-  'migrations-path': path.resolve('src', 'migrations')
+  'config': useDistConfig ? 
+    path.resolve('dist/config', 'config.js') : 
+    path.resolve('src/config', 'config.cjs'),
+  'models-path': useDistConfig ? 
+    path.resolve('dist', 'models') : 
+    path.resolve('src', 'models'),
+  'seeders-path': useDistConfig ? 
+    path.resolve('dist', 'seeders') : 
+    path.resolve('src', 'seeders'),
+  'migrations-path': useDistConfig ? 
+    path.resolve('dist', 'migrations') : 
+    path.resolve('src', 'migrations')
 };

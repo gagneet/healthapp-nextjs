@@ -64,6 +64,7 @@ services:
     volumes:
       - ../src:/app/src:ro
       - ../logs:/app/logs
+      - ../.sequelizerc:/app/.sequelizerc:ro
       - node_modules_cache:/app/node_modules
     networks:
       - healthapp-network
