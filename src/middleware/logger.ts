@@ -834,14 +834,14 @@ export const getTraceContext = () => {
 const globalLogger = new EnhancedWinstonLogger("global");
 
 // Export convenience methods using the global logger
-export const debug = (...args: any[]) => globalLogger.debug(...args);
-export const info = (...args: any[]) => globalLogger.info(...args);
-export const warn = (...args: any[]) => globalLogger.warn(...args);
-export const error = (...args: any[]) => globalLogger.error(...args);
-export const performance = (...args: any[]) => globalLogger.performance(...args);
-export const audit = (...args: any[]) => globalLogger.audit(...args);
-export const structured = (...args: any[]) => globalLogger.structured(...args);
-export const trace = (...args: any[]) => globalLogger.trace(...args);
+export const debug = (message: any, ...args: any[]) => globalLogger.debug(message, ...args);
+export const info = (message: any, ...args: any[]) => globalLogger.info(message, ...args);
+export const warn = (message: any, ...args: any[]) => globalLogger.warn(message, ...args);
+export const error = (message: any, ...args: any[]) => globalLogger.error(message, ...args);
+export const performance = (label: any, durationMs: any, metadata = {}) => globalLogger.performance(label, durationMs, metadata);
+export const audit = (action: any, details = {}) => globalLogger.audit(action, details);
+export const structured = (level: any, message: any, data = {}) => globalLogger.structured(level, message, data);
+export const trace = (operationName: any, metadata = {}) => globalLogger.trace(operationName, metadata);
 
 // Export the global logger instance
 export const logger = globalLogger;

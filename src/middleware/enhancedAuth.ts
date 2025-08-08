@@ -114,12 +114,9 @@ export const enhancedAuthenticate = async (req: any, res: any, next: any) => {
       }
       
       return res.status(401).json(ResponseFormatter.error(
-        {
-          status: 'UNAUTHORIZED',
-          message,
-          code: errorCode
-        },
-        401
+        message,
+        401,
+        errorCode
       ));
     }
     

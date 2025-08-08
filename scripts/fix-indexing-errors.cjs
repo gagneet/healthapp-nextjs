@@ -4,6 +4,18 @@ const fs = require('fs');
 const path = require('path');
 const { execSync } = require('child_process');
 
+// Security: Sanitize log output to prevent log injection
+const sanitizeForLog = (input) => {
+  if (typeof input !== 'string') {
+    input = String(input);
+  }
+  // Remove/escape potentially dangerous characters that could manipulate logs
+  return input.replace(/[\r\n\t]/g, ' ').replace(/[<>&"']/g, (char) => {
+    const escapes = { '<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;', "'": '&#x27;' };
+    return escapes[char] || char;
+  });
+};
+
 console.log('🔧 Fixing TypeScript indexing errors (TS7053)...');
 
 // Get TypeScript errors
@@ -51,7 +63,7 @@ indexingErrors.forEach(errorLine => {
   
   if (fixedLine !== line) {
     lines[lineNumber - 1] = fixedLine;
-    console.log(`Fixed indexing in ${filePath}:${lineNumber}`);
+    console.log(`Fixed indexing in ${sanitizeForLog(filePath)}:${sanitizeForLog(lineNumber)}`);
   }
 });
 
