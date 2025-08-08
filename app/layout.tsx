@@ -26,7 +26,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="h-full">
       <head>
-        <meta httpEquiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline' 'unsafe-eval'; connect-src 'self' http://192.168.0.148:3004;" />
+        <meta httpEquiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline' 'unsafe-eval'; connect-src 'self' http://192.168.0.148:3002 http://192.168.0.148:3005;" />
       </head>
       <body className={`${inter.className} h-full bg-gray-50`}>
         <ErrorBoundary>

@@ -39,7 +39,7 @@ DB_HOST_IP=${2:-$HOST_IP}
 REDIS_HOST_IP=${3:-$HOST_IP}
 
 print_message $YELLOW "Configuration:"
-print_message $YELLOW "  Frontend URL: http://$HOST_IP:3000"
+print_message $YELLOW "  Frontend URL: http://$HOST_IP:3002"
 print_message $YELLOW "  Backend API:  http://$HOST_IP:3005"
 print_message $YELLOW "  Database:     $DB_HOST_IP:5432"
 print_message $YELLOW "  Redis Cache:  $REDIS_HOST_IP:6379"
@@ -124,7 +124,7 @@ print_message $GREEN "Services Status:"
 docker-compose -f "$COMPOSE_FILE" ps
 
 print_message $GREEN "🌐 Application URLs:"
-print_message $GREEN "   Frontend:        http://$HOST_IP:3000"
+print_message $GREEN "   Frontend:        http://$HOST_IP:3002"
 print_message $GREEN "   Backend API:     http://$HOST_IP:3005"
 print_message $GREEN "   API Health:      http://$HOST_IP:3005/health"
 print_message $GREEN "   Database:        $DB_HOST_IP:5432 (healthapp_dev)"

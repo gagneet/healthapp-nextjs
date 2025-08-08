@@ -296,7 +296,7 @@ update_environment_files() {
         cp "$env_file" "$working_env"
         
         # Update URLs with the provided IP address
-        sed -i "s/localhost:3000/$IP_ADDRESS:3000/g" "$working_env"
+        sed -i "s/localhost:3002/$IP_ADDRESS:3002/g" "$working_env"
         sed -i "s/localhost:3005/$IP_ADDRESS:3005/g" "$working_env"
         
         print_status "Environment file updated: $working_env"
@@ -407,7 +407,7 @@ services:
       REDIS_HOST: redis
       REDIS_PORT: 6379
       JWT_SECRET: 25af6001e43881f727388f44e0f6fff837510b0649fe9393987f009c595156f778442654270516863b00617b478aa46dea6311f74fb95325d3c9a344b125d033
-      FRONTEND_URL: http://${HOST_IP}:3000
+      FRONTEND_URL: http://${HOST_IP}:3002
       LOG_LEVEL: info
       # Add connection retry configuration for better startup reliability
       DB_CONNECT_RETRY_DELAY: 5000
@@ -452,7 +452,7 @@ services:
       BACKEND_URL: http://backend:3005
       NEXT_PUBLIC_API_URL: http://${HOST_IP}:3005/api
     ports:
-      - "${HOST_IP}:3000:3000"
+      - "${HOST_IP}:3002:3002"
     networks:
       - healthapp-network
     depends_on:
@@ -474,7 +474,7 @@ services:
           memory: 512M
     # Frontend healthcheck - simplified to just check if Next.js is responding
     healthcheck:
-      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3000/ || exit 1"]
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3002/ || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -555,7 +555,7 @@ deploy_stack() {
         export DB_USER=healthapp_user  
         export DB_PASSWORD=pg_password
         export JWT_SECRET=25af6001e43881f727388f44e0f6fff837510b0649fe9393987f009c595156f778442654270516863b00617b478aa46dea6311f74fb95325d3c9a344b125d033
-        export FRONTEND_URL=http://$HOST_IP:3000
+        export FRONTEND_URL=http://$HOST_IP:3002
         export NEXT_PUBLIC_API_URL=http://$HOST_IP:3005/api
         
         # Deploy the unified stack
@@ -706,7 +706,7 @@ wait_for_services() {
     while [ $counter -lt $timeout ]; do
         if docker service ls | grep "${DOCKER_STACK_NAME}_frontend" | grep -q "1/1"; then
             # Also check if frontend responds
-            if curl -f http://${HOST_IP}:3000 > /dev/null 2>&1; then
+            if curl -f http://${HOST_IP}:3002 > /dev/null 2>&1; then
                 print_status "Frontend service is ready and responding"
                 break
             fi
@@ -973,7 +973,7 @@ show_deployment_summary() {
     echo "   Seeders:        $([ "$RUN_SEEDERS" = true ] && echo "✅ Executed" || echo "⏭️ Skipped")"
     echo ""
     echo "📋 Access URLs:"
-    echo "   Frontend:       http://$HOST_IP:3000"
+    echo "   Frontend:       http://$HOST_IP:3002"
     echo "   Backend API:    http://$HOST_IP:3005"
     echo "   Health Check:   http://$HOST_IP:3005/health"
     echo "   pgAdmin:        http://$HOST_IP:5050 (admin@healthapp.com / admin123)"
