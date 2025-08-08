@@ -1,111 +1,65 @@
 # Healthcare Management Platform
 
-A comprehensive, modern healthcare management system built with **NextJS 14** frontend and **Node.js/Express** backend, featuring patient care management, medication tracking, appointment scheduling, and real-time monitoring capabilities.
+A comprehensive, modern healthcare management system built with **Node.js/Express** backend and **NextJS 14** frontend, featuring patient care management, medication tracking, appointment scheduling, and real-time monitoring capabilities.
 
-Key Updates Made:
+## ✨ Latest Enhancements
 
-## ✅ Architecture & Technology Stack
+### 🚀 **Complete Architecture Implementation**
+- **Full ES Module Migration**: Complete conversion from CommonJS to modern ES modules with `.js` extensions
+- **Production-Ready Routes**: 10 organized route files with comprehensive CRUD operations
+- **Service Layer Architecture**: Business logic separation with AuthService, PatientService, MedicationService, and SchedulingService
+- **Complete Database Schema**: 22 migration files with 13+ Sequelize models and proper associations
 
-- Updated to reflect the hybrid NextJS 14 + Node.js/Express architecture
-- Highlighted modern ES Modules, PostgreSQL, and TypeScript implementation
-- Added comprehensive project structure diagram
+### 🏗️ **Modern Development Stack**
+- **Node.js 22+ with ES Modules**: Modern async/await patterns and top-level await support
+- **MySQL with Sequelize ORM**: Production-ready database with connection pooling and optimized queries
+- **TypeScript Definitions**: Complete type safety across backend with `/typings` directory
+- **Enhanced Security**: Helmet, CORS, rate limiting, JWT authentication, and HIPAA compliance features
 
-## ✅ Clear Installation Instructions
-
-- Step-by-step setup process with PostgreSQL database creation
-- Environment configuration with complete variable reference table
-- Proper migration and seeding workflow
-
-## ✅ Complete API Documentation
-
-- All major API endpoints with proper HTTP methods
-- Consistent response format documentation
-- Authentication and authorization details
-
-## ✅ Development Workflow
-
-- All available npm scripts clearly explained
-- Database development with Sequelize commands
-- Code quality standards and modern JavaScript practices
-
-## ✅ Docker Swarm Deployment
-
-- Production-ready Docker Swarm orchestration
-- Horizontal scaling and load balancing
-- Zero-downtime rolling updates
-- Complete deployment automation
-
-## ✅ Security & Compliance Features
-
-- HIPAA compliance details
-- Security features and best practices
-- Healthcare industry standards
-
-## ✅ Performance & Monitoring
-
-- Database optimization features
-- Caching strategies with Redis
-- Monitoring and logging capabilities
-
-## ✅ Comprehensive Documentation Links
-
-- References to all existing documentation files
-- Troubleshooting guide with common issues
-- Migration and deployment guides
-
-The updated documentation now properly reflects your sophisticated healthcare management platform with:
-
-- Clear architecture overview
-- Step-by-step setup instructions
-- Complete API documentation
-- Modern development practices
-- Production deployment guidance
-
-- 22 migration files for complete database schema
-- 13+ Sequelize models with associations
-- Modern ES Module implementation
-- PostgreSQL with advanced features (UUIDs, JSONB, full-text search)
-- Complete healthcare management functionality
-- Docker deployment with production-ready configuration
-- HIPAA compliance and security features
-
-The documentation is now production-ready and provides clear guidance for developers, operators, and healthcare organizations implementing this system.
-
-Having well-organized documentation like this will make it much easier for new developers to onboard, for operations teams to deploy, and for healthcare organizations to understand the platform's capabilities.
+### 🔧 **Development Experience**
+- **Comprehensive Testing**: Jest with `--detectOpenHandles` and coverage reporting
+- **Code Quality**: ESLint configured for modern JavaScript with auto-fix capabilities
+- **Database Seeding**: Initial data for specialists, medicines, and vital templates
+- **Docker Swarm Ready**: Production deployment with horizontal scaling and zero-downtime updates
 
 ## 🏗️ Architecture
 
-This application uses a **hybrid architecture** combining:
+This application uses a **modern architecture** combining:
 
-- **Frontend**: NextJS 14 with TypeScript, TailwindCSS, and App Router
-- **Backend**: Node.js/Express with ES Modules and Sequelize ORM
-- **Database**: PostgreSQL with advanced features and Redis caching
-- **Deployment**: Docker containers with production-ready orchestration
+- **Backend**: Node.js 22+ with Express.js, ES Modules, and Sequelize ORM
+- **Frontend**: NextJS 14 with TypeScript, TailwindCSS, and App Router (ready for integration)
+- **Database**: MySQL 8.0+ with advanced features and Redis caching
+- **Deployment**: Docker Swarm with horizontal scaling and production orchestration
 
 ```text
 healthapp-nextjs/
-├── 🎨 Frontend (NextJS 14 + TypeScript)
+├── 🔧 Backend (Node.js 22+ + Express + ES Modules)
+│   └── src/
+│       ├── config/          # Database, JWT, constants, cloud config
+│       ├── controllers/     # Route handlers for each domain (8 controllers)
+│       ├── middleware/      # Auth, validation, error handling, rate limiting, logging
+│       ├── models/          # Sequelize models and associations (13+ models)
+│       ├── routes/          # API route definitions (10 route files)
+│       ├── services/        # Business logic and data processing (4 services)
+│       ├── utils/           # Helper functions, validators, response formatters
+│       ├── migrations/      # Database schema migrations (22+ files)
+│       ├── seeders/         # Initial data seeding
+│       └── server.js        # Modern ES module application entry point
+├── 🎨 Frontend (NextJS 14 + TypeScript) - Ready for Integration
 │   ├── app/                 # NextJS App Router pages
 │   ├── components/          # Reusable React components
 │   ├── lib/                 # Frontend utilities & API client
 │   └── types/               # TypeScript definitions
-├── 🔧 Backend (Node.js + Express + Sequelize)
-│   └── src/
-│       ├── config/          # Database, JWT, constants
-│       ├── controllers/     # Route handlers (8 controllers)
-│       ├── middleware/      # Auth, validation, rate limiting
-│       ├── models/          # Sequelize models (13+ models)
-│       ├── routes/          # API endpoints (10 route files)
-│       ├── services/        # Business logic layer (4 services)
-│       ├── utils/           # Helper functions & validators
-│       ├── migrations/      # Database migrations (22 files)
-│       └── seeders/         # Initial data population
-├── 🚀 Deployment & Infrastructure
-│   ├── docker/              # Docker configurations
-│   ├── scripts/             # Deployment scripts
-│   ├── nginx/               # Reverse proxy config
-│   └── monitoring/          # Prometheus configuration
-└── 📚 docs/                 # Comprehensive documentation
+├── 🏗️ Development & Infrastructure
+│   ├── docker/              # Docker configurations & Swarm orchestration
+│   ├── scripts/             # Deployment and automation scripts
+│   ├── typings/             # TypeScript definitions for backend
+│   └── docs/                # Comprehensive documentation
+└── 🚀 Production Ready Features
+    ├── Migration system with versioned schema changes
+    ├── Seeded initial data (specialists, medicines, vital templates)
+    ├── Complete ES module conversion for modern development
+    └── Docker Swarm deployment with scaling capabilities
 ```
 
 ## ✨ Key Features
@@ -135,9 +89,9 @@ healthapp-nextjs/
 
 ### Prerequisites
 
-- **Node.js** 18.0.0 or higher
-- **PostgreSQL** 14+ (recommended) or MySQL 8.0+
-- **Redis** (optional, for caching)
+- **Node.js** 22.18.0 LTS or higher
+- **MySQL** 8.0+ (primary database)
+- **Redis** (optional, for caching and sessions)
 - **Docker** (optional, for containerized deployment)
 
 ### Installation
@@ -163,8 +117,8 @@ nano .env.local
 #### **Database setup:**
 
 ```bash
-# Create PostgreSQL database
-createdb healthapp_db
+# Create MySQL database
+mysql -u root -p -e "CREATE DATABASE healthapp_dev;"
 
 # Run migrations
 npm run migrate
@@ -173,21 +127,20 @@ npm run migrate
 npm run seed
 ```
 
-#### **Start development servers:**
+#### **Start development server:**
 
 ```bash
-# Start backend API server (port 3001)
-npm run backend:dev
-
-# In another terminal, start frontend (port 3000)
+# Start backend development server with nodemon
 npm run dev
+
+# Or start production server
+npm start
 ```
 
 #### **Access the application:**
 
-- **Frontend**: [http://localhost:3000](http://localhost:3000)
-- **Backend API**: [http://localhost:3001](http://localhost:3001)
-- **API Documentation**: [http://localhost:3001/api-docs](http://localhost:3001/api-docs) (if configured)
+- **Backend API**: [http://localhost:5000](http://localhost:5000) (development)
+- **Frontend**: Ready for integration at [http://localhost:3000](http://localhost:3000)
 
 ## 🔧 Configuration
 
@@ -196,13 +149,12 @@ npm run dev
 | Variable | Description | Example |
 |----------|-------------|---------|
 | `NODE_ENV` | Environment mode | `development` |
-| `PORT` | Frontend port | `3000` |
-| `BACKEND_PORT` | Backend API port | `3001` |
-| `DB_NAME` | Database name | `healthapp_db` |
-| `DB_USER` | Database username | `postgres` |
+| `PORT` | Backend API port | `5000` |
+| `DB_NAME` | Database name | `healthapp_dev` |
+| `DB_USER` | Database username | `root` |
 | `DB_PASSWORD` | Database password | `your_password` |
 | `DB_HOST` | Database host | `localhost` |
-| `DB_PORT` | Database port | `5432` |
+| `DB_PORT` | Database port | `3306` |
 | `JWT_SECRET` | JWT signing secret | `your-super-secret-jwt-key` |
 | `REDIS_URL` | Redis connection URL | `redis://localhost:6379` |
 | `AWS_ACCESS_KEY_ID` | AWS S3 access key | `your-aws-key` |
@@ -212,14 +164,14 @@ npm run dev
 
 ### Database Schema
 
-The application uses a comprehensive PostgreSQL schema with:
+The application uses a comprehensive MySQL schema with:
 
 - **13+ Core Models**: Users, Patients, Providers, Care Plans, Medications, etc.
-- **Advanced Features**: UUIDs, JSONB columns, full-text search, triggers
+- **Advanced Features**: Proper relationships, foreign keys, indexes, and constraints
 - **HIPAA Compliance**: Audit logging, soft deletes, encrypted sensitive data
 - **Performance**: Optimized indexes, connection pooling, query optimization
 
-See `docs/healthapp_schema.sql` for the complete schema definition.
+See the `/src/migrations/` directory for complete schema definitions with 22+ migration files.
 
 ## 📚 API Documentation
 
@@ -300,35 +252,29 @@ Authorization: Bearer <your-jwt-token>
 ### Available Scripts
 
 ```bash
-# Frontend Development
-npm run dev              # Start NextJS development server
-npm run build           # Build production frontend
-npm run start           # Start production frontend
-npm run lint            # Run ESLint on frontend
-npm run type-check      # TypeScript type checking
-
-# Backend Development  
-npm run backend:dev     # Start backend with nodemon
-npm run backend:start   # Start production backend
-npm run lint:backend    # Run ESLint on backend
-npm run lint:fix        # Auto-fix ESLint issues
+# Development
+npm run dev                    # Start development server with nodemon
+npm start                     # Start production server
 
 # Database Management
-npm run migrate         # Run all pending migrations
-npm run migrate:undo    # Undo last migration
-npm run seed            # Run all seeders
-npm run seed:undo       # Undo all seeders
-npm run db:setup        # Run migrations + seeders
+npm run migrate               # Run all pending migrations
+npm run migrate:undo          # Undo last migration
+npm run seed                  # Run all seeders
+npm run seed:undo            # Undo all seeders
 
 # Testing
-npm test                # Run Jest test suite
-npm run test:watch      # Run tests in watch mode
-npm run test:coverage   # Generate coverage report
+npm test                     # Run Jest test suite with --detectOpenHandles
+npm run test:watch           # Run tests in watch mode
+npm run test:coverage        # Generate test coverage report
+
+# Code Quality
+npm run lint                 # Run ESLint on src/
+npm run lint:fix             # Auto-fix ESLint issues
 ```
 
 ### Database Development
 
-The application uses Sequelize with PostgreSQL:
+The application uses Sequelize with MySQL:
 
 ```bash
 # Generate new migration
@@ -341,14 +287,42 @@ npx sequelize-cli seed:generate --name demo-data
 npm run db:test
 ```
 
+### Modern ES Module Implementation
+
+The codebase has been **completely converted** from CommonJS to modern ES Modules:
+
+#### **Key Implementation Details:**
+- **Full `import/export` Syntax**: No more `require()` or `module.exports`
+- **`.js` Extensions Required**: All relative imports must include `.js` extensions for proper module resolution
+- **Top-level Await Support**: Ready for Node.js 22+ async patterns
+- **Modern Async/Await**: Consistent patterns throughout the application
+
+#### **Migration Benefits:**
+- **Better Tree Shaking**: Improved bundle optimization and dead code elimination
+- **Static Analysis**: Enhanced IDE support and tooling capabilities  
+- **Future-Ready**: Aligned with modern JavaScript and web standards
+- **Performance**: Faster module loading and better optimization
+
+#### **Development Guidelines:**
+```javascript
+// ✅ Correct ES Module patterns
+import { User } from '../models/User.js';
+import config from '../config/database.js';
+export default AuthService;
+
+// ❌ Avoid CommonJS patterns  
+const User = require('../models/User');
+module.exports = AuthService;
+```
+
 ### Code Quality
 
 The project enforces modern JavaScript standards:
 
-- **ES Modules**: Full `import/export` syntax with `.js` extensions
-- **ESLint**: Configured for modern JavaScript and React
-- **TypeScript**: Type safety across frontend and backend
-- **Jest**: Comprehensive testing with coverage reporting
+- **ES Modules**: Complete `import/export` implementation with `.js` extensions
+- **ESLint**: Configured for modern JavaScript with ES2022+ features
+- **TypeScript Definitions**: Complete type safety with `/typings` directory
+- **Jest**: Comprehensive testing with `--detectOpenHandles` for proper cleanup
 
 ## 🐳 Docker Swarm Deployment
 
@@ -410,12 +384,12 @@ docker stack deploy -c docker/docker-stack.yml healthapp
 
 | Service | Development Port | Production | Description |
 |---------|------------------|------------|-------------|
-| Frontend | 3000 | 80/443 | NextJS application |
-| Backend | 3001 | Internal | Node.js API server |
-| PostgreSQL | 5432 | Internal | Primary database |
+| Backend | 5000 | Internal | Node.js API server with ES Modules |
+| Frontend | 3000 | 80/443 | NextJS application (ready for integration) |
+| MySQL | 3306 | Internal | Primary database |
 | Redis | 6379 | Internal | Cache & sessions |
 | NGINX | - | 80/443 | Reverse proxy |
-| pgAdmin | 5050 | - | Database management (dev only) |
+| phpMyAdmin | 8080 | - | Database management (dev only) |
 
 See `docs/docker_deployment_guide.md` for comprehensive deployment instructions.
 
@@ -520,27 +494,29 @@ All schema changes are version-controlled through Sequelize migrations:
 
 ## 📊 Database Schema
 
-The application uses a sophisticated PostgreSQL schema with:
+The application uses a sophisticated MySQL schema with 22+ migration files:
 
 ### Core Tables
 
-- **users** - Authentication and profiles
-- **healthcare_providers** - Doctor/provider profiles  
+- **users** - Authentication and profiles with role-based access
+- **doctors** - Healthcare provider profiles and specialties
 - **patients** - Patient records and medical history
-- **care_plans** - Treatment and care management
-- **medications** - Prescription tracking
-- **appointments** - Scheduling system
-- **vital_readings** - Health monitoring data
-- **notifications** - Multi-channel messaging
+- **care_plans** - Treatment and care management plans
+- **medications** - Prescription tracking and adherence
+- **appointments** - Scheduling system with recurring events
+- **vitals** - Health monitoring data and readings
+- **medicines** - Drug database and templates
+- **specialities** - Medical specialties and categories
+- **vital_templates** - Standardized vital sign templates
 
 ### Advanced Features
 
-- **UUID Primary Keys** - Scalable, secure identifiers
-- **JSONB Columns** - Flexible, queryable JSON storage
-- **Full-text Search** - PostgreSQL's advanced search capabilities
+- **Proper Relationships** - Foreign keys and associations between all entities
+- **Migration System** - Versioned schema changes with 22+ migration files
+- **Seeded Data** - Initial specialists, medicines, and vital templates
 - **Audit Logging** - HIPAA-compliant activity tracking
-- **Soft Deletes** - Data retention and recovery
-- **Triggers & Functions** - Automated timestamp updates
+- **Soft Deletes** - Data retention and recovery capabilities
+- **Connection Pooling** - Optimized database performance
 
 ## 🆘 Support & Troubleshooting
 
@@ -549,8 +525,8 @@ The application uses a sophisticated PostgreSQL schema with:
 **Database Connection Issues:**
 
 ```bash
-# Check PostgreSQL is running
-sudo service postgresql status
+# Check MySQL is running
+sudo service mysql status
 
 # Test database connection
 npm run db:test
@@ -560,9 +536,9 @@ npm run db:test
 
 ```bash
 # Check what's running on ports
-lsof -i :3000  # Frontend
-lsof -i :3001  # Backend
-lsof -i :5432  # PostgreSQL
+lsof -i :5000  # Backend API
+lsof -i :3306  # MySQL
+lsof -i :6379  # Redis
 ```
 
 **Migration Errors:**
@@ -597,6 +573,8 @@ This application is designed with healthcare industry standards in mind:
 
 ---
 
-## **Built with ❤️ for healthcare providers and patients**
+**Built with ❤️ for healthcare providers and patients**
 
-## *Last updated: January 2025*
+*Healthcare Management Platform - Production-ready backend with modern ES Modules, MySQL, and comprehensive API*
+
+**Last updated: August 2025** | Node.js 22+ | MySQL 8.0+ | Docker Swarm Ready

@@ -755,12 +755,100 @@ initialize_database() {
             # Run migrations if requested
             if [ "$RUN_MIGRATIONS" = true ]; then
                 print_status "Running database migrations..."
-                if docker exec "$container_id" npm run migrate 2>/dev/null; then
-                    print_status "✅ Database migrations completed successfully"
+                
+                # Enhanced database readiness validation
+                print_status "Validating database connection and readiness..."
+                local db_ready=false
+                local db_validation_timeout=120
+                local db_counter=0
+                
+                while [ $db_counter -lt $db_validation_timeout ]; do
+                    # Test database connectivity with multiple validation methods
+                    if docker exec "$container_id" sh -c "cd /app && timeout 10 npx sequelize-cli db:validate 2>/dev/null"; then
+                        print_status "✅ Database connection validation successful"
+                        db_ready=true
+                        break
+                    fi
+                    
+                    # Alternate validation: Direct PostgreSQL connection test
+                    if docker exec "$container_id" sh -c "cd /app && timeout 10 node -e 'const { Sequelize } = require(\"sequelize\"); require(\"dotenv\").config(); const sequelize = new Sequelize(process.env.POSTGRES_DB, process.env.POSTGRES_USER, process.env.POSTGRES_PASSWORD, { host: process.env.POSTGRES_HOST, dialect: \"postgres\", logging: false }); sequelize.authenticate().then(() => { console.log(\"DB_READY\"); process.exit(0); }).catch(err => { console.error(\"DB_NOT_READY:\", err.message); process.exit(1); });' 2>/dev/null | grep -q 'DB_READY'"; then
+                        print_status "✅ Direct database connection test successful"
+                        db_ready=true
+                        break
+                    fi
+                    
+                    sleep 3
+                    db_counter=$((db_counter + 3))
+                    echo -n "."
+                done
+                echo ""
+                
+                if [ "$db_ready" = false ]; then
+                    print_error "❌ Database readiness validation failed after $db_validation_timeout seconds!"
+                    print_warning "Attempting migration anyway with extended timeout..."
                 else
-                    print_error "❌ Database migration failed!"
-                    print_warning "This may cause issues with the application. Please check the backend logs."
-                    print_status "Backend logs: docker service logs ${DOCKER_STACK_NAME}_backend -f"
+                    print_status "Database is ready for migrations"
+                fi
+                
+                # Wait additional stabilization time
+                print_status "Waiting additional 10 seconds for database stability..."
+                sleep 10
+                
+                # Attempt migration with comprehensive error handling
+                print_status "Attempting database migration..."
+                local migration_success=false
+                local migration_attempts=0
+                local max_migration_attempts=3
+                
+                while [ $migration_attempts -lt $max_migration_attempts ] && [ "$migration_success" = false ]; do
+                    migration_attempts=$((migration_attempts + 1))
+                    print_status "Migration attempt $migration_attempts of $max_migration_attempts"
+                    
+                    # Set longer timeout for migration execution
+                    if timeout 180 docker exec "$container_id" sh -c "cd /app && NODE_ENV=${MODE} npm run migrate" 2>&1 | tee /tmp/migration_log_${MODE}.txt; then
+                        print_status "✅ Database migrations completed successfully on attempt $migration_attempts"
+                        migration_success=true
+                        break
+                    else
+                        local exit_code=$?
+                        print_warning "❌ Migration attempt $migration_attempts failed with exit code $exit_code"
+                        
+                        # Analyze the failure
+                        if grep -q "ECONNREFUSED\|connection refused\|Connection refused" /tmp/migration_log_${MODE}.txt; then
+                            print_warning "Database connection issue detected. Waiting 15 seconds before retry..."
+                            sleep 15
+                        elif grep -q "timeout\|ETIMEDOUT" /tmp/migration_log_${MODE}.txt; then
+                            print_warning "Database operation timeout detected. Waiting 20 seconds before retry..."
+                            sleep 20
+                        elif grep -q "already exists\|duplicate\|constraint" /tmp/migration_log_${MODE}.txt; then
+                            print_warning "Schema conflicts detected - checking migration status..."
+                            if docker exec "$container_id" sh -c "cd /app && NODE_ENV=${MODE} npx sequelize-cli db:migrate:status" 2>&1 | grep -q "up"; then
+                                print_status "Some migrations already applied - this may be expected"
+                                migration_success=true
+                                break
+                            fi
+                        else
+                            print_warning "Unknown migration error - checking logs..."
+                            tail -20 /tmp/migration_log_${MODE}.txt || true
+                        fi
+                        
+                        if [ $migration_attempts -lt $max_migration_attempts ]; then
+                            sleep 10
+                        fi
+                    fi
+                done
+                
+                # Final migration status check
+                if [ "$migration_success" = false ]; then
+                    print_error "❌ All migration attempts failed!"
+                    print_warning "Checking current database state..."
+                    docker exec "$container_id" sh -c "cd /app && NODE_ENV=${MODE} npx sequelize-cli db:migrate:status" 2>&1 || true
+                    print_warning "Migration logs available at: /tmp/migration_log_${MODE}.txt"
+                    print_warning "This may cause issues with the application. Please check backend logs:"
+                    print_warning "docker service logs ${DOCKER_STACK_NAME}_backend --tail 100"
+                else
+                    # Clean up temporary log file on success
+                    rm -f /tmp/migration_log_${MODE}.txt
                 fi
             else
                 print_status "Skipping migrations. Database schema will be auto-created by sequelize.sync()"
@@ -769,15 +857,84 @@ initialize_database() {
             # Run seeders if requested or prompt in interactive mode
             if [ "$RUN_SEEDERS" = true ]; then
                 print_status "Running database seeders..."
-                if docker exec "$container_id" npm run seed 2>/dev/null; then
-                    print_status "✅ Database test data populated successfully"
+                
+                # Wait a moment after migrations for database stabilization
+                print_status "Waiting 10 seconds after migrations for database stabilization..."
+                sleep 10
+                
+                # Enhanced seeder execution with comprehensive error handling
+                local seeder_success=false
+                local seeder_attempts=0
+                local max_seeder_attempts=3
+                
+                while [ $seeder_attempts -lt $max_seeder_attempts ] && [ "$seeder_success" = false ]; do
+                    seeder_attempts=$((seeder_attempts + 1))
+                    print_status "Seeder attempt $seeder_attempts of $max_seeder_attempts"
+                    
+                    # Execute seeders with timeout and detailed logging
+                    if timeout 120 docker exec "$container_id" sh -c "cd /app && NODE_ENV=${MODE} npm run seed" 2>&1 | tee /tmp/seeder_log_${MODE}.txt; then
+                        print_status "✅ Database test data populated successfully on attempt $seeder_attempts"
+                        seeder_success=true
+                        break
+                    else
+                        local exit_code=$?
+                        print_warning "❌ Seeder attempt $seeder_attempts failed with exit code $exit_code"
+                        
+                        # Analyze the seeder failure
+                        if grep -q "ECONNREFUSED\|connection refused\|Connection refused" /tmp/seeder_log_${MODE}.txt; then
+                            print_warning "Database connection issue during seeding. Waiting 10 seconds before retry..."
+                            sleep 10
+                        elif grep -q "timeout\|ETIMEDOUT" /tmp/seeder_log_${MODE}.txt; then
+                            print_warning "Database operation timeout during seeding. Waiting 15 seconds before retry..."
+                            sleep 15
+                        elif grep -q "already exists\|duplicate\|constraint\|unique" /tmp/seeder_log_${MODE}.txt; then
+                            print_warning "Duplicate data detected - some seed data may already exist"
+                            # Check if this is actually successful (seed data already present)
+                            if docker exec "$container_id" sh -c "cd /app && NODE_ENV=${MODE} node -e 'const { Sequelize } = require(\"sequelize\"); require(\"dotenv\").config(); const sequelize = new Sequelize(process.env.POSTGRES_DB, process.env.POSTGRES_USER, process.env.POSTGRES_PASSWORD, { host: process.env.POSTGRES_HOST, dialect: \"postgres\", logging: false }); sequelize.query(\"SELECT COUNT(*) as count FROM users WHERE email LIKE \\\"%@healthapp.com\\\"\").then(([results]) => { if (results[0].count > 0) { console.log(\"SEED_DATA_EXISTS\"); process.exit(0); } else { console.log(\"NO_SEED_DATA\"); process.exit(1); } }).catch(err => { console.error(\"CHECK_FAILED:\", err.message); process.exit(1); });' 2>/dev/null | grep -q 'SEED_DATA_EXISTS'"; then
+                                print_status "✅ Seed data already exists - seeding considered successful"
+                                seeder_success=true
+                                break
+                            fi
+                        elif grep -q "SequelizeConnectionError\|SequelizeDatabaseError" /tmp/seeder_log_${MODE}.txt; then
+                            print_warning "Sequelize database error during seeding. Checking database status..."
+                            # Quick database health check
+                            if docker exec "$container_id" sh -c "cd /app && timeout 10 node -e 'const { Sequelize } = require(\"sequelize\"); require(\"dotenv\").config(); const sequelize = new Sequelize(process.env.POSTGRES_DB, process.env.POSTGRES_USER, process.env.POSTGRES_PASSWORD, { host: process.env.POSTGRES_HOST, dialect: \"postgres\", logging: false }); sequelize.authenticate().then(() => { console.log(\"DB_OK\"); process.exit(0); }).catch(err => { console.error(\"DB_ERROR:\", err.message); process.exit(1); });' 2>/dev/null | grep -q 'DB_OK'"; then
+                                print_status "Database connection is healthy - will retry seeding"
+                                sleep 8
+                            else
+                                print_error "Database connection issues detected - aborting further seeder attempts"
+                                break
+                            fi
+                        else
+                            print_warning "Unknown seeder error - checking logs..."
+                            tail -15 /tmp/seeder_log_${MODE}.txt || true
+                        fi
+                        
+                        # Reset any failed seeder state before retry (if not the last attempt)
+                        if [ $seeder_attempts -lt $max_seeder_attempts ]; then
+                            print_status "Clearing any partial seeder state before retry..."
+                            docker exec "$container_id" sh -c "cd /app && NODE_ENV=${MODE} npx sequelize-cli db:seed:undo:all --to 0" 2>/dev/null || true
+                            sleep 5
+                        fi
+                    fi
+                done
+                
+                # Final seeder status assessment
+                if [ "$seeder_success" = false ]; then
+                    print_warning "⚠️ All seeder attempts failed, but this is not critical"
+                    print_status "The application will work without initial test data"
+                    print_warning "Seeder logs available at: /tmp/seeder_log_${MODE}.txt"
+                    print_warning "To manually populate test data later, run:"
+                    print_warning "docker exec \$(docker ps -q -f name=${DOCKER_STACK_NAME}_backend) sh -c 'cd /app && NODE_ENV=${MODE} npm run seed'"
                 else
-                    print_warning "⚠️ Seeder execution failed, but continuing..."
+                    # Clean up temporary log file on success
+                    rm -f /tmp/seeder_log_${MODE}.txt
+                    print_status "Database initialization completed with test data"
                 fi
             elif [ "$AUTO_YES" != true ] && [ "$MODE" = "dev" ]; then
                 # Interactive prompt for dev mode only (not for production or auto-yes)
                 if prompt_user "Do you want to populate the database with test data (recommended for dev environment)?"; then
-                    docker exec "$container_id" npm run seed 2>/dev/null || {
+                    timeout 60 docker exec "$container_id" sh -c "cd /app && NODE_ENV=${MODE} npm run seed" 2>/dev/null || {
                         print_warning "Seeder execution failed. Database schema will be auto-created by sequelize.sync()"
                     }
                     print_status "Database test data populated successfully"

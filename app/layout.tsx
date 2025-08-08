@@ -6,7 +6,11 @@ import { AuthProvider } from '@/lib/auth-context'
 import ErrorBoundary from '@/components/ErrorBoundary'
 import GlobalErrorHandler from '@/components/GlobalErrorHandler'
 
-const inter = Inter({ subsets: ['latin'] })
+const inter = Inter({ 
+  subsets: ['latin'],
+  display: 'swap',
+  preload: true
+})
 
 export const metadata: Metadata = {
   title: 'Healthcare Management Platform',
@@ -22,7 +26,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="h-full">
       <head>
-        <meta httpEquiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline' 'unsafe-eval'" />
+        <meta httpEquiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline' 'unsafe-eval'; connect-src 'self' http://192.168.0.148:3004;" />
       </head>
       <body className={`${inter.className} h-full bg-gray-50`}>
         <ErrorBoundary>
