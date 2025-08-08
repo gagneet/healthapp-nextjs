@@ -568,7 +568,7 @@ export default (sequelize: any) => {
     
     const now = new Date();
     const expiration = new Date(this.expiration_date);
-    const diffTime = expiration - now;
+    const diffTime = expiration.getTime() - now.getTime();
     return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   };
   

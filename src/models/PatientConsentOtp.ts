@@ -382,7 +382,7 @@ export default (sequelize: any) => {
     if (this.isExpired()) return 0;
     
     const now = new Date();
-    const remaining = this.expires_at - now;
+    const remaining = this.expires_at.getTime() - now.getTime();
     return Math.max(0, Math.floor(remaining / 1000)); // Return seconds
   };
   

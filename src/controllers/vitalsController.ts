@@ -210,14 +210,14 @@ class VitalsController {
   calculateRemaining(vital: any): number {
     const now = new Date();
     const endDate = new Date(vital.end_date);
-    const daysDiff = Math.ceil((endDate - now) / (1000 * 60 * 60 * 24));
+    const daysDiff = Math.ceil((endDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
     return Math.max(0, daysDiff);
   }
 
   calculateTotal(vital: any): number {
     const startDate = new Date(vital.start_date);
     const endDate = new Date(vital.end_date);
-    return Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
+    return Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
   }
 
   async createVitalSchedule(vital: any, repeatDays: number[]): Promise<void> {

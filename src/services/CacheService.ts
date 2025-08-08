@@ -89,6 +89,24 @@ class CacheService {
   async disconnect() {
     this.cache.clear();
   }
+
+  // User-specific cache methods for auth middleware compatibility
+  async getCachedUser(userId: string) {
+    return this.get(`user:${userId}`);
+  }
+
+  async cacheUser(userId: string, user: any, ttlSeconds?: number) {
+    return this.set(`user:${userId}`, user, ttlSeconds);
+  }
+
+  // API response cache methods for middleware compatibility
+  async getCachedApiResponse(key: string) {
+    return this.get(`api:${key}`);
+  }
+
+  async cacheApiResponse(key: string, response: any, ttlSeconds?: number) {
+    return this.set(`api:${key}`, response, ttlSeconds);
+  }
 }
 
 export default new CacheService();

@@ -82,11 +82,7 @@ export const enhancedAuthenticate = async (req: any, res: any, next: any) => {
     
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return res.status(401).json(ResponseFormatter.error(
-        {
-          status: 'UNAUTHORIZED',
-          message: 'Authentication token required',
-          code: 'MISSING_TOKEN'
-        },
+        'Authentication token required',
         401
       ));
     }
@@ -96,11 +92,7 @@ export const enhancedAuthenticate = async (req: any, res: any, next: any) => {
     // Check if token is blacklisted
     if (tokenBlacklist.has(token)) {
       return res.status(401).json(ResponseFormatter.error(
-        {
-          status: 'UNAUTHORIZED',
-          message: 'Token has been revoked',
-          code: 'TOKEN_REVOKED'
-        },
+        'Token has been revoked',
         401
       ));
     }
@@ -160,14 +152,7 @@ export const enhancedAuthenticate = async (req: any, res: any, next: any) => {
     }
 
     if (!user || user.account_status !== ACCOUNT_STATUS.ACTIVE || !user.is_active) {
-      return res.status(401).json(ResponseFormatter.error(
-        {
-          status: 'UNAUTHORIZED',
-          message: 'Account is inactive or not found',
-          code: 'INACTIVE_ACCOUNT'
-        },
-        401
-      ));
+      return res.status(401).json(ResponseFormatter.error('Account is inactive or not found', 401));
     }
 
     // Add enhanced context to request
@@ -189,14 +174,7 @@ export const enhancedAuthenticate = async (req: any, res: any, next: any) => {
     next();
   } catch (error) {
     console.error('Enhanced auth middleware error:', error);
-    return res.status(500).json(ResponseFormatter.error(
-      {
-        status: 'INTERNAL_ERROR',
-        message: 'Authentication service error',
-        code: 'AUTH_SERVICE_ERROR'
-      },
-      500
-    ));
+    return res.status(500).json(ResponseFormatter.error('Authentication service error', 500));
   }
 };
 
@@ -206,27 +184,13 @@ export const refreshTokenHandler = async (req: any, res: any) => {
     const { refreshToken } = req.body;
     
     if (!refreshToken) {
-      return res.status(400).json(ResponseFormatter.error(
-        {
-          status: 'BAD_REQUEST',
-          message: 'Refresh token is required',
-          code: 'MISSING_REFRESH_TOKEN'
-        },
-        400
-      ));
+      return res.status(400).json(ResponseFormatter.error('Refresh token is required', 400));
     }
     
     // Check if refresh token exists in our store
     const tokenData = refreshTokens.get(refreshToken);
     if (!tokenData) {
-      return res.status(401).json(ResponseFormatter.error(
-        {
-          status: 'UNAUTHORIZED',
-          message: 'Invalid refresh token',
-          code: 'INVALID_REFRESH_TOKEN'
-        },
-        401
-      ));
+      return res.status(401).json(ResponseFormatter.error('Invalid refresh token', 401));
     }
     
     // Verify refresh token
@@ -237,14 +201,7 @@ export const refreshTokenHandler = async (req: any, res: any) => {
       // Remove invalid refresh token
       refreshTokens.delete(refreshToken);
       
-      return res.status(401).json(ResponseFormatter.error(
-        {
-          status: 'UNAUTHORIZED',
-          message: 'Refresh token expired or invalid',
-          code: 'REFRESH_TOKEN_EXPIRED'
-        },
-        401
-      ));
+      return res.status(401).json(ResponseFormatter.error('Refresh token expired or invalid', 401));
     }
     
     // Get user data
@@ -258,14 +215,7 @@ export const refreshTokenHandler = async (req: any, res: any) => {
     
     if (!user || user.account_status !== ACCOUNT_STATUS.ACTIVE) {
       refreshTokens.delete(refreshToken);
-      return res.status(401).json(ResponseFormatter.error(
-        {
-          status: 'UNAUTHORIZED',
-          message: 'User account not found or inactive',
-          code: 'USER_NOT_FOUND'
-        },
-        401
-      ));
+      return res.status(401).json(ResponseFormatter.error('User account not found or inactive', 401));
     }
     
     // Generate new tokens
@@ -317,14 +267,7 @@ export const refreshTokenHandler = async (req: any, res: any) => {
     
   } catch (error) {
     console.error('Refresh token error:', error);
-    return res.status(500).json(ResponseFormatter.error(
-      {
-        status: 'INTERNAL_ERROR',
-        message: 'Token refresh failed',
-        code: 'REFRESH_SERVICE_ERROR'
-      },
-      500
-    ));
+    return res.status(500).json(ResponseFormatter.error('Token refresh failed', 500));
   }
 };
 
@@ -380,14 +323,7 @@ export const enhancedLogout = async (req: any, res: any) => {
     
   } catch (error) {
     console.error('Enhanced logout error:', error);
-    return res.status(500).json(ResponseFormatter.error(
-      {
-        status: 'INTERNAL_ERROR',
-        message: 'Logout failed',
-        code: 'LOGOUT_SERVICE_ERROR'
-      },
-      500
-    ));
+    return res.status(500).json(ResponseFormatter.error('Logout failed', 500));
   }
 };
 
@@ -419,14 +355,7 @@ export const validateToken = async (req: any, res: any) => {
     
   } catch (error) {
     console.error('Token validation error:', error);
-    return res.status(500).json(ResponseFormatter.error(
-      {
-        status: 'INTERNAL_ERROR',
-        message: 'Token validation failed',
-        code: 'VALIDATION_SERVICE_ERROR'
-      },
-      500
-    ));
+    return res.status(500).json(ResponseFormatter.error('Token validation failed', 500));
   }
 };
 
@@ -454,14 +383,7 @@ export const getActiveSessions = async (req: any, res: any) => {
     
   } catch (error) {
     console.error('Get sessions error:', error);
-    return res.status(500).json(ResponseFormatter.error(
-      {
-        status: 'INTERNAL_ERROR',
-        message: 'Failed to retrieve sessions',
-        code: 'SESSIONS_SERVICE_ERROR'
-      },
-      500
-    ));
+    return res.status(500).json(ResponseFormatter.error('Failed to retrieve sessions', 500));
   }
 };
 

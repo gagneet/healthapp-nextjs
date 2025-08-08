@@ -100,7 +100,7 @@ export class HIPAAAuditLog {
     const key = process.env.HIPAA_AUDIT_ENCRYPTION_KEY || crypto.randomBytes(32);
     const iv = crypto.randomBytes(16);
     
-    const cipher = crypto.createCipher(algorithm, key);
+    const cipher = crypto.createCipheriv(algorithm, key.slice(0, 32), iv);
     let encrypted = cipher.update(JSON.stringify(data), 'utf8', 'hex');
     encrypted += cipher.final('hex');
     
@@ -139,7 +139,7 @@ export const requireHIPAAConsent = async (req: any, res: any, next: any) => {
       }
 
       // Check if consent is still valid (yearly renewal)
-      const consentAge = new Date() - new Date(user.hipaa_consent_date);
+      const consentAge = new Date().getTime() - new Date(user.hipaa_consent_date).getTime();
       const oneYear = 365 * 24 * 60 * 60 * 1000;
       
       if (consentAge > oneYear) {
@@ -307,7 +307,7 @@ export class PHIEncryption {
     const key = Buffer.from(process.env.PHI_ENCRYPTION_KEY || crypto.randomBytes(32).toString('hex'), 'hex');
     const iv = crypto.randomBytes(16);
     
-    const cipher = crypto.createCipher(algorithm, key);
+    const cipher = crypto.createCipheriv(algorithm, key.slice(0, 32), iv);
     let encrypted = cipher.update(JSON.stringify(data), 'utf8', 'hex');
     encrypted += cipher.final('hex');
     
@@ -326,7 +326,7 @@ export class PHIEncryption {
     const key = Buffer.from(process.env.PHI_ENCRYPTION_KEY || crypto.randomBytes(32).toString('hex'), 'hex');
     const iv = Buffer.from(encryptedData.iv, 'hex');
     
-    const decipher = crypto.createDecipher(algorithm, key);
+    const decipher = crypto.createDecipheriv(algorithm, key.slice(0, 32), iv);
     if (encryptedData.authTag) {
       decipher.setAuthTag(Buffer.from(encryptedData.authTag, 'hex'));
     }

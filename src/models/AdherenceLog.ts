@@ -348,7 +348,7 @@ export default (sequelize: any) => {
         if (log.scheduled_datetime && log.actual_datetime) {
           const scheduledTime = new Date(log.scheduled_datetime);
           const actualTime = new Date(log.actual_datetime);
-          log.delay_minutes = Math.round((actualTime - scheduledTime) / (1000 * 60));
+          log.delay_minutes = Math.round((actualTime.getTime() - scheduledTime.getTime()) / (1000 * 60));
         }
         
         // Set completion percentage based on status
@@ -365,7 +365,7 @@ export default (sequelize: any) => {
           if (log.scheduled_datetime && log.actual_datetime) {
             const scheduledTime = new Date(log.scheduled_datetime);
             const actualTime = new Date(log.actual_datetime);
-            log.delay_minutes = Math.round((actualTime - scheduledTime) / (1000 * 60));
+            log.delay_minutes = Math.round((actualTime.getTime() - scheduledTime.getTime()) / (1000 * 60));
           }
         }
       }
@@ -492,7 +492,7 @@ export default (sequelize: any) => {
       // Check for consecutive misses
       if (index > 0) {
         const prevTime = new Date(missedLogs[index - 1].scheduled_datetime);
-        const timeDiff = scheduledTime - prevTime;
+        const timeDiff = scheduledTime.getTime() - prevTime.getTime();
         const hoursDiff = timeDiff / (1000 * 60 * 60);
         
         if (hoursDiff <= 48) { // Within 48 hours = consecutive

@@ -105,84 +105,9 @@ export default (sequelize: any) => {
       }
     ],
     
-    // Instance methods
-    instanceMethods: {
-      // Update last used time
-      async updateLastUsed() {
-        (this as any).last_used_at = new Date();
-        await (this as any).save();
-      },
-      
-      // Deactivate device
-      async deactivate() {
-        (this as any).is_active = false;
-        await (this as any).save();
-      },
-      
-      // Check if device supports notification type
-      supportsNotification(type: any) {
-        return this.notification_settings && this.notification_settings[type] === true;
-      },
-      
-      // Update notification settings
-      async updateNotificationSettings(settings: any) {
-        this.notification_settings = {
-          ...this.notification_settings,
-          ...settings
-        };
-        await (this as any).save();
-      }
-    },
-    
-    // Class methods
-    classMethods: {
-      // Find active devices for user
-      findActiveForUser(userId: any) {
-        return (this as any).findAll({
-          where: {
-            user_id: userId,
-            is_active: true
-          },
-          order: [['last_used_at', 'DESC']]
-        });
-      },
-      
-      // Find by push token
-      findByPushToken(pushToken: any) {
-        return (this as any).findOne({
-          where: {
-            push_token: pushToken,
-            is_active: true
-          }
-        });
-      },
-      
-      // Clean up inactive devices
-      async cleanupInactive(daysInactive = 90) {
-        const cutoffDate = new Date();
-        cutoffDate.setDate(cutoffDate.getDate() - daysInactive);
-        
-        return (this as any).update(
-          { is_active: false },
-          {
-            where: {
-              last_used_at: {
-                [sequelize.Sequelize.Op.lt]: cutoffDate
-              },
-              is_active: true
-            }
-          }
-        );
-      },
-      
-      // Get devices by type
-      findByType(deviceType: any) {
-        return (this as any).findAll({
-          where: {
-            device_type: deviceType,
-            is_active: true
-          }
-        });
+    hooks: {
+      beforeUpdate: (device: any) => {
+        device.updated_at = new Date();
       }
     }
   });

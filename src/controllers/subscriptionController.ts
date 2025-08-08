@@ -4,6 +4,10 @@ import '../types/express.js';
 import { ServicePlan, PatientSubscription, Payment, PaymentMethod, Patient, HealthcareProvider } from '../models/index.js';
 import { Op } from 'sequelize';
 import SubscriptionService from '../services/SubscriptionService.js';
+import { parseQueryParam, parseQueryParamAsInt } from '../utils/queryHelpers.js';
+
+// Initialize Stripe (should be moved to a service/config file)
+const stripe = SubscriptionService.stripeInstance || null;
 
 class SubscriptionController {
   // Service Plan Management
@@ -67,8 +71,8 @@ class SubscriptionController {
 
       const plans = await SubscriptionService.getServicePlans(targetProviderId, {
         is_active: is_active !== undefined ? is_active === 'true' : null,
-        limit: parseInt(limit) || 20,
-        offset: parseInt(offset) || 0
+        limit: parseQueryParamAsInt(limit, 20) || 20,
+        offset: parseQueryParamAsInt(offset, 0) || 0
       });
 
       res.status(200).json({
@@ -256,8 +260,8 @@ class SubscriptionController {
             as: 'provider'
           }
         ],
-        limit: parseInt(limit) || 20,
-        offset: parseInt(offset) || 0,
+        limit: parseQueryParamAsInt(limit, 20) || 20,
+        offset: parseQueryParamAsInt(offset, 0) || 0,
         order: [['created_at', 'DESC']]
       });
 
@@ -311,8 +315,8 @@ class SubscriptionController {
             as: 'servicePlan'
           }
         ],
-        limit: parseInt(limit) || 20,
-        offset: parseInt(offset) || 0,
+        limit: parseQueryParamAsInt(limit, 20) || 20,
+        offset: parseQueryParamAsInt(offset, 0) || 0,
         order: [['created_at', 'DESC']]
       });
 
@@ -603,8 +607,8 @@ class SubscriptionController {
             ]
           }
         ],
-        limit: parseInt(limit) || 20,
-        offset: parseInt(offset) || 0,
+        limit: parseQueryParamAsInt(limit, 20) || 20,
+        offset: parseQueryParamAsInt(offset, 0) || 0,
         order: [['created_at', 'DESC']]
       });
 

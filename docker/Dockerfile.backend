@@ -1,52 +1,86 @@
-# Multi-stage backend API Dockerfile for production
-FROM node:22.18.0-alpine AS deps
+# Multi-stage backend API Dockerfile for development and production
+
+# Base stage - Common dependencies
+FROM node:22.18.0-alpine AS base
 WORKDIR /app
 
-# Install build dependencies
-RUN apk add --no-cache build-base postgresql-client
+# Install system dependencies
+RUN apk add --no-cache \
+    postgresql-client \
+    curl \
+    bash \
+    build-base
 
 # Copy package files
 COPY package.json package-lock.json ./
+COPY tsconfig.backend.json tsconfig.build.json tsconfig.docker.json ./
 
-# Install production dependencies only
-RUN npm ci --only=production && npm cache clean --force
+# Development stage
+FROM base AS development
+ENV NODE_ENV=development
 
-# Build stage for TypeScript compilation
-FROM node:22.18.0-alpine AS builder
-WORKDIR /app
-
-# Install build dependencies
-RUN apk add --no-cache build-base
-
-# Copy package files
-COPY package.json package-lock.json ./
-COPY tsconfig.backend.json tsconfig.build.json ./
-
-# Install all dependencies (including dev)
+# Install all dependencies (including dev dependencies)
 RUN npm ci
 
 # Copy source code
 COPY src/ ./src/
 COPY .sequelizerc ./
 
-# Compile TypeScript to JavaScript
-RUN npx tsc -p tsconfig.build.json
+# Create logs directory
+RUN mkdir -p logs
 
-# Production runtime
-FROM node:22.18.0-alpine AS runner
+# Add non-root user for development
+RUN addgroup --system --gid 1001 nodejs && \
+    adduser --system --uid 1001 --ingroup nodejs apiuser
+
+# Change ownership
+RUN chown -R apiuser:nodejs /app
+
+USER apiuser
+
+EXPOSE 3005
+
+# Development command (with hot reload)
+CMD ["npm", "run", "backend:dev"]
+
+# Build stage - TypeScript compilation
+FROM base AS builder
+
+# Install all dependencies (including dev dependencies)
+RUN npm ci
+
+# Copy source code
+COPY src/ ./src/
+COPY .sequelizerc ./
+
+# Compile TypeScript to JavaScript using permissive config for Docker builds
+RUN npx tsc -p tsconfig.docker.json
+
+# Production dependencies stage
+FROM base AS deps
+ENV NODE_ENV=production
+
+# Install production dependencies only
+RUN npm ci --only=production && npm cache clean --force
+
+# Production stage
+FROM node:22.18.0-alpine AS production
 WORKDIR /app
 
-# Install runtime dependencies only
+ENV NODE_ENV=production
+ENV PORT=3005
+
+# Install runtime dependencies
 RUN apk add --no-cache \
     postgresql-client \
     curl \
     bash
 
 # Create non-root user
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 apiuser
+RUN addgroup --system --gid 1001 nodejs && \
+    adduser --system --uid 1001 --ingroup nodejs apiuser
 
-# Copy dependencies and compiled JavaScript
+# Copy production dependencies and compiled JavaScript
 COPY --from=deps --chown=apiuser:nodejs /app/node_modules ./node_modules
 COPY --from=builder --chown=apiuser:nodejs /app/dist ./dist
 COPY --chown=apiuser:nodejs .sequelizerc ./
@@ -57,13 +91,11 @@ RUN mkdir -p logs && chown -R apiuser:nodejs logs
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
-  CMD curl -f http://localhost:3001/health || exit 1
+  CMD curl -f http://localhost:3005/health || exit 1
 
 USER apiuser
 
-EXPOSE 3001
+EXPOSE 3005
 
-ENV NODE_ENV=production
-ENV PORT=3001
-
+# Production command
 CMD ["node", "dist/server.js"]

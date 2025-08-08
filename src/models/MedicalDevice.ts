@@ -608,7 +608,7 @@ export default (sequelize: any) => {
     
     const now = new Date();
     const maintenance = new Date(this.next_maintenance);
-    const diffTime = maintenance - now;
+    const diffTime = maintenance.getTime() - now.getTime();
     return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   };
   

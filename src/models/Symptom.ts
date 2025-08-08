@@ -195,7 +195,7 @@ export default (sequelize: any) => {
       getDuration() {
         if (!(this as any).onset_time) return null;
         
-        const duration = new Date((this as any).recorded_at) - new Date((this as any).onset_time);
+        const duration = new Date((this as any).recorded_at).getTime() - new Date((this as any).onset_time).getTime();
         const hours = Math.floor(duration / (1000 * 60 * 60));
         const days = Math.floor(hours / 24);
         

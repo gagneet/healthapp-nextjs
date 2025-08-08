@@ -23,6 +23,11 @@ class SubscriptionService {
     });
   }
 
+  // Public getter for stripe instance
+  get stripeInstance() {
+    return this.stripe;
+  }
+
   // Service Plan Management
   async createServicePlan(providerId: string, planData: ServicePlanData): Promise<any> {
     const { name, description, price, billing_cycle, features, patient_limit, trial_period_days, setup_fee } = planData;

@@ -189,7 +189,7 @@ class MedicationController {
               total_scheduled: events.length,
               completed: completedEvents,
               missed: events.filter((e: any) => e.status === 'expired').length,
-              adherence_percentage: parseFloat(adherencePercentage)
+              adherence_percentage: parseFloat(adherencePercentage.toString())
             }
           },
           message: 'Medication timeline retrieved successfully'
@@ -205,7 +205,7 @@ class MedicationController {
     // Calculate remaining doses based on schedule
     const now = new Date();
     const endDate = new Date(medication.end_date);
-    const daysDiff = Math.ceil((endDate - now) / (1000 * 60 * 60 * 24));
+    const daysDiff = Math.ceil((endDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
     return Math.max(0, daysDiff);
   }
 
@@ -213,7 +213,7 @@ class MedicationController {
     // Calculate total doses
     const startDate = new Date(medication.start_date);
     const endDate = new Date(medication.end_date);
-    return Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
+    return Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
   }
 
   generateRRule(repeatType: string, startDate: string): string {

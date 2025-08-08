@@ -72,6 +72,7 @@ const authenticate = async (req: Request, res: Response, next: NextFunction): Pr
     }
 
     req.user = {
+      id: user.id,
       userId: user.id,
       email: user.email,
       userCategory: decoded.userCategory || user.role,

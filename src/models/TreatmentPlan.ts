@@ -327,7 +327,7 @@ export default (sequelize: any) => {
     if (!this.end_date) return null;
     const now = new Date();
     const end = new Date(this.end_date);
-    const diffTime = end - now;
+    const diffTime = end.getTime() - now.getTime();
     return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   };
   

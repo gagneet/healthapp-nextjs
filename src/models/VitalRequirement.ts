@@ -89,70 +89,7 @@ export default (sequelize: any) => {
         unique: true,
         where: { deleted_at: null }
       }
-    ],
-    
-    // Instance methods
-    instanceMethods: {
-      // Check if critical
-      isCritical() {
-        return this.is_critical;
-      },
-      
-      // Get next due date based on frequency
-      getNextDueDate(lastReading = null) {
-        const now = new Date();
-        const baseDate = lastReading ? new Date(lastReading) : now;
-        
-        switch ((this as any).frequency) {
-          case 'hourly':
-            return new Date(baseDate.getTime() + 60 * 60 * 1000);
-          case 'every_4_hours':
-            return new Date(baseDate.getTime() + 4 * 60 * 60 * 1000);
-          case 'every_6_hours':
-            return new Date(baseDate.getTime() + 6 * 60 * 60 * 1000);
-          case 'every_8_hours':
-            return new Date(baseDate.getTime() + 8 * 60 * 60 * 1000);
-          case 'every_12_hours':
-            return new Date(baseDate.getTime() + 12 * 60 * 60 * 1000);
-          case 'daily':
-            return new Date(baseDate.getTime() + 24 * 60 * 60 * 1000);
-          case 'twice_daily':
-            return new Date(baseDate.getTime() + 12 * 60 * 60 * 1000);
-          case 'weekly':
-            return new Date(baseDate.getTime() + 7 * 24 * 60 * 60 * 1000);
-          case 'monthly':
-            const nextMonth = new Date(baseDate);
-            nextMonth.setMonth(nextMonth.getMonth() + 1);
-            return nextMonth;
-          default:
-            return null; // as_needed
-        }
-      }
-    },
-    
-    // Class methods
-    classMethods: {
-      // Find by care plan
-      findByCarePlan(carePlanId: any) {
-        return (this as any).findAll({
-          where: {
-            care_plan_id: carePlanId,
-            deleted_at: null
-          },
-          include: ['VitalType']
-        });
-      },
-      
-      // Find critical requirements
-      findCritical() {
-        return (this as any).findAll({
-          where: {
-            is_critical: true,
-            deleted_at: null
-          }
-        });
-      }
-    }
+    ]
   });
   
   return VitalRequirement;
