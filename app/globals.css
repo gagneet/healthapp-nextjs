@@ -73,6 +73,16 @@
   body {
     @apply bg-background text-foreground;
   }
+  
+  /* Prevent layout overflow issues */
+  img {
+    @apply max-w-full h-auto;
+  }
+  
+  /* Container constraints */
+  .container {
+    @apply max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
 }
 
 /* Healthcare-specific custom styles */
@@ -110,4 +120,26 @@
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
+}
+
+/* Layout stability utilities */
+.content-container {
+  @apply w-full max-w-none overflow-x-hidden;
+}
+
+.image-container {
+  @apply relative overflow-hidden rounded-lg;
+}
+
+.prevent-overflow {
+  @apply overflow-hidden;
+}
+
+.responsive-grid {
+  @apply grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4;
+}
+
+/* Fix for svg scaling */
+svg {
+  @apply max-w-full h-auto;
 }

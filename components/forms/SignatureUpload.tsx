@@ -309,7 +309,7 @@ export default function SignatureUpload({
             <img
               src={currentSignatureUrl}
               alt="Current signature"
-              className="mx-auto max-h-40 bg-white border rounded"
+              className="mx-auto max-h-40 max-w-full bg-white border rounded object-contain"
             />
             <div className="mt-4 flex justify-center space-x-3">
               {!disabled && (

@@ -14,7 +14,7 @@ function DoctorLayout({ children }: DoctorLayoutProps) {
 
   return (
     <RouteGuardLayout>
-      <div className="flex h-screen bg-gray-50">
+      <div className="flex h-screen bg-gray-50 overflow-hidden">
         <DoctorSidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
         <div className="flex-1 flex flex-col overflow-hidden lg:ml-0">
           {/* Top bar for mobile */}
@@ -23,8 +23,10 @@ function DoctorLayout({ children }: DoctorLayoutProps) {
             <h1 className="text-lg font-semibold text-gray-900">Healthcare Application</h1>
             <div className="w-8"></div> {/* Spacer for centering */}
           </div>
-          <main className="flex-1 overflow-y-auto p-6 lg:p-8">
-            {children}
+          <main className="flex-1 overflow-y-auto p-6 lg:p-8 content-container">
+            <div className="max-w-7xl mx-auto">
+              {children}
+            </div>
           </main>
         </div>
       </div>

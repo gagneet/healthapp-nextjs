@@ -223,7 +223,7 @@ export default function BodyDiagram({
 
         <svg
           viewBox="0 0 300 400"
-          className={`w-full h-auto transition-transform duration-300 ${
+          className={`w-full h-auto max-w-sm mx-auto transition-transform duration-300 ${
             interactive ? 'cursor-crosshair' : ''
           } ${view === 'left' ? 'scale-x-[-1]' : ''}`}
           onClick={handleBodyClick}

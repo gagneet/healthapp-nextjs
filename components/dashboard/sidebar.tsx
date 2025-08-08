@@ -152,7 +152,7 @@ function SidebarContent({ navigation, pathname, user, onLogout, onClose }: Sideb
           <div className="flex-shrink-0">
             {user?.profile_picture_url ? (
               <img
-                className="h-10 w-10 rounded-full"
+                className="h-10 w-10 rounded-full object-cover"
                 src={user.profile_picture_url}
                 alt={user?.first_name || user?.email}
               />

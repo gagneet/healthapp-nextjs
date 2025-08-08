@@ -350,7 +350,7 @@ export default function DoctorDashboard() {
                   <div className="flex-shrink-0">
                     {(patient as any).profile_picture_url ? (
                       <img
-                        className="h-10 w-10 rounded-full"
+                        className="h-10 w-10 rounded-full object-cover"
                         src={(patient as any).profile_picture_url}
                         alt={`${patient.first_name} ${patient.last_name}`}
                       />
