@@ -3,44 +3,62 @@
 /** @type {import('sequelize-cli').Migration} */
 export default {
   async up (queryInterface: any, Sequelize: any) {
-    // Add provider linkage fields to patients table
-    await queryInterface.addColumn('patients', 'linked_provider_id', {
-      type: Sequelize.UUID,
-      allowNull: true,
-      references: {
-        model: 'organizations',
-        key: 'id'
-      },
-      onDelete: 'SET NULL',
-      comment: 'Current provider organization linked to this patient'
-    });
+    // Check if columns already exist before adding them
+    const tableInfo = await queryInterface.describeTable('patients');
+    
+    // Add provider linkage fields to patients table (idempotent)
+    if (!tableInfo.linked_provider_id) {
+      await queryInterface.addColumn('patients', 'linked_provider_id', {
+        type: Sequelize.UUID,
+        allowNull: true,
+        references: {
+          model: 'organizations',
+          key: 'id'
+        },
+        onDelete: 'SET NULL',
+        comment: 'Current provider organization linked to this patient'
+      });
+    }
 
-    await queryInterface.addColumn('patients', 'provider_linked_at', {
-      type: Sequelize.DATE,
-      allowNull: true,
-      comment: 'When the patient was linked to the current provider'
-    });
+    if (!tableInfo.provider_linked_at) {
+      await queryInterface.addColumn('patients', 'provider_linked_at', {
+        type: Sequelize.DATE,
+        allowNull: true,
+        comment: 'When the patient was linked to the current provider'
+      });
+    }
 
-    await queryInterface.addColumn('patients', 'provider_consent_given', {
-      type: Sequelize.BOOLEAN,
-      defaultValue: false,
-      comment: 'Whether patient gave consent for current provider linkage'
-    });
+    if (!tableInfo.provider_consent_given) {
+      await queryInterface.addColumn('patients', 'provider_consent_given', {
+        type: Sequelize.BOOLEAN,
+        defaultValue: false,
+        comment: 'Whether patient gave consent for current provider linkage'
+      });
+    }
 
-    await queryInterface.addColumn('patients', 'provider_consent_given_at', {
-      type: Sequelize.DATE,
-      allowNull: true,
-      comment: 'When consent was given for current provider linkage'
-    });
+    if (!tableInfo.provider_consent_given_at) {
+      await queryInterface.addColumn('patients', 'provider_consent_given_at', {
+        type: Sequelize.DATE,
+        allowNull: true,
+        comment: 'When consent was given for current provider linkage'
+      });
+    }
 
-    await queryInterface.addColumn('patients', 'provider_consent_method', {
-      type: Sequelize.ENUM('sms', 'email', 'in_person', 'phone', 'automatic'),
-      allowNull: true,
-      comment: 'Method used to obtain consent for provider linkage'
-    });
+    if (!tableInfo.provider_consent_method) {
+      await queryInterface.addColumn('patients', 'provider_consent_method', {
+        type: Sequelize.ENUM('sms', 'email', 'in_person', 'phone', 'automatic'),
+        allowNull: true,
+        comment: 'Method used to obtain consent for provider linkage'
+      });
+    }
 
-    // Create provider consent history table
-    await queryInterface.createTable('patient_provider_consent_history', {
+    // Create provider consent history table (idempotent)
+    const [tables] = await queryInterface.sequelize.query(
+      "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'patient_provider_consent_history'"
+    );
+    
+    if (!tables.length) {
+      await queryInterface.createTable('patient_provider_consent_history', {
       id: {
         type: Sequelize.UUID,
         defaultValue: Sequelize.UUIDV4,
@@ -178,10 +196,16 @@ export default {
         type: Sequelize.DATE,
         defaultValue: Sequelize.NOW
       }
-    });
+      });
+    }
 
-    // Create doctor/HSP provider history table to track provider changes
-    await queryInterface.createTable('provider_change_history', {
+    // Create doctor/HSP provider history table to track provider changes (idempotent)
+    const [providerTables] = await queryInterface.sequelize.query(
+      "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'provider_change_history'"
+    );
+    
+    if (!providerTables.length) {
+      await queryInterface.createTable('provider_change_history', {
       id: {
         type: Sequelize.UUID,
         defaultValue: Sequelize.UUIDV4,
@@ -256,23 +280,41 @@ export default {
         type: Sequelize.DATE,
         defaultValue: Sequelize.NOW
       }
-    });
+      });
+    }
 
-    // Add indexes for performance
-    await queryInterface.addIndex('patients', ['linked_provider_id']);
-    await queryInterface.addIndex('patients', ['provider_consent_given']);
-    await queryInterface.addIndex('patients', ['provider_linked_at']);
+    // Add indexes for performance (idempotent)
+    try {
+      if (tableInfo.linked_provider_id) {
+        await queryInterface.addIndex('patients', ['linked_provider_id'], { concurrently: true });
+      }
+      if (tableInfo.provider_consent_given) {
+        await queryInterface.addIndex('patients', ['provider_consent_given'], { concurrently: true });
+      }
+      if (tableInfo.provider_linked_at) {
+        await queryInterface.addIndex('patients', ['provider_linked_at'], { concurrently: true });
+      }
 
-    await queryInterface.addIndex('patient_provider_consent_history', ['patient_id', 'status']);
-    await queryInterface.addIndex('patient_provider_consent_history', ['new_provider_id']);
-    await queryInterface.addIndex('patient_provider_consent_history', ['consent_requested_at']);
-    await queryInterface.addIndex('patient_provider_consent_history', ['doctor_id']);
-    await queryInterface.addIndex('patient_provider_consent_history', ['hsp_id']);
+      if (!tables.length) {
+        await queryInterface.addIndex('patient_provider_consent_history', ['patient_id', 'status'], { concurrently: true });
+        await queryInterface.addIndex('patient_provider_consent_history', ['new_provider_id'], { concurrently: true });
+        await queryInterface.addIndex('patient_provider_consent_history', ['consent_requested_at'], { concurrently: true });
+        await queryInterface.addIndex('patient_provider_consent_history', ['doctor_id'], { concurrently: true });
+        await queryInterface.addIndex('patient_provider_consent_history', ['hsp_id'], { concurrently: true });
+      }
 
-    await queryInterface.addIndex('provider_change_history', ['practitioner_type', 'practitioner_id']);
-    await queryInterface.addIndex('provider_change_history', ['new_provider_id']);
-    await queryInterface.addIndex('provider_change_history', ['change_date']);
-    await queryInterface.addIndex('provider_change_history', ['status']);
+      if (!providerTables.length) {
+        await queryInterface.addIndex('provider_change_history', ['practitioner_type', 'practitioner_id'], { concurrently: true });
+        await queryInterface.addIndex('provider_change_history', ['new_provider_id'], { concurrently: true });
+        await queryInterface.addIndex('provider_change_history', ['change_date'], { concurrently: true });
+        await queryInterface.addIndex('provider_change_history', ['status'], { concurrently: true });
+      }
+    } catch (error: any) {
+      // Ignore index already exists errors
+      if (!error.message.includes('already exists')) {
+        throw error;
+      }
+    }
   },
 
   async down (queryInterface: any, Sequelize: any) {

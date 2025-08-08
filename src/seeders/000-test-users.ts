@@ -100,6 +100,14 @@ export default {
     );
 
     if (existingDoctorUsers.length > 0) {
+      // Ensure General Medicine specialty exists (idempotent)
+      await queryInterface.sequelize.query(
+        `INSERT INTO specialities (id, name, description, created_at, updated_at) 
+         VALUES (3, 'General Medicine', 'General medical practice', NOW(), NOW())
+         ON CONFLICT (id) DO NOTHING`,
+        { type: Sequelize.QueryTypes.INSERT }
+      );
+
       const doctorRecords = existingDoctorUsers.map((user: any) => ({
         id: uuidv4(),
         user_id: user.id,
@@ -133,6 +141,14 @@ export default {
     );
 
     if (existingDoctorsToUpdate.length > 0) {
+      // Ensure General Medicine specialty exists (idempotent)
+      await queryInterface.sequelize.query(
+        `INSERT INTO specialities (id, name, description, created_at, updated_at) 
+         VALUES (3, 'General Medicine', 'General medical practice', NOW(), NOW())
+         ON CONFLICT (id) DO NOTHING`,
+        { type: Sequelize.QueryTypes.INSERT }
+      );
+
       for (const doctor of existingDoctorsToUpdate) {
         await queryInterface.sequelize.query(
           `UPDATE doctors SET 
