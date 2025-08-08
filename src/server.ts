@@ -72,8 +72,8 @@ app.use('*', (req, res) => {
 
 // Database connection with retry logic
 const connectWithRetry = async () => {
-  const maxRetries = parseInt(process.env.DB_CONNECT_MAX_RETRIES) || 10;
-  const retryDelay = parseInt(process.env.DB_CONNECT_RETRY_DELAY) || 5000;
+  const maxRetries = parseInt(process.env.DB_CONNECT_MAX_RETRIES || '10') || 10;
+  const retryDelay = parseInt(process.env.DB_CONNECT_RETRY_DELAY || '5000') || 5000;
   
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {

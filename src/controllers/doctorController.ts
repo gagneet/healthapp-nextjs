@@ -389,6 +389,7 @@ class DoctorController {
           }
         });
       });
+      return; // Explicit return for TypeScript
     } catch (error: unknown) {
       next(error);
     }
@@ -1263,7 +1264,7 @@ class DoctorController {
   // Find nearby clinics based on coordinates
   async findNearbyClinics(req: Request, res: Response, next: NextFunction): Promise<void | Response> {
     try {
-      const { latitude, longitude, radius = 10 } = req.query;
+      const { latitude, longitude, radius } = req.query;
 
       // Validate coordinates using safe query parameter parsing
       const lat = parseQueryParamAsNumber(latitude);
@@ -1304,12 +1305,7 @@ class DoctorController {
       });
 
       // Find nearby clinics using already parsed coordinates
-      const nearbyClinicsList = geoLocationService.findNearbyClinics(
-        lat,
-        lon,
-        radiusNum,
-        clinics.map((clinic: any) => clinic.toJSON())
-      );
+      const nearbyClinicsList = await geoLocationService.findNearbyClinics(lat, lon, radiusNum);
 
       res.status(200).json({
         status: true,
