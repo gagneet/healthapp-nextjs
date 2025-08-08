@@ -140,7 +140,7 @@ class PatientController {
       // Use service layer for complex business logic
       const result = await PatientService.createPatientWithUser(
         patientData, 
-        req.user.id
+        req.user!.id
       );
 
       res.status(201).json(ResponseFormatter.success(
@@ -221,7 +221,7 @@ class PatientController {
       // Use current user's name if not provided
       let nameToUse = doctorName;
       if (!nameToUse && req.user) {
-        const user = await User.findByPk(req.user.id);
+        const user = await User.findByPk(req.user!.id);
         nameToUse = user ? `${user.first_name} ${user.last_name}` : 'Unknown Doctor';
       }
 
@@ -259,7 +259,7 @@ class PatientController {
           search
         };
 
-        const accessiblePatients = await PatientAccessService.getAccessiblePatients(req.user.id, options);
+        const accessiblePatients = await PatientAccessService.getAccessiblePatients(req.user!.id, options);
 
         // Combine primary and secondary patients
         const allPatients = [];
@@ -448,7 +448,7 @@ class PatientController {
       const result = await PatientService.updatePatientData(
         patientId, 
         updateData,
-        req.user.id
+        req.user!.id
       );
 
       res.status(200).json(ResponseFormatter.success(
@@ -488,7 +488,7 @@ class PatientController {
           is_active: false,
           status: 'DEACTIVATED',
           deactivated_at: new Date(),
-          deactivated_by: req.user.id
+          deactivated_by: req.user!.id
         },
         { 
           where: { id: patientId }
@@ -506,7 +506,7 @@ class PatientController {
   }
 
   // Helper methods using modern ES6+ features
-  buildSearchClause(search: any) {
+  buildSearchClause(search: any): any {
     if (!search) return {};
     
     return {

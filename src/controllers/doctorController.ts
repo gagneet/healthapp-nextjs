@@ -1,12 +1,13 @@
 // src/controllers/doctorController.ts
 import { Request, Response, NextFunction } from 'express';
-import { Doctor, User, Speciality, Patient, CarePlan, Clinic, Appointment } from '../models/index.js';
+import { Doctor, User, Speciality, Patient, CarePlan, Clinic, Appointment , Medication} from '../models/index.js';
 import { Op } from 'sequelize';
 import '../types/express.js';
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
 import geoLocationService from '../services/GeoLocationService.js';
+import { parseQueryParam, parseQueryParamAsNumber, parseQueryParamAsInt } from '../utils/queryHelpers.js';
 
 // Configure multer for file uploads
 const storage = multer.diskStorage({
@@ -45,7 +46,7 @@ class DoctorController {
   // Get comprehensive doctor profile
   async getProfile(req: Request, res: Response, next: NextFunction): Promise<void | Response> {
     try {
-      const userId = req.user.id;
+      const userId = req.user!.id;
 
       const doctor = await Doctor.findOne({
         where: { user_id: userId },
@@ -196,7 +197,7 @@ class DoctorController {
     const transaction = await Doctor.sequelize.transaction();
     
     try {
-      const userId = req.user.id;
+      const userId = req.user!.id;
       const {
         // Basic Information
         full_name,
@@ -327,7 +328,7 @@ class DoctorController {
   // Upload profile images (profile picture, banner, signature)
   async uploadImages(req: Request, res: Response, next: NextFunction): Promise<void | Response> {
     try {
-      const userId = req.user.id;
+      const userId = req.user!.id;
       const uploadFields = upload.fields([
         { name: 'profile_picture', maxCount: 1 },
         { name: 'banner_image', maxCount: 1 },
@@ -615,7 +616,7 @@ class DoctorController {
   // Get doctor's clinics
   async getClinics(req: Request, res: Response, next: NextFunction): Promise<void | Response> {
     try {
-      const userId = req.user.id;
+      const userId = req.user!.id;
 
       const doctor = await Doctor.findOne({ where: { user_id: userId } });
       if (!doctor) {
@@ -652,7 +653,7 @@ class DoctorController {
   // Create new clinic with geo-location support
   async createClinic(req: Request, res: Response, next: NextFunction): Promise<void | Response> {
     try {
-      const userId = req.user.id;
+      const userId = req.user!.id;
       const clinicData = req.body;
 
       const doctor = await Doctor.findOne({ where: { user_id: userId } });
@@ -696,12 +697,12 @@ class DoctorController {
             }
           } else {
             // Log geocoding failure but don't fail clinic creation
-            console.warn(`Geocoding failed for clinic: ${geocodeResult.error}`);
+            console.warn(`Geocoding failed for clinic: ${(geocodeResult as any).error}`);
             clinicCreateData.location_verified = false;
           }
         } catch (geocodeError) {
           // Log error but don't fail clinic creation
-          console.error('Geocoding error during clinic creation:', geocodeError);
+          (console as any).error('Geocoding error during clinic creation:', geocodeError);
           clinicCreateData.location_verified = false;
         }
       }
@@ -731,7 +732,7 @@ class DoctorController {
     try {
       const { clinicId } = req.params;
       const updateData = req.body;
-      const userId = req.user.id;
+      const userId = req.user!.id;
 
       const doctor = await Doctor.findOne({ where: { user_id: userId } });
       if (!doctor) {
@@ -793,13 +794,13 @@ class DoctorController {
               }
             } else {
               // Mark location as unverified if geocoding fails
-              console.warn(`Geocoding failed for clinic update: ${geocodeResult.error}`);
+              console.warn(`Geocoding failed for clinic update: ${(geocodeResult as any).error}`);
               clinicUpdateData.location_verified = false;
               clinicUpdateData.location_accuracy = null;
             }
           } catch (geocodeError) {
             // Log error but don't fail update
-            console.error('Geocoding error during clinic update:', geocodeError);
+            (console as any).error('Geocoding error during clinic update:', geocodeError);
             clinicUpdateData.location_verified = false;
             clinicUpdateData.location_accuracy = null;
           }
@@ -833,7 +834,7 @@ class DoctorController {
   async deleteClinic(req: Request, res: Response, next: NextFunction): Promise<void | Response> {
     try {
       const { clinicId } = req.params;
-      const userId = req.user.id;
+      const userId = req.user!.id;
 
       const doctor = await Doctor.findOne({ where: { user_id: userId } });
       if (!doctor) {
@@ -883,7 +884,7 @@ class DoctorController {
   // Get Doctor Dashboard Data
   async getDashboardData(req: Request, res: Response, next: NextFunction): Promise<void | Response> {
     try {
-      const userId = req.user.id;
+      const userId = req.user!.id;
 
       const doctor = await Doctor.findOne({ where: { user_id: userId } });
       if (!doctor) {
@@ -983,7 +984,7 @@ class DoctorController {
   // Get Doctor's Recent Patients
   async getRecentPatients(req: Request, res: Response, next: NextFunction): Promise<void | Response> {
     try {
-      const userId = req.user.id;
+      const userId = req.user!.id;
       const { limit = 5 } = req.query;
 
       const doctor = await Doctor.findOne({ where: { user_id: userId } });
@@ -1048,7 +1049,7 @@ class DoctorController {
   // Get Doctor's Critical Alerts
   async getCriticalAlerts(req: Request, res: Response, next: NextFunction): Promise<void | Response> {
     try {
-      const userId = req.user.id;
+      const userId = req.user!.id;
       const { limit = 10 } = req.query;
 
       const doctor = await Doctor.findOne({ where: { user_id: userId } });
@@ -1118,7 +1119,7 @@ class DoctorController {
   // Get Adherence Analytics
   async getAdherenceAnalytics(req: Request, res: Response, next: NextFunction): Promise<void | Response> {
     try {
-      const userId = req.user.id;
+      const userId = req.user!.id;
 
       const doctor = await Doctor.findOne({ where: { user_id: userId } });
       if (!doctor) {
@@ -1169,7 +1170,7 @@ class DoctorController {
   async geocodeClinicAddress(req: Request, res: Response, next: NextFunction): Promise<void | Response> {
     try {
       const { clinicId } = req.params;
-      const userId = req.user.id;
+      const userId = req.user!.id;
 
       const doctor = await Doctor.findOne({ where: { user_id: userId } });
       if (!doctor) {
@@ -1248,7 +1249,7 @@ class DoctorController {
           payload: {
             error: {
               status: 'GEOCODING_FAILED',
-              message: geocodeResult.error || 'Failed to geocode address'
+              message: (geocodeResult as any).error || 'Failed to geocode address'
             }
           }
         });
@@ -1264,20 +1265,21 @@ class DoctorController {
     try {
       const { latitude, longitude, radius = 10 } = req.query;
 
-      // Validate coordinates
-      const coordValidation = geoLocationService.validateCoordinates(
-        parseFloat(latitude), 
-        parseFloat(longitude)
-      );
+      // Validate coordinates using safe query parameter parsing
+      const lat = parseQueryParamAsNumber(latitude);
+      const lon = parseQueryParamAsNumber(longitude);
+      const radiusNum = parseQueryParamAsNumber(radius, 10);
 
-      if (!coordValidation.valid) {
+      const coordValidation = (geoLocationService as any).validateCoordinates(lat, lon);
+
+      if (!(coordValidation as any).valid) {
         return res.status(400).json({
           status: false,
           statusCode: 400,
           payload: {
             error: {
               status: 'INVALID_COORDINATES',
-              message: coordValidation.errors.join(', ')
+              message: (coordValidation as any).errors.join(', ')
             }
           }
         });
@@ -1301,11 +1303,11 @@ class DoctorController {
         }]
       });
 
-      // Find nearby clinics
+      // Find nearby clinics using already parsed coordinates
       const nearbyClinicsList = geoLocationService.findNearbyClinics(
-        parseFloat(latitude),
-        parseFloat(longitude),
-        parseFloat(radius),
+        lat,
+        lon,
+        radiusNum,
         clinics.map((clinic: any) => clinic.toJSON())
       );
 
@@ -1315,9 +1317,9 @@ class DoctorController {
         payload: {
           data: {
             search_criteria: {
-              latitude: parseFloat(latitude),
-              longitude: parseFloat(longitude),
-              radius_km: parseFloat(radius)
+              latitude: lat,
+              longitude: lon,
+              radius_km: radiusNum
             },
             nearby_clinics: nearbyClinicsList,
             total_found: nearbyClinicsList.length
@@ -1337,16 +1339,16 @@ class DoctorController {
       const { latitude, longitude } = req.body;
 
       // Validate coordinates
-      const coordValidation = geoLocationService.validateCoordinates(latitude, longitude);
+      const coordValidation = (geoLocationService as any).validateCoordinates(latitude, longitude);
 
-      if (!coordValidation.valid) {
+      if (!(coordValidation as any).valid) {
         return res.status(400).json({
           status: false,
           statusCode: 400,
           payload: {
             error: {
               status: 'INVALID_COORDINATES',
-              message: coordValidation.errors.join(', ')
+              message: (coordValidation as any).errors.join(', ')
             }
           }
         });
@@ -1373,7 +1375,7 @@ class DoctorController {
           payload: {
             error: {
               status: 'REVERSE_GEOCODING_FAILED',
-              message: reverseResult.error || 'Failed to find address for coordinates'
+              message: (reverseResult as any).error || 'Failed to find address for coordinates'
             }
           }
         });

@@ -347,14 +347,14 @@ export const enhancedLogout = async (req: any, res: any) => {
     // If logout all sessions, remove all user's refresh tokens
     if (logoutAll && req.user) {
       for (const [token, data] of refreshTokens.entries()) {
-        if (data.userId === req.user.id) {
+        if (data.userId === req.user!.id) {
           refreshTokens.delete(token);
         }
       }
       
       // Remove all active sessions for user
       for (const [sessionId, sessionData] of activeSessions.entries()) {
-        if (sessionData.userId === req.user.id) {
+        if (sessionData.userId === req.user!.id) {
           tokenBlacklist.add(sessionData.accessToken);
           activeSessions.delete(sessionId);
         }
@@ -364,8 +364,8 @@ export const enhancedLogout = async (req: any, res: any) => {
     // Log logout event
     if (req.user) {
       logAuthEvent('USER_LOGOUT', {
-        userId: req.user.id,
-        email: req.user.email,
+        userId: req.user!.id,
+        email: req.user!.email,
         ip: req.ip,
         userAgent: req.get('User-Agent'),
         logoutAll,
@@ -433,7 +433,7 @@ export const validateToken = async (req: any, res: any) => {
 // Get active sessions
 export const getActiveSessions = async (req: any, res: any) => {
   try {
-    const userId = req.user.id;
+    const userId = req.user!.id;
     const userSessions = [];
     
     for (const [sessionId, sessionData] of activeSessions.entries()) {

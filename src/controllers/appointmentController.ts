@@ -39,7 +39,7 @@ class AppointmentController {
 
       // Check for conflicts
       const conflicts = await CalendarService.checkConflicts(
-        req.user.id,
+        req.user!.id,
         startTime,
         endTime
       );
@@ -84,12 +84,12 @@ class AppointmentController {
       }
 
       const appointment = await Appointment.create({
-        participant_one_type: req.userCategory || req.user.role || 'user',
-        participant_one_id: req.user.id,
+        participant_one_type: req.userCategory || req.user!.role || 'user',
+        participant_one_id: req.user!.id,
         participant_two_type: 'patient',
         participant_two_id: patient_id,
-        organizer_type: req.userCategory || req.user.role || 'user',
-        organizer_id: req.user.id,
+        organizer_type: req.userCategory || req.user!.role || 'user',
+        organizer_id: req.user!.id,
         description,
         start_date: startTime.toISOString().split('T')[0],
         end_date: endTime.toISOString().split('T')[0],
@@ -222,8 +222,8 @@ class AppointmentController {
           // Add user-specific filtering based on role
           ...(req.userCategory === 'doctor' && req.user && {
             [Op.or]: [
-              { participant_one_id: req.user.id, participant_one_type: 'doctor' },
-              { organizer_id: req.user.id, organizer_type: 'doctor' }
+              { participant_one_id: req.user!.id, participant_one_type: 'doctor' },
+              { organizer_id: req.user!.id, organizer_type: 'doctor' }
             ]
           })
         },
@@ -370,7 +370,7 @@ class AppointmentController {
       const { startDate, endDate } = req.query;
 
       // Use current user's ID if doctorId not provided and user is doctor
-      const targetDoctorId = doctorId || (req.userCategory === 'doctor' && req.user ? req.user.id : null);
+      const targetDoctorId = doctorId || (req.userCategory === 'doctor' && req.user ? req.user!.id : null);
 
       if (!targetDoctorId) {
         return res.status(400).json({
@@ -409,7 +409,7 @@ class AppointmentController {
       const { startDate, endDate } = req.query;
 
       // Use current user's ID if patientId not provided and user is patient
-      const targetPatientId = patientId || (req.userCategory === 'patient' && req.user ? req.user.id : null);
+      const targetPatientId = patientId || (req.userCategory === 'patient' && req.user ? req.user!.id : null);
 
       if (!targetPatientId) {
         return res.status(400).json({
@@ -448,7 +448,7 @@ class AppointmentController {
       const availabilityData = req.body;
 
       // Use current user's ID if doctorId not provided and user is doctor
-      const targetDoctorId = doctorId || (req.userCategory === 'doctor' && req.user ? req.user.id : null);
+      const targetDoctorId = doctorId || (req.userCategory === 'doctor' && req.user ? req.user!.id : null);
 
       if (!targetDoctorId) {
         return res.status(400).json({

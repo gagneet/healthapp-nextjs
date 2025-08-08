@@ -13,7 +13,7 @@ class SubscriptionController {
       const planData = req.body;
 
       // Use current user's provider ID if not specified and user is provider
-      const targetProviderId = providerId || (req.userCategory === 'hsp' ? req.user.provider_id : null);
+      const targetProviderId = providerId || (req.userCategory === 'hsp' ? req.user!.provider_id : null);
 
       if (!targetProviderId) {
         return res.status(400).json({
@@ -50,7 +50,7 @@ class SubscriptionController {
       const limitNum = parseInt(String(limit)) || 10;
       const offsetNum = parseInt(String(offset)) || 0;
 
-      const targetProviderId = providerId || (req.userCategory === 'hsp' ? req.user.provider_id : null);
+      const targetProviderId = providerId || (req.userCategory === 'hsp' ? req.user!.provider_id : null);
 
       if (!targetProviderId) {
         return res.status(400).json({
@@ -224,7 +224,7 @@ class SubscriptionController {
       const { patientId } = req.params;
       const { status, limit, offset } = req.query;
 
-      const targetPatientId = patientId || (req.userCategory === 'patient' ? req.user.id : null);
+      const targetPatientId = patientId || (req.userCategory === 'patient' ? req.user!.id : null);
 
       if (!targetPatientId) {
         return res.status(400).json({
@@ -279,7 +279,7 @@ class SubscriptionController {
       const { providerId } = req.params;
       const { status, limit, offset } = req.query;
 
-      const targetProviderId = providerId || (req.userCategory === 'hsp' ? req.user.provider_id : null);
+      const targetProviderId = providerId || (req.userCategory === 'hsp' ? req.user!.provider_id : null);
 
       if (!targetProviderId) {
         return res.status(400).json({
@@ -402,7 +402,7 @@ class SubscriptionController {
       const { patientId } = req.params;
       const { stripePaymentMethodId, setAsDefault = false } = req.body;
 
-      const targetPatientId = patientId || (req.userCategory === 'patient' ? req.user.id : null);
+      const targetPatientId = patientId || (req.userCategory === 'patient' ? req.user!.id : null);
 
       if (!targetPatientId) {
         return res.status(400).json({
@@ -452,7 +452,7 @@ class SubscriptionController {
     try {
       const { patientId } = req.params;
 
-      const targetPatientId = patientId || (req.userCategory === 'patient' ? req.user.id : null);
+      const targetPatientId = patientId || (req.userCategory === 'patient' ? req.user!.id : null);
 
       if (!targetPatientId) {
         return res.status(400).json({
@@ -569,7 +569,7 @@ class SubscriptionController {
       const { patientId } = req.params;
       const { limit, offset, status } = req.query;
 
-      const targetPatientId = patientId || (req.userCategory === 'patient' ? req.user.id : null);
+      const targetPatientId = patientId || (req.userCategory === 'patient' ? req.user!.id : null);
 
       if (!targetPatientId) {
         return res.status(400).json({

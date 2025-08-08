@@ -214,7 +214,7 @@ async function compareWithTargetSchema() {
     console.log('   3. Test the application: npm run dev');
     
   } catch (error) {
-    console.(error as any)('❌ Comparison failed:', (error as any).message);
+    console.error('❌ Comparison failed:', (error as any).message);
     
     if ((error as any).message.includes('database') && (error as any).message.includes('does not exist')) {
       console.log('\n🛠️  Database does not exist. Create it first:');

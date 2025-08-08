@@ -55,7 +55,7 @@ async function testAuth() {
     }
     
   } catch (error) {
-    console.(error as any)('❌ Login failed:', (error as any).response?.data || (error as any).message);
+    console.error('❌ Login failed:', (error as any).response?.data || (error as any).message);
   }
 }
 

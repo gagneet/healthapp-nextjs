@@ -273,8 +273,8 @@ class PatientService {
     
     return {
       ...validation,
-      isAlreadyRegistered: existingPatient.exists,
-      existingPatient: existingPatient.patient
+      isAlreadyRegistered: existingPatient!.exists,
+      existingPatient: existingPatient!.patient
     };
   }
 

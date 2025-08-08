@@ -34,10 +34,10 @@ class SubscriptionService {
         const stripePrice = await this.stripe.prices.create({
           currency: 'usd',
           unit_amount: Math.round(price * 100), // Convert to cents
-          recurring: billing_cycle !== 'one-time' ? { interval: billing_cycle } : undefined,
+          recurring: billing_cycle !== 'one-time' ? { interval: billing_cycle  as any} : undefined,
           product_data: {
             name: name,
-            description: description,
+            description: description as any,
           },
         });
         stripePriceId = stripePrice.id;
@@ -112,7 +112,7 @@ class SubscriptionService {
     if (servicePlan.trial_period_days > 0) {
       trialStart = new Date(now);
       trialEnd = new Date(now);
-      trialEnd.setDate(trialEnd.getDate() + servicePlan.trial_period_days);
+      trialEnd!.setDate(trialEnd!.getDate() + servicePlan.trial_period_days);
       status = 'TRIALING';
     }
 
@@ -162,7 +162,7 @@ class SubscriptionService {
       status,
       current_period_start: currentPeriodStart.toISOString().split('T')[0],
       current_period_end: currentPeriodEnd.toISOString().split('T')[0],
-      next_billing_date: status === 'TRIALING' ? trialEnd.toISOString().split('T')[0] : currentPeriodEnd.toISOString().split('T')[0],
+      next_billing_date: status === 'TRIALING' ? trialEnd!.toISOString().split('T')[0] : currentPeriodEnd.toISOString().split('T')[0],
       trial_start: trialStart?.toISOString().split('T')[0],
       trial_end: trialEnd?.toISOString().split('T')[0],
       payment_method_id: paymentMethodId,

@@ -47,7 +47,7 @@ export const dynamicRateLimit = (options = {}) => {
     max: (req) => {
       // Higher limits for different user types
       if (req.user) {
-        switch (req.user.category) {
+        switch (req.user!.category) {
           case 'admin':
           case 'system_admin':
             return adminMax;
@@ -64,7 +64,7 @@ export const dynamicRateLimit = (options = {}) => {
     },
     keyGenerator: (req) => {
       // Use user ID for authenticated users, IP for others
-      return req.user ? `user:${req.user.id}` : req.ip;
+      return req.user ? `user:${req.user!.id}` : req.ip;
     },
     message: {
       status: false,

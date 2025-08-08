@@ -107,7 +107,7 @@ class MedicationController {
       const medication = await Medication.create({
         participant_id: patientId,
         organizer_type: req.userCategory,
-        organizer_id: req.user.id,
+        organizer_id: req.user!.id,
         medicine_id,
         description: `${quantity} ${unit} ${strength}`,
         start_date,

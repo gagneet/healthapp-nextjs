@@ -66,6 +66,19 @@ class GeoLocationService {
       return distance <= radiusKm;
     });
   }
+
+  validateCoordinates(lat: any, lon: any) {
+    const latitude = parseFloat(lat);
+    const longitude = parseFloat(lon);
+    return !isNaN(latitude) && !isNaN(longitude) && 
+           latitude >= -90 && latitude <= 90 && 
+           longitude >= -180 && longitude <= 180;
+  }
+
+  async findNearbyClinics(lat: any, lon: any, radius: any = 10) {
+    // Mock implementation
+    return [];
+  }
 }
 
 export default new GeoLocationService();

@@ -20,7 +20,7 @@ RUN apk add --no-cache build-base
 
 # Copy package files
 COPY package.json package-lock.json ./
-COPY tsconfig.backend.json ./
+COPY tsconfig.backend.json tsconfig.build.json ./
 
 # Install all dependencies (including dev)
 RUN npm ci
@@ -30,7 +30,7 @@ COPY src/ ./src/
 COPY .sequelizerc ./
 
 # Compile TypeScript to JavaScript
-RUN npx tsc -p tsconfig.backend.json
+RUN npx tsc -p tsconfig.build.json
 
 # Production runtime
 FROM node:22.18.0-alpine AS runner

@@ -66,12 +66,8 @@ class AuthService {
   }
 
   generateTokens(user: any, userRole: any) {
-    const tokenPayload = {
-      userId: user.id,
-      userCategory: user.category,
-      userRoleId: userRole?.id || null,
-      permissions: [] // Add permissions logic
-    };
+    const tokenPayload = { userId: user.id, email: user.email, userCategory: user.category, userRoleId: userRole?.id || null, permissions: [] // Add permissions logic
+     };
 
     return {
       accessToken: generateToken(tokenPayload),

@@ -16,7 +16,7 @@ class ConsentController {
    */
   async getSecondaryPatients(req: Request, res: Response, next: NextFunction): Promise<void | Response> {
     try {
-      const doctorUserId = req.user.id;
+      const doctorUserId = req.user!.id;
       const { page = 1, limit = 20, search } = req.query;
       const pageNum = parseInt(String(page)) || 1;
       const limitNum = parseInt(String(limit)) || 20;
@@ -73,7 +73,7 @@ class ConsentController {
 
       // Get current doctor (primary doctor)
       const primaryDoctor = await Doctor.findOne({
-        where: { user_id: req.user.id }
+        where: { user_id: req.user!.id }
       });
 
       if (!primaryDoctor) {
@@ -145,7 +145,7 @@ class ConsentController {
   async requestConsent(req: Request, res: Response, next: NextFunction): Promise<void | Response> {
     try {
       const { patientId } = req.params;
-      const requestingUserId = req.user.id;
+      const requestingUserId = req.user!.id;
 
       // Find the secondary assignment for this doctor and patient
       const doctorRecord = await Doctor.findOne({
@@ -205,7 +205,7 @@ class ConsentController {
     try {
       const { patientId } = req.params;
       const { otp_code } = req.body;
-      const requestingUserId = req.user.id;
+      const requestingUserId = req.user!.id;
 
       if (!otp_code || !/^\d{4,6}$/.test(otp_code)) {
         throw new ValidationError('Valid OTP code is required (4-6 digits)');
@@ -234,15 +234,7 @@ class ConsentController {
           'OTP verified successfully. Patient access granted.'
         ));
       } else {
-        res.status(400).json(ResponseFormatter.error(
-          {
-            status: 'OTP_VERIFICATION_FAILED',
-            message: this.getOtpErrorMessage(result.error),
-            error_code: result.error,
-            attempts_remaining: result.attempts_remaining || 0
-          },
-          400
-        ));
+        res.status(400).json(ResponseFormatter.error(this.getOtpErrorMessage(result.error), 400));
       }
 
     } catch (error: unknown) {
@@ -257,7 +249,7 @@ class ConsentController {
   async resendOtp(req: Request, res: Response, next: NextFunction): Promise<void | Response> {
     try {
       const { patientId } = req.params;
-      const requestingUserId = req.user.id;
+      const requestingUserId = req.user!.id;
 
       // Find the assignment
       const accessCheck = await PatientAccessService.canAccessPatient(requestingUserId, patientId);
@@ -305,7 +297,7 @@ class ConsentController {
   async getConsentStatus(req: Request, res: Response, next: NextFunction): Promise<void | Response> {
     try {
       const { patientId } = req.params;
-      const requestingUserId = req.user.id;
+      const requestingUserId = req.user!.id;
 
       const accessCheck = await PatientAccessService.canAccessPatient(requestingUserId, patientId);
 

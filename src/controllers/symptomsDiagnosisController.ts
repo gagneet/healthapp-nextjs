@@ -325,7 +325,7 @@ class SymptomsDiagnosisController {
           diagnosis_name: diagnosisName,
           category: category || 'General',
           symptoms: { [symptomName]: true },
-          created_by: req.user.id,
+          created_by: req.user!.id,
           is_active: true
         }
       });
@@ -389,7 +389,7 @@ class SymptomsDiagnosisController {
         diagnosis_name: diagnosisName,
         category: category || 'General',
         symptoms: symptomsObj,
-        created_by: req.user.id,
+        created_by: req.user!.id,
         is_active: true
       });
 

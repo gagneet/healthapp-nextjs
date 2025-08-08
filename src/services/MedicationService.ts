@@ -58,7 +58,7 @@ class MedicationService {
     const missedEvents = events.filter((e: any) => e.status === 'expired').length;
 
     const adherencePercentage = totalEvents > 0 ? 
-      (completedEvents / totalEvents * 100).toFixed(2) : 0;
+      (completedEvents / totalEvents * 100).toFixed(2) : '0';
 
     return {
       total_scheduled: totalEvents,

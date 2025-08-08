@@ -277,7 +277,7 @@ class CalendarService {
       end_date: newEndTime.toISOString().split('T')[0],
       slot_id: newSlotId,
       details: {
-        ...appointment.details,
+        ...(appointment as object).details,
         rescheduled: true,
         rescheduled_at: new Date(),
         previous_start_time: appointment.start_time

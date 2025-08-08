@@ -28,7 +28,7 @@ const validatePermissions = body('permissions')
 
 // Patient Secondary Doctor Management Routes
 router.post('/patients/:patientId/secondary-doctors',
-  authorize([USER_CATEGORIES.DOCTOR]),
+  authorize(USER_CATEGORIES.DOCTOR),
   validateUUID('patientId'),
   validateAssignmentType,
   validateOptionalUUID('doctorId'),
@@ -42,7 +42,7 @@ router.post('/patients/:patientId/secondary-doctors',
 );
 
 router.get('/patients/:patientId/secondary-doctors',
-  authorize([USER_CATEGORIES.DOCTOR, (USER_CATEGORIES as any).PROVIDER_ADMIN]),
+  authorize(USER_CATEGORIES.DOCTOR, (USER_CATEGORIES as any).PROVIDER_ADMIN),
   validateUUID('patientId'),
   query('includeInactive').optional().isBoolean().withMessage('Include inactive must be boolean'),
   SecondaryDoctorController.getPatientDoctorAssignments
@@ -50,13 +50,13 @@ router.get('/patients/:patientId/secondary-doctors',
 
 // Assignment Management Routes
 router.get('/assignments/:assignmentId',
-  authorize([USER_CATEGORIES.DOCTOR, (USER_CATEGORIES as any).PROVIDER_ADMIN]),
+  authorize(USER_CATEGORIES.DOCTOR, (USER_CATEGORIES as any).PROVIDER_ADMIN),
   validateUUID('assignmentId'),
   SecondaryDoctorController.getAssignmentDetails
 );
 
 router.post('/assignments/:assignmentId/request-consent',
-  authorize([USER_CATEGORIES.DOCTOR]),
+  authorize(USER_CATEGORIES.DOCTOR),
   validateUUID('assignmentId'),
   body('consentMethod')
     .optional()
@@ -66,7 +66,7 @@ router.post('/assignments/:assignmentId/request-consent',
 );
 
 router.post('/assignments/:assignmentId/verify-consent',
-  authorize([USER_CATEGORIES.DOCTOR, USER_CATEGORIES.PATIENT]),
+  authorize(USER_CATEGORIES.DOCTOR, USER_CATEGORIES.PATIENT),
   validateUUID('assignmentId'),
   body('otp')
     .isLength({ min: 6, max: 6 })
@@ -76,14 +76,14 @@ router.post('/assignments/:assignmentId/verify-consent',
 );
 
 router.put('/assignments/:assignmentId/permissions',
-  authorize([USER_CATEGORIES.DOCTOR]),
+  authorize(USER_CATEGORIES.DOCTOR),
   validateUUID('assignmentId'),
   validatePermissions,
   SecondaryDoctorController.updateAssignmentPermissions
 );
 
 router.delete('/assignments/:assignmentId',
-  authorize([USER_CATEGORIES.DOCTOR]),
+  authorize(USER_CATEGORIES.DOCTOR),
   validateUUID('assignmentId'),
   body('reason').optional().isString().withMessage('Reason must be a string'),
   SecondaryDoctorController.deactivateAssignment
@@ -91,14 +91,14 @@ router.delete('/assignments/:assignmentId',
 
 // Doctor Access Routes  
 router.get('/doctors/:doctorId/patient-access/:patientId',
-  authorize([USER_CATEGORIES.DOCTOR, (USER_CATEGORIES as any).PROVIDER_ADMIN]),
+  authorize(USER_CATEGORIES.DOCTOR, (USER_CATEGORIES as any).PROVIDER_ADMIN),
   validateUUID('doctorId'),
   validateUUID('patientId'),
   SecondaryDoctorController.checkDoctorPatientAccess
 );
 
 router.get('/doctors/available-for-assignment',
-  authorize([USER_CATEGORIES.DOCTOR]),
+  authorize(USER_CATEGORIES.DOCTOR),
   query('specialty').optional().isString().withMessage('Specialty must be a string'),
   query('organizationId').optional().isUUID().withMessage('Organization ID must be UUID'),
   query('assignmentType')

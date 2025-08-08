@@ -109,12 +109,12 @@ async function testDatabaseSetup() {
     console.log('\n📋 Summary:');
     console.log(`   - Database: ${sequelize.config.database}`);
     console.log(`   - Host: ${sequelize.config.host}:${sequelize.config.port}`);
-    console.log(`   - Dialect: ${sequelize.(config as any).dialect}`);
+    console.log(`   - Dialect: ${(sequelize.config as any).dialect}`);
     console.log(`   - Models loaded: ${models.length}`);
     console.log(`   - Tables found: ${tables.length}`);
     
   } catch (error) {
-    console.(error as any)('❌ Database setup test failed:', (error as any).message);
+    console.error('❌ Database setup test failed:', (error as any).message);
     console.error('\n🛠️  Troubleshooting:');
     console.error('   1. Make sure PostgreSQL is running');
     console.error('   2. Check database connection parameters in .env');

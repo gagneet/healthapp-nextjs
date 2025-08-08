@@ -33,7 +33,7 @@ export class SecondaryDoctorController {
         requiresConsent = false
       } = req.body;
 
-      const assignedBy = req.user.doctorProfile?.id;
+      const assignedBy = req.user!.doctorProfile?.id;
       if (!assignedBy) {
         return responseFormatter.error(res, 'Only doctors can assign secondary doctors', 403);
       }
@@ -54,7 +54,7 @@ export class SecondaryDoctorController {
         patientId,
         doctorId,
         assignmentType,
-        assignedBy: req.user.id
+        assignedBy: req.user!.id
       });
 
       return responseFormatter.success(res, assignment, 'Secondary doctor assigned successfully', 201);
@@ -75,7 +75,7 @@ export class SecondaryDoctorController {
       const { includeInactive = 'false' } = req.query;
 
       // Check if user can access this patient
-      const doctorId = req.user.doctorProfile?.id;
+      const doctorId = req.user!.doctorProfile?.id;
       if (doctorId) {
         const accessCheck = await SecondaryDoctorService.canDoctorAccessPatient(doctorId, patientId);
         if (!accessCheck.canAccess) {
@@ -109,7 +109,7 @@ export class SecondaryDoctorController {
       const assignment = await SecondaryDoctorService.getAssignmentDetails(assignmentId);
 
       // Check if user can access this assignment
-      const doctorId = req.user.doctorProfile?.id;
+      const doctorId = req.user!.doctorProfile?.id;
       if (doctorId) {
         const accessCheck = await SecondaryDoctorService.canDoctorAccessPatient(
           doctorId, 
@@ -141,7 +141,7 @@ export class SecondaryDoctorController {
       const assignment = await SecondaryDoctorService.getAssignmentDetails(assignmentId);
       
       // Check if requesting user is the primary doctor
-      const doctorId = req.user.doctorProfile?.id;
+      const doctorId = req.user!.doctorProfile?.id;
       if (!assignment.assignedBy || assignment.assignedBy.id !== doctorId) {
         return responseFormatter.error(res, 'Only the assigning doctor can request consent', 403);
       }
@@ -150,7 +150,7 @@ export class SecondaryDoctorController {
 
       logger.info(`Consent request sent for assignment ${assignmentId}`, {
         consentMethod,
-        requestedBy: req.user.id
+        requestedBy: req.user!.id
       });
 
       return responseFormatter.success(res, result, 'Consent request sent successfully');
@@ -177,11 +177,11 @@ export class SecondaryDoctorController {
       const result = await SecondaryDoctorService.verifyPatientConsent(
         assignmentId, 
         otp,
-        req.user.id
+        req.user!.id
       );
 
       logger.info(`Patient consent verified for assignment ${assignmentId}`, {
-        verifiedBy: req.user.id
+        verifiedBy: req.user!.id
       });
 
       return responseFormatter.success(res, result, 'Patient consent verified successfully');
@@ -201,7 +201,7 @@ export class SecondaryDoctorController {
       const { assignmentId } = req.params;
       const { permissions } = req.body;
 
-      const doctorId = req.user.doctorProfile?.id;
+      const doctorId = req.user!.doctorProfile?.id;
       if (!doctorId) {
         return responseFormatter.error(res, 'Only doctors can update permissions', 403);
       }
@@ -214,7 +214,7 @@ export class SecondaryDoctorController {
 
       logger.info(`Assignment permissions updated for ${assignmentId}`, {
         permissions,
-        updatedBy: req.user.id
+        updatedBy: req.user!.id
       });
 
       return responseFormatter.success(res, assignment, 'Permissions updated successfully');
@@ -234,7 +234,7 @@ export class SecondaryDoctorController {
       const { assignmentId } = req.params;
       const { reason = 'Assignment ended by primary doctor' } = req.body;
 
-      const doctorId = req.user.doctorProfile?.id;
+      const doctorId = req.user!.doctorProfile?.id;
       if (!doctorId) {
         return responseFormatter.error(res, 'Only doctors can deactivate assignments', 403);
       }
@@ -247,7 +247,7 @@ export class SecondaryDoctorController {
 
       logger.info(`Assignment ${assignmentId} deactivated`, {
         reason,
-        deactivatedBy: req.user.id
+        deactivatedBy: req.user!.id
       });
 
       return responseFormatter.success(res, result, 'Assignment deactivated successfully');
@@ -267,8 +267,8 @@ export class SecondaryDoctorController {
       const { doctorId, patientId } = req.params;
 
       // Only allow doctors to check their own access or admins
-      const requestingDoctorId = req.user.doctorProfile?.id;
-      if (requestingDoctorId !== doctorId && req.user.category !== 'admin') {
+      const requestingDoctorId = req.user!.doctorProfile?.id;
+      if (requestingDoctorId !== doctorId && req.user!.category !== 'admin') {
         return responseFormatter.error(res, 'Access denied', 403);
       }
 
@@ -295,7 +295,7 @@ export class SecondaryDoctorController {
         patientId 
       } = req.query;
 
-      const requestingDoctorId = req.user.doctorProfile?.id;
+      const requestingDoctorId = req.user!.doctorProfile?.id;
       if (!requestingDoctorId) {
         return responseFormatter.error(res, 'Only doctors can view available doctors', 403);
       }

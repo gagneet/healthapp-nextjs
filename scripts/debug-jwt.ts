@@ -46,7 +46,7 @@ async function debugJWT() {
     }
     
   } catch (error) {
-    console.(error as any)('Debug failed:', (error as any).message);
+    console.error('Debug failed:', (error as any).message);
   }
 }
 

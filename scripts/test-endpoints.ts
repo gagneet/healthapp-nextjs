@@ -18,7 +18,7 @@ async function testEndpoints() {
     console.log('✅ Token verification successful');
     console.log('Status:', verifyResponse.data.status);
   } catch (error) {
-    console.(error as any)('❌ Token verification failed:', (error as any).response?.data || (error as any).message);
+    console.error('❌ Token verification failed:', (error as any).response?.data || (error as any).message);
   }
   
   // Test patients endpoint
@@ -31,7 +31,7 @@ async function testEndpoints() {
     console.log('Status:', patientsResponse.data.status);
     console.log('Patients count:', patientsResponse.data.payload?.data?.patients ? Object.keys(patientsResponse.data.payload.data.patients).length : 0);
   } catch (error) {
-    console.(error as any)('❌ Patients endpoint failed:', (error as any).response?.data || (error as any).message);
+    console.error('❌ Patients endpoint failed:', (error as any).response?.data || (error as any).message);
   }
 }
 

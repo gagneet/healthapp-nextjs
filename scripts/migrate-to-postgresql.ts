@@ -593,7 +593,7 @@ class DatabaseMigrator {
         }
       } catch (error) {
         console.warn(`⚠️  ${query.name} verification failed: ${(error as any).message}`);
-        verificationResults.push({ table: query.name, status: 'warning', (error as any): (error as any).message });
+        verificationResults.push({ table: query.name, status: 'warning', error: (error as any).message });
       }
     }
 

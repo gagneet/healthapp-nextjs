@@ -41,12 +41,9 @@ router.post('/enhanced-sign-in', async (req, res, next) => {
     
     if (!user) {
       return res.status(401).json(ResponseFormatter.error(
-        {
-          status: 'UNAUTHORIZED',
-          message: 'Invalid email or password',
-          code: 'INVALID_CREDENTIALS'
-        },
-        401
+        'Invalid email or password',
+        401,
+        'INVALID_CREDENTIALS'
       ));
     }
     
@@ -54,12 +51,9 @@ router.post('/enhanced-sign-in', async (req, res, next) => {
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
       return res.status(401).json(ResponseFormatter.error(
-        {
-          status: 'UNAUTHORIZED',
-          message: 'Invalid email or password',
-          code: 'INVALID_CREDENTIALS'
-        },
-        401
+        'Invalid email or password',
+        401,
+        'INVALID_CREDENTIALS'
       ));
     }
     
@@ -152,7 +146,7 @@ router.get('/active-sessions', enhancedAuthenticate, getActiveSessions);
 router.delete('/sessions/:sessionId', enhancedAuthenticate, async (req, res, next) => {
   try {
     const { sessionId } = req.params;
-    const userId = req.user.id;
+    const userId = req.user!.id;
     
     // Implementation for revoking specific session
     // This would need to be implemented in the enhancedAuth middleware
@@ -171,7 +165,7 @@ router.delete('/sessions/:sessionId', enhancedAuthenticate, async (req, res, nex
 router.post('/change-password', enhancedAuthenticate, async (req, res, next) => {
   try {
     const { currentPassword, newPassword, logoutOtherSessions = false } = req.body;
-    const userId = req.user.id;
+    const userId = req.user!.id;
     
     if (!currentPassword || !newPassword) {
       throw new ValidationError('Current password and new password are required');
@@ -186,12 +180,9 @@ router.post('/change-password', enhancedAuthenticate, async (req, res, next) => 
     const isCurrentPasswordValid = await bcrypt.compare(currentPassword, user.password);
     if (!isCurrentPasswordValid) {
       return res.status(400).json(ResponseFormatter.error(
-        {
-          status: 'BAD_REQUEST',
-          message: 'Current password is incorrect',
-          code: 'INVALID_CURRENT_PASSWORD'
-        },
-        400
+        'Current password is incorrect',
+        400,
+        'INVALID_CURRENT_PASSWORD'
       ));
     }
     
@@ -236,7 +227,7 @@ router.post('/change-password', enhancedAuthenticate, async (req, res, next) => 
 // Get user profile with enhanced data
 router.get('/profile', enhancedAuthenticate, async (req, res, next) => {
   try {
-    const userId = req.user.id;
+    const userId = req.user!.id;
     
     const user = await User.findByPk(userId, {
       attributes: { exclude: ['password'] },
@@ -294,7 +285,7 @@ router.get('/profile', enhancedAuthenticate, async (req, res, next) => {
 // Update user profile
 router.put('/profile', enhancedAuthenticate, async (req, res, next) => {
   try {
-    const userId = req.user.id;
+    const userId = req.user!.id;
     const { 
       first_name, 
       last_name, 
