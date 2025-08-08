@@ -1,6 +1,6 @@
 import { ParsedQs } from 'qs';
 
-export type QueryValue = string | string[] | ParsedQs | ParsedQs[] | undefined;
+export type QueryValue = string | ParsedQs | (string | ParsedQs)[] | undefined;
 
 /**
  * Safely converts query parameter to string

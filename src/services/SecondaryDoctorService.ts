@@ -19,6 +19,16 @@ export class SecondaryDoctorService {
     assignmentReason,
     notes,
     requiresConsent = false
+  }: {
+    patientId: string;
+    doctorId: string;
+    assignmentType: 'specialist' | 'substitute' | 'transferred';
+    assignedBy: string;
+    specialtyFocus?: string[];
+    carePlanIds?: string[];
+    assignmentReason?: string;
+    notes?: string;
+    requiresConsent?: boolean;
   }) {
     try {
       // Validate assignment type
@@ -127,7 +137,12 @@ export class SecondaryDoctorService {
   /**
    * Validate assignment permissions based on doctor roles and organization
    */
-  static async validateAssignmentPermissions({ assignmentType, assigningDoctor, targetDoctor, patient }) {
+  static async validateAssignmentPermissions({ assignmentType, assigningDoctor, targetDoctor, patient }: {
+    assignmentType: string;
+    assigningDoctor: any;
+    targetDoctor: any;
+    patient: any;
+  }) {
     // Check if assigning doctor has permission to assign doctors to this patient
     const primaryAssignment = await PatientDoctorAssignment.findOne({
       where: {
@@ -170,7 +185,7 @@ export class SecondaryDoctorService {
   /**
    * Get all doctor assignments for a patient
    */
-  static async getPatientDoctorAssignments(patientId, includeInactive = false) {
+  static async getPatientDoctorAssignments(patientId: string, includeInactive: boolean = false) {
     try {
       const whereClause = { patient_id: patientId };
       if (!includeInactive) {
@@ -236,7 +251,7 @@ export class SecondaryDoctorService {
   /**
    * Send consent request to patient for doctor assignment
    */
-  static async sendConsentRequest(assignment) {
+  static async sendConsentRequest(assignment: any) {
     try {
       // Generate OTP
       await assignment.generateConsentOTP();
@@ -263,7 +278,7 @@ export class SecondaryDoctorService {
   /**
    * Verify patient consent OTP
    */
-  static async verifyPatientConsent(assignmentId, otp, verifiedBy = null) {
+  static async verifyPatientConsent(assignmentId: string, otp: string, verifiedBy: string | null = null) {
     try {
       const assignment = await PatientDoctorAssignment.findByPk(assignmentId);
       if (!assignment) {
@@ -295,7 +310,7 @@ export class SecondaryDoctorService {
   /**
    * Update assignment permissions
    */
-  static async updateAssignmentPermissions(assignmentId, permissions, updatedBy) {
+  static async updateAssignmentPermissions(assignmentId: string, permissions: any, updatedBy: string) {
     try {
       const assignment = await PatientDoctorAssignment.findByPk(assignmentId);
       if (!assignment) {
@@ -332,7 +347,7 @@ export class SecondaryDoctorService {
   /**
    * Deactivate doctor assignment
    */
-  static async deactivateAssignment(assignmentId, deactivatedBy, reason) {
+  static async deactivateAssignment(assignmentId: string, deactivatedBy: string, reason: string) {
     try {
       const assignment = await PatientDoctorAssignment.findByPk(assignmentId);
       if (!assignment) {
@@ -377,7 +392,7 @@ export class SecondaryDoctorService {
   /**
    * Get detailed assignment information
    */
-  static async getAssignmentDetails(assignmentId) {
+  static async getAssignmentDetails(assignmentId: string) {
     try {
       const assignment = await PatientDoctorAssignment.findByPk(assignmentId, {
         include: [
@@ -449,7 +464,7 @@ export class SecondaryDoctorService {
   /**
    * Check if doctor can access patient
    */
-  static async canDoctorAccessPatient(doctorId, patientId) {
+  static async canDoctorAccessPatient(doctorId: string, patientId: string) {
     try {
       const assignment = await PatientDoctorAssignment.findOne({
         where: {

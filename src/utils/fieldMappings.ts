@@ -127,19 +127,19 @@ export const ACCOUNT_STATUS_MAPPINGS: Record<string, string> = {
 /**
  * Utility functions for mapping values
  */
-export const mapGender = (value) => {
+export const mapGender = (value: any) => {
   if (!value) return null;
   return GENDER_MAPPINGS[value.toString().toLowerCase()] || value.toUpperCase();
 };
 
-export const mapEventStatus = (value, toDatabase = true) => {
+export const mapEventStatus = (value: any, toDatabase: boolean = true) => {
   if (!value) return null;
   return toDatabase 
     ? EVENT_STATUS_MAPPINGS[value.toUpperCase()] || value.toLowerCase()
     : EVENT_STATUS_MAPPINGS[value.toLowerCase()] || value.toUpperCase();
 };
 
-export const mapEventType = (value, toDatabase = true) => {
+export const mapEventType = (value: any, toDatabase: boolean = true) => {
   if (!value) return null;
   return toDatabase
     ? EVENT_TYPE_MAPPINGS[value.toUpperCase()] || value.toLowerCase()

@@ -32,8 +32,6 @@ const verifyToken = (token: string): TokenPayload => {
   return decoded as TokenPayload;
 };
 
-export type { TokenPayload };
-
 export {
   JWT_SECRET,
   JWT_EXPIRE,

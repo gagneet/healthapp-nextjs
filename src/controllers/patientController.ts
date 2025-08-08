@@ -164,10 +164,11 @@ class PatientController {
       const { phoneNumber, countryCode = 'US' } = req.body;
 
       if (!phoneNumber) {
-        return res.status(400).json(ResponseFormatter.error(
+        res.status(400).json(ResponseFormatter.error(
           'Phone number is required',
           400
         ));
+        return;
       }
 
       const result = await PatientService.findPatientByPhone(phoneNumber, countryCode);
@@ -190,10 +191,11 @@ class PatientController {
       const { phoneNumber, countryCode = 'US' } = req.body;
 
       if (!phoneNumber) {
-        return res.status(400).json(ResponseFormatter.error(
+        res.status(400).json(ResponseFormatter.error(
           'Phone number is required',
           400
         ));
+        return;
       }
 
       const validation = await PatientService.validatePatientPhone(phoneNumber, countryCode);
@@ -336,11 +338,12 @@ class PatientController {
           has_prev: parseInt(page) > 1
         };
 
-        return res.status(200).json(ResponseFormatter.paginated(
+        res.status(200).json(ResponseFormatter.paginated(
           responseData,
           pagination,
           'Patients retrieved successfully with consent status'
         ));
+        return;
       }
 
       // Fallback for non-doctor users - original logic

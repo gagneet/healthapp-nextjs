@@ -21,7 +21,7 @@ class AuthController {
       });
 
       if (!user) {
-        return res.status(401).json({
+        res.status(401).json({
           status: false,
           statusCode: 401,
           payload: {
@@ -31,12 +31,13 @@ class AuthController {
             }
           }
         });
+        return;
       }
 
       // Verify password
       const isPasswordValid = await bcrypt.compare(password, user.password_hash);
       if (!isPasswordValid) {
-        return res.status(401).json({
+        res.status(401).json({
           status: false,
           statusCode: 401,
           payload: {
@@ -46,11 +47,13 @@ class AuthController {
             }
           }
         });
+        return;
       }
 
       // Generate tokens (simplified without roles for now)
       const tokenPayload = {
         userId: user.id,
+        email: user.email,
         userCategory: user.role, // Using role field directly
         permissions: [] // Add permissions logic as needed
       };
@@ -142,7 +145,7 @@ class AuthController {
       });
 
       if (existingUser) {
-        return res.status(400).json({
+        res.status(400).json({
           status: false,
           statusCode: 400,
           payload: {
@@ -152,6 +155,7 @@ class AuthController {
             }
           }
         });
+        return;
       }
 
       // Hash password
@@ -226,7 +230,7 @@ class AuthController {
       });
 
       if (!fullUser) {
-        return res.status(401).json({
+        res.status(401).json({
           status: false,
           statusCode: 401,
           payload: {
@@ -236,6 +240,7 @@ class AuthController {
             }
           }
         });
+        return;
       }
 
       // Format response similar to login
@@ -278,7 +283,7 @@ class AuthController {
       const { refresh_token } = req.body;
       
       if (!refresh_token) {
-        return res.status(400).json({
+        res.status(400).json({
           status: false,
           statusCode: 400,
           payload: {
@@ -288,13 +293,14 @@ class AuthController {
             }
           }
         });
+        return;
       }
 
       const decoded = verifyToken(refresh_token) as JwtPayload & { userId: string };
       const user = await User.findByPk(decoded.userId);
 
       if (!user || user.account_status !== ACCOUNT_STATUS.ACTIVE) {
-        return res.status(401).json({
+        res.status(401).json({
           status: false,
           statusCode: 401,
           payload: {
@@ -304,10 +310,12 @@ class AuthController {
             }
           }
         });
+        return;
       }
 
       const newAccessToken = generateToken({
         userId: user.id,
+        email: user.email,
         userCategory: user.role
       });
 

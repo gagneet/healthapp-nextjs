@@ -27,7 +27,8 @@
     "types": ["node"]
   },
   "include": [
-    "src/**/*"
+    "src/**/*",
+    "typings/**/*"
   ],
   "exclude": [
     "node_modules",

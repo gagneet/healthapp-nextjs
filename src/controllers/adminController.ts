@@ -284,7 +284,7 @@ class AdminController {
       
       if (existingUser) {
         await transaction.rollback();
-        return res.status(400).json({
+        res.status(400).json({
           status: false,
           statusCode: 400,
           payload: {
@@ -294,6 +294,7 @@ class AdminController {
             }
           }
         });
+        return;
       }
 
       // Hash password
@@ -463,7 +464,7 @@ class AdminController {
 
       if (!doctor) {
         await transaction.rollback();
-        return res.status(404).json({
+        res.status(404).json({
           status: false,
           statusCode: 404,
           payload: {
@@ -473,6 +474,7 @@ class AdminController {
             }
           }
         });
+        return;
       }
 
       // Update User table (basic info)
@@ -572,7 +574,7 @@ class AdminController {
       });
 
       if (!doctor) {
-        return res.status(404).json({
+        res.status(404).json({
           status: false,
           statusCode: 404,
           payload: {
@@ -582,6 +584,7 @@ class AdminController {
             }
           }
         });
+        return;
       }
 
       // Update user status
@@ -643,7 +646,7 @@ class AdminController {
       });
 
       if (!doctor) {
-        return res.status(404).json({
+        res.status(404).json({
           status: false,
           statusCode: 404,
           payload: {
@@ -653,6 +656,7 @@ class AdminController {
             }
           }
         });
+        return;
       }
 
       // Get patient count
@@ -770,7 +774,7 @@ class AdminController {
 
       if (!doctor) {
         await transaction.rollback();
-        return res.status(404).json({
+        res.status(404).json({
           status: false,
           statusCode: 404,
           payload: {
@@ -780,6 +784,7 @@ class AdminController {
             }
           }
         });
+        return;
       }
 
       // Check if doctor has active patients
@@ -790,7 +795,7 @@ class AdminController {
 
       if (activePatients > 0) {
         await transaction.rollback();
-        return res.status(400).json({
+        res.status(400).json({
           status: false,
           statusCode: 400,
           payload: {
@@ -800,6 +805,7 @@ class AdminController {
             }
           }
         });
+        return;
       }
 
       // Soft delete user account
@@ -869,7 +875,7 @@ class AdminController {
 
       const medicine = await Medicine.findByPk(medicineId);
       if (!medicine) {
-        return res.status(404).json({
+        res.status(404).json({
           status: false,
           statusCode: 404,
           payload: {
@@ -879,6 +885,7 @@ class AdminController {
             }
           }
         });
+        return;
       }
 
       await medicine.update({
@@ -911,7 +918,7 @@ class AdminController {
 
       const medicine = await Medicine.findByPk(medicineId);
       if (!medicine) {
-        return res.status(404).json({
+        res.status(404).json({
           status: false,
           statusCode: 404,
           payload: {
@@ -921,6 +928,7 @@ class AdminController {
             }
           }
         });
+        return;
       }
 
       // Check if medicine is being used in active prescriptions
@@ -932,7 +940,7 @@ class AdminController {
       });
 
       if (activeUsage > 0) {
-        return res.status(400).json({
+        res.status(400).json({
           status: false,
           statusCode: 400,
           payload: {
@@ -942,6 +950,7 @@ class AdminController {
             }
           }
         });
+        return;
       }
 
       await medicine.destroy();
@@ -1075,7 +1084,7 @@ class AdminController {
 
       const condition = await SymptomsDatabase.findByPk(conditionId);
       if (!condition) {
-        return res.status(404).json({
+        res.status(404).json({
           status: false,
           statusCode: 404,
           payload: {
@@ -1085,6 +1094,7 @@ class AdminController {
             }
           }
         });
+        return;
       }
 
       await condition.update({
@@ -1116,7 +1126,7 @@ class AdminController {
 
       const condition = await SymptomsDatabase.findByPk(conditionId);
       if (!condition) {
-        return res.status(404).json({
+        res.status(404).json({
           status: false,
           statusCode: 404,
           payload: {
@@ -1126,6 +1136,7 @@ class AdminController {
             }
           }
         });
+        return;
       }
 
       // Soft delete by setting is_active to false
@@ -1298,7 +1309,7 @@ class AdminController {
 
       const treatment = await TreatmentDatabase.findByPk(treatmentId);
       if (!treatment) {
-        return res.status(404).json({
+        res.status(404).json({
           status: false,
           statusCode: 404,
           payload: {
@@ -1308,6 +1319,7 @@ class AdminController {
             }
           }
         });
+        return;
       }
 
       await treatment.update({
@@ -1348,7 +1360,7 @@ class AdminController {
 
       const treatment = await TreatmentDatabase.findByPk(treatmentId);
       if (!treatment) {
-        return res.status(404).json({
+        res.status(404).json({
           status: false,
           statusCode: 404,
           payload: {
@@ -1358,6 +1370,7 @@ class AdminController {
             }
           }
         });
+        return;
       }
 
       // Soft delete by setting is_active to false
