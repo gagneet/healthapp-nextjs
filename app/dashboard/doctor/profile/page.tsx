@@ -79,8 +79,8 @@ export default function DoctorProfilePage() {
   const fetchDoctorProfile = async () => {
     try {
       const response = await apiRequest.get('/doctors/profile')
-      if (response.status && response.payload?.data?.profile) {
-        setProfile(response.payload.data.profile)
+      if ((response as any).status && (response as any).payload?.data?.profile) {
+        setProfile((response as any).payload.data.profile)
       }
     } catch (error) {
       console.error('Failed to fetch doctor profile:', error)
@@ -101,7 +101,7 @@ export default function DoctorProfilePage() {
         [field]: tempValues[field]
       })
       
-      if (response.status) {
+      if ((response as any).status) {
         setProfile(prev => prev ? { ...prev, [field]: tempValues[field] } : null)
         setEditingField(null)
         setTempValues({})
@@ -132,8 +132,8 @@ export default function DoctorProfilePage() {
         headers: { 'Content-Type': 'multipart/form-data' }
       })
       
-      if (response.status && response.payload?.data?.imageUrl) {
-        setProfile(prev => prev ? { ...prev, profile_picture_url: response.payload.data.imageUrl } : null)
+      if ((response as any).status && (response as any).payload?.data?.imageUrl) {
+        setProfile(prev => prev ? { ...prev, profile_picture_url: (response as any).payload.data.imageUrl } : null)
         toast.success('Profile image updated successfully')
       }
     } catch (error) {
@@ -351,7 +351,7 @@ export default function DoctorProfilePage() {
               </label>
               <div className="flex items-center">
                 <PhoneIcon className="h-4 w-4 text-gray-400 mr-2" />
-                <EditableField field="mobile_number" value={profile.mobile_number || user?.mobile_number} />
+                <EditableField field="mobile_number" value={(profile as any).mobile_number || user?.mobile_number} />
               </div>
             </div>
 

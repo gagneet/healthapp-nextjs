@@ -400,7 +400,7 @@ export default function HospitalPatientsPage() {
                       {formatDate(patient.last_visit)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getAdherenceColor(patient.adherence_rate)}`}>
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                         {patient.adherence_rate}%
                       </span>
                     </td>

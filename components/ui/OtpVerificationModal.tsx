@@ -149,8 +149,8 @@ export default function OtpVerificationModal({
         assignment_id: patient.assignment_id
       })
 
-      if (response.status) {
-        setOtpResponse(response.payload.data)
+      if ((response as any).status) {
+        setOtpResponse((response as any).payload.data)
         setStep('verify')
         setTimeRemaining(300) // Reset timer
         setCanResend(false)
@@ -158,7 +158,7 @@ export default function OtpVerificationModal({
         // Focus first OTP input
         setTimeout(() => otpRefs[0]?.current?.focus(), 100)
       } else {
-        setError(response.payload?.error?.message || 'Failed to send OTP')
+        setError((response as any).payload?.error?.message || 'Failed to send OTP')
       }
     } catch (err: any) {
       setError(err.message || 'Failed to request OTP')
@@ -183,14 +183,14 @@ export default function OtpVerificationModal({
         assignment_id: patient!.assignment_id
       })
 
-      if (response.status && response.payload?.data?.success) {
+      if ((response as any).status && (response as any).payload?.data?.success) {
         setSuccess(true)
         setTimeout(() => {
           onSuccess(patient!)
           onClose()
         }, 2000)
       } else {
-        setError(response.payload?.error?.message || 'Invalid OTP')
+        setError((response as any).payload?.error?.message || 'Invalid OTP')
         // Clear OTP inputs on error
         setOtp(['', '', '', ''])
         otpRefs[0]?.current?.focus()

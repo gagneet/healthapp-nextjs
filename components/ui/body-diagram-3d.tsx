@@ -37,13 +37,13 @@ function HumanBodyModel({ gender, onBodyClick, interactive }: {
   const handleBodyPartClick = (event: THREE.Event, bodyPartName: string) => {
     if (!interactive || !onBodyClick) return
     
-    event.stopPropagation()
-    const intersect = event.intersections?.[0]
+    (event as any).stopPropagation()
+    const intersect = (event as any).intersections?.[0]
     if (intersect?.point) {
       // Add body part information to the click event
       const position = new THREE.Vector3()
       position.copy(intersect.point)
-      position.bodyPart = bodyPartName // Add custom property for body part identification
+      (position as any).bodyPart = bodyPartName // Add custom property for body part identification
       onBodyClick(position)
     }
   }
@@ -185,7 +185,7 @@ function SymptomMarker({
   }
 
   const handleClick = (event: THREE.Event) => {
-    event.stopPropagation()
+    (event as any).stopPropagation()
     onClick?.(symptom)
   }
 

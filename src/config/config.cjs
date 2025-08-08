@@ -1,9 +1,5 @@
 // src/config/config.cjs - Sequelize CLI Configuration (CommonJS)
-// This file is specifically for Sequelize CLI which requires CommonJS format
-const { config } = require('dotenv');
-
-// Load environment variables
-config();
+require('dotenv').config();
 
 module.exports = {
   development: {

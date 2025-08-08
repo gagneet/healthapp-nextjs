@@ -55,30 +55,30 @@ export default function DoctorCalendarPage() {
     setIsLoading(true)
     setTimeout(() => {
       // Mock data for demonstration
-      const mockAppointments = [
+      const mockAppointments: Appointment[] = [
         {
           id: 1,
           patient_name: 'John Doe',
           appointment_time: '09:00',
           appointment_date: selectedDate,
-          status: 'scheduled',
-          type: 'consultation'
+          status: 'scheduled' as const,
+          type: 'consultation' as const
         },
         {
           id: 2,
           patient_name: 'Jane Smith',
           appointment_time: '10:30',
           appointment_date: selectedDate,
-          status: 'scheduled',
-          type: 'follow-up'
+          status: 'scheduled' as const,
+          type: 'follow-up' as const
         },
         {
           id: 3,
           patient_name: 'Mike Johnson',
           appointment_time: '14:00',
           appointment_date: selectedDate,
-          status: 'completed',
-          type: 'consultation'
+          status: 'completed' as const,
+          type: 'consultation' as const
         }
       ]
       setAppointments(mockAppointments)
@@ -553,10 +553,7 @@ export default function DoctorCalendarPage() {
                   events={calendarEvents}
                   onEventClick={handleEventClick}
                   onTimeRangeSelected={handleTimeRangeSelected}
-                  style={{
-                    height: '100%'
-                  }}
-                  config={{
+                  {...({ config: {
                     startDate: calendarConfig.startDate,
                     locale: 'en-us',
                     heightSpec: 'Fixed',
@@ -574,18 +571,14 @@ export default function DoctorCalendarPage() {
                     businessBeginsHour: 7,
                     businessEndsHour: 20,
                     eventStackingLineHeight: 20
-                  }}
+                  }} as any)}
                 />
               ) : (
                 <DayPilotCalendar
-                  {...calendarConfig}
                   events={calendarEvents}
                   onEventClick={handleEventClick}
                   onTimeRangeSelected={handleTimeRangeSelected}
-                  style={{
-                    height: '100%'
-                  }}
-                  config={{
+                  {...({ config: {
                     viewType: viewType === 'Days' ? 'Days' : 'Week',
                     startDate: calendarConfig.startDate,
                     locale: 'en-us',
@@ -606,7 +599,7 @@ export default function DoctorCalendarPage() {
                     showNonBusiness: true,
                     timeFormat: 'Clock12Hours',
                     eventRightClickHandling: 'ContextMenu'
-                  }}
+                  }} as any)}
                 />
               )}
             </div>

@@ -84,7 +84,7 @@ export default function SpeechToText({
         // Configuration for multilingual support
         recognition.continuous = true
         recognition.interimResults = true
-        recognition.maxAlternatives = 3
+        (recognition as any).maxAlternatives = 3
         
         // Set language based on preference
         if (language === 'auto') {

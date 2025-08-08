@@ -17,6 +17,9 @@ NC='\033[0m' # No Color
 # Default values
 MODE=""
 IP_ADDRESS=""
+HOST_IP=""
+DB_HOST_IP=""
+REDIS_HOST_IP=""
 AUTO_YES=false
 SCALE_BACKEND=1
 SCALE_FRONTEND=1
@@ -50,11 +53,14 @@ print_header() {
 show_usage() {
     echo "HealthApp Deployment Script"
     echo ""
-    echo "Usage: $0 MODE [IP_ADDRESS] [OPTIONS]"
+    echo "Usage: $0 MODE [HOST_IP] [DB_HOST_IP] [REDIS_HOST_IP] [OPTIONS]"
+    echo "   OR: $0 MODE [IP_ADDRESS] [OPTIONS]  # For backward compatibility"
     echo ""
     echo "PARAMETERS:"
     echo "  MODE              Deployment mode: 'dev' or 'prod'"
-    echo "  IP_ADDRESS        Network IP address (optional, auto-detects if not provided)"
+    echo "  HOST_IP           Frontend/Backend host IP (optional, auto-detects if not provided)"
+    echo "  DB_HOST_IP        Database host IP (optional, defaults to HOST_IP)"
+    echo "  REDIS_HOST_IP     Redis host IP (optional, defaults to HOST_IP)"
     echo ""
     echo "OPTIONS:"
     echo "  --auto-yes        Skip all confirmation prompts"
@@ -63,15 +69,19 @@ show_usage() {
     echo "  --branch=BRANCH   Git branch to deploy (default: master)"
     echo "  --migrate         Run database migrations after deployment"
     echo "  --seed            Run database seeders after deployment"
+    echo "  --host-ip=IP      Override host IP address"
+    echo "  --db-ip=IP        Override database IP address"
+    echo "  --redis-ip=IP     Override Redis IP address"
     echo "  --help            Show this help message"
     echo ""
     echo "EXAMPLES:"
     echo "  $0 dev                                    # Deploy dev with auto-detected IP"
-    echo "  $0 dev 192.168.0.148                     # Deploy dev with specific IP"
+    echo "  $0 dev 192.168.0.148                     # Deploy dev with specific IP for all services"
+    echo "  $0 dev 192.168.0.148 192.168.0.149 192.168.0.150  # Different IPs per service"
     echo "  $0 prod 10.0.0.100 --auto-yes            # Deploy prod with auto-confirmation"
     echo "  $0 dev --scale-backend=3 --scale-frontend=2  # Deploy with scaling"
     echo "  $0 dev --migrate --seed                   # Deploy with migrations and seeders"
-    echo "  $0 prod 10.0.0.100 --migrate --auto-yes  # Production with migrations"
+    echo "  $0 prod --host-ip=10.0.0.100 --db-ip=10.0.0.101 --migrate --auto-yes  # Production with custom IPs"
     echo ""
 }
 
@@ -92,6 +102,8 @@ get_network_ip() {
 
 # Parse command line arguments
 parse_arguments() {
+    local positional_args=()
+    
     while [[ $# -gt 0 ]]; do
         case $1 in
             dev|prod)
@@ -127,6 +139,18 @@ parse_arguments() {
                 RUN_SEEDERS=true
                 shift
                 ;;
+            --host-ip=*)
+                HOST_IP="${1#*=}"
+                shift
+                ;;
+            --db-ip=*)
+                DB_HOST_IP="${1#*=}"
+                shift
+                ;;
+            --redis-ip=*)
+                REDIS_HOST_IP="${1#*=}"
+                shift
+                ;;
             --help)
                 show_usage
                 exit 0
@@ -137,9 +161,9 @@ parse_arguments() {
                 exit 1
                 ;;
             *)
-                # Assume it's an IP address
-                if [ -z "$IP_ADDRESS" ] && [[ $1 =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-                    IP_ADDRESS="$1"
+                # Collect positional arguments (IP addresses)
+                if [[ $1 =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+                    positional_args+=("$1")
                 else
                     print_error "Invalid argument: $1"
                     show_usage
@@ -157,10 +181,44 @@ parse_arguments() {
         exit 1
     fi
 
-    # Auto-detect IP if not provided
+    # Process positional IP arguments
+    if [ ${#positional_args[@]} -eq 1 ]; then
+        # Single IP - use for all services (backward compatibility)
+        IP_ADDRESS="${positional_args[0]}"
+        HOST_IP="${positional_args[0]}"
+        DB_HOST_IP="${positional_args[0]}"
+        REDIS_HOST_IP="${positional_args[0]}"
+    elif [ ${#positional_args[@]} -eq 3 ]; then
+        # Three IPs - granular control
+        HOST_IP="${positional_args[0]}"
+        DB_HOST_IP="${positional_args[1]}"
+        REDIS_HOST_IP="${positional_args[2]}"
+        IP_ADDRESS="$HOST_IP"  # For backward compatibility
+    elif [ ${#positional_args[@]} -gt 1 ] && [ ${#positional_args[@]} -ne 3 ]; then
+        print_error "Invalid number of IP addresses. Provide either 1 (for all services) or 3 (HOST_IP DB_HOST_IP REDIS_HOST_IP)"
+        show_usage
+        exit 1
+    fi
+
+    # Auto-detect IPs if not provided via any method
+    if [ -z "$HOST_IP" ]; then
+        HOST_IP=$(get_network_ip)
+        print_warning "Auto-detected HOST_IP: $HOST_IP"
+    fi
+    
+    if [ -z "$DB_HOST_IP" ]; then
+        DB_HOST_IP="$HOST_IP"
+        print_warning "Using HOST_IP for database: $DB_HOST_IP"
+    fi
+    
+    if [ -z "$REDIS_HOST_IP" ]; then
+        REDIS_HOST_IP="$HOST_IP"
+        print_warning "Using HOST_IP for Redis: $REDIS_HOST_IP"
+    fi
+    
+    # Set IP_ADDRESS for backward compatibility
     if [ -z "$IP_ADDRESS" ]; then
-        IP_ADDRESS=$(get_network_ip)
-        print_warning "Auto-detected IP address: $IP_ADDRESS"
+        IP_ADDRESS="$HOST_IP"
     fi
 }
 
@@ -238,9 +296,8 @@ update_environment_files() {
         cp "$env_file" "$working_env"
         
         # Update URLs with the provided IP address
-        sed -i "s/localhost:3002/$IP_ADDRESS:3002/g" "$working_env"
-        sed -i "s/localhost:3001/$IP_ADDRESS:3001/g" "$working_env"
-        sed -i "s/localhost:3000/$IP_ADDRESS:3002/g" "$working_env"
+        sed -i "s/localhost:3000/$IP_ADDRESS:3000/g" "$working_env"
+        sed -i "s/localhost:3005/$IP_ADDRESS:3005/g" "$working_env"
         
         print_status "Environment file updated: $working_env"
     else
@@ -302,7 +359,7 @@ services:
     volumes:
       - postgres_data_${MODE}:/var/lib/postgresql/data
     ports:
-      - "5433:5432"
+      - "${DB_HOST_IP}:5433:5432"
     networks:
       - healthapp-network
     healthcheck:
@@ -323,7 +380,7 @@ services:
     volumes:
       - redis_data_${MODE}:/data
     ports:
-      - "6379:6379"
+      - "${REDIS_HOST_IP}:6379:6379"
     networks:
       - healthapp-network
     healthcheck:
@@ -338,7 +395,10 @@ services:
     image: healthapp-backend:${MODE}
     environment:
       NODE_ENV: ${NODE_ENV_VALUE}
-      PORT: 3001
+      PORT: 3005
+      HOST_IP: ${HOST_IP}
+      DB_HOST_IP: ${DB_HOST_IP}
+      REDIS_HOST_IP: ${REDIS_HOST_IP}
       POSTGRES_HOST: postgres
       POSTGRES_PORT: 5432
       POSTGRES_DB: healthapp_${MODE}
@@ -347,7 +407,7 @@ services:
       REDIS_HOST: redis
       REDIS_PORT: 6379
       JWT_SECRET: 25af6001e43881f727388f44e0f6fff837510b0649fe9393987f009c595156f778442654270516863b00617b478aa46dea6311f74fb95325d3c9a344b125d033
-      FRONTEND_URL: http://${IP_ADDRESS}:3002
+      FRONTEND_URL: http://${HOST_IP}:3000
       LOG_LEVEL: info
       # Add connection retry configuration for better startup reliability
       DB_CONNECT_RETRY_DELAY: 5000
@@ -355,7 +415,7 @@ services:
     volumes:
       - backend_logs_${MODE}:/app/logs
     ports:
-      - "3001:3001"
+      - "${HOST_IP}:3005:3005"
     networks:
       - healthapp-network
     deploy:
@@ -378,7 +438,7 @@ services:
       - postgres
       - redis
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:3001/health || exit 1"]
+      test: ["CMD-SHELL", "curl -f http://localhost:3005/health || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -388,10 +448,11 @@ services:
     image: healthapp-frontend:${MODE}
     environment:
       NODE_ENV: ${NODE_ENV_VALUE}
-      BACKEND_URL: http://backend:3001
-      NEXT_PUBLIC_API_URL: http://${IP_ADDRESS}:3001/api
+      HOST_IP: ${HOST_IP}
+      BACKEND_URL: http://backend:3005
+      NEXT_PUBLIC_API_URL: http://${HOST_IP}:3005/api
     ports:
-      - "3002:3000"
+      - "${HOST_IP}:3000:3000"
     networks:
       - healthapp-network
     depends_on:
@@ -428,7 +489,7 @@ services:
     volumes:
       - pgadmin_data_${MODE}:/var/lib/pgadmin
     ports:
-      - "5050:80"
+      - "${HOST_IP}:5050:80"
     networks:
       - healthapp-network
     deploy:
@@ -487,12 +548,15 @@ deploy_stack() {
         
         # Set environment variables for the stack
         export VERSION=$MODE
+        export HOST_IP=$HOST_IP
+        export DB_HOST_IP=$DB_HOST_IP
+        export REDIS_HOST_IP=$REDIS_HOST_IP
         export DB_NAME=healthapp_$MODE
         export DB_USER=healthapp_user  
         export DB_PASSWORD=pg_password
         export JWT_SECRET=25af6001e43881f727388f44e0f6fff837510b0649fe9393987f009c595156f778442654270516863b00617b478aa46dea6311f74fb95325d3c9a344b125d033
-        export FRONTEND_URL=http://$IP_ADDRESS:3002
-        export NEXT_PUBLIC_API_URL=http://$IP_ADDRESS:3001/api
+        export FRONTEND_URL=http://$HOST_IP:3000
+        export NEXT_PUBLIC_API_URL=http://$HOST_IP:3005/api
         
         # Deploy the unified stack
         docker stack deploy -c docker/docker-stack.yml "$DOCKER_STACK_NAME" --detach=false
@@ -618,7 +682,7 @@ wait_for_services() {
     while [ $counter -lt $timeout ]; do
         if docker service ls | grep "${DOCKER_STACK_NAME}_backend" | grep -q "1/1"; then
             # Also check if backend health endpoint responds
-            if curl -f http://${IP_ADDRESS}:3001/health > /dev/null 2>&1; then
+            if curl -f http://${HOST_IP}:3005/health > /dev/null 2>&1; then
                 print_status "Backend API service is ready and responding"
                 break
             fi
@@ -642,7 +706,7 @@ wait_for_services() {
     while [ $counter -lt $timeout ]; do
         if docker service ls | grep "${DOCKER_STACK_NAME}_frontend" | grep -q "1/1"; then
             # Also check if frontend responds
-            if curl -f http://${IP_ADDRESS}:3002 > /dev/null 2>&1; then
+            if curl -f http://${HOST_IP}:3000 > /dev/null 2>&1; then
                 print_status "Frontend service is ready and responding"
                 break
             fi
@@ -742,7 +806,9 @@ show_deployment_summary() {
     echo ""
     echo "📋 Deployment Details:"
     echo "   Mode:           $MODE"
-    echo "   IP Address:     $IP_ADDRESS"
+    echo "   Host IP:        $HOST_IP"
+    echo "   Database IP:    $DB_HOST_IP"
+    echo "   Redis IP:       $REDIS_HOST_IP"
     echo "   Stack Name:     $DOCKER_STACK_NAME"
     echo "   Backend Scale:  $SCALE_BACKEND replicas"
     echo "   Frontend Scale: $SCALE_FRONTEND replicas"
@@ -750,10 +816,10 @@ show_deployment_summary() {
     echo "   Seeders:        $([ "$RUN_SEEDERS" = true ] && echo "✅ Executed" || echo "⏭️ Skipped")"
     echo ""
     echo "📋 Access URLs:"
-    echo "   Frontend:       http://$IP_ADDRESS:3002"
-    echo "   Backend API:    http://$IP_ADDRESS:3001"
-    echo "   Health Check:   http://$IP_ADDRESS:3001/health"
-    echo "   pgAdmin:        http://$IP_ADDRESS:5050 (admin@healthapp.com / admin123)"
+    echo "   Frontend:       http://$HOST_IP:3000"
+    echo "   Backend API:    http://$HOST_IP:3005"
+    echo "   Health Check:   http://$HOST_IP:3005/health"
+    echo "   pgAdmin:        http://$HOST_IP:5050 (admin@healthapp.com / admin123)"
     echo ""
     echo "🔧 Docker Swarm Management:"
     echo "   View services:  docker stack services $DOCKER_STACK_NAME"
@@ -805,7 +871,9 @@ main() {
     # Display configuration
     print_status "Deployment Configuration:"
     echo "  Mode: $MODE"
-    echo "  IP Address: $IP_ADDRESS"
+    echo "  Host IP (Frontend/Backend): $HOST_IP"
+    echo "  Database IP: $DB_HOST_IP"
+    echo "  Redis IP: $REDIS_HOST_IP"
     echo "  Backend Replicas: $SCALE_BACKEND"
     echo "  Frontend Replicas: $SCALE_FRONTEND"
     echo "  Run Migrations: $RUN_MIGRATIONS"

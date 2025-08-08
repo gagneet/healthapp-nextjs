@@ -557,7 +557,7 @@ export default function AddPatientPage() {
         last_name: lastName,
         email: formData.email || '',
         mobile_number: formData.mobileNumber,
-        gender: genderMapping[formData.gender] || '',
+        gender: (genderMapping as any)[formData.gender] || '',
         dob: processedDateOfBirth,
         address: formData.address || '',
         
@@ -610,7 +610,7 @@ export default function AddPatientPage() {
       
     } catch (error) {
       console.error('Error creating patient:', error)
-      alert(`Error creating patient: ${error.message || 'Please try again'}`)
+      alert(`Error creating patient: ${(error as any).message || 'Please try again'}`)
     } finally {
       setIsSubmitting(false)
     }

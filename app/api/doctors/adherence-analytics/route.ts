@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import jwt from 'jsonwebtoken'
+import { Op } from 'sequelize'
 import db from '../../../../src/models/index.js'
 
 interface AdherenceOverview {
@@ -57,7 +58,7 @@ async function calculateAdherenceAnalytics(doctorUserId: string): Promise<Adhere
         entity_id: doctor.id,
         metric_type: 'adherence_analytics',
         valid_until: {
-          [db.Sequelize.Op.gt]: new Date()
+          [Op.gt]: new Date()
         }
       }
     })
@@ -84,7 +85,7 @@ async function calculateAdherenceAnalytics(doctorUserId: string): Promise<Adhere
     // Get all patients for this doctor
     const doctorPatients = await db.Patient.findAll({
       where: {
-        [db.Sequelize.Op.or]: [
+        [Op.or]: [
           { primary_care_doctor_id: doctor.id },
           { 
             care_coordinator_id: doctor.id,
@@ -96,7 +97,7 @@ async function calculateAdherenceAnalytics(doctorUserId: string): Promise<Adhere
       attributes: ['id']
     })
 
-    const patientIds = doctorPatients.map(p => p.id)
+    const patientIds = doctorPatients.map((p: any) => p.id)
 
     if (patientIds.length === 0) {
       // No patients assigned to this doctor
@@ -121,7 +122,7 @@ async function calculateAdherenceAnalytics(doctorUserId: string): Promise<Adhere
         where: {
           patient_id: patientId,
           scheduled_at: {
-            [db.Sequelize.Op.gte]: thirtyDaysAgo
+            [Op.gte]: thirtyDaysAgo
           }
         },
         raw: true
@@ -169,10 +170,10 @@ async function calculateAdherenceAnalytics(doctorUserId: string): Promise<Adhere
       // Get medication adherence for this month
       const monthlyMedStats = await db.MedicationLog.aggregate('adherence_status', 'count', {
         where: {
-          patient_id: { [db.Sequelize.Op.in]: patientIds },
+          patient_id: { [Op.in]: patientIds },
           scheduled_at: {
-            [db.Sequelize.Op.gte]: startDate,
-            [db.Sequelize.Op.lt]: endDate
+            [Op.gte]: startDate,
+            [Op.lt]: endDate
           },
           adherence_status: 'taken'
         }
@@ -181,10 +182,10 @@ async function calculateAdherenceAnalytics(doctorUserId: string): Promise<Adhere
       // Get vital readings for this month
       const monthlyVitalStats = await db.VitalReading.count({
         where: {
-          patient_id: { [db.Sequelize.Op.in]: patientIds },
+          patient_id: { [Op.in]: patientIds },
           reading_time: {
-            [db.Sequelize.Op.gte]: startDate,
-            [db.Sequelize.Op.lt]: endDate
+            [Op.gte]: startDate,
+            [Op.lt]: endDate
           }
         }
       })
