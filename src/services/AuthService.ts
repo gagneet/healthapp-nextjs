@@ -4,7 +4,7 @@ import { User, Doctor, Patient, UserRole } from '../models/index.js';
 import { generateToken, generateRefreshToken } from '../config/jwt.js';
 
 class AuthService {
-  async createUser(userData) {
+  async createUser(userData: any) {
     const {
       email,
       password,
@@ -40,7 +40,7 @@ class AuthService {
     return { user, userRole };
   }
 
-  async authenticateUser(email, password) {
+  async authenticateUser(email: string, password: string) {
     const user = await User.findOne({
       where: { 
         email,
@@ -65,7 +65,7 @@ class AuthService {
     return user;
   }
 
-  generateTokens(user, userRole) {
+  generateTokens(user: any, userRole: any) {
     const tokenPayload = {
       userId: user.id,
       userCategory: user.category,

@@ -6,6 +6,12 @@ import { AsyncLocalStorage } from "async_hooks";
 
 // Trace context management
 class TraceContext {
+  traceId: string;
+  spanId: string;
+  parentId: string;
+  sampled: string;
+  baggage: Map<string, any>;
+
   static TRACE_HEADERS = [
     "x-request-id",
     "x-correlation-id",
@@ -27,7 +33,7 @@ class TraceContext {
     this.baggage = new Map();
   }
 
-  static fromHeaders(headers) {
+  static fromHeaders(headers: any) {
     const context = new TraceContext();
 
     // Extract W3C Trace Context

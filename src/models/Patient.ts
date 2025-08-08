@@ -4,7 +4,7 @@ import { createLogger } from '../middleware/logger.js';
 
 const logger = createLogger(import.meta.url);
 
-export default (sequelize) => {
+export default (sequelize: any) => {
   const Patient = sequelize.define('Patient', {
     id: {
       type: DataTypes.UUID,

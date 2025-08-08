@@ -2,6 +2,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { Doctor, User, Speciality, Patient, CarePlan, Clinic, Appointment } from '../models/index.js';
 import { Op } from 'sequelize';
+import '../types/express.js';
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';

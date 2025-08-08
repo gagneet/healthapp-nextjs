@@ -5,6 +5,9 @@ import { createLogger } from '../middleware/logger.js';
 const logger = createLogger(import.meta.url);
 
 class CacheService {
+  client: any;
+  isConnected: boolean;
+
   constructor() {
     this.client = null;
     this.isConnected = false;

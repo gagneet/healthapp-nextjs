@@ -10,8 +10,10 @@ declare global {
         userId: string;
         email: string;
         role?: string;
+        id: string;
         [key: string]: any;
       };
+      userCategory?: string;
       fileValidationError?: string;
     }
   }

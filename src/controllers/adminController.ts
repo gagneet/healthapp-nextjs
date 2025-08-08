@@ -1,5 +1,6 @@
 // src/controllers/adminController.ts
 import { Request, Response, NextFunction } from 'express';
+import '../types/express.js';
 import { Doctor, Patient, User, Medicine, Speciality, Medication, Appointment, SymptomsDatabase, TreatmentDatabase, Clinic, UserRole } from '../models/index.js';
 import { Op } from 'sequelize';
 import bcrypt from 'bcryptjs';

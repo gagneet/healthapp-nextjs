@@ -1,5 +1,6 @@
 // src/controllers/symptomsDiagnosisController.ts - Symptoms and Diagnosis management
 import { Request, Response, NextFunction } from 'express';
+import '../types/express.js';
 import { SymptomsDatabase, TreatmentDatabase, sequelize } from '../models/index.js';
 import { Op } from 'sequelize';
 import ResponseFormatter from '../utils/responseFormatter.js';

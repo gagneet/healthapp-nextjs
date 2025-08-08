@@ -3,10 +3,25 @@ import { Request, Response, NextFunction } from 'express';
 import { Appointment, Patient, Doctor, User, ScheduleEvent, AppointmentSlot } from '../models/index.js';
 import { Op } from 'sequelize';
 import CalendarService from '../services/CalendarService.js';
+import '../types/express.js';
 
 class AppointmentController {
-  async createAppointment(req: Request, res: Response, next: NextFunction): Promise<void | Response> {
+  async createAppointment(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
+      if (!req.user) {
+        res.status(401).json({
+          status: false,
+          statusCode: 401,
+          payload: {
+            error: {
+              status: 'UNAUTHORIZED',
+              message: 'User not authenticated'
+            }
+          }
+        });
+        return;
+      }
+
       const {
         patient_id,
         description,
@@ -30,14 +45,14 @@ class AppointmentController {
       );
 
       if (conflicts.length > 0) {
-        return res.status(409).json({
+        res.status(409).json({
           status: false,
           statusCode: 409,
           payload: {
             error: {
               status: 'CONFLICT',
               message: 'Time slot conflicts with existing appointment',
-              conflicts: conflicts.map(c => ({
+              conflicts: conflicts.map((c: any) => ({
                 id: c.id,
                 start_time: c.start_time,
                 end_time: c.end_time
@@ -45,6 +60,7 @@ class AppointmentController {
             }
           }
         });
+        return;
       }
 
       // Book slot if provided
@@ -53,7 +69,7 @@ class AppointmentController {
           await CalendarService.bookAppointmentSlot(slot_id, null);
         } catch (error: unknown) {
           const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-          return res.status(400).json({
+          res.status(400).json({
             status: false,
             statusCode: 400,
             payload: {
@@ -63,15 +79,16 @@ class AppointmentController {
               }
             }
           });
+          return;
         }
       }
 
       const appointment = await Appointment.create({
-        participant_one_type: req.userCategory,
+        participant_one_type: req.userCategory || req.user.role || 'user',
         participant_one_id: req.user.id,
         participant_two_type: 'patient',
         participant_two_id: patient_id,
-        organizer_type: req.userCategory,
+        organizer_type: req.userCategory || req.user.role || 'user',
         organizer_id: req.user.id,
         description,
         start_date: startTime.toISOString().split('T')[0],
@@ -108,7 +125,7 @@ class AppointmentController {
     }
   }
 
-  async getPatientAppointments(req: Request, res: Response, next: NextFunction): Promise<void | Response> {
+  async getPatientAppointments(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const { patientId } = req.params;
 
@@ -128,7 +145,7 @@ class AppointmentController {
         order: [['start_time', 'ASC']]
       });
 
-      const responseData = { appointments: {} };
+      const responseData: { appointments: { [key: string]: any } } = { appointments: {} };
 
       for (const appointment of appointments) {
         // Get organizer details
@@ -203,7 +220,7 @@ class AppointmentController {
         where: {
           start_date: date,
           // Add user-specific filtering based on role
-          ...(req.userCategory === 'doctor' && {
+          ...(req.userCategory === 'doctor' && req.user && {
             [Op.or]: [
               { participant_one_id: req.user.id, participant_one_type: 'doctor' },
               { organizer_id: req.user.id, organizer_type: 'doctor' }
@@ -213,7 +230,7 @@ class AppointmentController {
         order: [['start_time', 'ASC']]
       });
 
-      const responseData = { appointments: {} };
+      const responseData: { appointments: { [key: string]: any } } = { appointments: {} };
 
       for (const appointment of appointments) {
         const participantTwo = await this.getParticipantDetails(
@@ -250,7 +267,7 @@ class AppointmentController {
   }
 
   // Helper methods
-  async getOrganizerDetails(organizerType: string, organizerId: number): Promise<{ name: string } | null> {
+  async getOrganizerDetails(organizerType: string, organizerId: number | string): Promise<{ name: string } | null> {
     if (organizerType === 'doctor') {
       const doctor = await Doctor.findByPk(organizerId, {
         include: [{ model: User, as: 'user' }]
@@ -263,7 +280,7 @@ class AppointmentController {
     return null;
   }
 
-  async getParticipantDetails(participantType: string, participantId: number): Promise<{ name: string } | null> {
+  async getParticipantDetails(participantType: string, participantId: number | string): Promise<{ name: string } | null> {
     if (participantType === 'patient') {
       const patient = await Patient.findByPk(participantId);
       return { name: `${patient?.first_name} ${patient?.last_name}` };
@@ -314,12 +331,12 @@ class AppointmentController {
   }
 
   // New calendar and availability methods
-  async getDoctorAvailableSlots(req: Request, res: Response, next: NextFunction): Promise<void | Response> {
+  async getDoctorAvailableSlots(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const { doctorId, date, appointmentType } = req.query;
 
       if (!doctorId || !date) {
-        return res.status(400).json({
+        res.status(400).json({
           status: false,
           statusCode: 400,
           payload: {
@@ -329,9 +346,10 @@ class AppointmentController {
             }
           }
         });
+        return;
       }
 
-      const slots = await CalendarService.getAvailableSlots(doctorId, date, appointmentType);
+      const slots = await CalendarService.getAvailableSlots(doctorId as string, date as string, appointmentType as string);
 
       res.status(200).json({
         status: true,
@@ -352,7 +370,7 @@ class AppointmentController {
       const { startDate, endDate } = req.query;
 
       // Use current user's ID if doctorId not provided and user is doctor
-      const targetDoctorId = doctorId || (req.userCategory === 'doctor' ? req.user.id : null);
+      const targetDoctorId = doctorId || (req.userCategory === 'doctor' && req.user ? req.user.id : null);
 
       if (!targetDoctorId) {
         return res.status(400).json({
@@ -391,7 +409,7 @@ class AppointmentController {
       const { startDate, endDate } = req.query;
 
       // Use current user's ID if patientId not provided and user is patient
-      const targetPatientId = patientId || (req.userCategory === 'patient' ? req.user.id : null);
+      const targetPatientId = patientId || (req.userCategory === 'patient' && req.user ? req.user.id : null);
 
       if (!targetPatientId) {
         return res.status(400).json({
@@ -430,7 +448,7 @@ class AppointmentController {
       const availabilityData = req.body;
 
       // Use current user's ID if doctorId not provided and user is doctor
-      const targetDoctorId = doctorId || (req.userCategory === 'doctor' ? req.user.id : null);
+      const targetDoctorId = doctorId || (req.userCategory === 'doctor' && req.user ? req.user.id : null);
 
       if (!targetDoctorId) {
         return res.status(400).json({

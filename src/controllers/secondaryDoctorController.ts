@@ -4,6 +4,7 @@ import SecondaryDoctorService from '../services/SecondaryDoctorService.js';
 import responseFormatter from '../utils/responseFormatter.js';
 import { createLogger } from '../middleware/logger.js';
 import { validationResult } from 'express-validator';
+import '../types/express.js';
 
 const logger = createLogger(import.meta.url);
 
@@ -12,12 +13,13 @@ export class SecondaryDoctorController {
    * Assign a secondary doctor to patient
    * POST /api/patients/:patientId/secondary-doctors
    */
-  static async assignSecondaryDoctor(req: Request, res: Response): Promise<void | Response> {
+  static async assignSecondaryDoctor(req: Request, res: Response): Promise<void> {
     try {
       // Check validation errors
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
-        return responseFormatter.error(res, 'Validation failed', 400, errors.array());
+        responseFormatter.error(res, 'Validation failed', 400, errors.array());
+        return;
       }
 
       const { patientId } = req.params;

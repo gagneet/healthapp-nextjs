@@ -1,5 +1,6 @@
 // src/controllers/consentController.ts - Patient Consent Workflow Controller
 import { Request, Response, NextFunction } from 'express';
+import '../types/express.js';
 import { Op } from 'sequelize';
 import PatientAccessService from '../services/PatientAccessService.js';
 import { Doctor, Patient, HSP, User, Speciality } from '../models/index.js';

@@ -7,6 +7,7 @@ import ResponseFormatter from '../utils/responseFormatter.js';
 import PatientService from '../services/PatientService.js';
 import PatientAccessService from '../services/PatientAccessService.js';
 import { ValidationError, NotFoundError } from '../utils/errors.js';
+import '../types/express.js';
 
 class PatientController {
   /**

@@ -62,7 +62,7 @@ class SubscriptionService {
     return servicePlan;
   }
 
-  async updateServicePlan(planId, updateData) {
+  async updateServicePlan(planId: string, updateData: any) {
     const plan = await ServicePlan.findByPk(planId);
     if (!plan) {
       throw new Error('Service plan not found');
@@ -72,7 +72,7 @@ class SubscriptionService {
     return plan;
   }
 
-  async getServicePlans(providerId, options = {}) {
+  async getServicePlans(providerId: string, options: any = {}) {
     const { is_active = true, limit = 20, offset = 0 } = options;
 
     const plans = await ServicePlan.findAll({
@@ -89,7 +89,7 @@ class SubscriptionService {
   }
 
   // Subscription Management
-  async createSubscription(patientId, providerId, servicePlanId, paymentMethodId = null) {
+  async createSubscription(patientId: string, providerId: string, servicePlanId: string, paymentMethodId: string | null = null) {
     const servicePlan = await ServicePlan.findByPk(servicePlanId);
     if (!servicePlan || !servicePlan.is_active) {
       throw new Error('Service plan not found or inactive');

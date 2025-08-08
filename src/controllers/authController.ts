@@ -6,6 +6,7 @@ import { User, Doctor, Patient, UserRole, Speciality } from '../models/index.js'
 import { generateToken, generateRefreshToken, verifyToken } from '../config/jwt.js';
 import { USER_CATEGORIES, ACCOUNT_STATUS } from '../config/constants.js';
 import { ControllerFunction } from '../types/express.js';
+import '../types/express.js';
 
 class AuthController {
   async signIn(req: Request, res: Response, next: NextFunction): Promise<void> {
@@ -219,6 +220,20 @@ class AuthController {
     try {
       // req.user is populated by authenticate middleware
       const user = req.user;
+
+      if (!user) {
+        res.status(401).json({
+          status: false,
+          statusCode: 401,
+          payload: {
+            error: {
+              status: 'UNAUTHORIZED',
+              message: 'User not authenticated'
+            }
+          }
+        });
+        return;
+      }
 
       // Get user with all necessary associations
       const fullUser = await User.findByPk(user.id, {

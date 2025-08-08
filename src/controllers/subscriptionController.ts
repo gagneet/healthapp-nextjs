@@ -1,5 +1,6 @@
 // src/controllers/subscriptionController.ts
 import { Request, Response, NextFunction } from 'express';
+import '../types/express.js';
 import { ServicePlan, PatientSubscription, Payment, PaymentMethod, Patient, HealthcareProvider } from '../models/index.js';
 import { Op } from 'sequelize';
 import SubscriptionService from '../services/SubscriptionService.js';
@@ -98,15 +99,16 @@ class SubscriptionController {
           message: 'Service plan updated successfully'
         }
       });
-    } catch (error) {
-      if (error.message === 'Service plan not found') {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      if (errorMessage === 'Service plan not found') {
         return res.status(404).json({
           status: false,
           statusCode: 404,
           payload: {
             error: {
               status: 'NOT_FOUND',
-              message: error.message
+              message: errorMessage
             }
           }
         });

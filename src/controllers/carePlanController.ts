@@ -2,6 +2,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { CarePlan, Patient, Doctor, User, Medication, Appointment, Vital } from '../models/index.js';
 import { Op } from 'sequelize';
+import '../types/express.js';
 
 class CarePlanController {
   async getPatientCarePlan(req: Request, res: Response, next: NextFunction): Promise<void | Response> {
@@ -82,9 +83,9 @@ class CarePlanController {
             diagnosis: carePlan.diagnosis,
             priority: carePlan.priority
           },
-          medication_ids: medications.map(m => m.id),
-          appointment_ids: appointments.map(a => a.id),
-          vital_ids: vitals.map(v => v.id),
+          medication_ids: medications.map((m: any) => m.id),
+          appointment_ids: appointments.map((a: any) => a.id),
+          vital_ids: vitals.map((v: any) => v.id),
           diet_ids: [], // Implement if diet table exists
           workout_ids: [], // Implement if workout table exists
           created_at: carePlan.created_at,
@@ -126,8 +127,22 @@ class CarePlanController {
     }
   }
 
-  async createCarePlan(req: Request, res: Response, next: NextFunction): Promise<void | Response> {
+  async createCarePlan(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
+      if (!req.user) {
+        res.status(401).json({
+          status: false,
+          statusCode: 401,
+          payload: {
+            error: {
+              status: 'UNAUTHORIZED',
+              message: 'User not authenticated'
+            }
+          }
+        });
+        return;
+      }
+
       const { patientId } = req.params;
       const {
         treatment_id,
@@ -142,7 +157,7 @@ class CarePlanController {
       // Get doctor ID from authenticated user
       const doctor = await Doctor.findOne({ where: { user_id: req.user.id } });
       if (!doctor) {
-        return res.status(403).json({
+        res.status(403).json({
           status: false,
           statusCode: 403,
           payload: {
@@ -152,6 +167,7 @@ class CarePlanController {
             }
           }
         });
+        return;
       }
 
       const carePlan = await CarePlan.create({
