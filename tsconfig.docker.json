@@ -26,6 +26,10 @@
     "components", 
     "lib",
     "**/*.test.ts",
-    "**/*.spec.ts"
+    "**/*.spec.ts",
+    "next-env.d.ts",
+    "postcss.config.ts",
+    "tailwind.config.ts",
+    "*.config.ts"
   ]
 }
