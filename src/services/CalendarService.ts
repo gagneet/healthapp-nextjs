@@ -230,9 +230,9 @@ class CalendarService {
             }
           }
         ],
-        ...(excludeAppointmentId && {
+        ...(excludeAppointmentId ? {
           id: { [Op.ne]: excludeAppointmentId }
-        })
+        } : {})
       }
     });
 

@@ -2,6 +2,30 @@
 import { ScheduleEvent, Appointment, Medication, Vital } from '../models/index.js';
 import { Op } from 'sequelize';
 
+interface MissedMedicationEvent {
+  medication_id: string;
+  medication_name: string;
+  event_id: string;
+  scheduled_time: any;
+  missed_at: any;
+}
+
+interface MissedAppointmentEvent {
+  appointment_id: string;
+  appointment_type: string;
+  event_id: string;
+  scheduled_time: any;
+  missed_at: any;
+}
+
+interface MissedVitalEvent {
+  vital_id: string;
+  vital_type: string;
+  event_id: string;
+  scheduled_time: any;
+  missed_at: any;
+}
+
 class SchedulingService {
   async getMissedEvents(patientId: any, eventType = null) {
     const whereClause = {
@@ -38,9 +62,9 @@ class SchedulingService {
     });
 
     const missedEvents = {
-      medications: [],
-      appointments: [],
-      vitals: []
+      medications: [] as MissedMedicationEvent[],
+      appointments: [] as MissedAppointmentEvent[],
+      vitals: [] as MissedVitalEvent[]
     };
 
     events.forEach((event: any) => {

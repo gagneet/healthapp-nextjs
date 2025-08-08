@@ -8,6 +8,7 @@ import PatientService from '../services/PatientService.js';
 import PatientAccessService from '../services/PatientAccessService.js';
 import { ValidationError, NotFoundError } from '../utils/errors.js';
 import '../types/express.js';
+import { parseQueryParam, parseQueryParamAsNumber, parseQueryParamAsInt } from '../utils/queryHelpers.js';
 
 class PatientController {
   /**
@@ -176,7 +177,7 @@ class PatientController {
 
       res.status(200).json(ResponseFormatter.success(
         result,
-        result.exists ? 'Patient found' : 'No patient found with this phone number'
+        result?.exists ? 'Patient found' : 'No patient found with this phone number'
       ));
 
     } catch (error: unknown) {
@@ -242,27 +243,24 @@ class PatientController {
    */
   async getPatients(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const {
-        page = PAGINATION.DEFAULT_PAGE,
-        limit = PAGINATION.DEFAULT_LIMIT,
-        search,
-        filter = {},
-        sortBy = 'created_at',
-        sortOrder = 'desc'
-      } = req.query;
+      const { search, filter = {}, sortBy = 'created_at', sortOrder = 'desc' } = req.query;
 
       // Use PatientAccessService for provider-aware patient access
       if (req.userCategory === USER_CATEGORIES.DOCTOR || req.userCategory === USER_CATEGORIES.HSP) {
+        const limitNum = parseQueryParamAsInt(req.query.limit, PAGINATION.DEFAULT_LIMIT);
+        const pageNum = parseQueryParamAsInt(req.query.page, PAGINATION.DEFAULT_PAGE);
+        const searchStr = parseQueryParam(search);
+        
         const options = {
-          limit: parseInt(limit),
-          offset: (parseInt(page) - 1) * parseInt(limit),
-          search
+          limit: limitNum,
+          offset: (pageNum - 1) * limitNum,
+          search: searchStr
         };
 
         const accessiblePatients = await PatientAccessService.getAccessiblePatients(req.user!.id, options);
 
         // Combine primary and secondary patients
-        const allPatients = [];
+        const allPatients: any[] = [];
 
         // Add primary patients with 'M' indicator
         accessiblePatients.primary_patients.forEach((patient: any) => {
@@ -331,12 +329,12 @@ class PatientController {
         };
 
         const pagination = {
-          page: parseInt(page),
-          limit: parseInt(limit),
+          page: pageNum,
+          limit: limitNum,
           total: allPatients.length,
-          total_pages: Math.ceil(allPatients.length / parseInt(limit)),
-          has_next: parseInt(page) < Math.ceil(allPatients.length / parseInt(limit)),
-          has_prev: parseInt(page) > 1
+          total_pages: Math.ceil(allPatients.length / limitNum),
+          has_next: pageNum < Math.ceil(allPatients.length / limitNum),
+          has_prev: pageNum > 1
         };
 
         res.status(200).json(ResponseFormatter.paginated(
@@ -387,8 +385,8 @@ class PatientController {
             ]
           }
         ],
-        offset: (parseInt(page) - 1) * parseInt(limit),
-        limit: parseInt(limit),
+        offset: (parseQueryParamAsInt(req.query.page, 1) - 1) * parseQueryParamAsInt(req.query.limit, 20),
+        limit: parseQueryParamAsInt(req.query.limit, 20),
         order: [[sortBy, (sortOrder as any).toUpperCase()]],
         distinct: true
       });
@@ -417,13 +415,16 @@ class PatientController {
         }, {})
       };
 
+      const pageNum = parseQueryParamAsInt(req.query.page, 1);
+      const limitNum = parseQueryParamAsInt(req.query.limit, 20);
+      
       const pagination = {
-        page: parseInt(page),
-        limit: parseInt(limit),
+        page: pageNum,
+        limit: limitNum,
         total: count,
-        total_pages: Math.ceil(count / parseInt(limit)),
-        has_next: parseInt(page) < Math.ceil(count / parseInt(limit)),
-        has_prev: parseInt(page) > 1
+        total_pages: Math.ceil(count / limitNum),
+        has_next: pageNum < Math.ceil(count / limitNum),
+        has_prev: pageNum > 1
       };
 
       res.status(200).json(ResponseFormatter.paginated(

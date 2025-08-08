@@ -37,7 +37,7 @@ class SubscriptionService {
           recurring: billing_cycle !== 'one-time' ? { interval: billing_cycle  as any} : undefined,
           product_data: {
             name: name,
-            description: description as any,
+            // Note: description removed as it's not supported in ProductData for prices
           },
         });
         stripePriceId = stripePrice.id;

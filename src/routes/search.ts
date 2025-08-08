@@ -3,15 +3,17 @@ import express from 'express';
 import { Medicine, Speciality } from '../models/index.js';
 import { authenticate } from '../middleware/auth.js';
 import { Op } from 'sequelize';
+import { parseQueryParamAsInt, parseQueryParam } from '../utils/queryHelpers.js';
 
 const router = express.Router();
 
 // GET /api/medicines?value=metformin
 router.get('/medicines',
   authenticate,
-  async (req, res, next) => {
+  async (req, res, next): Promise<void> => {
     try {
-      const { value, limit = 10 } = req.query;
+      const value = parseQueryParam(req.query.value);
+      const limitNum = parseQueryParamAsInt(req.query.limit, 10);
 
       if (!value) {
         return res.status(400).json({
@@ -31,7 +33,7 @@ router.get('/medicines',
           name: { [Op.like]: `%${value}%` },
           public_medicine: true
         },
-        limit: parseInt(limit),
+        limit: limitNum,
         order: [['name', 'ASC']]
       });
 
