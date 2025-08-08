@@ -1,7 +1,7 @@
 // src/controllers/secondaryDoctorController.ts - API endpoints for Secondary Doctor Management
 import { Request, Response, NextFunction } from 'express';
 import SecondaryDoctorService from '../services/SecondaryDoctorService.js';
-import responseFormatter from '../utils/responseFormatter.js';
+import ResponseFormatter from '../utils/responseFormatter.js';
 import { createLogger } from '../middleware/logger.js';
 import { validationResult } from 'express-validator';
 import '../types/express.js';
@@ -18,7 +18,7 @@ export class SecondaryDoctorController {
       // Check validation errors
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
-        responseFormatter.error(res, 'Validation failed', 400, errors.array());
+        res.status(400).json(ResponseFormatter.error('Validation failed', 400));
         return;
       }
 
@@ -35,7 +35,8 @@ export class SecondaryDoctorController {
 
       const assignedBy = req.user!.doctorProfile?.id;
       if (!assignedBy) {
-        return responseFormatter.error(res, 'Only doctors can assign secondary doctors', 403);
+        res.status(403).json(ResponseFormatter.error('Only doctors can assign secondary doctors', 403));
+        return;
       }
 
       const assignment = await SecondaryDoctorService.assignSecondaryDoctor({
@@ -57,11 +58,13 @@ export class SecondaryDoctorController {
         assignedBy: req.user!.id
       });
 
-      return responseFormatter.success(res, assignment, 'Secondary doctor assigned successfully', 201);
+      res.status(201).json(ResponseFormatter.success(assignment, 'Secondary doctor assigned successfully'));
+      return;
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       logger.error('Error in assignSecondaryDoctor:', error);
-      return responseFormatter.error(res, errorMessage, 400);
+      res.status(400).json(ResponseFormatter.error(errorMessage, 400));
+      return;
     }
   }
 
@@ -79,9 +82,8 @@ export class SecondaryDoctorController {
       if (doctorId) {
         const accessCheck = await SecondaryDoctorService.canDoctorAccessPatient(doctorId, patientId);
         if (!accessCheck.canAccess) {
-          return responseFormatter.error(res, 'Access denied to this patient', 403, { 
-            reason: accessCheck.reason 
-          });
+          res.status(403).json(ResponseFormatter.error('Access denied to this patient', 403));
+          return;
         }
       }
 
@@ -90,11 +92,13 @@ export class SecondaryDoctorController {
         includeInactive === 'true'
       );
 
-      return responseFormatter.success(res, assignments, 'Doctor assignments retrieved successfully');
+      res.status(200).json(ResponseFormatter.success(assignments, 'Doctor assignments retrieved successfully'));
+      return;
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       logger.error('Error in getPatientDoctorAssignments:', error);
-      return responseFormatter.error(res, errorMessage, 400);
+      res.status(400).json(ResponseFormatter.error(errorMessage, 400));
+      return;
     }
   }
 
@@ -116,15 +120,18 @@ export class SecondaryDoctorController {
           assignment.patient.id
         );
         if (!accessCheck.canAccess && assignment.doctor.id !== doctorId) {
-          return responseFormatter.error(res, 'Access denied to this assignment', 403);
+          res.status(403).json(ResponseFormatter.error('Access denied to this assignment', 403));
+          return;
         }
       }
 
-      return responseFormatter.success(res, assignment, 'Assignment details retrieved successfully');
+      res.status(200).json(ResponseFormatter.success(assignment, 'Assignment details retrieved successfully'));
+      return;
     } catch (error: unknown) {
       logger.error('Error in getAssignmentDetails:', error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      return responseFormatter.error(res, errorMessage, 400);
+      res.status(400).json(ResponseFormatter.error(errorMessage, 400));
+      return;
     }
   }
 
@@ -143,7 +150,8 @@ export class SecondaryDoctorController {
       // Check if requesting user is the primary doctor
       const doctorId = req.user!.doctorProfile?.id;
       if (!assignment.assignedBy || assignment.assignedBy.id !== doctorId) {
-        return responseFormatter.error(res, 'Only the assigning doctor can request consent', 403);
+        res.status(403).json(ResponseFormatter.error('Only the assigning doctor can request consent', 403));
+        return;
       }
 
       const result = await SecondaryDoctorService.sendConsentRequest(assignment);
@@ -153,11 +161,13 @@ export class SecondaryDoctorController {
         requestedBy: req.user!.id
       });
 
-      return responseFormatter.success(res, result, 'Consent request sent successfully');
+      res.status(200).json(ResponseFormatter.success(result, 'Consent request sent successfully'));
+      return;
     } catch (error: unknown) {
       logger.error('Error in requestPatientConsent:', error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      return responseFormatter.error(res, errorMessage, 400);
+      res.status(400).json(ResponseFormatter.error(errorMessage, 400));
+      return;
     }
   }
 
@@ -171,7 +181,8 @@ export class SecondaryDoctorController {
       const { otp } = req.body;
 
       if (!otp) {
-        return responseFormatter.error(res, 'OTP is required', 400);
+        res.status(400).json(ResponseFormatter.error('OTP is required', 400));
+        return;
       }
 
       const result = await SecondaryDoctorService.verifyPatientConsent(
@@ -184,11 +195,13 @@ export class SecondaryDoctorController {
         verifiedBy: req.user!.id
       });
 
-      return responseFormatter.success(res, result, 'Patient consent verified successfully');
+      res.status(200).json(ResponseFormatter.success(result, 'Patient consent verified successfully'));
+      return;
     } catch (error: unknown) {
       logger.error('Error in verifyPatientConsent:', error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      return responseFormatter.error(res, errorMessage, 400);
+      res.status(400).json(ResponseFormatter.error(errorMessage, 400));
+      return;
     }
   }
 
@@ -203,7 +216,7 @@ export class SecondaryDoctorController {
 
       const doctorId = req.user!.doctorProfile?.id;
       if (!doctorId) {
-        return responseFormatter.error(res, 'Only doctors can update permissions', 403);
+        res.status(403).json(ResponseFormatter.error('Only doctors can update permissions', 403));
       }
 
       const assignment = await SecondaryDoctorService.updateAssignmentPermissions(
@@ -217,11 +230,13 @@ export class SecondaryDoctorController {
         updatedBy: req.user!.id
       });
 
-      return responseFormatter.success(res, assignment, 'Permissions updated successfully');
+      res.status(200).json(ResponseFormatter.success(assignment, 'Permissions updated successfully'));
+      return;
     } catch (error: unknown) {
       logger.error('Error in updateAssignmentPermissions:', error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      return responseFormatter.error(res, errorMessage, 400);
+      res.status(400).json(ResponseFormatter.error(errorMessage, 400));
+      return;
     }
   }
 
@@ -236,7 +251,7 @@ export class SecondaryDoctorController {
 
       const doctorId = req.user!.doctorProfile?.id;
       if (!doctorId) {
-        return responseFormatter.error(res, 'Only doctors can deactivate assignments', 403);
+        res.status(403).json(ResponseFormatter.error('Only doctors can deactivate assignments', 403));
       }
 
       const result = await SecondaryDoctorService.deactivateAssignment(
@@ -250,11 +265,13 @@ export class SecondaryDoctorController {
         deactivatedBy: req.user!.id
       });
 
-      return responseFormatter.success(res, result, 'Assignment deactivated successfully');
+      res.status(200).json(ResponseFormatter.success(result, 'Assignment deactivated successfully'));
+      return;
     } catch (error: unknown) {
       logger.error('Error in deactivateAssignment:', error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      return responseFormatter.error(res, errorMessage, 400);
+      res.status(400).json(ResponseFormatter.error(errorMessage, 400));
+      return;
     }
   }
 
@@ -269,16 +286,18 @@ export class SecondaryDoctorController {
       // Only allow doctors to check their own access or admins
       const requestingDoctorId = req.user!.doctorProfile?.id;
       if (requestingDoctorId !== doctorId && req.user!.category !== 'admin') {
-        return responseFormatter.error(res, 'Access denied', 403);
+        res.status(403).json(ResponseFormatter.error('Access denied', 403));
       }
 
       const access = await SecondaryDoctorService.canDoctorAccessPatient(doctorId, patientId);
 
-      return responseFormatter.success(res, access, 'Access check completed');
+      res.status(200).json(ResponseFormatter.success(access, 'Access check completed'));
+      return;
     } catch (error: unknown) {
       logger.error('Error in checkDoctorPatientAccess:', error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      return responseFormatter.error(res, errorMessage, 400);
+      res.status(400).json(ResponseFormatter.error(errorMessage, 400));
+      return;
     }
   }
 
@@ -297,18 +316,20 @@ export class SecondaryDoctorController {
 
       const requestingDoctorId = req.user!.doctorProfile?.id;
       if (!requestingDoctorId) {
-        return responseFormatter.error(res, 'Only doctors can view available doctors', 403);
+        res.status(403).json(ResponseFormatter.error('Only doctors can view available doctors', 403));
       }
 
       // This would be implemented based on your specific requirements
       // For now, returning a basic structure
-      const availableDoctors = [];
+      const availableDoctors: any[] = [];
 
-      return responseFormatter.success(res, availableDoctors, 'Available doctors retrieved');
+      res.status(200).json(ResponseFormatter.success(availableDoctors, 'Available doctors retrieved'));
+      return;
     } catch (error: unknown) {
       logger.error('Error in getAvailableDoctors:', error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      return responseFormatter.error(res, errorMessage, 400);
+      res.status(400).json(ResponseFormatter.error(errorMessage, 400));
+      return;
     }
   }
 }

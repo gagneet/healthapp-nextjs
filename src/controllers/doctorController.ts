@@ -335,9 +335,9 @@ class DoctorController {
         { name: 'signature_image', maxCount: 1 }
       ]);
 
-      uploadFields(req, res, async (err) => {
+      uploadFields(req, res, async (err): Promise<void> => {
         if (err) {
-          return res.status(400).json({
+          res.status(400).json({
             status: false,
             statusCode: 400,
             payload: {
@@ -347,11 +347,12 @@ class DoctorController {
               }
             }
           });
+          return;
         }
 
         const doctor = await Doctor.findOne({ where: { user_id: userId } });
         if (!doctor) {
-          return res.status(404).json({
+          res.status(404).json({
             status: false,
             statusCode: 404,
             payload: {
@@ -361,6 +362,7 @@ class DoctorController {
               }
             }
           });
+          return;
         }
 
         const updateData = {};

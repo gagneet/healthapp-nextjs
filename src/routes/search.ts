@@ -16,7 +16,7 @@ router.get('/medicines',
       const limitNum = parseQueryParamAsInt(req.query.limit, 10);
 
       if (!value) {
-        return res.status(400).json({
+        res.status(400).json({
           status: false,
           statusCode: 400,
           payload: {
@@ -26,6 +26,7 @@ router.get('/medicines',
             }
           }
         });
+        return;
       }
 
       const medicines = await Medicine.findAll({
