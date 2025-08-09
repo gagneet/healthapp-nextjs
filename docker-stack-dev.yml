@@ -1,0 +1,159 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: healthapp_dev
+      POSTGRES_USER: healthapp_user
+      POSTGRES_PASSWORD: pg_password
+      POSTGRES_HOST_AUTH_METHOD: trust
+    volumes:
+      - postgres_data_dev:/var/lib/postgresql/data
+    ports:
+      - "192.168.0.148:5433:5432"
+    networks:
+      - healthapp-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U healthapp_user -d healthapp_dev && psql -U healthapp_user -d healthapp_dev -c 'SELECT 1'"]
+      interval: 15s
+      timeout: 10s
+      retries: 6
+      start_period: 120s
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+
+  redis:
+    image: redis:7-alpine
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data_dev:/data
+    ports:
+      - "192.168.0.148:6379:6379"
+    networks:
+      - healthapp-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    deploy:
+      replicas: 1
+
+  backend:
+    image: healthapp-backend:dev
+    environment:
+      NODE_ENV: development
+      PORT: 3005
+      HOST_IP: 192.168.0.148
+      DB_HOST_IP: 192.168.0.148
+      REDIS_HOST_IP: 192.168.0.148
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: healthapp_dev
+      POSTGRES_USER: healthapp_user
+      POSTGRES_PASSWORD: pg_password
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      JWT_SECRET: 25af6001e43881f727388f44e0f6fff837510b0649fe9393987f009c595156f778442654270516863b00617b478aa46dea6311f74fb95325d3c9a344b125d033
+      FRONTEND_URL: http://192.168.0.148:3002
+      LOG_LEVEL: info
+      # Add connection retry configuration for better startup reliability
+      DB_CONNECT_RETRY_DELAY: 5000
+      DB_CONNECT_MAX_RETRIES: 10
+    volumes:
+      - backend_logs_dev:/app/logs
+    ports:
+      - "192.168.0.148:3005:3005"
+    networks:
+      - healthapp-network
+    deploy:
+      replicas: 1
+      update_config:
+        parallelism: 1
+        delay: 10s
+        failure_action: rollback
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 512M
+    # Backend waits for database health checks
+    depends_on:
+      - postgres
+      - redis
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:3005/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 120s  # Increased to allow database connection setup
+
+  frontend:
+    image: healthapp-frontend:dev
+    environment:
+      NODE_ENV: development
+      HOST_IP: 192.168.0.148
+      BACKEND_URL: http://backend:3005
+      NEXT_PUBLIC_API_URL: http://192.168.0.148:3005/api
+    ports:
+      - "192.168.0.148:3002:3002"
+    networks:
+      - healthapp-network
+    depends_on:
+      - backend
+    deploy:
+      replicas: 1
+      update_config:
+        parallelism: 1
+        delay: 10s
+        failure_action: rollback
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 512M
+    # Frontend healthcheck - simplified to just check if Next.js is responding
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3002/ || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 90s
+
+  pgadmin:
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@healthapp.com
+      PGADMIN_DEFAULT_PASSWORD: admin123
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    volumes:
+      - pgadmin_data_dev:/var/lib/pgadmin
+    ports:
+      - "192.168.0.148:5050:80"
+    networks:
+      - healthapp-network
+    deploy:
+      replicas: 1
+
+networks:
+  healthapp-network:
+    driver: overlay
+    attachable: true
+
+volumes:
+  postgres_data_dev:
+  redis_data_dev:
+  backend_logs_dev:
+  pgadmin_data_dev:

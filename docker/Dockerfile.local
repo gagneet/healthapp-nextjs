@@ -1,0 +1,55 @@
+# Dockerfile.local - Multi-stage local development build
+FROM node:18-alpine as base
+
+# Install dependencies for development
+RUN apk add --no-cache \
+    libc6-compat \
+    postgresql-client \
+    curl \
+    bash \
+    git
+
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+RUN npm ci
+
+# Backend development stage
+FROM base as backend-dev
+LABEL maintainer="HealthApp Team <dev@healthapp.com>"
+
+# Copy backend source
+COPY src/ ./src/
+COPY tsconfig*.json ./
+COPY .sequelizerc ./
+
+# Create logs directory
+RUN mkdir -p logs
+
+# Expose backend port
+EXPOSE 3005
+
+# Development command
+CMD ["npm", "run", "backend:dev"]
+
+# Frontend development stage  
+FROM base as frontend-dev
+LABEL maintainer="HealthApp Team <dev@healthapp.com>"
+
+# Copy frontend source
+COPY app/ ./app/
+COPY components/ ./components/
+COPY lib/ ./lib/
+COPY public/ ./public/
+COPY types/ ./types/
+COPY next.config.js ./
+COPY tailwind.config.js ./
+COPY postcss.config.js ./
+COPY tsconfig.json ./
+
+# Expose frontend port
+EXPOSE 3002
+
+# Development command
+CMD ["npm", "run", "dev"]

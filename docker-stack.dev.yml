@@ -1,0 +1,112 @@
+# docker-stack.dev.yml - Docker Swarm stack for development environment
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: healthapp_dev
+      POSTGRES_USER: healthapp_user
+      POSTGRES_PASSWORD: pg_password
+    volumes:
+      - postgres_dev_data:/var/lib/postgresql/data
+    networks:
+      - healthapp-network
+    ports:
+      - "5432:5432"
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@healthapp.com
+      PGADMIN_DEFAULT_PASSWORD: admin123
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    ports:
+      - "5050:80"
+    networks:
+      - healthapp-network
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+
+  backend:
+    image: healthapp-backend:dev
+    environment:
+      NODE_ENV: development
+      PORT: 3005
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: healthapp_dev
+      POSTGRES_USER: healthapp_user
+      POSTGRES_PASSWORD: pg_password
+      JWT_SECRET: dev_jwt_secret_key_2024
+      CORS_ORIGIN: http://localhost:3002
+    ports:
+      - "3005:3005"
+    networks:
+      - healthapp-network
+    depends_on:
+      - postgres
+    deploy:
+      replicas: 2
+      update_config:
+        parallelism: 1
+        delay: 10s
+        order: start-first
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 256M
+
+  frontend:
+    image: healthapp-frontend:dev
+    environment:
+      NODE_ENV: development
+      PORT: 3002
+      NEXT_PUBLIC_API_URL: http://localhost:3005
+    ports:
+      - "3002:3002"
+    networks:
+      - healthapp-network
+    depends_on:
+      - backend
+    deploy:
+      replicas: 2
+      update_config:
+        parallelism: 1
+        delay: 10s
+        order: start-first
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 256M
+
+volumes:
+  postgres_dev_data:
+    driver: local
+
+networks:
+  healthapp-network:
+    driver: overlay
+    attachable: true

@@ -1,138 +1,227 @@
 #!/bin/bash
 
-# Healthcare Management Platform - Development Deployment Script
-# Usage: ./scripts/deploy-dev.sh [HOST_IP] [DB_HOST_IP] [REDIS_HOST_IP]
-#
-# Examples:
-#   ./scripts/deploy-dev.sh                           # Uses localhost for all services  
-#   ./scripts/deploy-dev.sh 192.168.0.148             # Uses specified IP for all services
-#   ./scripts/deploy-dev.sh 192.168.0.148 192.168.0.148 192.168.0.148  # Custom IPs per service
+# deploy-dev.sh - Deploy to development environment using Docker Swarm
+# Usage: ./scripts/deploy-dev.sh [deploy|update|stop|logs|status]
 
 set -e
 
-# Color codes for output
+# Colors for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
-# Script configuration
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
-COMPOSE_FILE="$PROJECT_ROOT/docker/docker-compose.dev.yml"
-ENV_FILE="$PROJECT_ROOT/env_files/.env.development"
+# Configuration
+STACK_NAME="healthapp-dev"
+STACK_FILE="docker-stack.dev.yml"
 
-# Function to print colored output
-print_message() {
-    local color=$1
-    local message=$2
-    echo -e "${color}[$(date +'%Y-%m-%d %H:%M:%S')] $message${NC}"
+# Help function
+show_help() {
+    echo "🏥 HealthApp Development Deployment Script"
+    echo "=========================================="
+    echo ""
+    echo "Usage: $0 [COMMAND] [OPTIONS]"
+    echo ""
+    echo "Commands:"
+    echo "  deploy    Deploy the stack to swarm"
+    echo "  update    Update running services"
+    echo "  stop      Remove the stack from swarm"
+    echo "  logs      Show service logs"
+    echo "  status    Show service status"
+    echo "  build     Build and push images"
+    echo "  scale     Scale specific service"
+    echo ""
+    echo "Options:"
+    echo "  -h, --help    Show this help message"
+    echo ""
+    echo "Examples:"
+    echo "  $0 deploy                    # Deploy development stack"
+    echo "  $0 logs backend              # Show backend service logs"
+    echo "  $0 scale backend 3           # Scale backend to 3 replicas"
+    echo ""
 }
 
-print_message $BLUE "🚀 Healthcare Management Platform - Development Deployment"
-print_message $BLUE "=================================================================="
-
-# Parse command line arguments with defaults
-HOST_IP=${1:-localhost}
-DB_HOST_IP=${2:-$HOST_IP}
-REDIS_HOST_IP=${3:-$HOST_IP}
-
-print_message $YELLOW "Configuration:"
-print_message $YELLOW "  Frontend URL: http://$HOST_IP:3002"
-print_message $YELLOW "  Backend API:  http://$HOST_IP:3005"
-print_message $YELLOW "  Database:     $DB_HOST_IP:5432"
-print_message $YELLOW "  Redis Cache:  $REDIS_HOST_IP:6379"
-
-# Validate required files exist
-if [ ! -f "$COMPOSE_FILE" ]; then
-    print_message $RED "❌ Docker Compose file not found: $COMPOSE_FILE"
-    exit 1
-fi
-
-if [ ! -f "$ENV_FILE" ]; then
-    print_message $RED "❌ Environment file not found: $ENV_FILE"
-    exit 1
-fi
-
-# Export environment variables for docker-compose
-export HOST_IP
-export DB_HOST_IP  
-export REDIS_HOST_IP
-
-print_message $BLUE "🔧 Setting up development environment..."
-
-# Create logs directory if it doesn't exist
-mkdir -p "$PROJECT_ROOT/logs"
-
-# Stop any running containers
-print_message $YELLOW "🛑 Stopping any existing containers..."
-cd "$PROJECT_ROOT"
-docker-compose -f "$COMPOSE_FILE" down --remove-orphans || true
-
-# Remove any dangling volumes (optional - comment out if you want to preserve data)
-# print_message $YELLOW "🧹 Cleaning up dangling volumes..."
-# docker system prune -f --volumes
-
-# Build and start services
-print_message $BLUE "🏗️  Building and starting development services..."
-docker-compose -f "$COMPOSE_FILE" up --build -d
-
-# Wait for services to be healthy
-print_message $YELLOW "⏳ Waiting for services to be healthy..."
-
-# Wait for PostgreSQL
-print_message $YELLOW "   Waiting for PostgreSQL..."
-timeout 60s bash -c 'until docker-compose -f '"$COMPOSE_FILE"' exec -T postgres pg_isready -U healthapp_user -d healthapp_dev; do sleep 2; done' || {
-    print_message $RED "❌ PostgreSQL failed to start within 60 seconds"
-    docker-compose -f "$COMPOSE_FILE" logs postgres
-    exit 1
+# Check if Docker Swarm is initialized
+check_swarm() {
+    if ! docker info --format '{{.Swarm.LocalNodeState}}' | grep -q active; then
+        echo -e "${YELLOW}[WARNING]${NC} Docker Swarm is not active. Initializing..."
+        docker swarm init
+        echo -e "${GREEN}[SUCCESS]${NC} Docker Swarm initialized!"
+    fi
 }
 
-# Wait for Redis
-print_message $YELLOW "   Waiting for Redis..."
-timeout 30s bash -c 'until docker-compose -f '"$COMPOSE_FILE"' exec -T redis redis-cli --raw incr ping; do sleep 2; done' || {
-    print_message $RED "❌ Redis failed to start within 30 seconds"
-    docker-compose -f "$COMPOSE_FILE" logs redis
-    exit 1
+# Build and push images
+build_images() {
+    echo -e "${BLUE}[INFO]${NC} Building development images..."
+    
+    # Build backend image
+    echo -e "${BLUE}[INFO]${NC} Building backend image..."
+    docker build -f docker/Dockerfile.local --target backend-dev -t healthapp-backend:dev .
+    
+    # Build frontend image
+    echo -e "${BLUE}[INFO]${NC} Building frontend image..."
+    docker build -f docker/Dockerfile.local --target frontend-dev -t healthapp-frontend:dev .
+    
+    echo -e "${GREEN}[SUCCESS]${NC} Images built successfully!"
+}
+
+# Deploy stack
+deploy_stack() {
+    echo -e "${BLUE}[INFO]${NC} Deploying HealthApp development stack..."
+    echo -e "${BLUE}[INFO]${NC} Using ports: Frontend 3002, Backend 3005, PostgreSQL 5432"
+    
+    docker stack deploy -c $STACK_FILE $STACK_NAME
+    
+    echo -e "${GREEN}[SUCCESS]${NC} Stack deployed successfully!"
+    echo -e "${BLUE}[INFO]${NC} Frontend: http://localhost:3002"
+    echo -e "${BLUE}[INFO]${NC} Backend API: http://localhost:3005"
+    echo -e "${BLUE}[INFO]${NC} PgAdmin: http://localhost:5050"
+    echo ""
+    echo -e "${YELLOW}[NEXT]${NC} Run './scripts/deploy-dev.sh logs' to see logs"
+    echo -e "${YELLOW}[NEXT]${NC} Run './scripts/deploy-dev.sh status' to check service status"
+}
+
+# Update services
+update_services() {
+    echo -e "${BLUE}[INFO]${NC} Updating development services..."
+    docker service update --force ${STACK_NAME}_backend
+    docker service update --force ${STACK_NAME}_frontend
+    echo -e "${GREEN}[SUCCESS]${NC} Services updated successfully!"
+}
+
+# Stop stack
+stop_stack() {
+    echo -e "${BLUE}[INFO]${NC} Removing HealthApp development stack..."
+    docker stack rm $STACK_NAME
+    echo -e "${GREEN}[SUCCESS]${NC} Stack removed successfully!"
+}
+
+# Show logs
+show_logs() {
+    local service=${1:-""}
+    if [ -z "$service" ]; then
+        echo -e "${BLUE}[INFO]${NC} Showing logs for all services..."
+        for svc in $(docker service ls --filter name=${STACK_NAME} --format "{{.Name}}"); do
+            echo -e "${YELLOW}=== $svc ===${NC}"
+            docker service logs --tail 50 $svc
+            echo ""
+        done
+    else
+        echo -e "${BLUE}[INFO]${NC} Showing logs for ${STACK_NAME}_$service..."
+        docker service logs -f ${STACK_NAME}_$service
+    fi
+}
+
+# Show status
+show_status() {
+    echo -e "${BLUE}[INFO]${NC} HealthApp Development Stack Status:"
+    echo ""
+    docker stack services $STACK_NAME
+    echo ""
+    echo -e "${BLUE}[INFO]${NC} Service Details:"
+    docker service ps ${STACK_NAME} --no-trunc
+}
+
+# Scale service
+scale_service() {
+    local service=$1
+    local replicas=$2
+    
+    if [ -z "$service" ] || [ -z "$replicas" ]; then
+        echo -e "${RED}[ERROR]${NC} Usage: $0 scale <service> <replicas>"
+        exit 1
+    fi
+    
+    echo -e "${BLUE}[INFO]${NC} Scaling ${STACK_NAME}_$service to $replicas replicas..."
+    docker service scale ${STACK_NAME}_$service=$replicas
+    echo -e "${GREEN}[SUCCESS]${NC} Service scaled successfully!"
 }
 
 # Run database migrations
-print_message $BLUE "🗄️  Running database migrations..."
-docker-compose -f "$COMPOSE_FILE" exec -T backend npm run migrate || {
-    print_message $YELLOW "⚠️  Migration failed - this might be expected for first run"
+run_migrations() {
+    echo -e "${BLUE}[INFO]${NC} Running database migrations..."
+    
+    # Wait for backend service to be ready
+    echo -e "${BLUE}[INFO]${NC} Waiting for backend service..."
+    sleep 10
+    
+    # Get a backend container ID
+    CONTAINER_ID=$(docker ps --filter "name=${STACK_NAME}_backend" --format "{{.ID}}" | head -n1)
+    
+    if [ -z "$CONTAINER_ID" ]; then
+        echo -e "${RED}[ERROR]${NC} No backend containers found"
+        exit 1
+    fi
+    
+    docker exec $CONTAINER_ID npm run migrate
+    echo -e "${GREEN}[SUCCESS]${NC} Migrations completed!"
 }
 
-# Seed initial data (optional)
-print_message $BLUE "🌱 Seeding initial data..."
-docker-compose -f "$COMPOSE_FILE" exec -T backend npm run seed || {
-    print_message $YELLOW "⚠️  Seeding failed - this might be expected if data already exists"
+# Run database seeders
+run_seeders() {
+    echo -e "${BLUE}[INFO]${NC} Running database seeders..."
+    
+    # Get a backend container ID
+    CONTAINER_ID=$(docker ps --filter "name=${STACK_NAME}_backend" --format "{{.ID}}" | head -n1)
+    
+    if [ -z "$CONTAINER_ID" ]; then
+        echo -e "${RED}[ERROR]${NC} No backend containers found"
+        exit 1
+    fi
+    
+    docker exec $CONTAINER_ID npm run seed
+    echo -e "${GREEN}[SUCCESS]${NC} Seeders completed!"
 }
 
-# Wait for backend to be ready
-print_message $YELLOW "   Waiting for backend API..."
-timeout 60s bash -c 'until curl -f http://'"$HOST_IP"':3005/health >/dev/null 2>&1; do sleep 3; done' || {
-    print_message $RED "❌ Backend API failed to respond within 60 seconds"
-    docker-compose -f "$COMPOSE_FILE" logs backend
-    exit 1
+# Main script logic
+main() {
+    check_swarm
+    
+    case ${1:-""} in
+        deploy)
+            build_images
+            deploy_stack
+            ;;
+        update)
+            build_images
+            update_services
+            ;;
+        stop)
+            stop_stack
+            ;;
+        logs)
+            show_logs $2
+            ;;
+        status)
+            show_status
+            ;;
+        build)
+            build_images
+            ;;
+        scale)
+            scale_service $2 $3
+            ;;
+        migrate)
+            run_migrations
+            ;;
+        seed)
+            run_seeders
+            ;;
+        -h|--help|help)
+            show_help
+            ;;
+        "")
+            echo -e "${YELLOW}[WARNING]${NC} No command specified"
+            show_help
+            ;;
+        *)
+            echo -e "${RED}[ERROR]${NC} Unknown command: $1"
+            show_help
+            exit 1
+            ;;
+    esac
 }
 
-# Show running containers
-print_message $GREEN "✅ Development environment deployed successfully!"
-print_message $GREEN "=================================================================="
-print_message $GREEN "Services Status:"
-docker-compose -f "$COMPOSE_FILE" ps
-
-print_message $GREEN "🌐 Application URLs:"
-print_message $GREEN "   Frontend:        http://$HOST_IP:3002"
-print_message $GREEN "   Backend API:     http://$HOST_IP:3005"
-print_message $GREEN "   API Health:      http://$HOST_IP:3005/health"
-print_message $GREEN "   Database:        $DB_HOST_IP:5432 (healthapp_dev)"
-print_message $GREEN "   Redis Cache:     $REDIS_HOST_IP:6379"
-
-print_message $BLUE "📋 Useful Commands:"
-print_message $BLUE "   View logs:       docker-compose -f $COMPOSE_FILE logs -f [service]"
-print_message $BLUE "   Stop services:   docker-compose -f $COMPOSE_FILE down"
-print_message $BLUE "   Restart service: docker-compose -f $COMPOSE_FILE restart [service]"
-
-print_message $GREEN "🎉 Development environment is ready for development!"
+# Run main function with all arguments
+main "$@"

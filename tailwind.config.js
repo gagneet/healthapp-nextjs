@@ -1,5 +1,6 @@
+// tailwind.config.js - JavaScript configuration for Tailwind CSS
 /** @type {import('tailwindcss').Config} */
-export default {
+module.exports = {
   darkMode: ['class'],
   content: [
     './pages/**/*.{ts,tsx}',

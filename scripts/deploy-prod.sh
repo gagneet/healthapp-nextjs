@@ -1,9 +1,9 @@
 #!/bin/bash
 
-# HealthApp Production Deployment Script
-set -e
+# deploy-prod.sh - Deploy to production environment using Docker Swarm
+# Usage: ./scripts/deploy-prod.sh [deploy|update|stop|logs|status]
 
-echo "🚀 Starting HealthApp Production Deployment..."
+set -e
 
 # Colors for output
 RED='\033[0;31m'
@@ -12,310 +12,301 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
-# Function to print colored output
-print_status() {
-    echo -e "${GREEN}[INFO]${NC} $1"
+# Configuration
+STACK_NAME="healthapp-prod"
+STACK_FILE="docker-stack.prod.yml"
+REGISTRY="your-registry.com" # Update with your container registry
+
+# Help function
+show_help() {
+    echo "🏥 HealthApp Production Deployment Script"
+    echo "========================================="
+    echo ""
+    echo "Usage: $0 [COMMAND] [OPTIONS]"
+    echo ""
+    echo "Commands:"
+    echo "  deploy    Deploy the stack to swarm"
+    echo "  update    Update running services"
+    echo "  stop      Remove the stack from swarm"
+    echo "  logs      Show service logs"
+    echo "  status    Show service status"
+    echo "  build     Build and push images"
+    echo "  scale     Scale specific service"
+    echo "  secrets   Manage Docker secrets"
+    echo ""
+    echo "Options:"
+    echo "  -h, --help    Show this help message"
+    echo ""
+    echo "Examples:"
+    echo "  $0 deploy                    # Deploy production stack"
+    echo "  $0 logs backend              # Show backend service logs"
+    echo "  $0 scale backend 5           # Scale backend to 5 replicas"
+    echo "  $0 secrets create            # Create required secrets"
+    echo ""
 }
-
-print_warning() {
-    echo -e "${YELLOW}[WARN]${NC} $1"
-}
-
-print_error() {
-    echo -e "${RED}[ERROR]${NC} $1"
-}
-
-print_header() {
-    echo -e "${BLUE}[STEP]${NC} $1"
-}
-
-# Default values
-VERSION=${VERSION:-latest}
-ENVIRONMENT=${ENVIRONMENT:-production}
-DOCKER_REGISTRY=${DOCKER_REGISTRY:-""}
-SKIP_BUILD=${SKIP_BUILD:-false}
-SKIP_MIGRATION=${SKIP_MIGRATION:-false}
-
-# Parse command line arguments
-while [[ $# -gt 0 ]]; do
-    case $1 in
-        -v|--version)
-            VERSION="$2"
-            shift 2
-            ;;
-        -e|--environment)
-            ENVIRONMENT="$2"
-            shift 2
-            ;;
-        -r|--registry)
-            DOCKER_REGISTRY="$2"
-            shift 2
-            ;;
-        --skip-build)
-            SKIP_BUILD=true
-            shift
-            ;;
-        --skip-migration)
-            SKIP_MIGRATION=true
-            shift
-            ;;
-        -h|--help)
-            echo "Usage: $0 [OPTIONS]"
-            echo "Options:"
-            echo "  -v, --version VERSION    Docker image version (default: latest)"
-            echo "  -e, --environment ENV    Environment name (default: production)"
-            echo "  -r, --registry REGISTRY  Docker registry URL"
-            echo "  --skip-build            Skip building Docker images"
-            echo "  --skip-migration        Skip database migrations"
-            echo "  -h, --help              Show this help message"
-            exit 0
-            ;;
-        *)
-            print_error "Unknown option: $1"
-            exit 1
-            ;;
-    esac
-done
-
-print_status "Deployment Configuration:"
-print_status "  Version: $VERSION"
-print_status "  Environment: $ENVIRONMENT"
-print_status "  Registry: ${DOCKER_REGISTRY:-'local'}"
-print_status "  Skip Build: $SKIP_BUILD"
-print_status "  Skip Migration: $SKIP_MIGRATION"
-
-# Check prerequisites
-print_header "1. Checking prerequisites..."
-
-# Check if Docker is running
-if ! docker info > /dev/null 2>&1; then
-    print_error "Docker is not running. Please start Docker first."
-    exit 1
-fi
 
 # Check if Docker Swarm is initialized
-if ! docker node ls > /dev/null 2>&1; then
-    print_error "Docker Swarm is not initialized. Run 'docker swarm init' first."
-    exit 1
-fi
-
-# Check if environment file exists
-if [ ! -f env_files/.env.docker.production ]; then
-    print_error "env_files/.env.docker.production file not found. Please create it from env_files/.env.production.example"
-    exit 1
-fi
-
-# Source environment variables
-set -a
-source env_files/.env.docker.production
-set +a
-
-print_header "2. Preparing environment..."
-
-# Create necessary directories on all nodes
-docker node ls --format "table {{.Hostname}}" | tail -n +2 | while read node; do
-    print_status "Creating directories on node: $node"
-    docker node update --label-add database=true $node 2>/dev/null || true
-    docker node update --label-add cache=true $node 2>/dev/null || true
-    docker node update --label-add backend=true $node 2>/dev/null || true
-    docker node update --label-add frontend=true $node 2>/dev/null || true
-    docker node update --label-add monitoring=true $node 2>/dev/null || true
-    docker node update --label-add logging=true $node 2>/dev/null || true
-done
-
-# Create Docker secrets
-print_status "Creating Docker secrets..."
-secrets=(
-    "db_password:$DB_PASSWORD"
-    "jwt_secret:$JWT_SECRET"
-    "redis_password:$REDIS_PASSWORD"
-    "aws_access_key:$AWS_ACCESS_KEY_ID"
-    "aws_secret_key:$AWS_SECRET_ACCESS_KEY"
-    "grafana_password:$GRAFANA_PASSWORD"
-)
-
-for secret in "${secrets[@]}"; do
-    secret_name=$(echo $secret | cut -d: -f1)
-    secret_value=$(echo $secret | cut -d: -f2-)
-    
-    if docker secret inspect $secret_name > /dev/null 2>&1; then
-        print_status "Secret $secret_name already exists, updating..."
-        docker secret rm $secret_name
-    fi
-    echo "$secret_value" | docker secret create $secret_name -
-    print_status "Created secret: $secret_name"
-done
-
-# Create SSL certificates secret (if files exist)
-if [ -f "ssl/cert.pem" ] && [ -f "ssl/key.pem" ]; then
-    print_status "Creating SSL certificate secrets..."
-    docker secret create ssl_cert ssl/cert.pem 2>/dev/null || docker secret rm ssl_cert && docker secret create ssl_cert ssl/cert.pem
-    docker secret create ssl_key ssl/key.pem 2>/dev/null || docker secret rm ssl_key && docker secret create ssl_key ssl/key.pem
-else
-    print_warning "SSL certificate files not found. Please add ssl/cert.pem and ssl/key.pem"
-fi
-
-# Create Docker configs
-print_status "Creating Docker configs..."
-configs=(
-    "nginx_config:nginx/nginx.conf"
-    "prometheus_config:monitoring/prometheus.yml"
-)
-
-for config in "${configs[@]}"; do
-    config_name=$(echo $config | cut -d: -f1)
-    config_file=$(echo $config | cut -d: -f2)
-    
-    if [ -f "$config_file" ]; then
-        if docker config inspect $config_name > /dev/null 2>&1; then
-            print_status "Config $config_name already exists, updating..."
-            docker config rm $config_name
-        fi
-        docker config create $config_name $config_file
-        print_status "Created config: $config_name"
-    else
-        print_warning "Config file not found: $config_file"
-    fi
-done
-
-print_header "3. Building and pushing Docker images..."
-
-if [ "$SKIP_BUILD" = false ]; then
-    # Build images
-    images=("backend" "frontend")
-    
-    for image in "${images[@]}"; do
-        image_tag="healthapp/${image}:${VERSION}"
-        
-        if [ "$image" = "backend" ]; then
-            dockerfile="docker/Dockerfile.backend"
-        else
-            dockerfile="docker/Dockerfile"
-        fi
-        
-        print_status "Building $image_tag..."
-        docker build -f $dockerfile -t $image_tag .
-        
-        # Tag for registry if specified
-        if [ -n "$DOCKER_REGISTRY" ]; then
-            registry_tag="${DOCKER_REGISTRY}/healthapp/${image}:${VERSION}"
-            docker tag $image_tag $registry_tag
-            print_status "Pushing to registry: $registry_tag"
-            docker push $registry_tag
-        fi
-    done
-else
-    print_status "Skipping Docker image build (--skip-build specified)"
-fi
-
-print_header "4. Deploying stack..."
-
-# Deploy the stack
-export VERSION=$VERSION
-docker stack deploy -c docker/docker-stack.yml healthapp
-
-print_header "5. Waiting for services to be ready..."
-
-# Wait for services to be deployed
-print_status "Waiting for stack deployment..."
-sleep 30
-
-# Check service status
-print_status "Checking service status..."
-docker stack services healthapp
-
-print_header "6. Running database migrations..."
-
-if [ "$SKIP_MIGRATION" = false ]; then
-    # Wait for database to be ready
-    print_status "Waiting for database to be ready..."
-    timeout=120
-    counter=0
-    while [ $counter -lt $timeout ]; do
-        if docker service ps healthapp_postgres --format "{{.CurrentState}}" | grep -q "Running"; then
-            break
-        fi
-        sleep 5
-        counter=$((counter + 5))
-        echo -n "."
-    done
-    echo ""
-    
-    if [ $counter -ge $timeout ]; then
-        print_error "Database service failed to start within $timeout seconds"
+check_swarm() {
+    if ! docker info --format '{{.Swarm.LocalNodeState}}' | grep -q active; then
+        echo -e "${RED}[ERROR]${NC} Docker Swarm is not initialized on this node"
+        echo -e "${YELLOW}[INFO]${NC} Run 'docker swarm init' or join an existing swarm"
         exit 1
     fi
     
-    # Run migrations
-    print_status "Running database migrations..."
-    sleep 10
-    docker service ls --filter name=healthapp_backend --format "{{.ID}}" | head -1 | xargs -I {} docker service update --force {}
-    
-    # Wait a bit more for migration to complete
-    sleep 30
-else
-    print_status "Skipping database migrations (--skip-migration specified)"
-fi
-
-print_header "7. Verifying deployment..."
-
-# Check service health
-services=("healthapp_postgres" "healthapp_redis" "healthapp_backend" "healthapp_frontend" "healthapp_nginx")
-for service in "${services[@]}"; do
-    replicas=$(docker service ps $service --format "{{.CurrentState}}" | grep -c "Running" || echo "0")
-    desired=$(docker service ls --filter name=$service --format "{{.Replicas}}" | cut -d'/' -f2)
-    
-    if [ "$replicas" -eq "$desired" ] && [ "$replicas" -gt 0 ]; then
-        print_status "$service: $replicas/$desired replicas running ✓"
-    else
-        print_warning "$service: $replicas/$desired replicas running ⚠️"
-        docker service ps $service --no-trunc
+    # Check if we're on a manager node
+    if ! docker info --format '{{.Swarm.ControlAvailable}}' | grep -q true; then
+        echo -e "${RED}[ERROR]${NC} This node is not a swarm manager"
+        echo -e "${YELLOW}[INFO]${NC} Deploy from a manager node"
+        exit 1
     fi
-done
+}
 
-# Test application endpoints
-print_status "Testing application endpoints..."
-sleep 10
-
-endpoints=(
-    "https://api.healthapp.com/api/health:Backend API"
-    "https://app.healthapp.com:Frontend"
-)
-
-for endpoint in "${endpoints[@]}"; do
-    url=$(echo $endpoint | cut -d: -f1-2)
-    name=$(echo $endpoint | cut -d: -f3)
+# Create Docker secrets
+create_secrets() {
+    echo -e "${BLUE}[INFO]${NC} Creating Docker secrets..."
     
-    if curl -f -s -k --max-time 10 "$url" > /dev/null 2>&1; then
-        print_status "$name is accessible ✓"
+    # Check if secrets already exist
+    if docker secret inspect postgres_password >/dev/null 2>&1; then
+        echo -e "${YELLOW}[WARNING]${NC} Secret 'postgres_password' already exists"
     else
-        print_warning "$name health check failed ⚠️"
+        read -s -p "Enter PostgreSQL password: " POSTGRES_PASSWORD
+        echo ""
+        echo "$POSTGRES_PASSWORD" | docker secret create postgres_password -
+        echo -e "${GREEN}[SUCCESS]${NC} Created postgres_password secret"
     fi
-done
+    
+    if docker secret inspect jwt_secret >/dev/null 2>&1; then
+        echo -e "${YELLOW}[WARNING]${NC} Secret 'jwt_secret' already exists"
+    else
+        read -s -p "Enter JWT secret key: " JWT_SECRET
+        echo ""
+        echo "$JWT_SECRET" | docker secret create jwt_secret -
+        echo -e "${GREEN}[SUCCESS]${NC} Created jwt_secret secret"
+    fi
+    
+    echo -e "${GREEN}[SUCCESS]${NC} All secrets created successfully!"
+}
 
-print_header "✅ Production deployment completed!"
+# Build and push production images
+build_images() {
+    echo -e "${BLUE}[INFO]${NC} Building production images..."
+    
+    # Build backend image
+    echo -e "${BLUE}[INFO]${NC} Building backend production image..."
+    docker build -f docker/Dockerfile.prod --target backend-prod -t healthapp-backend:prod .
+    docker tag healthapp-backend:prod $REGISTRY/healthapp-backend:prod
+    
+    # Build frontend image
+    echo -e "${BLUE}[INFO]${NC} Building frontend production image..."
+    docker build -f docker/Dockerfile.prod --target frontend-prod -t healthapp-frontend:prod .
+    docker tag healthapp-frontend:prod $REGISTRY/healthapp-frontend:prod
+    
+    # Push to registry
+    echo -e "${BLUE}[INFO]${NC} Pushing images to registry..."
+    docker push $REGISTRY/healthapp-backend:prod
+    docker push $REGISTRY/healthapp-frontend:prod
+    
+    echo -e "${GREEN}[SUCCESS]${NC} Production images built and pushed successfully!"
+}
 
-echo ""
-echo "🌟 HealthApp Production Environment is ready!"
-echo ""
-echo "📋 Access URLs:"
-echo "   Frontend:    https://app.healthapp.com"
-echo "   Backend API: https://api.healthapp.com"
-echo "   Monitoring:  http://monitoring.healthapp.com (admin / $GRAFANA_PASSWORD)"
-echo ""
-echo "🔧 Management commands:"
-echo "   View services:    docker stack services healthapp"
-echo "   View service logs: docker service logs healthapp_[service_name] -f"
-echo "   Scale service:    docker service scale healthapp_[service_name]=N"
-echo "   Update service:   docker service update healthapp_[service_name]"
-echo "   Remove stack:     docker stack rm healthapp"
-echo ""
-echo "📊 Monitoring:"
-echo "   Prometheus: http://localhost:9090"
-echo "   Grafana:    http://monitoring.healthapp.com"
-echo ""
-echo "🔍 Troubleshooting:"
-echo "   Check service status: docker stack ps healthapp"
-echo "   View service logs:    docker service logs healthapp_[service] --tail 100"
-echo "   Service not starting: docker service ps healthapp_[service] --no-trunc"
-echo ""
+# Deploy stack
+deploy_stack() {
+    echo -e "${BLUE}[INFO]${NC} Deploying HealthApp production stack..."
+    echo -e "${BLUE}[INFO]${NC} Using ports: Frontend 3002, Backend 3005, PostgreSQL 5432"
+    
+    # Verify secrets exist
+    if ! docker secret inspect postgres_password >/dev/null 2>&1; then
+        echo -e "${RED}[ERROR]${NC} Secret 'postgres_password' not found. Run '$0 secrets create' first"
+        exit 1
+    fi
+    
+    if ! docker secret inspect jwt_secret >/dev/null 2>&1; then
+        echo -e "${RED}[ERROR]${NC} Secret 'jwt_secret' not found. Run '$0 secrets create' first"
+        exit 1
+    fi
+    
+    docker stack deploy -c $STACK_FILE $STACK_NAME
+    
+    echo -e "${GREEN}[SUCCESS]${NC} Production stack deployed successfully!"
+    echo -e "${BLUE}[INFO]${NC} Frontend: https://your-domain.com"
+    echo -e "${BLUE}[INFO]${NC} Backend API: https://api.your-domain.com"
+    echo ""
+    echo -e "${YELLOW}[NEXT]${NC} Run './scripts/deploy-prod.sh logs' to see logs"
+    echo -e "${YELLOW}[NEXT]${NC} Run './scripts/deploy-prod.sh status' to check service status"
+}
+
+# Update services with zero-downtime deployment
+update_services() {
+    echo -e "${BLUE}[INFO]${NC} Updating production services with zero-downtime..."
+    
+    # Update backend with rolling update
+    docker service update --image $REGISTRY/healthapp-backend:prod ${STACK_NAME}_backend
+    
+    # Update frontend with rolling update
+    docker service update --image $REGISTRY/healthapp-frontend:prod ${STACK_NAME}_frontend
+    
+    echo -e "${GREEN}[SUCCESS]${NC} Production services updated successfully!"
+}
+
+# Stop stack
+stop_stack() {
+    echo -e "${YELLOW}[WARNING]${NC} This will stop the production environment!"
+    read -p "Are you sure? (y/N): " -n 1 -r
+    echo
+    if [[ $REPLY =~ ^[Yy]$ ]]; then
+        echo -e "${BLUE}[INFO]${NC} Removing HealthApp production stack..."
+        docker stack rm $STACK_NAME
+        echo -e "${GREEN}[SUCCESS]${NC} Production stack removed successfully!"
+    else
+        echo -e "${BLUE}[INFO]${NC} Operation cancelled"
+    fi
+}
+
+# Show logs
+show_logs() {
+    local service=${1:-""}
+    if [ -z "$service" ]; then
+        echo -e "${BLUE}[INFO]${NC} Showing logs for all production services..."
+        for svc in $(docker service ls --filter name=${STACK_NAME} --format "{{.Name}}"); do
+            echo -e "${YELLOW}=== $svc ===${NC}"
+            docker service logs --tail 100 $svc
+            echo ""
+        done
+    else
+        echo -e "${BLUE}[INFO]${NC} Showing logs for ${STACK_NAME}_$service..."
+        docker service logs -f ${STACK_NAME}_$service
+    fi
+}
+
+# Show status
+show_status() {
+    echo -e "${BLUE}[INFO]${NC} HealthApp Production Stack Status:"
+    echo ""
+    docker stack services $STACK_NAME
+    echo ""
+    echo -e "${BLUE}[INFO]${NC} Service Details:"
+    docker service ps ${STACK_NAME} --no-trunc
+    echo ""
+    echo -e "${BLUE}[INFO]${NC} Node Information:"
+    docker node ls
+}
+
+# Scale service
+scale_service() {
+    local service=$1
+    local replicas=$2
+    
+    if [ -z "$service" ] || [ -z "$replicas" ]; then
+        echo -e "${RED}[ERROR]${NC} Usage: $0 scale <service> <replicas>"
+        exit 1
+    fi
+    
+    echo -e "${YELLOW}[WARNING]${NC} Scaling production service ${STACK_NAME}_$service to $replicas replicas"
+    read -p "Are you sure? (y/N): " -n 1 -r
+    echo
+    if [[ $REPLY =~ ^[Yy]$ ]]; then
+        echo -e "${BLUE}[INFO]${NC} Scaling ${STACK_NAME}_$service to $replicas replicas..."
+        docker service scale ${STACK_NAME}_$service=$replicas
+        echo -e "${GREEN}[SUCCESS]${NC} Service scaled successfully!"
+    else
+        echo -e "${BLUE}[INFO]${NC} Scaling cancelled"
+    fi
+}
+
+# Run database migrations
+run_migrations() {
+    echo -e "${BLUE}[INFO]${NC} Running production database migrations..."
+    
+    # Wait for backend service to be ready
+    echo -e "${BLUE}[INFO]${NC} Waiting for backend service..."
+    sleep 15
+    
+    # Get a backend container ID
+    CONTAINER_ID=$(docker ps --filter "name=${STACK_NAME}_backend" --format "{{.ID}}" | head -n1)
+    
+    if [ -z "$CONTAINER_ID" ]; then
+        echo -e "${RED}[ERROR]${NC} No backend containers found"
+        exit 1
+    fi
+    
+    docker exec $CONTAINER_ID npm run migrate
+    echo -e "${GREEN}[SUCCESS]${NC} Production migrations completed!"
+}
+
+# Backup database
+backup_database() {
+    echo -e "${BLUE}[INFO]${NC} Creating production database backup..."
+    
+    BACKUP_FILE="healthapp_prod_backup_$(date +%Y%m%d_%H%M%S).sql"
+    
+    # Get postgres container ID
+    POSTGRES_ID=$(docker ps --filter "name=${STACK_NAME}_postgres" --format "{{.ID}}" | head -n1)
+    
+    if [ -z "$POSTGRES_ID" ]; then
+        echo -e "${RED}[ERROR]${NC} No postgres containers found"
+        exit 1
+    fi
+    
+    docker exec $POSTGRES_ID pg_dump -U healthapp_user healthapp_prod > $BACKUP_FILE
+    echo -e "${GREEN}[SUCCESS]${NC} Database backup created: $BACKUP_FILE"
+}
+
+# Main script logic
+main() {
+    check_swarm
+    
+    case ${1:-""} in
+        deploy)
+            build_images
+            deploy_stack
+            ;;
+        update)
+            build_images
+            update_services
+            ;;
+        stop)
+            stop_stack
+            ;;
+        logs)
+            show_logs $2
+            ;;
+        status)
+            show_status
+            ;;
+        build)
+            build_images
+            ;;
+        scale)
+            scale_service $2 $3
+            ;;
+        migrate)
+            run_migrations
+            ;;
+        backup)
+            backup_database
+            ;;
+        secrets)
+            if [ "$2" == "create" ]; then
+                create_secrets
+            else
+                echo -e "${RED}[ERROR]${NC} Usage: $0 secrets create"
+                exit 1
+            fi
+            ;;
+        -h|--help|help)
+            show_help
+            ;;
+        "")
+            echo -e "${YELLOW}[WARNING]${NC} No command specified"
+            show_help
+            ;;
+        *)
+            echo -e "${RED}[ERROR]${NC} Unknown command: $1"
+            show_help
+            exit 1
+            ;;
+    esac
+}
+
+# Run main function with all arguments
+main "$@"
