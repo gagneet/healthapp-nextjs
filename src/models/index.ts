@@ -1,54 +1,54 @@
 // src/models/index.js - Updated with new models
 import { Sequelize } from 'sequelize';
-import sequelize from '../config/database.ts';
+import sequelize from '../config/database.js';
 
 // Import models
-import UserModel from './User.ts';
-import UserRoleModel from './UserRole.ts';
-import OrganizationModel from './Organization.ts';
-import HealthcareProviderModel from './HealthcareProvider.ts';
-import DoctorModel from './Doctor.ts';
-import HSPModel from './HSP.ts';
-import PatientModel from './Patient.ts';
-import ProviderModel from './Provider.ts';
-import PatientProviderAssignmentModel from './PatientProviderAssignment.ts';
-import MedicineModel from './Medicine.ts';
-import MedicationModel from './Medications.ts';
-import AppointmentModel from './Appointment.ts';
-import CarePlanModel from './CarePlan.ts';
-import TreatmentPlanModel from './TreatmentPlan.ts';
-import VitalModel from './Vital.ts';
-import VitalTemplateModel from './VitalTemplate.ts';
-import VitalTypeModel from './VitalType.ts';
-import VitalReadingModel from './VitalReading.ts';
-import VitalRequirementModel from './VitalRequirement.ts';
-import ScheduleEventModel from './ScheduleEvent.ts';
-import ScheduledEventModel from './ScheduledEvent.ts';
-import AdherenceRecordModel from './AdherenceRecord.ts';
-import SymptomModel from './Symptom.ts';
-import NotificationModel from './Notification.ts';
-import UserDeviceModel from './UserDevice.ts';
-import AuditLogModel from './AuditLog.ts';
-import SpecialityModel from './Speciality.ts';
-import SymptomsDatabaseModel from './SymptomsDatabase.ts';
-import TreatmentDatabaseModel from './TreatmentDatabase.ts';
-import PatientDoctorAssignmentModel from './PatientDoctorAssignment.ts';
-import ClinicModel from './Clinic.ts';
-import DoctorAvailabilityModel from './DoctorAvailability.ts';
-import AppointmentSlotModel from './AppointmentSlot.ts';
-import ServicePlanModel from './ServicePlan.ts';
-import PatientSubscriptionModel from './PatientSubscription.ts';
-import PaymentModel from './Payment.ts';
-import PaymentMethodModel from './PaymentMethod.ts';
+import UserModel from './User.js';
+import UserRoleModel from './UserRole.js';
+import OrganizationModel from './Organization.js';
+import HealthcareProviderModel from './HealthcareProvider.js';
+import DoctorModel from './Doctor.js';
+import HSPModel from './HSP.js';
+import PatientModel from './Patient.js';
+import ProviderModel from './Provider.js';
+import PatientProviderAssignmentModel from './PatientProviderAssignment.js';
+import MedicineModel from './Medicine.js';
+import MedicationModel from './Medications.js';
+import AppointmentModel from './Appointment.js';
+import CarePlanModel from './CarePlan.js';
+import TreatmentPlanModel from './TreatmentPlan.js';
+import VitalModel from './Vital.js';
+import VitalTemplateModel from './VitalTemplate.js';
+import VitalTypeModel from './VitalType.js';
+import VitalReadingModel from './VitalReading.js';
+import VitalRequirementModel from './VitalRequirement.js';
+import ScheduleEventModel from './ScheduleEvent.js';
+import ScheduledEventModel from './ScheduledEvent.js';
+import AdherenceRecordModel from './AdherenceRecord.js';
+import SymptomModel from './Symptom.js';
+import NotificationModel from './Notification.js';
+import UserDeviceModel from './UserDevice.js';
+import AuditLogModel from './AuditLog.js';
+import SpecialityModel from './Speciality.js';
+import SymptomsDatabaseModel from './SymptomsDatabase.js';
+import TreatmentDatabaseModel from './TreatmentDatabase.js';
+import PatientDoctorAssignmentModel from './PatientDoctorAssignment.js';
+import ClinicModel from './Clinic.js';
+import DoctorAvailabilityModel from './DoctorAvailability.js';
+import AppointmentSlotModel from './AppointmentSlot.js';
+import ServicePlanModel from './ServicePlan.js';
+import PatientSubscriptionModel from './PatientSubscription.js';
+import PaymentModel from './Payment.js';
+import PaymentMethodModel from './PaymentMethod.js';
 
 // Import new chart analytics models
-import MedicationLogModel from './MedicationLog.ts';
-import PatientAlertModel from './PatientAlert.ts';
-import DashboardMetricModel from './DashboardMetric.ts';
+import MedicationLogModel from './MedicationLog.js';
+import PatientAlertModel from './PatientAlert.js';
+import DashboardMetricModel from './DashboardMetric.js';
 
 // Import new consent workflow models
-import SecondaryDoctorAssignmentModel from './SecondaryDoctorAssignment.ts';
-import PatientConsentOtpModel from './PatientConsentOtp.ts';
+import SecondaryDoctorAssignmentModel from './SecondaryDoctorAssignment.js';
+import PatientConsentOtpModel from './PatientConsentOtp.js';
 
 // Initialize models with new ES modules format
 const User = UserModel(sequelize);
@@ -148,7 +148,7 @@ const db = {
 };
 
 // Set up associations
-import setupAssociations from './associations.ts';
+import setupAssociations from './associations.js';
 setupAssociations(db);
 
 export { 

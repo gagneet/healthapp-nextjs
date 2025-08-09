@@ -1,11 +1,11 @@
 // src/controllers/adminController.ts
 import { Request, Response, NextFunction } from 'express';
-import '../types/express.ts';
-import { Doctor, Patient, User, Medicine, Speciality, Medication, Appointment, SymptomsDatabase, TreatmentDatabase, Clinic, UserRole } from '../models/index.ts';
+import '../types/express.js';
+import { Doctor, Patient, User, Medicine, Speciality, Medication, Appointment, SymptomsDatabase, TreatmentDatabase, Clinic, UserRole } from '../models/index.js';
 import { Op } from 'sequelize';
 import bcrypt from 'bcryptjs';
-import { USER_CATEGORIES } from '../config/constants.ts';
-import { parseQueryParam, parseQueryParamAsNumber } from '../utils/queryHelpers.ts';
+import { USER_CATEGORIES } from '../config/constants.js';
+import { parseQueryParam, parseQueryParamAsNumber } from '../utils/queryHelpers.js';
 
 class AdminController {
   async getDoctors(req: Request, res: Response, next: NextFunction): Promise<void> {

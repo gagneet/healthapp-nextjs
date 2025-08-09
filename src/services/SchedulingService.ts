@@ -1,5 +1,5 @@
 // src/services/schedulingService.js
-import { ScheduleEvent, Appointment, Medication, Vital } from '../models/index.ts';
+import { ScheduleEvent, Appointment, Medication, Vital } from '../models/index.js';
 import { Op } from 'sequelize';
 
 interface MissedMedicationEvent {

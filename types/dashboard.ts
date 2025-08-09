@@ -14,11 +14,12 @@ export interface User {
   last_name: string
   email: string
   phone?: string
+  mobile_number?: string
   date_of_birth?: string
   gender?: string
   profile_picture_url?: string
-  created_at: string
-  updated_at: string
+  created_at?: string
+  updated_at?: string
 }
 
 export interface Patient {
@@ -42,34 +43,34 @@ export interface Patient {
   specialty_focus?: string[]
   primary_doctor_provider?: string
   secondary_doctor_provider?: string
-  emergency_contacts: Array<{
+  emergency_contacts?: Array<{
     name: string
     relationship: string
     phone: string
     email?: string
     primary?: boolean
   }>
-  insurance_information: Record<string, any>
-  medical_history: Array<{
+  insurance_information?: Record<string, any>
+  medical_history?: Array<{
     condition: string
     diagnosed_date?: string
     status: 'active' | 'resolved' | 'chronic'
     notes?: string
   }>
-  allergies: Array<{
+  allergies?: Array<{
     name: string
     allergen: string
     reaction?: string
     severity: 'mild' | 'moderate' | 'severe'
   }>
-  current_medications: Array<Record<string, any>>
+  current_medications?: Array<Record<string, any>>
   height_cm?: number
   weight_kg?: number
   blood_type?: string
-  primary_language: string
-  risk_level: 'low' | 'medium' | 'high' | 'critical'
-  risk_factors: Array<string>
-  communication_preferences: {
+  primary_language?: string
+  risk_level?: 'low' | 'medium' | 'high' | 'critical'
+  risk_factors?: Array<string>
+  communication_preferences?: {
     preferred_contact_method: 'email' | 'phone' | 'sms'
     appointment_reminders: boolean
     medication_reminders: boolean
@@ -78,7 +79,7 @@ export interface Patient {
     language: string
     time_zone: string
   }
-  privacy_settings: {
+  privacy_settings?: {
     share_with_family: boolean
     share_for_research: boolean
     marketing_communications: boolean
@@ -91,21 +92,21 @@ export interface Patient {
   care_coordinator_type?: 'doctor' | 'hsp'
   overall_adherence_score?: number
   last_adherence_calculation?: string
-  total_appointments: number
-  missed_appointments: number
+  total_appointments?: number
+  missed_appointments?: number
   last_visit_date?: string
   next_appointment_date?: string
   bmi?: number
-  is_active: boolean
-  requires_interpreter: boolean
-  has_mobility_issues: boolean
-  created_at: string
-  updated_at: string
+  is_active?: boolean
+  requires_interpreter?: boolean
+  has_mobility_issues?: boolean
+  created_at?: string
+  updated_at?: string
   deleted_at?: string
   // Provider linkage and consent tracking
   linked_provider_id?: string
   provider_linked_at?: string
-  provider_consent_given: boolean
+  provider_consent_given?: boolean
   provider_consent_given_at?: string
   provider_consent_method?: 'sms' | 'email' | 'in_person' | 'phone' | 'automatic'
   // Navigation/computed fields for frontend
@@ -119,11 +120,14 @@ export interface Patient {
   last_name?: string
   email?: string
   phone?: string
+  date_of_birth?: string
+  gender?: string
   adherence_rate?: number
   critical_alerts?: number
   status?: string
   last_visit?: string
   next_appointment?: string
+  profile_picture_url?: string
 }
 
 export interface AdherenceMetrics {

@@ -351,7 +351,7 @@ export default function DoctorProfilePage() {
               </label>
               <div className="flex items-center">
                 <PhoneIcon className="h-4 w-4 text-gray-400 mr-2" />
-                <EditableField field="mobile_number" value={(profile as any).mobile_number || user?.mobile_number} />
+                <EditableField field="mobile_number" value={profile?.mobile_number || (user as any)?.mobile_number || (user as any)?.phone || ''} />
               </div>
             </div>
 

@@ -1,10 +1,10 @@
 // src/controllers/secondaryDoctorController.ts - API endpoints for Secondary Doctor Management
 import { Request, Response, NextFunction } from 'express';
-import SecondaryDoctorService from '../services/SecondaryDoctorService.ts';
-import ResponseFormatter from '../utils/responseFormatter.ts';
-import { createLogger } from '../middleware/logger.ts';
+import SecondaryDoctorService from '../services/SecondaryDoctorService.js';
+import ResponseFormatter from '../utils/responseFormatter.js';
+import { createLogger } from '../middleware/logger.js';
 import { validationResult } from 'express-validator';
-import '../types/express.ts';
+import '../types/express.js';
 
 const logger = createLogger(import.meta.url);
 

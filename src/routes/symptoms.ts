@@ -1,8 +1,8 @@
 // src/routes/symptoms.js - Symptoms and Diagnosis routes
 import express from 'express';
-import symptomsDiagnosisController from '../controllers/symptomsDiagnosisController.ts';
-import { authenticate, authorize } from '../middleware/auth.ts';
-import { USER_CATEGORIES } from '../config/constants.ts';
+import symptomsDiagnosisController from '../controllers/symptomsDiagnosisController.js';
+import { authenticate, authorize } from '../middleware/auth.js';
+import { USER_CATEGORIES } from '../config/constants.js';
 
 const router = express.Router();
 

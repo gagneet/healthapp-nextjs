@@ -1,13 +1,13 @@
 // src/controllers/doctorController.ts
 import { Request, Response, NextFunction } from 'express';
-import { Doctor, User, Speciality, Patient, CarePlan, Clinic, Appointment , Medication} from '../models/index.ts';
+import { Doctor, User, Speciality, Patient, CarePlan, Clinic, Appointment , Medication} from '../models/index.js';
 import { Op } from 'sequelize';
-import '../types/express.ts';
+import '../types/express.js';
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
-import geoLocationService from '../services/GeoLocationService.ts';
-import { parseQueryParam, parseQueryParamAsNumber, parseQueryParamAsInt } from '../utils/queryHelpers.ts';
+import geoLocationService from '../services/GeoLocationService.js';
+import { parseQueryParam, parseQueryParamAsNumber, parseQueryParamAsInt } from '../utils/queryHelpers.js';
 
 // Configure multer for file uploads
 const storage = multer.diskStorage({

@@ -1,8 +1,8 @@
 // src/controllers/carePlanController.ts
 import { Request, Response, NextFunction } from 'express';
-import { CarePlan, Patient, Doctor, User, Medication, Appointment, Vital } from '../models/index.ts';
+import { CarePlan, Patient, Doctor, User, Medication, Appointment, Vital } from '../models/index.js';
 import { Op } from 'sequelize';
-import '../types/express.ts';
+import '../types/express.js';
 
 class CarePlanController {
   async getPatientCarePlan(req: Request, res: Response, next: NextFunction): Promise<void | Response> {

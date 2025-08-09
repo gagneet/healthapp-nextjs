@@ -1,6 +1,6 @@
 // src/models/Organization.js
 import { DataTypes } from 'sequelize';
-import { ORGANIZATION_TYPES } from '../config/enums.ts';
+import { ORGANIZATION_TYPES } from '../config/enums.js';
 
 export default (sequelize: any) => {
   const Organization = sequelize.define('Organization', {

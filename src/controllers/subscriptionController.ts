@@ -1,10 +1,10 @@
 // src/controllers/subscriptionController.ts
 import { Request, Response, NextFunction } from 'express';
-import '../types/express.ts';
-import { ServicePlan, PatientSubscription, Payment, PaymentMethod, Patient, HealthcareProvider } from '../models/index.ts';
+import '../types/express.js';
+import { ServicePlan, PatientSubscription, Payment, PaymentMethod, Patient, HealthcareProvider } from '../models/index.js';
 import { Op } from 'sequelize';
-import SubscriptionService from '../services/SubscriptionService.ts';
-import { parseQueryParam, parseQueryParamAsInt } from '../utils/queryHelpers.ts';
+import SubscriptionService from '../services/SubscriptionService.js';
+import { parseQueryParam, parseQueryParamAsInt } from '../utils/queryHelpers.js';
 
 // Initialize Stripe (should be moved to a service/config file)
 const stripe = SubscriptionService.stripeInstance || null;

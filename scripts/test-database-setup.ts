@@ -2,8 +2,8 @@
 
 // scripts/test-database-setup.js
 // Test script to verify PostgreSQL migration and models setup
-import sequelize from '../src/config/database.ts';
-import '../src/models/index.ts';
+import sequelize from '../src/config/database.js';
+import '../src/models/index.js';
 
 async function testDatabaseSetup() {
   console.log('🔧 Testing PostgreSQL Database Setup...\n');

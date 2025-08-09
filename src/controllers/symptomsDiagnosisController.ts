@@ -1,10 +1,10 @@
 // src/controllers/symptomsDiagnosisController.ts - Symptoms and Diagnosis management
 import { Request, Response, NextFunction } from 'express';
-import '../types/express.ts';
-import { SymptomsDatabase, TreatmentDatabase, sequelize } from '../models/index.ts';
+import '../types/express.js';
+import { SymptomsDatabase, TreatmentDatabase, sequelize } from '../models/index.js';
 import { Op } from 'sequelize';
-import ResponseFormatter from '../utils/responseFormatter.ts';
-import { ValidationError, NotFoundError } from '../utils/errors.ts';
+import ResponseFormatter from '../utils/responseFormatter.js';
+import { ValidationError, NotFoundError } from '../utils/errors.js';
 
 class SymptomsDiagnosisController {
   /**

@@ -1,9 +1,9 @@
 // src/middleware/enhancedAuth.js - Enhanced JWT Authentication with Refresh Tokens
 import jwt from 'jsonwebtoken';
-import { User, UserRole, Doctor, Patient } from '../models/index.ts';
-import { USER_CATEGORIES, ACCOUNT_STATUS } from '../config/constants.ts';
-import cacheService from '../services/CacheService.ts';
-import ResponseFormatter from '../utils/responseFormatter.ts';
+import { User, UserRole, Doctor, Patient } from '../models/index.js';
+import { USER_CATEGORIES, ACCOUNT_STATUS } from '../config/constants.js';
+import cacheService from '../services/CacheService.js';
+import ResponseFormatter from '../utils/responseFormatter.js';
 
 // Token blacklist - in production, this should be Redis
 const tokenBlacklist = new Set();

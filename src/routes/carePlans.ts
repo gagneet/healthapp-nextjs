@@ -1,8 +1,8 @@
 // src/routes/carePlans.js
 import express from 'express';
-import carePlanController from '../controllers/carePlanController.ts';
-import { authenticate, authorize } from '../middleware/auth.ts';
-import { USER_CATEGORIES } from '../config/constants.ts';
+import carePlanController from '../controllers/carePlanController.js';
+import { authenticate, authorize } from '../middleware/auth.js';
+import { USER_CATEGORIES } from '../config/constants.js';
 
 const router = express.Router();
 

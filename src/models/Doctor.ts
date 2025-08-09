@@ -1,7 +1,7 @@
 // src/models/Doctor.js - Doctor Model for Licensed Physicians (PostgreSQL)
 import { DataTypes } from 'sequelize';
-import { createLogger } from '../middleware/logger.ts';
-import { PROVIDER_CAPABILITIES } from '../config/enums.ts';
+import { createLogger } from '../middleware/logger.js';
+import { PROVIDER_CAPABILITIES } from '../config/enums.js';
 
 const logger = createLogger(import.meta.url);
 

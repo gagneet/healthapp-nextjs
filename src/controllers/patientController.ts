@@ -1,14 +1,14 @@
 // src/controllers/PatientController.js - Modern ES Module Pattern
 import { Request, Response, NextFunction } from 'express';
-import { User, Doctor, Patient, CarePlan } from '../models/index.ts';
+import { User, Doctor, Patient, CarePlan } from '../models/index.js';
 import { Op } from 'sequelize';
-import { PAGINATION, USER_CATEGORIES } from '../config/constants.ts';
-import ResponseFormatter from '../utils/responseFormatter.ts';
-import PatientService from '../services/PatientService.ts';
-import PatientAccessService from '../services/PatientAccessService.ts';
-import { ValidationError, NotFoundError } from '../utils/errors.ts';
-import '../types/express.ts';
-import { parseQueryParam, parseQueryParamAsNumber, parseQueryParamAsInt } from '../utils/queryHelpers.ts';
+import { PAGINATION, USER_CATEGORIES } from '../config/constants.js';
+import ResponseFormatter from '../utils/responseFormatter.js';
+import PatientService from '../services/PatientService.js';
+import PatientAccessService from '../services/PatientAccessService.js';
+import { ValidationError, NotFoundError } from '../utils/errors.js';
+import '../types/express.js';
+import { parseQueryParam, parseQueryParamAsNumber, parseQueryParamAsInt } from '../utils/queryHelpers.js';
 
 class PatientController {
   /**

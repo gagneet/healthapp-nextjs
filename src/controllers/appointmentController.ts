@@ -1,9 +1,9 @@
 // src/controllers/appointmentController.ts
 import { Request, Response, NextFunction } from 'express';
-import { Appointment, Patient, Doctor, User, ScheduleEvent, AppointmentSlot } from '../models/index.ts';
+import { Appointment, Patient, Doctor, User, ScheduleEvent, AppointmentSlot } from '../models/index.js';
 import { Op } from 'sequelize';
-import CalendarService from '../services/CalendarService.ts';
-import '../types/express.ts';
+import CalendarService from '../services/CalendarService.js';
+import '../types/express.js';
 
 class AppointmentController {
   async createAppointment(req: Request, res: Response, next: NextFunction): Promise<void> {

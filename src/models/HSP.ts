@@ -1,7 +1,7 @@
 // src/models/HSP.js - Healthcare Support Personnel Model (Nurses, PAs, etc.)
 import { DataTypes } from 'sequelize';
-import { createLogger } from '../middleware/logger.ts';
-import { HSP_TYPES, PROVIDER_CAPABILITIES } from '../config/enums.ts';
+import { createLogger } from '../middleware/logger.js';
+import { HSP_TYPES, PROVIDER_CAPABILITIES } from '../config/enums.js';
 
 const logger = createLogger(import.meta.url);
 

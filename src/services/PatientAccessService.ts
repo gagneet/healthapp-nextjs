@@ -7,10 +7,10 @@ import {
   Organization, 
   SecondaryDoctorAssignment, 
   PatientConsentOtp 
-} from '../models/index.ts';
+} from '../models/index.js';
 import { Op } from 'sequelize';
-import { USER_CATEGORIES } from '../config/constants.ts';
-import NotificationService from './NotificationService.ts';
+import { USER_CATEGORIES } from '../config/constants.js';
+import NotificationService from './NotificationService.js';
 
 class PatientAccessService {
   

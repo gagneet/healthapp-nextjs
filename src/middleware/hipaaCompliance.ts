@@ -1,7 +1,7 @@
 // src/middleware/hipaaCompliance.js - HIPAA Compliance Framework
 import crypto from 'crypto';
-import { createLogger } from './logger.ts';
-import { USER_ROLES } from '../config/enums.ts';
+import { createLogger } from './logger.js';
+import { USER_ROLES } from '../config/enums.js';
 
 const logger = createLogger(import.meta.url);
 

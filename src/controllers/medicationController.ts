@@ -1,7 +1,7 @@
 // src/controllers/medicationController.ts
 import { Request, Response, NextFunction } from 'express';
-import '../types/express.ts';
-import { Medication, Medicine, Patient, User, ScheduleEvent } from '../models/index.ts';
+import '../types/express.js';
+import { Medication, Medicine, Patient, User, ScheduleEvent } from '../models/index.js';
 import { Op } from 'sequelize';
 
 class MedicationController {

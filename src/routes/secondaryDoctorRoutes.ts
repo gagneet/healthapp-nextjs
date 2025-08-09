@@ -1,9 +1,9 @@
 // src/routes/secondaryDoctorRoutes.js - Routes for Secondary Doctor Management
 import express from 'express';
 import { body, param, query } from 'express-validator';
-import { SecondaryDoctorController } from '../controllers/secondaryDoctorController.ts';
-import { authenticate, authorize } from '../middleware/auth.ts';
-import { USER_CATEGORIES } from '../config/constants.ts';
+import { SecondaryDoctorController } from '../controllers/secondaryDoctorController.js';
+import { authenticate, authorize } from '../middleware/auth.js';
+import { USER_CATEGORIES } from '../config/constants.js';
 
 const router = express.Router();
 

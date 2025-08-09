@@ -1,9 +1,9 @@
 // src/routes/subscriptions.js
 import express from 'express';
-import subscriptionController from '../controllers/subscriptionController.ts';
-import { authenticate, authorize } from '../middleware/auth.ts';
-import { validateRequest, schemas } from '../middleware/validation.ts';
-import { USER_CATEGORIES } from '../config/constants.ts';
+import subscriptionController from '../controllers/subscriptionController.js';
+import { authenticate, authorize } from '../middleware/auth.js';
+import { validateRequest, schemas } from '../middleware/validation.js';
+import { USER_CATEGORIES } from '../config/constants.js';
 
 const router = express.Router();
 

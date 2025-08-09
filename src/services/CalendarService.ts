@@ -1,7 +1,7 @@
 // src/services/CalendarService.js
-import { Appointment, ScheduleEvent, DoctorAvailability, AppointmentSlot, Doctor, Patient, User } from '../models/index.ts';
+import { Appointment, ScheduleEvent, DoctorAvailability, AppointmentSlot, Doctor, Patient, User } from '../models/index.js';
 import { Op } from 'sequelize';
-import db from '../models/index.ts';
+import db from '../models/index.js';
 
 class CalendarService {
   // Generate time slots for a doctor on a specific date

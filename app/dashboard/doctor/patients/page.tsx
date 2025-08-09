@@ -470,13 +470,13 @@ export default function PatientsPage() {
           </div>
           <div className="bg-white rounded-lg p-4 border border-gray-200">
             <div className="text-2xl font-bold text-red-600">
-              {patients.filter(p => p.critical_alerts > 0).length}
+              {patients.filter(p => (p.critical_alerts ?? 0) > 0).length}
             </div>
             <div className="text-sm text-gray-600">With Alerts</div>
           </div>
           <div className="bg-white rounded-lg p-4 border border-gray-200">
             <div className="text-2xl font-bold text-blue-600">
-              {Math.round(patients.reduce((sum, p) => sum + p.adherence_rate, 0) / patients.length)}%
+              {patients.length > 0 ? Math.round(patients.reduce((sum, p) => sum + (p.adherence_rate ?? 0), 0) / patients.length) : 0}%
             </div>
             <div className="text-sm text-gray-600">Avg Adherence</div>
           </div>
@@ -548,7 +548,7 @@ export default function PatientsPage() {
                         <div className="text-sm text-gray-500">{patient.phone}</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {formatDate(patient.last_visit)}
+                        {patient.last_visit ? formatDate(patient.last_visit) : 'No visits'}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         {getConsentStatusBadge(patient)}

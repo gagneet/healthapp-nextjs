@@ -2,11 +2,11 @@
 import bcrypt from 'bcryptjs';
 import { Request, Response, NextFunction } from 'express';
 import { JwtPayload } from 'jsonwebtoken';
-import { User, Doctor, Patient, UserRole, Speciality } from '../models/index.ts';
-import { generateToken, generateRefreshToken, verifyToken } from '../config/jwt.ts';
-import { USER_CATEGORIES, ACCOUNT_STATUS } from '../config/constants.ts';
-import { ControllerFunction } from '../types/express.ts';
-import '../types/express.ts';
+import { User, Doctor, Patient, UserRole, Speciality } from '../models/index.js';
+import { generateToken, generateRefreshToken, verifyToken } from '../config/jwt.js';
+import { USER_CATEGORIES, ACCOUNT_STATUS } from '../config/constants.js';
+import { ControllerFunction } from '../types/express.js';
+import '../types/express.js';
 
 class AuthController {
   async signIn(req: Request, res: Response, next: NextFunction): Promise<void> {

@@ -1,9 +1,9 @@
 // src/routes/enhancedAuth.js - Enhanced Authentication Routes
 import express from 'express';
 import bcrypt from 'bcryptjs';
-import { User, UserRole, Doctor, Patient } from '../models/index.ts';
-import { USER_CATEGORIES, ACCOUNT_STATUS } from '../config/constants.ts';
-import ResponseFormatter from '../utils/responseFormatter.ts';
+import { User, UserRole, Doctor, Patient } from '../models/index.js';
+import { USER_CATEGORIES, ACCOUNT_STATUS } from '../config/constants.js';
+import ResponseFormatter from '../utils/responseFormatter.js';
 import { 
   generateTokens, 
   enhancedAuthenticate, 
@@ -11,8 +11,8 @@ import {
   enhancedLogout, 
   validateToken,
   getActiveSessions 
-} from '../middleware/enhancedAuth.ts';
-import { ValidationError, NotFoundError } from '../utils/errors.ts';
+} from '../middleware/enhancedAuth.js';
+import { ValidationError, NotFoundError } from '../utils/errors.js';
 
 const router = express.Router();
 

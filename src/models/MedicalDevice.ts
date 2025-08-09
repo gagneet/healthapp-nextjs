@@ -1,6 +1,6 @@
 // src/models/MedicalDevice.js - Medical Devices and Remote Monitoring Integration
 import { DataTypes } from 'sequelize';
-import { createLogger } from '../middleware/logger.ts';
+import { createLogger } from '../middleware/logger.js';
 
 const logger = createLogger(import.meta.url);
 
