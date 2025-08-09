@@ -4,7 +4,18 @@ import { v4 as uuidv4 } from 'uuid';
 
 export default {
   async up(queryInterface: any, Sequelize: any) {
-    console.log('🚀 Seeding comprehensive chart test data...');
+    console.log('🚀 Seeding comprehensive chart test data (idempotent)...');
+
+    // Check if comprehensive chart data already exists (idempotent)
+    const existingChartData = await queryInterface.sequelize.query(
+      'SELECT COUNT(*) as count FROM medication_logs',
+      { type: Sequelize.QueryTypes.SELECT }
+    );
+    
+    if (existingChartData[0].count > 100) {
+      console.log(`ℹ️ Comprehensive chart test data already exists (${existingChartData[0].count} records found), skipping seeding`);
+      return;
+    }
 
     // Helper to generate random date within range
     const randomDate = (start: any, end: any) => {
@@ -294,7 +305,7 @@ export default {
     // Insert data in batches
     console.log(`Inserting ${medicationsData.length} medications...`);
     if (medicationsData.length > 0) {
-      await queryInterface.bulkInsert('medications', medicationsData);
+      await queryInterface.bulkInsert('medications', medicationsData, { ignoreDuplicates: true });
     }
 
     console.log(`Inserting ${medicationLogsData.length} medication logs...`);
@@ -302,24 +313,24 @@ export default {
       const batchSize = 1000;
       for (let i = 0; i < medicationLogsData.length; i += batchSize) {
         const batch = medicationLogsData.slice(i, i + batchSize);
-        await queryInterface.bulkInsert('medication_logs', batch);
+        await queryInterface.bulkInsert('medication_logs', batch, { ignoreDuplicates: true });
         console.log(`  Inserted batch ${Math.floor(i/batchSize) + 1}/${Math.ceil(medicationLogsData.length/batchSize)}`);
       }
     }
 
     console.log(`Inserting ${vitalReadingsData.length} vital readings...`);
     if (vitalReadingsData.length > 0) {
-      await queryInterface.bulkInsert('vital_readings', vitalReadingsData);
+      await queryInterface.bulkInsert('vital_readings', vitalReadingsData, { ignoreDuplicates: true });
     }
 
     console.log(`Inserting ${patientAlertsData.length} patient alerts...`);
     if (patientAlertsData.length > 0) {
-      await queryInterface.bulkInsert('patient_alerts', patientAlertsData);
+      await queryInterface.bulkInsert('patient_alerts', patientAlertsData, { ignoreDuplicates: true });
     }
 
     console.log(`Inserting ${dashboardMetricsData.length} dashboard metrics...`);
     if (dashboardMetricsData.length > 0) {
-      await queryInterface.bulkInsert('dashboard_metrics', dashboardMetricsData);
+      await queryInterface.bulkInsert('dashboard_metrics', dashboardMetricsData, { ignoreDuplicates: true });
     }
 
     console.log('✅ Comprehensive chart test data seeded successfully!');

@@ -1,7 +1,7 @@
 // src/services/authService.js
 import bcrypt from 'bcryptjs';
-import { User, Doctor, Patient, UserRole } from '../models/index.js';
-import { generateToken, generateRefreshToken } from '../config/jwt.js';
+import { User, Doctor, Patient, UserRole } from '../models/index.ts';
+import { generateToken, generateRefreshToken } from '../config/jwt.ts';
 
 class AuthService {
   async createUser(userData: any) {

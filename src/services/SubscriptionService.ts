@@ -1,5 +1,5 @@
 // src/services/SubscriptionService.ts
-import { ServicePlan, PatientSubscription, Payment, PaymentMethod, Patient, HealthcareProvider } from '../models/index.js';
+import { ServicePlan, PatientSubscription, Payment, PaymentMethod, Patient, HealthcareProvider } from '../models/index.ts';
 import { Op } from 'sequelize';
 import Stripe from 'stripe';
 

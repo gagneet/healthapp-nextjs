@@ -1,10 +1,10 @@
 // src/routes/auth.js
 import express from 'express';
-import authController from '../controllers/authController.js';
-import { validateRequest, schemas } from '../middleware/validation.js';
-import { authLimiter } from '../middleware/rateLimiter.js';
-import { authenticate } from '../middleware/auth.js';
-import enhancedAuthRoutes from './enhancedAuth.js';
+import authController from '../controllers/authController.ts';
+import { validateRequest, schemas } from '../middleware/validation.ts';
+import { authLimiter } from '../middleware/rateLimiter.ts';
+import { authenticate } from '../middleware/auth.ts';
+import enhancedAuthRoutes from './enhancedAuth.ts';
 
 const router = express.Router();
 

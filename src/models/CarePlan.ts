@@ -1,7 +1,7 @@
 // src/models/CarePlan.ts - Long-term care plans for chronic conditions (PostgreSQL)
 import crypto from 'crypto';
 import { DataTypes } from 'sequelize';
-import { PLAN_TYPES, CARE_PLAN_STATUS, PRIORITY_LEVEL } from '../config/enums.js';
+import { PLAN_TYPES, CARE_PLAN_STATUS, PRIORITY_LEVEL } from '../config/enums.ts';
 
 export default (sequelize: any) => {
   const CarePlan = sequelize.define('CarePlan', {

@@ -1,9 +1,9 @@
 // src/routes/admin.js
 import express from 'express';
-import adminController from '../controllers/adminController.js';
-import { authenticate, authorize } from '../middleware/auth.js';
-import { validateQuery, schemas } from '../middleware/validation.js';
-import { USER_CATEGORIES } from '../config/constants.js';
+import adminController from '../controllers/adminController.ts';
+import { authenticate, authorize } from '../middleware/auth.ts';
+import { validateQuery, schemas } from '../middleware/validation.ts';
+import { USER_CATEGORIES } from '../config/constants.ts';
 
 const router = express.Router();
 

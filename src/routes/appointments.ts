@@ -1,9 +1,9 @@
 // src/routes/appointments.js
 import express from 'express';
-import appointmentController from '../controllers/appointmentController.js';
-import { authenticate, authorize } from '../middleware/auth.js';
-import { validateRequest, schemas } from '../middleware/validation.js';
-import { USER_CATEGORIES } from '../config/constants.js';
+import appointmentController from '../controllers/appointmentController.ts';
+import { authenticate, authorize } from '../middleware/auth.ts';
+import { validateRequest, schemas } from '../middleware/validation.ts';
+import { USER_CATEGORIES } from '../config/constants.ts';
 
 const router = express.Router();
 

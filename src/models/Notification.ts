@@ -1,6 +1,6 @@
 // src/models/Notification.js - Notification System for Healthcare Platform
 import { DataTypes } from 'sequelize';
-import { NOTIFICATION_CHANNEL, PRIORITY_LEVEL } from '../config/enums.js';
+import { NOTIFICATION_CHANNEL, PRIORITY_LEVEL } from '../config/enums.ts';
 
 export default (sequelize: any) => {
   const Notification = sequelize.define('Notification', {

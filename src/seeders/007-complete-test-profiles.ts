@@ -59,7 +59,7 @@ export default {
 
     if (!existingEmails.includes('admin@healthapp.com')) {
       usersToCreate.push({
-        id: uuidv4(),
+        id: '11111111-1111-1111-1111-111111111111', // Deterministic UUID for admin
         email: 'admin@healthapp.com',
         password_hash: passwordHash,
         role: 'SYSTEM_ADMIN',
@@ -75,7 +75,7 @@ export default {
 
     if (!existingEmails.includes('doctor@healthapp.com')) {
       usersToCreate.push({
-        id: uuidv4(),
+        id: '22222222-2222-2222-2222-222222222222', // Deterministic UUID for doctor
         email: 'doctor@healthapp.com',
         password_hash: passwordHash,
         role: 'DOCTOR',
@@ -94,7 +94,7 @@ export default {
 
     if (!existingEmails.includes('patient@healthapp.com')) {
       usersToCreate.push({
-        id: uuidv4(),
+        id: '33333333-3333-3333-3333-333333333333', // Deterministic UUID for patient
         email: 'patient@healthapp.com',
         password_hash: passwordHash,
         role: 'PATIENT',
@@ -137,7 +137,7 @@ export default {
       );
 
       if (existingDoctor.length === 0) {
-        const doctorId = uuidv4();
+        const doctorId = '44444444-4444-4444-4444-444444444444'; // Deterministic UUID for doctor profile
         await queryInterface.bulkInsert('doctors', [{
           id: doctorId,
           user_id: doctorUser.id,
@@ -181,7 +181,7 @@ export default {
 
         // Create a clinic for the doctor
         await queryInterface.bulkInsert('clinics', [{
-          id: uuidv4(),
+          id: '55555555-5555-5555-5555-555555555555', // Deterministic UUID for clinic
           doctor_id: doctorId,
           name: 'Main Family Practice Clinic',
           address: JSON.stringify({
@@ -235,7 +235,7 @@ export default {
           }
         );
 
-        const patientId = uuidv4();
+        const patientId = '66666666-6666-6666-6666-666666666666'; // Deterministic UUID for patient profile
         await queryInterface.bulkInsert('patients', [{
           id: patientId,
           user_id: patientUser.id,

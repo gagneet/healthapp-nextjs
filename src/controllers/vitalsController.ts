@@ -1,7 +1,7 @@
 // src/controllers/vitalsController.ts
 import { Request, Response, NextFunction } from 'express';
-import '../types/express.js';
-import { Vital, VitalTemplate, CarePlan, ScheduleEvent } from '../models/index.js';
+import '../types/express.ts';
+import { Vital, VitalTemplate, CarePlan, ScheduleEvent } from '../models/index.ts';
 import { Op } from 'sequelize';
 
 class VitalsController {

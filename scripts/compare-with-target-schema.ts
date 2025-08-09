@@ -4,7 +4,7 @@
 // Compare current database structure with target healthapp_schema.sql
 import fs from 'fs/promises';
 import path from 'path';
-import sequelize from '../src/config/database.js';
+import sequelize from '../src/config/database.ts';
 
 async function compareWithTargetSchema() {
   console.log('🔍 Comparing current setup with target schema...\n');

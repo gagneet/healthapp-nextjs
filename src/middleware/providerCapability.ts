@@ -1,6 +1,6 @@
 // src/middleware/providerCapability.js - Validate provider capabilities
-import { createLogger } from './logger.js';
-import { PROVIDER_CAPABILITIES, USER_ROLES } from '../config/enums.js';
+import { createLogger } from './logger.ts';
+import { PROVIDER_CAPABILITIES, USER_ROLES } from '../config/enums.ts';
 
 const logger = createLogger(import.meta.url);
 

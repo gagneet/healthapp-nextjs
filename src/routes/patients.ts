@@ -1,9 +1,9 @@
 // src/routes/patients.js
 import express from 'express';
-import patientController from '../controllers/patientController.js';
-import { authenticate, authorize } from '../middleware/auth.js';
-import { validateRequest, validateQuery, schemas } from '../middleware/validation.js';
-import { USER_CATEGORIES } from '../config/constants.js';
+import patientController from '../controllers/patientController.ts';
+import { authenticate, authorize } from '../middleware/auth.ts';
+import { validateRequest, validateQuery, schemas } from '../middleware/validation.ts';
+import { USER_CATEGORIES } from '../config/constants.ts';
 
 const router = express.Router();
 

@@ -1,12 +1,12 @@
 // src/controllers/consentController.ts - Patient Consent Workflow Controller
 import { Request, Response, NextFunction } from 'express';
-import '../types/express.js';
+import '../types/express.ts';
 import { Op } from 'sequelize';
-import PatientAccessService from '../services/PatientAccessService.js';
-import { Doctor, Patient, HSP, User, Speciality } from '../models/index.js';
-import { USER_CATEGORIES } from '../config/constants.js';
-import ResponseFormatter from '../utils/responseFormatter.js';
-import { ValidationError, NotFoundError } from '../utils/errors.js';
+import PatientAccessService from '../services/PatientAccessService.ts';
+import { Doctor, Patient, HSP, User, Speciality } from '../models/index.ts';
+import { USER_CATEGORIES } from '../config/constants.ts';
+import ResponseFormatter from '../utils/responseFormatter.ts';
+import { ValidationError, NotFoundError } from '../utils/errors.ts';
 
 class ConsentController {
 

@@ -1,7 +1,7 @@
 // src/models/TreatmentPlan.ts - Short-term, acute treatment plans for outpatient visits
 import crypto from 'crypto';
 import { DataTypes } from 'sequelize';
-import { PLAN_TYPES, CARE_PLAN_STATUS, PRIORITY_LEVEL } from '../config/enums.js';
+import { PLAN_TYPES, CARE_PLAN_STATUS, PRIORITY_LEVEL } from '../config/enums.ts';
 
 export default (sequelize: any) => {
   const TreatmentPlan = sequelize.define('TreatmentPlan', {

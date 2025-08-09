@@ -1,8 +1,8 @@
 // src/routes/consent.js - Patient Consent Workflow Routes
 import express from 'express';
-import consentController from '../controllers/consentController.js';
-import { authenticate, authorize } from '../middleware/auth.js';
-import { USER_CATEGORIES } from '../config/constants.js';
+import consentController from '../controllers/consentController.ts';
+import { authenticate, authorize } from '../middleware/auth.ts';
+import { USER_CATEGORIES } from '../config/constants.ts';
 
 const router = express.Router();
 

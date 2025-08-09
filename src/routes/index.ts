@@ -1,18 +1,18 @@
 // src/routes/index.js
 import express from 'express';
-import authRoutes from './auth.js';
-import patientRoutes from './patients.js';
-import doctorRoutes from './doctors.js';
-import medicationRoutes from './medications.js';
-import appointmentRoutes from './appointments.js';
-import carePlanRoutes from './carePlans.js';
-import vitalsRoutes from './vitals.js';
-import adminRoutes from './admin.js';
-import searchRoutes from './search.js';
-import symptomsRoutes from './symptoms.js';
-import secondaryDoctorRoutes from './secondaryDoctorRoutes.js';
-import subscriptionRoutes from './subscriptions.js';
-import consentRoutes from './consent.js';
+import authRoutes from './auth.ts';
+import patientRoutes from './patients.ts';
+import doctorRoutes from './doctors.ts';
+import medicationRoutes from './medications.ts';
+import appointmentRoutes from './appointments.ts';
+import carePlanRoutes from './carePlans.ts';
+import vitalsRoutes from './vitals.ts';
+import adminRoutes from './admin.ts';
+import searchRoutes from './search.ts';
+import symptomsRoutes from './symptoms.ts';
+import secondaryDoctorRoutes from './secondaryDoctorRoutes.ts';
+import subscriptionRoutes from './subscriptions.ts';
+import consentRoutes from './consent.ts';
 
 const router = express.Router();
 

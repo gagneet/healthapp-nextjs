@@ -1,6 +1,6 @@
 // src/models/User.js - Enhanced User Model for PostgreSQL Multi-tenant Architecture
 import { DataTypes } from 'sequelize';
-import { USER_ROLES, ACCOUNT_STATUS, GENDER } from '../config/enums.js';
+import { USER_ROLES, ACCOUNT_STATUS, GENDER } from '../config/enums.ts';
 import bcrypt from 'bcryptjs';
 
 export default (sequelize: any) => {

@@ -1,9 +1,9 @@
 // src/routes/search.js
 import express from 'express';
-import { Medicine, Speciality } from '../models/index.js';
-import { authenticate } from '../middleware/auth.js';
+import { Medicine, Speciality } from '../models/index.ts';
+import { authenticate } from '../middleware/auth.ts';
 import { Op } from 'sequelize';
-import { parseQueryParamAsInt, parseQueryParam } from '../utils/queryHelpers.js';
+import { parseQueryParamAsInt, parseQueryParam } from '../utils/queryHelpers.ts';
 
 const router = express.Router();
 

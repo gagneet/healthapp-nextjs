@@ -7,11 +7,11 @@ import compression from 'compression';
 import morgan from 'morgan';
 import { config } from 'dotenv';
 
-import { sequelize } from './models/index.js';
-import routes from './routes/index.js';
-import errorHandler from './middleware/errorHandler.js';
-import rateLimiter from './middleware/rateLimiter.js';
-import { createLogger } from './middleware/logger.js';
+import { sequelize } from './models/index.ts';
+import routes from './routes/index.ts';
+import errorHandler from './middleware/errorHandler.ts';
+import rateLimiter from './middleware/rateLimiter.ts';
+import { createLogger } from './middleware/logger.ts';
 
 config();
 

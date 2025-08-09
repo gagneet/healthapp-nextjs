@@ -1,9 +1,9 @@
 // src/middleware/auth.js
 import jwt from 'jsonwebtoken';
-import { verifyToken, TokenPayload } from '../config/jwt.js';
-import { User, UserRole, Doctor, Patient } from '../models/index.js';
-import { USER_CATEGORIES, ACCOUNT_STATUS } from '../config/constants.js';
-import cacheService from '../services/CacheService.js';
+import { verifyToken, TokenPayload } from '../config/jwt.ts';
+import { User, UserRole, Doctor, Patient } from '../models/index.ts';
+import { USER_CATEGORIES, ACCOUNT_STATUS } from '../config/constants.ts';
+import cacheService from '../services/CacheService.ts';
 import { Request, Response, NextFunction } from 'express';
 
 const authenticate = async (req: Request, res: Response, next: NextFunction): Promise<void> => {

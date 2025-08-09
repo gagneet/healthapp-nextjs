@@ -1,6 +1,6 @@
 // src/models/ScheduledEvent.js
 import { DataTypes } from 'sequelize';
-import { EVENT_TYPES, EVENT_STATUS, PRIORITY_LEVELS } from '../config/enums.js';
+import { EVENT_TYPES, EVENT_STATUS, PRIORITY_LEVELS } from '../config/enums.ts';
 
 export default (sequelize: any) => {
   const ScheduledEvent = sequelize.define('ScheduledEvent', {

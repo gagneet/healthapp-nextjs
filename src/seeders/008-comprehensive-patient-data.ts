@@ -5,13 +5,27 @@ import { v4 as uuidv4 } from 'uuid';
 
 export default {
   async up(queryInterface: any, Sequelize: any) {
+    console.log('📊 Seeding comprehensive patient data (idempotent)...');
+    
     const transaction = await queryInterface.sequelize.transaction();
 
     try {
-      // Create test users with different roles
+      // Check if comprehensive test data already exists (idempotent)
+      const existingComprehensiveData = await queryInterface.sequelize.query(
+        "SELECT email FROM users WHERE email IN ('patient1@healthapp.com', 'patient2@healthapp.com', 'doctor1@healthapp.com')",
+        { type: Sequelize.QueryTypes.SELECT, transaction }
+      );
+      
+      if (existingComprehensiveData.length > 0) {
+        console.log(`ℹ️ Comprehensive test data already exists (${existingComprehensiveData.length} users found), skipping seeding`);
+        await transaction.rollback();
+        return;
+      }
+
+      // Create test users with different roles (using deterministic UUIDs)
       const testUsers = [
         {
-          id: uuidv4(),
+          id: '77777777-7777-7777-7777-777777777777', // Deterministic UUID for patient1
           email: 'patient1@healthapp.com',
           password_hash: '$2b$10$rX8X9YUjF1L5yG4zP2wKJ.8HhYh9kXzP2wKJ8rX9YUjF1L5yG4zP2',
           role: 'PATIENT',
@@ -26,7 +40,7 @@ export default {
           updated_at: new Date()
         },
         {
-          id: uuidv4(),
+          id: '88888888-8888-8888-8888-888888888888', // Deterministic UUID for patient2
           email: 'patient2@healthapp.com',
           password_hash: '$2b$10$rX8X9YUjF1L5yG4zP2wKJ.8HhYh9kXzP2wKJ8rX9YUjF1L5yG4zP2',
           role: 'PATIENT',
@@ -41,7 +55,7 @@ export default {
           updated_at: new Date()
         },
         {
-          id: uuidv4(),
+          id: '99999999-9999-9999-9999-999999999999', // Deterministic UUID for doctor1
           email: 'doctor1@healthapp.com',
           password_hash: '$2b$10$rX8X9YUjF1L5yG4zP2wKJ.8HhYh9kXzP2wKJ8rX9YUjF1L5yG4zP2',
           role: 'DOCTOR',
@@ -57,12 +71,12 @@ export default {
         }
       ];
 
-      await queryInterface.bulkInsert('users', testUsers, { transaction });
+      await queryInterface.bulkInsert('users', testUsers, { transaction, ignoreDuplicates: true });
 
-      // Create patient records
+      // Create patient records (using deterministic UUIDs)
       const patients = [
         {
-          id: uuidv4(),
+          id: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', // Deterministic UUID for patient profile 1
           user_id: testUsers[0].id,
           patient_id: 'PAT-2024-001',
           height_cm: 165.0,
@@ -100,7 +114,7 @@ export default {
           updated_at: new Date()
         },
         {
-          id: uuidv4(),
+          id: 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', // Deterministic UUID for patient profile 2
           user_id: testUsers[1].id,
           patient_id: 'PAT-2024-002',
           height_cm: 178.0,
@@ -135,7 +149,7 @@ export default {
         }
       ];
 
-      await queryInterface.bulkInsert('patients', patients, { transaction });
+      await queryInterface.bulkInsert('patients', patients, { transaction, ignoreDuplicates: true });
 
       // Create doctor record
       const doctors = [{
@@ -154,7 +168,7 @@ export default {
         updated_at: new Date()
       }];
 
-      await queryInterface.bulkInsert('doctors', doctors, { transaction });
+      await queryInterface.bulkInsert('doctors', doctors, { transaction, ignoreDuplicates: true });
 
       // Get medicine IDs (assuming medicines seeder has run)
       const medicines = await queryInterface.sequelize.query(
@@ -234,7 +248,7 @@ export default {
         }
       }
 
-      await queryInterface.bulkInsert('medications', medications, { transaction });
+      await queryInterface.bulkInsert('medications', medications, { transaction, ignoreDuplicates: true });
 
       // Create scheduled events for the next 7 days
       const scheduledEvents = [];
@@ -371,7 +385,7 @@ export default {
         }
       }
 
-      await queryInterface.bulkInsert('scheduled_events', scheduledEvents, { transaction });
+      await queryInterface.bulkInsert('scheduled_events', scheduledEvents, { transaction, ignoreDuplicates: true });
 
       // Create adherence records
       const adherenceRecords = [];
@@ -416,7 +430,7 @@ export default {
         });
       }
 
-      await queryInterface.bulkInsert('adherence_records', adherenceRecords, { transaction });
+      await queryInterface.bulkInsert('adherence_records', adherenceRecords, { transaction, ignoreDuplicates: true });
 
       // Create vital readings
       const vitalReadings = [];
@@ -479,7 +493,7 @@ export default {
         }
       }
 
-      await queryInterface.bulkInsert('vital_readings', vitalReadings, { transaction });
+      await queryInterface.bulkInsert('vital_readings', vitalReadings, { transaction, ignoreDuplicates: true });
 
       // Create symptoms for Sarah
       const symptoms = [
@@ -519,7 +533,7 @@ export default {
         }
       ];
 
-      await queryInterface.bulkInsert('symptoms', symptoms, { transaction });
+      await queryInterface.bulkInsert('symptoms', symptoms, { transaction, ignoreDuplicates: true });
 
       // Create appointments
       const appointments = [
@@ -553,7 +567,7 @@ export default {
         }
       ];
 
-      await queryInterface.bulkInsert('appointments', appointments, { transaction });
+      await queryInterface.bulkInsert('appointments', appointments, { transaction, ignoreDuplicates: true });
 
       await transaction.commit();
       console.log('✅ Comprehensive patient data seeded successfully');
@@ -578,7 +592,7 @@ export default {
             type: Sequelize.QueryTypes.SELECT 
           }
         ).then((results: any) => results.map((r: any) => r.id)) }
-      }, { transaction });
+      }, { transaction, ignoreDuplicates: true });
 
       await queryInterface.bulkDelete('symptoms', {
         patient_id: { [Sequelize.Op.in]: await queryInterface.sequelize.query(
@@ -588,7 +602,7 @@ export default {
             type: Sequelize.QueryTypes.SELECT 
           }
         ).then((results: any) => results.map((r: any) => r.id)) }
-      }, { transaction });
+      }, { transaction, ignoreDuplicates: true });
 
       await queryInterface.bulkDelete('vital_readings', {
         patient_id: { [Sequelize.Op.in]: await queryInterface.sequelize.query(
@@ -598,7 +612,7 @@ export default {
             type: Sequelize.QueryTypes.SELECT 
           }
         ).then((results: any) => results.map((r: any) => r.id)) }
-      }, { transaction });
+      }, { transaction, ignoreDuplicates: true });
 
       await queryInterface.bulkDelete('adherence_records', {
         patient_id: { [Sequelize.Op.in]: await queryInterface.sequelize.query(
@@ -608,7 +622,7 @@ export default {
             type: Sequelize.QueryTypes.SELECT 
           }
         ).then((results: any) => results.map((r: any) => r.id)) }
-      }, { transaction });
+      }, { transaction, ignoreDuplicates: true });
 
       await queryInterface.bulkDelete('scheduled_events', {
         patient_id: { [Sequelize.Op.in]: await queryInterface.sequelize.query(
@@ -618,7 +632,7 @@ export default {
             type: Sequelize.QueryTypes.SELECT 
           }
         ).then((results: any) => results.map((r: any) => r.id)) }
-      }, { transaction });
+      }, { transaction, ignoreDuplicates: true });
 
       await queryInterface.bulkDelete('medications', {
         participant_id: { [Sequelize.Op.in]: await queryInterface.sequelize.query(
@@ -628,7 +642,7 @@ export default {
             type: Sequelize.QueryTypes.SELECT 
           }
         ).then((results: any) => results.map((r: any) => r.id)) }
-      }, { transaction });
+      }, { transaction, ignoreDuplicates: true });
 
       await queryInterface.bulkDelete('doctors', {
         user_id: { [Sequelize.Op.in]: await queryInterface.sequelize.query(
@@ -638,11 +652,11 @@ export default {
             type: Sequelize.QueryTypes.SELECT 
           }
         ).then((results: any) => results.map((r: any) => r.id)) }
-      }, { transaction });
+      }, { transaction, ignoreDuplicates: true });
 
       await queryInterface.bulkDelete('patients', { 
         patient_id: { [Sequelize.Op.in]: ['PAT-2024-001', 'PAT-2024-002'] }
-      }, { transaction });
+      }, { transaction, ignoreDuplicates: true });
 
       await queryInterface.bulkDelete('user_roles', {
         user_id: { [Sequelize.Op.in]: await queryInterface.sequelize.query(
@@ -652,11 +666,11 @@ export default {
             type: Sequelize.QueryTypes.SELECT 
           }
         ).then((results: any) => results.map((r: any) => r.id)) }
-      }, { transaction });
+      }, { transaction, ignoreDuplicates: true });
 
       await queryInterface.bulkDelete('users', {
         email: { [Sequelize.Op.in]: ['patient1@healthapp.com', 'patient2@healthapp.com', 'doctor1@healthapp.com'] }
-      }, { transaction });
+      }, { transaction, ignoreDuplicates: true });
 
       await transaction.commit();
       console.log('✅ Comprehensive patient data cleanup completed');

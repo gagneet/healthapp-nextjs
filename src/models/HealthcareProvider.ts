@@ -1,6 +1,6 @@
 // src/models/HealthcareProvider.js - Healthcare Provider Model
 import { DataTypes } from 'sequelize';
-import { createLogger } from '../middleware/logger.js';
+import { createLogger } from '../middleware/logger.ts';
 
 const logger = createLogger(import.meta.url);
 

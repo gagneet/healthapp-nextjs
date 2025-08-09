@@ -1,5 +1,5 @@
 // src/services/medicationService.js
-import { Medication, Medicine, ScheduleEvent } from '../models/index.js';
+import { Medication, Medicine, ScheduleEvent } from '../models/index.ts';
 import { Op } from 'sequelize';
 
 class MedicationService {

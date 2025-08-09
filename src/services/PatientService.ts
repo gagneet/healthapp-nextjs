@@ -1,9 +1,9 @@
 // src/services/PatientService.js
 
-import { User, Patient, Doctor, sequelize } from '../models/index.js';
-import { ValidationError, ConflictError, NotFoundError } from '../utils/errors.js';
-import { generatePatientId } from '../utils/generators.js';
-import { getPhoneSearchFormats, validatePhoneNumber } from '../utils/phoneValidation.js';
+import { User, Patient, Doctor, sequelize } from '../models/index.ts';
+import { ValidationError, ConflictError, NotFoundError } from '../utils/errors.ts';
+import { generatePatientId } from '../utils/generators.ts';
+import { getPhoneSearchFormats, validatePhoneNumber } from '../utils/phoneValidation.ts';
 import { Op } from 'sequelize';
 
 class PatientService {

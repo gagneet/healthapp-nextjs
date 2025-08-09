@@ -1,6 +1,6 @@
 // src/models/AdherenceRecord.js
 import { DataTypes } from 'sequelize';
-import { EVENT_TYPES } from '../config/enums.js';
+import { EVENT_TYPES } from '../config/enums.ts';
 
 export default (sequelize: any) => {
   const AdherenceRecord = sequelize.define('AdherenceRecord', {

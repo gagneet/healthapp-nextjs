@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import jwt from 'jsonwebtoken'
 import { Op } from 'sequelize'
-import db from '../../../../src/models/index.js'
+import db from '../../../../src/models'
 
 interface DashboardStats {
   total_patients: number
