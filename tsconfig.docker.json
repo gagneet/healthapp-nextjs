@@ -4,14 +4,14 @@
     // Allow compilation despite errors for Docker build
     "noEmitOnError": false,
     
-    // Less strict settings for Docker build
-    "noImplicitAny": false,
-    "strictNullChecks": false,
-    "noImplicitReturns": false,
-    "noImplicitThis": false,
-    
+    // Enforce strict settings for Docker builds to match local development
+    "strict": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "noImplicitReturns": true,
+    "noImplicitThis": true,
+
     // Keep important settings
-    "strict": false,
     "skipLibCheck": true,
     "esModuleInterop": true
   },

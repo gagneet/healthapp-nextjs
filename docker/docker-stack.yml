@@ -1,0 +1,156 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_HOST_AUTH_METHOD: trust
+    volumes:
+      - postgres_data_${VERSION}:/var/lib/postgresql/data
+    ports:
+      - "${DB_HOST_IP}:5433:5432"
+    networks:
+      - healthapp-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME} && psql -U ${DB_USER} -d ${DB_NAME} -c 'SELECT 1'"]
+      interval: 15s
+      timeout: 10s
+      retries: 6
+      start_period: 120s
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+
+  redis:
+    image: redis:7-alpine
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data_${VERSION}:/data
+    ports:
+      - "${REDIS_HOST_IP}:6379:6379"
+    networks:
+      - healthapp-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    deploy:
+      replicas: 1
+
+  backend:
+    image: healthapp-backend:${VERSION}
+    environment:
+      NODE_ENV: ${NODE_ENV_VALUE}
+      PORT: 3005
+      HOST_IP: ${HOST_IP}
+      DB_HOST_IP: ${DB_HOST_IP}
+      REDIS_HOST_IP: ${REDIS_HOST_IP}
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      JWT_SECRET: ${JWT_SECRET}
+      FRONTEND_URL: ${FRONTEND_URL}
+      LOG_LEVEL: info
+      DB_CONNECT_RETRY_DELAY: 5000
+      DB_CONNECT_MAX_RETRIES: 10
+    volumes:
+      - backend_logs_${VERSION}:/app/logs
+    ports:
+      - "${HOST_IP}:3005:3005"
+    networks:
+      - healthapp-network
+    deploy:
+      replicas: ${SCALE_BACKEND}
+      update_config:
+        parallelism: 1
+        delay: 10s
+        failure_action: rollback
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 512M
+    depends_on:
+      - postgres
+      - redis
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:3005/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 120s
+
+  frontend:
+    image: healthapp-frontend:${VERSION}
+    environment:
+      NODE_ENV: ${NODE_ENV_VALUE}
+      HOST_IP: ${HOST_IP}
+      BACKEND_URL: http://backend:3005
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+    ports:
+      - "${HOST_IP}:3002:3002"
+    networks:
+      - healthapp-network
+    depends_on:
+      - backend
+    deploy:
+      replicas: ${SCALE_FRONTEND}
+      update_config:
+        parallelism: 1
+        delay: 10s
+        failure_action: rollback
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 512M
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3002/ || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 90s
+
+  pgadmin:
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@healthapp.com
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    volumes:
+      - pgadmin_data_${VERSION}:/var/lib/pgadmin
+    ports:
+      - "${HOST_IP}:5050:80"
+    networks:
+      - healthapp-network
+    deploy:
+      replicas: 1
+
+networks:
+  healthapp-network:
+    driver: overlay
+    attachable: true
+
+volumes:
+  postgres_data_${VERSION}:
+  redis_data_${VERSION}:
+  backend_logs_${VERSION}:
+  pgadmin_data_${VERSION}:

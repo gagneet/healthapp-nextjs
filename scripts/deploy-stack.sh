@@ -246,6 +246,20 @@ prompt_user() {
 check_prerequisites() {
     print_header "Checking prerequisites..."
     
+    # Check for required secrets in environment
+    if [ -z "$JWT_SECRET" ]; then
+        print_error "FATAL: JWT_SECRET environment variable is not set."
+        print_error "Please set it to a long, random string. Example: openssl rand -hex 64"
+        exit 1
+    fi
+
+    if [ -z "$PGADMIN_DEFAULT_PASSWORD" ]; then
+        print_error "FATAL: PGADMIN_DEFAULT_PASSWORD environment variable is not set."
+        print_error "Please set a password for the pgAdmin user."
+        exit 1
+    fi
+    print_status "Required secrets (JWT_SECRET, PGADMIN_DEFAULT_PASSWORD) are present."
+
     # Check if Docker is running
     if ! docker info > /dev/null 2>&1; then
         print_error "Docker is not running. Please start Docker first."
@@ -295,9 +309,8 @@ update_environment_files() {
         # Copy template and update with IP address
         cp "$env_file" "$working_env"
         
-        # Update URLs with the provided IP address
-        sed -i "s/localhost:3002/$IP_ADDRESS:3002/g" "$working_env"
-        sed -i "s/localhost:3005/$IP_ADDRESS:3005/g" "$working_env"
+        # Update URLs with the provided IP address in a portable way
+        sed -e "s/localhost:3002/$IP_ADDRESS:3002/g" -e "s/localhost:3005/$IP_ADDRESS:3005/g" "$working_env" > "$working_env.tmp" && mv "$working_env.tmp" "$working_env"
         
         print_status "Environment file updated: $working_env"
     else
@@ -334,181 +347,6 @@ build_images() {
     print_status "Docker images built successfully"
 }
 
-# Function to create Docker Swarm stack file
-create_swarm_stack() {
-    print_header "Creating Docker Swarm stack configuration..."
-    
-    # Map deployment mode to proper NODE_ENV values
-    if [ "$MODE" = "dev" ]; then
-        NODE_ENV_VALUE="development"
-    else
-        NODE_ENV_VALUE="production"
-    fi
-    
-    cat > docker-stack-$MODE.yml << EOF
-version: '3.8'
-
-services:
-  postgres:
-    image: postgres:15-alpine
-    environment:
-      POSTGRES_DB: healthapp_${MODE}
-      POSTGRES_USER: healthapp_user
-      POSTGRES_PASSWORD: pg_password
-      POSTGRES_HOST_AUTH_METHOD: trust
-    volumes:
-      - postgres_data_${MODE}:/var/lib/postgresql/data
-    ports:
-      - "${DB_HOST_IP}:5433:5432"
-    networks:
-      - healthapp-network
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U healthapp_user -d healthapp_${MODE} && psql -U healthapp_user -d healthapp_${MODE} -c 'SELECT 1'"]
-      interval: 15s
-      timeout: 10s
-      retries: 6
-      start_period: 120s
-    deploy:
-      replicas: 1
-      placement:
-        constraints:
-          - node.role == manager
-
-  redis:
-    image: redis:7-alpine
-    command: redis-server --appendonly yes
-    volumes:
-      - redis_data_${MODE}:/data
-    ports:
-      - "${REDIS_HOST_IP}:6379:6379"
-    networks:
-      - healthapp-network
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    deploy:
-      replicas: 1
-
-  backend:
-    image: healthapp-backend:${MODE}
-    environment:
-      NODE_ENV: ${NODE_ENV_VALUE}
-      PORT: 3005
-      HOST_IP: ${HOST_IP}
-      DB_HOST_IP: ${DB_HOST_IP}
-      REDIS_HOST_IP: ${REDIS_HOST_IP}
-      POSTGRES_HOST: postgres
-      POSTGRES_PORT: 5432
-      POSTGRES_DB: healthapp_${MODE}
-      POSTGRES_USER: healthapp_user
-      POSTGRES_PASSWORD: pg_password
-      REDIS_HOST: redis
-      REDIS_PORT: 6379
-      JWT_SECRET: 25af6001e43881f727388f44e0f6fff837510b0649fe9393987f009c595156f778442654270516863b00617b478aa46dea6311f74fb95325d3c9a344b125d033
-      FRONTEND_URL: http://${HOST_IP}:3002
-      LOG_LEVEL: info
-      # Add connection retry configuration for better startup reliability
-      DB_CONNECT_RETRY_DELAY: 5000
-      DB_CONNECT_MAX_RETRIES: 10
-    volumes:
-      - backend_logs_${MODE}:/app/logs
-    ports:
-      - "${HOST_IP}:3005:3005"
-    networks:
-      - healthapp-network
-    deploy:
-      replicas: ${SCALE_BACKEND}
-      update_config:
-        parallelism: 1
-        delay: 10s
-        failure_action: rollback
-      restart_policy:
-        condition: on-failure
-        delay: 5s
-        max_attempts: 3
-      resources:
-        limits:
-          memory: 1G
-        reservations:
-          memory: 512M
-    # Backend waits for database health checks
-    depends_on:
-      - postgres
-      - redis
-    healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:3005/health || exit 1"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-      start_period: 120s  # Increased to allow database connection setup
-
-  frontend:
-    image: healthapp-frontend:${MODE}
-    environment:
-      NODE_ENV: ${NODE_ENV_VALUE}
-      HOST_IP: ${HOST_IP}
-      BACKEND_URL: http://backend:3005
-      NEXT_PUBLIC_API_URL: http://${HOST_IP}:3005/api
-    ports:
-      - "${HOST_IP}:3002:3002"
-    networks:
-      - healthapp-network
-    depends_on:
-      - backend
-    deploy:
-      replicas: ${SCALE_FRONTEND}
-      update_config:
-        parallelism: 1
-        delay: 10s
-        failure_action: rollback
-      restart_policy:
-        condition: on-failure
-        delay: 5s
-        max_attempts: 3
-      resources:
-        limits:
-          memory: 1G
-        reservations:
-          memory: 512M
-    # Frontend healthcheck - simplified to just check if Next.js is responding
-    healthcheck:
-      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3002/ || exit 1"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-      start_period: 90s
-
-  pgadmin:
-    image: dpage/pgadmin4
-    environment:
-      PGADMIN_DEFAULT_EMAIL: admin@healthapp.com
-      PGADMIN_DEFAULT_PASSWORD: admin123
-      PGADMIN_CONFIG_SERVER_MODE: 'False'
-    volumes:
-      - pgadmin_data_${MODE}:/var/lib/pgadmin
-    ports:
-      - "${HOST_IP}:5050:80"
-    networks:
-      - healthapp-network
-    deploy:
-      replicas: 1
-
-networks:
-  healthapp-network:
-    driver: overlay
-    attachable: true
-
-volumes:
-  postgres_data_${MODE}:
-  redis_data_${MODE}:
-  backend_logs_${MODE}:
-  pgadmin_data_${MODE}:
-EOF
-
-    print_status "Docker Swarm stack file created: docker-stack-$MODE.yml"
-}
 
 # Function to cleanup existing deployment
 cleanup_existing() {
@@ -531,9 +369,9 @@ cleanup_existing() {
     fi
 
     # Clean up Docker system
-    if prompt_user "Do you want to clean up unused Docker resources?"; then
+    if prompt_user "Do you want to clean up unused Docker resources (this will NOT remove volumes)?"; then
         print_status "Cleaning up Docker system..."
-        docker system prune -f --volumes
+        docker system prune
         print_status "Docker cleanup completed"
     fi
 }
@@ -542,30 +380,32 @@ cleanup_existing() {
 deploy_stack() {
     print_header "Deploying HealthApp Stack..."
     
-    # Check if we should use the unified docker-stack.yml or the generated one
-    if [ -f "docker/docker-stack.yml" ]; then
-        print_status "Using unified Docker Swarm configuration: docker/docker-stack.yml"
-        
-        # Set environment variables for the stack
-        export VERSION=$MODE
-        export HOST_IP=$HOST_IP
-        export DB_HOST_IP=$DB_HOST_IP
-        export REDIS_HOST_IP=$REDIS_HOST_IP
-        export DB_NAME=healthapp_$MODE
-        export DB_USER=healthapp_user  
-        export DB_PASSWORD=pg_password
-        export JWT_SECRET=25af6001e43881f727388f44e0f6fff837510b0649fe9393987f009c595156f778442654270516863b00617b478aa46dea6311f74fb95325d3c9a344b125d033
-        export FRONTEND_URL=http://$HOST_IP:3002
-        export NEXT_PUBLIC_API_URL=http://$HOST_IP:3005/api
-        
-        # Deploy the unified stack
-        docker stack deploy -c docker/docker-stack.yml "$DOCKER_STACK_NAME" --detach=false
+    print_status "Using unified Docker Swarm configuration: docker/docker-stack.yml"
+
+    # Set environment variables for the stack
+    export VERSION=$MODE
+    export HOST_IP=$HOST_IP
+    export DB_HOST_IP=$DB_HOST_IP
+    export REDIS_HOST_IP=$REDIS_HOST_IP
+    export DB_NAME=healthapp_$MODE
+    export DB_USER=healthapp_user
+    export DB_PASSWORD=pg_password
+    # JWT_SECRET and PGADMIN_DEFAULT_PASSWORD are now read from the environment
+    export JWT_SECRET
+    export PGADMIN_DEFAULT_PASSWORD
+    export FRONTEND_URL=http://$HOST_IP:3002
+    export NEXT_PUBLIC_API_URL=http://$HOST_IP:3005/api
+    export SCALE_BACKEND
+    export SCALE_FRONTEND
+    if [ "$MODE" = "dev" ]; then
+        export NODE_ENV_VALUE="development"
     else
-        # Fallback to generated stack file
-        print_status "Using generated stack configuration: docker-stack-$MODE.yml"
-        docker stack deploy -c docker-stack-$MODE.yml "$DOCKER_STACK_NAME" --detach=false
+        export NODE_ENV_VALUE="production"
     fi
     
+    # Deploy the unified stack
+    docker stack deploy -c docker/docker-stack.yml "$DOCKER_STACK_NAME" --detach=false
+
     print_status "Stack deployment initiated successfully"
 }
 
@@ -1047,7 +887,6 @@ main() {
     check_prerequisites
     update_environment_files
     build_images
-    create_swarm_stack
     cleanup_existing
     deploy_stack
     wait_for_services
