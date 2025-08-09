@@ -4,7 +4,6 @@ const nextConfig = {
     ignoreBuildErrors: true,
   },
   productionBrowserSourceMaps: false,
-  devtool: false,
   images: {
     domains: ['localhost', 'via.placeholder.com'],
   },
@@ -13,11 +12,9 @@ const nextConfig = {
     NEXT_PUBLIC_FRONTEND_URL: process.env.NEXT_PUBLIC_FRONTEND_URL || 'http://localhost:3002',
     NEXT_PUBLIC_BACKEND_URL: process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3005',
   },
-  experimental: {
-    allowedDevOrigins: process.env.ALLOWED_DEV_ORIGINS ? 
-      process.env.ALLOWED_DEV_ORIGINS.split(',') : 
-      [process.env.HOST_IP ? `${process.env.HOST_IP}:3002` : 'localhost:3002'],
-  },
+  allowedDevOrigins: process.env.ALLOWED_DEV_ORIGINS ? 
+    process.env.ALLOWED_DEV_ORIGINS.split(',') : 
+    [process.env.HOST_IP ? `${process.env.HOST_IP}:3002` : 'localhost:3002'],
   webpack: (config, { isServer }) => {
     // Exclude backend dependencies from client-side bundle
     if (!isServer) {
