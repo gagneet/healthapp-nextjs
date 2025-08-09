@@ -4,7 +4,7 @@ import { AuthResponse, LoginCredentials, RegisterData } from '@/types/auth'
 import { createLogger } from './logger'
 
 const logger = createLogger('API')
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api'
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://192.168.0.148:3005/api'
 
 // Create axios instance
 const api = axios.create({

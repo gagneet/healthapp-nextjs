@@ -7,7 +7,7 @@ const nextConfig = {
     domains: ['localhost', 'via.placeholder.com'],
   },
   env: {
-    BACKEND_URL: process.env.BACKEND_URL || 'http://localhost:3001',
+    BACKEND_URL: process.env.BACKEND_URL || 'http://192.168.0.148:3005',
   },
   webpack: (config, { isServer }) => {
     // Exclude backend dependencies from client-side bundle
@@ -34,7 +34,7 @@ const nextConfig = {
     return [
       {
         source: '/api/:path*',
-        destination: `${process.env.BACKEND_URL || 'http://localhost:3001'}/api/:path*`,
+        destination: `${process.env.BACKEND_URL || 'http://192.168.0.148:3005'}/api/:path*`,
       },
     ];
   },
