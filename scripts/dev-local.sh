@@ -223,9 +223,9 @@ clean_all() {
 run_migrations() {
     echo -e "${BLUE}[INFO]${NC} Running database migrations..."
     
-    # First, ensure TypeScript is compiled
-    echo -e "${BLUE}[INFO]${NC} Compiling TypeScript before running migrations..."
-    docker-compose -f $COMPOSE_FILE -p $PROJECT_NAME exec backend npm run backend:build
+    # First, ensure TypeScript migrations are compiled for Sequelize CLI
+    echo -e "${BLUE}[INFO]${NC} Compiling TypeScript migrations for Sequelize CLI..."
+    docker-compose -f $COMPOSE_FILE -p $PROJECT_NAME exec backend npm run migrations:build
     
     # Then run migrations
     docker-compose -f $COMPOSE_FILE -p $PROJECT_NAME exec backend npm run migrate
@@ -236,9 +236,9 @@ run_migrations() {
 run_seeders() {
     echo -e "${BLUE}[INFO]${NC} Running database seeders..."
     
-    # Ensure TypeScript is compiled (in case seeders are run independently)
-    echo -e "${BLUE}[INFO]${NC} Ensuring TypeScript is compiled..."
-    docker-compose -f $COMPOSE_FILE -p $PROJECT_NAME exec backend npm run backend:build
+    # Ensure TypeScript migrations/seeders are compiled (in case seeders are run independently)
+    echo -e "${BLUE}[INFO]${NC} Ensuring TypeScript migrations/seeders are compiled..."
+    docker-compose -f $COMPOSE_FILE -p $PROJECT_NAME exec backend npm run migrations:build
     
     # Then run seeders
     docker-compose -f $COMPOSE_FILE -p $PROJECT_NAME exec backend npm run seed

@@ -11,6 +11,7 @@
     "lint": "next lint",
     "type-check": "tsc --noEmit",
     "backend:build": "tsc -p tsconfig.backend.json",
+    "migrations:build": "tsc -p tsconfig.migrations.json && find dist-migrations -name '*.js' -exec sh -c 'mv \"$1\" \"${1%.js}.cjs\"' _ {} \\;",
     "backend:dev": "nodemon --exec \"node --loader ts-node/esm\" src/server.ts",
     "backend:start": "node --loader ts-node/esm src/server.ts",
     "backend:prod": "npm run backend:build && node dist/server.js",

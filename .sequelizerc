@@ -2,24 +2,19 @@
 const path = require('path');
 const fs = require('fs');
 
-// Determine if we're using compiled code (production) or source code (development)
-const distConfigExists = fs.existsSync(path.resolve('dist/config/config.js'));
-const srcConfigExists = fs.existsSync(path.resolve('src/config/config.cjs'));
-
-// Use dist (compiled) if available, otherwise use src (development)
-const useDistConfig = distConfigExists && !srcConfigExists;
+// Check for migrations-specific compiled output (CommonJS .cjs format for Sequelize CLI)
+const distMigrationsExists = fs.existsSync(path.resolve('dist-migrations/migrations')) && 
+                              fs.readdirSync(path.resolve('dist-migrations/migrations')).some(file => file.endsWith('.cjs'));
+const distSeedersExists = fs.existsSync(path.resolve('dist-migrations/seeders')) && 
+                          fs.readdirSync(path.resolve('dist-migrations/seeders')).some(file => file.endsWith('.cjs'));
 
 module.exports = {
-  'config': useDistConfig ? 
-    path.resolve('dist/config', 'config.js') : 
-    path.resolve('src/config', 'config.cjs'),
-  'models-path': useDistConfig ? 
-    path.resolve('dist', 'models') : 
-    path.resolve('src', 'models'),
-  'seeders-path': useDistConfig ? 
-    path.resolve('dist', 'seeders') : 
+  'config': path.resolve('src/config', 'config.cjs'),  // Always use CommonJS config for CLI
+  'models-path': path.resolve('src', 'models'),        // Always use source models for CLI
+  'seeders-path': distSeedersExists ? 
+    path.resolve('dist-migrations', 'seeders') : 
     path.resolve('src', 'seeders'),
-  'migrations-path': useDistConfig ? 
-    path.resolve('dist', 'migrations') : 
+  'migrations-path': distMigrationsExists ? 
+    path.resolve('dist-migrations', 'migrations') : 
     path.resolve('src', 'migrations')
 };
