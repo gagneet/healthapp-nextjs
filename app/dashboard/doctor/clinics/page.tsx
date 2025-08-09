@@ -197,7 +197,7 @@ export default function ClinicsPage() {
       email: clinic.email || '',
       website: clinic.website || '',
       consultation_fee: clinic.consultation_fee?.toString() || '',
-      operating_hours: clinic.operating_hours || {
+      operating_hours: (clinic.operating_hours as any) || {
         monday: { open: '09:00', close: '17:00', closed: false },
         tuesday: { open: '09:00', close: '17:00', closed: false },
         wednesday: { open: '09:00', close: '17:00', closed: false },

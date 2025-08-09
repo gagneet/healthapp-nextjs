@@ -334,9 +334,10 @@ export default function OrganizationsPage() {
       ))
     } else {
       // Add new department
+      const { id: _, ...deptDataWithoutId } = departmentData as Department;
       const newDepartment: Department = {
         id: Date.now().toString(),
-        ...departmentData as Department,
+        ...deptDataWithoutId,
         staff_count: 0,
         patient_count: 0,
         status: 'active',

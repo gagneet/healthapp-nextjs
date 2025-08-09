@@ -177,7 +177,7 @@ function ConfirmationModal({ isOpen, title, message, confirmText, confirmVariant
 }
 
 export default function StaffManagementPage() {
-  const [staff, setStaff] = useState<StaffMember[]>(mockStaff)
+  const [staff, setStaff] = useState<StaffMember[]>(mockStaff as StaffMember[])
   const [searchTerm, setSearchTerm] = useState('')
   const [roleFilter, setRoleFilter] = useState<string>('all')
   const [statusFilter, setStatusFilter] = useState<string>('all')

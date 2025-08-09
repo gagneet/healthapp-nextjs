@@ -68,20 +68,40 @@
 
 @layer base {
   * {
-    @apply border-border;
+    border-color: hsl(var(--border));
   }
   body {
-    @apply bg-background text-foreground;
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
   }
   
   /* Prevent layout overflow issues */
   img {
-    @apply max-w-full h-auto;
+    max-width: 100%;
+    height: auto;
   }
   
   /* Container constraints */
   .container {
-    @apply max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8;
+    max-width: 1536px;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+  
+  @media (min-width: 640px) {
+    .container {
+      padding-left: 1.5rem;
+      padding-right: 1.5rem;
+    }
+  }
+  
+  @media (min-width: 1024px) {
+    .container {
+      padding-left: 2rem;
+      padding-right: 2rem;
+    }
   }
 }
 
@@ -124,22 +144,47 @@
 
 /* Layout stability utilities */
 .content-container {
-  @apply w-full max-w-none overflow-x-hidden;
+  width: 100%;
+  max-width: none;
+  overflow-x: hidden;
 }
 
 .image-container {
-  @apply relative overflow-hidden rounded-lg;
+  position: relative;
+  overflow: hidden;
+  border-radius: 0.5rem;
 }
 
 .prevent-overflow {
-  @apply overflow-hidden;
+  overflow: hidden;
 }
 
 .responsive-grid {
-  @apply grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4;
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+}
+
+@media (min-width: 640px) {
+  .responsive-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  .responsive-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1280px) {
+  .responsive-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
 }
 
 /* Fix for svg scaling */
 svg {
-  @apply max-w-full h-auto;
+  max-width: 100%;
+  height: auto;
 }

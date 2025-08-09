@@ -128,9 +128,7 @@ export default function DoctorProfilePage() {
     formData.append('profile_image', file)
 
     try {
-      const response = await apiRequest.post('/doctors/profile/image', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      })
+      const response = await apiRequest.post('/doctors/profile/image', formData)
       
       if ((response as any).status && (response as any).payload?.data?.imageUrl) {
         setProfile(prev => prev ? { ...prev, profile_picture_url: (response as any).payload.data.imageUrl } : null)

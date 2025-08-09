@@ -124,33 +124,33 @@ const departmentData = [
     patients: mockPatients.filter(p => p.department === 'Cardiology').length,
     avgAdherence: Math.round(
       mockPatients.filter(p => p.department === 'Cardiology')
-        .reduce((acc, p) => acc + p.adherence_rate, 0) /
+        .reduce((acc, p) => acc + (p.adherence_rate ?? 0), 0) /
       mockPatients.filter(p => p.department === 'Cardiology').length
     ),
     criticalAlerts: mockPatients.filter(p => p.department === 'Cardiology')
-      .reduce((acc, p) => acc + p.critical_alerts, 0),
+      .reduce((acc, p) => acc + (p.critical_alerts ?? 0), 0),
   },
   {
     department: 'Endocrinology',
     patients: mockPatients.filter(p => p.department === 'Endocrinology').length,
     avgAdherence: Math.round(
       mockPatients.filter(p => p.department === 'Endocrinology')
-        .reduce((acc, p) => acc + p.adherence_rate, 0) /
+        .reduce((acc, p) => acc + (p.adherence_rate ?? 0), 0) /
       mockPatients.filter(p => p.department === 'Endocrinology').length
     ),
     criticalAlerts: mockPatients.filter(p => p.department === 'Endocrinology')
-      .reduce((acc, p) => acc + p.critical_alerts, 0),
+      .reduce((acc, p) => acc + (p.critical_alerts ?? 0), 0),
   },
   {
     department: 'Internal Medicine',
     patients: mockPatients.filter(p => p.department === 'Internal Medicine').length,
     avgAdherence: Math.round(
       mockPatients.filter(p => p.department === 'Internal Medicine')
-        .reduce((acc, p) => acc + p.adherence_rate, 0) /
+        .reduce((acc, p) => acc + (p.adherence_rate ?? 0), 0) /
       mockPatients.filter(p => p.department === 'Internal Medicine').length
     ),
     criticalAlerts: mockPatients.filter(p => p.department === 'Internal Medicine')
-      .reduce((acc, p) => acc + p.critical_alerts, 0),
+      .reduce((acc, p) => acc + (p.critical_alerts ?? 0), 0),
   },
 ]
 
@@ -168,9 +168,9 @@ export default function HospitalPatientsPage() {
 
   const filteredPatients = patients.filter(patient => {
     const matchesSearch = 
-      patient.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      patient.last_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      patient.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (patient.first_name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (patient.last_name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (patient.email || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
       patient.medical_record_number?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       patient.assigned_doctor?.toLowerCase().includes(searchTerm.toLowerCase())
     
@@ -268,7 +268,7 @@ export default function HospitalPatientsPage() {
             <ExclamationTriangleIcon className="h-8 w-8 text-red-600 mr-3" />
             <div>
               <div className="text-2xl font-bold text-red-600">
-                {patients.filter(p => p.critical_alerts > 0).length}
+                {patients.filter(p => (p.critical_alerts ?? 0) > 0).length}
               </div>
               <div className="text-sm text-gray-600">With Alerts</div>
             </div>
@@ -279,7 +279,7 @@ export default function HospitalPatientsPage() {
             <ChartBarIcon className="h-8 w-8 text-green-600 mr-3" />
             <div>
               <div className="text-2xl font-bold text-green-600">
-                {Math.round(patients.reduce((sum, p) => sum + p.adherence_rate, 0) / patients.length)}%
+                {Math.round(patients.reduce((sum, p) => sum + (p.adherence_rate ?? 0), 0) / patients.length)}%
               </div>
               <div className="text-sm text-gray-600">Avg Adherence</div>
             </div>
@@ -291,6 +291,7 @@ export default function HospitalPatientsPage() {
             <div>
               <div className="text-2xl font-bold text-purple-600">
                 {patients.filter(p => {
+                  if (!p.next_appointment) return false
                   const nextAppt = new Date(p.next_appointment)
                   const today = new Date()
                   const diffTime = nextAppt.getTime() - today.getTime()
@@ -397,7 +398,7 @@ export default function HospitalPatientsPage() {
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {formatDate(patient.last_visit)}
+                      {patient.last_visit ? formatDate(patient.last_visit) : 'No visits'}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
@@ -405,7 +406,7 @@ export default function HospitalPatientsPage() {
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      {patient.critical_alerts > 0 ? (
+                      {(patient.critical_alerts ?? 0) > 0 ? (
                         <div className="flex items-center">
                           <ExclamationTriangleIcon className="h-4 w-4 text-red-500 mr-1" />
                           <span className="text-sm text-red-600">
@@ -417,7 +418,7 @@ export default function HospitalPatientsPage() {
                       )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium capitalize ${getStatusColor(patient.status)}`}>
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium capitalize ${getStatusColor(patient.status || 'active')}`}>
                         {patient.status}
                       </span>
                     </td>

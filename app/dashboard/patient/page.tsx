@@ -9,7 +9,7 @@ import {
   CalendarIcon,
   ClockIcon,
   CheckIcon,
-  PillIcon,
+  BeakerIcon,
   HeartIcon,
   UserIcon,
   DocumentTextIcon,
@@ -200,7 +200,7 @@ export default function PatientDashboard() {
 
   const getEventIcon = (eventType: string) => {
     switch (eventType) {
-      case 'MEDICATION': return <PillIcon className="h-5 w-5" />
+      case 'MEDICATION': return <BeakerIcon className="h-5 w-5" />
       case 'VITAL_CHECK': return <HeartIcon className="h-5 w-5" />
       case 'EXERCISE': return <PlayIcon className="h-5 w-5" />
       case 'DIET_LOG': return <DocumentTextIcon className="h-5 w-5" />
@@ -268,7 +268,7 @@ export default function PatientDashboard() {
         <div className="flex space-x-1 overflow-x-auto">
           {[
             { id: 'overview', label: 'Overview', icon: ChartBarIcon },
-            { id: 'medications', label: 'Meds', icon: PillIcon },
+            { id: 'medications', label: 'Meds', icon: BeakerIcon },
             { id: 'vitals', label: 'Vitals', icon: HeartIcon },
             { id: 'activities', label: 'Activities', icon: PlayIcon },
           ].map((tab) => (
@@ -337,7 +337,7 @@ export default function PatientDashboard() {
               <Card className="p-4">
                 <div className="flex items-center">
                   <div className="p-2 bg-blue-100 rounded-lg">
-                    <PillIcon className="h-6 w-6 text-blue-600" />
+                    <BeakerIcon className="h-6 w-6 text-blue-600" />
                   </div>
                   <div className="ml-4">
                     <p className="text-sm font-medium text-gray-600">Medications</p>
@@ -556,7 +556,7 @@ export default function PatientDashboard() {
             // Optionally refresh dashboard data
           }}
           patientId={user?.id}
-          gender={user?.gender === 'F' ? 'female' : 'male'}
+          gender={user?.gender === 'FEMALE' ? 'female' : 'male'}
         />
       </div>
 
@@ -565,7 +565,7 @@ export default function PatientDashboard() {
         <div className="grid grid-cols-5 py-2">
           {[
             { id: 'overview', label: 'Home', icon: ChartBarIcon },
-            { id: 'medications', label: 'Meds', icon: PillIcon },
+            { id: 'medications', label: 'Meds', icon: BeakerIcon },
             { id: 'vitals', label: 'Vitals', icon: HeartIcon },
             { id: 'activities', label: 'Activity', icon: PlayIcon },
             { id: 'symptoms', label: 'Symptoms', icon: UserIcon },
