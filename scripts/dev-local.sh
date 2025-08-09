@@ -1,7 +1,10 @@
 #!/bin/bash
 
 # dev-local.sh - Local development with docker-compose
-# Usage: ./scripts/dev-local.sh [start|stop|restart|logs|status]
+# Usage: ./scripts/dev-local.sh [COMMAND] [OPTIONS]
+# Examples:
+#   ./scripts/dev-local.sh start --migrate --seed
+#   ./scripts/dev-local.sh start --ip-address 192.168.1.100 --auto-yes
 
 set -e
 
@@ -13,8 +16,57 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 # Configuration
-COMPOSE_FILE="docker-compose.local.yml"
+COMPOSE_FILE="docker/docker-compose.local.yml"
 PROJECT_NAME="healthapp-local"
+ENV_FILE="env_files/.env.local"
+
+# Default values
+AUTO_YES=false
+RUN_MIGRATE=false
+RUN_SEED=false
+IP_ADDRESS="localhost"
+
+# Parse command line arguments
+parse_args() {
+    COMMAND=""
+    while [[ $# -gt 0 ]]; do
+        case $1 in
+            start|stop|restart|logs|status|build|clean|migrate|seed|shell)
+                COMMAND="$1"
+                shift
+                ;;
+            --migrate)
+                RUN_MIGRATE=true
+                shift
+                ;;
+            --seed)
+                RUN_SEED=true
+                shift
+                ;;
+            --auto-yes)
+                AUTO_YES=true
+                shift
+                ;;
+            --ip-address)
+                IP_ADDRESS="$2"
+                shift 2
+                ;;
+            -h|--help)
+                show_help
+                exit 0
+                ;;
+            *)
+                if [ -z "$COMMAND" ]; then
+                    COMMAND="$1"
+                else
+                    # Store additional arguments (like service names for logs)
+                    EXTRA_ARGS="$EXTRA_ARGS $1"
+                fi
+                shift
+                ;;
+        esac
+    done
+}
 
 # Help function
 show_help() {
@@ -36,12 +88,18 @@ show_help() {
     echo "  shell     Open shell in backend container"
     echo ""
     echo "Options:"
-    echo "  -h, --help    Show this help message"
+    echo "  --migrate         Run migrations after starting services"
+    echo "  --seed            Run seeders after starting services"
+    echo "  --auto-yes        Skip confirmation prompts"
+    echo "  --ip-address IP   Use specific IP address (default: localhost)"
+    echo "  -h, --help        Show this help message"
     echo ""
     echo "Examples:"
-    echo "  $0 start                    # Start all services"
-    echo "  $0 logs backend             # Show backend logs only"
-    echo "  $0 shell                    # Open backend shell"
+    echo "  $0 start                                    # Start all services"
+    echo "  $0 start --migrate --seed                   # Start with migrations and seeders"
+    echo "  $0 start --ip-address 192.168.1.100        # Start with custom IP"
+    echo "  $0 logs backend                             # Show backend logs only"
+    echo "  $0 clean --auto-yes                         # Clean without confirmation"
     echo ""
 }
 
@@ -66,17 +124,41 @@ check_prerequisites() {
 # Start services
 start_services() {
     echo -e "${BLUE}[INFO]${NC} Starting HealthApp local development environment..."
-    echo -e "${BLUE}[INFO]${NC} Using ports: Frontend 3002, Backend 3005, PostgreSQL 5432"
+    echo -e "${BLUE}[INFO]${NC} Using IP: $IP_ADDRESS, Frontend: 3002, Backend: 3005, PostgreSQL: 5432"
+    
+    # Export environment variables for docker-compose
+    export HOST_IP=$IP_ADDRESS
+    export BACKEND_URL=http://$IP_ADDRESS:3005
+    export FRONTEND_URL=http://$IP_ADDRESS:3002
     
     docker-compose -f $COMPOSE_FILE -p $PROJECT_NAME up -d
     
     echo -e "${GREEN}[SUCCESS]${NC} Services started successfully!"
-    echo -e "${BLUE}[INFO]${NC} Frontend: http://localhost:3002"
-    echo -e "${BLUE}[INFO]${NC} Backend API: http://localhost:3005"
-    echo -e "${BLUE}[INFO]${NC} PgAdmin: http://localhost:5050"
+    echo -e "${BLUE}[INFO]${NC} Frontend: http://$IP_ADDRESS:3002"
+    echo -e "${BLUE}[INFO]${NC} Backend API: http://$IP_ADDRESS:3005"
+    echo -e "${BLUE}[INFO]${NC} PgAdmin: http://$IP_ADDRESS:5050"
     echo ""
+    
+    # Run migrations if requested
+    if [ "$RUN_MIGRATE" = true ]; then
+        echo -e "${YELLOW}[INFO]${NC} Running database migrations..."
+        sleep 5  # Wait for services to be ready
+        run_migrations
+    fi
+    
+    # Run seeders if requested
+    if [ "$RUN_SEED" = true ]; then
+        echo -e "${YELLOW}[INFO]${NC} Running database seeders..."
+        if [ "$RUN_MIGRATE" = false ]; then
+            sleep 5  # Wait for services to be ready if migrations weren't run
+        fi
+        run_seeders
+    fi
+    
     echo -e "${YELLOW}[NEXT]${NC} Run './scripts/dev-local.sh logs' to see logs"
-    echo -e "${YELLOW}[NEXT]${NC} Run './scripts/dev-local.sh migrate' to set up database"
+    if [ "$RUN_MIGRATE" = false ]; then
+        echo -e "${YELLOW}[NEXT]${NC} Run './scripts/dev-local.sh migrate' to set up database"
+    fi
 }
 
 # Stop services
@@ -119,16 +201,22 @@ build_images() {
 # Clean up
 clean_all() {
     echo -e "${YELLOW}[WARNING]${NC} This will remove all containers, networks, and volumes!"
-    read -p "Are you sure? (y/N): " -n 1 -r
-    echo
-    if [[ $REPLY =~ ^[Yy]$ ]]; then
-        echo -e "${BLUE}[INFO]${NC} Cleaning up..."
-        docker-compose -f $COMPOSE_FILE -p $PROJECT_NAME down -v --remove-orphans
-        docker system prune -f
-        echo -e "${GREEN}[SUCCESS]${NC} Cleanup completed!"
+    
+    if [ "$AUTO_YES" = false ]; then
+        read -p "Are you sure? (y/N): " -n 1 -r
+        echo
+        if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+            echo -e "${BLUE}[INFO]${NC} Cleanup cancelled"
+            return
+        fi
     else
-        echo -e "${BLUE}[INFO]${NC} Cleanup cancelled"
+        echo -e "${YELLOW}[INFO]${NC} Auto-yes enabled, proceeding with cleanup..."
     fi
+    
+    echo -e "${BLUE}[INFO]${NC} Cleaning up..."
+    docker-compose -f $COMPOSE_FILE -p $PROJECT_NAME down -v --remove-orphans
+    docker system prune -f
+    echo -e "${GREEN}[SUCCESS]${NC} Cleanup completed!"
 }
 
 # Run migrations
@@ -154,9 +242,19 @@ open_shell() {
 
 # Main script logic
 main() {
+    # Parse command line arguments
+    parse_args "$@"
+    
+    # Check if no command was specified
+    if [ -z "$COMMAND" ]; then
+        echo -e "${YELLOW}[WARNING]${NC} No command specified"
+        show_help
+        exit 1
+    fi
+    
     check_prerequisites
     
-    case ${1:-""} in
+    case $COMMAND in
         start)
             start_services
             ;;
@@ -167,7 +265,7 @@ main() {
             restart_services
             ;;
         logs)
-            show_logs $2
+            show_logs $EXTRA_ARGS
             ;;
         status)
             show_status
@@ -185,17 +283,10 @@ main() {
             run_seeders
             ;;
         shell)
-            open_shell $2
-            ;;
-        -h|--help|help)
-            show_help
-            ;;
-        "")
-            echo -e "${YELLOW}[WARNING]${NC} No command specified"
-            show_help
+            open_shell $EXTRA_ARGS
             ;;
         *)
-            echo -e "${RED}[ERROR]${NC} Unknown command: $1"
+            echo -e "${RED}[ERROR]${NC} Unknown command: $COMMAND"
             show_help
             exit 1
             ;;

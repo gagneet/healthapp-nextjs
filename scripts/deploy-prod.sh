@@ -1,7 +1,11 @@
 #!/bin/bash
 
 # deploy-prod.sh - Deploy to production environment using Docker Swarm
-# Usage: ./scripts/deploy-prod.sh [deploy|update|stop|logs|status]
+# Usage: ./scripts/deploy-prod.sh [COMMAND] [OPTIONS]
+# Examples:
+#   ./scripts/deploy-prod.sh deploy --migrate --seed
+#   ./scripts/deploy-prod.sh deploy --frontend-ip 10.0.1.10 --backend-ip 10.0.1.11
+#   ./scripts/deploy-prod.sh deploy --auto-yes
 
 set -e
 
@@ -14,8 +18,17 @@ NC='\033[0m' # No Color
 
 # Configuration
 STACK_NAME="healthapp-prod"
-STACK_FILE="docker-stack.prod.yml"
+STACK_FILE="docker/docker-stack.prod.yml"
 REGISTRY="your-registry.com" # Update with your container registry
+
+# Default values
+AUTO_YES=false
+RUN_MIGRATE=false
+RUN_SEED=false
+FRONTEND_IP="localhost"
+BACKEND_IP="localhost" 
+POSTGRES_IP="localhost"
+REDIS_IP="localhost"
 
 # Help function
 show_help() {
