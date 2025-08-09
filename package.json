@@ -11,7 +11,7 @@
     "lint": "next lint",
     "type-check": "tsc --noEmit",
     "backend:build": "tsc -p tsconfig.backend.json",
-    "backend:dev": "nodemon src/server.ts",
+    "backend:dev": "nodemon --exec \"node --loader ts-node/esm\" src/server.ts",
     "backend:start": "node --loader ts-node/esm src/server.ts",
     "backend:prod": "npm run backend:build && node dist/server.js",
     "test": "jest --detectOpenHandles",
