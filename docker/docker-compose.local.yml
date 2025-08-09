@@ -16,7 +16,6 @@ services:
       - "5432:5432"  # Standard PostgreSQL port
     volumes:
       - postgres_local_data:/var/lib/postgresql/data
-      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U healthapp_user -d healthapp_dev"]
       interval: 10s
@@ -43,8 +42,8 @@ services:
   # Backend API
   backend:
     build:
-      context: .
-      dockerfile: docker/Dockerfile.dev
+      context: ..
+      dockerfile: docker/Dockerfile.local
       target: backend-dev
     container_name: healthapp-backend-local
     environment:
@@ -63,9 +62,9 @@ services:
     ports:
       - "3005:3005"  # Backend port
     volumes:
-      - ./src:/app/src
-      - ./package.json:/app/package.json
-      - ./tsconfig.backend.json:/app/tsconfig.backend.json
+      - ../src:/app/src
+      - ../package.json:/app/package.json
+      - ../tsconfig.backend.json:/app/tsconfig.backend.json
       - backend_local_logs:/app/logs
     depends_on:
       postgres:
@@ -83,8 +82,8 @@ services:
   # Frontend (Next.js)
   frontend:
     build:
-      context: .
-      dockerfile: docker/Dockerfile.dev
+      context: ..
+      dockerfile: docker/Dockerfile.local
       target: frontend-dev
     container_name: healthapp-frontend-local
     environment:
@@ -95,15 +94,15 @@ services:
     ports:
       - "3002:3002"  # Frontend port
     volumes:
-      - ./app:/app/app
-      - ./components:/app/components
-      - ./lib:/app/lib
-      - ./public:/app/public
-      - ./types:/app/types
-      - ./package.json:/app/package.json
-      - ./next.config.js:/app/next.config.js
-      - ./tailwind.config.js:/app/tailwind.config.js
-      - ./postcss.config.js:/app/postcss.config.js
+      - ../app:/app/app
+      - ../components:/app/components
+      - ../lib:/app/lib
+      - ../public:/app/public
+      - ../types:/app/types
+      - ../package.json:/app/package.json
+      - ../next.config.js:/app/next.config.js
+      - ../tailwind.config.js:/app/tailwind.config.js
+      - ../postcss.config.js:/app/postcss.config.js
     depends_on:
       backend:
         condition: service_healthy
