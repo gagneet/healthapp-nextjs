@@ -432,6 +432,14 @@ export default {
 
       await queryInterface.bulkInsert('adherence_records', adherenceRecords, { transaction, ignoreDuplicates: true });
 
+      // Get vital type IDs for proper foreign key references
+      const vitalTypeIds = {
+        systolic: '550e8400-e29b-41d4-a716-446655440201',
+        diastolic: '550e8400-e29b-41d4-a716-446655440202', 
+        glucose: '550e8400-e29b-41d4-a716-446655440203',
+        weight: '550e8400-e29b-41d4-a716-446655440204'
+      };
+
       // Create vital readings
       const vitalReadings = [];
       
@@ -439,39 +447,53 @@ export default {
         const readingDate = new Date(currentDate);
         readingDate.setDate(currentDate.getDate() - i);
 
-        // Sarah's vitals (diabetic with hypertension)
+        // Sarah's vitals (diabetic with hypertension) - separate readings for systolic/diastolic
         vitalReadings.push(
+          // Systolic blood pressure reading
           {
             id: uuidv4(),
             patient_id: patient1Id,
-            vital_type: 'blood_pressure',
-            systolic_value: 125 + Math.floor(Math.random() * 20), // 125-145
-            diastolic_value: 80 + Math.floor(Math.random() * 15), // 80-95
+            vital_type_id: vitalTypeIds.systolic,
+            value: 125 + Math.floor(Math.random() * 20), // 125-145
             unit: 'mmHg',
             reading_time: new Date(readingDate.getFullYear(), readingDate.getMonth(), readingDate.getDate(), 9, 0),
-            notes: 'Morning reading',
+            notes: 'Morning systolic BP reading',
             created_at: readingDate,
             updated_at: readingDate
           },
+          // Diastolic blood pressure reading
           {
             id: uuidv4(),
             patient_id: patient1Id,
-            vital_type: 'blood_glucose',
-            numeric_value: 95 + Math.floor(Math.random() * 30), // 95-125 mg/dL
+            vital_type_id: vitalTypeIds.diastolic,
+            value: 80 + Math.floor(Math.random() * 15), // 80-95
+            unit: 'mmHg',
+            reading_time: new Date(readingDate.getFullYear(), readingDate.getMonth(), readingDate.getDate(), 9, 0),
+            notes: 'Morning diastolic BP reading',
+            created_at: readingDate,
+            updated_at: readingDate
+          },
+          // Blood glucose reading
+          {
+            id: uuidv4(),
+            patient_id: patient1Id,
+            vital_type_id: vitalTypeIds.glucose,
+            value: 95 + Math.floor(Math.random() * 30), // 95-125 mg/dL
             unit: 'mg/dL',
             reading_time: new Date(readingDate.getFullYear(), readingDate.getMonth(), readingDate.getDate(), 12, 0),
-            notes: 'Before lunch',
+            notes: 'Before lunch glucose reading',
             created_at: readingDate,
             updated_at: readingDate
           },
+          // Weight reading
           {
             id: uuidv4(),
             patient_id: patient1Id,
-            vital_type: 'weight',
-            numeric_value: 68.5 + (Math.random() - 0.5) * 2, // +/- 1kg variation
+            vital_type_id: vitalTypeIds.weight,
+            value: 68.5 + (Math.random() - 0.5) * 2, // +/- 1kg variation
             unit: 'kg',
             reading_time: new Date(readingDate.getFullYear(), readingDate.getMonth(), readingDate.getDate(), 7, 30),
-            notes: 'Morning weight',
+            notes: 'Morning weight reading',
             created_at: readingDate,
             updated_at: readingDate
           }
@@ -482,8 +504,8 @@ export default {
           vitalReadings.push({
             id: uuidv4(),
             patient_id: patient2Id,
-            vital_type: 'weight',
-            numeric_value: 82.3 + (Math.random() - 0.5) * 1, // +/- 0.5kg variation
+            vital_type_id: vitalTypeIds.weight,
+            value: 82.3 + (Math.random() - 0.5) * 1, // +/- 0.5kg variation
             unit: 'kg',
             reading_time: new Date(readingDate.getFullYear(), readingDate.getMonth(), readingDate.getDate(), 7, 0),
             notes: 'Weekly weigh-in',
@@ -495,39 +517,35 @@ export default {
 
       await queryInterface.bulkInsert('vital_readings', vitalReadings, { transaction, ignoreDuplicates: true });
 
-      // Create symptoms for Sarah
+      // Create symptoms for Sarah (using correct schema)
       const symptoms = [
         {
           id: uuidv4(),
           patient_id: patient1Id,
-          name: 'Mild Headache',
+          symptom_name: 'Mild Headache',
           description: 'Dull headache, especially in the morning',
           severity: 4,
-          body_part: 'Head',
+          body_location: JSON.stringify({ region: 'head', specific: 'frontal' }),
           onset_time: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
-          duration_hours: 48,
-          triggers: 'Stress, lack of sleep',
-          status: 'improving',
-          x_coordinate: 50,
-          y_coordinate: 10,
-          z_coordinate: 0,
+          recorded_at: new Date(),
+          triggers: JSON.stringify(['stress', 'lack of sleep']),
+          relieving_factors: JSON.stringify(['rest', 'hydration']),
+          associated_symptoms: JSON.stringify([]),
           created_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
           updated_at: new Date()
         },
         {
           id: uuidv4(),
           patient_id: patient1Id,
-          name: 'Foot Numbness',
+          symptom_name: 'Foot Numbness',
           description: 'Tingling sensation in toes, possibly diabetes-related',
           severity: 6,
-          body_part: 'Left Foot',
+          body_location: JSON.stringify({ region: 'foot', specific: 'left_toes' }),
           onset_time: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
-          duration_hours: 120,
-          triggers: 'Long periods of standing',
-          status: 'active',
-          x_coordinate: 35,
-          y_coordinate: 95,
-          z_coordinate: 0,
+          recorded_at: new Date(),
+          triggers: JSON.stringify(['prolonged standing', 'tight shoes']),
+          relieving_factors: JSON.stringify(['elevation', 'massage']),
+          associated_symptoms: JSON.stringify(['tingling']),
           created_at: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
           updated_at: new Date()
         }
@@ -535,33 +553,44 @@ export default {
 
       await queryInterface.bulkInsert('symptoms', symptoms, { transaction, ignoreDuplicates: true });
 
-      // Create appointments
+      // Create appointments (using correct appointments schema)
+      const futureDate1 = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+      const futureDate2 = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000);
+      
       const appointments = [
         {
           id: uuidv4(),
-          patient_id: patient1Id,
+          participant_one_type: 'patient',
+          participant_one_id: patient1Id,
+          participant_two_type: 'doctor',
+          participant_two_id: doctors[0].id,
+          organizer_type: 'doctor',
+          organizer_id: doctors[0].id,
           doctor_id: doctors[0].id,
-          appointment_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-          start_time: '10:00',
-          end_time: '10:30',
-          appointment_type: 'follow_up',
-          status: 'SCHEDULED',
-          notes: 'Quarterly diabetes checkup',
-          is_virtual: false,
+          patient_id: patient1Id,
+          start_date: futureDate1,
+          end_date: futureDate1,
+          start_time: new Date(futureDate1.getFullYear(), futureDate1.getMonth(), futureDate1.getDate(), 10, 0),
+          end_time: new Date(futureDate1.getFullYear(), futureDate1.getMonth(), futureDate1.getDate(), 10, 30),
+          description: 'Quarterly diabetes checkup and medication review',
           created_at: new Date(),
           updated_at: new Date()
         },
         {
           id: uuidv4(),
-          patient_id: patient2Id,
+          participant_one_type: 'patient',
+          participant_one_id: patient2Id,
+          participant_two_type: 'doctor',
+          participant_two_id: doctors[0].id,
+          organizer_type: 'doctor',
+          organizer_id: doctors[0].id,
           doctor_id: doctors[0].id,
-          appointment_date: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000),
-          start_time: '14:00',
-          end_time: '14:30',
-          appointment_type: 'routine_checkup',
-          status: 'SCHEDULED',
-          notes: 'Annual physical examination',
-          is_virtual: true,
+          patient_id: patient2Id,
+          start_date: futureDate2,
+          end_date: futureDate2,
+          start_time: new Date(futureDate2.getFullYear(), futureDate2.getMonth(), futureDate2.getDate(), 14, 0),
+          end_time: new Date(futureDate2.getFullYear(), futureDate2.getMonth(), futureDate2.getDate(), 14, 30),
+          description: 'Annual physical examination and health assessment',
           created_at: new Date(),
           updated_at: new Date()
         }

@@ -96,20 +96,20 @@ export default {
     // 4. ADHERENCE RECORDS INDEXES (Medication adherence tracking)
     const adherenceIndexes = [
       {
-        fields: ['patient_id', 'due_at', 'completion_status'],
+        fields: ['patient_id', 'due_at', 'is_completed'],
         name: 'idx_adherence_patient_due_status',
         concurrently: true
       },
       {
-        fields: ['scheduled_event_id', 'completion_status', 'completed_at'],
+        fields: ['scheduled_event_id', 'is_completed', 'recorded_at'],
         name: 'idx_adherence_event_status_completed',
         concurrently: true
       },
       {
-        fields: ['due_at', 'completion_status'],
+        fields: ['due_at', 'is_completed'],
         name: 'idx_adherence_due_status',
         concurrently: true,
-        where: { completion_status: ['pending', 'missed'] }
+        where: { is_completed: false }
       }
     ];
 
@@ -120,26 +120,25 @@ export default {
     // 5. APPOINTMENTS SCHEDULING INDEXES
     const appointmentIndexes = [
       {
-        fields: ['provider_id', 'start_time', 'status'],
-        name: 'idx_appointments_provider_time_status',
+        fields: ['provider_id', 'start_time'],
+        name: 'idx_appointments_provider_time',
         concurrently: true
       },
       {
-        fields: ['patient_id', 'start_time', 'status'],
-        name: 'idx_appointments_patient_time_status',
+        fields: ['patient_id', 'start_time'],
+        name: 'idx_appointments_patient_time',
         concurrently: true
       },
       {
         fields: ['doctor_id', 'start_time'],
-        name: 'idx_appointments_doctor_time',
+        name: 'idx_appointments_doctor_time_enhanced',
         concurrently: true,
         where: { doctor_id: { [Sequelize.Op.ne]: null } }
       },
       {
-        fields: ['hsp_id', 'start_time'],
-        name: 'idx_appointments_hsp_time',
-        concurrently: true,
-        where: { hsp_id: { [Sequelize.Op.ne]: null } }
+        fields: ['organizer_type', 'organizer_id', 'start_time'],
+        name: 'idx_appointments_organizer_time',
+        concurrently: true
       }
     ];
 
@@ -151,19 +150,20 @@ export default {
     const carePlanIndexes = [
       {
         fields: ['patient_id', 'status', 'start_date'],
-        name: 'idx_careplans_patient_status_start',
+        name: 'idx_careplans_patient_status_start_fixed',
         concurrently: true
       },
       {
-        fields: ['provider_id', 'status', 'created_at'],
-        name: 'idx_careplans_provider_status_created',
-        concurrently: true
-      },
-      {
-        fields: ['template_id', 'status'],
-        name: 'idx_careplans_template_status',
+        fields: ['created_by_doctor_id', 'created_at'],
+        name: 'idx_careplans_doctor_created',
         concurrently: true,
-        where: { template_id: { [Sequelize.Op.ne]: null } }
+        where: { created_by_doctor_id: { [Sequelize.Op.ne]: null } }
+      },
+      {
+        fields: ['organization_id', 'status'],
+        name: 'idx_careplans_org_status',
+        concurrently: true,
+        where: { organization_id: { [Sequelize.Op.ne]: null } }
       }
     ];
 
@@ -174,20 +174,20 @@ export default {
     // 7. SCHEDULED EVENTS INDEXES (High-volume operations)
     const eventIndexes = [
       {
-        fields: ['patient_id', 'scheduled_time', 'completion_status'],
+        fields: ['patient_id', 'scheduled_for', 'status'],
         name: 'idx_events_patient_time_status',
         concurrently: true
       },
       {
-        fields: ['care_plan_id', 'scheduled_time', 'event_type'],
+        fields: ['care_plan_id', 'scheduled_for', 'event_type'],
         name: 'idx_events_careplan_time_type',
         concurrently: true
       },
       {
-        fields: ['scheduled_time', 'completion_status'],
+        fields: ['scheduled_for', 'status'],
         name: 'idx_events_time_status',
         concurrently: true,
-        where: { completion_status: ['pending', 'due'] }
+        where: { status: 'SCHEDULED' }
       }
     ];
 
@@ -222,15 +222,15 @@ export default {
         concurrently: true
       },
       {
-        fields: ['mobile_number', 'account_status'],
+        fields: ['phone', 'account_status'],
         name: 'idx_users_mobile_status',
-        concurrently: true
+        concurrently: true,
+        where: { phone: { [Sequelize.Op.ne]: null } }
       },
       {
-        fields: ['organization_id', 'account_status'],
-        name: 'idx_users_org_status',
-        concurrently: true,
-        where: { organization_id: { [Sequelize.Op.ne]: null } }
+        fields: ['role', 'account_status'],
+        name: 'idx_users_role_status',
+        concurrently: true
       }
     ];
 
@@ -259,9 +259,10 @@ export default {
         concurrently: true
       },
       {
-        fields: ['entity_type', 'entity_id', 'created_at'],
-        name: 'idx_audit_entity_type_id_created',
-        concurrently: true
+        fields: ['patient_id', 'action', 'created_at'],
+        name: 'idx_audit_patient_action_created',
+        concurrently: true,
+        where: { patient_id: { [Sequelize.Op.ne]: null } }
       }
     ];
 
@@ -272,12 +273,13 @@ export default {
     // 12. NOTIFICATIONS INDEXES
     const notificationIndexes = [
       {
-        fields: ['recipient_id', 'created_at', 'is_read'],
-        name: 'idx_notifications_recipient_created_read',
-        concurrently: true
+        fields: ['patient_id', 'created_at'],
+        name: 'idx_notifications_patient_created',
+        concurrently: true,
+        where: { patient_id: { [Sequelize.Op.ne]: null } }
       },
       {
-        fields: ['notification_type', 'priority', 'created_at'],
+        fields: ['type', 'priority', 'created_at'],
         name: 'idx_notifications_type_priority_created',
         concurrently: true
       }

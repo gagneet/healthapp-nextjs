@@ -1,5 +1,6 @@
 // src/seeders/003-vital-templates.js
 'use strict';
+import { v4 as uuidv4 } from 'uuid';
 
 export default {
   up: async (queryInterface: any, Sequelize: any) => {
@@ -18,7 +19,7 @@ export default {
 
     await queryInterface.bulkInsert('vital_templates', [
       {
-        id: 1,
+        id: '550e8400-e29b-41d4-a716-446655440101',
         name: 'Blood Pressure',
         unit: 'mmHg',
         details: JSON.stringify({
@@ -30,7 +31,7 @@ export default {
         updated_at: new Date(),
       },
       {
-        id: 2,
+        id: '550e8400-e29b-41d4-a716-446655440102',
         name: 'Blood Sugar',
         unit: 'mg/dL',
         details: JSON.stringify({
@@ -42,7 +43,7 @@ export default {
         updated_at: new Date(),
       },
       {
-        id: 3,
+        id: '550e8400-e29b-41d4-a716-446655440103',
         name: 'Weight',
         unit: 'kg',
         details: JSON.stringify({
@@ -54,7 +55,7 @@ export default {
         updated_at: new Date(),
       },
       {
-        id: 4,
+        id: '550e8400-e29b-41d4-a716-446655440104',
         name: 'Temperature',
         unit: '°F',
         details: JSON.stringify({

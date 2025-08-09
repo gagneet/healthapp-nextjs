@@ -53,9 +53,10 @@ export default {
     }
 
     // Create provider consent history table (idempotent)
-    const [tables] = await queryInterface.sequelize.query(
+    const result = await queryInterface.sequelize.query(
       "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'patient_provider_consent_history'"
     );
+    const tables = result[0] || [];
     
     if (!tables.length) {
       await queryInterface.createTable('patient_provider_consent_history', {
@@ -200,9 +201,10 @@ export default {
     }
 
     // Create doctor/HSP provider history table to track provider changes (idempotent)
-    const [providerTables] = await queryInterface.sequelize.query(
+    const providerResult = await queryInterface.sequelize.query(
       "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'provider_change_history'"
     );
+    const providerTables = providerResult[0] || [];
     
     if (!providerTables.length) {
       await queryInterface.createTable('provider_change_history', {
