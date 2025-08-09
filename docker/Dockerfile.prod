@@ -66,7 +66,7 @@ COPY public/ ./public/
 COPY types/ ./types/
 COPY next.config.js ./
 COPY tailwind.config.js ./
-COPY postcss.config.js ./
+COPY .postcssrc.json ./
 COPY tsconfig.json ./
 
 # Build Next.js application

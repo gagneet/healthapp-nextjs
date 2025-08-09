@@ -26,7 +26,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="h-full">
       <head>
-        <meta httpEquiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline' 'unsafe-eval'; connect-src 'self' http://192.168.0.148:3002 http://192.168.0.148:3005;" />
+        <meta httpEquiv="Content-Security-Policy" content={`script-src 'self' 'unsafe-inline' 'unsafe-eval'; connect-src 'self' ${process.env.NEXT_PUBLIC_FRONTEND_URL || 'http://localhost:3002'} ${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3005'};`} />
       </head>
       <body className={`${inter.className} h-full bg-gray-50`}>
         <ErrorBoundary>

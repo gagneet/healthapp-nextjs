@@ -58,7 +58,7 @@ services:
       REDIS_PORT: 6379
       REDIS_PASSWORD: redis_password
       JWT_SECRET: local-dev-secret-key-12345
-      CORS_ORIGIN: "http://localhost:3002"
+      CORS_ORIGIN: "${FRONTEND_URL:-http://localhost:3002}"
     ports:
       - "3005:3005"  # Backend port
     volumes:
@@ -89,8 +89,9 @@ services:
     environment:
       NODE_ENV: development
       PORT: 3002
-      NEXT_PUBLIC_API_URL: http://localhost:3005/api
-      NEXT_PUBLIC_BACKEND_URL: http://localhost:3005
+      NEXT_PUBLIC_API_URL: ${BACKEND_URL:-http://localhost:3005}/api
+      NEXT_PUBLIC_BACKEND_URL: ${BACKEND_URL:-http://localhost:3005}
+      NEXT_PUBLIC_FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3002}
     ports:
       - "3002:3002"  # Frontend port
     volumes:
@@ -102,7 +103,7 @@ services:
       - ../package.json:/app/package.json
       - ../next.config.js:/app/next.config.js
       - ../tailwind.config.js:/app/tailwind.config.js
-      - ../postcss.config.js:/app/postcss.config.js
+      - ../.postcssrc.json:/app/.postcssrc.json
     depends_on:
       backend:
         condition: service_healthy
