@@ -804,6 +804,12 @@ initialize_database() {
                     migration_attempts=$((migration_attempts + 1))
                     print_status "Migration attempt $migration_attempts of $max_migration_attempts"
                     
+                    # Ensure TypeScript is compiled before running migrations
+                    print_status "Compiling TypeScript before migration attempt $migration_attempts..."
+                    if ! docker exec "$container_id" sh -c "cd /app && npm run backend:build" 2>&1 | tee /tmp/build_log_${MODE}.txt; then
+                        print_warning "TypeScript compilation failed, but attempting migration anyway..."
+                    fi
+                    
                     # Set longer timeout for migration execution
                     if timeout 180 docker exec "$container_id" sh -c "cd /app && NODE_ENV=${MODE} npm run migrate" 2>&1 | tee /tmp/migration_log_${MODE}.txt; then
                         print_status "✅ Database migrations completed successfully on attempt $migration_attempts"
@@ -871,6 +877,12 @@ initialize_database() {
                     seeder_attempts=$((seeder_attempts + 1))
                     print_status "Seeder attempt $seeder_attempts of $max_seeder_attempts"
                     
+                    # Ensure TypeScript is compiled before running seeders
+                    print_status "Compiling TypeScript before seeder attempt $seeder_attempts..."
+                    if ! docker exec "$container_id" sh -c "cd /app && npm run backend:build" 2>&1 | tee /tmp/build_seeder_log_${MODE}.txt; then
+                        print_warning "TypeScript compilation failed, but attempting seeders anyway..."
+                    fi
+                    
                     # Execute seeders with timeout and detailed logging
                     if timeout 120 docker exec "$container_id" sh -c "cd /app && NODE_ENV=${MODE} npm run seed" 2>&1 | tee /tmp/seeder_log_${MODE}.txt; then
                         print_status "✅ Database test data populated successfully on attempt $seeder_attempts"
@@ -934,6 +946,12 @@ initialize_database() {
             elif [ "$AUTO_YES" != true ] && [ "$MODE" = "dev" ]; then
                 # Interactive prompt for dev mode only (not for production or auto-yes)
                 if prompt_user "Do you want to populate the database with test data (recommended for dev environment)?"; then
+                    # Ensure TypeScript is compiled before running seeders
+                    print_status "Compiling TypeScript before running seeders..."
+                    docker exec "$container_id" sh -c "cd /app && npm run backend:build" 2>/dev/null || {
+                        print_warning "TypeScript compilation failed, but attempting seeders anyway..."
+                    }
+                    
                     timeout 60 docker exec "$container_id" sh -c "cd /app && NODE_ENV=${MODE} npm run seed" 2>/dev/null || {
                         print_warning "Seeder execution failed. Database schema will be auto-created by sequelize.sync()"
                     }

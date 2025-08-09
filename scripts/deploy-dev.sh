@@ -269,6 +269,11 @@ run_migrations() {
         exit 1
     fi
     
+    # Ensure TypeScript is compiled before running migrations
+    echo -e "${BLUE}[INFO]${NC} Compiling TypeScript before running migrations..."
+    docker exec $CONTAINER_ID npm run backend:build
+    
+    # Then run migrations
     docker exec $CONTAINER_ID npm run migrate
     echo -e "${GREEN}[SUCCESS]${NC} Migrations completed!"
 }
@@ -285,6 +290,11 @@ run_seeders() {
         exit 1
     fi
     
+    # Ensure TypeScript is compiled before running seeders
+    echo -e "${BLUE}[INFO]${NC} Ensuring TypeScript is compiled..."
+    docker exec $CONTAINER_ID npm run backend:build
+    
+    # Then run seeders
     docker exec $CONTAINER_ID npm run seed
     echo -e "${GREEN}[SUCCESS]${NC} Seeders completed!"
 }

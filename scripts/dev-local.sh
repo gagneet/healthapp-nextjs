@@ -222,6 +222,12 @@ clean_all() {
 # Run migrations
 run_migrations() {
     echo -e "${BLUE}[INFO]${NC} Running database migrations..."
+    
+    # First, ensure TypeScript is compiled
+    echo -e "${BLUE}[INFO]${NC} Compiling TypeScript before running migrations..."
+    docker-compose -f $COMPOSE_FILE -p $PROJECT_NAME exec backend npm run backend:build
+    
+    # Then run migrations
     docker-compose -f $COMPOSE_FILE -p $PROJECT_NAME exec backend npm run migrate
     echo -e "${GREEN}[SUCCESS]${NC} Migrations completed!"
 }
@@ -229,6 +235,12 @@ run_migrations() {
 # Run seeders
 run_seeders() {
     echo -e "${BLUE}[INFO]${NC} Running database seeders..."
+    
+    # Ensure TypeScript is compiled (in case seeders are run independently)
+    echo -e "${BLUE}[INFO]${NC} Ensuring TypeScript is compiled..."
+    docker-compose -f $COMPOSE_FILE -p $PROJECT_NAME exec backend npm run backend:build
+    
+    # Then run seeders
     docker-compose -f $COMPOSE_FILE -p $PROJECT_NAME exec backend npm run seed
     echo -e "${GREEN}[SUCCESS]${NC} Seeders completed!"
 }
