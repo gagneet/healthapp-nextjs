@@ -22,10 +22,18 @@ const PORT = parseInt(process.env.PORT || '3000');
 // Security middleware
 app.use(helmet());
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+  origin: [
+    process.env.FRONTEND_URL || 'http://localhost:3002',
+    process.env.CORS_ORIGIN || 'http://localhost:3002',
+    'http://frontend:3002',  // Allow frontend container access
+    'http://localhost:3002',
+    'http://127.0.0.1:3002',
+    ...(process.env.HOST_IP ? [`http://${process.env.HOST_IP}:3002`] : [])
+  ],
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
+  optionsSuccessStatus: 200 // Some legacy browsers (IE11, various SmartTVs) choke on 204
 }));
 
 // Request parsing

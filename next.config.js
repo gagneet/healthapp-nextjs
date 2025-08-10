@@ -14,7 +14,11 @@ const nextConfig = {
   },
   allowedDevOrigins: process.env.ALLOWED_DEV_ORIGINS ? 
     process.env.ALLOWED_DEV_ORIGINS.split(',') : 
-    [process.env.HOST_IP ? `${process.env.HOST_IP}:3002` : 'localhost:3002'],
+    [
+      process.env.HOST_IP ? `${process.env.HOST_IP}:3002` : 'localhost:3002',
+      'localhost:3002',
+      '127.0.0.1:3002'
+    ],
   webpack: (config, { isServer }) => {
     // Exclude backend dependencies from client-side bundle
     if (!isServer) {
