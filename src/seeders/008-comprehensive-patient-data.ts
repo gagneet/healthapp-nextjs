@@ -432,6 +432,60 @@ export default {
 
       await queryInterface.bulkInsert('adherence_records', adherenceRecords, { transaction, ignoreDuplicates: true });
 
+      // First, create vital types if they don't exist
+      const vitalTypesData = [
+        {
+          id: '550e8400-e29b-41d4-a716-446655440201',
+          name: 'Systolic Blood Pressure',
+          unit: 'mmHg',
+          normal_range_min: 90,
+          normal_range_max: 140,
+          description: 'Systolic blood pressure measurement',
+          validation_rules: JSON.stringify({ min: 60, max: 200 }),
+          created_at: new Date(),
+          updated_at: new Date()
+        },
+        {
+          id: '550e8400-e29b-41d4-a716-446655440202',
+          name: 'Diastolic Blood Pressure',
+          unit: 'mmHg',
+          normal_range_min: 60,
+          normal_range_max: 90,
+          description: 'Diastolic blood pressure measurement',
+          validation_rules: JSON.stringify({ min: 40, max: 120 }),
+          created_at: new Date(),
+          updated_at: new Date()
+        },
+        {
+          id: '550e8400-e29b-41d4-a716-446655440203',
+          name: 'Blood Glucose',
+          unit: 'mg/dL',
+          normal_range_min: 70,
+          normal_range_max: 140,
+          description: 'Blood glucose level measurement',
+          validation_rules: JSON.stringify({ min: 30, max: 400 }),
+          created_at: new Date(),
+          updated_at: new Date()
+        },
+        {
+          id: '550e8400-e29b-41d4-a716-446655440204',
+          name: 'Weight',
+          unit: 'kg',
+          normal_range_min: 30,
+          normal_range_max: 200,
+          description: 'Body weight measurement',
+          validation_rules: JSON.stringify({ min: 10, max: 500 }),
+          created_at: new Date(),
+          updated_at: new Date()
+        }
+      ];
+
+      // Insert vital types (idempotent)
+      await queryInterface.bulkInsert('vital_types', vitalTypesData, { 
+        transaction, 
+        ignoreDuplicates: true 
+      });
+
       // Get vital type IDs for proper foreign key references
       const vitalTypeIds = {
         systolic: '550e8400-e29b-41d4-a716-446655440201',

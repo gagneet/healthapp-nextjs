@@ -150,20 +150,69 @@ export default {
           let value, systolic, diastolic;
           const isFlagged = Math.random() < 0.1; // 10% chance of abnormal reading
           
+          // Generate medical data following proper standards
           if (vitalType.type === 'blood_pressure') {
-            systolic = isFlagged ? 
-              (Math.random() < 0.5 ? Math.floor(Math.random() * 30) + 160 : Math.floor(Math.random() * 20) + 90) :
-              Math.floor(Math.random() * 30) + vitalType.normalMin;
-            diastolic = Math.floor(systolic * 0.6) + Math.floor(Math.random() * 10);
-            value = null;
+            // Generate realistic blood pressure readings
+            if (isFlagged) {
+              // Generate abnormal BP (hypertension or hypotension)
+              if (Math.random() < 0.7) {
+                // Hypertension (70% of abnormal cases)
+                systolic = Math.floor(Math.random() * 40) + 140; // 140-180
+                diastolic = Math.floor(Math.random() * 30) + 90;  // 90-120
+              } else {
+                // Hypotension (30% of abnormal cases)
+                systolic = Math.floor(Math.random() * 20) + 70;   // 70-90
+                diastolic = Math.floor(Math.random() * 20) + 40;  // 40-60
+              }
+            } else {
+              // Normal blood pressure ranges
+              systolic = Math.floor(Math.random() * 30) + 110;  // 110-140 (normal)
+              diastolic = Math.floor(Math.random() * 20) + 70;  // 70-90 (normal)
+            }
+            
+            // Ensure diastolic is reasonably related to systolic (medical reality)
+            if (diastolic >= systolic) {
+              diastolic = Math.floor(systolic * 0.6) + Math.floor(Math.random() * 10);
+            }
+            
+            value = null; // Don't use value for BP, use separate fields
           } else {
-            value = isFlagged ?
-              (Math.random() < 0.5 ? 
-                vitalType.normalMax + Math.floor(Math.random() * 50) : 
-                vitalType.normalMin - Math.floor(Math.random() * 20)) :
-              Math.floor(Math.random() * (vitalType.normalMax - vitalType.normalMin)) + vitalType.normalMin;
+            // Handle other vital signs (weight, temperature, etc.)
+            if (vitalType.type === 'weight') {
+              // Generate realistic weight variations (±2kg around base)
+              const baseWeight = 70; // kg
+              value = baseWeight + (Math.random() - 0.5) * 4;
+            } else if (vitalType.type === 'temperature') {
+              // Generate temperature readings
+              if (isFlagged) {
+                value = Math.random() < 0.5 ? 
+                  Math.random() * 2 + 38.5 : // fever: 38.5-40.5°C
+                  Math.random() * 2 + 34;     // hypothermia: 34-36°C
+              } else {
+                value = Math.random() * 1.5 + 36.2; // normal: 36.2-37.7°C
+              }
+            } else {
+              // Generic vital sign generation
+              value = isFlagged ?
+                (Math.random() < 0.5 ? 
+                  vitalType.normalMax + Math.floor(Math.random() * 50) : 
+                  vitalType.normalMin - Math.floor(Math.random() * 20)) :
+                Math.floor(Math.random() * (vitalType.normalMax - vitalType.normalMin)) + vitalType.normalMin;
+            }
             systolic = null;
             diastolic = null;
+          }
+
+          // Generate pulse rate (medical best practice - usually taken with BP)
+          let pulseRate = null;
+          if (vitalType.type === 'blood_pressure' || Math.random() < 0.3) {
+            if (isFlagged) {
+              pulseRate = Math.random() < 0.5 ? 
+                Math.floor(Math.random() * 50) + 100 : // tachycardia: 100-150
+                Math.floor(Math.random() * 20) + 45;   // bradycardia: 45-65
+            } else {
+              pulseRate = Math.floor(Math.random() * 30) + 65; // normal: 65-95
+            }
           }
 
           // Use existing vital_readings table structure
@@ -179,13 +228,25 @@ export default {
               vital_type_id: vitalTypeId[0].id,
               value: value,
               unit: vitalType.unit,
+              // Medical standard fields
+              systolic_value: systolic,
+              diastolic_value: diastolic,
+              pulse_rate: pulseRate,
+              respiratory_rate: vitalType.type === 'blood_pressure' && Math.random() < 0.2 ? 
+                Math.floor(Math.random() * 8) + 14 : null, // 14-22 (occasionally measured)
+              oxygen_saturation: vitalType.type === 'blood_pressure' && Math.random() < 0.15 ? 
+                Math.floor(Math.random() * 5) + 96 : null, // 96-100% (occasionally measured)
               reading_time: readingDate,
               device_info: JSON.stringify({
-                device_type: ['manual', 'smart_watch', 'home_monitor'][Math.floor(Math.random() * 3)],
-                model: 'Test Device'
+                device_type: ['manual', 'smart_watch', 'home_monitor', 'hospital_grade'][Math.floor(Math.random() * 4)],
+                model: ['Omron BP652', 'Apple Watch Series 8', 'Manual Sphygmomanometer', 'Philips IntelliVue'][Math.floor(Math.random() * 4)]
               }),
               is_flagged: isFlagged,
-              notes: isFlagged ? 'Abnormal reading - requires follow-up' : null,
+              // Alert system will be calculated automatically by model hooks
+              alert_level: 'normal', // Will be recalculated by model
+              alert_reasons: JSON.stringify([]),
+              notes: isFlagged ? `Abnormal ${vitalType.type} reading - requires medical follow-up` : 
+                     `Routine ${vitalType.type} monitoring`,
               created_at: readingDate,
               updated_at: readingDate
             });

@@ -1,0 +1,89 @@
+// src/migrations/001-create-organizations.ts
+'use strict';
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.default = {
+    up: async (queryInterface, Sequelize) => {
+        // Check if organizations table already exists
+        const tableExists = await queryInterface.tableExists('organizations');
+        if (tableExists) {
+            console.log('ℹ️ Table "organizations" already exists, skipping creation');
+            return;
+        }
+        // Create organizations table
+        await queryInterface.createTable('organizations', {
+            id: {
+                type: Sequelize.UUID,
+                primaryKey: true,
+                defaultValue: Sequelize.UUIDV4,
+            },
+            name: {
+                type: Sequelize.STRING(255),
+                allowNull: false,
+            },
+            type: {
+                type: Sequelize.STRING(100),
+                defaultValue: 'clinic',
+            },
+            license_number: {
+                type: Sequelize.STRING(100),
+                allowNull: true,
+            },
+            contact_info: {
+                type: Sequelize.JSONB,
+                defaultValue: {},
+            },
+            address: {
+                type: Sequelize.JSONB,
+                defaultValue: {},
+            },
+            settings: {
+                type: Sequelize.JSONB,
+                defaultValue: {},
+            },
+            is_active: {
+                type: Sequelize.BOOLEAN,
+                defaultValue: true,
+            },
+            created_at: {
+                type: Sequelize.DATE,
+                allowNull: false,
+                defaultValue: Sequelize.NOW,
+            },
+            updated_at: {
+                type: Sequelize.DATE,
+                allowNull: false,
+                defaultValue: Sequelize.NOW,
+            },
+            deleted_at: {
+                type: Sequelize.DATE,
+                allowNull: true,
+            },
+        });
+        // Add indexes (with idempotent checks)
+        try {
+            await queryInterface.addIndex('organizations', ['name'], { name: 'idx_organizations_name' });
+        }
+        catch (error) {
+            if (!error.message.includes('already exists'))
+                throw error;
+        }
+        try {
+            await queryInterface.addIndex('organizations', ['type'], { name: 'idx_organizations_type' });
+        }
+        catch (error) {
+            if (!error.message.includes('already exists'))
+                throw error;
+        }
+        try {
+            await queryInterface.addIndex('organizations', ['is_active'], { name: 'idx_organizations_is_active' });
+        }
+        catch (error) {
+            if (!error.message.includes('already exists'))
+                throw error;
+        }
+    },
+    down: async (queryInterface, Sequelize) => {
+        await queryInterface.dropTable('organizations');
+    }
+};
+//# sourceMappingURL=001-create-organizations.js.map
