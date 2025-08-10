@@ -98,11 +98,13 @@ services:
       - ../app:/app/app
       - ../components:/app/components
       - ../lib:/app/lib
+      - ../hooks:/app/hooks
       - ../public:/app/public
       - ../types:/app/types
       - ../package.json:/app/package.json
       - ../next.config.js:/app/next.config.js
       - ../tailwind.config.js:/app/tailwind.config.js
+      - ../tsconfig.json:/app/tsconfig.json
       - ../.postcssrc.json:/app/.postcssrc.json
     depends_on:
       backend:
