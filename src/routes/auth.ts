@@ -75,6 +75,55 @@ router.get('/sessions', authenticate, (req, res) => {
   });
 });
 
+// GET /api/auth/enhanced/profile (simple version for compatibility)
+router.get('/enhanced/profile', authenticate, (req, res) => {
+  const user = req.user;
+  res.status(200).json({
+    status: true,
+    statusCode: 200,
+    payload: {
+      data: {
+        user: {
+          id: user?.id,
+          email: user?.email,
+          first_name: user?.first_name,
+          last_name: user?.last_name,
+          role: user?.role
+        },
+        // Return default settings since we don't have a settings table yet
+        settings: {
+          notifications: {
+            email_notifications: true,
+            sms_notifications: false,
+            push_notifications: true,
+            appointment_reminders: true,
+            medication_alerts: true,
+            system_updates: false
+          },
+          privacy: {
+            profile_visibility: 'colleagues_only',
+            show_online_status: true,
+            allow_patient_messaging: true
+          },
+          preferences: {
+            language: 'en',
+            timezone: 'Asia/Kolkata',
+            date_format: 'DD/MM/YYYY',
+            time_format: '12h',
+            default_consultation_duration: 30
+          },
+          security: {
+            two_factor_enabled: false,
+            login_notifications: true,
+            session_timeout: 24
+          }
+        }
+      },
+      message: 'Profile retrieved successfully'
+    }
+  });
+});
+
 // Mount enhanced authentication routes
 router.use('/enhanced', enhancedAuthRoutes);
 

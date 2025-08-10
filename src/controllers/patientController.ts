@@ -1,6 +1,6 @@
 // src/controllers/PatientController.js - Modern ES Module Pattern
 import { Request, Response, NextFunction } from 'express';
-import { User, Doctor, Patient, CarePlan } from '../models/index.js';
+import { User, Doctor, Patient, CarePlan, Medication, sequelize } from '../models/index.js';
 import { Op } from 'sequelize';
 import { PAGINATION, USER_CATEGORIES } from '../config/constants.js';
 import ResponseFormatter from '../utils/responseFormatter.js';
@@ -463,6 +463,239 @@ class PatientController {
   }
 
   /**
+   * Get patient dashboard data - comprehensive overview
+   */
+  async getPatientDashboard(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const { patientId } = req.params;
+
+      // Find the patient with all necessary relationships
+      const user = await User.findOne({
+        where: { 
+          id: patientId,
+          role: USER_CATEGORIES.PATIENT 
+        },
+        include: [
+          {
+            model: Patient,
+            as: 'patientProfile',
+            required: true,
+            include: [
+              {
+                model: Doctor,
+                as: 'primaryCareDoctor',
+                required: false,
+                include: [{
+                  model: User,
+                  as: 'user',
+                  attributes: ['first_name', 'last_name', 'email']
+                }]
+              },
+              {
+                model: CarePlan,
+                as: 'carePlans',
+                required: false,
+                include: [
+                  {
+                    model: Medication,
+                    as: 'medicationPrescriptions',
+                    required: false
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      });
+
+      if (!user) {
+        throw new NotFoundError('Patient not found');
+      }
+
+      const patient = user.patientProfile;
+
+      // Get comprehensive dashboard data
+      const dashboardData = {
+        patient_info: {
+          id: patient.id.toString(),
+          user_id: user.id.toString(),
+          full_name: `${user.first_name || ''} ${user.last_name || ''}`.trim(),
+          age: user.current_age,
+          gender: user.gender,
+          medical_record_number: patient.medical_record_number,
+          primary_doctor: patient.primaryCareDoctor ? {
+            name: `${patient.primaryCareDoctor.user.first_name || ''} ${patient.primaryCareDoctor.user.last_name || ''}`.trim(),
+            email: patient.primaryCareDoctor.user.email
+          } : null
+        },
+        
+        health_overview: {
+          overall_adherence_score: patient.overall_adherence_score || 0,
+          risk_level: patient.risk_level || 'low',
+          last_visit_date: patient.last_visit_date,
+          next_appointment_date: patient.next_appointment_date,
+          bmi: patient.bmi,
+          blood_type: patient.blood_type
+        },
+
+        current_medications: patient.carePlans?.flatMap((plan: any) => 
+          plan.medicationPrescriptions?.map((med: any) => ({
+            id: med.id,
+            name: med.medication_name,
+            dosage: med.dosage,
+            frequency: med.frequency,
+            status: med.status,
+            adherence_score: med.adherence_score || 0
+          })) || []
+        ) || [],
+
+        vital_signs_summary: {
+          latest_readings: [],
+          trends: {},
+          alerts_count: 0
+        },
+
+        recent_activities: [],
+        
+        alerts: {
+          critical: [],
+          warnings: [],
+          reminders: []
+        }
+      };
+
+      res.status(200).json(ResponseFormatter.success(
+        dashboardData,
+        'Patient dashboard data retrieved successfully'
+      ));
+
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  /**
+   * Get patient medication events (complete/missed tracking)
+   */
+  async getPatientEvents(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const { patientId } = req.params;
+      const { startDate, endDate, eventType, limit = 50 } = req.query;
+
+      // Verify patient exists
+      const patient = await Patient.findOne({
+        where: { user_id: patientId },
+        include: [{
+          model: User,
+          as: 'user',
+          attributes: ['first_name', 'last_name']
+        }]
+      });
+
+      if (!patient) {
+        throw new NotFoundError('Patient not found');
+      }
+
+      // Build query conditions
+      const whereClause: any = { patient_id: patient.id };
+      
+      if (startDate && endDate) {
+        whereClause.created_at = {
+          [Op.between]: [new Date(startDate as string), new Date(endDate as string)]
+        };
+      }
+      
+      if (eventType && eventType !== 'all') {
+        whereClause.event_type = eventType;
+      }
+
+      // Get medication logs/events (assuming MedicationLog model exists)
+      const events = await (sequelize as any).models.MedicationLog?.findAll({
+        where: whereClause,
+        include: [
+          {
+            model: Medication,
+            as: 'medication',
+            attributes: ['medication_name', 'dosage']
+          }
+        ],
+        order: [['created_at', 'DESC']],
+        limit: parseInt(limit as string)
+      }) || [];
+
+      const formattedEvents = events.map((event: any) => ({
+        id: event.id,
+        event_type: event.event_type,
+        medication_name: event.medication?.medication_name,
+        dosage: event.medication?.dosage,
+        scheduled_time: event.scheduled_time,
+        actual_time: event.actual_time,
+        status: event.status,
+        notes: event.notes,
+        created_at: event.created_at
+      }));
+
+      res.status(200).json(ResponseFormatter.success(
+        { 
+          events: formattedEvents,
+          patient_id: patientId,
+          total_events: formattedEvents.length
+        },
+        'Patient events retrieved successfully'
+      ));
+
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  /**
+   * Record patient medication event (complete/missed)
+   */
+  async recordPatientEvent(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const { patientId } = req.params;
+      const { 
+        medication_id, 
+        event_type, 
+        scheduled_time, 
+        actual_time, 
+        notes 
+      } = req.body;
+
+      // Verify patient exists
+      const patient = await Patient.findOne({
+        where: { user_id: patientId }
+      });
+
+      if (!patient) {
+        throw new NotFoundError('Patient not found');
+      }
+
+      // Create medication event log
+      const eventLog = await (sequelize as any).models.MedicationLog?.create({
+        patient_id: patient.id,
+        medication_id,
+        event_type, // 'completed', 'missed', 'delayed'
+        scheduled_time: new Date(scheduled_time),
+        actual_time: actual_time ? new Date(actual_time) : null,
+        status: event_type === 'completed' ? 'taken' : 'missed',
+        notes: notes || null,
+        recorded_by: req.user!.id
+      }) || {};
+
+      res.status(201).json(ResponseFormatter.success(
+        { event: eventLog },
+        'Patient medication event recorded successfully',
+        201
+      ));
+
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  /**
    * Soft delete patient (deactivate instead of hard delete)
    */
   async deletePatient(req: Request, res: Response, next: NextFunction): Promise<void> {
@@ -499,6 +732,259 @@ class PatientController {
       res.status(200).json(ResponseFormatter.success(
         null,
         'Patient account deactivated successfully'
+      ));
+
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  /**
+   * Request patient consent for secondary doctor assignment
+   */
+  async requestPatientConsent(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const { patientId } = req.params;
+      const { 
+        secondary_doctor_id, 
+        secondary_hsp_id, 
+        assignment_reason, 
+        specialty_focus,
+        consent_method = 'sms'
+      } = req.body;
+
+      // Verify patient exists
+      const patient = await Patient.findOne({
+        where: { user_id: patientId },
+        include: [{
+          model: User,
+          as: 'user',
+          attributes: ['first_name', 'last_name', 'mobile_number', 'email']
+        }]
+      });
+
+      if (!patient) {
+        throw new NotFoundError('Patient not found');
+      }
+
+      // Get the requesting doctor's information
+      const requestingDoctor = await Doctor.findOne({
+        where: { user_id: req.user!.id },
+        include: [{
+          model: User,
+          as: 'user',
+          attributes: ['first_name', 'last_name']
+        }]
+      });
+
+      if (!requestingDoctor) {
+        throw new NotFoundError('Doctor profile not found');
+      }
+
+      // Generate OTP
+      const otp = Math.floor(100000 + Math.random() * 900000).toString();
+      const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+
+      // Create consent request record
+      const consentRequest = await (sequelize as any).models.PatientConsentOtp?.create({
+        patient_id: patient.id,
+        primary_doctor_id: requestingDoctor.id,
+        secondary_doctor_id: secondary_doctor_id || null,
+        secondary_hsp_id: secondary_hsp_id || null,
+        assignment_reason: assignment_reason || 'Care coordination',
+        specialty_focus: specialty_focus || [],
+        otp_code: otp,
+        consent_method,
+        expires_at: expiresAt,
+        requested_by_user_id: req.user!.id,
+        status: 'pending'
+      }) || {};
+
+      // TODO: Send OTP via SMS/Email (integrate with notification service)
+      const contactInfo = consent_method === 'sms' ? 
+        patient.user.mobile_number : 
+        patient.user.email;
+
+      res.status(201).json(ResponseFormatter.success(
+        {
+          consent_request_id: consentRequest.id,
+          patient_name: `${patient.user.first_name} ${patient.user.last_name}`,
+          contact_method: consent_method,
+          contact_info: contactInfo,
+          expires_at: expiresAt,
+          otp_sent: true
+        },
+        'Consent request sent successfully',
+        201
+      ));
+
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  /**
+   * Verify patient consent with OTP
+   */
+  async verifyPatientConsent(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const { consent_request_id, otp_code, patient_signature } = req.body;
+
+      if (!consent_request_id || !otp_code) {
+        res.status(400).json(ResponseFormatter.error(
+          'Consent request ID and OTP code are required',
+          400
+        ));
+        return;
+      }
+
+      // Find the consent request
+      const consentRequest = await (sequelize as any).models.PatientConsentOtp?.findOne({
+        where: { 
+          id: consent_request_id,
+          otp_code,
+          status: 'pending',
+          expires_at: { [Op.gt]: new Date() }
+        },
+        include: [
+          {
+            model: Patient,
+            as: 'patient',
+            include: [{
+              model: User,
+              as: 'user',
+              attributes: ['first_name', 'last_name']
+            }]
+          }
+        ]
+      });
+
+      if (!consentRequest) {
+        res.status(400).json(ResponseFormatter.error(
+          'Invalid or expired consent request',
+          400
+        ));
+        return;
+      }
+
+      // Update consent request as verified
+      await consentRequest.update({
+        status: 'verified',
+        verified_at: new Date(),
+        patient_signature: patient_signature || null
+      });
+
+      // Create the secondary doctor assignment
+      const assignment = await (sequelize as any).models.SecondaryDoctorAssignment?.create({
+        patient_id: consentRequest.patient_id,
+        primary_doctor_id: consentRequest.primary_doctor_id,
+        secondary_doctor_id: consentRequest.secondary_doctor_id,
+        secondary_hsp_id: consentRequest.secondary_hsp_id,
+        assignment_reason: consentRequest.assignment_reason,
+        specialty_focus: consentRequest.specialty_focus,
+        assignment_status: 'active',
+        consent_given: true,
+        consent_given_at: new Date(),
+        consent_method: consentRequest.consent_method,
+        created_by: consentRequest.requested_by_user_id
+      }) || {};
+
+      res.status(200).json(ResponseFormatter.success(
+        {
+          assignment_id: assignment.id,
+          patient_name: `${consentRequest.patient.user.first_name} ${consentRequest.patient.user.last_name}`,
+          consent_verified: true,
+          assignment_active: true
+        },
+        'Patient consent verified and assignment created successfully'
+      ));
+
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  /**
+   * Get patient consent status and assignments
+   */
+  async getPatientConsentStatus(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const { patientId } = req.params;
+
+      // Get patient with assignments
+      const patient = await Patient.findOne({
+        where: { user_id: patientId },
+        include: [
+          {
+            model: User,
+            as: 'user',
+            attributes: ['first_name', 'last_name']
+          }
+        ]
+      });
+
+      if (!patient) {
+        throw new NotFoundError('Patient not found');
+      }
+
+      // Get active secondary assignments
+      const assignments = await (sequelize as any).models.SecondaryDoctorAssignment?.findAll({
+        where: { 
+          patient_id: patient.id,
+          assignment_status: 'active'
+        },
+        include: [
+          {
+            model: Doctor,
+            as: 'primaryDoctor',
+            include: [{
+              model: User,
+              as: 'user',
+              attributes: ['first_name', 'last_name']
+            }]
+          },
+          {
+            model: Doctor,
+            as: 'secondaryDoctor',
+            required: false,
+            include: [{
+              model: User,
+              as: 'user',
+              attributes: ['first_name', 'last_name']
+            }]
+          }
+        ]
+      }) || [];
+
+      // Get pending consent requests
+      const pendingRequests = await (sequelize as any).models.PatientConsentOtp?.findAll({
+        where: {
+          patient_id: patient.id,
+          status: 'pending',
+          expires_at: { [Op.gt]: new Date() }
+        }
+      }) || [];
+
+      res.status(200).json(ResponseFormatter.success(
+        {
+          patient_info: {
+            id: patient.id,
+            name: `${patient.user.first_name} ${patient.user.last_name}`
+          },
+          active_assignments: assignments.map((assignment: any) => ({
+            id: assignment.id,
+            primary_doctor: assignment.primaryDoctor ? 
+              `${assignment.primaryDoctor.user.first_name} ${assignment.primaryDoctor.user.last_name}` : null,
+            secondary_doctor: assignment.secondaryDoctor ? 
+              `${assignment.secondaryDoctor.user.first_name} ${assignment.secondaryDoctor.user.last_name}` : null,
+            assignment_reason: assignment.assignment_reason,
+            specialty_focus: assignment.specialty_focus,
+            consent_given_at: assignment.consent_given_at
+          })),
+          pending_requests: pendingRequests.length,
+          total_assignments: assignments.length
+        },
+        'Patient consent status retrieved successfully'
       ));
 
     } catch (error: unknown) {

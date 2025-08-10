@@ -63,4 +63,45 @@ router.post('/generate-id',
   patientController.generatePatientId
 );
 
+// GET /api/patients/:patientId/dashboard - Get patient dashboard data
+router.get('/:patientId/dashboard',
+  authenticate,
+  authorize(USER_CATEGORIES.DOCTOR, USER_CATEGORIES.HSP, (USER_CATEGORIES as any).ADMIN),
+  patientController.getPatientDashboard
+);
+
+// GET /api/patients/:patientId/events - Get patient medication events
+router.get('/:patientId/events',
+  authenticate,
+  authorize(USER_CATEGORIES.DOCTOR, USER_CATEGORIES.HSP, (USER_CATEGORIES as any).ADMIN),
+  patientController.getPatientEvents
+);
+
+// POST /api/patients/:patientId/events - Record patient medication event
+router.post('/:patientId/events',
+  authenticate,
+  authorize(USER_CATEGORIES.DOCTOR, USER_CATEGORIES.HSP, (USER_CATEGORIES as any).ADMIN),
+  patientController.recordPatientEvent
+);
+
+// POST /api/patients/:patientId/consent/request - Request patient consent for secondary assignment
+router.post('/:patientId/consent/request',
+  authenticate,
+  authorize(USER_CATEGORIES.DOCTOR, (USER_CATEGORIES as any).ADMIN),
+  patientController.requestPatientConsent
+);
+
+// POST /api/patients/consent/verify - Verify patient consent with OTP
+router.post('/consent/verify',
+  authenticate,
+  patientController.verifyPatientConsent
+);
+
+// GET /api/patients/:patientId/consent/status - Get patient consent status
+router.get('/:patientId/consent/status',
+  authenticate,
+  authorize(USER_CATEGORIES.DOCTOR, USER_CATEGORIES.HSP, (USER_CATEGORIES as any).ADMIN),
+  patientController.getPatientConsentStatus
+);
+
 export default router;
