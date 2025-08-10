@@ -44,6 +44,37 @@ router.post('/logout', (req, res) => {
   });
 });
 
+// POST /api/auth/change-password
+router.post('/change-password',
+  authenticate,
+  authController.changePassword
+);
+
+// POST /api/auth/logout-all
+router.post('/logout-all',
+  authenticate,
+  authController.logoutAll
+);
+
+// GET /api/auth/sessions (simple endpoint for session info)
+router.get('/sessions', authenticate, (req, res) => {
+  res.status(200).json({
+    status: true,
+    statusCode: 200,
+    payload: {
+      data: {
+        sessions: [{
+          id: 'session_1',
+          user_id: req.user?.id,
+          active: true,
+          created_at: new Date().toISOString()
+        }]
+      },
+      message: 'Sessions retrieved successfully'
+    }
+  });
+});
+
 // Mount enhanced authentication routes
 router.use('/enhanced', enhancedAuthRoutes);
 

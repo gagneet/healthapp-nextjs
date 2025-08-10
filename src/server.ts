@@ -17,7 +17,7 @@ config();
 
 const logger = createLogger(import.meta.url);
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = parseInt(process.env.PORT || '3000');
 
 // Security middleware
 app.use(helmet());
@@ -106,7 +106,7 @@ const startServer = async () => {
       logger.info('Database synchronized');
     }
     
-    app.listen(PORT, () => {
+    app.listen(PORT, '0.0.0.0', () => {
       logger.info(`Server running on port ${PORT}`);
       logger.info(`Environment: ${process.env.NODE_ENV || 'development'}`);
     });

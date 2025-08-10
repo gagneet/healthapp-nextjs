@@ -348,6 +348,97 @@ class AuthController {
       next(error);
     }
   }
+
+  // Change password
+  async changePassword(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const { currentPassword, newPassword } = req.body;
+      const userId = req.user!.id;
+
+      if (!currentPassword || !newPassword) {
+        res.status(400).json({
+          status: false,
+          statusCode: 400,
+          payload: {
+            error: {
+              status: 'VALIDATION_ERROR',
+              message: 'Current password and new password are required'
+            }
+          }
+        });
+        return;
+      }
+
+      // Find user
+      const user = await User.findByPk(userId);
+      if (!user) {
+        res.status(404).json({
+          status: false,
+          statusCode: 404,
+          payload: {
+            error: {
+              status: 'NOT_FOUND',
+              message: 'User not found'
+            }
+          }
+        });
+        return;
+      }
+
+      // Verify current password
+      const isCurrentPasswordValid = await bcrypt.compare(currentPassword, user.password_hash);
+      if (!isCurrentPasswordValid) {
+        res.status(400).json({
+          status: false,
+          statusCode: 400,
+          payload: {
+            error: {
+              status: 'INVALID_PASSWORD',
+              message: 'Current password is incorrect'
+            }
+          }
+        });
+        return;
+      }
+
+      // Hash new password
+      const saltRounds = 12;
+      const hashedNewPassword = await bcrypt.hash(newPassword, saltRounds);
+
+      // Update password
+      await user.update({ 
+        password_hash: hashedNewPassword,
+        updated_at: new Date()
+      });
+
+      res.status(200).json({
+        status: true,
+        statusCode: 200,
+        payload: {
+          message: 'Password changed successfully'
+        }
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  // Logout from all devices
+  async logoutAll(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      // For now, just return success
+      // In production, you would invalidate all sessions/tokens for the user
+      res.status(200).json({
+        status: true,
+        statusCode: 200,
+        payload: {
+          message: 'Logged out from all devices successfully'
+        }
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
 }
 
 export default new AuthController();

@@ -47,6 +47,13 @@ router.get('/profile',
   doctorController.getProfile
 );
 
+// PUT /api/doctors/settings (Update doctor settings)
+router.put('/settings',
+  authenticate,
+  authorize(USER_CATEGORIES.DOCTOR),
+  doctorController.updateSettings
+);
+
 // PUT /api/doctors/profile (Update doctor's comprehensive profile)
 router.put('/profile',
   authenticate,
