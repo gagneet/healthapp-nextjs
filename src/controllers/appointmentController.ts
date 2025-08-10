@@ -129,12 +129,25 @@ class AppointmentController {
     try {
       const { patientId } = req.params;
 
+      // First verify the patient exists
+      const patient = await Patient.findByPk(patientId);
+      if (!patient) {
+        res.status(404).json({
+          status: false,
+          statusCode: 404,
+          payload: {
+            error: {
+              status: 'NOT_FOUND',
+              message: 'Patient not found'
+            }
+          }
+        });
+        return;
+      }
+
       const appointments = await Appointment.findAll({
         where: {
-          [Op.or]: [
-            { participant_one_id: patientId, participant_one_type: 'patient' },
-            { participant_two_id: patientId, participant_two_type: 'patient' }
-          ]
+          patient_id: patientId
         },
         include: [
           {

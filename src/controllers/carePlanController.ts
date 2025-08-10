@@ -9,6 +9,21 @@ class CarePlanController {
     try {
       const { patientId } = req.params;
 
+      // First verify the patient exists
+      const patient = await Patient.findByPk(patientId);
+      if (!patient) {
+        return res.status(404).json({
+          status: false,
+          statusCode: 404,
+          payload: {
+            error: {
+              status: 'NOT_FOUND',
+              message: 'Patient not found'
+            }
+          }
+        });
+      }
+
       const carePlans = await CarePlan.findAll({
         where: { 
           patient_id: patientId,

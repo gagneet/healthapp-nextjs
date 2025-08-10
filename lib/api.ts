@@ -4,7 +4,8 @@ import { AuthResponse, LoginCredentials, RegisterData } from '@/types/auth'
 import { createLogger } from './logger'
 
 const logger = createLogger('API')
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://192.168.0.148:3005/api'
+// Use relative URL to leverage Next.js rewrites instead of direct backend URL
+const API_BASE_URL = '/api'
 
 // Create axios instance
 const api = axios.create({

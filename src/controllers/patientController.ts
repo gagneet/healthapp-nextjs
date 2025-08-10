@@ -21,101 +21,101 @@ class PatientController {
     try {
       const { patientId } = req.params;
 
-      // Use the normalized User model approach
-      const user = await User.findOne({
+      // Find patient by patient table ID, then get associated user
+      const patient = await Patient.findOne({
         where: { 
-          id: patientId,
-          role: USER_CATEGORIES.PATIENT 
+          id: patientId
         },
         include: [
           {
-            model: Patient,
-            as: 'patientProfile',
+            model: User,
+            as: 'user',
             required: true,
+            where: {
+              role: USER_CATEGORIES.PATIENT
+            }
+          },
+          {
+            model: Doctor,
+            as: 'primaryCareDoctor',
+            required: false,
             include: [
               {
-                model: Doctor,
-                as: 'primaryCareDoctor',
-                required: false,
-                include: [
-                  {
-                    model: User,
-                    as: 'user',
-                    attributes: ['first_name', 'last_name', 'email']
-                  }
-                ]
+                model: User,
+                as: 'user',
+                attributes: ['first_name', 'last_name', 'email']
               }
             ]
           }
         ]
       });
 
-      if (!user) {
+      if (!patient) {
         throw new NotFoundError('Patient not found');
       }
 
       // Modern response formatting with the normalized data
       const responseData = {
         patients: {
-          [user.patientProfile.id]: {
+          [patient.id]: {
             basic_info: {
-              id: user.patientProfile.id.toString(),
-              user_id: user.id.toString(),
+              id: patient.id.toString(),
+              user_id: patient.user.id.toString(),
               
               // Common fields from User model
-              gender: user.gender,
-              first_name: user.first_name,
-              middle_name: user.middle_name,
-              last_name: user.last_name,
-              full_name: `${user.first_name || ''} ${user.middle_name || ''} ${user.last_name || ''}`.replace(/\s+/g, ' ').trim(), // Constructed field
-              current_age: user.current_age, // Virtual field
-              age: `${user.current_age} years`,
+              gender: patient.user.gender,
+              first_name: patient.user.first_name,
+              middle_name: patient.user.middle_name,
+              last_name: patient.user.last_name,
+              full_name: `${patient.user.first_name || ''} ${patient.user.middle_name || ''} ${patient.user.last_name || ''}`.replace(/\s+/g, ' ').trim(), // Constructed field
+              current_age: patient.user.current_age, // Virtual field
+              age: `${patient.user.current_age} years`,
               
               // Address information from User model
-              street: user.street,
-              city: user.city,
-              state: user.state,
-              country: user.country,
-              formatted_address: user.formatted_address,
+              street: patient.user.street,
+              city: patient.user.city,
+              state: patient.user.state,
+              country: patient.user.country,
+              formatted_address: patient.user.formatted_address,
               
               // Contact from User model
-              mobile_number: user.mobile_number,
-              email: user.email,
+              mobile_number: patient.user.mobile_number,
+              email: patient.user.email,
               
               // Patient-specific fields
-              medical_record_number: user.patientProfile.medical_record_number,
-              blood_group: user.patientProfile.blood_group,
-              height_cm: user.patientProfile.height_cm,
-              weight_kg: user.patientProfile.weight_kg,
-              bmi: user.patientProfile.bmi, // Virtual field
+              medical_record_number: patient.medical_record_number,
+              blood_group: patient.blood_type,
+              height_cm: patient.height_cm,
+              weight_kg: patient.weight_kg,
+              bmi: patient.bmi, // Virtual field
             },
             
             // Medical information
             medical_info: {
-              allergies: user.patientProfile.allergies || [],
-              chronic_conditions: user.patientProfile.chronic_conditions || [],
-              current_medications: user.patientProfile.current_medications || [],
-              family_medical_history: user.patientProfile.family_medical_history || {},
-              emergency_contact: user.patientProfile.emergency_contact || {},
-              insurance_info: user.patientProfile.insurance_info || {}
+              allergies: patient.allergies || [],
+              chronic_conditions: patient.medical_history || [],
+              current_medications: patient.current_medications || [],
+              family_medical_history: patient.medical_history || {},
+              emergency_contact: patient.emergency_contacts || {},
+              insurance_info: patient.insurance_information || {}
             },
             
             // System fields
-            consent_given: user.patientProfile.consent_given,
-            data_sharing_consent: user.patientProfile.data_sharing_consent,
-            activated_on: user.activated_on,
-            created_at: user.created_at,
-            updated_at: user.updated_at,
+            consent_given: patient.provider_consent_given,
+            data_sharing_consent: patient.privacy_settings?.data_sharing_consent || false,
+            activated_on: patient.user.activated_on,
+            created_at: patient.created_at,
+            updated_at: patient.updated_at,
             
             // Relationships
-            primary_doctor: user.patientProfile.primaryCareDoctor ? {
-              id: user.patientProfile.primaryCareDoctor.id,
-              name: `${user.patientProfile.primaryCareDoctor.user.first_name || ''} ${user.patientProfile.primaryCareDoctor.user.middle_name || ''} ${user.patientProfile.primaryCareDoctor.user.last_name || ''}`.replace(/\s+/g, ' ').trim(),
-              email: user.patientProfile.primaryCareDoctor.user.email
+            primary_doctor: patient.primaryCareDoctor ? {
+              id: patient.primaryCareDoctor.id,
+              name: `${patient.primaryCareDoctor.user.first_name || ''} ${patient.primaryCareDoctor.user.middle_name || ''} ${patient.primaryCareDoctor.user.last_name || ''}`.replace(/\s+/g, ' ').trim(),
+              email: patient.primaryCareDoctor.user.email
             } : null,
             
             // Integration fields
-            feedId: Buffer.from(`patient_${user.patientProfile.id}`).toString('base64'),
+            feedId: Buffer.from(`patient_${patient.id}`).toString('base64'),
             notificationToken: 'getstream_token' // Implement GetStream integration
           }
         }
