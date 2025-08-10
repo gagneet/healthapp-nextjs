@@ -141,6 +141,23 @@ deploy_stack() {
     docker stack deploy -c $STACK_FILE $STACK_NAME
     
     echo -e "${GREEN}[SUCCESS]${NC} Production stack deployed successfully!"
+    
+    # Wait for services to be ready
+    echo -e "${BLUE}[INFO]${NC} Waiting for services to be ready..."
+    sleep 30
+    
+    # Run migrations if requested
+    if [ "$RUN_MIGRATE" = true ]; then
+        echo -e "${BLUE}[INFO]${NC} Running migrations as requested..."
+        run_migrations
+    fi
+    
+    # Run seeders if requested
+    if [ "$RUN_SEED" = true ]; then
+        echo -e "${BLUE}[INFO]${NC} Running seeders as requested..."
+        run_seeders
+    fi
+    
     echo -e "${BLUE}[INFO]${NC} Frontend: https://your-domain.com"
     echo -e "${BLUE}[INFO]${NC} Backend API: https://api.your-domain.com"
     echo ""
@@ -242,13 +259,36 @@ run_migrations() {
         exit 1
     fi
     
-    # Ensure TypeScript is compiled before running migrations
-    echo -e "${BLUE}[INFO]${NC} Compiling TypeScript before running migrations..."
-    docker exec $CONTAINER_ID npm run backend:build
+    # Ensure TypeScript migrations are compiled for Sequelize CLI
+    echo -e "${BLUE}[INFO]${NC} Compiling TypeScript migrations/seeders for production..."
+    docker exec $CONTAINER_ID npm run migrations:build
     
     # Then run migrations
+    echo -e "${BLUE}[INFO]${NC} Running database migrations in production..."
     docker exec $CONTAINER_ID npm run migrate
     echo -e "${GREEN}[SUCCESS]${NC} Production migrations completed!"
+}
+
+# Run database seeders in production
+run_seeders() {
+    echo -e "${BLUE}[INFO]${NC} Running database seeders in production..."
+    
+    # Find the running backend container
+    CONTAINER_ID=$(docker ps -q --filter "label=com.docker.stack.namespace=$STACK_NAME" --filter "name=backend")
+    
+    if [ -z "$CONTAINER_ID" ]; then
+        echo -e "${RED}[ERROR]${NC} No backend containers found"
+        exit 1
+    fi
+    
+    # Ensure TypeScript migrations are compiled (seeders need this too)
+    echo -e "${BLUE}[INFO]${NC} Ensuring TypeScript migrations/seeders are compiled..."
+    docker exec $CONTAINER_ID npm run migrations:build
+    
+    # Then run seeders
+    echo -e "${BLUE}[INFO]${NC} Running database seeders in production..."
+    docker exec $CONTAINER_ID npm run seed
+    echo -e "${GREEN}[SUCCESS]${NC} Production seeders completed!"
 }
 
 # Backup database

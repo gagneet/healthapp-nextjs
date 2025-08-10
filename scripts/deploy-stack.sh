@@ -804,9 +804,9 @@ initialize_database() {
                     migration_attempts=$((migration_attempts + 1))
                     print_status "Migration attempt $migration_attempts of $max_migration_attempts"
                     
-                    # Ensure TypeScript is compiled before running migrations
-                    print_status "Compiling TypeScript before migration attempt $migration_attempts..."
-                    if ! docker exec "$container_id" sh -c "cd /app && npm run backend:build" 2>&1 | tee /tmp/build_log_${MODE}.txt; then
+                    # Ensure TypeScript migrations are compiled for Sequelize CLI
+                    print_status "Compiling TypeScript migrations/seeders for migration attempt $migration_attempts..."
+                    if ! docker exec "$container_id" sh -c "cd /app && npm run migrations:build" 2>&1 | tee /tmp/build_log_${MODE}.txt; then
                         print_warning "TypeScript compilation failed, but attempting migration anyway..."
                     fi
                     
@@ -877,9 +877,9 @@ initialize_database() {
                     seeder_attempts=$((seeder_attempts + 1))
                     print_status "Seeder attempt $seeder_attempts of $max_seeder_attempts"
                     
-                    # Ensure TypeScript is compiled before running seeders
-                    print_status "Compiling TypeScript before seeder attempt $seeder_attempts..."
-                    if ! docker exec "$container_id" sh -c "cd /app && npm run backend:build" 2>&1 | tee /tmp/build_seeder_log_${MODE}.txt; then
+                    # Ensure TypeScript migrations/seeders are compiled for Sequelize CLI
+                    print_status "Compiling TypeScript migrations/seeders for seeder attempt $seeder_attempts..."
+                    if ! docker exec "$container_id" sh -c "cd /app && npm run migrations:build" 2>&1 | tee /tmp/build_seeder_log_${MODE}.txt; then
                         print_warning "TypeScript compilation failed, but attempting seeders anyway..."
                     fi
                     
@@ -946,9 +946,9 @@ initialize_database() {
             elif [ "$AUTO_YES" != true ] && [ "$MODE" = "dev" ]; then
                 # Interactive prompt for dev mode only (not for production or auto-yes)
                 if prompt_user "Do you want to populate the database with test data (recommended for dev environment)?"; then
-                    # Ensure TypeScript is compiled before running seeders
-                    print_status "Compiling TypeScript before running seeders..."
-                    docker exec "$container_id" sh -c "cd /app && npm run backend:build" 2>/dev/null || {
+                    # Ensure TypeScript migrations/seeders are compiled for Sequelize CLI
+                    print_status "Compiling TypeScript migrations/seeders before running seeders..."
+                    docker exec "$container_id" sh -c "cd /app && npm run migrations:build" 2>/dev/null || {
                         print_warning "TypeScript compilation failed, but attempting seeders anyway..."
                     }
                     

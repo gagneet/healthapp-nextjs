@@ -269,9 +269,9 @@ run_migrations() {
         exit 1
     fi
     
-    # Ensure TypeScript is compiled before running migrations
-    echo -e "${BLUE}[INFO]${NC} Compiling TypeScript before running migrations..."
-    docker exec $CONTAINER_ID npm run backend:build
+    # Ensure TypeScript migrations are compiled for Sequelize CLI
+    echo -e "${BLUE}[INFO]${NC} Compiling TypeScript migrations/seeders for development..."
+    docker exec $CONTAINER_ID npm run migrations:build
     
     # Then run migrations
     docker exec $CONTAINER_ID npm run migrate
@@ -290,9 +290,9 @@ run_seeders() {
         exit 1
     fi
     
-    # Ensure TypeScript is compiled before running seeders
-    echo -e "${BLUE}[INFO]${NC} Ensuring TypeScript is compiled..."
-    docker exec $CONTAINER_ID npm run backend:build
+    # Ensure TypeScript migrations/seeders are compiled (seeders need this too)
+    echo -e "${BLUE}[INFO]${NC} Ensuring TypeScript migrations/seeders are compiled..."
+    docker exec $CONTAINER_ID npm run migrations:build
     
     # Then run seeders
     docker exec $CONTAINER_ID npm run seed
