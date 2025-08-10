@@ -13,6 +13,7 @@ Our deployment architecture follows a clear separation pattern:
 ## Port Configuration
 
 All environments use consistent ports:
+
 - **Frontend**: 3002
 - **Backend API**: 3005  
 - **PostgreSQL**: 5432
@@ -27,6 +28,7 @@ All environments use consistent ports:
 **Command**: `./scripts/dev-local.sh [command]`
 
 **Available Commands**:
+
 - `start` - Start all services
 - `stop` - Stop all services
 - `restart` - Restart all services
@@ -39,10 +41,12 @@ All environments use consistent ports:
 - `shell [service]` - Open shell in container
 
 **Files**:
+
 - `docker-compose.local.yml` - Local compose configuration
 - `docker/Dockerfile.local` - Multi-stage local development images
 
 **Example Usage**:
+
 ```bash
 # Start local environment
 ./scripts/dev-local.sh start
@@ -64,6 +68,7 @@ All environments use consistent ports:
 **Command**: `./scripts/deploy-dev.sh [command]`
 
 **Available Commands**:
+
 - `deploy` - Deploy the development stack
 - `update` - Update running services
 - `stop` - Remove the stack
@@ -75,15 +80,18 @@ All environments use consistent ports:
 - `seed` - Run database seeders
 
 **Files**:
+
 - `docker-stack.dev.yml` - Development swarm stack
 - `docker/Dockerfile.local` - Development images (multi-target)
 
 **Scaling Configuration**:
+
 - **Backend**: 2 replicas (can scale up)
 - **Frontend**: 2 replicas (can scale up)
 - **PostgreSQL**: 1 replica (manager node only)
 
 **Example Usage**:
+
 ```bash
 # Deploy development stack
 ./scripts/deploy-dev.sh deploy
@@ -105,6 +113,7 @@ All environments use consistent ports:
 **Command**: `./scripts/deploy-prod.sh [command]`
 
 **Available Commands**:
+
 - `deploy` - Deploy the production stack
 - `update` - Zero-downtime rolling updates
 - `stop` - Remove the production stack (with confirmation)
@@ -117,10 +126,12 @@ All environments use consistent ports:
 - `backup` - Create database backup
 
 **Files**:
+
 - `docker-stack.prod.yml` - Production swarm stack
 - `docker/Dockerfile.prod` - Optimized production images
 
 **Security Features**:
+
 - Docker secrets for sensitive data
 - Non-root containers
 - Health checks for all services
@@ -128,12 +139,14 @@ All environments use consistent ports:
 - Rolling updates with rollback capability
 
 **Scaling Configuration**:
+
 - **Backend**: 3 replicas with placement constraints
 - **Frontend**: 3 replicas with placement constraints  
 - **PostgreSQL**: 1 replica (manager node only)
 - **Nginx**: 2 replicas for load balancing
 
 **Example Usage**:
+
 ```bash
 # Create required secrets first
 ./scripts/deploy-prod.sh secrets create
@@ -171,11 +184,13 @@ All configuration files use JavaScript (not TypeScript) following best practices
 ### Multi-stage Build Strategy
 
 **Local Development** (`docker/Dockerfile.local`):
+
 - `backend-dev`: Development backend with hot-reload
 - `frontend-dev`: Development frontend with hot-reload
 - Includes debugging tools and utilities
 
 **Production** (`docker/Dockerfile.prod`):
+
 - `backend-prod`: Optimized backend build
 - `frontend-prod`: Optimized frontend build with static generation
 - Minimal attack surface with non-root users
@@ -184,6 +199,7 @@ All configuration files use JavaScript (not TypeScript) following best practices
 ## Database Management
 
 ### Migrations
+
 ```bash
 # Local
 ./scripts/dev-local.sh migrate
@@ -196,6 +212,7 @@ All configuration files use JavaScript (not TypeScript) following best practices
 ```
 
 ### Seeders
+
 ```bash
 # Local
 ./scripts/dev-local.sh seed
@@ -205,6 +222,7 @@ All configuration files use JavaScript (not TypeScript) following best practices
 ```
 
 ### Backups (Production)
+
 ```bash
 ./scripts/deploy-prod.sh backup
 ```
@@ -212,6 +230,7 @@ All configuration files use JavaScript (not TypeScript) following best practices
 ## Monitoring and Logs
 
 ### Service Logs
+
 ```bash
 # All services
 ./scripts/[env].sh logs
@@ -222,6 +241,7 @@ All configuration files use JavaScript (not TypeScript) following best practices
 ```
 
 ### Service Status
+
 ```bash
 # Quick status
 ./scripts/[env].sh status
@@ -234,6 +254,7 @@ docker service ps healthapp-[env]_[service]
 ## Scaling Services
 
 ### Development Environment
+
 ```bash
 # Scale backend
 ./scripts/deploy-dev.sh scale backend 3
@@ -243,6 +264,7 @@ docker service ps healthapp-[env]_[service]
 ```
 
 ### Production Environment
+
 ```bash
 # Scale with confirmation prompts
 ./scripts/deploy-prod.sh scale backend 5
@@ -343,6 +365,7 @@ If migrating from the previous setup:
 5. **Verify** application functionality
 
 This new architecture provides:
+
 - ✅ Clean separation between environments
 - ✅ Consistent port usage (3002, 3005, 5432)
 - ✅ Scalable Docker Swarm for dev/prod
