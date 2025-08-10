@@ -73,6 +73,91 @@ healthapp-nextjs/
 └── [config files]               # Application configuration
 ```
 
+## ✅ New Deployment for Local, Development and Production
+
+### File Organization
+
+- ✅ Docker files: All docker-* files moved to docker/ folder
+- ✅ Environment files: Created proper .env files in env_files/ folder
+- ✅ Scripts: All scripts already in scripts/ folder
+
+### Options/Parameters for the Command Line
+
+Local Development Script (scripts/dev-local.sh):
+
+- All missing options restored:
+./scripts/dev-local.sh start --migrate --seed                    # Run migrations & seeders
+./scripts/dev-local.sh start --ip-address 192.168.1.100         # Custom IP address
+./scripts/dev-local.sh clean --auto-yes                         # Skip confirmations
+
+Development Deployment Script (scripts/deploy-dev.sh):
+
+- Multi-server deployment options:
+./scripts/deploy-dev.sh deploy --migrate --seed                  # Run DB setup
+./scripts/deploy-dev.sh deploy --auto-yes                        # Skip confirmations
+./scripts/deploy-dev.sh deploy --all-ip 192.168.1.100          # Single server
+./scripts/deploy-dev.sh deploy --frontend-ip 192.168.1.10 \
+                              --backend-ip 192.168.1.11 \
+                              --postgres-ip 192.168.1.12 \
+                              --redis-ip 192.168.1.13             # Multi-server
+
+Production Deployment Script (scripts/deploy-prod.sh):
+
+- Same multi-server options for production:
+./scripts/deploy-prod.sh deploy --frontend-ip 10.0.1.10 \
+                                --backend-ip 10.0.1.11 \
+                                --postgres-ip 10.0.1.12           # Production multi-server
+./scripts/deploy-prod.sh deploy --migrate --auto-yes            # Automated deployment
+
+### Multi-Server Deployment Capabilities
+
+✅ Separate Server Deployment Options:
+
+- --frontend-ip - Deploy frontend to specific server
+- --backend-ip - Deploy backend to specific server
+- --postgres-ip - Deploy PostgreSQL to specific server
+- --redis-ip - Deploy Redis to specific server
+- --all-ip - Deploy all services to same server
+
+### Updated File Paths
+
+✅ All scripts now reference correct paths:
+
+- Docker compose files: docker/docker-compose.local.yml
+- Docker stack files: docker/docker-stack.dev.yml, docker/docker-stack.prod.yml
+- Environment files: env_files/.env.local, env_files/.env.dev
+- Dockerfiles: docker/Dockerfile.local, docker/Dockerfile.prod
+
+### Environment Files Created
+
+✅ Proper environment configuration:
+
+- env_files/.env.local - Local development variables
+- env_files/.env.dev - Development swarm variables
+- env_files/.env.prod.example - Production template
+
+🚀 Enhanced Usage Examples
+
+#### LOCAL DEVELOPMENT
+
+./scripts/dev-local.sh start --migrate --seed --ip-address 192.168.1.100
+
+#### DEVELOPMENT DEPLOYMENT (Multi-server)
+
+./scripts/deploy-dev.sh deploy \
+  --frontend-ip 192.168.1.10 \
+  --backend-ip 192.168.1.11 \
+  --postgres-ip 192.168.1.12 \
+  --migrate --seed
+
+#### PRODUCTION DEPLOYMENT (Multi-server)
+
+./scripts/deploy-prod.sh deploy \
+  --frontend-ip 10.0.1.10 \
+  --backend-ip 10.0.1.11 \
+  --postgres-ip 10.0.1.12 \
+  --auto-yes
+
 ## 🚀 Development Deployment
 
 ### Quick Start
