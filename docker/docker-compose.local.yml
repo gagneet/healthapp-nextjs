@@ -95,6 +95,10 @@ services:
       NEXT_PUBLIC_FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3002}
       HOST_IP: ${HOST_IP:-192.168.0.148}
       ALLOWED_DEV_ORIGINS: ${HOST_IP:-192.168.0.148}:3002,localhost:3002
+      # WebSocket configuration for HMR
+      WATCHPACK_POLLING: true
+      WDS_SOCKET_HOST: ${HOST_IP:-192.168.0.148}
+      WDS_SOCKET_PORT: 3002
     ports:
       - "3002:3002"  # Frontend port
     volumes:

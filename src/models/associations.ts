@@ -255,19 +255,31 @@ export default function defineAssociations(models: any) {
     });
   }
 
+  // UserRole associations (direct relationship)
+  if (User && UserRole) {
+    User.hasMany(UserRole, { 
+      foreignKey: 'user_identity', 
+      as: 'roles' 
+    });
+    UserRole.belongsTo(User, { 
+      foreignKey: 'user_identity', 
+      as: 'user' 
+    });
+  }
+
   // Role associations (if using role-based access)
   if (User && Role && UserRole) {
     User.belongsToMany(Role, {
       through: UserRole,
       foreignKey: 'user_id',
       otherKey: 'role_id',
-      as: 'roles'
+      as: 'userRoles'
     });
     Role.belongsToMany(User, {
       through: UserRole,
       foreignKey: 'role_id',
       otherKey: 'user_id',
-      as: 'users'
+      as: 'roleUsers'
     });
   }
 

@@ -1,21 +1,10 @@
 'use client'
 
 import { useState } from 'react'
-import dynamic from 'next/dynamic'
 import BodyDiagram from './body-diagram'
-
-// Dynamically import 3D component to prevent SSR issues with Three.js
-const BodyDiagram3D = dynamic(() => import('./body-diagram-3d'), {
-  ssr: false,
-  loading: () => (
-    <div className="flex items-center justify-center h-64 bg-gray-50 rounded-lg">
-      <div className="text-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
-        <p className="text-gray-500">Loading 3D body diagram...</p>
-      </div>
-    </div>
-  )
-})
+import BodyDiagram3DSimple from './body-diagram-3d-simple'
+import BodyDiagram3DWrapper from './body-diagram-3d-wrapper'
+import BodyDiagramErrorBoundary from './body-diagram-error-boundary'
 
 interface Symptom {
   id: string
@@ -50,6 +39,7 @@ export default function BodyDiagramEnhanced({
   gender = 'male'
 }: BodyDiagramEnhancedProps) {
   const [mode, setMode] = useState<'2d' | '3d'>('2d')
+  const [has3DError, setHas3DError] = useState(false)
 
   // Convert 3D coordinates to 2D for legacy support
   const symptoms2D = symptoms.map(symptom => ({
@@ -120,8 +110,8 @@ export default function BodyDiagramEnhanced({
           onViewChange={onViewChange}
           highlightedSymptom={highlightedSymptom}
         />
-      ) : (
-        <BodyDiagram3D
+      ) : has3DError ? (
+        <BodyDiagram3DSimple
           symptoms={symptoms3D}
           onSymptomClick={onSymptomClick}
           onBodyClick={handle3DBodyClick}
@@ -129,6 +119,26 @@ export default function BodyDiagramEnhanced({
           gender={gender}
           highlightedSymptom={highlightedSymptom}
         />
+      ) : (
+        <BodyDiagramErrorBoundary fallback={({ error }) => (
+          <BodyDiagram3DSimple
+            symptoms={symptoms3D}
+            onSymptomClick={onSymptomClick}
+            onBodyClick={handle3DBodyClick}
+            interactive={interactive}
+            gender={gender}
+            highlightedSymptom={highlightedSymptom}
+          />
+        )}>
+          <BodyDiagram3DWrapper
+            symptoms={symptoms3D}
+            onSymptomClick={onSymptomClick}
+            onBodyClick={handle3DBodyClick}
+            interactive={interactive}
+            gender={gender}
+            highlightedSymptom={highlightedSymptom}
+          />
+        </BodyDiagramErrorBoundary>
       )}
 
       {/* Feature info */}

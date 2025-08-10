@@ -11,6 +11,22 @@ const nextConfig = {
     BACKEND_URL: process.env.BACKEND_URL || 'http://localhost:3005',
     NEXT_PUBLIC_FRONTEND_URL: process.env.NEXT_PUBLIC_FRONTEND_URL || 'http://localhost:3002',
     NEXT_PUBLIC_BACKEND_URL: process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3005',
+    // WebSocket environment variables for Docker HMR
+    WDS_SOCKET_HOST: process.env.WDS_SOCKET_HOST,
+    WDS_SOCKET_PORT: process.env.WDS_SOCKET_PORT,
+    WATCHPACK_POLLING: process.env.WATCHPACK_POLLING,
+  },
+  // WebSocket configuration for Docker environments
+  webpackDevMiddleware: (config) => {
+    config.watchOptions = {
+      poll: 1000,
+      aggregateTimeout: 300,
+    }
+    return config
+  },
+  // Configure WebSocket hostname for Docker
+  experimental: {
+    forceSwcTransforms: true,
   },
   allowedDevOrigins: process.env.ALLOWED_DEV_ORIGINS ? 
     process.env.ALLOWED_DEV_ORIGINS.split(',') : 
@@ -38,6 +54,7 @@ const nextConfig = {
         path: false,
       }
     }
+    
     return config
   },
   async rewrites() {
