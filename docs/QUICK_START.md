@@ -27,7 +27,7 @@ npx prisma generate
 
 # 4. Deploy everything with Next.js + Prisma
 chmod +x scripts/deploy-nextjs-local.sh
-./scripts/deploy-nextjs-local.sh deploy --migrate
+./scripts/deploy-nextjs-local.sh deploy --migrate --seed
 ```
 
 ## 🎯 What You Get
@@ -36,10 +36,10 @@ After successful deployment (Simplified Architecture):
 
 | Service | URL | Purpose |
 |---------|-----|---------|
-| **🏥 Healthcare App** | [http://localhost:3002](http://localhost:3002) | **Full-Stack Next.js Application** |
-| **🔧 API Routes** | [http://localhost:3002/api](http://localhost:3002/api) | **Integrated Next.js API Routes** |
-| **💊 Health Check** | [http://localhost:3002/api/health](http://localhost:3002/api/health) | **Real Database Statistics** |
-| **📊 Database** | localhost:5432 | PostgreSQL with 46 Healthcare Models |
+| **🏥 Healthcare App** | [http://192.168.0.148:3002](http://192.168.0.148:3002) | **Full-Stack Next.js Application** |
+| **🔧 API Routes** | [http://192.168.0.148:3002/api](http://192.168.0.148:3002/api) | **Integrated Next.js API Routes** |
+| **💊 Health Check** | [http://192.168.0.148:3002/api/health](http://192.168.0.148:3002/api/health) | **Real Database Statistics** |
+| **📊 Database** | 192.168.0.148:5432 | PostgreSQL with 46 Healthcare Models |
 
 ### **Key Architecture Changes** ✅
 
@@ -52,10 +52,11 @@ After successful deployment (Simplified Architecture):
 
 ### Default Access
 
-- **Application**: [http://localhost:3002](http://localhost:3002)
-- **Doctor Dashboard**: `/dashboard/doctor` (requires authentication)
+- **Application**: [http://192.168.0.148:3002](http://192.168.0.148:3002)
+- **Doctor Dashboard**: `/dashboard/doctor` (requires authentication)  
 - **Patient Dashboard**: `/dashboard/patient` (requires authentication)
 - **Test Credentials**: Available in database (check with API health endpoint)
+- **Real-time Debugging**: `./scripts/deploy-nextjs-local.sh monitor`
 
 ## ⚙️ Environment Configuration
 
