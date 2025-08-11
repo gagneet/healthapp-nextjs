@@ -1,10 +1,10 @@
-# Healthcare Application Architecture
+# Healthcare Application Architecture - Next.js + Prisma
 
 ## 🏗️ System Architecture Overview
 
-The Healthcare Management Platform uses a modern hybrid architecture combining NextJS frontend with Node.js Express API backend, designed for scalability, security, and compliance with healthcare standards.
+The Healthcare Management Platform uses a **modern pure Next.js architecture** with integrated API routes and Prisma ORM, designed for scalability, security, and compliance with healthcare standards.
 
-## 📐 Architecture Diagram
+## 📐 Updated Architecture Diagram
 
 ```text
 ┌─────────────────────────────────────────────────────────────────┐
@@ -15,29 +15,26 @@ The Healthcare Management Platform uses a modern hybrid architecture combining N
     ┌─────────────────┼─────────────────┐
     │                 │                 │
     ▼                 ▼                 ▼
-┌─────────┐    ┌─────────────┐    ┌─────────────┐
-│Frontend │    │  Frontend   │    │  Frontend   │
-│NextJS   │    │   NextJS    │    │   NextJS    │
-│:3000    │    │   :3000     │    │   :3000     │
-└─────────┘    └─────────────┘    └─────────────┘
-    │                 │                 │
-    └─────────────────┼─────────────────┘
-                      │
-            ┌─────────┼─────────┐
-            ▼         ▼         ▼
-    ┌─────────────────────────────────┐
-    │        API Gateway              │
-    │     Rate Limiting & Auth        │
-    └─────────────────────────────────┘
-                      │
-    ┌─────────────────┼─────────────────┐
-    │                 │                 │
-    ▼                 ▼                 ▼
-┌─────────┐    ┌─────────────┐    ┌─────────────┐
-│Backend  │    │   Backend   │    │   Backend   │
-│Node.js  │    │   Node.js   │    │   Node.js   │
-│:3001    │    │   :3001     │    │   :3001     │
-└─────────┘    └─────────────┘    └─────────────┘
+┌─────────────┐ ┌─────────────┐ ┌─────────────┐
+│   Next.js   │ │   Next.js   │ │   Next.js   │
+│ Full-Stack  │ │ Full-Stack  │ │ Full-Stack  │
+│ Healthcare  │ │ Healthcare  │ │ Healthcare  │
+│ Application │ │ Application │ │ Application │
+│    :3002    │ │    :3002    │ │    :3002    │
+│             │ │             │ │             │
+│ ┌─────────┐ │ │ ┌─────────┐ │ │ ┌─────────┐ │
+│ │Frontend │ │ │ │Frontend │ │ │ │Frontend │ │
+│ │App Router│ │ │ │App Router│ │ │ │App Router│ │
+│ └─────────┘ │ │ └─────────┘ │ │ └─────────┘ │
+│ ┌─────────┐ │ │ ┌─────────┐ │ │ ┌─────────┐ │
+│ │API Routes│ │ │ │API Routes│ │ │ │API Routes│ │
+│ │/app/api │ │ │ │/app/api │ │ │ │/app/api │ │
+│ └─────────┘ │ │ └─────────┘ │ │ └─────────┘ │
+│ ┌─────────┐ │ │ ┌─────────┐ │ │ ┌─────────┐ │
+│ │ Prisma  │ │ │ │ Prisma  │ │ │ │ Prisma  │ │
+│ │   ORM   │ │ │ │   ORM   │ │ │ │   ORM   │ │
+│ └─────────┘ │ │ └─────────┘ │ │ └─────────┘ │
+└─────────────┘ └─────────────┘ └─────────────┘
     │                 │                 │
     └─────────────────┼─────────────────┘
                       │
@@ -48,44 +45,58 @@ The Healthcare Management Platform uses a modern hybrid architecture combining N
 │ PostgreSQL  │ │    Redis    │ │   File Storage  │
 │  Database   │ │ Cache/Queue │ │   AWS S3/Azure  │
 │   :5432     │ │    :6379    │ │                 │
+│             │ │             │ │                 │
+│ 46 Healthcare│ │Session &   │ │Medical Documents│
+│   Models    │ │Rate Limiting│ │& Images         │
 └─────────────┘ └─────────────┘ └─────────────────┘
 ```
 
 ## 🎯 Core Architecture Principles
 
-### 1. **Hybrid Frontend-Backend Architecture**
+### 1. **Pure Next.js Full-Stack Architecture**
 
-- **Frontend**: NextJS 14 with App Router for modern React development
-- **Backend**: Node.js Express API with Sequelize ORM
-- **Communication**: RESTful APIs with JSON responses
-- **Authentication**: JWT-based with role-based access control
+- **Frontend**: Next.js 14 with App Router for modern React development
+- **Backend**: Integrated Next.js API routes (/app/api) - **NO separate Express server**
+- **Database**: Prisma ORM with introspected PostgreSQL schema (46 healthcare models)
+- **Communication**: Direct API calls to Next.js routes
+- **Authentication**: JWT-based with role-based access control in API routes
 
-### 2. **Microservices-Ready Design**
+### 2. **Prisma-First Data Architecture**
 
-- **Service Layer**: Business logic separated from controllers
-- **Modular Structure**: Clear separation of concerns
-- **API-First**: Backend designed as headless API
-- **Scalable**: Easy to split into microservices when needed
+- **Type-Safe ORM**: Prisma provides full TypeScript integration 
+- **Database Introspection**: 46 healthcare models generated from existing PostgreSQL schema
+- **Service Layer**: Business logic in `/lib/api-services.ts`
+- **API Routes**: Next.js API routes in `/app/api` directory
+- **Scalable**: Can be easily containerized and scaled horizontally
 
-### 3. **Data Architecture**
+### 3. **Healthcare Data Models (Prisma Introspected)**
 
 ```text
 ┌─────────────────────────────────────┐
-│            Data Layer               │
+│         Prisma Data Layer           │
 ├─────────────────────────────────────┤
-│ PostgreSQL (Primary Database)       │
+│ PostgreSQL (46 Introspected Models) │
 │ ├── Users & Authentication          │
-│ ├── Healthcare Providers            │
+│ ├── Healthcare Providers (doctors)  │
 │ ├── Patients & Care Plans          │
 │ ├── Medications & Adherence        │
 │ ├── Appointments & Scheduling      │
 │ ├── Vital Signs & Readings        │
-│ ├── Secondary Doctor Management   │ ✅ New
-│ ├── Symptoms & Body Mapping       │ ✅ New
+│ ├── Secondary Doctor Management   │
+│ ├── Symptoms & Body Mapping       │
+│ ├── Organizations & Providers     │
+│ ├── Services & Subscriptions      │
+│ ├── Notifications & Devices       │
 │ └── Audit Logs & Compliance       │
 ├─────────────────────────────────────┤
+│ Prisma Client (Type-Safe)          │
+│ ├── Generated from existing DB     │
+│ ├── Full TypeScript integration    │
+│ ├── Connection pooling            │
+│ └── Query optimization            │
+├─────────────────────────────────────┤
 │ Redis (Cache & Sessions)           │ 
-│ ├── User Sessions                  │
+│ ├── JWT Session Storage           │
 │ ├── API Response Cache            │
 │ ├── Rate Limiting Data            │
 │ └── Real-time Notifications       │

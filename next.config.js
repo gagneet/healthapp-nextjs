@@ -1,24 +1,39 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Enable standalone output for Docker deployments
+  output: 'standalone',
+  
   typescript: {
-    ignoreBuildErrors: true,
+    ignoreBuildErrors: false, // Enable strict TypeScript checking for production
   },
+  
   productionBrowserSourceMaps: false,
+  
   images: {
     domains: ['localhost', 'via.placeholder.com'],
+    // Add any healthcare image domains you use
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: '**',
+      },
+    ],
   },
+  
   env: {
-    BACKEND_URL: process.env.BACKEND_URL || 'http://localhost:3005',
-    NEXT_PUBLIC_FRONTEND_URL: process.env.NEXT_PUBLIC_FRONTEND_URL || 'http://localhost:3002',
-    NEXT_PUBLIC_BACKEND_URL: process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3005',
+    // Pure Next.js configuration - no backend service
+    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3002/api',
     // WebSocket environment variables for Docker HMR
     WDS_SOCKET_HOST: process.env.WDS_SOCKET_HOST,
     WDS_SOCKET_PORT: process.env.WDS_SOCKET_PORT,
     WATCHPACK_POLLING: process.env.WATCHPACK_POLLING,
   },
+  
   // Configure WebSocket hostname for Docker
   experimental: {
     forceSwcTransforms: true,
+    // Enable server-side caching for healthcare applications
+    serverComponentsExternalPackages: ['prisma', '@prisma/client'],
   },
   // WebSocket configuration moved to webpack config for polling in Docker
   allowedDevOrigins: process.env.ALLOWED_DEV_ORIGINS ? 
@@ -29,14 +44,14 @@ const nextConfig = {
       '127.0.0.1:3002'
     ],
   webpack: (config, { isServer }) => {
-    // Exclude backend dependencies from client-side bundle
+    // Optimize for Prisma and healthcare applications
     if (!isServer) {
+      // Client-side bundle exclusions for database dependencies
       config.resolve.fallback = {
         ...config.resolve.fallback,
         fs: false,
         net: false,
         tls: false,
-        crypto: false,
         stream: false,
         url: false,
         zlib: false,
@@ -45,39 +60,35 @@ const nextConfig = {
         assert: false,
         os: false,
         path: false,
-        // Add database-specific exclusions
+        // Prisma and database exclusions
+        '@prisma/client': false,
+        prisma: false,
         pg: false,
-        'pg-hstore': false,
-        sequelize: false,
+        'pg-native': false,
         redis: false,
       }
     }
 
-    // Optimize API route imports for server-side
+    // Server-side optimizations for healthcare application
     if (isServer) {
       config.externals = config.externals || [];
       config.externals.push({
-        // Mark certain modules as external for server builds
         'utf-8-validate': 'commonjs utf-8-validate',
         'bufferutil': 'commonjs bufferutil',
+        // Keep Prisma as external for better performance
+        '@prisma/client': 'commonjs @prisma/client',
       });
     }
     
     return config
   },
-  // Removed rewrites - Now using native Next.js API routes
-  // This allows /app/api routes to work instead of proxying to Express
-  // For legacy support, specific routes can still be proxied if needed
+  
+  // Pure Next.js API routes - no Express backend needed
   async rewrites() {
-    // Only proxy specific legacy routes if needed during transition
-    const legacyRoutes = process.env.PROXY_LEGACY_ROUTES === 'true' ? [
-      {
-        source: '/api/legacy/:path*',
-        destination: `${process.env.BACKEND_URL || 'http://localhost:3005'}/api/:path*`,
-      },
-    ] : [];
-    
-    return legacyRoutes;
+    return [
+      // All API routes handled by Next.js /app/api directory
+      // No external backend rewrites required
+    ];
   },
 };
 

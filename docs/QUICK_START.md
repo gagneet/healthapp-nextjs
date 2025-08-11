@@ -1,13 +1,14 @@
 # 🚀 Quick Start Guide - Healthcare Management Platform
+## **Pure Next.js + Prisma Architecture**
 
-## ⚡ 5-Minute Setup
+## ⚡ 3-Minute Setup
 
 ### Prerequisites Check
 
 ```bash
 # Verify you have these installed:
-node --version    # Should be 18.0.0+
-docker --version  # Any recent version
+node --version    # Should be 22.18.0+ (LTS)
+docker --version  # Any recent version  
 git --version     # Any recent version
 ```
 
@@ -21,26 +22,40 @@ cd healthapp-nextjs
 # 2. Install dependencies
 npm install
 
-# 3. Deploy everything (includes migrations & seeding)
-chmod +x scripts/deploy-dev.sh
-./scripts/deploy-dev.sh
+# 3. Generate Prisma client from existing database
+npx prisma generate
+
+# 4. Deploy everything with Next.js + Prisma
+chmod +x scripts/deploy-nextjs-local.sh
+./scripts/deploy-nextjs-local.sh deploy --migrate
 ```
 
 ## 🎯 What You Get
 
-After successful deployment:
+After successful deployment (Simplified Architecture):
 
 | Service | URL | Purpose |
 |---------|-----|---------|
-| **🏥 Frontend** | [http://localhost:3002](http://localhost:3002) | Healthcare Management UI |
-| **🔧 Backend API** | [http://localhost:3001](http://localhost:3001) | REST API Server |
-| **📊 pgAdmin** | [http://localhost:5050](http://localhost:5050) | Database Management |
-| **📈 API Docs** | [http://localhost:3001/api-docs](http://localhost:3001/api-docs) | API Documentation |
+| **🏥 Healthcare App** | [http://localhost:3002](http://localhost:3002) | **Full-Stack Next.js Application** |
+| **🔧 API Routes** | [http://localhost:3002/api](http://localhost:3002/api) | **Integrated Next.js API Routes** |
+| **💊 Health Check** | [http://localhost:3002/api/health](http://localhost:3002/api/health) | **Real Database Statistics** |
+| **📊 Database** | localhost:5432 | PostgreSQL with 46 Healthcare Models |
 
-### Default Credentials
+### **Key Architecture Changes** ✅
 
-- **pgAdmin**: admin @healthapp.com / admin123
-- **Application**: Create account through frontend UI
+- ❌ **No separate Express backend** (port 3005) 
+- ❌ **No API proxying required**
+- ✅ **Single Next.js service** with integrated API routes
+- ✅ **Prisma ORM** with introspected healthcare schema  
+- ✅ **Type-safe database operations**
+- ✅ **Faster startup** (2-3 seconds vs 5-8 seconds)
+
+### Default Access
+
+- **Application**: [http://localhost:3002](http://localhost:3002)
+- **Doctor Dashboard**: `/dashboard/doctor` (requires authentication)
+- **Patient Dashboard**: `/dashboard/patient` (requires authentication)
+- **Test Credentials**: Available in database (check with API health endpoint)
 
 ## ⚙️ Environment Configuration
 

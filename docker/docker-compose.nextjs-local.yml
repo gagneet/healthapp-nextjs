@@ -1,0 +1,125 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database (Local Development)
+  postgres:
+    image: postgres:15-alpine
+    container_name: healthapp-postgres-local
+    environment:
+      POSTGRES_DB: healthapp_dev
+      POSTGRES_USER: healthapp_user
+      POSTGRES_PASSWORD: pg_password
+      POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --lc-collate=C --lc-ctype=C"
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data_local:/var/lib/postgresql/data
+      - ./postgres-init:/docker-entrypoint-initdb.d
+    networks:
+      - healthapp-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U healthapp_user -d healthapp_dev"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis Cache (Local Development)  
+  redis:
+    image: redis:7-alpine
+    container_name: healthapp-redis-local
+    command: redis-server --requirepass redis_password --appendonly yes
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data_local:/data
+    networks:
+      - healthapp-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+
+  # Next.js Healthcare Application (Local Development)
+  nextjs:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.nextjs
+      target: runner
+    container_name: healthapp-nextjs-local
+    environment:
+      NODE_ENV: development
+      PORT: 3002
+      HOST_IP: ${HOST_IP:-192.168.0.148}
+      
+      # Database Configuration for Prisma
+      DATABASE_URL: "postgresql://healthapp_user:pg_password@postgres:5432/healthapp_dev?schema=public"
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: healthapp_dev
+      POSTGRES_USER: healthapp_user
+      POSTGRES_PASSWORD: pg_password
+      
+      # Redis Configuration
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: redis_password
+      
+      # JWT Configuration
+      JWT_SECRET: development_jwt_secret_key_256_bits_long_for_local_testing_only
+      JWT_REFRESH_SECRET: development_refresh_secret_key_for_local_testing
+      JWT_EXPIRES_IN: 1h
+      JWT_REFRESH_EXPIRE: 7d
+      
+      # Application URLs
+      FRONTEND_URL: http://${HOST_IP:-192.168.0.148}:3002
+      NEXT_PUBLIC_API_URL: http://${HOST_IP:-192.168.0.148}:3002/api
+      
+      # Development Settings
+      RATE_LIMIT_WINDOW_MS: 900000
+      RATE_LIMIT_MAX_REQUESTS: 1000
+      LOG_LEVEL: debug
+      DEBUG: healthapp:*
+      
+    ports:
+      - "3002:3002"
+    volumes:
+      - ../logs:/app/logs
+      - nextjs_uploads_local:/app/uploads
+      # Mount source code for development (optional - for hot reload)
+      # - ..:/app
+      # - /app/node_modules
+      # - /app/.next
+    networks:
+      - healthapp-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3002/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    command: ["node", "server.js"]
+    # For development with hot reload, use:
+    # command: ["npm", "run", "dev"]
+
+volumes:
+  postgres_data_local:
+    driver: local
+  redis_data_local:
+    driver: local
+  nextjs_uploads_local:
+    driver: local
+
+networks:
+  healthapp-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
