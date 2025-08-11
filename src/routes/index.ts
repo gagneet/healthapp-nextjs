@@ -2,6 +2,7 @@
 import express from 'express';
 import authRoutes from './auth.js';
 import patientRoutes from './patients.js';
+import patientSelfRoutes from './patient.js';
 import doctorRoutes from './doctors.js';
 import medicationRoutes from './medications.js';
 import appointmentRoutes from './appointments.js';
@@ -19,6 +20,7 @@ const router = express.Router();
 // Mount routes
 router.use('/auth', authRoutes);
 router.use('/patients', patientRoutes);
+router.use('/patient', patientSelfRoutes); // Patient self-service routes
 router.use('/doctors', doctorRoutes);
 router.use('/medications', medicationRoutes);
 router.use('/appointments', appointmentRoutes);
