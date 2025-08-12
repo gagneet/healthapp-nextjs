@@ -1,0 +1,62 @@
+# ============================================================================
+# NEXT.JS HEALTHCARE APPLICATION - DEVELOPMENT DOCKERFILE
+# ============================================================================
+# Optimized for development with hot reload, auto-migrations, and debugging
+# ============================================================================
+
+FROM node:22.18.0-alpine AS base
+LABEL description="Healthcare App - Development base"
+
+# Install system dependencies for development
+RUN apk add --no-cache \
+    curl \
+    bash \
+    git \
+    build-base \
+    openssl \
+    python3 \
+    make \
+    g++ \
+    postgresql-client
+
+WORKDIR /app
+
+# ============================================================================
+# DEVELOPMENT STAGE - Hot reload and debugging enabled
+# ============================================================================
+FROM base AS development
+LABEL stage=development
+LABEL description="Healthcare App - Development environment with hot reload"
+
+# Development environment
+ENV NODE_ENV=development
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV HOSTNAME="0.0.0.0"
+ENV PORT=3000
+
+# Install all dependencies (including dev dependencies)
+COPY package.json package-lock.json ./
+RUN npm ci
+
+# Copy Prisma schema for migrations
+COPY prisma ./prisma/
+
+# Generate Prisma client
+RUN npx prisma generate
+
+# Copy source code
+COPY . .
+
+# Create directories for development
+RUN mkdir -p logs uploads temp && \
+    chmod 755 logs uploads temp
+
+# Development health check
+HEALTHCHECK --interval=30s --timeout=15s --start-period=60s --retries=5 \
+    CMD curl -f http://localhost:3000/api/health || exit 1
+
+# Expose development port
+EXPOSE 3000
+
+# Default development command (can be overridden)
+CMD ["npm", "run", "dev"]

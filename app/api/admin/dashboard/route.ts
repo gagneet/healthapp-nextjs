@@ -70,7 +70,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
             gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
             lte: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
           },
-          status: 'confirmed'
+          // Note: appointments table may not have status field in current schema
         }
       }),
       

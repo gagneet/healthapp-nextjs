@@ -1,5 +1,5 @@
 # 🚀 Quick Start Guide - Healthcare Management Platform
-## **Next.js Frontend + Node.js Backend + Prisma Architecture**
+## **Pure Next.js Full-Stack + NextAuth.js + Prisma Architecture**
 
 ## ⚡ 5-Minute Setup
 
@@ -25,58 +25,65 @@ npm install
 # 3. Generate Prisma client
 npx prisma generate
 
-# 4. Deploy local development environment
-chmod +x scripts/dev-local.sh
-./scripts/dev-local.sh start --migrate --seed
+# 4. Quick start with Next.js application
+chmod +x quick-start-nextjs.sh
+./quick-start-nextjs.sh
 ```
 
 ## 🎯 What You Get
 
-After successful deployment (Full-Stack Architecture):
+After successful deployment (Pure Next.js Architecture):
 
 | Service | URL | Purpose |
 |---------|-----|---------|
-| **🏥 Next.js Frontend** | [http://192.168.0.148:3002](http://192.168.0.148:3002) | **Modern Healthcare Dashboard** |
-| **🔧 Node.js API Backend** | [http://192.168.0.148:3005](http://192.168.0.148:3005) | **TypeScript REST API with Business Logic** |
-| **💊 Health Check** | [http://192.168.0.148:3005/api/health](http://192.168.0.148:3005/api/health) | **Real Database Statistics** |
-| **📊 PostgreSQL** | 192.168.0.148:5434 | Advanced Healthcare Schema with Business IDs |
-| **⚡ Redis Cache** | 192.168.0.148:6379 | Session management and caching |
+| **🏥 Next.js Full-Stack App** | [http://localhost:3000](http://localhost:3000) | **Complete Healthcare Management Platform** |
+| **💊 Health Check** | [http://localhost:3000/api/health](http://localhost:3000/api/health) | **Real Database Statistics** |
+| **📊 PostgreSQL** | localhost:5432 | Advanced Healthcare Schema with Prisma |
+| **⚡ Redis Cache** | localhost:6379 | Session management and caching |
+| **🗄️ Database Admin** | [http://localhost:5050](http://localhost:5050) | **PgAdmin Interface** |
 
 ### **Current Architecture** ✅
 
-- ✅ **Next.js 14 Frontend** with App Router (port 3002)
-- ✅ **Node.js/Express Backend** with TypeScript (port 3005) 
-- ✅ **API proxying** via Next.js rewrites to backend
-- ✅ **Prisma ORM** with comprehensive healthcare schema  
+- ✅ **Pure Next.js 14 Full-Stack** with App Router (port 3000)
+- ✅ **NextAuth.js Authentication** with healthcare role-based permissions
+- ✅ **Integrated API routes** in `/app/api` directory - no separate backend
+- ✅ **Prisma ORM** with introspected PostgreSQL healthcare schema  
 - ✅ **Business ID generation** (DOC-2025-001, PAT-2025-001, HSP-2025-001)
-- ✅ **Type-safe operations** across frontend and backend
-- ✅ **Faster startup** (2-3 seconds vs 5-8 seconds)
+- ✅ **Type-safe operations** with full TypeScript integration
+- ✅ **Simplified deployment** - single Next.js service only
 
 ### Default Access
 
-- **Application**: [http://192.168.0.148:3002](http://192.168.0.148:3002)
+- **Application**: [http://localhost:3000](http://localhost:3000)
 - **Doctor Dashboard**: `/dashboard/doctor` (requires authentication)  
 - **Patient Dashboard**: `/dashboard/patient` (requires authentication)
-- **Test Credentials**: Available in database (check with API health endpoint)
-- **Real-time Debugging**: `./scripts/deploy-nextjs-local.sh monitor`
+- **Admin Dashboard**: `/dashboard/admin` (requires authentication)
+- **NextAuth.js Sign In**: `/api/auth/signin`
+- **Health Check**: [http://localhost:3000/api/health](http://localhost:3000/api/health)
 
 ## ⚙️ Environment Configuration
 
-The deployment script will prompt you to configure `.env.development` if it doesn't exist.
+The deployment script will create `.env.local` if it doesn't exist.
 
-### Required Changes (Minimum)
+### Required Environment Variables
 
 ```bash
-# Edit .env.development
-POSTGRES_PASSWORD=YourSecurePassword123!
-JWT_SECRET=your-256-bit-secret-key-here (25af6001e43881f727388f44e0f6fff837510b0649fe9393987f009c595156f778442654270516863b00617b478aa46dea6311f74fb95325d3c9a344b125d033)
+# NextAuth.js Configuration
+NEXTAUTH_URL=http://localhost:3000
+NEXTAUTH_SECRET=nextjs_healthcare_secret_key_for_development_not_for_production
+
+# Database Connection (Prisma)
+DATABASE_URL="postgresql://healthapp_user:pg_password@localhost:5432/healthapp_dev?schema=public"
+
+# Application Settings
+NEXT_PUBLIC_API_URL=http://localhost:3000/api
 ```
 
-### Generate Secure JWT Secret
+### Generate Secure NextAuth Secret
 
 ```bash
-# Run this command to generate a secure JWT secret:
-node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
+# Run this command to generate a secure NextAuth secret:
+node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
 ```
 
 ## 🔧 Post-Deployment Verification
@@ -84,32 +91,31 @@ node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
 ### Check All Services
 
 ```bash
-docker stack services healthapp
+docker-compose -f docker/docker-compose.nextjs-local.yml ps
 ```
 
 Expected output:
 
 ```text
-         Name                       State           Ports
-----------------------------------------------------------------
-healthapp-backend-dev     Up      0.0.0.0:3001->3001/tcp
-healthapp-frontend-dev    Up      0.0.0.0:3002->3000/tcp
-healthapp-pgadmin-dev     Up      0.0.0.0:5050->80/tcp
-healthapp-postgres-dev    Up      0.0.0.0:5433->5432/tcp
-healthapp-redis-dev       Up      0.0.0.0:6379->6379/tcp
+              Name                            State           Ports
+-------------------------------------------------------------------------
+healthapp-nextjs-app-local        Up      0.0.0.0:3000->3000/tcp
+healthapp-nextjs-postgres-local   Up      0.0.0.0:5432->5432/tcp
+healthapp-nextjs-redis-local      Up      0.0.0.0:6379->6379/tcp
+healthapp-nextjs-pgadmin-local    Up      0.0.0.0:5050->80/tcp
 ```
 
 ### Test API Health
 
 ```bash
-curl http://localhost:3001/api/health
-# Expected: {"status":"ok","timestamp":"..."}
+curl http://localhost:3000/api/health
+# Expected: {"status":true,"payload":{"data":{...}}}
 ```
 
 ### Test Frontend
 
 ```bash
-curl -I http://localhost:3002
+curl -I http://localhost:3000
 # Expected: HTTP/1.1 200 OK
 ```
 
@@ -121,24 +127,24 @@ curl -I http://localhost:3002
 
 ```bash
 # Kill processes using conflicting ports
-sudo fuser -k 3000/tcp 3001/tcp 5432/tcp
+sudo fuser -k 3000/tcp 5432/tcp 6379/tcp
 ```
 
 **Database Connection Issues:**
 
 ```bash
-# Check PostgreSQL service
-docker service logs healthapp_postgres -f
-docker service update --force healthapp_postgres
+# Check PostgreSQL container
+docker logs healthapp-nextjs-postgres-local
+docker restart healthapp-nextjs-postgres-local
 ```
 
 **Complete Reset (Nuclear Option):**
 
 ```bash
 # Stop everything and start fresh
-docker stack rm healthapp
-sleep 30
-./scripts/deploy-stack.sh dev --auto-yes
+docker-compose -f docker/docker-compose.nextjs-local.yml down -v
+sleep 10
+./quick-start-nextjs.sh
 ```
 
 ## 📚 Useful Commands
@@ -147,34 +153,31 @@ sleep 30
 
 ```bash
 # View logs
-docker service logs healthapp_[service] -f
+docker-compose -f docker/docker-compose.nextjs-local.yml logs -f nextjs
 
-# Restart specific service
-docker service update --force healthapp_[service]
-
-# Scale services
-docker service scale healthapp_backend=5 healthapp_frontend=3
+# Restart Next.js service
+docker-compose -f docker/docker-compose.nextjs-local.yml restart nextjs
 
 # Stop all services
-docker stack rm healthapp
+docker-compose -f docker/docker-compose.nextjs-local.yml down
 ```
 
 ### Database Operations
 
 ```bash
-# Database operations (get container ID first)
-BACKEND_CONTAINER=$(docker ps -q -f name=healthapp_backend)
-docker exec $BACKEND_CONTAINER npm run migrate
-docker exec $BACKEND_CONTAINER npm run seed
-docker exec $BACKEND_CONTAINER npm run migrate:undo
+# Prisma operations (get container ID first)
+NEXTJS_CONTAINER=$(docker ps -q -f name=healthapp-nextjs-app-local)
+docker exec $NEXTJS_CONTAINER npx prisma migrate dev
+docker exec $NEXTJS_CONTAINER npx prisma db seed
+docker exec $NEXTJS_CONTAINER npx prisma migrate reset
 ```
 
 ### Development
 
 ```bash
 # Run locally (without Docker)
-npm run backend:dev  # Backend on :3001
-npm run dev          # Frontend on :3000
+npm run dev          # Full-stack Next.js on :3000
+# Note: No separate backend needed - APIs are integrated
 ```
 
 ## 🎯 Key Features Available
@@ -194,11 +197,12 @@ Once deployed, you have access to:
 
 ## 📝 Next Steps
 
-1. **Explore the UI**: Visit [http://localhost:3002](http://localhost:3002)
-2. **Create Admin Account**: Use the registration form
-3. **Review API Docs**: Visit [http://localhost:3001/api-docs](http://localhost:3001/api-docs)
+1. **Explore the UI**: Visit [http://localhost:3000](http://localhost:3000)
+2. **Sign In**: Use NextAuth.js at `/api/auth/signin`
+3. **Create Test Data**: Use Prisma seed data for testing
 4. **Database Exploration**: Use pgAdmin at [http://localhost:5050](http://localhost:5050)
-5. **Read Full Guide**: See `SETUP_GUIDE.md` for detailed configuration
+5. **API Testing**: Test endpoints at [http://localhost:3000/api/health](http://localhost:3000/api/health)
+6. **Read Full Guide**: See `SETUP_GUIDE.md` for detailed configuration
 
 ## 🔒 Security Notes
 
@@ -223,11 +227,11 @@ Once deployed, you have access to:
 
 - **Full Setup Guide**: `SETUP_GUIDE.md`
 - **Architecture Overview**: `README.md`
-- **API Documentation**: [http://localhost:3001/api-docs](http://localhost:3001/api-docs) (after deployment)
+- **API Health Check**: [http://localhost:3000/api/health](http://localhost:3000/api/health) (after deployment)
 - **Docker Guide**: `docs/docker_deployment_guide.md`
 
 ---
 
 **🎉 That's it! Your Healthcare Management Platform is ready to use!**
 
-## *Last updated: January 2025*
+## *Last updated: August 2025 - Pure Next.js Migration Complete*

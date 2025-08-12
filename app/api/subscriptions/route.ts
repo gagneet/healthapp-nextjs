@@ -320,8 +320,9 @@ export async function PUT(request: NextRequest) {
   }
 }
 
+// Note: GET_PLANS functionality moved to /api/subscriptions/plans route
 // GET available service plans
-export async function GET_PLANS(request: NextRequest) {
+async function getAvailablePlans(request: NextRequest) {
   try {
     const { user, error } = await verifyAuth(request);
     if (error) {

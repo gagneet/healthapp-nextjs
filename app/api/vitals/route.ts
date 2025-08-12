@@ -118,35 +118,19 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
         message: 'Vitals retrieved successfully'
       }
     });
-  } catch (error) {
-    console.error('Error fetching vitals:', error);
-    return NextResponse.json({
-      status: false,
-      statusCode: 500,
-      payload: { error: { status: 'error', message: 'Internal server error' } }
-    }, { status: 500 });
+});
+
+export const POST = withErrorHandling(async (request: NextRequest) => {
+  const session = await getServerSession(authOptions)
+  
+  if (!session) {
+    return createUnauthorizedResponse()
   }
-}
 
-export async function POST(request: NextRequest) {
-  try {
-    const { user, error } = await verifyAuth(request);
-    if (error) {
-      return NextResponse.json({ 
-        status: false, 
-        statusCode: 401, 
-        payload: { error: { status: 'unauthorized', message: error } } 
-      }, { status: 401 });
-    }
-
-    // Only doctors and HSPs can create vitals
-    if (!['DOCTOR', 'HSP'].includes(user.role)) {
-      return NextResponse.json({
-        status: false,
-        statusCode: 403,
-        payload: { error: { status: 'forbidden', message: 'Only doctors and HSPs can create vitals' } }
-      }, { status: 403 });
-    }
+  // Only doctors and HSPs can create vitals
+  if (!['DOCTOR', 'HSP'].includes(session.user.role)) {
+    return createForbiddenResponse('Only doctors and HSPs can create vitals')
+  }
 
     const body = await request.json();
     const {
@@ -203,20 +187,5 @@ export async function POST(request: NextRequest) {
       }
     });
 
-    return NextResponse.json({
-      status: true,
-      statusCode: 201,
-      payload: {
-        data: { vital },
-        message: 'Vital monitoring created successfully'
-      }
-    });
-  } catch (error) {
-    console.error('Error creating vital:', error);
-    return NextResponse.json({
-      status: false,
-      statusCode: 500,
-      payload: { error: { status: 'error', message: 'Internal server error' } }
-    }, { status: 500 });
-  }
-}
+    return createSuccessResponse({ vital }, 'Vital monitoring created successfully', 201);
+});

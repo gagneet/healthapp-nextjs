@@ -1,0 +1,130 @@
+# ============================================================================
+# NEXT.JS HEALTHCARE APPLICATION - PRODUCTION DOCKERFILE
+# ============================================================================
+# Multi-stage build for pure Next.js 14 with NextAuth.js + Prisma + PostgreSQL
+# Optimized for healthcare application with security and performance focus
+# ============================================================================
+
+# ============================================================================
+# DEPENDENCIES STAGE - Install production dependencies only
+# ============================================================================
+FROM node:22.18.0-alpine AS deps
+LABEL stage=deps
+LABEL description="Healthcare App - Dependencies installation"
+
+# Install system dependencies for native modules
+RUN apk add --no-cache \
+    libc6-compat \
+    openssl \
+    build-base \
+    python3 \
+    make \
+    g++
+
+WORKDIR /app
+
+# Copy package files
+COPY package.json package-lock.json ./
+COPY prisma ./prisma/
+
+# Install dependencies and generate Prisma client
+ENV SKIP_ENV_VALIDATION=1
+RUN npm ci --only=production && \
+    npx prisma generate && \
+    npm cache clean --force
+
+# ============================================================================
+# BUILD STAGE - Build Next.js application with TypeScript
+# ============================================================================
+FROM node:22.18.0-alpine AS builder
+LABEL stage=builder
+LABEL description="Healthcare App - Build stage"
+
+WORKDIR /app
+RUN apk add --no-cache build-base openssl python3 make g++
+
+# Copy package files and install all dependencies
+COPY package.json package-lock.json ./
+COPY prisma ./prisma/
+RUN npm ci
+
+# Copy source code
+COPY . .
+
+# Build-time environment variables
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV SKIP_ENV_VALIDATION=1
+
+# Generate Prisma client and build Next.js
+RUN npx prisma generate && \
+    npm run build
+
+# ============================================================================
+# RUNTIME STAGE - Production runtime with security hardening
+# ============================================================================
+FROM node:22.18.0-alpine AS runner
+LABEL stage=runner
+LABEL description="Healthcare App - Production runtime"
+LABEL maintainer="Healthcare Team"
+LABEL version="2.0.0-nextjs-pure"
+
+WORKDIR /app
+
+# Install production utilities with security focus
+RUN apk add --no-cache \
+    curl \
+    bash \
+    openssl \
+    ca-certificates \
+    tini \
+    dumb-init && \
+    apk upgrade --no-cache
+
+# Production environment
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV HOSTNAME="0.0.0.0"
+ENV PORT=3000
+
+# Create non-root user for security
+RUN addgroup --system --gid 1001 nodejs && \
+    adduser --system --uid 1001 nextjs
+
+# Copy dependencies from deps stage
+COPY --from=deps --chown=nextjs:nodejs /app/node_modules ./node_modules
+COPY --from=deps --chown=nextjs:nodejs /app/prisma ./prisma
+
+# Copy built application from builder
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+COPY --from=builder --chown=nextjs:nodejs /app/public ./public
+COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma
+
+# Copy additional configuration files
+COPY --from=builder --chown=nextjs:nodejs /app/next.config.js ./
+COPY --from=builder --chown=nextjs:nodejs /app/middleware.ts ./middleware.js 2>/dev/null || :
+
+# Create directories for logs and uploads with proper permissions
+RUN mkdir -p /app/logs /app/uploads /app/temp && \
+    chown -R nextjs:nodejs /app/logs /app/uploads /app/temp
+
+# Healthcare application health check
+HEALTHCHECK --interval=30s --timeout=15s --start-period=60s --retries=5 \
+    CMD curl -f http://localhost:3000/api/health || exit 1
+
+# Switch to non-root user
+USER nextjs
+
+# Expose port
+EXPOSE 3000
+
+# Add health check endpoint validation
+RUN echo "#!/bin/bash\necho 'Healthcare App Starting...'\necho 'Port: $PORT'\necho 'Environment: $NODE_ENV'\necho 'User: $(whoami)'" > /app/startup-info.sh && \
+    chmod +x /app/startup-info.sh
+
+# Use dumb-init for proper signal handling in containers
+ENTRYPOINT ["dumb-init", "--"]
+
+# Start the application
+CMD ["/app/startup-info.sh", "&&", "node", "server.js"]

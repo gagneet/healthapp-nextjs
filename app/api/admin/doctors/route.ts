@@ -46,11 +46,11 @@ export async function GET(request: NextRequest) {
       prisma.doctors.findMany({
         where: whereClause,
         include: {
-          user: {
+          users_doctors_user_idTousers: {
             select: {
               id: true,
               email: true,
-              mobile_number: true,
+              phone: true,
               account_status: true,
               email_verified: true,
               last_login_at: true
