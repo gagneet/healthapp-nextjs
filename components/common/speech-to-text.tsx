@@ -222,7 +222,7 @@ export default function SpeechToText({
         clearTimeout(silenceTimerRef.current)
       }
     }
-  }, [language, autoStop])
+  }, [language, autoStop, detectLanguage, onTranscript, stopListening, transcript])
 
   // Simple language detection based on script and common words
   const detectLanguage = useCallback((text: string): string => {

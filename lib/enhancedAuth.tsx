@@ -161,7 +161,7 @@ export const EnhancedAuthProvider: React.FC<EnhancedAuthProviderProps> = ({ chil
 
     setRefreshPromise(promise)
     return promise
-  }, [clearTokens, storeTokens])
+  }, [clearTokens, storeTokens, refreshPromise])
 
   // Get valid access token (refresh if needed)
   const getValidToken = useCallback(async (): Promise<string | null> => {

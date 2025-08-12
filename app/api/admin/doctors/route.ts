@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { verifyAuth } from '@/lib/auth-utils';
 import bcrypt from 'bcryptjs';
+import { randomUUID } from 'crypto';
 
 export async function GET(request: NextRequest) {
   try {
@@ -63,11 +64,11 @@ export async function GET(request: NextRequest) {
               description: true
             }
           },
-          providers: {
+          organizations: {
             select: {
               id: true,
               name: true,
-              provider_type: true
+              type: true
             }
           },
           _count: {
@@ -140,13 +141,13 @@ export async function POST(request: NextRequest) {
       date_of_birth,
       gender,
       speciality_id,
-      license_number,
-      years_experience,
-      qualifications,
-      provider_id,
+      medical_license_number: license_number,
+      years_of_experience: years_experience,
+      qualification_details: qualifications,
+      organization_id: provider_id,
       consultation_fee,
-      available_days,
-      available_hours
+      // Note: available_days and available_hours are now part of availability_schedule JSON field
+      // They could be stored in availability_schedule if needed
     } = body;
 
     // Check if user already exists
@@ -174,11 +175,11 @@ export async function POST(request: NextRequest) {
           password_hash: hashedPassword,
           first_name,
           last_name,
-          mobile_number,
+          phone: mobile_number,
           date_of_birth: date_of_birth ? new Date(date_of_birth) : null,
           gender,
           role: 'DOCTOR',
-          account_status: 'active',
+          account_status: 'ACTIVE',
           email_verified: true,
           created_at: new Date(),
           updated_at: new Date()
@@ -188,26 +189,29 @@ export async function POST(request: NextRequest) {
       // Create doctor profile
       const doctor = await tx.doctors.create({
         data: {
+          id: randomUUID(),
+          doctor_id: `DOC-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 10000)).padStart(4, '0')}`,
           user_id: newUser.id,
           speciality_id,
-          license_number,
-          years_experience: years_experience ? parseInt(years_experience) : null,
-          qualifications,
-          provider_id,
+          medical_license_number: license_number,
+          years_of_experience: years_experience ? parseInt(years_experience) : null,
+          qualification_details: qualifications,
+          organization_id: provider_id,
           consultation_fee: consultation_fee ? parseFloat(consultation_fee) : null,
-          available_days,
-          available_hours,
+          // availability_schedule can be set here if needed
+          mobile_number,
+          gender,
           created_at: new Date(),
           updated_at: new Date()
         },
         include: {
-          user: {
+          users_doctors_user_idTousers: {
             select: {
               id: true,
               email: true,
               first_name: true,
               last_name: true,
-              mobile_number: true
+              phone: true
             }
           },
           specialities: {

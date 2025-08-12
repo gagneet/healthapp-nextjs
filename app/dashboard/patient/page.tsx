@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import dynamic from 'next/dynamic'
 import {
@@ -125,9 +125,9 @@ export default function PatientDashboard() {
 
   useEffect(() => {
     fetchDashboardData()
-  }, [user?.id])
+  }, [fetchDashboardData])
 
-  const fetchDashboardData = async () => {
+  const fetchDashboardData = useCallback(async () => {
     if (!user?.id) return
     
     setIsLoading(true)
@@ -152,7 +152,7 @@ export default function PatientDashboard() {
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [user?.id])
 
   // Mock data generation removed - using real API data only
 
