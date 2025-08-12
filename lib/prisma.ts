@@ -73,18 +73,11 @@ export const healthcareDb = {
       include: {
         healthcare_provider: {
           include: {
-            speciality: true,
             organization: true,
           },
         },
         patient: {
           include: {
-            primary_doctor: {
-              include: {
-                user: true,
-                speciality: true,
-              },
-            },
             organization: true,
           },
         },
@@ -100,69 +93,24 @@ export const healthcareDb = {
       where: { id: patientId },
       include: {
         user: true,
-        primary_doctor: {
+        doctors: {
           include: {
-            user: true,
-            speciality: true,
-          },
-        },
-        care_coordinator: {
-          include: {
-            user: true,
+            users_doctors_user_idTousers: true,
+            specialities: true,
           },
         },
         care_plans: {
           include: {
-            doctor: {
+            doctors: {
               include: {
-                user: true,
+                users_doctors_user_idTousers: true,
               },
             },
-            medications: true,
           },
         },
-        medications: {
-          include: {
-            medicine: true,
-            prescriber: {
-              include: {
-                user: true,
-              },
-            },
-            adherence_records: {
-              orderBy: {
-                scheduled_time: 'desc',
-              },
-              take: 10, // Last 10 records
-            },
-          },
-        },
-        appointments: {
-          include: {
-            doctor: {
-              include: {
-                user: true,
-              },
-            },
-            clinic: true,
-          },
-          orderBy: {
-            scheduled_date: 'desc',
-          },
-        },
-        vital_readings: {
-          include: {
-            vital_type: true,
-          },
-          orderBy: {
-            measured_at: 'desc',
-          },
-        },
-        symptoms: {
-          orderBy: {
-            created_at: 'desc',
-          },
-        },
+        appointments: true,
+        adherence_records: true,
+        symptoms: true,
       },
     });
   },
@@ -189,7 +137,7 @@ export const healthcareDb = {
       // Active care plans created by this doctor
       prisma.carePlan.count({
         where: {
-          doctor_id: doctorId,
+          created_by_doctor_id: doctorId,
           status: 'ACTIVE',
         },
       }),
@@ -198,12 +146,9 @@ export const healthcareDb = {
       prisma.appointment.count({
         where: {
           doctor_id: doctorId,
-          scheduled_date: {
+          start_date: {
             gte: new Date(new Date().setHours(0, 0, 0, 0)),
             lt: new Date(new Date().setHours(23, 59, 59, 999)),
-          },
-          status: {
-            in: ['SCHEDULED', 'CONFIRMED'],
           },
         },
       }),
@@ -219,8 +164,8 @@ export const healthcareDb = {
               },
             },
           },
-          is_critical: true,
-          measured_at: {
+          is_flagged: true,
+          reading_time: {
             gte: new Date(Date.now() - 24 * 60 * 60 * 1000),
           },
         },
@@ -229,13 +174,16 @@ export const healthcareDb = {
       // Missed medications in last 24 hours
       prisma.adherenceRecord.count({
         where: {
-          medication: {
-            prescriber: {
-              id: doctorId,
+          patient: {
+            patient_doctor_assignments: {
+              some: {
+                doctor_id: doctorId,
+                is_active: true,
+              },
             },
           },
-          was_taken: false,
-          scheduled_time: {
+          is_missed: true,
+          due_at: {
             gte: new Date(Date.now() - 24 * 60 * 60 * 1000),
             lt: new Date(),
           },
@@ -262,21 +210,17 @@ export const healthcareDb = {
     const adherenceRecords = await prisma.adherenceRecord.findMany({
       where: {
         patient_id: patientId,
-        scheduled_time: {
+        due_at: {
           gte: startDate,
         },
       },
       include: {
-        medication: {
-          include: {
-            medicine: true,
-          },
-        },
+        patient: true,
       },
     });
 
     const totalScheduled = adherenceRecords.length;
-    const totalTaken = adherenceRecords.filter(record => record.was_taken).length;
+    const totalTaken = adherenceRecords.filter(record => record.is_completed).length;
 
     return {
       adherenceRate: totalScheduled > 0 ? (totalTaken / totalScheduled) * 100 : 0,
@@ -292,9 +236,9 @@ export const healthcareDb = {
  * Type-safe transaction wrapper
  */
 export async function withTransaction<T>(
-  callback: (tx: PrismaClient) => Promise<T>
+  callback: (tx: typeof prisma) => Promise<T>
 ): Promise<T> {
-  return await prisma.$transaction(callback);
+  return await prisma.$transaction(callback as any) as T;
 }
 
 export default prisma;

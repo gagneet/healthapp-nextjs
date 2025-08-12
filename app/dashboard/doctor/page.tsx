@@ -42,7 +42,7 @@ interface CriticalAlertsAPI {
 
 interface AdherenceAnalyticsAPI {
   adherence_overview: { name: string; value: number; color: string }[]
-  monthly_trends: { month: string; medications: number; appointments: number; vitals: number }[]
+  monthly_trends: { month: string; care_plans: number; appointments: number; vitals: number }[]
 }
 
 export default function DoctorDashboard() {
@@ -57,7 +57,7 @@ export default function DoctorDashboard() {
   const [recentPatients, setRecentPatients] = useState<Patient[]>([])
   const [criticalAlerts, setCriticalAlerts] = useState<CriticalAlert[]>([])
   const [adherenceChartData, setAdherenceChartData] = useState<{ name: string; value: number; color: string }[]>([])
-  const [monthlyAdherenceData, setMonthlyAdherenceData] = useState<{ month: string; medications: number; appointments: number; vitals: number }[]>([])
+  const [monthlyAdherenceData, setMonthlyAdherenceData] = useState<{ month: string; care_plans: number; appointments: number; vitals: number }[]>([])
 
   const fetchDashboardData = async () => {
     try {

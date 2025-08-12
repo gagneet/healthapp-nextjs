@@ -207,7 +207,7 @@ export function createErrorResponse(
     const details = error.errors.map(err => ({
       field: err.path.join('.'),
       message: err.message,
-      received: err.received
+      received: (err as any).received || undefined
     }))
     
     errorResponse = createApiResponse(

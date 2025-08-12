@@ -53,7 +53,7 @@ export const PatientSchema = z.object({
   lastName: z.string().min(1, "Last name is required"),
   middleName: z.string().optional(),
   phone: z.string().regex(/^\+?[\d\s\-\(\)]+$/, "Invalid phone number format"),
-  dateOfBirth: z.string().pipe(z.coerce.date("Invalid date of birth")),
+  dateOfBirth: z.string().pipe(z.coerce.date({ message: "Invalid date of birth" })),
   gender: z.enum(["MALE", "FEMALE", "OTHER"]).optional(),
   
   // Medical Information
@@ -163,8 +163,8 @@ export const MedicationSchema = z.object({
   dosage: z.string().min(1, "Dosage is required"),
   frequency: z.string().min(1, "Frequency is required"),
   route: z.enum(["ORAL", "INJECTION", "TOPICAL", "INHALATION", "OTHER"]).default("ORAL"),
-  startDate: z.string().pipe(z.coerce.date("Invalid start date")),
-  endDate: z.string().pipe(z.coerce.date("Invalid end date")).optional(),
+  startDate: z.string().pipe(z.coerce.date({ message: "Invalid start date" })),
+  endDate: z.string().pipe(z.coerce.date({ message: "Invalid end date" })).optional(),
   instructions: z.string().optional(),
   
   // Safety Information
@@ -188,10 +188,10 @@ export const VitalSignSchema = z.object({
     "HEIGHT",
     "BMI"
   ]),
-  valuePrimary: z.number("Primary value is required"),
+  valuePrimary: z.number({ message: "Primary value is required" }),
   valueSecondary: z.number().optional(), // For blood pressure diastolic
   unit: z.string().min(1, "Unit is required"),
-  measuredAt: z.string().pipe(z.coerce.date("Invalid measurement date")),
+  measuredAt: z.string().pipe(z.coerce.date({ message: "Invalid measurement date" })),
   measurementMethod: z.enum(["MANUAL", "DEVICE", "ESTIMATED"]).default("MANUAL"),
   deviceId: z.string().optional(),
   notes: z.string().optional()
@@ -210,7 +210,7 @@ export const AppointmentSchema = z.object({
     "VITAL_CHECK",
     "TELEHEALTH"
   ]),
-  scheduledDate: z.string().pipe(z.coerce.date("Invalid appointment date")),
+  scheduledDate: z.string().pipe(z.coerce.date({ message: "Invalid appointment date" })),
   scheduledTime: z.string().regex(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/, "Invalid time format (HH:mm)"),
   durationMinutes: z.number().min(15).max(480).default(30),
   isVirtual: z.boolean().default(false),
@@ -247,10 +247,10 @@ export const CarePlanSchema = z.object({
     targetDate: z.string().pipe(z.coerce.date()).optional(),
     status: z.enum(["ACTIVE", "ACHIEVED", "MODIFIED", "DISCONTINUED"]).default("ACTIVE")
   })).default([]),
-  startDate: z.string().pipe(z.coerce.date("Invalid start date")),
+  startDate: z.string().pipe(z.coerce.date({ message: "Invalid start date" })),
   endDate: z.string().pipe(z.coerce.date()).optional(),
   planDetails: z.object({
-    medications: z.array(z.string()).optional(),
+    care_plans: z.array(z.string()).optional(),
     procedures: z.array(z.string()).optional(),
     lifestyle: z.object({
       diet: z.string().optional(),

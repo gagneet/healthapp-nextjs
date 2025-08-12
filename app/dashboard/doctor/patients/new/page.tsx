@@ -210,7 +210,7 @@ export default function AddPatientPage() {
         expiration_date: '',
         copay_amount: '',
         deductible_amount: '',
-        phone_number: ''
+        phone: ''
       },
       secondary: {
         insurance_company: '',
@@ -223,7 +223,7 @@ export default function AddPatientPage() {
         expiration_date: '',
         copay_amount: '',
         deductible_amount: '',
-        phone_number: ''
+        phone: ''
       },
       coverage_type: '',
       notes: ''
@@ -1277,12 +1277,12 @@ export default function AddPatientPage() {
                     </label>
                     <input
                       type="tel"
-                      value={formData.insurance_info.primary.phone_number}
+                      value={formData.insurance_info.primary.phone}
                       onChange={(e) => setFormData(prev => ({
                         ...prev,
                         insurance_info: {
                           ...prev.insurance_info,
-                          primary: { ...prev.insurance_info.primary, phone_number: e.target.value }
+                          primary: { ...prev.insurance_info.primary, phone: e.target.value }
                         }
                       }))}
                       placeholder="Insurance company customer service number"

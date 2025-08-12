@@ -28,7 +28,7 @@ interface CareplanTemplate {
   updated_at: string
   usage_count: number
   components: {
-    medications: number
+    care_plans: number
     vitals: number
     appointments: number
     exercises: number
@@ -49,7 +49,7 @@ const mockTemplates: CareplanTemplate[] = [
     updated_at: '2024-01-20T14:30:00Z',
     usage_count: 45,
     components: {
-      medications: 3,
+      care_plans: 3,
       vitals: 2,
       appointments: 4,
       exercises: 2,
@@ -68,7 +68,7 @@ const mockTemplates: CareplanTemplate[] = [
     updated_at: '2024-01-22T11:45:00Z',
     usage_count: 32,
     components: {
-      medications: 2,
+      care_plans: 2,
       vitals: 3,
       appointments: 6,
       exercises: 3,
@@ -87,7 +87,7 @@ const mockTemplates: CareplanTemplate[] = [
     updated_at: '2024-01-18T09:10:00Z',
     usage_count: 28,
     components: {
-      medications: 4,
+      care_plans: 4,
       vitals: 1,
       appointments: 3,
       exercises: 1,
@@ -106,7 +106,7 @@ const mockTemplates: CareplanTemplate[] = [
     updated_at: '2024-01-15T10:20:00Z',
     usage_count: 67,
     components: {
-      medications: 0,
+      care_plans: 0,
       vitals: 4,
       appointments: 2,
       exercises: 1,
@@ -125,7 +125,7 @@ const mockTemplates: CareplanTemplate[] = [
     updated_at: '2024-01-12T15:15:00Z',
     usage_count: 15,
     components: {
-      medications: 5,
+      care_plans: 5,
       vitals: 3,
       appointments: 8,
       exercises: 4,
@@ -375,7 +375,7 @@ export default function CareplanTemplatesPage() {
 
               <div className="grid grid-cols-3 gap-2 mb-4 text-xs">
                 <div className="text-center p-2 bg-blue-50 rounded">
-                  <div className="font-semibold text-blue-700">{template.components.medications}</div>
+                  <div className="font-semibold text-blue-700">{template.components.care_plans}</div>
                   <div className="text-blue-600">Medications</div>
                 </div>
                 <div className="text-center p-2 bg-green-50 rounded">

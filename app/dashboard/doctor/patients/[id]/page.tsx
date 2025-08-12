@@ -215,7 +215,7 @@ export default function PatientDetailsPage() {
   const [carePlans, setCarePlans] = useState<CarePlan[]>([])
   const [symptoms, setSymptoms] = useState<any[]>([])
   const [loadingStates, setLoadingStates] = useState({
-    medications: false,
+    care_plans: false,
     vitals: false,
     appointments: false,
     carePlans: false,
@@ -290,7 +290,7 @@ export default function PatientDetailsPage() {
 
   const fetchMedications = useCallback(async () => {
     try {
-      setLoadingStates(prev => ({ ...prev, medications: true }))
+      setLoadingStates(prev => ({ ...prev, care_plans: true }))
       const token = localStorage.getItem('authToken')
       const response = await fetch(`/api/medications/${patientId}`, {
         headers: {
@@ -302,15 +302,15 @@ export default function PatientDetailsPage() {
       if (response.ok) {
         const data = await response.json()
         // Transform the API response to match expected format
-        if (data.payload?.data?.medications) {
-          setMedications(Object.values(data.payload.data.medications))
+        if (data.payload?.data?.care_plans) {
+          setMedications(Object.values(data.payload.data.care_plans))
         }
       }
     } catch (err) {
-      console.error('Error fetching medications:', err)
+      console.error('Error fetching care_plans: ', err)
       // Keep empty array as fallback
     } finally {
-      setLoadingStates(prev => ({ ...prev, medications: false }))
+      setLoadingStates(prev => ({ ...prev, care_plans: false }))
     }
   }, [patientId])
 
@@ -653,7 +653,7 @@ export default function PatientDetailsPage() {
               <div>
                 <p className="text-sm font-medium text-gray-600">Active Medications</p>
                 <p className="text-3xl font-bold text-gray-900">
-                  {loadingStates.medications ? (
+                  {loadingStates.care_plans ? (
                     <span className="text-sm text-gray-500">Loading...</span>
                   ) : (
                     medications.length
@@ -820,7 +820,7 @@ export default function PatientDetailsPage() {
                 </button>
               </CardHeader>
               <CardContent>
-                {loadingStates.medications ? (
+                {loadingStates.care_plans ? (
                   <div className="flex items-center justify-center py-8">
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
                     <p className="ml-3 text-gray-600">Loading medications...</p>

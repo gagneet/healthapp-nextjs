@@ -181,8 +181,8 @@ class FrontendLogger {
       prefix: this.prefix,
       environment: process.env.NODE_ENV,
       debugEnvVar: process.env.NEXT_PUBLIC_DEBUG_LOGS,
-      localStorageValue: null,
-      urlDebug: null
+      localStorageValue: null as string | null,
+      urlDebug: null as string | null
     };
 
     if (typeof window !== 'undefined') {

@@ -41,8 +41,7 @@ function HumanBodyModel({ gender, onBodyClick, interactive }: {
     const intersect = (event as any).intersections?.[0]
     if (intersect?.point) {
       // Add body part information to the click event
-      const position = new THREE.Vector3()
-      position.copy(intersect.point)
+      const position = new THREE.Vector3().copy(intersect.point);
       (position as any).bodyPart = bodyPartName // Add custom property for body part identification
       onBodyClick(position)
     }
@@ -360,13 +359,6 @@ export default function BodyDiagram3D({
                 antialias: true,
                 alpha: false,
                 powerPreference: 'high-performance'
-              }}
-              onContextLost={(e) => {
-                console.warn('WebGL context lost, preventing default behavior')
-                e.preventDefault()
-              }}
-              onContextRestore={() => {
-                console.log('WebGL context restored')
               }}
             >
               <Scene

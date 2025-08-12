@@ -17,7 +17,7 @@ interface Prescription {
   doctor_name: string
   doctor_speciality: string
   prescribed_date: string
-  medications: {
+  care_plans: {
     name: string
     dosage: string
     frequency: string
@@ -193,7 +193,7 @@ export default function PrescriptionsPage() {
                     <div className="border-t border-gray-100 pt-4">
                       <h4 className="text-sm font-medium text-gray-900 mb-3">Medications:</h4>
                       <div className="space-y-2">
-                        {prescription.medications.map((medication, index) => (
+                        {prescription.care_plans.map((medication, index) => (
                           <div key={index} className="bg-gray-50 rounded-md p-3">
                             <div className="flex items-start justify-between">
                               <div className="flex-1">
@@ -308,7 +308,7 @@ export default function PrescriptionsPage() {
               <div>
                 <h4 className="text-lg font-medium text-gray-900 mb-4">Prescribed Medications</h4>
                 <div className="space-y-4">
-                  {selectedPrescription.medications.map((medication, index) => (
+                  {selectedPrescription.care_plans.map((medication, index) => (
                     <div key={index} className="border border-gray-200 rounded-lg p-4">
                       <h5 className="text-lg font-medium text-gray-900 mb-2">{medication.name}</h5>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">

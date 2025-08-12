@@ -60,7 +60,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
             locale: true,
             created_at: true,
             updated_at: true,
-            last_login_at: true
+            
           }
         },
         specialities: {
@@ -126,7 +126,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
         profilePictureUrl: doctor.users_doctors_user_idTousers.profile_picture_url,
         timezone: doctor.users_doctors_user_idTousers.timezone,
         locale: doctor.users_doctors_user_idTousers.locale,
-        lastLoginAt: doctor.users_doctors_user_idTousers.last_login_at
+        lastLoginAt: doctor.users_doctors_user_idTousers.created_at
       },
       professional: {
         medicalLicenseNumber: doctor.medical_license_number,

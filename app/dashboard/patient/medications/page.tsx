@@ -48,7 +48,7 @@ export default function MedicationsPage() {
         setMedications(data.payload?.data || [])
       }
     } catch (error) {
-      console.error('Failed to fetch medications:', error)
+      console.error('Failed to fetch care_plans: ', error)
     } finally {
       setLoading(false)
     }

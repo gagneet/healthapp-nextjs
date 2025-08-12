@@ -45,8 +45,8 @@ export const EnhancedAuthProvider: React.FC<EnhancedAuthProviderProps> = ({ chil
   const [state, setState] = useState<EnhancedAuthState>({
     user: null,
     token: null,
-    refreshToken: null,
-    sessionId: null,
+    refreshToken: undefined,
+    sessionId: undefined,
     isLoading: true,
     isAuthenticated: false,
     expiresAt: undefined,
@@ -95,8 +95,8 @@ export const EnhancedAuthProvider: React.FC<EnhancedAuthProviderProps> = ({ chil
     setState({
       user: null,
       token: null,
-      refreshToken: null,
-      sessionId: null,
+      refreshToken: undefined,
+      sessionId: undefined,
       isLoading: false,
       isAuthenticated: false,
       expiresAt: undefined,
@@ -355,8 +355,8 @@ export const EnhancedAuthProvider: React.FC<EnhancedAuthProviderProps> = ({ chil
             setState({
               user,
               token,
-              refreshToken,
-              sessionId,
+              refreshToken: refreshToken || undefined,
+              sessionId: sessionId || undefined,
               isLoading: false,
               isAuthenticated: true,
               expiresAt,

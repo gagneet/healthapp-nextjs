@@ -54,7 +54,7 @@ export async function GET(request: NextRequest) {
               phone: true,
               account_status: true,
               email_verified: true,
-              last_login_at: true
+              
             }
           },
           specialities: {

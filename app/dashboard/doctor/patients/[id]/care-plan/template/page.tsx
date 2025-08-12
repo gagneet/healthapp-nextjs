@@ -23,7 +23,7 @@ const mockTemplates = [
     description: 'Comprehensive care plan for Type 2 diabetes patients including medication, lifestyle modifications, and monitoring',
     category: 'Endocrine',
     duration: '6 months',
-    medications: 3,
+    care_plans: 3,
     vitals: 5,
     appointments: 8,
     popularity: 95,
@@ -42,7 +42,7 @@ const mockTemplates = [
     description: 'Evidence-based hypertension care plan with medication protocols and lifestyle interventions',
     category: 'Cardiovascular',
     duration: '3 months',
-    medications: 2,
+    care_plans: 2,
     vitals: 3,
     appointments: 6,
     popularity: 88,
@@ -61,7 +61,7 @@ const mockTemplates = [
     description: 'Comprehensive heart failure management with medication optimization and symptom monitoring',
     category: 'Cardiovascular',
     duration: '12 months',
-    medications: 4,
+    care_plans: 4,
     vitals: 6,
     appointments: 12,
     popularity: 82,
@@ -80,7 +80,7 @@ const mockTemplates = [
     description: 'Chronic obstructive pulmonary disease care plan with bronchodilator therapy and pulmonary rehabilitation',
     category: 'Respiratory',
     duration: '6 months',
-    medications: 3,
+    care_plans: 3,
     vitals: 4,
     appointments: 8,
     popularity: 76,
@@ -99,7 +99,7 @@ const mockTemplates = [
     description: 'CKD management plan focusing on progression prevention and complication management',
     category: 'Nephrology',
     duration: '12 months',
-    medications: 3,
+    care_plans: 3,
     vitals: 5,
     appointments: 10,
     popularity: 71,
@@ -118,7 +118,7 @@ const mockTemplates = [
     description: 'RA management with disease-modifying therapy and joint function preservation',
     category: 'Rheumatology',
     duration: '6 months',
-    medications: 4,
+    care_plans: 4,
     vitals: 3,
     appointments: 9,
     popularity: 68,
@@ -277,7 +277,7 @@ export default function CarePlanTemplatePage() {
               {/* Template Stats */}
               <div className="grid grid-cols-3 gap-4 text-sm">
                 <div className="text-center">
-                  <div className="font-semibold text-gray-900">{template.medications}</div>
+                  <div className="font-semibold text-gray-900">{template.care_plans}</div>
                   <div className="text-gray-500">Medications</div>
                 </div>
                 <div className="text-center">

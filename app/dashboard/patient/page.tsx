@@ -123,10 +123,6 @@ export default function PatientDashboard() {
   const [showSymptomReporter, setShowSymptomReporter] = useState(false)
   const [activeView, setActiveView] = useState<'overview' | 'medications' | 'vitals' | 'activities'>('overview')
 
-  useEffect(() => {
-    fetchDashboardData()
-  }, [fetchDashboardData])
-
   const fetchDashboardData = useCallback(async () => {
     if (!user?.id) return
     
@@ -153,6 +149,10 @@ export default function PatientDashboard() {
       setIsLoading(false)
     }
   }, [user?.id])
+
+  useEffect(() => {
+    fetchDashboardData()
+  }, [fetchDashboardData])
 
   // Mock data generation removed - using real API data only
 

@@ -119,8 +119,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
         email: true,
         role: true,
         account_status: true,
-        created_at: true,
-        last_login_at: true
+        created_at: true
       },
       orderBy: { created_at: 'desc' },
       take: 10

@@ -55,15 +55,13 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
           select: {
             name: true,
             unit: true,
-            normal_range_min: true,
-            normal_range_max: true,
-            category: true
+            details: true
           }
         },
         care_plans: {
           select: {
             patient_id: true,
-            patients: {
+            patient: {
               select: {
                 id: true,
                 patient_id: true,
@@ -75,17 +73,6 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
                 }
               }
             }
-          }
-        },
-        vital_readings: {
-          orderBy: { created_at: 'desc' },
-          take: 5,
-          select: {
-            value: true,
-            systolic_value: true,
-            diastolic_value: true,
-            alert_level: true,
-            created_at: true
           }
         }
       },
@@ -147,6 +134,7 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
     // Create the vital monitoring
     const vital = await prisma.vitals.create({
       data: {
+        id: require('crypto').randomUUID(),
         vital_template_id,
         care_plan_id,
         description,
@@ -164,14 +152,13 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
         vital_templates: {
           select: {
             name: true,
-            unit: true,
-            category: true
+            unit: true
           }
         },
         care_plans: {
           select: {
             patient_id: true,
-            patients: {
+            patient: {
               select: {
                 patient_id: true,
                 user: {
@@ -187,5 +174,5 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
       }
     });
 
-    return createSuccessResponse({ vital }, 'Vital monitoring created successfully', 201);
+    return createSuccessResponse({ vital }, 201);
 });

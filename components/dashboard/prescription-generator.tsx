@@ -6,7 +6,7 @@ import { Fragment } from 'react'
 import {
   XMarkIcon,
   DocumentTextIcon,
-  DownloadIcon,
+  ArrowDownTrayIcon,
   PrinterIcon,
   CloudArrowUpIcon,
 } from '@heroicons/react/24/outline'
@@ -60,7 +60,7 @@ interface PrescriptionData {
   clinic_name: string
   clinic_address: string
   clinic_phone: string
-  medications: Array<{
+  care_plans: Array<{
     name: string
     strength: string
     dosage_form: string
@@ -99,7 +99,7 @@ export default function PrescriptionGenerator({
       clinic_name: doctor.clinic_name,
       clinic_address: doctor.clinic_address,
       clinic_phone: doctor.phone,
-      medications,
+      care_plans: medications,
       prescription_date: formatDate(new Date().toISOString()),
       prescription_id: `RX-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
     }
@@ -355,7 +355,7 @@ export default function PrescriptionGenerator({
                         onClick={downloadPDF}
                         className="inline-flex w-full justify-center items-center rounded-md bg-green-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-green-500 sm:w-auto"
                       >
-                        <DownloadIcon className="h-4 w-4 mr-2" />
+                        <ArrowDownTrayIcon className="h-4 w-4 mr-2" />
                         Download PDF
                       </button>
                       <button

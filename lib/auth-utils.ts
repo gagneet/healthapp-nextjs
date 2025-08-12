@@ -1,6 +1,6 @@
 // lib/auth-utils.ts - Authentication utilities for Next.js API routes
 import { NextRequest } from 'next/server';
-import jwt from 'jsonwebtoken';
+import jwt, { SignOptions } from 'jsonwebtoken';
 import { prisma } from './prisma';
 
 interface DecodedToken {
@@ -64,11 +64,19 @@ export async function verifyAuth(request: NextRequest): Promise<AuthResult> {
       return { error: 'User not found' };
     }
 
-    if (user.account_status !== 'active') {
+    if (user.account_status !== 'ACTIVE') {
       return { error: 'Account is not active' };
     }
 
-    return { user };
+    return { 
+      user: {
+        id: user.id,
+        email: user.email,
+        role: user.role as string,
+        first_name: user.first_name || '',
+        last_name: user.last_name || '',
+      }
+    };
   } catch (error) {
     console.error('Auth verification error:', error);
     return { error: 'Authentication failed' };
@@ -93,14 +101,18 @@ export function requireRole(allowedRoles: string[]) {
 
 export function generateToken(payload: { id: string; email: string; role: string }): string {
   const jwtSecret = process.env.JWT_SECRET || 'development_jwt_secret_key_256_bit_not_for_production_use_only_123456789';
-  const expiresIn = process.env.JWT_EXPIRES_IN || '60m';
+  const options: SignOptions = {
+    expiresIn: '60m'
+  };
   
-  return jwt.sign(payload, jwtSecret, { expiresIn });
+  return jwt.sign(payload, jwtSecret, options);
 }
 
 export function generateRefreshToken(payload: { id: string; email: string }): string {
   const refreshSecret = process.env.JWT_REFRESH_SECRET || 'dev_refresh_secret_key_256_bit_not_for_production_use_only_987654321';
-  const expiresIn = process.env.JWT_REFRESH_EXPIRE || '7d';
+  const options: SignOptions = {
+    expiresIn: '7d'
+  };
   
-  return jwt.sign(payload, refreshSecret, { expiresIn });
+  return jwt.sign(payload, refreshSecret, options);
 }

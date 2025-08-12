@@ -22,12 +22,7 @@ interface SpeechRecognitionError extends Event {
   message: string
 }
 
-declare global {
-  interface Window {
-    SpeechRecognition: any
-    webkitSpeechRecognition: any
-  }
-}
+// Types for Speech Recognition APIs
 
 // Language configurations with both native and English script support
 const LANGUAGE_CONFIG = {
@@ -71,20 +66,56 @@ export default function SpeechToText({
   const silenceTimerRef = useRef<NodeJS.Timeout | null>(null)
   const isListeningRef = useRef(false)
 
+  // Simple language detection based on script and common words
+  const detectLanguage = useCallback((text: string): string => {
+    if (!text.trim()) return currentLanguage
+    
+    // Check for Devanagari script (Hindi)
+    const devanagariPattern = /[\u0900-\u097F]/
+    if (devanagariPattern.test(text)) {
+      return 'hi'
+    }
+    
+    // Check for common Hindi words in English script
+    const hindiWords = ['main', 'hai', 'hoon', 'aur', 'kya', 'kaise', 'kahan', 'kab', 'kaun', 'mere', 'mera', 'meri', 'dard', 'takleef', 'bimari', 'dawai']
+    const words = text.toLowerCase().split(/\s+/)
+    const hindiWordCount = words.filter(word => hindiWords.includes(word)).length
+    
+    if (hindiWordCount > words.length * 0.2) { // If 20% of words are Hindi
+      return 'hi'
+    }
+    
+    return 'en'
+  }, [currentLanguage])
+
+  const stopListening = useCallback(() => {
+    if (!recognitionRef.current || !isListening) return
+
+    try {
+      (recognitionRef.current as any).stop()
+      if (silenceTimerRef.current) {
+        clearTimeout(silenceTimerRef.current)
+        silenceTimerRef.current = null
+      }
+    } catch (error) {
+      console.error('Error stopping recognition:', error)
+    }
+  }, [isListening])
+
   // Initialize speech recognition
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
+      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
       
       if (SpeechRecognition) {
         setIsSupported(true)
         
-        const recognition = new SpeechRecognition()
+        const recognition: any = new SpeechRecognition()
         
         // Configuration for multilingual support
         recognition.continuous = true
         recognition.interimResults = true
-        (recognition as any).maxAlternatives = 3
+        recognition.maxAlternatives = 3
         
         // Set language based on preference
         if (language === 'auto') {
@@ -216,35 +247,13 @@ export default function SpeechToText({
 
     return () => {
       if (recognitionRef.current) {
-        recognitionRef.current.stop()
+        (recognitionRef.current as any).stop()
       }
       if (silenceTimerRef.current) {
         clearTimeout(silenceTimerRef.current)
       }
     }
   }, [language, autoStop, detectLanguage, onTranscript, stopListening, transcript])
-
-  // Simple language detection based on script and common words
-  const detectLanguage = useCallback((text: string): string => {
-    if (!text.trim()) return currentLanguage
-    
-    // Check for Devanagari script (Hindi)
-    const devanagariPattern = /[\u0900-\u097F]/
-    if (devanagariPattern.test(text)) {
-      return 'hi'
-    }
-    
-    // Check for common Hindi words in English script
-    const hindiWords = ['main', 'hai', 'hoon', 'aur', 'kya', 'kaise', 'kahan', 'kab', 'kaun', 'mere', 'mera', 'meri', 'dard', 'takleef', 'bimari', 'dawai']
-    const words = text.toLowerCase().split(/\s+/)
-    const hindiWordCount = words.filter(word => hindiWords.includes(word)).length
-    
-    if (hindiWordCount > words.length * 0.2) { // If 20% of words are Hindi
-      return 'hi'
-    }
-    
-    return 'en'
-  }, [currentLanguage])
 
   const startListening = useCallback(() => {
     if (!recognitionRef.current || isListening || disabled) return
@@ -254,26 +263,12 @@ export default function SpeechToText({
     setInterimTranscript('')
     
     try {
-      recognitionRef.current.start()
+      (recognitionRef.current as any).start()
     } catch (error) {
       console.error('Error starting recognition:', error)
       setError('Failed to start speech recognition. Please try again.')
     }
   }, [isListening, disabled])
-
-  const stopListening = useCallback(() => {
-    if (!recognitionRef.current || !isListening) return
-
-    try {
-      recognitionRef.current.stop()
-      if (silenceTimerRef.current) {
-        clearTimeout(silenceTimerRef.current)
-        silenceTimerRef.current = null
-      }
-    } catch (error) {
-      console.error('Error stopping recognition:', error)
-    }
-  }, [isListening])
 
   const toggleListening = useCallback(() => {
     if (isListening) {
@@ -293,11 +288,11 @@ export default function SpeechToText({
       if (newLang === 'auto') {
         // Auto-detect based on browser/system language
         const userLang = navigator.language.split('-')[0]
-        const detectedLang = userLang === 'hi' ? 'hi' : 'en'
-        recognitionRef.current.lang = LANGUAGE_CONFIG[detectedLang].code
+        const detectedLang: 'hi' | 'en' = userLang === 'hi' ? 'hi' : 'en'
+        ;(recognitionRef.current as any).lang = LANGUAGE_CONFIG[detectedLang].code
         setCurrentLanguage(detectedLang)
       } else {
-        recognitionRef.current.lang = LANGUAGE_CONFIG[newLang].code
+        (recognitionRef.current as any).lang = LANGUAGE_CONFIG[newLang].code
         setCurrentLanguage(newLang)
       }
       

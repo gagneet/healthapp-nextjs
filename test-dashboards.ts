@@ -64,15 +64,15 @@ async function testDashboards() {
     const patientUser = await prisma.user.findUnique({
       where: { email: 'patient1@healthapp.com' },
       include: {
-        patients: true
+        patient: true
       }
     });
     
-    if (!patientUser || !patientUser.patients) {
+    if (!patientUser || !patientUser.patient) {
       throw new Error('Patient profile not found');
     }
     
-    const patientId = patientUser.patients.id;
+    const patientId = patientUser.patient.id;
     console.log('Patient Profile ID:', patientId);
     
     try {
@@ -97,7 +97,7 @@ async function testDashboards() {
         id: true,
         doctor_id: true,
         medical_license_number: true,
-        user: {
+        users_doctors_user_idTousers: {
           select: {
             first_name: true,
             last_name: true,
@@ -109,7 +109,7 @@ async function testDashboards() {
     
     console.log('👨‍⚕️ Doctors with business IDs:');
     doctors.forEach(doc => {
-      console.log(`  - ${doc.doctor_id} (${doc.medical_license_number}) - ${doc.user.first_name} ${doc.user.last_name} (${doc.user.email})`);
+      console.log(`  - ${doc.doctor_id} (${doc.medical_license_number}) - ${doc.users_doctors_user_idTousers.first_name} ${doc.users_doctors_user_idTousers.last_name} (${doc.users_doctors_user_idTousers.email})`);
     });
     
     const patients = await prisma.patient.findMany({
@@ -138,7 +138,7 @@ async function testDashboards() {
         hsp_id: true,
         hsp_type: true,
         license_number: true,
-        user: {
+        users_hsps_user_idTousers: {
           select: {
             first_name: true,
             last_name: true,
@@ -150,7 +150,7 @@ async function testDashboards() {
     
     console.log('🔬 HSPs with business IDs:');
     hsps.forEach(hsp => {
-      console.log(`  - ${hsp.hsp_id} (${hsp.license_number}) - ${hsp.user.first_name} ${hsp.user.last_name} (${hsp.user.email})`);
+      console.log(`  - ${hsp.hsp_id} (${hsp.license_number}) - ${hsp.users_hsps_user_idTousers.first_name} ${hsp.users_hsps_user_idTousers.last_name} (${hsp.users_hsps_user_idTousers.email})`);
     });
     
     console.log('\n✅ Dashboard testing completed successfully!');

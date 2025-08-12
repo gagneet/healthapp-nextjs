@@ -228,10 +228,10 @@ export default function PatientQuickView({ isOpen, setIsOpen, patient }: Patient
                           <div className="bg-gray-50 rounded-lg p-3">
                             <p className="text-xs font-medium text-gray-500">Adherence Rate</p>
                             <p className={`text-lg font-bold ${
-                              patient.adherence_rate >= 85 ? 'text-green-600' : 
-                              patient.adherence_rate >= 70 ? 'text-yellow-600' : 'text-red-600'
+                              (patient.adherence_rate ?? 0) >= 85 ? 'text-green-600' : 
+                              (patient.adherence_rate ?? 0) >= 70 ? 'text-yellow-600' : 'text-red-600'
                             }`}>
-                              {patient.adherence_rate}%
+                              {patient.adherence_rate ?? 0}%
                             </p>
                           </div>
                           <div className="bg-gray-50 rounded-lg p-3">
