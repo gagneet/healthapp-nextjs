@@ -98,6 +98,14 @@ model User {
   scheduled_events                                             scheduled_events[]
   user_devices                                                 UserDevice[]
   user_roles                                                   user_roles[]
+  
+  // Medical Safety Relationships
+  verified_patient_allergies                                   PatientAllergy[]
+  resolved_medication_alerts                                   MedicationSafetyAlert[]
+  created_medication_alerts                                    MedicationSafetyAlert[] @relation("SafetyAlertCreatedBy")
+  acknowledged_emergency_alerts                                EmergencyAlert[] @relation("EmergencyAlertAcknowledged")
+  resolved_emergency_alerts                                    EmergencyAlert[] @relation("EmergencyAlertResolved")
+  vital_alert_rules                                            VitalAlertRule[]
 
   @@index([email, account_status], map: "idx_users_email_status")
   @@index([role, account_status], map: "idx_users_role_status")
@@ -174,6 +182,12 @@ model Patient {
   symptoms                                                 Symptom[]
   treatment_plans                                          treatment_plans[]
   vital_readings                                           VitalReading[]
+  
+  // Medical Safety Relationships
+  patient_allergies                                        PatientAllergy[]
+  medication_safety_alerts                                 MedicationSafetyAlert[]
+  emergency_alerts                                         EmergencyAlert[]
+  emergency_contacts_new                                   EmergencyContact[]
 
   @@index([primary_care_doctor_id, created_at, is_active], map: "idx_patients_doctor_created_active")
   @@index([patient_id, created_at], map: "idx_patients_id_created")
@@ -394,6 +408,7 @@ model Medication {
   care_plan       CarePlan?                        @relation("prescribed_medications", fields: [care_plan_id], references: [id])
   medicine        Medicine                         @relation(fields: [medicine_id], references: [id], onDelete: NoAction)
   notifications   Notification[]
+  safety_alerts   MedicationSafetyAlert[]
 
   @@index([medicine_id], map: "medications_medicine_id")
   @@index([organizer_type, organizer_id], map: "medications_organizer_type_organizer_id")
@@ -508,6 +523,7 @@ model VitalReading {
   patient              Patient                          @relation(fields: [patient_id], references: [id], onDelete: NoAction)
   healthcare_providers HealthcareProvider?              @relation(fields: [validated_by], references: [id], onDelete: NoAction, onUpdate: NoAction)
   vital_type           VitalType                        @relation(fields: [vital_type_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  emergency_alerts     EmergencyAlert[]
 
   @@index([patient_id, reading_time, vital_type_id], map: "idx_vitals_patient_time_type")
   @@index([patient_id, vital_type_id, reading_time], map: "idx_vitals_patient_type_time_desc")

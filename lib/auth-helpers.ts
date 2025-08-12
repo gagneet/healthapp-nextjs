@@ -102,9 +102,17 @@ export async function requireAuth(request: NextRequest, allowedRoles?: string[])
  */
 const rateLimitMap = new Map();
 
-export function checkRateLimit(ip: string, limit: number = 100, windowMs: number = 15 * 60 * 1000): boolean {
+export function checkRateLimit(
+  ip: string, 
+  options: { max?: number; windowMs?: number; } | number = 100,
+  windowMs?: number
+): boolean {
+  // Support both old and new function signatures
+  const limit = typeof options === 'number' ? options : (options.max || 100);
+  const window = typeof options === 'number' ? (windowMs || 15 * 60 * 1000) : (options.windowMs || 15 * 60 * 1000);
+  
   const now = Date.now();
-  const windowStart = now - windowMs;
+  const windowStart = now - window;
   
   if (!rateLimitMap.has(ip)) {
     rateLimitMap.set(ip, []);
