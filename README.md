@@ -5,18 +5,21 @@ A comprehensive, modern healthcare management system built with **Next.js 14** f
 ## ✨ Latest Architecture - Pure Next.js Implementation
 
 ### 🚀 **Complete Next.js Migration**
+
 - **Full-Stack Next.js 14**: Unified frontend and backend with API routes
 - **NextAuth.js Authentication**: Modern, secure authentication with role-based access control
 - **Prisma ORM**: Type-safe database operations with PostgreSQL
 - **Healthcare Business Logic**: Role-based permissions enforcing medical workflow compliance
 
 ### 🏗️ **Modern Technology Stack**
+
 - **Next.js 14 with App Router**: Modern React patterns with server-side rendering
 - **PostgreSQL with Prisma**: Production-ready database with type-safe queries
 - **TypeScript Throughout**: Complete type safety across the entire application
 - **Healthcare Compliance**: HIPAA-ready audit logging and role-based data access
 
 ### 🔧 **Production-Ready Features**
+
 - **Comprehensive API Routes**: 15+ API endpoints covering all healthcare domains
 - **Role-Based Access Control**: Doctor, HSP, Patient, and Admin role enforcement
 - **Modern Authentication**: NextAuth.js with JWT and session management
@@ -160,11 +163,11 @@ npm run dev
 
 ### Access Your Application
 
-- **Healthcare App**: http://localhost:3000 (or your domain)
-- **Doctor Dashboard**: http://localhost:3000/dashboard/doctor  
-- **Patient Dashboard**: http://localhost:3000/dashboard/patient
-- **Admin Dashboard**: http://localhost:3000/dashboard/admin
-- **Database Admin** (dev): http://localhost:5050 (if using Docker setup)
+- **Healthcare App**: [http://localhost:3000](http://localhost:3000) (or your domain)
+- **Doctor Dashboard**: [http://localhost:3000/dashboard/doctor](http://localhost:3000/dashboard/doctor)  
+- **Patient Dashboard**: [http://localhost:3000/dashboard/patient](http://localhost:3000/dashboard/patient)
+- **Admin Dashboard**: [http://localhost:3000/dashboard/admin](http://localhost:3000/dashboard/admin)
+- **Database Admin** (dev): [http://localhost:5050](http://localhost:5050) (if using Docker setup)
 
 ## 🔧 Configuration
 
@@ -232,38 +235,45 @@ export async function GET(request: NextRequest) {
 ### Core API Endpoints
 
 #### 🔐 Authentication
+
 - `POST /api/auth/signin` - NextAuth.js sign in
 - `POST /api/auth/signout` - Sign out
 - `GET /api/auth/session` - Get current session
 
 #### 👥 Patient Management
+
 - `GET /api/patients` - Get patient list (role-based filtering)
 - `GET /api/patients/[id]` - Get patient details
 - `POST /api/patients` - Create new patient
 - `PUT /api/patients/[id]` - Update patient information
 
 #### 👨‍⚕️ Doctor Management
+
 - `GET /api/doctors/profile` - Get doctor profile
 - `PUT /api/doctors/profile` - Update doctor profile
 - `GET /api/doctors/patients` - Get assigned patients
 
 #### 💊 Care Plans & Medications
+
 - `GET /api/care-plans` - Get care plans
 - `POST /api/care-plans` - Create care plan
 - `GET /api/care-plans/templates` - Get care plan templates
 - `POST /api/care-plans/templates` - Create template
 
 #### 📅 Appointments
+
 - `GET /api/appointments` - Get appointments
 - `POST /api/appointments` - Create appointment
 - `PUT /api/appointments/[id]` - Update appointment
 
 #### 📊 Vitals & Symptoms
+
 - `POST /api/vitals` - Record vital signs
 - `GET /api/vitals/[patientId]` - Get patient vitals
 - `POST /api/symptoms` - Report symptoms with body mapping
 
 #### 🏥 Admin Management
+
 - `GET /api/admin/dashboard` - Admin dashboard data
 - `GET /api/admin/doctors` - Manage doctors
 - `POST /api/admin/doctors` - Create doctor account
@@ -424,7 +434,7 @@ psql -h localhost -p 5432 -U healthapp_user -d healthapp_dev
 - **Access Controls**: Business logic enforces medical workflow rules
 - **Secure Communications**: HTTPS enforced in production
 
-### Healthcare Business Logic
+### Healthcare Business Logic for NextJS Architecture
 
 ```typescript
 // Patient data access control
@@ -555,6 +565,7 @@ The application uses **PostgreSQL with Prisma** featuring 40+ models:
 ### Common Issues
 
 **Database Connection:**
+
 ```bash
 # Check PostgreSQL
 sudo systemctl status postgresql
@@ -564,6 +575,7 @@ npx prisma db push
 ```
 
 **Port Conflicts:**
+
 ```bash
 # Check what's using port 3000
 lsof -i :3000
@@ -573,6 +585,7 @@ lsof -i :5432
 ```
 
 **Authentication Issues:**
+
 ```bash
 # Regenerate NextAuth secret
 openssl rand -base64 32
@@ -605,8 +618,8 @@ This application is designed for real-world healthcare use:
 
 ---
 
-**Built with ❤️ for healthcare providers and patients**
+- **Built with ❤️ for healthcare providers and patients**
 
-*Next.js Healthcare Management Platform - Production-ready full-stack application with NextAuth.js, Prisma, and PostgreSQL*
+- *Next.js Healthcare Management Platform - Production-ready full-stack application with NextAuth.js, Prisma, and PostgreSQL*
 
 **Last updated: August 2025** | Next.js 14 | PostgreSQL 15+ | NextAuth.js | TypeScript
