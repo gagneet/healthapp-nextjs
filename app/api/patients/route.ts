@@ -1,0 +1,332 @@
+/**
+ * Patient Management API Route
+ * Handles CRUD operations for patient management with healthcare business logic compliance
+ */
+
+import { NextRequest, NextResponse } from "next/server"
+import { getServerSession } from "next-auth"
+import { authOptions } from "@/lib/auth"
+import { prisma } from "@/lib/prisma"
+import { 
+  createSuccessResponse, 
+  createErrorResponse, 
+  createUnauthorizedResponse,
+  createForbiddenResponse,
+  HealthcareErrorCodes,
+  withErrorHandling,
+  validateHealthcarePermissions
+} from "@/lib/api-response"
+import { 
+  PatientSchema, 
+  PaginationSchema 
+} from "@/lib/validations/healthcare"
+import { generatePatientId } from "@/lib/id-generation"
+
+/**
+ * GET /api/patients
+ * Retrieve patients list with filtering and pagination
+ * Business Logic: Only doctors, HSPs, and admins can access patient lists
+ */
+export const GET = withErrorHandling(async (request: NextRequest) => {
+  const session = await getServerSession(authOptions)
+  
+  if (!session) {
+    return createUnauthorizedResponse()
+  }
+
+  // Business Logic: Check permissions to access patient data
+  if (!session.user.canAccessPatientData) {
+    return createForbiddenResponse("Access to patient data denied")
+  }
+
+  // Parse query parameters
+  const { searchParams } = new URL(request.url)
+  const paginationResult = PaginationSchema.safeParse({
+    page: parseInt(searchParams.get('page') || '1'),
+    limit: parseInt(searchParams.get('limit') || '20'),
+    sortBy: searchParams.get('sortBy') || 'created_at',
+    sortOrder: searchParams.get('sortOrder') || 'desc'
+  })
+
+  if (!paginationResult.success) {
+    return createErrorResponse(paginationResult.error)
+  }
+
+  const { page, limit, sortBy, sortOrder } = paginationResult.data
+  const skip = (page - 1) * limit
+
+  // Additional filters
+  const searchQuery = searchParams.get('search')
+  const doctorFilter = searchParams.get('doctorId') 
+  const statusFilter = searchParams.get('status')
+
+  try {
+    // Build where clause based on user role and filters
+    let whereClause: any = {}
+
+    // Business Logic: Role-based data access
+    switch (session.user.role) {
+      case 'DOCTOR':
+        // Doctors can only see their assigned patients
+        whereClause.primary_doctor_id = session.user.profileId
+        break
+      case 'HSP':
+        // HSPs can see patients through care team assignments
+        // TODO: Implement care team relationship filtering
+        whereClause.care_team = {
+          some: {
+            hsp_id: session.user.profileId
+          }
+        }
+        break
+      case 'SYSTEM_ADMIN':
+        // System admins can see all patients
+        break
+      case 'HOSPITAL_ADMIN':
+        // Hospital admins can see patients in their organization
+        if (session.user.organizationId) {
+          whereClause.organization_id = session.user.organizationId
+        }
+        break
+      default:
+        return createForbiddenResponse("Invalid role for patient access")
+    }
+
+    // Apply search filter
+    if (searchQuery) {
+      whereClause.OR = [
+        {
+          user: {
+            OR: [
+              { first_name: { contains: searchQuery, mode: 'insensitive' } },
+              { last_name: { contains: searchQuery, mode: 'insensitive' } },
+              { email: { contains: searchQuery, mode: 'insensitive' } }
+            ]
+          }
+        },
+        {
+          patient_id: { contains: searchQuery, mode: 'insensitive' }
+        },
+        {
+          medical_record_number: { contains: searchQuery, mode: 'insensitive' }
+        }
+      ]
+    }
+
+    // Apply doctor filter
+    if (doctorFilter) {
+      whereClause.primary_doctor_id = doctorFilter
+    }
+
+    // Apply status filter
+    if (statusFilter) {
+      whereClause.user = {
+        ...whereClause.user,
+        account_status: statusFilter.toUpperCase()
+      }
+    }
+
+    // Get total count for pagination
+    const total = await prisma.patient.count({ where: whereClause })
+
+    // Fetch patients with user details
+    const patients = await prisma.patient.findMany({
+      where: whereClause,
+      skip,
+      take: limit,
+      orderBy: {
+        [sortBy]: sortOrder
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            email: true,
+            first_name: true,
+            last_name: true,
+            phone: true,
+            date_of_birth: true,
+            gender: true,
+            account_status: true,
+            created_at: true,
+            updated_at: true
+          }
+        },
+        // Include primary doctor info
+        doctors_patients_primary_doctor_idTodoctors: {
+          select: {
+            doctor_id: true,
+            user: {
+              select: {
+                first_name: true,
+                last_name: true,
+                email: true
+              }
+            }
+          }
+        }
+      }
+    })
+
+    // Format response data
+    const formattedPatients = patients.map(patient => ({
+      id: patient.id,
+      patientId: patient.patient_id,
+      medicalRecordNumber: patient.medical_record_number,
+      user: {
+        id: patient.user.id,
+        email: patient.user.email,
+        name: `${patient.user.first_name} ${patient.user.last_name}`.trim(),
+        firstName: patient.user.first_name,
+        lastName: patient.user.last_name,
+        phone: patient.user.phone,
+        dateOfBirth: patient.user.date_of_birth,
+        gender: patient.user.gender,
+        accountStatus: patient.user.account_status
+      },
+      primaryDoctor: patient.doctors_patients_primary_doctor_idTodoctors ? {
+        doctorId: patient.doctors_patients_primary_doctor_idTodoctors.doctor_id,
+        name: `${patient.doctors_patients_primary_doctor_idTodoctors.user.first_name} ${patient.doctors_patients_primary_doctor_idTodoctors.user.last_name}`.trim(),
+        email: patient.doctors_patients_primary_doctor_idTodoctors.user.email
+      } : null,
+      height: patient.height,
+      weight: patient.weight,
+      bloodType: patient.blood_type,
+      createdAt: patient.created_at,
+      updatedAt: patient.updated_at
+    }))
+
+    return createSuccessResponse(
+      formattedPatients,
+      200,
+      { page, limit, total }
+    )
+  } catch (error) {
+    console.error("Failed to fetch patients:", error)
+    throw error
+  }
+})
+
+/**
+ * POST /api/patients
+ * Create new patient with medical validation
+ * Business Logic: Only doctors and admins can create patient records
+ */
+export const POST = withErrorHandling(async (request: NextRequest) => {
+  const session = await getServerSession(authOptions)
+  
+  if (!session) {
+    return createUnauthorizedResponse()
+  }
+
+  // Business Logic: Only doctors and admins can create patients
+  if (!['DOCTOR', 'SYSTEM_ADMIN', 'HOSPITAL_ADMIN'].includes(session.user.role)) {
+    return createForbiddenResponse("Only doctors and administrators can create patient records")
+  }
+
+  const body = await request.json()
+  const validationResult = PatientSchema.safeParse(body)
+
+  if (!validationResult.success) {
+    return createErrorResponse(validationResult.error)
+  }
+
+  const patientData = validationResult.data
+
+  try {
+    // Check if user with email already exists
+    const existingUser = await prisma.user.findUnique({
+      where: { email: patientData.email }
+    })
+
+    if (existingUser) {
+      return createErrorResponse(
+        new Error("User with this email already exists"),
+        HealthcareErrorCodes.VALIDATION_ERROR,
+        400
+      )
+    }
+
+    // Generate business ID for patient
+    const { businessId: patientBusinessId } = await generatePatientId()
+
+    // Create user and patient records in transaction
+    const result = await prisma.$transaction(async (tx) => {
+      // Create user record
+      const user = await tx.user.create({
+        data: {
+          email: patientData.email,
+          first_name: patientData.firstName,
+          last_name: patientData.lastName,
+          middle_name: patientData.middleName,
+          phone: patientData.phone,
+          date_of_birth: patientData.dateOfBirth,
+          gender: patientData.gender,
+          role: 'PATIENT',
+          account_status: 'ACTIVE',
+          // Generate a temporary password - patient should reset on first login
+          password_hash: '$2b$12$defaulthash', // This should be a properly hashed temporary password
+          email_verified: false,
+          created_at: new Date(),
+          updated_at: new Date()
+        }
+      })
+
+      // Create patient profile
+      const patient = await tx.patient.create({
+        data: {
+          user_id: user.id,
+          patient_id: patientBusinessId,
+          medical_record_number: `MRN${Date.now()}`, // Generate unique MRN
+          primary_doctor_id: patientData.primaryDoctorId,
+          height: patientData.height,
+          weight: patientData.weight,
+          blood_type: patientData.bloodType,
+          medical_history: patientData.medicalHistory,
+          allergies: patientData.allergies,
+          emergency_contact: patientData.emergencyContact,
+          insurance_details: patientData.insuranceDetails,
+          consent_status: 'pending',
+          hipaa_authorization: false,
+          created_at: new Date(),
+          updated_at: new Date()
+        }
+      })
+
+      return { user, patient }
+    })
+
+    // Format response
+    const responseData = {
+      id: result.patient.id,
+      patientId: result.patient.patient_id,
+      medicalRecordNumber: result.patient.medical_record_number,
+      user: {
+        id: result.user.id,
+        email: result.user.email,
+        name: `${result.user.first_name} ${result.user.last_name}`.trim(),
+        firstName: result.user.first_name,
+        lastName: result.user.last_name,
+        phone: result.user.phone,
+        dateOfBirth: result.user.date_of_birth,
+        gender: result.user.gender,
+        accountStatus: result.user.account_status
+      },
+      height: result.patient.height,
+      weight: result.patient.weight,
+      bloodType: result.patient.blood_type,
+      medicalHistory: result.patient.medical_history,
+      allergies: result.patient.allergies,
+      emergencyContact: result.patient.emergency_contact,
+      createdAt: result.patient.created_at
+    }
+
+    // TODO: Send welcome email with temporary password
+    // TODO: Log audit trail for patient creation
+
+    return createSuccessResponse(responseData, 201)
+  } catch (error) {
+    console.error("Failed to create patient:", error)
+    throw error
+  }
+})

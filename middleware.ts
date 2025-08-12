@@ -1,203 +1,187 @@
 /**
  * Next.js Middleware for Healthcare Management Platform
- * 
- * This middleware handles authentication, authorization, and security
- * for the entire application using Next.js 14 App Router patterns.
+ * Implements role-based route protection with healthcare business logic compliance
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import { withAuth } from "next-auth/middleware"
+import { NextResponse } from "next/server"
+import type { NextRequest } from "next/server"
 
-// Dynamic import to avoid webpack issues
-let jwt: any = null;
+export default withAuth(
+  function middleware(req) {
+    const token = req.nextauth.token
+    const pathname = req.nextUrl.pathname
 
-async function initializeJWT() {
-  if (!jwt) {
-    jwt = (await import('jsonwebtoken')).default;
-  }
-  return jwt;
-}
-
-/**
- * Extract and verify JWT token
- */
-async function verifyToken(request: NextRequest): Promise<any> {
-  try {
-    const authHeader = request.headers.get('authorization');
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return null;
-    }
-
-    const token = authHeader.substring(7);
-    const jwtLib = await initializeJWT();
-    const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
-    
-    const decoded = jwtLib.verify(token, JWT_SECRET);
-    return decoded;
-  } catch (error) {
-    console.error('Token verification failed:', error);
-    return null;
-  }
-}
-
-/**
- * Check if user has required role
- */
-function hasRole(user: any, allowedRoles: string[]): boolean {
-  if (!user || !user.role) {
-    return false;
-  }
-  
-  return allowedRoles.includes(user.role) || allowedRoles.includes(user.category);
-}
-
-/**
- * Main middleware function
- */
-export async function middleware(request: NextRequest) {
-  const pathname = request.nextUrl.pathname;
-  
-  // Skip middleware for static files and Next.js internals
-  if (
-    pathname.startsWith('/_next') ||
-    pathname.startsWith('/favicon') ||
-    pathname.includes('.') ||
-    pathname === '/api/health'
-  ) {
-    return NextResponse.next();
-  }
-
-  // Handle authentication for protected routes
-  if (pathname.startsWith('/dashboard') || pathname.startsWith('/api')) {
-    // Skip auth routes and public API routes
+    // Skip middleware for public routes
     if (
+      pathname.startsWith('/_next') ||
       pathname.startsWith('/api/auth') ||
-      pathname === '/api' ||
-      pathname === '/api/health'
+      pathname.startsWith('/auth') ||
+      pathname === '/' ||
+      pathname.startsWith('/public')
     ) {
-      return NextResponse.next();
+      return NextResponse.next()
     }
 
-    // Verify authentication for protected routes
-    const user = await verifyToken(request);
-    if (!user) {
-      if (pathname.startsWith('/api/')) {
-        return NextResponse.json(
-          { 
-            status: false,
-            statusCode: 401,
-            payload: {
-              error: {
-                status: 'error',
-                message: 'Authentication required'
-              }
-            }
-          },
-          { status: 401 }
-        );
-      } else {
-        // Redirect to login for dashboard routes
-        return NextResponse.redirect(new URL('/auth/login', request.url));
+    // Ensure user is authenticated for protected routes
+    if (!token) {
+      return NextResponse.redirect(new URL('/auth/signin', req.url))
+    }
+
+    // Check account status - healthcare compliance requirement
+    if (token.accountStatus !== 'ACTIVE') {
+      return NextResponse.redirect(new URL('/auth/account-inactive', req.url))
+    }
+
+    // Route-based authorization following healthcare business logic
+
+    // System Admin routes - highest privilege level
+    if (pathname.startsWith('/dashboard/admin') || pathname.startsWith('/api/admin')) {
+      if (token.role !== 'SYSTEM_ADMIN') {
+        return NextResponse.redirect(new URL('/unauthorized', req.url))
+      }
+      return NextResponse.next()
+    }
+
+    // Provider Admin routes - manage doctors and providers
+    if (pathname.startsWith('/dashboard/provider') || pathname.startsWith('/api/provider')) {
+      if (!['SYSTEM_ADMIN', 'HOSPITAL_ADMIN'].includes(token.role)) {
+        return NextResponse.redirect(new URL('/unauthorized', req.url))
+      }
+      return NextResponse.next()
+    }
+
+    // Doctor routes - medical practice management
+    if (pathname.startsWith('/dashboard/doctor') || pathname.startsWith('/api/doctors')) {
+      // Business Logic: Doctors can access doctor routes, admins can manage doctor accounts
+      if (!['DOCTOR', 'SYSTEM_ADMIN', 'HOSPITAL_ADMIN'].includes(token.role)) {
+        return NextResponse.redirect(new URL('/unauthorized', req.url))
+      }
+      return NextResponse.next()
+    }
+
+    // Patient routes - patient-specific data access
+    if (pathname.startsWith('/dashboard/patient')) {
+      // Business Logic: Patients can access their own data, healthcare providers can access patient data
+      if (!['PATIENT', 'DOCTOR', 'HSP', 'SYSTEM_ADMIN'].includes(token.role)) {
+        return NextResponse.redirect(new URL('/unauthorized', req.url))
+      }
+      return NextResponse.next()
+    }
+
+    // HSP (Health Service Provider) routes
+    if (pathname.startsWith('/dashboard/hospital') || pathname.startsWith('/api/hsp')) {
+      // Business Logic: HSPs can access HSP routes, admins can manage HSP accounts
+      if (!['HSP', 'SYSTEM_ADMIN', 'HOSPITAL_ADMIN'].includes(token.role)) {
+        return NextResponse.redirect(new URL('/unauthorized', req.url))
+      }
+      return NextResponse.next()
+    }
+
+    // Patient API routes with enhanced security
+    if (pathname.startsWith('/api/patients')) {
+      // Business Logic: Only doctors, HSPs, and admins can access patient APIs
+      if (!token.canAccessPatientData) {
+        return NextResponse.redirect(new URL('/unauthorized', req.url))
+      }
+      return NextResponse.next()
+    }
+
+    // Medication API routes - prescription authority required
+    if (pathname.startsWith('/api/medications') && req.method === 'POST') {
+      // Business Logic: Only doctors can prescribe medications (create medication records)
+      if (!token.canPrescribeMedication) {
+        return NextResponse.redirect(new URL('/unauthorized', req.url))
+      }
+      return NextResponse.next()
+    }
+
+    // Care plan management - healthcare provider only
+    if (pathname.startsWith('/api/care-plans') || pathname.startsWith('/api/careplan')) {
+      // Business Logic: Only healthcare providers can manage care plans
+      if (!['DOCTOR', 'HSP', 'SYSTEM_ADMIN'].includes(token.role)) {
+        return NextResponse.redirect(new URL('/unauthorized', req.url))
+      }
+      return NextResponse.next()
+    }
+
+    // Provider management APIs - admin only
+    if (pathname.startsWith('/api/providers') && ['POST', 'PUT', 'DELETE'].includes(req.method || '')) {
+      if (!token.canManageProviders) {
+        return NextResponse.redirect(new URL('/unauthorized', req.url))
+      }
+      return NextResponse.next()
+    }
+
+    // Symptoms and diagnosis APIs - healthcare provider access
+    if (pathname.startsWith('/api/symptoms')) {
+      // Business Logic: Patients can record symptoms, healthcare providers can manage symptoms
+      if (!['PATIENT', 'DOCTOR', 'HSP', 'SYSTEM_ADMIN'].includes(token.role)) {
+        return NextResponse.redirect(new URL('/unauthorized', req.url))
+      }
+      return NextResponse.next()
+    }
+
+    // Vitals API routes - patient self-recording and healthcare provider management
+    if (pathname.startsWith('/api/vitals')) {
+      // Business Logic: Patients can record their vitals, healthcare providers can manage vitals
+      if (!['PATIENT', 'DOCTOR', 'HSP', 'SYSTEM_ADMIN'].includes(token.role)) {
+        return NextResponse.redirect(new URL('/unauthorized', req.url))
+      }
+      return NextResponse.next()
+    }
+
+    // Appointments API - scheduling permissions
+    if (pathname.startsWith('/api/appointments')) {
+      // Business Logic: Patients, doctors, and HSPs can manage appointments
+      if (!['PATIENT', 'DOCTOR', 'HSP', 'SYSTEM_ADMIN'].includes(token.role)) {
+        return NextResponse.redirect(new URL('/unauthorized', req.url))
+      }
+      return NextResponse.next()
+    }
+
+    // Default dashboard redirect based on role
+    if (pathname === '/dashboard') {
+      switch (token.role) {
+        case 'SYSTEM_ADMIN':
+          return NextResponse.redirect(new URL('/dashboard/admin', req.url))
+        case 'HOSPITAL_ADMIN':
+          return NextResponse.redirect(new URL('/dashboard/provider', req.url))
+        case 'DOCTOR':
+          return NextResponse.redirect(new URL('/dashboard/doctor', req.url))
+        case 'HSP':
+          return NextResponse.redirect(new URL('/dashboard/hospital', req.url))
+        case 'PATIENT':
+          return NextResponse.redirect(new URL('/dashboard/patient', req.url))
+        default:
+          return NextResponse.redirect(new URL('/auth/signin', req.url))
       }
     }
 
-    // Role-based authorization for dashboard routes
-    if (pathname.startsWith('/dashboard')) {
-      const role = user.role || user.category;
-      
-      // Admin routes
-      if (pathname.startsWith('/dashboard/admin') && role !== 'admin') {
-        return NextResponse.redirect(new URL('/unauthorized', request.url));
-      }
-      
-      // Doctor routes
-      if (pathname.startsWith('/dashboard/doctor') && !['DOCTOR', 'admin'].includes(role)) {
-        return NextResponse.redirect(new URL('/unauthorized', request.url));
-      }
-      
-      // Patient routes
-      if (pathname.startsWith('/dashboard/patient') && !['PATIENT', 'DOCTOR', 'admin'].includes(role)) {
-        return NextResponse.redirect(new URL('/unauthorized', request.url));
-      }
-      
-      // Hospital/HSP routes
-      if (pathname.startsWith('/dashboard/hospital') && !['HSP', 'DOCTOR', 'admin'].includes(role)) {
-        return NextResponse.redirect(new URL('/unauthorized', request.url));
-      }
-    }
+    return NextResponse.next()
+  },
+  {
+    callbacks: {
+      authorized: ({ token, req }) => {
+        const pathname = req.nextUrl.pathname
 
-    // API route authorization
-    if (pathname.startsWith('/api/')) {
-      const role = user.role || user.category;
-      
-      // Admin-only API routes
-      if (pathname.startsWith('/api/admin') && role !== 'admin') {
-        return NextResponse.json(
-          {
-            status: false,
-            statusCode: 403,
-            payload: {
-              error: {
-                status: 'error',
-                message: 'Admin access required'
-              }
-            }
-          },
-          { status: 403 }
-        );
-      }
-      
-      // Healthcare provider routes (doctors/HSPs)
-      if (
-        (pathname.startsWith('/api/doctors') || pathname.startsWith('/api/medications')) &&
-        !['DOCTOR', 'HSP', 'admin'].includes(role)
-      ) {
-        return NextResponse.json(
-          {
-            status: false,
-            statusCode: 403,
-            payload: {
-              error: {
-                status: 'error',
-                message: 'Healthcare provider access required'
-              }
-            }
-          },
-          { status: 403 }
-        );
-      }
-    }
+        // Allow public routes
+        if (
+          pathname.startsWith('/_next') ||
+          pathname.startsWith('/api/auth') ||
+          pathname.startsWith('/auth') ||
+          pathname === '/' ||
+          pathname.startsWith('/public')
+        ) {
+          return true
+        }
 
-    // Add user info to request headers for API routes
-    if (pathname.startsWith('/api/')) {
-      const requestHeaders = new Headers(request.headers);
-      requestHeaders.set('x-user-id', user.id || user.userId);
-      requestHeaders.set('x-user-role', user.role || user.category);
-      requestHeaders.set('x-user-email', user.email || '');
-      
-      return NextResponse.next({
-        request: {
-          headers: requestHeaders,
-        },
-      });
+        // Require authentication for all other routes
+        return !!token
+      }
     }
   }
-
-  // Security headers for all responses
-  const response = NextResponse.next();
-  
-  // HIPAA compliance security headers
-  response.headers.set('X-Frame-Options', 'DENY');
-  response.headers.set('X-Content-Type-Options', 'nosniff');
-  response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
-  response.headers.set('Permissions-Policy', 'geolocation=(), microphone=(), camera=()');
-  
-  // HSTS for HTTPS
-  if (process.env.NODE_ENV === 'production') {
-    response.headers.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
-  }
-
-  return response;
-}
+)
 
 /**
  * Middleware configuration

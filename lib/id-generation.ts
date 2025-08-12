@@ -10,21 +10,7 @@
  * Avoids collisions and provides predictable, sortable IDs
  */
 
-import { PrismaClient } from './prisma-client/index.js';
-
-// Default prisma instance (can be overridden)
-let prismaInstance: PrismaClient | null = null;
-
-function getPrisma(): PrismaClient {
-  if (!prismaInstance) {
-    prismaInstance = new PrismaClient();
-  }
-  return prismaInstance;
-}
-
-export function setPrismaInstance(instance: PrismaClient) {
-  prismaInstance = instance;
-}
+import { prisma } from "@/lib/prisma"
 
 export interface BusinessIdConfig {
   prefix: string;
@@ -92,7 +78,7 @@ async function generateBusinessId(config: {
     
     switch (config.tableName) {
       case 'doctors':
-        const doctors = await getPrisma().doctors.findMany({
+        const doctors = await prisma.doctors.findMany({
           where: {
             doctor_id: {
               startsWith: yearPrefix
@@ -106,7 +92,7 @@ async function generateBusinessId(config: {
         break;
         
       case 'hsps':
-        const hsps = await getPrisma().hsps.findMany({
+        const hsps = await prisma.hsps.findMany({
           where: {
             hsp_id: {
               startsWith: yearPrefix
@@ -120,7 +106,7 @@ async function generateBusinessId(config: {
         break;
         
       case 'patients':
-        const patients = await getPrisma().patient.findMany({
+        const patients = await prisma.patient.findMany({
           where: {
             patient_id: {
               startsWith: yearPrefix

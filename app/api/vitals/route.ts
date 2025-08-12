@@ -1,18 +1,41 @@
-// app/api/vitals/route.ts - Vitals management API
-import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
-import { verifyAuth } from '@/lib/auth-utils';
+/**
+ * Vitals Management API Route
+ * Handles vital signs monitoring and recording with medical validation
+ * Business Logic: Patients can record vitals, healthcare providers can manage vitals
+ */
 
-export async function GET(request: NextRequest) {
-  try {
-    const { user, error } = await verifyAuth(request);
-    if (error) {
-      return NextResponse.json({ 
-        status: false, 
-        statusCode: 401, 
-        payload: { error: { status: 'unauthorized', message: error } } 
-      }, { status: 401 });
-    }
+import { NextRequest, NextResponse } from "next/server"
+import { getServerSession } from "next-auth"
+import { authOptions } from "@/lib/auth"
+import { prisma } from "@/lib/prisma"
+import { 
+  createSuccessResponse, 
+  createErrorResponse, 
+  createUnauthorizedResponse,
+  createForbiddenResponse,
+  withErrorHandling
+} from "@/lib/api-response"
+import { 
+  VitalSignSchema, 
+  PaginationSchema 
+} from "@/lib/validations/healthcare"
+
+/**
+ * GET /api/vitals
+ * Retrieve vital signs with filtering and pagination
+ * Business Logic: Patients can view their own vitals, healthcare providers can view patient vitals
+ */
+export const GET = withErrorHandling(async (request: NextRequest) => {
+  const session = await getServerSession(authOptions)
+  
+  if (!session) {
+    return createUnauthorizedResponse()
+  }
+
+  // Business Logic: Only patients and healthcare providers can access vitals
+  if (!['PATIENT', 'DOCTOR', 'HSP', 'SYSTEM_ADMIN'].includes(session.user.role)) {
+    return createForbiddenResponse("Access to vitals denied")
+  }
 
     const { searchParams } = new URL(request.url);
     const patientId = searchParams.get('patient_id');

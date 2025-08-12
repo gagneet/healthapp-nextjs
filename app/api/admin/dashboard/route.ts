@@ -1,27 +1,39 @@
-// app/api/admin/dashboard/route.ts - Admin dashboard API
-import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
-import { verifyAuth } from '@/lib/auth-utils';
+/**
+ * Admin Dashboard API Route
+ * Provides comprehensive system analytics and statistics for administrators
+ * Business Logic: Only system administrators can access admin dashboard
+ */
 
-export async function GET(request: NextRequest) {
+import { NextRequest, NextResponse } from "next/server"
+import { getServerSession } from "next-auth"
+import { authOptions } from "@/lib/auth"
+import { prisma } from "@/lib/prisma"
+import { 
+  createSuccessResponse, 
+  createErrorResponse, 
+  createUnauthorizedResponse,
+  createForbiddenResponse,
+  withErrorHandling
+} from "@/lib/api-response"
+
+/**
+ * GET /api/admin/dashboard
+ * Retrieve comprehensive admin dashboard analytics and statistics
+ * Business Logic: Only system admins can access admin dashboard
+ */
+export const GET = withErrorHandling(async (request: NextRequest) => {
+  const session = await getServerSession(authOptions)
+  
+  if (!session) {
+    return createUnauthorizedResponse()
+  }
+
+  // Business Logic: Only system administrators can access admin dashboard
+  if (!['SYSTEM_ADMIN', 'HOSPITAL_ADMIN'].includes(session.user.role)) {
+    return createForbiddenResponse("Admin access required")
+  }
+
   try {
-    const { user, error } = await verifyAuth(request);
-    if (error) {
-      return NextResponse.json({ 
-        status: false, 
-        statusCode: 401, 
-        payload: { error: { status: 'unauthorized', message: error } } 
-      }, { status: 401 });
-    }
-
-    // Only admins can access admin dashboard
-    if (user!.role !== 'ADMIN' && user!.role !== 'PROVIDER_ADMIN') {
-      return NextResponse.json({
-        status: false,
-        statusCode: 403,
-        payload: { error: { status: 'forbidden', message: 'Admin access required' } }
-      }, { status: 403 });
-    }
 
     // Get comprehensive dashboard statistics
     const [
@@ -160,20 +172,9 @@ export async function GET(request: NextRequest) {
       }
     };
 
-    return NextResponse.json({
-      status: true,
-      statusCode: 200,
-      payload: {
-        data: dashboardData,
-        message: 'Admin dashboard data retrieved successfully'
-      }
-    });
+    return createSuccessResponse(dashboardData)
   } catch (error) {
-    console.error('Error fetching admin dashboard:', error);
-    return NextResponse.json({
-      status: false,
-      statusCode: 500,
-      payload: { error: { status: 'error', message: 'Internal server error' } }
-    }, { status: 500 });
+    console.error("Failed to fetch admin dashboard:", error)
+    throw error
   }
-}
+})

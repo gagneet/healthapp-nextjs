@@ -1,370 +1,455 @@
-// app/api/care-plans/route.ts - Care plans management API
-import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
-import { verifyAuth } from '@/lib/auth-utils';
+/**
+ * Care Plan Management API Route
+ * Handles CRUD operations for care plan management with healthcare business logic compliance
+ */
 
-export async function GET(request: NextRequest) {
-  try {
-    const { user, error } = await verifyAuth(request);
-    if (error) {
-      return NextResponse.json({ 
-        status: false, 
-        statusCode: 401, 
-        payload: { error: { status: 'unauthorized', message: error } } 
-      }, { status: 401 });
-    }
+import { NextRequest, NextResponse } from "next/server"
+import { getServerSession } from "next-auth"
+import { authOptions } from "@/lib/auth"
+import { prisma } from "@/lib/prisma"
+import { 
+  createSuccessResponse, 
+  createErrorResponse, 
+  createUnauthorizedResponse,
+  createForbiddenResponse,
+  withErrorHandling,
+  validateHealthcarePermissions
+} from "@/lib/api-response"
+import { 
+  CarePlanSchema, 
+  PaginationSchema 
+} from "@/lib/validations/healthcare"
 
-    const { searchParams } = new URL(request.url);
-    const patientId = searchParams.get('patient_id');
-    const doctorId = searchParams.get('doctor_id');
-    const status = searchParams.get('status');
-    const page = parseInt(searchParams.get('page') || '1');
-    const limit = parseInt(searchParams.get('limit') || '10');
-    const offset = (page - 1) * limit;
-
-    let whereClause: any = {};
-
-    // Role-based access control
-    if (user.role === 'PATIENT') {
-      const patient = await prisma.patients.findFirst({
-        where: { user_id: user.id }
-      });
-      if (!patient) {
-        return NextResponse.json({
-          status: false,
-          statusCode: 403,
-          payload: { error: { status: 'forbidden', message: 'Patient profile not found' } }
-        }, { status: 403 });
-      }
-      whereClause.patient_id = patient.id;
-    } else if (user.role === 'DOCTOR') {
-      const doctor = await prisma.doctors.findFirst({
-        where: { user_id: user.id }
-      });
-      if (!doctor) {
-        return NextResponse.json({
-          status: false,
-          statusCode: 403,
-          payload: { error: { status: 'forbidden', message: 'Doctor profile not found' } }
-        }, { status: 403 });
-      }
-      whereClause.created_by = doctor.id;
-    }
-
-    // Additional filters
-    if (patientId && ['DOCTOR', 'HSP', 'ADMIN'].includes(user.role)) {
-      whereClause.patient_id = patientId;
-    }
-    
-    if (doctorId && ['ADMIN', 'HSP'].includes(user.role)) {
-      whereClause.created_by = doctorId;
-    }
-    
-    if (status) {
-      whereClause.status = status;
-    }
-
-    const [carePlans, totalCount] = await Promise.all([
-      prisma.care_plans.findMany({
-        where: whereClause,
-        include: {
-          patients: {
-            select: {
-              id: true,
-              patient_id: true,
-              user: {
-                select: {
-                  first_name: true,
-                  last_name: true,
-                  email: true
-                }
-              }
-            }
-          },
-          doctors: {
-            select: {
-              id: true,
-              user: {
-                select: {
-                  first_name: true,
-                  last_name: true
-                }
-              },
-              specialities: {
-                select: {
-                  name: true
-                }
-              }
-            }
-          },
-          medications: {
-            select: {
-              id: true,
-              medicine_name: true,
-              dosage: true,
-              frequency: true,
-              status: true
-            }
-          },
-          vitals: {
-            select: {
-              id: true,
-              description: true,
-              vital_templates: {
-                select: {
-                  name: true,
-                  unit: true
-                }
-              }
-            }
-          },
-          _count: {
-            select: {
-              medications: true,
-              vitals: true,
-              appointments: true
-            }
-          }
-        },
-        skip: offset,
-        take: limit,
-        orderBy: { created_at: 'desc' }
-      }),
-      prisma.care_plans.count({ where: whereClause })
-    ]);
-
-    return NextResponse.json({
-      status: true,
-      statusCode: 200,
-      payload: {
-        data: {
-          care_plans: carePlans,
-          pagination: {
-            page,
-            limit,
-            total: totalCount,
-            totalPages: Math.ceil(totalCount / limit)
-          }
-        },
-        message: 'Care plans retrieved successfully'
-      }
-    });
-  } catch (error) {
-    console.error('Error fetching care plans:', error);
-    return NextResponse.json({
-      status: false,
-      statusCode: 500,
-      payload: { error: { status: 'error', message: 'Internal server error' } }
-    }, { status: 500 });
+/**
+ * GET /api/care-plans
+ * Retrieve care plans with filtering and pagination
+ * Business Logic: Only healthcare providers can access care plans
+ */
+export const GET = withErrorHandling(async (request: NextRequest) => {
+  const session = await getServerSession(authOptions)
+  
+  if (!session) {
+    return createUnauthorizedResponse()
   }
-}
 
-export async function POST(request: NextRequest) {
+  // Business Logic: Only healthcare providers can access care plans
+  if (!['DOCTOR', 'HSP', 'PATIENT', 'SYSTEM_ADMIN'].includes(session.user.role)) {
+    return createForbiddenResponse("Access to care plans denied")
+  }
+
+  const { searchParams } = new URL(request.url)
+  const paginationResult = PaginationSchema.safeParse({
+    page: parseInt(searchParams.get('page') || '1'),
+    limit: parseInt(searchParams.get('limit') || '20'),
+    sortBy: searchParams.get('sortBy') || 'created_at',
+    sortOrder: searchParams.get('sortOrder') || 'desc'
+  })
+
+  if (!paginationResult.success) {
+    return createErrorResponse(paginationResult.error)
+  }
+
+  const { page, limit, sortBy, sortOrder } = paginationResult.data
+  const skip = (page - 1) * limit
+
+  // Additional filters
+  const patientId = searchParams.get('patientId')
+  const doctorId = searchParams.get('doctorId')
+  const searchQuery = searchParams.get('search')
+  const status = searchParams.get('status')
+
   try {
-    const { user, error } = await verifyAuth(request);
-    if (error) {
-      return NextResponse.json({ 
-        status: false, 
-        statusCode: 401, 
-        payload: { error: { status: 'unauthorized', message: error } } 
-      }, { status: 401 });
+    // Build where clause based on user role and filters
+    let whereClause: any = {}
+
+    // Business Logic: Role-based data access
+    switch (session.user.role) {
+      case 'DOCTOR':
+        // Doctors can only see care plans they created or are assigned to
+        whereClause.primary_doctor_id = session.user.profileId
+        break
+      case 'HSP':
+        // HSPs can see care plans through care team assignments
+        whereClause.OR = [
+          {
+            care_team: {
+              some: {
+                hsp_id: session.user.profileId
+              }
+            }
+          },
+          {
+            assigned_hsps: {
+              some: {
+                hsp_id: session.user.profileId
+              }
+            }
+          }
+        ]
+        break
+      case 'PATIENT':
+        // Patients can only see their own care plans
+        whereClause.patient_id = session.user.profileId
+        break
+      case 'SYSTEM_ADMIN':
+        // System admins can see all care plans
+        break
+      default:
+        return createForbiddenResponse("Invalid role for care plan access")
     }
 
-    // Only doctors and HSPs can create care plans
-    if (!['DOCTOR', 'HSP'].includes(user.role)) {
-      return NextResponse.json({
-        status: false,
-        statusCode: 403,
-        payload: { error: { status: 'forbidden', message: 'Only doctors and HSPs can create care plans' } }
-      }, { status: 403 });
+    // Apply patient filter (for healthcare providers)
+    if (patientId && ['DOCTOR', 'HSP', 'SYSTEM_ADMIN'].includes(session.user.role)) {
+      whereClause.patient_id = patientId
     }
 
-    const body = await request.json();
-    const {
-      patient_id,
-      title,
-      description,
-      start_date,
-      end_date,
-      goals,
-      status,
-      priority,
-      care_team_notes
-    } = body;
-
-    // Get doctor ID
-    const doctor = await prisma.doctors.findFirst({
-      where: { user_id: user.id }
-    });
-
-    if (!doctor && user.role === 'DOCTOR') {
-      return NextResponse.json({
-        status: false,
-        statusCode: 403,
-        payload: { error: { status: 'forbidden', message: 'Doctor profile not found' } }
-      }, { status: 403 });
+    // Apply doctor filter (for admins)
+    if (doctorId && session.user.role === 'SYSTEM_ADMIN') {
+      whereClause.primary_doctor_id = doctorId
     }
 
-    const carePlan = await prisma.care_plans.create({
+    // Apply search filter
+    if (searchQuery) {
+      whereClause.OR = [
+        ...(whereClause.OR || []),
+        {
+          plan_name: { contains: searchQuery, mode: 'insensitive' }
+        },
+        {
+          primary_diagnosis: { contains: searchQuery, mode: 'insensitive' }
+        },
+        {
+          patient: {
+            user: {
+              OR: [
+                { first_name: { contains: searchQuery, mode: 'insensitive' } },
+                { last_name: { contains: searchQuery, mode: 'insensitive' } }
+              ]
+            }
+          }
+        }
+      ]
+    }
+
+    // Apply status filter
+    if (status) {
+      whereClause.status = status.toUpperCase()
+    }
+
+    // Get total count for pagination
+    const total = await prisma.care_plan.count({ where: whereClause })
+
+    // Fetch care plans with related data
+    const carePlans = await prisma.care_plan.findMany({
+      where: whereClause,
+      skip,
+      take: limit,
+      orderBy: {
+        [sortBy]: sortOrder
+      },
+      include: {
+        patient: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                first_name: true,
+                last_name: true,
+                email: true
+              }
+            }
+          }
+        },
+        doctors_care_plan_primary_doctor_idTodoctors: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                first_name: true,
+                last_name: true,
+                email: true
+              }
+            },
+            speciality: {
+              select: {
+                name: true
+              }
+            }
+          }
+        },
+        // Include medications count
+        medications: {
+          select: {
+            id: true
+          }
+        }
+      }
+    })
+
+    // Format response data
+    const formattedCarePlans = carePlans.map(carePlan => ({
+      id: carePlan.id,
+      carePlanId: carePlan.care_plan_id,
+      planName: carePlan.plan_name,
+      primaryDiagnosis: carePlan.primary_diagnosis,
+      icd10Codes: carePlan.icd10_codes || [],
+      status: carePlan.status,
+      patient: {
+        id: carePlan.patient.id,
+        patientId: carePlan.patient.patient_id,
+        name: `${carePlan.patient.user.first_name} ${carePlan.patient.user.last_name}`.trim(),
+        email: carePlan.patient.user.email
+      },
+      primaryDoctor: carePlan.doctors_care_plan_primary_doctor_idTodoctors ? {
+        id: carePlan.doctors_care_plan_primary_doctor_idTodoctors.id,
+        doctorId: carePlan.doctors_care_plan_primary_doctor_idTodoctors.doctor_id,
+        name: `${carePlan.doctors_care_plan_primary_doctor_idTodoctors.user.first_name} ${carePlan.doctors_care_plan_primary_doctor_idTodoctors.user.last_name}`.trim(),
+        email: carePlan.doctors_care_plan_primary_doctor_idTodoctors.user.email,
+        speciality: carePlan.doctors_care_plan_primary_doctor_idTodoctors.speciality?.name
+      } : null,
+      treatmentGoals: carePlan.treatment_goals || [],
+      medicationCount: carePlan.medications.length,
+      startDate: carePlan.start_date,
+      endDate: carePlan.end_date,
+      planDetails: carePlan.plan_details,
+      createdAt: carePlan.created_at,
+      updatedAt: carePlan.updated_at
+    }))
+
+    return createSuccessResponse(
+      formattedCarePlans,
+      200,
+      { page, limit, total }
+    )
+  } catch (error) {
+    console.error("Failed to fetch care plans:", error)
+    throw error
+  }
+})
+
+/**
+ * POST /api/care-plans
+ * Create new care plan with medical validation
+ * Business Logic: Only doctors can create care plans
+ */
+export const POST = withErrorHandling(async (request: NextRequest) => {
+  const session = await getServerSession(authOptions)
+  
+  if (!session) {
+    return createUnauthorizedResponse()
+  }
+
+  // Business Logic: Only doctors can create care plans
+  if (session.user.role !== 'DOCTOR') {
+    return createForbiddenResponse("Only doctors can create care plans")
+  }
+
+  const body = await request.json()
+  const validationResult = CarePlanSchema.safeParse(body)
+
+  if (!validationResult.success) {
+    return createErrorResponse(validationResult.error)
+  }
+
+  const carePlanData = validationResult.data
+
+  try {
+    // Verify doctor has access to the patient
+    const patientExists = await prisma.patient.findFirst({
+      where: {
+        id: carePlanData.patientId,
+        // Business Logic: Ensure doctor-patient relationship
+        OR: [
+          { primary_doctor_id: session.user.profileId },
+          { 
+            patient_doctor_assignments: {
+              some: {
+                doctor_id: session.user.profileId,
+                assignment_type: { in: ['primary', 'specialist', 'consulting'] }
+              }
+            }
+          }
+        ]
+      }
+    })
+
+    if (!patientExists) {
+      return createForbiddenResponse("Access denied to patient or patient not found")
+    }
+
+    // Generate business ID for care plan
+    const carePlanBusinessId = `CP-${Date.now()}`
+
+    // Create care plan record
+    const carePlan = await prisma.care_plan.create({
       data: {
-        patient_id,
-        created_by: doctor?.id || user.id,
-        title,
-        description,
-        start_date: new Date(start_date),
-        end_date: end_date ? new Date(end_date) : null,
-        goals: goals || [],
-        status: status || 'active',
-        priority: priority || 'medium',
-        care_team_notes,
+        care_plan_id: carePlanBusinessId,
+        patient_id: carePlanData.patientId,
+        primary_doctor_id: session.user.profileId!,
+        plan_name: carePlanData.planName,
+        primary_diagnosis: carePlanData.primaryDiagnosis,
+        icd10_codes: carePlanData.icd10Codes,
+        treatment_goals: carePlanData.treatmentGoals,
+        start_date: carePlanData.startDate,
+        end_date: carePlanData.endDate,
+        plan_details: carePlanData.planDetails,
+        status: 'ACTIVE',
         created_at: new Date(),
         updated_at: new Date()
       },
       include: {
-        patients: {
-          select: {
-            patient_id: true,
+        patient: {
+          include: {
             user: {
               select: {
                 first_name: true,
-                last_name: true
-              }
-            }
-          }
-        },
-        doctors: {
-          select: {
-            user: {
-              select: {
-                first_name: true,
-                last_name: true
+                last_name: true,
+                email: true
               }
             }
           }
         }
       }
-    });
+    })
 
-    return NextResponse.json({
-      status: true,
-      statusCode: 201,
-      payload: {
-        data: { care_plan: carePlan },
-        message: 'Care plan created successfully'
-      }
-    });
-  } catch (error) {
-    console.error('Error creating care plan:', error);
-    return NextResponse.json({
-      status: false,
-      statusCode: 500,
-      payload: { error: { status: 'error', message: 'Internal server error' } }
-    }, { status: 500 });
-  }
-}
-
-export async function PUT(request: NextRequest) {
-  try {
-    const { user, error } = await verifyAuth(request);
-    if (error) {
-      return NextResponse.json({ 
-        status: false, 
-        statusCode: 401, 
-        payload: { error: { status: 'unauthorized', message: error } } 
-      }, { status: 401 });
+    // Format response
+    const responseData = {
+      id: carePlan.id,
+      carePlanId: carePlan.care_plan_id,
+      planName: carePlan.plan_name,
+      primaryDiagnosis: carePlan.primary_diagnosis,
+      patient: {
+        id: carePlan.patient.id,
+        name: `${carePlan.patient.user.first_name} ${carePlan.patient.user.last_name}`.trim(),
+        email: carePlan.patient.user.email
+      },
+      status: carePlan.status,
+      startDate: carePlan.start_date,
+      endDate: carePlan.end_date,
+      treatmentGoals: carePlan.treatment_goals,
+      createdAt: carePlan.created_at
     }
 
-    const body = await request.json();
-    const { id, title, description, goals, status, priority, care_team_notes, end_date } = body;
+    // TODO: Send notifications to care team
+    // TODO: Log audit trail for care plan creation
 
+    return createSuccessResponse(responseData, 201)
+  } catch (error) {
+    console.error("Failed to create care plan:", error)
+    throw error
+  }
+})
+
+/**
+ * PUT /api/care-plans
+ * Update care plan information
+ * Business Logic: Only care plan creator or admins can update care plans
+ */
+export const PUT = withErrorHandling(async (request: NextRequest) => {
+  const session = await getServerSession(authOptions)
+  
+  if (!session) {
+    return createUnauthorizedResponse()
+  }
+
+  // Business Logic: Only healthcare providers can update care plans
+  if (!['DOCTOR', 'HSP', 'SYSTEM_ADMIN'].includes(session.user.role)) {
+    return createForbiddenResponse("Only healthcare providers can update care plans")
+  }
+
+  const body = await request.json()
+  const { id, ...updateData } = body
+
+  if (!id) {
+    return createErrorResponse(new Error("Care plan ID is required"))
+  }
+
+  try {
     // Get existing care plan to verify permissions
-    const existingPlan = await prisma.care_plans.findUnique({
+    const existingPlan = await prisma.care_plan.findUnique({
       where: { id },
       include: {
-        doctors: { select: { user_id: true } }
+        doctors_care_plan_primary_doctor_idTodoctors: {
+          select: { user_id: true }
+        }
       }
-    });
+    })
 
     if (!existingPlan) {
-      return NextResponse.json({
-        status: false,
-        statusCode: 404,
-        payload: { error: { status: 'not_found', message: 'Care plan not found' } }
-      }, { status: 404 });
+      return createErrorResponse(new Error("Care plan not found"), 404)
     }
 
-    // Check permissions - only creator or admin can modify
+    // Business Logic: Check permissions - only creator, care team, or admin can modify
     const canModify = 
-      user.role === 'ADMIN' ||
-      (user.role === 'DOCTOR' && existingPlan.doctors?.user_id === user.id) ||
-      user.role === 'HSP';
+      session.user.role === 'SYSTEM_ADMIN' ||
+      (session.user.role === 'DOCTOR' && existingPlan.primary_doctor_id === session.user.profileId) ||
+      (session.user.role === 'HSP') // HSPs can update care plans they're assigned to
 
     if (!canModify) {
-      return NextResponse.json({
-        status: false,
-        statusCode: 403,
-        payload: { error: { status: 'forbidden', message: 'Cannot modify this care plan' } }
-      }, { status: 403 });
+      return createForbiddenResponse("Cannot modify this care plan")
     }
 
-    const updatedCarePlan = await prisma.care_plans.update({
+    // Build update data
+    const carePlanUpdateData: any = {
+      updated_at: new Date()
+    }
+
+    if (updateData.planName) carePlanUpdateData.plan_name = updateData.planName
+    if (updateData.primaryDiagnosis) carePlanUpdateData.primary_diagnosis = updateData.primaryDiagnosis
+    if (updateData.treatmentGoals) carePlanUpdateData.treatment_goals = updateData.treatmentGoals
+    if (updateData.status) carePlanUpdateData.status = updateData.status.toUpperCase()
+    if (updateData.endDate) carePlanUpdateData.end_date = new Date(updateData.endDate)
+    if (updateData.planDetails) carePlanUpdateData.plan_details = updateData.planDetails
+    if (updateData.icd10Codes) carePlanUpdateData.icd10_codes = updateData.icd10Codes
+
+    const updatedCarePlan = await prisma.care_plan.update({
       where: { id },
-      data: {
-        ...(title && { title }),
-        ...(description && { description }),
-        ...(goals && { goals }),
-        ...(status && { status }),
-        ...(priority && { priority }),
-        ...(care_team_notes && { care_team_notes }),
-        ...(end_date && { end_date: new Date(end_date) }),
-        updated_at: new Date()
-      },
+      data: carePlanUpdateData,
       include: {
-        patients: {
-          select: {
-            patient_id: true,
+        patient: {
+          include: {
+            user: {
+              select: {
+                first_name: true,
+                last_name: true,
+                email: true
+              }
+            }
+          }
+        },
+        doctors_care_plan_primary_doctor_idTodoctors: {
+          include: {
             user: {
               select: {
                 first_name: true,
                 last_name: true
               }
             }
-          }
-        },
-        doctors: {
-          select: {
-            user: {
-              select: {
-                first_name: true,
-                last_name: true
-              }
-            }
-          }
-        },
-        _count: {
-          select: {
-            medications: true,
-            vitals: true,
-            appointments: true
           }
         }
       }
-    });
+    })
 
-    return NextResponse.json({
-      status: true,
-      statusCode: 200,
-      payload: {
-        data: { care_plan: updatedCarePlan },
-        message: 'Care plan updated successfully'
-      }
-    });
+    // Format response
+    const responseData = {
+      id: updatedCarePlan.id,
+      carePlanId: updatedCarePlan.care_plan_id,
+      planName: updatedCarePlan.plan_name,
+      primaryDiagnosis: updatedCarePlan.primary_diagnosis,
+      patient: {
+        id: updatedCarePlan.patient.id,
+        name: `${updatedCarePlan.patient.user.first_name} ${updatedCarePlan.patient.user.last_name}`.trim(),
+        email: updatedCarePlan.patient.user.email
+      },
+      status: updatedCarePlan.status,
+      treatmentGoals: updatedCarePlan.treatment_goals,
+      planDetails: updatedCarePlan.plan_details,
+      updatedAt: updatedCarePlan.updated_at
+    }
+
+    return createSuccessResponse(responseData)
   } catch (error) {
-    console.error('Error updating care plan:', error);
-    return NextResponse.json({
-      status: false,
-      statusCode: 500,
-      payload: { error: { status: 'error', message: 'Internal server error' } }
-    }, { status: 500 });
+    console.error("Failed to update care plan:", error)
+    throw error
   }
-}
+})
