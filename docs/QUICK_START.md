@@ -1,7 +1,7 @@
 # 🚀 Quick Start Guide - Healthcare Management Platform
-## **Pure Next.js + Prisma Architecture**
+## **Next.js Frontend + Node.js Backend + Prisma Architecture**
 
-## ⚡ 3-Minute Setup
+## ⚡ 5-Minute Setup
 
 ### Prerequisites Check
 
@@ -12,7 +12,7 @@ docker --version  # Any recent version
 git --version     # Any recent version
 ```
 
-### One-Command Deployment
+### One-Command Local Development
 
 ```bash
 # 1. Clone repository
@@ -22,32 +22,34 @@ cd healthapp-nextjs
 # 2. Install dependencies
 npm install
 
-# 3. Generate Prisma client from existing database
+# 3. Generate Prisma client
 npx prisma generate
 
-# 4. Deploy everything with Next.js + Prisma
-chmod +x scripts/deploy-nextjs-local.sh
-./scripts/deploy-nextjs-local.sh deploy --migrate --seed
+# 4. Deploy local development environment
+chmod +x scripts/dev-local.sh
+./scripts/dev-local.sh start --migrate --seed
 ```
 
 ## 🎯 What You Get
 
-After successful deployment (Simplified Architecture):
+After successful deployment (Full-Stack Architecture):
 
 | Service | URL | Purpose |
 |---------|-----|---------|
-| **🏥 Healthcare App** | [http://192.168.0.148:3002](http://192.168.0.148:3002) | **Full-Stack Next.js Application** |
-| **🔧 API Routes** | [http://192.168.0.148:3002/api](http://192.168.0.148:3002/api) | **Integrated Next.js API Routes** |
-| **💊 Health Check** | [http://192.168.0.148:3002/api/health](http://192.168.0.148:3002/api/health) | **Real Database Statistics** |
-| **📊 Database** | 192.168.0.148:5432 | PostgreSQL with 46 Healthcare Models |
+| **🏥 Next.js Frontend** | [http://192.168.0.148:3002](http://192.168.0.148:3002) | **Modern Healthcare Dashboard** |
+| **🔧 Node.js API Backend** | [http://192.168.0.148:3005](http://192.168.0.148:3005) | **TypeScript REST API with Business Logic** |
+| **💊 Health Check** | [http://192.168.0.148:3005/api/health](http://192.168.0.148:3005/api/health) | **Real Database Statistics** |
+| **📊 PostgreSQL** | 192.168.0.148:5434 | Advanced Healthcare Schema with Business IDs |
+| **⚡ Redis Cache** | 192.168.0.148:6379 | Session management and caching |
 
-### **Key Architecture Changes** ✅
+### **Current Architecture** ✅
 
-- ❌ **No separate Express backend** (port 3005) 
-- ❌ **No API proxying required**
-- ✅ **Single Next.js service** with integrated API routes
-- ✅ **Prisma ORM** with introspected healthcare schema  
-- ✅ **Type-safe database operations**
+- ✅ **Next.js 14 Frontend** with App Router (port 3002)
+- ✅ **Node.js/Express Backend** with TypeScript (port 3005) 
+- ✅ **API proxying** via Next.js rewrites to backend
+- ✅ **Prisma ORM** with comprehensive healthcare schema  
+- ✅ **Business ID generation** (DOC-2025-001, PAT-2025-001, HSP-2025-001)
+- ✅ **Type-safe operations** across frontend and backend
 - ✅ **Faster startup** (2-3 seconds vs 5-8 seconds)
 
 ### Default Access

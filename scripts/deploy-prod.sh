@@ -259,13 +259,9 @@ run_migrations() {
         exit 1
     fi
     
-    # Ensure TypeScript migrations are compiled for Sequelize CLI
-    echo -e "${BLUE}[INFO]${NC} Compiling TypeScript migrations/seeders for production..."
-    docker exec $CONTAINER_ID npm run migrations:build
-    
-    # Then run migrations
-    echo -e "${BLUE}[INFO]${NC} Running database migrations in production..."
-    docker exec $CONTAINER_ID npm run migrate
+    # Run Prisma migrations
+    echo -e "${BLUE}[INFO]${NC} Running Prisma database migrations in production..."
+    docker exec $CONTAINER_ID npx prisma migrate deploy
     echo -e "${GREEN}[SUCCESS]${NC} Production migrations completed!"
 }
 
@@ -281,13 +277,9 @@ run_seeders() {
         exit 1
     fi
     
-    # Ensure TypeScript migrations are compiled (seeders need this too)
-    echo -e "${BLUE}[INFO]${NC} Ensuring TypeScript migrations/seeders are compiled..."
-    docker exec $CONTAINER_ID npm run migrations:build
-    
-    # Then run seeders
-    echo -e "${BLUE}[INFO]${NC} Running database seeders in production..."
-    docker exec $CONTAINER_ID npm run seed
+    # Run Prisma seeders
+    echo -e "${BLUE}[INFO]${NC} Running Prisma database seeders in production..."
+    docker exec $CONTAINER_ID npx tsx lib/seed.ts
     echo -e "${GREEN}[SUCCESS]${NC} Production seeders completed!"
 }
 

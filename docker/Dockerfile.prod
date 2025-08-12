@@ -20,12 +20,16 @@ LABEL maintainer="HealthApp Team <ops@healthapp.com>"
 
 # Copy backend source and build
 COPY src/ ./src/
+COPY prisma/ ./prisma/
+COPY lib/ ./lib/
 COPY tsconfig*.json ./
-COPY .sequelizerc ./
 
-# Build TypeScript
+# Build TypeScript backend
 RUN npm install -g typescript
-RUN npm run build
+RUN npm run backend:build
+
+# Generate Prisma client
+RUN npx prisma generate
 
 # Remove dev dependencies and source files
 RUN rm -rf src/ tsconfig*.json node_modules/

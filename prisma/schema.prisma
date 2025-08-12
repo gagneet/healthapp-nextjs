@@ -904,6 +904,7 @@ model dashboard_metrics {
 model doctors {
   id                                                                                     String                             @id @db.Uuid
   user_id                                                                                String                             @unique(map: "doctors_user_id") @db.Uuid
+  doctor_id                                                                              String                             @unique(map: "doctors_doctor_id") @db.VarChar(50)
   organization_id                                                                        String?                            @db.Uuid
   medical_license_number                                                                 String                             @unique(map: "doctors_medical_license_number") @db.VarChar(100)
   npi_number                                                                             String?                            @unique @db.VarChar(20)
@@ -977,6 +978,7 @@ model doctors {
 model hsps {
   id                               String                             @id @db.Uuid
   user_id                          String                             @unique(map: "hsps_user_id") @db.Uuid
+  hsp_id                           String                             @unique(map: "hsps_hsp_id") @db.VarChar(50)
   organization_id                  String?                            @db.Uuid
   hsp_type                         String                             @db.VarChar(50)
   license_number                   String?                            @unique @db.VarChar(100)

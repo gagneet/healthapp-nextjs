@@ -1,0 +1,382 @@
+// app/api/appointments/route.ts - Appointments management API
+import { NextRequest, NextResponse } from 'next/server';
+import { prisma } from '@/lib/prisma';
+import { verifyAuth } from '@/lib/auth-utils';
+
+export async function GET(request: NextRequest) {
+  try {
+    const { user, error } = await verifyAuth(request);
+    if (error) {
+      return NextResponse.json({ 
+        status: false, 
+        statusCode: 401, 
+        payload: { error: { status: 'unauthorized', message: error } } 
+      }, { status: 401 });
+    }
+
+    const { searchParams } = new URL(request.url);
+    const patientId = searchParams.get('patient_id');
+    const doctorId = searchParams.get('doctor_id');
+    const status = searchParams.get('status');
+    const startDate = searchParams.get('start_date');
+    const endDate = searchParams.get('end_date');
+    const page = parseInt(searchParams.get('page') || '1');
+    const limit = parseInt(searchParams.get('limit') || '20');
+    const offset = (page - 1) * limit;
+
+    let whereClause: any = {};
+
+    // Role-based filtering
+    if (user!.role === 'PATIENT') {
+      // Patients can only see their own appointments
+      const patient = await prisma.patient.findFirst({
+        where: { user_id: user!.id }
+      });
+      if (!patient) {
+        return NextResponse.json({
+          status: false,
+          statusCode: 403,
+          payload: { error: { status: 'forbidden', message: 'Patient profile not found' } }
+        }, { status: 403 });
+      }
+      whereClause.patient_id = patient.id;
+    } else if (user!.role === 'DOCTOR') {
+      // Doctors can only see their own appointments
+      const doctor = await prisma.doctors.findFirst({
+        where: { user_id: user!.id }
+      });
+      if (!doctor) {
+        return NextResponse.json({
+          status: false,
+          statusCode: 403,
+          payload: { error: { status: 'forbidden', message: 'Doctor profile not found' } }
+        }, { status: 403 });
+      }
+      whereClause.doctor_id = doctor.id;
+    }
+
+    // Additional filters
+    if (patientId && ['DOCTOR', 'HSP', 'ADMIN'].includes(user!.role)) {
+      whereClause.patient_id = patientId;
+    }
+    
+    if (doctorId && ['ADMIN', 'HSP'].includes(user!.role)) {
+      whereClause.doctor_id = doctorId;
+    }
+    
+    if (status) {
+      whereClause.status = status;
+    }
+    
+    if (startDate && endDate) {
+      whereClause.start_time = {
+        gte: new Date(startDate),
+        lte: new Date(endDate)
+      };
+    }
+
+    const [appointments, totalCount] = await Promise.all([
+      prisma.appointment.findMany({
+        where: whereClause,
+        include: {
+          patient: {
+            select: {
+              id: true,
+              patient_id: true,
+              user: {
+                select: {
+                  first_name: true,
+                  last_name: true,
+                  email: true,
+                  mobile_number: true
+                }
+              }
+            }
+          },
+          doctor: {
+            select: {
+              id: true,
+              user: {
+                select: {
+                  first_name: true,
+                  last_name: true,
+                  email: true
+                }
+              },
+              speciality: {
+                select: {
+                  name: true
+                }
+              }
+            }
+          },
+          appointment_slots: {
+            select: {
+              start_time: true,
+              end_time: true,
+              slot_type: true
+            }
+          }
+        },
+        skip: offset,
+        take: limit,
+        orderBy: { start_time: 'desc' }
+      }),
+      prisma.appointment.count({ where: whereClause })
+    ]);
+
+    return NextResponse.json({
+      status: true,
+      statusCode: 200,
+      payload: {
+        data: {
+          appointments,
+          pagination: {
+            page,
+            limit,
+            total: totalCount,
+            totalPages: Math.ceil(totalCount / limit)
+          }
+        },
+        message: 'Appointments retrieved successfully'
+      }
+    });
+  } catch (error) {
+    console.error('Error fetching appointments:', error);
+    return NextResponse.json({
+      status: false,
+      statusCode: 500,
+      payload: { error: { status: 'error', message: 'Internal server error' } }
+    }, { status: 500 });
+  }
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    const { user, error } = await verifyAuth(request);
+    if (error) {
+      return NextResponse.json({ 
+        status: false, 
+        statusCode: 401, 
+        payload: { error: { status: 'unauthorized', message: error } } 
+      }, { status: 401 });
+    }
+
+    const body = await request.json();
+    const {
+      patient_id,
+      doctor_id,
+      start_time,
+      appointment_time,
+      slot_id,
+      appointment_type,
+      reason,
+      notes,
+      duration_minutes
+    } = body;
+
+    // Validate user permissions
+    if (user!.role === 'PATIENT') {
+      const patient = await prisma.patient.findFirst({
+        where: { user_id: user!.id }
+      });
+      if (!patient || patient.id !== patient_id) {
+        return NextResponse.json({
+          status: false,
+          statusCode: 403,
+          payload: { error: { status: 'forbidden', message: 'Can only book appointments for yourself' } }
+        }, { status: 403 });
+      }
+    }
+
+    // Check if slot is available
+    if (slot_id) {
+      const slot = await prisma.appointment_slots.findUnique({
+        where: { id: slot_id }
+      });
+      
+      if (!slot || !slot.is_available) {
+        return NextResponse.json({
+          status: false,
+          statusCode: 409,
+          payload: { error: { status: 'conflict', message: 'Time slot not available' } }
+        }, { status: 409 });
+      }
+    }
+
+    // Create appointment
+    const appointment = await prisma.$transaction(async (tx) => {
+      // Create the appointment
+      const newAppointment = await tx.appointment.create({
+        data: {
+          patient_id,
+          doctor_id,
+          start_time: new Date(start_time),
+          appointment_time,
+          slot_id,
+          appointment_type,
+          reason,
+          notes,
+          duration_minutes: duration_minutes || 30,
+          status: 'pending',
+          booked_by: user.id,
+          created_at: new Date(),
+          updated_at: new Date()
+        },
+        include: {
+          patients: {
+            select: {
+              patient_id: true,
+              user: {
+                select: {
+                  first_name: true,
+                  last_name: true,
+                  email: true
+                }
+              }
+            }
+          },
+          doctors: {
+            select: {
+              user: {
+                select: {
+                  first_name: true,
+                  last_name: true
+                }
+              },
+              specialities: {
+                select: {
+                  name: true
+                }
+              }
+            }
+          }
+        }
+      });
+
+      // Mark slot as unavailable if slot_id provided
+      if (slot_id) {
+        await tx.appointment_slots.update({
+          where: { id: slot_id },
+          data: { is_available: false }
+        });
+      }
+
+      return newAppointment;
+    });
+
+    return NextResponse.json({
+      status: true,
+      statusCode: 201,
+      payload: {
+        data: { appointment },
+        message: 'Appointment booked successfully'
+      }
+    });
+  } catch (error) {
+    console.error('Error creating appointment:', error);
+    return NextResponse.json({
+      status: false,
+      statusCode: 500,
+      payload: { error: { status: 'error', message: 'Internal server error' } }
+    }, { status: 500 });
+  }
+}
+
+export async function PUT(request: NextRequest) {
+  try {
+    const { user, error } = await verifyAuth(request);
+    if (error) {
+      return NextResponse.json({ 
+        status: false, 
+        statusCode: 401, 
+        payload: { error: { status: 'unauthorized', message: error } } 
+      }, { status: 401 });
+    }
+
+    const body = await request.json();
+    const { id, status, notes, reschedule_date, reschedule_time } = body;
+
+    // Get appointment to verify permissions
+    const existingAppointment = await prisma.appointment.findUnique({
+      where: { id },
+      include: {
+        patients: { select: { user_id: true } },
+        doctors: { select: { user_id: true } }
+      }
+    });
+
+    if (!existingAppointment) {
+      return NextResponse.json({
+        status: false,
+        statusCode: 404,
+        payload: { error: { status: 'not_found', message: 'Appointment not found' } }
+      }, { status: 404 });
+    }
+
+    // Check permissions
+    const canModify = 
+      user.role === 'ADMIN' ||
+      (user.role === 'DOCTOR' && existingAppointment.doctors?.user_id === user.id) ||
+      (user.role === 'PATIENT' && existingAppointment.patients?.user_id === user.id);
+
+    if (!canModify) {
+      return NextResponse.json({
+        status: false,
+        statusCode: 403,
+        payload: { error: { status: 'forbidden', message: 'Cannot modify this appointment' } }
+      }, { status: 403 });
+    }
+
+    // Update appointment
+    const updatedAppointment = await prisma.appointment.update({
+      where: { id },
+      data: {
+        ...(status && { status }),
+        ...(notes && { notes }),
+        ...(reschedule_date && { start_time: new Date(reschedule_date) }),
+        ...(reschedule_time && { appointment_time: reschedule_time }),
+        updated_at: new Date()
+      },
+      include: {
+        patients: {
+          select: {
+            patient_id: true,
+            user: {
+              select: {
+                first_name: true,
+                last_name: true
+              }
+            }
+          }
+        },
+        doctors: {
+          select: {
+            user: {
+              select: {
+                first_name: true,
+                last_name: true
+              }
+            }
+          }
+        }
+      }
+    });
+
+    return NextResponse.json({
+      status: true,
+      statusCode: 200,
+      payload: {
+        data: { appointment: updatedAppointment },
+        message: 'Appointment updated successfully'
+      }
+    });
+  } catch (error) {
+    console.error('Error updating appointment:', error);
+    return NextResponse.json({
+      status: false,
+      statusCode: 500,
+      payload: { error: { status: 'error', message: 'Internal server error' } }
+    }, { status: 500 });
+  }
+}
