@@ -12,7 +12,7 @@ A comprehensive, modern healthcare management system built with **Node.js/Expres
 
 ### 🏗️ **Modern Development Stack**
 - **Node.js 22+ with ES Modules**: Modern async/await patterns and top-level await support
-- **MySQL with Sequelize ORM**: Production-ready database with connection pooling and optimized queries
+- **PostgreSQL with Prisma ORM**: Production-ready database with connection pooling and optimized queries
 - **TypeScript Definitions**: Complete type safety across backend with `/typings` directory
 - **Enhanced Security**: Helmet, CORS, rate limiting, JWT authentication, and HIPAA compliance features
 

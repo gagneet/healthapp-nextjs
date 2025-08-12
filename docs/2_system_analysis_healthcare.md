@@ -1,51 +1,72 @@
-I have a health application, which is using React v16 with ANTD and MUI components as the frontend UI/UX and Node/Express, with MySQL/MongoDB as the backend. The frontend code is in 'adherelive-fe', while the backend code is in 'adherelive-be'. The current MySQL schema they are is in the SQL file: 'adherelive-be/database_schema.sql'.
+# AdhereLive Medical Health Application - System Analysis & Best Practices
+
+> I have a health application, which is using React v16 with ANTD and MUI components as the frontend UI/UX and Node/Express, with MySQL/MongoDB as the backend. The frontend code is in 'adherelive-fe', while the backend code is in 'adherelive-be'. The current MySQL schema they are is in the SQL file: 'adherelive-be/database_schema.sql'.
 
 Could you go through this code and generate a full code account of how the system works as a markdown file - system_works_analysed.md? Mainly, I want to look for:
 
 0. I am looking for an overall best practise for a Medical Health application, which is used for Patient Adherence. Mainly, we want to monitor: Medicines prescribed and taken, Appointments which can be critical or non-critical, Diets across the day - as prescribed and what actually gets eaten, Workouts - mainly for basic health and if required with a Diet or a Medicine or before an appointment. Also, the Vitals checks (Blood Pressure, Temperature, Urine sample and when to take, etc.)
+
 1. The Doctor to Patient linking and when a 'Add Patient' is submitted, what all fields are being populated
+
 2. The linking between a Doctor and a Secondary Doctor to a Patient. And how does the Consent with OTP work
+
 3. The 'Add Medicine' and 'Add Medication Reminders'. Only the Doctor can add medication reminders? Can the Doctor add a new medicine also, how?
+
 4. The 'Add Medications Reminder', how is the Algolia data helping to get the Medicine? Is the medicine matched with the 'medicines' table or if it does not exist it gets added there? What is the use of the 'medicine' table?
+
 5. HSP user cannot add medicines, can they add medication reminders?
+
 6. How does the subscription and service work with the 'My Scheduled Activities'?
+
 7. Doctor can add a Service and convert it to a subscription. How does this workflow work and what all data is created/generated and which all tables are used for this activity?
+
 8. Symptoms and Diagnosis, where the diagnosis is coming from a NoSQL data type and how it links to a Treatment or a Symptom (I think it links to a Symptom, but not how it does that and show on the UI when a Symptom is selected)
+
 9. How is the Doctor linked to a Provider, and what is the Clinic meant for?
+
 10. What all is present in a Doctor Profile and how do we add/edit a Profile and a Clinic for a Doctor?
+
 11. Care Plan vs Treatment, how are they different and what is the difference. What is the Medical Health application analysis and how are we treating it?
+
 12. Admin user, what all is it capable of? Can it only see 1. Doctor's and their Profile, 2. Medicine data and add or remove a medicine, 3. Anything else it can do in the current application?
+
 13. Missed charts for the Doctor, what all information do they provide and how are they linked to the Patient and the Doctor?
+
 14. Patient side mobile application API, what all information do they provide to the Patient when a Patient user role logs in the application? How and what information is the Patient shown?
+
 15. The performa fields in the frontend UI/UX, what do they do and what fields will they utilize for the Patient? Do we need to build a new table for these fields in the backend?
-16. All the details for the drawers. I want what all tables they get the details from, what all API's they call and what response data they get back from the database tables:
-	a. Add/Edit Account Details,
-	b. Add/Edit Appointments,
-	c. Add/Edit Care Plans,
-	d. Add/Edit Diet,
-	e. Add/Edit Exercise,
-	f. Add/Edit FoodGroup,
-	g. Add/Edit Food Group,
-	h. Add/Edit Medication Reminders,
-	i. Add/Edit New Medicines,
-	j. Add/Edit Patient,
-	k. Add/Edit Report Drawer,
-	l. Add/Edit Secondary Doctor,
-	m. Add/Edit Vitals,
-	n. Add/Edit Template Page Create,
-	o. Add/Edit Template Page Edit,
-	p. Diet Responses,
-	q. Medication TImelines,
-	r. Missed Diet, Workout, Appointment, Vital, Medications reminders for charts
-	s. Notifications (get details from GetStream?)
-	t. Symptoms,
-	u. Vitals TImeline
-	v. Update Provider
-	w. Single Day Exercise
-	x. Vitals Timeline
-	y. Workout Responses
-17. How are GetStream and other 3rd party software used (check the env_files/.node_env_prod, for other 3rd party applications)
-18. Linking between User Roles and Users
+
+16. How are GetStream and other 3rd party software used (check the env_files/.node_env_prod, for other 3rd party applications)
+
+17. Linking between User Roles and Users
+
+18. All the details for the drawers. I want what all tables they get the details from, what all API's they call and what response data they get back from the database tables:
+
+a. Add/Edit Account Details,
+b. Add/Edit Appointments,
+c. Add/Edit Care Plans,
+d. Add/Edit Diet,
+e. Add/Edit Exercise,
+f. Add/Edit FoodGroup,
+g. Add/Edit Food Group,
+h. Add/Edit Medication Reminders,
+i. Add/Edit New Medicines,
+j. Add/Edit Patient,
+k. Add/Edit Report Drawer,
+l. Add/Edit Secondary Doctor,
+m. Add/Edit Vitals,
+n. Add/Edit Template Page Create,
+o. Add/Edit Template Page Edit,
+p. Diet Responses,
+q. Medication TImelines,
+r. Missed Diet, Workout, Appointment, Vital, Medications reminders for charts
+s. Notifications (get details from GetStream?)
+t. Symptoms,
+u. Vitals TImeline
+v. Update Provider
+w. Single Day Exercise
+x. Vitals Timeline
+y. Workout Responses
 
 Any other information pertelent to what we have asked for in this conversation.
 
@@ -53,42 +74,40 @@ Any other information pertelent to what we have asked for in this conversation.
 
 ● Update Todos
   ⎿  
-	☐ Explore the codebase structure and understand overall architecture
-	☐ Analyze database schema and table relationships
-	☐ Examine user roles and authentication system
-	☐ Study Doctor-Patient linking workflow
-	☐ Investigate medicine management and Algolia integration
-	☐ Analyze subscription and service workflows
-	☐ Study symptoms, diagnosis, and treatment systems
-	☐ Examine all drawer components and their API integrations
-	☐ Analyze third-party integrations (GetStream, etc.)
-	☐ Generate comprehensive markdown documentation
+☐ Explore the codebase structure and understand overall architecture
+☐ Analyze database schema and table relationships
+☐ Examine user roles and authentication system
+☐ Study Doctor-Patient linking workflow
+☐ Investigate medicine management and Algolia integration
+☐ Analyze subscription and service workflows
+☐ Study symptoms, diagnosis, and treatment systems
+☐ Examine all drawer components and their API integrations
+☐ Analyze third-party integrations (GetStream, etc.)
+☐ Generate comprehensive markdown documentation
 
-
-	☐ Analyze Add/Edit Account Details drawers (addAccountDetails & editAccountDetails)                                  
-	☐ Analyze Add/Edit Appointments drawers (addAppointment & editAppointment)
-	☐ Analyze Add/Edit Care Plans drawer (addCareplan)
-	☐ Analyze Add/Edit Diet drawers (addDiet & editDiet)
-	☐ Analyze Add/Edit Exercise drawers (addExercise, editWorkout & Exercise Group drawers)
-	☐ Analyze Add/Edit FoodGroup drawers (addFoodGroup & editFoodGroup)
-	☐ Analyze Add/Edit Medication Reminders drawers (addMedicationReminder & editMedicationReminder)
-	☐ Analyze Add/Edit New Medicines drawer (addNewMedicine)
-	☐ Analyze Add/Edit Patient drawers (addPatient & editPatient)
-	☐ Analyze Add/Edit Report drawers (addReportDrawer & editReportDrawer)
-	☐ Analyze Add/Edit Secondary Doctor drawer (addSecondaryDoctor)
-	☐ Analyze Add/Edit Vitals drawers (addVital & editVital)
-	☐ Analyze Template Page Create/Edit drawers (allTemplatesPageCreateTemplate & allTemplatesPageEditTemplate)
-	☐ Analyze Diet Responses drawer (dietResponses)
-	☐ Analyze Medication Timelines drawer (medicationTimeline)
-	☐ Analyze Missed reminders drawers (missedDiets, missedWorkouts, missedAppointments, missedVitals, missedMedications)
-	☐ Analyze Notifications drawer (notification)
-	☐ Analyze Symptoms drawer (symptoms)
-	☐ Analyze Vitals Timeline drawer (vitalTimeline)
-	☐ Analyze Update Provider drawer (updateProvider)
-	☐ Analyze Single Day Exercise drawer (singleDayExerciseComponent)
-	☐ Analyze Workout Responses drawer (workoutResponses & workoutResponseEventDetails)
-	☐ Compile comprehensive analysis report with database tables, API endpoints, and integration patterns
-
+☐ Analyze Add/Edit Account Details drawers (addAccountDetails & editAccountDetails)
+☐ Analyze Add/Edit Appointments drawers (addAppointment & editAppointment)
+☐ Analyze Add/Edit Care Plans drawer (addCareplan)
+☐ Analyze Add/Edit Diet drawers (addDiet & editDiet)
+☐ Analyze Add/Edit Exercise drawers (addExercise, editWorkout & Exercise Group drawers)
+☐ Analyze Add/Edit FoodGroup drawers (addFoodGroup & editFoodGroup)
+☐ Analyze Add/Edit Medication Reminders drawers (addMedicationReminder & editMedicationReminder)
+☐ Analyze Add/Edit New Medicines drawer (addNewMedicine)
+☐ Analyze Add/Edit Patient drawers (addPatient & editPatient)
+☐ Analyze Add/Edit Report drawers (addReportDrawer & editReportDrawer)
+☐ Analyze Add/Edit Secondary Doctor drawer (addSecondaryDoctor)
+☐ Analyze Add/Edit Vitals drawers (addVital & editVital)
+☐ Analyze Template Page Create/Edit drawers (allTemplatesPageCreateTemplate & allTemplatesPageEditTemplate)
+☐ Analyze Diet Responses drawer (dietResponses)
+☐ Analyze Medication Timelines drawer (medicationTimeline)
+☐ Analyze Missed reminders drawers (missedDiets, missedWorkouts, missedAppointments, missedVitals, missedMedications)
+☐ Analyze Notifications drawer (notification)
+☐ Analyze Symptoms drawer (symptoms)
+☐ Analyze Vitals Timeline drawer (vitalTimeline)
+☐ Analyze Update Provider drawer (updateProvider)
+☐ Analyze Single Day Exercise drawer (singleDayExerciseComponent)
+☐ Analyze Workout Responses drawer (workoutResponses & workoutResponseEventDetails)
+☐ Compile comprehensive analysis report with database tables, API endpoints, and integration patterns
 
 Key Findings Summary:
 
@@ -122,20 +141,18 @@ Key Findings Summary:
 
 The document provides everything a new development team would need to understand, rebuild, or enhance the application, including specific code examples, database schemas, and best practice recommendations for creating a world-class medical adherence platform.
 
-
-# AdhereLive Medical Health Application - System Analysis & Best Practices
-
 ## Table of Contents
+
 1. [Executive Summary](#executive-summary)
 2. [Current System Architecture](#current-system-architecture)
 3. [Medical Adherence Best Practices Analysis](#medical-adherence-best-practices-analysis)
 4. [Detailed System Components](#detailed-system-components)
-5. [User Roles and Authentication](#user-roles-and-authentication)
-6. [Core Medical Workflows](#core-medical-workflows)
+5. [User Roles and Authentication](#1-user-roles-and-authentication-system)
+6. [Core Medical Workflows](#detailed-system-components)
 7. [Third-Party Integrations](#third-party-integrations)
 8. [Frontend Components Analysis](#frontend-components-analysis)
 9. [Gaps and Recommendations](#gaps-and-recommendations)
-10. [Implementation Guidelines](#implementation-guidelines)
+10. [Implementation Guidelines](#implementation-guidelines-for-new-development-team)
 
 ---
 
@@ -144,9 +161,11 @@ The document provides everything a new development team would need to understand
 AdhereLive is a comprehensive medical health adherence platform designed to monitor patient compliance across multiple dimensions: medications, appointments, diet, exercise, and vital signs monitoring. The system implements a hybrid architecture combining React v16 frontend with Node.js/Express backend, MySQL for structured data, MongoDB for flexible clinical data, and extensive third-party integrations.
 
 ### Current Capabilities
+
 ✅ **Implemented**: Medication adherence tracking, appointment scheduling, care plan management, diet monitoring, exercise tracking, vital signs collection, clinical decision support system (CDSS), multi-role user management, real-time notifications, payment processing, service subscriptions, provider network management
 
 ### Best Practice Gaps Identified
+
 ❌ **Missing**: Comprehensive vital signs monitoring protocols, advanced medication interaction checking, standardized medical coding (ICD-10, SNOMED CT), HIPAA compliance framework, advanced analytics and reporting, clinical workflow automation, patient engagement gamification, integration with wearable devices, emergency response protocols
 
 ---
@@ -154,16 +173,18 @@ AdhereLive is a comprehensive medical health adherence platform designed to moni
 ## Current System Architecture
 
 ### Technology Stack
+
 - **Frontend**: React v16, Ant Design (ANTD), Material-UI (MUI), Redux state management
 - **Backend**: Node.js, Express.js, JWT authentication, RESTful APIs
-- **Databases**: 
+- **Databases**:
   - MySQL (Primary structured data)
   - MongoDB (Clinical decision support, flexible diagnosis data)
 - **Cloud Infrastructure**: Azure (Production), AWS (Services)
 - **Third-Party Services**: 17 integrated services (detailed in section 7)
 
 ### High-Level Architecture
-```
+
+```text
 Frontend (React) ↔ Backend APIs (Node.js/Express) ↔ Databases (MySQL/MongoDB)
                                 ↓
 Third-Party Services: GetStream, Algolia, Twilio, RazorPay, OneSignal, etc.
@@ -178,6 +199,7 @@ Third-Party Services: GetStream, Algolia, Twilio, RazorPay, OneSignal, etc.
 #### 1. Medication Adherence ✅ Implemented / ❌ Gaps
 
 **✅ Current Implementation:**
+
 - Medicine catalog with Algolia search integration
 - Medication reminder scheduling with recurrence rules
 - Dosage tracking and timing management
@@ -185,6 +207,7 @@ Third-Party Services: GetStream, Algolia, Twilio, RazorPay, OneSignal, etc.
 - Patient medication history tracking
 
 **❌ Best Practice Gaps:**
+
 - **Drug Interaction Checking**: No automated drug-drug interaction validation
 - **Allergy Management**: Basic allergy storage but no active checking during prescription
 - **Medication Reconciliation**: Missing comprehensive medication review workflows
@@ -195,12 +218,14 @@ Third-Party Services: GetStream, Algolia, Twilio, RazorPay, OneSignal, etc.
 #### 2. Appointment Management ✅ Partial / ❌ Gaps
 
 **✅ Current Implementation:**
+
 - Appointment scheduling with provider integration
 - Critical vs non-critical appointment classification
 - Appointment reminders and notifications
 - Multi-provider appointment management
 
 **❌ Best Practice Gaps:**
+
 - **Pre-appointment Protocols**: Missing pre-visit questionnaires
 - **Visit Planning**: No structured visit agenda preparation
 - **Post-appointment Follow-up**: Limited structured follow-up workflows
@@ -210,12 +235,14 @@ Third-Party Services: GetStream, Algolia, Twilio, RazorPay, OneSignal, etc.
 #### 3. Diet Monitoring ✅ Partial / ❌ Critical Gaps
 
 **✅ Current Implementation:**
+
 - Food group and meal template management
 - Diet response tracking
 - Meal timing preferences
 - Food item database
 
 **❌ Critical Gaps:**
+
 - **Nutritional Analysis**: Missing calorie counting and nutritional breakdown
 - **Dietary Restriction Management**: Limited allergy and restriction tracking
 - **Meal Photo Documentation**: No image-based meal logging
@@ -225,12 +252,14 @@ Third-Party Services: GetStream, Algolia, Twilio, RazorPay, OneSignal, etc.
 #### 4. Exercise/Workout Monitoring ✅ Basic / ❌ Major Gaps
 
 **✅ Current Implementation:**
+
 - Exercise catalog and workout templates
 - Workout response tracking
 - Exercise group mappings
 - Workout scheduling
 
 **❌ Major Gaps:**
+
 - **Activity Tracking Integration**: No wearable device integration
 - **Exercise Prescription**: Missing structured exercise prescription workflows
 - **Progress Tracking**: Limited exercise performance analytics
@@ -240,11 +269,13 @@ Third-Party Services: GetStream, Algolia, Twilio, RazorPay, OneSignal, etc.
 #### 5. Vital Signs Monitoring ✅ Basic / ❌ Critical Medical Gaps
 
 **✅ Current Implementation:**
+
 - Basic vital signs templates
 - Vital sign data entry
 - Timeline tracking
 
 **❌ Critical Medical Gaps:**
+
 - **Automated Device Integration**: No integration with BP monitors, glucometers, pulse oximeters
 - **Reference Range Validation**: Missing age/condition-specific normal ranges
 - **Trend Analysis**: Limited vital sign trend analytics and alerts
@@ -258,7 +289,8 @@ Third-Party Services: GetStream, Algolia, Twilio, RazorPay, OneSignal, etc.
 ### 1. User Roles and Authentication System
 
 #### Current User Hierarchy
-```
+
+```text
 ADMIN (System Administrator)
 ├── PROVIDER (Healthcare Organizations)
 │   ├── DOCTOR (Medical Professionals)
@@ -268,6 +300,7 @@ ADMIN (System Administrator)
 ```
 
 #### Authentication Features
+
 - **JWT Token-based**: 30-day token expiration
 - **Multi-platform Support**: Web (cookies) and Mobile (Bearer tokens)
 - **OTP Verification**: 4-digit SMS/Email verification
@@ -275,6 +308,7 @@ ADMIN (System Administrator)
 - **Permission System**: Granular permission management
 
 #### Database Tables
+
 - `users`: Core authentication (id, email, mobile, password, category, status)
 - `user_roles`: Multi-role assignments
 - `permissions`: Granular permission definitions
@@ -285,6 +319,7 @@ ADMIN (System Administrator)
 ### 2. Doctor-Patient Linking Workflow
 
 #### Patient Onboarding Process
+
 1. **Patient Creation** → `users` + `patients` + `user_roles` + `user_preferences`
 2. **Doctor Assignment** → `care_plans` (primary doctor relationship)
 3. **Secondary Doctors** → `careplan_secondary_doctor_mappings`
@@ -292,6 +327,7 @@ ADMIN (System Administrator)
 5. **Payment Terms** → `patients.payment_terms_accepted`
 
 #### Key Fields Populated During "Add Patient"
+
 ```javascript
 // User Level
 {
@@ -309,6 +345,7 @@ ADMIN (System Administrator)
 ```
 
 #### Consent Process with OTP
+
 1. Doctor initiates consent request for patient
 2. System generates 4-digit OTP
 3. OTP sent via SMS: "Hello from AdhereLive! Your OTP for consent request is {otp}"
@@ -320,6 +357,7 @@ ADMIN (System Administrator)
 ### 3. Medicine Management and Algolia Integration
 
 #### Dual Data Architecture
+
 - **MySQL `medicines` Table**: Persistent medicine catalog
   - Fields: id, name, type, description, creator_id, public_medicine, algolia_object_id
 - **Algolia Search Index**: Real-time medicine search
@@ -327,16 +365,19 @@ ADMIN (System Administrator)
   - Supports: creator filtering, public/private medicine filtering
 
 #### Medicine Addition Workflow
-```
+
+```text
 User Input → MySQL Storage → Algolia Sync → Search Index Update
 ```
 
 #### Permission System
+
 - **Admins**: Create public medicines (available to all users)
 - **Doctors/HSP**: Create private medicines (user-specific catalog)
 - **All Users**: Search and view medicines via Algolia integration
 
 #### Medication Reminder Process
+
 1. User searches medicines via Algolia autocomplete
 2. Selects medicine from results (references mysql medicine_id)
 3. Creates medication reminder with schedule details
@@ -348,7 +389,8 @@ User Input → MySQL Storage → Algolia Sync → Search Index Update
 ### 4. Subscription and Service Workflow
 
 #### Service-to-Subscription Architecture
-```
+
+```text
 service_offerings (1:M) → service_subscribe_plan_mappings ← (M:1) service_subscriptions
        ↓                           ↓                               ↓
 service_user_mappings    service_sub_transactions    service_subscription_user_mappings
@@ -357,6 +399,7 @@ service_user_mappings    service_sub_transactions    service_subscription_user_m
 ```
 
 #### Complete Workflow
+
 1. **Service Creation**: Doctor creates individual services with pricing
 2. **Subscription Bundling**: Multiple services grouped with monthly pricing  
 3. **Patient Purchase**: Creates user mappings and payment transactions
@@ -364,6 +407,7 @@ service_user_mappings    service_sub_transactions    service_subscription_user_m
 5. **Task Management**: Activities become trackable tasks in "My Scheduled Activities"
 
 #### Key Tables and Relationships
+
 - `service_offerings`: Individual services by doctors/providers
 - `service_subscriptions`: Monthly subscription plans
 - `service_subscribe_plan_mappings`: Services included in subscriptions
@@ -374,10 +418,12 @@ service_user_mappings    service_sub_transactions    service_subscription_user_m
 ### 5. Clinical Decision Support System (CDSS)
 
 #### Hybrid Database Architecture
+
 - **MySQL**: Structured symptoms, conditions, treatments
 - **MongoDB**: Flexible diagnosis patterns with boolean symptom flags
 
 #### Symptoms-to-Diagnosis Workflow
+
 1. **Symptom Collection**: Patients report symptoms with rich metadata
 2. **CDSS Analysis**: MongoDB query matches symptom combinations
 3. **Scoring Algorithm**: Ranks diagnoses by symptom match count
@@ -385,6 +431,7 @@ service_user_mappings    service_sub_transactions    service_subscription_user_m
 5. **Treatment Mapping**: Conditions linked to evidence-based treatments
 
 #### CDSS Algorithm
+
 ```javascript
 // Symptom boolean matching
 searchObject = symptoms.map(symptom => ({ [symptom]: true }));
@@ -409,38 +456,46 @@ ranked = Object.keys(scores).sort((a,b) => scores[b] - scores[a]);
 ### Complete Integration Ecosystem (17 Services)
 
 #### 1. Communication & Notifications
+
 - **Twilio** (`TWILIO_*`): SMS, voice calls, video chat
 - **OneSignal** (`ONE_SIGNAL_*`): Push notifications for mobile apps  
 - **SendGrid** (`SENDGRID_*`): Email delivery and templates
 - **SMS Bazar** (`SMS_BAZAR_*`): Indian SMS gateway for OTP delivery
 
 #### 2. Payment Processing
+
 - **RazorPay** (`RAZORPAY_*`): Payment gateway for subscriptions and services
 - Supports: INR, AUD, USD currencies
 - Payment links for services and subscriptions
 
 #### 3. Search & Data
+
 - **Algolia** (`ALGOLIA_*`): Real-time medicine search and autocomplete
 - **Google Cloud** (`GOOGLE_*`): Translation services, OAuth authentication
 - **Firebase** (`FIREBASE_*`): Mobile app analytics and crash reporting
 
 #### 4. Real-time Features  
+
 - **GetStream** (`GETSTREAM_*`): Real-time activity feeds and notifications
 - **Agora** (`AGORA_*`): Video calling and live streaming for consultations
 
 #### 5. Cloud Storage & Infrastructure
+
 - **AWS S3** (`AWS_*`, `S3_*`): File storage for reports, images, documents
 - **AWS SQS** (`SQS_*`): Message queuing for asynchronous processing
 - **Azure Database**: Production MySQL database hosting
 
 #### 6. Social Authentication
+
 - **Facebook** (`FACEBOOK_*`): Social login integration
 - **Google OAuth** (`GOOGLE_CLIENT_*`): Google account authentication
 
 #### 7. Mobile App Distribution
+
 - **Branch.io** (`BRANCH_IO_*`): Deep linking and mobile app attribution
 
 #### 8. Development & Monitoring
+
 - **Minio** (`MINIO_*`): Local development file storage
 - **Redis** (`REDIS_*`): Caching layer (configured but not actively used)
 
@@ -491,17 +546,20 @@ ranked = Object.keys(scores).sort((a,b) => scores[b] - scores[a]);
 #### Common Integration Patterns
 
 **Redux State Management Flow:**
-```
+
+```text
 User Action → Component → Action Creator → API Request → State Update → Re-render
 ```
 
 **API Integration Pattern:**
+
 - Consistent `doRequest()` helper for HTTP operations
 - Error handling: try-catch with user-friendly messages  
 - Response format: `{status: boolean, payload: {data: {}, error: {}}}`
 - Loading states and optimistic updates
 
 **Form Validation:**
+
 - Ant Design Form integration with real-time validation
 - Custom validation rules for medical data
 - Client-side validation with server-side confirmation
@@ -513,10 +571,12 @@ User Action → Component → Action Creator → API Request → State Update �
 ### Critical Medical Gaps
 
 #### 1. Vital Signs Monitoring Protocol ❌ CRITICAL
+
 **Current State**: Basic vital entry with minimal validation
 **Best Practice Need**: Comprehensive vital signs monitoring system
 
 **Recommendations:**
+
 ```javascript
 // Enhanced Vital Signs Table Structure Needed
 vital_protocols: {
@@ -540,10 +600,12 @@ vital_alerts: {
 ```
 
 #### 2. Medication Safety System ❌ CRITICAL
+
 **Current State**: Basic medicine catalog without safety checks
 **Best Practice Need**: Comprehensive medication safety validation
 
 **Recommendations:**
+
 ```javascript
 // Drug Interaction Database
 drug_interactions: {
@@ -577,10 +639,12 @@ medication_safety_checks: {
 ```
 
 #### 3. Advanced Clinical Decision Support ❌ MODERATE
+
 **Current State**: Basic symptom-to-diagnosis matching
 **Best Practice Need**: Evidence-based clinical guidelines integration
 
 **Recommendations:**
+
 ```javascript
 // Clinical Guidelines Database
 clinical_guidelines: {
@@ -604,10 +668,12 @@ treatment_protocols: {
 ```
 
 #### 4. Patient Engagement & Gamification ❌ MODERATE
+
 **Current State**: Basic reminders and tracking
 **Best Practice Need**: Advanced engagement and behavioral modification
 
 **Recommendations:**
+
 ```javascript
 // Gamification System
 patient_achievements: {
@@ -634,8 +700,10 @@ adherence_analytics: {
 ### Technical Architecture Gaps
 
 #### 1. HIPAA/Medical Compliance Framework ❌ CRITICAL
+
 **Current State**: Basic authentication without medical-grade security
 **Needed Implementation:**
+
 - End-to-end encryption for medical data
 - Audit logging for all medical record access
 - Data retention policies for medical records
@@ -643,8 +711,10 @@ adherence_analytics: {
 - Business Associate Agreements (BAA) framework
 
 #### 2. Integration Architecture ❌ MODERATE  
+
 **Current State**: Direct API integrations without middleware
 **Best Practice Need:**
+
 - Healthcare Integration Engine (HL7 FHIR compliance)
 - EHR system integration capabilities
 - Wearable device integration framework
@@ -652,8 +722,10 @@ adherence_analytics: {
 - Pharmacy system integration
 
 #### 3. Analytics and Reporting Platform ❌ MODERATE
+
 **Current State**: Basic data display without analytics
 **Needed Implementation:**
+
 - Population health analytics
 - Treatment outcome analysis  
 - Medication adherence trend analysis
@@ -663,6 +735,7 @@ adherence_analytics: {
 ### Database Schema Enhancements Needed
 
 #### New Tables for Medical Best Practices
+
 ```sql
 -- Enhanced Vital Signs Monitoring
 CREATE TABLE vital_protocols (
@@ -724,8 +797,10 @@ CREATE TABLE patient_achievements (
 ### Phase 1: Foundation Setup (Weeks 1-4)
 
 #### Development Environment
+
 1. **Repository Structure**
-   ```
+
+   ```text
    adherelive-app/
    ├── adherelive-be/          # Node.js Backend
    ├── adherelive-fe/          # React Frontend  
@@ -736,6 +811,7 @@ CREATE TABLE patient_achievements (
    ```
 
 2. **Required Dependencies**
+
    ```json
    // Backend (package.json)
    {
@@ -760,6 +836,7 @@ CREATE TABLE patient_achievements (
    ```
 
 3. **Database Setup**
+
    ```bash
    # MySQL Database
    mysql -u root -p < adherelive-be/database_schema.sql
@@ -772,6 +849,7 @@ CREATE TABLE patient_achievements (
 ### Phase 2: Core System Implementation (Weeks 5-12)
 
 #### Authentication System Implementation
+
 ```javascript
 // JWT Token Service
 class AuthService {
@@ -801,6 +879,7 @@ const requirePermission = (permission) => {
 ```
 
 #### Medical Data Models
+
 ```javascript
 // Enhanced Patient Model
 const PatientSchema = {
@@ -833,6 +912,7 @@ const PatientSchema = {
 ### Phase 3: Medical Safety Implementation (Weeks 13-20)
 
 #### Drug Interaction Checking System
+
 ```javascript
 class MedicationSafetyService {
   async checkDrugInteractions(patientId, newMedicineId) {
@@ -865,6 +945,7 @@ class MedicationSafetyService {
 ```
 
 #### Enhanced Vital Signs Monitoring
+
 ```javascript
 class VitalSignsService {
   async recordVital(patientId, vitalType, value, recordedAt) {
@@ -898,6 +979,7 @@ class VitalSignsService {
 ### Phase 4: Advanced Features (Weeks 21-28)
 
 #### Clinical Decision Support Enhancement
+
 ```javascript
 class CDSSService {
   async getDiagnosisRecommendations(symptoms, patientHistory = []) {
@@ -931,6 +1013,7 @@ class CDSSService {
 ### Phase 5: Integration and Deployment (Weeks 29-32)
 
 #### Third-Party Integration Framework
+
 ```javascript
 class IntegrationService {
   constructor() {
@@ -951,6 +1034,7 @@ class IntegrationService {
 ```
 
 #### Production Deployment Configuration
+
 ```yaml
 # docker-compose.production.yml
 version: '3.8'
@@ -984,6 +1068,7 @@ The AdhereLive system provides a solid foundation for medical adherence tracking
 The provided implementation guidelines offer a structured approach for a new development team to both understand the existing system and implement the necessary enhancements for a world-class medical adherence platform.
 
 **Priority Implementation Order:**
+
 1. **Critical Safety Features** (Weeks 1-12): Drug interactions, allergy management, vital signs protocols
 2. **Enhanced Clinical Support** (Weeks 13-20): Advanced CDSS, treatment protocols  
 3. **Patient Engagement** (Weeks 21-28): Gamification, behavioral analytics

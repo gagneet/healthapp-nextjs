@@ -63,7 +63,7 @@ The Healthcare Management Platform uses a **pure Next.js 14 full-stack architect
 
 ### 2. **Prisma-First Data Architecture**
 
-- **Type-Safe ORM**: Prisma provides full TypeScript integration 
+- **Type-Safe ORM**: Prisma provides full TypeScript integration
 - **Database Introspection**: 46 healthcare models generated from existing PostgreSQL schema
 - **Service Layer**: Business logic in `/lib/api-services.ts`
 - **API Routes**: Next.js API routes in `/app/api` directory
@@ -522,7 +522,7 @@ healthapp-nextjs/                              # 📁 Healthcare Management Plat
 └── 📁 seeders/                               # Compiled seeder files (.cjs)
 ```
 
-### **Infrastructure & DevOps**
+### **Infrastructure & DevOps Structure**
 
 ```text
 📁 docker/                                     # 🐳 Docker configurations
@@ -958,16 +958,19 @@ This pure Next.js architecture provides a simplified yet robust foundation for a
 ## 📝 Architecture Migration Summary
 
 ### **Before: Hybrid Architecture**
+
 ```text
 Next.js Frontend :3002 → API Proxy → Express Backend :3005 → Sequelize → PostgreSQL
 ```
 
 ### **After: Pure Next.js Architecture** ✅
+
 ```text
 Next.js Full-Stack :3000 → NextAuth.js Middleware → API Routes → Prisma → PostgreSQL
 ```
 
 ### **Key Benefits Achieved**
+
 - ✅ **60% Faster Startup** (2-3 seconds vs 5-8 seconds)
 - ✅ **Simplified Architecture** - Single Next.js service instead of 2 services  
 - ✅ **Enhanced Security** - NextAuth.js with CSRF protection and secure sessions
@@ -977,4 +980,4 @@ Next.js Full-Stack :3000 → NextAuth.js Middleware → API Routes → Prisma �
 
 ---
 
-*Last updated: August 2025 - Pure Next.js Migration Complete*
+- *Last updated: August 2025 - Pure Next.js Migration Complete*

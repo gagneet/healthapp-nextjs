@@ -26,6 +26,7 @@ The HealthApp deployment has been **migrated to Docker Swarm exclusively**. This
 ### From Docker Compose to Docker Swarm
 
 **OLD WAY (Docker Compose - DEPRECATED):**
+
 ```bash
 # These scripts have been removed
 ./scripts/deploy-dev.sh
@@ -34,6 +35,7 @@ The HealthApp deployment has been **migrated to Docker Swarm exclusively**. This
 ```
 
 **NEW WAY (Docker Swarm - CURRENT):**
+
 ```bash
 # Development deployment with migrations and test data
 ./scripts/deploy-stack.sh dev --migrate --seed
@@ -48,6 +50,7 @@ The HealthApp deployment has been **migrated to Docker Swarm exclusively**. This
 ### Quick Migration Examples
 
 **Development Environment:**
+
 ```bash
 # Old command equivalent
 # ./scripts/deploy.sh development --build --migrate --seed
@@ -57,6 +60,7 @@ The HealthApp deployment has been **migrated to Docker Swarm exclusively**. This
 ```
 
 **Production Environment:**
+
 ```bash
 # Old command equivalent  
 # ./scripts/deploy.sh production --build --migrate
@@ -66,6 +70,7 @@ The HealthApp deployment has been **migrated to Docker Swarm exclusively**. This
 ```
 
 ### Advanced Deployment Scenarios
+
 ```bash
 # High-availability production with database migrations
 ./scripts/deploy-stack.sh prod 192.168.1.100 --scale-backend=5 --scale-frontend=3 --migrate --auto-yes
@@ -80,7 +85,8 @@ The HealthApp deployment has been **migrated to Docker Swarm exclusively**. This
 ## 📁 **Architecture Changes**
 
 ### Current Docker Swarm Structure
-```
+
+```text
 ├── docker/
 │   ├── Dockerfile                  # Production frontend build
 │   ├── Dockerfile.backend          # Backend Node.js application  
@@ -96,7 +102,8 @@ The HealthApp deployment has been **migrated to Docker Swarm exclusively**. This
 ```
 
 ### Removed Files (Clean Architecture)
-```
+
+```text
 ❌ REMOVED:
 ├── scripts/deploy.sh               # Replaced by deploy-stack.sh
 ├── scripts/deploy-dev.sh           # Replaced by deploy-stack.sh dev
@@ -155,24 +162,28 @@ docker volume prune -f
 ## ⚡ **Key Benefits of Docker Swarm Migration**
 
 ### Enterprise-Grade Scaling
+
 - **Horizontal scaling** from 1 to 50+ replicas per service
 - **Load balancing** automatically distributes traffic across replicas  
 - **Auto-recovery** restarts failed containers automatically
 - **Rolling updates** with zero downtime deployments
 
 ### Enhanced Database Operations
+
 - **Migration support** with `--migrate` flag ensures schema consistency
 - **Seeding support** with `--seed` flag for consistent test data
 - **Transaction safety** with proper error handling and rollback capabilities  
 - **Environment isolation** between dev/prod database operations
 
 ### Production Reliability
+
 - **Health monitoring** with automatic service recovery
 - **Resource management** with memory and CPU limits
 - **Service discovery** eliminates manual container coordination
 - **Persistent volumes** ensure data survives container restarts
 
 ### Developer Experience  
+
 - **Single command deployment** replaces complex multi-step processes
 - **Intelligent defaults** with override capabilities for advanced users
 - **Comprehensive logging** with structured error messages and troubleshooting
@@ -181,16 +192,19 @@ docker volume prune -f
 ## 🔧 **Compatibility**
 
 ### Legacy Scripts Still Work
+
 - **`deploy-dev.sh`** - Updated to use new system with deprecation warning
 - **`deploy-prod.sh`** - Still functional with improvements
 - **`deploy-stack.sh`** - Enhanced to use unified configurations
 
 ### Docker Swarm
+
 - **Existing stack files** in `docker/` directory still work
 - **Enhanced scaling** and placement options
 - **Better health checks** and monitoring integration
 
 ### Environment Files
+
 - **Old environment files** in `env_files/` still used as templates
 - **New standardized format** with better security defaults
 
@@ -199,6 +213,7 @@ docker volume prune -f
 ### Common Issues
 
 #### Port Conflicts
+
 ```bash
 # Check what's using the port
 lsof -i :3001
@@ -209,6 +224,7 @@ FRONTEND_PORT=3003
 ```
 
 #### Permission Issues
+
 ```bash
 # Fix script permissions
 chmod +x scripts/*.sh
@@ -218,6 +234,7 @@ sudo usermod -aG docker $USER
 ```
 
 #### Database Issues
+
 ```bash
 # Reset database (WARNING: Data loss!)
 ./scripts/docker-cleanup.sh --volumes
@@ -229,16 +246,19 @@ sudo usermod -aG docker $USER
 ### Getting Help
 
 1. **Check the logs:**
+
    ```bash
    docker-compose logs [service_name]
    ```
 
 2. **Use the new cleanup script:**
+
    ```bash
    ./scripts/docker-cleanup.sh --help
    ```
 
 3. **Read comprehensive documentation:**
+
    ```bash
    cat DOCKER_README.md
    ```
@@ -253,6 +273,7 @@ sudo usermod -aG docker $USER
 ---
 
 **Ready to migrate?** Start with the development environment using:
+
 ```bash
 ./scripts/deploy.sh development --build --migrate --seed
 ```
