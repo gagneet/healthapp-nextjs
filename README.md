@@ -1,65 +1,73 @@
 # Healthcare Management Platform
 
-A comprehensive, modern healthcare management system built with **Node.js/Express** backend and **NextJS 14** frontend, featuring patient care management, medication tracking, appointment scheduling, and real-time monitoring capabilities.
+A comprehensive, modern healthcare management system built with **Next.js 14** full-stack architecture, featuring patient care management, medication tracking, appointment scheduling, and real-time monitoring capabilities with **NextAuth.js** authentication and **Prisma ORM**.
 
-## ✨ Latest Enhancements
+## ✨ Latest Architecture - Pure Next.js Implementation
 
-### 🚀 **Complete Architecture Implementation**
-- **Full ES Module Migration**: Complete conversion from CommonJS to modern ES modules with `.js` extensions
-- **Production-Ready Routes**: 10 organized route files with comprehensive CRUD operations
-- **Service Layer Architecture**: Business logic separation with AuthService, PatientService, MedicationService, and SchedulingService
-- **Complete Database Schema**: 22 migration files with 13+ Sequelize models and proper associations
+### 🚀 **Complete Next.js Migration**
+- **Full-Stack Next.js 14**: Unified frontend and backend with API routes
+- **NextAuth.js Authentication**: Modern, secure authentication with role-based access control
+- **Prisma ORM**: Type-safe database operations with PostgreSQL
+- **Healthcare Business Logic**: Role-based permissions enforcing medical workflow compliance
 
-### 🏗️ **Modern Development Stack**
-- **Node.js 22+ with ES Modules**: Modern async/await patterns and top-level await support
-- **PostgreSQL with Prisma ORM**: Production-ready database with connection pooling and optimized queries
-- **TypeScript Definitions**: Complete type safety across backend with `/typings` directory
-- **Enhanced Security**: Helmet, CORS, rate limiting, JWT authentication, and HIPAA compliance features
+### 🏗️ **Modern Technology Stack**
+- **Next.js 14 with App Router**: Modern React patterns with server-side rendering
+- **PostgreSQL with Prisma**: Production-ready database with type-safe queries
+- **TypeScript Throughout**: Complete type safety across the entire application
+- **Healthcare Compliance**: HIPAA-ready audit logging and role-based data access
 
-### 🔧 **Development Experience**
-- **Comprehensive Testing**: Jest with `--detectOpenHandles` and coverage reporting
-- **Code Quality**: ESLint configured for modern JavaScript with auto-fix capabilities
-- **Database Seeding**: Initial data for specialists, medicines, and vital templates
-- **Docker Swarm Ready**: Production deployment with horizontal scaling and zero-downtime updates
+### 🔧 **Production-Ready Features**
+- **Comprehensive API Routes**: 15+ API endpoints covering all healthcare domains
+- **Role-Based Access Control**: Doctor, HSP, Patient, and Admin role enforcement
+- **Modern Authentication**: NextAuth.js with JWT and session management
+- **Multi-Deployment Options**: Docker, VM, and hybrid deployment strategies
 
 ## 🏗️ Architecture
 
-This application uses a **modern architecture** combining:
+This application uses a **modern Next.js full-stack architecture**:
 
-- **Backend**: Node.js 22+ with Express.js, ES Modules, and Sequelize ORM
-- **Frontend**: NextJS 14 with TypeScript, TailwindCSS, and App Router (ready for integration)
-- **Database**: MySQL 8.0+ with advanced features and Redis caching
-- **Deployment**: Docker Swarm with horizontal scaling and production orchestration
+- **Full-Stack**: Next.js 14 with API routes handling both frontend and backend
+- **Database**: PostgreSQL with Prisma ORM for type-safe database operations
+- **Authentication**: NextAuth.js with healthcare role-based permissions
+- **Deployment**: Docker Compose, VM local, and hybrid deployment options
 
 ```text
 healthapp-nextjs/
-├── 🔧 Backend (Node.js 22+ + Express + ES Modules)
-│   └── src/
-│       ├── config/          # Database, JWT, constants, cloud config
-│       ├── controllers/     # Route handlers for each domain (8 controllers)
-│       ├── middleware/      # Auth, validation, error handling, rate limiting, logging
-│       ├── models/          # Sequelize models and associations (13+ models)
-│       ├── routes/          # API route definitions (10 route files)
-│       ├── services/        # Business logic and data processing (4 services)
-│       ├── utils/           # Helper functions, validators, response formatters
-│       ├── migrations/      # Database schema migrations (22+ files)
-│       ├── seeders/         # Initial data seeding
-│       └── server.js        # Modern ES module application entry point
-├── 🎨 Frontend (NextJS 14 + TypeScript) - Ready for Integration
-│   ├── app/                 # NextJS App Router pages
-│   ├── components/          # Reusable React components
-│   ├── lib/                 # Frontend utilities & API client
-│   └── types/               # TypeScript definitions
-├── 🏗️ Development & Infrastructure
-│   ├── docker/              # Docker configurations & Swarm orchestration
-│   ├── scripts/             # Deployment and automation scripts
-│   ├── typings/             # TypeScript definitions for backend
-│   └── docs/                # Comprehensive documentation
-└── 🚀 Production Ready Features
-    ├── Migration system with versioned schema changes
-    ├── Seeded initial data (specialists, medicines, vital templates)
-    ├── Complete ES module conversion for modern development
-    └── Docker Swarm deployment with scaling capabilities
+├── 🔧 Next.js Full-Stack Application
+│   ├── app/                  # Next.js 14 App Router
+│   │   ├── api/              # API routes (backend functionality)
+│   │   │   ├── admin/        # Admin management APIs
+│   │   │   ├── appointments/ # Appointment scheduling
+│   │   │   ├── care-plans/   # Care plan management  
+│   │   │   ├── patients/     # Patient management
+│   │   │   ├── symptoms/     # Symptom reporting
+│   │   │   └── vitals/       # Vital signs tracking
+│   │   ├── auth/             # Authentication pages
+│   │   └── dashboard/        # Role-based dashboards
+│   │       ├── doctor/       # Doctor interface
+│   │       ├── patient/      # Patient interface
+│   │       ├── hospital/     # HSP interface
+│   │       └── admin/        # Admin interface
+│   ├── components/           # React components
+│   │   ├── ui/               # Base UI components
+│   │   └── dashboard/        # Dashboard-specific components
+│   ├── lib/                  # Utilities and configurations
+│   │   ├── auth.ts           # NextAuth.js configuration
+│   │   ├── prisma.ts         # Prisma client
+│   │   └── validations/      # Zod schemas for validation
+│   └── types/                # TypeScript definitions
+├── 🗄️ Database & Schema
+│   └── prisma/
+│       ├── schema.prisma     # Database schema definition
+│       └── seed.ts           # Initial data seeding
+├── 🐳 Deployment Configurations
+│   ├── docker/               # Docker configurations
+│   └── scripts/              # Deployment scripts
+└── 🚀 Production Features
+    ├── NextAuth.js authentication with healthcare roles
+    ├── Prisma ORM with PostgreSQL for data integrity
+    ├── Role-based API access control and business logic
+    └── Multi-environment deployment strategies
 ```
 
 ## ✨ Key Features
@@ -67,80 +75,96 @@ healthapp-nextjs/
 ### Healthcare Management
 
 - **👥 Patient Management**: Complete patient lifecycle with medical records
-- **👨‍⚕️ Provider Management**: Doctor profiles, specialties, and credentials
+- **👨‍⚕️ Provider Management**: Doctor profiles, HSP profiles, and specialties
 - **💊 Medication Tracking**: Prescription management with adherence monitoring
-- **📅 Appointment System**: Scheduling with recurring appointments and reminders  
+- **📅 Appointment System**: Scheduling with provider availability
 - **📋 Care Plans**: Templated and customized treatment plans
-- **📊 Vital Signs**: Real-time monitoring and trend analysis
-- **🔔 Smart Notifications**: Multi-channel reminders and alerts
+- **📊 Vital Signs**: Real-time monitoring with 2D/3D body mapping
+- **🏥 Admin Dashboard**: System administration and provider management
 
 ### Technical Features
 
-- **🔐 Authentication & Authorization**: JWT with role-based access control
-- **🚀 Modern Stack**: ES Modules, async/await, TypeScript support
-- **📱 Real-time Updates**: Socket.io integration ready
-- **☁️ Cloud Storage**: AWS S3 integration for file uploads
+- **🔐 NextAuth.js Authentication**: Modern authentication with role-based access
+- **🚀 Full-Stack Next.js**: Unified development experience with API routes
+- **📱 Responsive Design**: Mobile-first healthcare interfaces
+- **🎯 Type Safety**: End-to-end TypeScript with Prisma
 - **🔍 Advanced Search**: Full-text search with PostgreSQL
-- **📈 Performance**: Redis caching, connection pooling, optimized queries
-- **🛡️ Security**: HIPAA compliance, rate limiting, input validation
-- **♿ Accessibility**: WCAG 2.1 compliant UI components
+- **🛡️ Healthcare Compliance**: Role-based data access and audit logging
+- **♿ Accessibility**: WCAG 2.1 compliant healthcare interfaces
 
 ## 🚀 Quick Start
 
 ### Prerequisites
 
-- **Node.js** 22.18.0 LTS or higher
-- **MySQL** 8.0+ (primary database)
-- **Redis** (optional, for caching and sessions)
+- **Node.js** 18+ LTS or higher
+- **PostgreSQL** 15+ (or Docker for containerized setup)
 - **Docker** (optional, for containerized deployment)
 
-### Installation
+### Installation Options
 
-#### **Clone and install dependencies:**
+Choose your preferred deployment method:
+
+#### **Option 1: Full Development Environment (Docker Compose)**
+
+Complete development setup with all services:
 
 ```bash
+# Clone repository
+git clone <repository-url>
+cd healthapp-nextjs
+
+# Deploy full development environment
+./scripts/deploy-nextjs-dev.sh --auto-yes --migrate --seed --domain localhost
+```
+
+**Includes**: PostgreSQL, Redis, Next.js app, PgAdmin, Redis Commander, MailHog
+
+#### **Option 2: VM Local Installation**
+
+For VM deployment with local PostgreSQL:
+
+```bash
+# Deploy on VM with local PostgreSQL
+./scripts/deploy-vm-local.sh --domain your.domain.com --local-db
+```
+
+#### **Option 3: Hybrid Setup**
+
+Containerized database with local Next.js:
+
+```bash
+# Hybrid deployment
+./scripts/deploy-vm-hybrid.sh --domain your.domain.com
+```
+
+#### **Option 4: Manual Setup**
+
+```bash
+# Clone and install
 git clone <repository-url>
 cd healthapp-nextjs
 npm install
-```
 
-#### **Environment setup:**
+# Set up environment
+cp .env.local.example .env.local
+# Edit .env.local with your PostgreSQL connection
 
-```bash
-# Copy environment template
-cp .env.example .env.local
+# Set up database
+npx prisma generate
+npx prisma migrate deploy
+npx prisma db seed
 
-# Edit .env.local with your configuration
-nano .env.local
-```
-
-#### **Database setup:**
-
-```bash
-# Create MySQL database
-mysql -u root -p -e "CREATE DATABASE healthapp_dev;"
-
-# Run migrations
-npm run migrate
-
-# Seed initial data (specialties, medicines, vital templates)
-npm run seed
-```
-
-#### **Start development server:**
-
-```bash
-# Start backend development server with nodemon
+# Start development
 npm run dev
-
-# Or start production server
-npm start
 ```
 
-#### **Access the application:**
+### Access Your Application
 
-- **Backend API**: [http://localhost:5000](http://localhost:5000) (development)
-- **Frontend**: Ready for integration at [http://localhost:3000](http://localhost:3000)
+- **Healthcare App**: http://localhost:3000 (or your domain)
+- **Doctor Dashboard**: http://localhost:3000/dashboard/doctor  
+- **Patient Dashboard**: http://localhost:3000/dashboard/patient
+- **Admin Dashboard**: http://localhost:3000/dashboard/admin
+- **Database Admin** (dev): http://localhost:5050 (if using Docker setup)
 
 ## 🔧 Configuration
 
@@ -149,40 +173,31 @@ npm start
 | Variable | Description | Example |
 |----------|-------------|---------|
 | `NODE_ENV` | Environment mode | `development` |
-| `PORT` | Backend API port | `5000` |
-| `DB_NAME` | Database name | `healthapp_dev` |
-| `DB_USER` | Database username | `root` |
-| `DB_PASSWORD` | Database password | `your_password` |
-| `DB_HOST` | Database host | `localhost` |
-| `DB_PORT` | Database port | `3306` |
-| `JWT_SECRET` | JWT signing secret | `your-super-secret-jwt-key` |
-| `REDIS_URL` | Redis connection URL | `redis://localhost:6379` |
-| `AWS_ACCESS_KEY_ID` | AWS S3 access key | `your-aws-key` |
-| `AWS_SECRET_ACCESS_KEY` | AWS S3 secret | `your-aws-secret` |
-| `AWS_REGION` | AWS region | `us-east-1` |
-| `AWS_BUCKET_NAME` | S3 bucket name | `healthapp-files` |
+| `PORT` | Application port | `3000` |
+| `NEXTAUTH_URL` | NextAuth.js URL | `http://localhost:3000` |
+| `NEXTAUTH_SECRET` | NextAuth.js secret | `your-nextauth-secret` |
+| `JWT_SECRET` | JWT signing secret | `your-jwt-secret` |
+| `DATABASE_URL` | PostgreSQL connection | `postgresql://user:pass@localhost:5432/healthapp` |
+| `NEXT_PUBLIC_API_URL` | Public API URL | `http://localhost:3000/api` |
 
-### Database Schema
+### Healthcare Role Configuration
 
-The application uses a comprehensive MySQL schema with:
+The application supports four main healthcare roles:
 
-- **13+ Core Models**: Users, Patients, Providers, Care Plans, Medications, etc.
-- **Advanced Features**: Proper relationships, foreign keys, indexes, and constraints
-- **HIPAA Compliance**: Audit logging, soft deletes, encrypted sensitive data
-- **Performance**: Optimized indexes, connection pooling, query optimization
-
-See the `/src/migrations/` directory for complete schema definitions with 22+ migration files.
+- **DOCTOR**: Full medical privileges (prescriptions, diagnoses, care plans)
+- **HSP** (Health Service Provider): Limited privileges (no prescriptions)
+- **PATIENT**: Read-only access to own data, can record vitals
+- **SYSTEM_ADMIN**: Full system administration access
 
 ## 📚 API Documentation
 
-### Base URLs
+### Base URL
 
-- **Web API**: `/api/*`
-- **Mobile API**: `/m-api/*` (optimized responses)
+- **API Routes**: `/api/*`
 
 ### Response Format
 
-All API responses follow a consistent structure:
+All API responses follow a consistent healthcare-compliant structure:
 
 ```json
 {
@@ -197,55 +212,61 @@ All API responses follow a consistent structure:
 
 ### Authentication
 
-Include JWT token in the Authorization header:
+NextAuth.js manages authentication with healthcare role enforcement:
 
-```bash
-Authorization: Bearer <your-jwt-token>
+```typescript
+// API route example with role protection
+import { getServerSession } from "next-auth"
+import { authOptions } from "@/lib/auth"
+
+export async function GET(request: NextRequest) {
+  const session = await getServerSession(authOptions)
+  
+  if (!session || !['DOCTOR', 'HSP'].includes(session.user.role)) {
+    return new Response('Unauthorized', { status: 401 })
+  }
+  // Healthcare business logic...
+}
 ```
 
-### Core Endpoints
+### Core API Endpoints
 
 #### 🔐 Authentication
-
-- `POST /api/auth/sign-in` - User login
-- `POST /api/auth/sign-up` - User registration  
-- `POST /api/auth/refresh-token` - Refresh access token
-- `POST /api/auth/forgot-password` - Password reset request
-- `POST /api/auth/reset-password` - Reset password
+- `POST /api/auth/signin` - NextAuth.js sign in
+- `POST /api/auth/signout` - Sign out
+- `GET /api/auth/session` - Get current session
 
 #### 👥 Patient Management
-
-- `GET /api/patients/pagination` - Get paginated patient list
-- `GET /api/patients/:patientId` - Get patient details
+- `GET /api/patients` - Get patient list (role-based filtering)
+- `GET /api/patients/[id]` - Get patient details
 - `POST /api/patients` - Create new patient
-- `PUT /api/patients/:patientId` - Update patient information
-- `DELETE /api/patients/:patientId` - Soft delete patient
+- `PUT /api/patients/[id]` - Update patient information
 
-#### 💊 Medication Management
+#### 👨‍⚕️ Doctor Management
+- `GET /api/doctors/profile` - Get doctor profile
+- `PUT /api/doctors/profile` - Update doctor profile
+- `GET /api/doctors/patients` - Get assigned patients
 
-- `GET /api/medications/:patientId` - Get patient medications
-- `POST /api/medications/treatment/:patientId/:carePlanId` - Add medication
-- `GET /api/medications/:medicationId/timeline` - Get adherence timeline
-- `PUT /api/medications/:medicationId/adherence` - Record medication taken
+#### 💊 Care Plans & Medications
+- `GET /api/care-plans` - Get care plans
+- `POST /api/care-plans` - Create care plan
+- `GET /api/care-plans/templates` - Get care plan templates
+- `POST /api/care-plans/templates` - Create template
 
 #### 📅 Appointments
-
+- `GET /api/appointments` - Get appointments
 - `POST /api/appointments` - Create appointment
-- `GET /api/appointments/:patientId` - Get patient appointments
-- `GET /api/appointments/date?date=YYYY-MM-DD` - Get appointments by date
-- `PUT /api/appointments/:appointmentId` - Update appointment
+- `PUT /api/appointments/[id]` - Update appointment
 
-#### 📋 Care Plans
+#### 📊 Vitals & Symptoms
+- `POST /api/vitals` - Record vital signs
+- `GET /api/vitals/[patientId]` - Get patient vitals
+- `POST /api/symptoms` - Report symptoms with body mapping
 
-- `GET /api/careplan/patients/:patientId/careplan-details` - Get patient care plan
-- `POST /api/careplan/patients/add-careplan-for-patient/:patientId` - Create care plan
-- `PUT /api/careplan/:carePlanId` - Update care plan
-
-#### 📊 Vital Signs
-
-- `POST /api/vitals` - Add vital sign reading
-- `GET /api/vitals/:patientId` - Get patient vitals
-- `GET /api/vitals/:vitalId/timeline` - Get vital trends
+#### 🏥 Admin Management
+- `GET /api/admin/dashboard` - Admin dashboard data
+- `GET /api/admin/doctors` - Manage doctors
+- `POST /api/admin/doctors` - Create doctor account
 
 ## 🛠️ Development
 
@@ -253,165 +274,174 @@ Authorization: Bearer <your-jwt-token>
 
 ```bash
 # Development
-npm run dev                    # Start development server with nodemon
-npm start                     # Start production server
+npm run dev                    # Start Next.js development server
+npm run build                  # Build Next.js production bundle  
+npm start                      # Start Next.js production server
 
-# Database Management
-npm run migrate               # Run all pending migrations
-npm run migrate:undo          # Undo last migration
-npm run seed                  # Run all seeders
-npm run seed:undo            # Undo all seeders
-
-# Testing
-npm test                     # Run Jest test suite with --detectOpenHandles
-npm run test:watch           # Run tests in watch mode
-npm run test:coverage        # Generate test coverage report
+# Database Management (Prisma)
+npx prisma generate            # Generate Prisma client
+npx prisma migrate dev         # Create and apply migration
+npx prisma migrate deploy      # Apply migrations in production
+npx prisma db seed            # Seed database with initial data
+npx prisma studio             # Open Prisma Studio (database GUI)
 
 # Code Quality
-npm run lint                 # Run ESLint on src/
-npm run lint:fix             # Auto-fix ESLint issues
+npm run lint                  # Run Next.js ESLint
+npm run type-check            # TypeScript type checking
+npm run lint:fix              # Auto-fix ESLint issues
+
+# Testing
+npm test                     # Run Jest test suite
+npm run test:watch           # Run tests in watch mode
+npm run test:coverage        # Generate test coverage report
 ```
 
 ### Database Development
 
-The application uses Sequelize with MySQL:
+The application uses **Prisma ORM** with **PostgreSQL**:
 
 ```bash
-# Generate new migration
-npx sequelize-cli migration:generate --name create-new-table
+# Create new migration
+npx prisma migrate dev --name add-new-feature
 
-# Generate new seeder
-npx sequelize-cli seed:generate --name demo-data
+# Reset database (development only)
+npx prisma migrate reset
 
-# Check database connection
-npm run db:test
+# Generate TypeScript client
+npx prisma generate
+
+# Seed with healthcare data
+npx prisma db seed
 ```
 
-### Modern ES Module Implementation
+### Healthcare Business Logic
 
-The codebase has been **completely converted** from CommonJS to modern ES Modules:
+The application enforces strict healthcare business rules:
 
-#### **Key Implementation Details:**
-- **Full `import/export` Syntax**: No more `require()` or `module.exports`
-- **`.js` Extensions Required**: All relative imports must include `.js` extensions for proper module resolution
-- **Top-level Await Support**: Ready for Node.js 22+ async patterns
-- **Modern Async/Await**: Consistent patterns throughout the application
-
-#### **Migration Benefits:**
-- **Better Tree Shaking**: Improved bundle optimization and dead code elimination
-- **Static Analysis**: Enhanced IDE support and tooling capabilities  
-- **Future-Ready**: Aligned with modern JavaScript and web standards
-- **Performance**: Faster module loading and better optimization
-
-#### **Development Guidelines:**
-```javascript
-// ✅ Correct ES Module patterns
-import { User } from '../models/User.js';
-import config from '../config/database.js';
-export default AuthService;
-
-// ❌ Avoid CommonJS patterns  
-const User = require('../models/User');
-module.exports = AuthService;
+```typescript
+// Example: Only doctors can prescribe medications
+if (session.user.role !== 'DOCTOR') {
+  return NextResponse.json({
+    status: false,
+    statusCode: 403,
+    payload: { 
+      error: { 
+        status: 'forbidden', 
+        message: 'Only doctors can prescribe medications' 
+      } 
+    }
+  }, { status: 403 });
+}
 ```
 
-### Code Quality
+## 🐳 Deployment Options
 
-The project enforces modern JavaScript standards:
+### Development Environment
 
-- **ES Modules**: Complete `import/export` implementation with `.js` extensions
-- **ESLint**: Configured for modern JavaScript with ES2022+ features
-- **TypeScript Definitions**: Complete type safety with `/typings` directory
-- **Jest**: Comprehensive testing with `--detectOpenHandles` for proper cleanup
-
-## 🐳 Docker Swarm Deployment
-
-This application uses **Docker Swarm** for production-ready deployment with horizontal scaling, load balancing, and zero-downtime updates.
-
-### Quick Start
+Full containerized development setup:
 
 ```bash
-# 1. Initialize Docker Swarm (one-time setup)
-./scripts/docker-swarm-init.sh
+# Start complete development environment
+./scripts/deploy-nextjs-dev.sh \
+  --auto-yes \
+  --migrate \
+  --seed \
+  --domain localhost
 
-# 2. Deploy development environment
-./scripts/deploy-stack.sh dev --auto-yes
-
-# 3. Deploy production environment  
-./scripts/deploy-stack.sh prod --auto-yes
+# Services included:
+# - Next.js application (port 3000)
+# - PostgreSQL database (port 5432) 
+# - Redis cache (port 6379)
+# - PgAdmin (port 5050)
+# - Redis Commander (port 8081)
+# - MailHog email testing (port 8025)
 ```
 
-### Scaling Services
+### Production Deployment
+
+#### VM with Local PostgreSQL
 
 ```bash
-# Scale backend to 10 replicas
-docker service scale healthapp_backend=10
+# Production deployment on VM
+./scripts/deploy-vm-local.sh \
+  --domain your-healthcare-app.com \
+  --local-db
 
-# Scale frontend to 5 replicas
-docker service scale healthapp_frontend=5
+# Includes:
+# - Local PostgreSQL installation
+# - Next.js production build
+# - Nginx reverse proxy
+# - SSL certificate setup (manual)
+# - Systemd service configuration
+```
 
-# Scale during deployment
-./scripts/deploy-stack.sh dev --scale-backend=8 --scale-frontend=4
+#### Hybrid Container Setup
+
+```bash
+# Containerized database with local Next.js
+./scripts/deploy-vm-hybrid.sh \
+  --domain your-healthcare-app.com
+
+# Includes:
+# - PostgreSQL container
+# - Redis container  
+# - Local Next.js production build
+# - Systemd service management
 ```
 
 ### Service Management
 
 ```bash
-# View all services
-docker stack services healthapp
+# Check application status
+sudo systemctl status healthapp-nextjs
 
-# View service logs
-docker service logs healthapp_backend -f
+# View application logs
+sudo journalctl -u healthapp-nextjs -f
 
-# Remove deployment
-docker stack rm healthapp
+# Restart application
+sudo systemctl restart healthapp-nextjs
+
+# Database management
+psql -h localhost -p 5432 -U healthapp_user -d healthapp_dev
 ```
 
-📖 **Complete Guide**: See [README-Docker-Swarm.md](./README-Docker-Swarm.md) for comprehensive documentation.
-
-### Production Deployment
-
-```bash
-# Production deployment
-./scripts/deploy-prod.sh
-
-# Docker Swarm (multi-node)
-./scripts/docker-swarm-init.sh
-docker stack deploy -c docker/docker-stack.yml healthapp
-```
-
-### Services Overview
-
-| Service | Development Port | Production | Description |
-|---------|------------------|------------|-------------|
-| Backend | 5000 | Internal | Node.js API server with ES Modules |
-| Frontend | 3000 | 80/443 | NextJS application (ready for integration) |
-| MySQL | 3306 | Internal | Primary database |
-| Redis | 6379 | Internal | Cache & sessions |
-| NGINX | - | 80/443 | Reverse proxy |
-| phpMyAdmin | 8080 | - | Database management (dev only) |
-
-See `docs/docker_deployment_guide.md` for comprehensive deployment instructions.
-
-## 🔒 Security & Compliance
+## 🔒 Security & Healthcare Compliance
 
 ### Security Features
 
-- **JWT Authentication**: Secure token-based authentication
-- **Role-based Access Control**: Granular permissions system
-- **Rate Limiting**: API abuse protection
-- **Input Validation**: Comprehensive request validation with Joi
-- **SQL Injection Protection**: Sequelize ORM parameterized queries
-- **XSS Protection**: Helmet security headers
-- **CORS Configuration**: Configurable cross-origin requests
+- **NextAuth.js**: Modern authentication with secure session management
+- **Role-Based Access Control**: Healthcare workflow compliance
+- **Input Validation**: Zod schemas for all healthcare data
+- **SQL Injection Protection**: Prisma ORM parameterized queries
+- **XSS Protection**: Next.js built-in security features
+- **Healthcare Audit Logging**: Complete activity tracking
 
-### HIPAA Compliance
+### HIPAA Compliance Features
 
-- **Audit Logging**: Complete activity tracking
-- **Data Encryption**: Sensitive data encrypted at rest
-- **Access Controls**: Role-based data access
-- **Secure Communications**: HTTPS/TLS in production
-- **Data Backup**: Encrypted backup procedures
+- **Role-Based Data Access**: Doctors, HSPs, and Patients have appropriate data access
+- **Audit Logging**: All healthcare data access is logged
+- **Data Encryption**: Sensitive data encrypted in transit and at rest
+- **Access Controls**: Business logic enforces medical workflow rules
+- **Secure Communications**: HTTPS enforced in production
+
+### Healthcare Business Logic
+
+```typescript
+// Patient data access control
+if (user.role === 'PATIENT' && patientId !== user.patientId) {
+  throw new Error('Patients can only access their own data');
+}
+
+// HSP prescription restrictions  
+if (user.role === 'HSP' && action === 'PRESCRIBE_MEDICATION') {
+  throw new Error('HSPs cannot prescribe medications - Doctor privileges required');
+}
+
+// Provider-patient relationship validation
+if (user.role === 'DOCTOR') {
+  await validateDoctorPatientRelationship(user.id, patientId);
+}
+```
 
 ## 🧪 Testing
 
@@ -422,159 +452,161 @@ npm test
 # Run with coverage
 npm run test:coverage
 
-# Run tests in watch mode
-npm run test:watch
+# Test specific component
+npm test -- PatientDashboard
 
-# Test specific component/service
-npm test -- --testPathPattern=AuthService
+# Test API routes
+npm test -- api/patients
 ```
 
-The testing setup includes:
+Healthcare-specific testing includes:
 
-- **Jest**: Testing framework with Node.js environment
-- **Supertest**: API endpoint testing
-- **Test Coverage**: Comprehensive coverage reporting
-- **Mock Services**: Database and external service mocking
+- **Role-Based Access**: Testing proper healthcare role enforcement
+- **Business Logic**: Testing medical workflow compliance
+- **Data Validation**: Testing healthcare data integrity
+- **API Security**: Testing authentication and authorization
 
 ## 📈 Performance & Monitoring
 
-### Performance Features
+### Next.js Performance Features
 
-- **Database Optimization**: Connection pooling, proper indexing
-- **Caching Strategy**: Redis integration for high-performance data access
-- **Query Optimization**: Efficient Sequelize queries with eager loading
-- **Static Asset Optimization**: NextJS automatic optimization
-- **Code Splitting**: Dynamic imports for reduced bundle sizes
+- **App Router**: Server-side rendering and static generation
+- **Automatic Code Splitting**: Optimized bundle loading
+- **Image Optimization**: Next.js automatic image optimization
+- **Database Connection Pooling**: Prisma connection management
 
-### Monitoring
+### Healthcare Monitoring
 
-- **Winston Logging**: Structured logging with multiple transports
-- **Prometheus Metrics**: Application and system metrics
-- **Health Checks**: Built-in health monitoring endpoints
-- **Error Tracking**: Comprehensive error handling and reporting
+- **Audit Logging**: All healthcare data access tracked
+- **Error Tracking**: Healthcare-specific error handling
+- **Performance Metrics**: Database query optimization
+- **Health Checks**: Built-in API health endpoints
 
-## 🔄 Migration Guides
+## 🔄 Migration from Express Backend
 
-### From Development to Production
+This application has been **completely migrated** from Express.js to pure Next.js:
 
-See `docs/docker_deployment_guide.md` for production deployment steps.
+### Migration Benefits
 
-### Database Migrations
+- **Unified Stack**: Single Next.js application instead of separate frontend/backend
+- **Better Type Safety**: End-to-end TypeScript with Prisma
+- **Modern Authentication**: NextAuth.js instead of custom JWT handling
+- **Simplified Deployment**: Single application deployment
+- **Better Performance**: Next.js optimizations and server-side rendering
 
-All schema changes are version-controlled through Sequelize migrations:
+### Key Changes
 
-- **22 Migration Files**: Complete schema evolution
-- **Rollback Support**: Safe migration rollback procedures
-- **Seeded Data**: Initial specialties, medicines, and vital templates
+- **API Routes**: Migrated from Express routes to Next.js API routes
+- **Authentication**: NextAuth.js with healthcare role management
+- **Database**: PostgreSQL with Prisma instead of MySQL/Sequelize
+- **Validation**: Zod schemas for healthcare data validation
+- **Business Logic**: Role-based healthcare workflow enforcement
 
 ## 🤝 Contributing
 
 1. Fork the repository
-2. Create a feature branch: `git checkout -b feature/amazing-feature`
-3. Commit your changes: `git commit -m 'Add amazing feature'`
-4. Push to the branch: `git push origin feature/amazing-feature`
+2. Create a feature branch: `git checkout -b feature/healthcare-feature`
+3. Commit your changes: `git commit -m 'Add healthcare feature'`
+4. Push to the branch: `git push origin feature/healthcare-feature`
 5. Open a Pull Request
 
 ### Development Guidelines
 
-- Follow the established ES Module patterns
-- Use the service layer for business logic
-- Write tests for new features
+- Follow Next.js App Router patterns
+- Use TypeScript throughout the application
+- Implement proper healthcare role-based access control
+- Write tests for healthcare business logic
 - Update documentation for API changes
-- Run `npm run lint:fix` before committing
+- Run `npm run lint` and `npm run type-check` before committing
 
 ## 📝 Documentation
 
-- **📖 [Architecture Overview](docs/architecture.md)** - System design and patterns
-- **🐳 [Docker Deployment Guide](docs/docker_deployment_guide.md)** - Complete deployment instructions
-- **🗂️ [Project Structure](docs/project_folder_structure.md)** - Detailed folder organization
-- **🖥️ [Windows Development Guide](docs/windows_development_guide.md)** - Windows-specific setup
-- **🔄 [NextJS Conversion Strategy](docs/nextjs_conversion_strategy.md)** - Frontend modernization
-- **🛠️ [Technical Implementation](docs/technical_implementation.md)** - Implementation details
+- **📖 [Healthcare Business Logic](CLAUDE.md)** - Complete healthcare workflow rules
+- **🚀 [Deployment Guide](scripts/)** - All deployment options and scripts
+- **🔐 [Authentication Guide](lib/auth.ts)** - NextAuth.js healthcare configuration
+- **🗄️ [Database Schema](prisma/schema.prisma)** - Complete healthcare data model
 
 ## 📊 Database Schema
 
-The application uses a sophisticated MySQL schema with 22+ migration files:
+The application uses **PostgreSQL with Prisma** featuring 40+ models:
 
-### Core Tables
+### Core Healthcare Tables
 
-- **users** - Authentication and profiles with role-based access
-- **doctors** - Healthcare provider profiles and specialties
-- **patients** - Patient records and medical history
-- **care_plans** - Treatment and care management plans
-- **medications** - Prescription tracking and adherence
-- **appointments** - Scheduling system with recurring events
-- **vitals** - Health monitoring data and readings
-- **medicines** - Drug database and templates
-- **specialities** - Medical specialties and categories
-- **vital_templates** - Standardized vital sign templates
+- **User** - Authentication with healthcare roles
+- **Patient** - Patient records and medical history
+- **doctors** - Healthcare provider profiles  
+- **hsps** - Health service provider profiles
+- **CarePlan** - Treatment and care management
+- **Medication** - Prescription tracking
+- **Appointment** - Scheduling system
+- **VitalReading** - Health monitoring data
+- **Symptom** - Patient symptom reporting with body mapping
 
-### Advanced Features
+### Healthcare Compliance Features
 
-- **Proper Relationships** - Foreign keys and associations between all entities
-- **Migration System** - Versioned schema changes with 22+ migration files
-- **Seeded Data** - Initial specialists, medicines, and vital templates
-- **Audit Logging** - HIPAA-compliant activity tracking
-- **Soft Deletes** - Data retention and recovery capabilities
-- **Connection Pooling** - Optimized database performance
+- **Role-Based Access**: Database-level access control
+- **Audit Logging**: Complete healthcare data activity tracking
+- **Data Relationships**: Proper medical data relationships
+- **HIPAA Compliance**: Privacy and security requirements met
+- **Business Logic**: Healthcare workflow rules enforced
 
 ## 🆘 Support & Troubleshooting
 
 ### Common Issues
 
-**Database Connection Issues:**
-
+**Database Connection:**
 ```bash
-# Check MySQL is running
-sudo service mysql status
+# Check PostgreSQL
+sudo systemctl status postgresql
 
 # Test database connection
-npm run db:test
+npx prisma db push
 ```
 
 **Port Conflicts:**
-
 ```bash
-# Check what's running on ports
-lsof -i :5000  # Backend API
-lsof -i :3306  # MySQL
-lsof -i :6379  # Redis
+# Check what's using port 3000
+lsof -i :3000
+
+# Check database port
+lsof -i :5432
 ```
 
-**Migration Errors:**
-
+**Authentication Issues:**
 ```bash
-# Reset database (development only)
-npm run migrate:undo
-npm run migrate
-npm run seed
+# Regenerate NextAuth secret
+openssl rand -base64 32
+
+# Clear Next.js cache
+rm -rf .next
+npm run build
 ```
 
 ### Getting Help
 
-- **Create an issue** in the repository for bugs
-- **Check documentation** in the `docs/` folder
-- **Review logs** with `docker service logs healthapp_[service] -f`
-- **Test environment** with health check endpoints
+- **Healthcare Business Logic**: Check [CLAUDE.md](CLAUDE.md) for role rules
+- **API Issues**: Review API route files in `app/api/`
+- **Database Problems**: Use `npx prisma studio` to inspect data
+- **Authentication**: Check NextAuth.js configuration in `lib/auth.ts`
 
 ## 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🏥 Healthcare Standards
+## 🏥 Healthcare Standards Compliance
 
-This application is designed with healthcare industry standards in mind:
+This application is designed for real-world healthcare use:
 
 - **HIPAA Compliance** - Privacy and security requirements
-- **HL7 Ready** - Structured for healthcare data exchange
-- **Clinical Workflows** - Designed for real-world healthcare processes
+- **Role-Based Workflows** - Doctor/HSP/Patient role enforcement  
+- **Medical Data Integrity** - Proper healthcare data relationships
 - **Audit Requirements** - Complete activity logging and tracking
-- **Scalable Architecture** - Supports growing healthcare organizations
+- **Scalable Architecture** - Production-ready for healthcare organizations
 
 ---
 
 **Built with ❤️ for healthcare providers and patients**
 
-*Healthcare Management Platform - Production-ready backend with modern ES Modules, MySQL, and comprehensive API*
+*Next.js Healthcare Management Platform - Production-ready full-stack application with NextAuth.js, Prisma, and PostgreSQL*
 
-**Last updated: August 2025** | Node.js 22+ | MySQL 8.0+ | Docker Swarm Ready
+**Last updated: August 2025** | Next.js 14 | PostgreSQL 15+ | NextAuth.js | TypeScript
