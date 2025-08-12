@@ -162,7 +162,7 @@ JSONB Fields: Flexible data storage
 
 ### 🏥 High Priority
 
-1. **Provider/Clinic Integration** 
+1. **Provider/Clinic Integration**
    - Add Provider/Clinic selection to Doctor onboarding
    - Update Add Patient form with Provider/Clinic integration
 

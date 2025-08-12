@@ -9,11 +9,13 @@ The Healthcare Management Platform has been successfully migrated to a pure Next
 ## 📋 **Migration Overview**
 
 ### **Before (Hybrid Architecture)**
+
 ```text
 Frontend: Next.js :3002 → Proxy → Express Backend :3005 → PostgreSQL + Sequelize
 ```
 
 ### **After (Pure Next.js Architecture)** ✅ COMPLETED
+
 ```text
 Next.js Full-Stack :3000 → NextAuth.js + Prisma ORM → PostgreSQL (46 Introspected Models)
 ```
@@ -21,12 +23,14 @@ Next.js Full-Stack :3000 → NextAuth.js + Prisma ORM → PostgreSQL (46 Introsp
 ## ⚠️ **Breaking Changes**
 
 ### **1. Removed Components**
+
 - ❌ **Express Server** (`src/server.ts`) - No longer needed
 - ❌ **Backend Docker Service** - Consolidated into Next.js service
 - ❌ **Sequelize ORM** - Replaced with Prisma
 - ❌ **API Proxying** - Direct Next.js API routes
 
 ### **2. Updated Components** ✅ COMPLETED
+
 - ✅ **Database Schema** - Introspected with Prisma (46 models preserved)
 - ✅ **API Routes** - Migrated to `/app/api` directory with NextAuth.js integration
 - ✅ **Authentication** - NextAuth.js with healthcare role-based permissions
@@ -81,6 +85,7 @@ nano env_files/.env.production  # Update DATABASE_URL, secrets, etc.
 ```
 
 **Key Environment Changes:**
+
 ```bash
 # Old Express Backend URL (REMOVE)
 - BACKEND_URL=http://backend:3005
@@ -288,7 +293,7 @@ docker exec postgres pg_restore < healthapp_prod_backup_YYYYMMDD.sql
 
 ## 📊 **Performance Comparison**
 
-### **Before (Hybrid Architecture)**
+### **Before (Hybrid Architecture) for NextJS Application**
 
 | Component | Memory | CPU | Startup Time |
 |-----------|--------|-----|--------------|
@@ -304,6 +309,7 @@ docker exec postgres pg_restore < healthapp_prod_backup_YYYYMMDD.sql
 | **Total** | **1GB** | **0.7 cores** | **2-3s** |
 
 **Benefits:**
+
 - ✅ **23% Less CPU Usage**  
 - ✅ **60% Faster Startup**
 - ✅ **Simplified Architecture**
@@ -336,6 +342,7 @@ After migration, update these documentation files:
 ### **Common Issues**
 
 #### **Database Connection Issues**
+
 ```bash
 # Check DATABASE_URL format
 echo $DATABASE_URL
@@ -346,6 +353,7 @@ npx prisma db pull --preview-feature
 ```
 
 #### **API Routes Not Found**
+
 ```bash
 # Verify Next.js build includes API routes
 ls -la .next/standalone/
@@ -357,6 +365,7 @@ cat next.config.js | grep "output"
 ```
 
 #### **Docker Container Won't Start**
+
 ```bash
 # Check container logs
 docker logs CONTAINER_NAME
@@ -422,4 +431,4 @@ curl http://localhost:3000/api/health
 
 🏥 **Healthcare Management Platform** - Migration completed successfully to pure Next.js + NextAuth.js + Prisma architecture!
 
-*Migration completed: August 2025*
+- *Migration completed: August 2025*
