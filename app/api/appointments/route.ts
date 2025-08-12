@@ -88,7 +88,7 @@ export async function GET(request: NextRequest) {
                   first_name: true,
                   last_name: true,
                   email: true,
-                  mobile_number: true
+                  phone: true
                 }
               }
             }
@@ -96,14 +96,14 @@ export async function GET(request: NextRequest) {
           doctor: {
             select: {
               id: true,
-              user: {
+              users_doctors_user_idTousers: {
                 select: {
                   first_name: true,
                   last_name: true,
                   email: true
                 }
               },
-              speciality: {
+              specialities: {
                 select: {
                   name: true
                 }
@@ -212,19 +212,21 @@ export async function POST(request: NextRequest) {
           patient_id,
           doctor_id,
           start_time: new Date(start_time),
-          appointment_time,
+          end_time: new Date(new Date(start_time).getTime() + (duration_minutes || 30) * 60000),
           slot_id,
-          appointment_type,
-          reason,
-          notes,
-          duration_minutes: duration_minutes || 30,
-          status: 'pending',
-          booked_by: user.id,
+          description: `${appointment_type || 'Consultation'}: ${reason || 'General consultation'}`,
+          details: { 
+            appointment_type, 
+            reason, 
+            notes, 
+            duration_minutes: duration_minutes || 30,
+            booked_by: user!.id 
+          },
           created_at: new Date(),
           updated_at: new Date()
         },
         include: {
-          patients: {
+          patient: {
             select: {
               patient_id: true,
               user: {
@@ -236,9 +238,9 @@ export async function POST(request: NextRequest) {
               }
             }
           },
-          doctors: {
+          doctor: {
             select: {
-              user: {
+              users_doctors_user_idTousers: {
                 select: {
                   first_name: true,
                   last_name: true
@@ -301,8 +303,8 @@ export async function PUT(request: NextRequest) {
     const existingAppointment = await prisma.appointment.findUnique({
       where: { id },
       include: {
-        patients: { select: { user_id: true } },
-        doctors: { select: { user_id: true } }
+        patient: { select: { user_id: true } },
+        doctor: { select: { user_id: true } }
       }
     });
 

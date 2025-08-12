@@ -287,7 +287,7 @@ export default function AddPatientPage() {
         setRecognition(rec)
       }
     }
-  }, [])
+  }, [formData.clinicalNotes])
 
   // Auto-generate patient ID when page loads
   useEffect(() => {
@@ -295,7 +295,7 @@ export default function AddPatientPage() {
       const doctorName = 'Dr. John Doe' // Replace with actual doctor name from context
       generatePatientId(doctorName)
     }
-  }, [])
+  }, [formData.patientId])
 
   const generatePatientId = (doctorName: string) => {
     const namePrefix = doctorName
