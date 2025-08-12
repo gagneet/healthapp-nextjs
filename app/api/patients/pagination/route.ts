@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
       limit: parseInt(searchParams.get('limit') || '10'),
       search: searchParams.get('search') || '',
       sortBy: searchParams.get('sortBy') || 'createdAt',
-      sortOrder: searchParams.get('sortOrder') || 'DESC'
+      sortOrder: (searchParams.get('sortOrder') || 'DESC') as 'asc' | 'desc'
     };
 
     const patientsData = await getPatients(user.id || user.userId, pagination);

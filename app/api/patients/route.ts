@@ -135,9 +135,17 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
       skip,
       take: limit,
       orderBy: {
-        [sortBy]: sortOrder
+        [sortBy as string]: sortOrder as 'asc' | 'desc'
       },
-      include: {
+      select: {
+        id: true,
+        patient_id: true,
+        medical_record_number: true,
+        height_cm: true,
+        weight_kg: true,
+        blood_type: true,
+        created_at: true,
+        updated_at: true,
         user: {
           select: {
             id: true,
@@ -153,10 +161,10 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
           }
         },
         // Include primary doctor info
-        doctors_patients_primary_doctor_idTodoctors: {
+        doctors: {
           select: {
             doctor_id: true,
-            user: {
+            users_doctors_user_idTousers: {
               select: {
                 first_name: true,
                 last_name: true,
@@ -184,13 +192,13 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
         gender: patient.user.gender,
         accountStatus: patient.user.account_status
       },
-      primaryDoctor: patient.doctors_patients_primary_doctor_idTodoctors ? {
-        doctorId: patient.doctors_patients_primary_doctor_idTodoctors.doctor_id,
-        name: `${patient.doctors_patients_primary_doctor_idTodoctors.user.first_name} ${patient.doctors_patients_primary_doctor_idTodoctors.user.last_name}`.trim(),
-        email: patient.doctors_patients_primary_doctor_idTodoctors.user.email
+      primaryDoctor: patient.doctors ? {
+        doctorId: patient.doctors.doctor_id,
+        name: `${patient.doctors.users_doctors_user_idTousers.first_name} ${patient.doctors.users_doctors_user_idTousers.last_name}`.trim(),
+        email: patient.doctors.users_doctors_user_idTousers.email
       } : null,
-      height: patient.height,
-      weight: patient.weight,
+      height: patient.height_cm,
+      weight: patient.weight_kg,
       bloodType: patient.blood_type,
       createdAt: patient.created_at,
       updatedAt: patient.updated_at
@@ -242,7 +250,6 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
     if (existingUser) {
       return createErrorResponse(
         new Error("User with this email already exists"),
-        HealthcareErrorCodes.VALIDATION_ERROR,
         400
       )
     }
@@ -278,16 +285,14 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
           user_id: user.id,
           patient_id: patientBusinessId,
           medical_record_number: `MRN${Date.now()}`, // Generate unique MRN
-          primary_doctor_id: patientData.primaryDoctorId,
-          height: patientData.height,
-          weight: patientData.weight,
+          primary_care_doctor_id: patientData.primaryDoctorId,
+          height_cm: patientData.height,
+          weight_kg: patientData.weight,
           blood_type: patientData.bloodType,
           medical_history: patientData.medicalHistory,
           allergies: patientData.allergies,
-          emergency_contact: patientData.emergencyContact,
-          insurance_details: patientData.insuranceDetails,
-          consent_status: 'pending',
-          hipaa_authorization: false,
+          emergency_contacts: patientData.emergencyContact,
+          insurance_information: patientData.insuranceDetails,
           created_at: new Date(),
           updated_at: new Date()
         }
@@ -312,12 +317,12 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
         gender: result.user.gender,
         accountStatus: result.user.account_status
       },
-      height: result.patient.height,
-      weight: result.patient.weight,
+      height: result.patient.height_cm,
+      weight: result.patient.weight_kg,
       bloodType: result.patient.blood_type,
       medicalHistory: result.patient.medical_history,
       allergies: result.patient.allergies,
-      emergencyContact: result.patient.emergency_contact,
+      emergencyContact: result.patient.emergency_contacts,
       createdAt: result.patient.created_at
     }
 

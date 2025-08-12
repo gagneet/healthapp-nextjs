@@ -42,10 +42,10 @@ export async function GET(request: NextRequest) {
       whereClause.alert_level = alertLevel;
     }
 
-    const readings = await prisma.vital_readings.findMany({
+    const readings = await prisma.vitalReading.findMany({
       where: whereClause,
       include: {
-        patients: {
+        patient: {
           select: {
             id: true,
             patient_id: true,
@@ -57,7 +57,7 @@ export async function GET(request: NextRequest) {
             }
           }
         },
-        vital_types: {
+        vital_type: {
           select: {
             name: true,
             unit: true,
@@ -112,7 +112,7 @@ export async function POST(request: NextRequest) {
     } = body;
 
     // Calculate alert level based on vital type and values
-    const vitalType = await prisma.vital_types.findUnique({
+    const vitalType = await prisma.vitalType.findUnique({
       where: { id: vital_type_id }
     });
 
@@ -120,19 +120,22 @@ export async function POST(request: NextRequest) {
     if (vitalType) {
       const mainValue = systolic_value || value;
       if (mainValue) {
-        if (vitalType.critical_min && mainValue <= vitalType.critical_min) {
+        const normalMin = vitalType.normal_range_min ? parseFloat(vitalType.normal_range_min.toString()) : null;
+        const normalMax = vitalType.normal_range_max ? parseFloat(vitalType.normal_range_max.toString()) : null;
+        
+        if (normalMin && mainValue < normalMin * 0.7) {
           alertLevel = 'critical';
-        } else if (vitalType.critical_max && mainValue >= vitalType.critical_max) {
+        } else if (normalMax && mainValue > normalMax * 1.3) {
           alertLevel = 'critical';
-        } else if (vitalType.warning_min && mainValue <= vitalType.warning_min) {
+        } else if (normalMin && mainValue < normalMin) {
           alertLevel = 'warning';
-        } else if (vitalType.warning_max && mainValue >= vitalType.warning_max) {
+        } else if (normalMax && mainValue > normalMax) {
           alertLevel = 'warning';
         }
       }
     }
 
-    const reading = await prisma.vital_readings.create({
+    const reading = await prisma.vitalReading.create({
       data: {
         patient_id,
         vital_type_id,
@@ -142,13 +145,12 @@ export async function POST(request: NextRequest) {
         unit,
         notes,
         alert_level: alertLevel as any,
-        reading_date: reading_date ? new Date(reading_date) : new Date(),
-        recorded_by: user.id,
+        reading_time: reading_date ? new Date(reading_date) : new Date(),
         created_at: new Date(),
         updated_at: new Date()
       },
       include: {
-        patients: {
+        patient: {
           select: {
             patient_id: true,
             user: {
@@ -159,7 +161,7 @@ export async function POST(request: NextRequest) {
             }
           }
         },
-        vital_types: {
+        vital_type: {
           select: {
             name: true,
             unit: true

@@ -24,9 +24,9 @@ export async function GET(request: NextRequest) {
     let whereClause: any = {};
 
     // Role-based access control
-    if (user.role === 'PATIENT') {
-      const patient = await prisma.patients.findFirst({
-        where: { user_id: user.id }
+    if (user!.role === 'PATIENT') {
+      const patient = await prisma.patient.findFirst({
+        where: { user_id: user!.id }
       });
       if (!patient) {
         return NextResponse.json({
@@ -39,7 +39,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Additional filters
-    if (patientId && ['DOCTOR', 'HSP', 'ADMIN', 'PROVIDER_ADMIN'].includes(user.role)) {
+    if (patientId && ['DOCTOR', 'HSP', 'ADMIN', 'PROVIDER_ADMIN'].includes(user!.role)) {
       whereClause.patient_id = patientId;
     }
     
@@ -48,10 +48,10 @@ export async function GET(request: NextRequest) {
     }
 
     const [subscriptions, totalCount] = await Promise.all([
-      prisma.patient_subscriptions.findMany({
+      prisma.patientSubscription.findMany({
         where: whereClause,
         include: {
-          patients: {
+          patient: {
             select: {
               id: true,
               patient_id: true,
@@ -70,9 +70,9 @@ export async function GET(request: NextRequest) {
               name: true,
               description: true,
               price: true,
-              duration_months: true,
+              billing_cycle: true,
               features: true,
-              doctors: {
+              healthcare_providers: {
                 select: {
                   user: {
                     select: {
@@ -89,7 +89,7 @@ export async function GET(request: NextRequest) {
         take: limit,
         orderBy: { created_at: 'desc' }
       }),
-      prisma.patient_subscriptions.count({ where: whereClause })
+      prisma.patientSubscription.count({ where: whereClause })
     ]);
 
     return NextResponse.json({
@@ -130,7 +130,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Only doctors can create patient subscriptions
-    if (user.role !== 'DOCTOR') {
+    if (user!.role !== 'DOCTOR') {
       return NextResponse.json({
         status: false,
         statusCode: 403,
@@ -149,11 +149,11 @@ export async function POST(request: NextRequest) {
     } = body;
 
     // Get service plan details
-    const servicePlan = await prisma.service_plans.findUnique({
+    const servicePlan = await prisma.servicePlan.findUnique({
       where: { id: service_plan_id },
       select: {
         price: true,
-        duration_months: true,
+        billing_cycle: true,
         name: true
       }
     });
@@ -166,27 +166,37 @@ export async function POST(request: NextRequest) {
       }, { status: 404 });
     }
 
-    // Calculate end date
+    // Calculate end date based on billing cycle
     const startDate = new Date(start_date);
     const endDate = new Date(startDate);
-    endDate.setMonth(endDate.getMonth() + servicePlan.duration_months);
+    
+    // Add duration based on billing cycle
+    if (servicePlan.billing_cycle === 'monthly') {
+      endDate.setMonth(endDate.getMonth() + 1);
+    } else if (servicePlan.billing_cycle === 'weekly') {
+      endDate.setDate(endDate.getDate() + 7);
+    } else if (servicePlan.billing_cycle === 'yearly') {
+      endDate.setFullYear(endDate.getFullYear() + 1);
+    } else if (servicePlan.billing_cycle === 'one_time') {
+      // For one-time payments, set end date to far future or keep same as start
+      endDate.setFullYear(endDate.getFullYear() + 10);
+    }
 
-    const subscription = await prisma.patient_subscriptions.create({
+    const subscription = await prisma.patientSubscription.create({
       data: {
         patient_id,
+        provider_id: 'placeholder-provider-id', // This needs to be determined from business logic
         service_plan_id,
-        start_date: startDate,
-        end_date: endDate,
-        status: 'active',
-        billing_cycle: billing_cycle || 'monthly',
+        current_period_start: startDate,
+        current_period_end: endDate,
+        status: 'ACTIVE',
         payment_method_id,
-        auto_renewal: auto_renewal || false,
-        subscription_amount: servicePlan.price,
+        last_payment_amount: servicePlan.price,
         created_at: new Date(),
         updated_at: new Date()
       },
       include: {
-        patients: {
+        patient: {
           select: {
             patient_id: true,
             user: {
@@ -203,7 +213,7 @@ export async function POST(request: NextRequest) {
             name: true,
             description: true,
             price: true,
-            duration_months: true
+            billing_cycle: true
           }
         }
       }
@@ -242,10 +252,10 @@ export async function PUT(request: NextRequest) {
     const { id, status, auto_renewal, payment_method_id, notes } = body;
 
     // Get existing subscription to verify permissions
-    const existingSubscription = await prisma.patient_subscriptions.findUnique({
+    const existingSubscription = await prisma.patientSubscription.findUnique({
       where: { id },
       include: {
-        patients: { select: { user_id: true } }
+        patient: { select: { user_id: true } }
       }
     });
 
@@ -259,9 +269,9 @@ export async function PUT(request: NextRequest) {
 
     // Check permissions
     const canModify = 
-      user.role === 'ADMIN' ||
-      user.role === 'DOCTOR' ||
-      (user.role === 'PATIENT' && existingSubscription.patients?.user_id === user.id);
+      user!.role === 'ADMIN' ||
+      user!.role === 'DOCTOR' ||
+      (user!.role === 'PATIENT' && existingSubscription.patient?.user_id === user!.id);
 
     if (!canModify) {
       return NextResponse.json({
@@ -271,17 +281,16 @@ export async function PUT(request: NextRequest) {
       }, { status: 403 });
     }
 
-    const updatedSubscription = await prisma.patient_subscriptions.update({
+    const updatedSubscription = await prisma.patientSubscription.update({
       where: { id },
       data: {
         ...(status && { status }),
-        ...(typeof auto_renewal === 'boolean' && { auto_renewal }),
         ...(payment_method_id && { payment_method_id }),
-        ...(notes && { notes }),
+        ...(notes && { metadata: { notes } }),
         updated_at: new Date()
       },
       include: {
-        patients: {
+        patient: {
           select: {
             patient_id: true,
             user: {
@@ -296,7 +305,7 @@ export async function PUT(request: NextRequest) {
           select: {
             name: true,
             price: true,
-            duration_months: true
+            billing_cycle: true
           }
         }
       }
@@ -333,22 +342,17 @@ async function getAvailablePlans(request: NextRequest) {
       }, { status: 401 });
     }
 
-    const plans = await prisma.service_plans.findMany({
+    const plans = await prisma.servicePlan.findMany({
       where: {
         is_active: true
       },
       include: {
-        doctors: {
+        healthcare_providers: {
           select: {
             user: {
               select: {
                 first_name: true,
                 last_name: true
-              }
-            },
-            specialities: {
-              select: {
-                name: true
               }
             }
           }

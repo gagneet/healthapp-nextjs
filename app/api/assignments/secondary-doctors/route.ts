@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { verifyAuth } from '@/lib/auth-utils';
+import { randomUUID } from 'crypto';
 
 export async function GET(request: NextRequest) {
   try {
@@ -22,9 +23,9 @@ export async function GET(request: NextRequest) {
     let whereClause: any = {};
 
     // Role-based access control
-    if (user.role === 'PATIENT') {
+    if (user!.role === 'PATIENT') {
       const patient = await prisma.patient.findFirst({
-        where: { user_id: user.id }
+        where: { user_id: user!.id }
       });
       if (!patient) {
         return NextResponse.json({
@@ -34,9 +35,9 @@ export async function GET(request: NextRequest) {
         }, { status: 403 });
       }
       whereClause.patient_id = patient.id;
-    } else if (user.role === 'DOCTOR') {
+    } else if (user!.role === 'DOCTOR') {
       const doctor = await prisma.doctors.findFirst({
-        where: { user_id: user.id }
+        where: { user_id: user!.id }
       });
       if (!doctor) {
         return NextResponse.json({
@@ -53,11 +54,11 @@ export async function GET(request: NextRequest) {
     }
 
     // Additional filters
-    if (patientId && ['ADMIN', 'HSP'].includes(user.role)) {
+    if (patientId && ['ADMIN', 'HSP'].includes(user!.role)) {
       whereClause.patient_id = patientId;
     }
     
-    if (primaryDoctorId && ['ADMIN', 'HSP'].includes(user.role)) {
+    if (primaryDoctorId && ['ADMIN', 'HSP'].includes(user!.role)) {
       whereClause.primary_doctor_id = primaryDoctorId;
     }
     
@@ -84,7 +85,7 @@ export async function GET(request: NextRequest) {
         doctors_secondary_doctor_assignments_primary_doctor_idTodoctors: {
           select: {
             id: true,
-            user: {
+            users_doctors_user_idTousers: {
               select: {
                 first_name: true,
                 last_name: true,
@@ -101,7 +102,7 @@ export async function GET(request: NextRequest) {
         doctors_secondary_doctor_assignments_secondary_doctor_idTodoctors: {
           select: {
             id: true,
-            user: {
+            users_doctors_user_idTousers: {
               select: {
                 first_name: true,
                 last_name: true,
@@ -149,7 +150,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Only doctors can create secondary assignments
-    if (user.role !== 'DOCTOR') {
+    if (user!.role !== 'DOCTOR') {
       return NextResponse.json({
         status: false,
         statusCode: 403,
@@ -171,7 +172,7 @@ export async function POST(request: NextRequest) {
 
     // Get primary doctor ID
     const primaryDoctor = await prisma.doctors.findFirst({
-      where: { user_id: user.id }
+      where: { user_id: user!.id }
     });
 
     if (!primaryDoctor) {
@@ -201,7 +202,7 @@ export async function POST(request: NextRequest) {
         patient_id,
         primary_doctor_id: primaryDoctor.id,
         secondary_doctor_id,
-        status: 'active'
+        is_active: true
       }
     });
 
@@ -215,18 +216,16 @@ export async function POST(request: NextRequest) {
 
     const assignment = await prisma.secondary_doctor_assignments.create({
       data: {
+        id: randomUUID(),
         patient_id,
         primary_doctor_id: primaryDoctor.id,
         secondary_doctor_id,
-        assignment_type,
-        specialization_area,
-        referral_reason,
-        priority_level: priority_level || 'medium',
-        expected_duration_days,
-        collaboration_notes,
-        status: 'pending',
-        assigned_by: user.id,
-        assigned_at: new Date(),
+        assignment_reason: referral_reason,
+        specialty_focus: specialization_area ? [specialization_area] : [],
+        consent_status: 'pending',
+        is_active: true,
+        assignment_start_date: new Date(),
+        assignment_end_date: expected_duration_days ? new Date(Date.now() + expected_duration_days * 24 * 60 * 60 * 1000) : null,
         created_at: new Date(),
         updated_at: new Date()
       },
@@ -244,7 +243,7 @@ export async function POST(request: NextRequest) {
         },
         doctors_secondary_doctor_assignments_secondary_doctor_idTodoctors: {
           select: {
-            user: {
+            users_doctors_user_idTousers: {
               select: {
                 first_name: true,
                 last_name: true,
@@ -315,10 +314,10 @@ export async function PUT(request: NextRequest) {
 
     // Check permissions
     const canModify = 
-      user.role === 'ADMIN' ||
-      (user.role === 'DOCTOR' && (
-        assignment.doctors_secondary_doctor_assignments_primary_doctor_idTodoctors?.user_id === user.id ||
-        assignment.doctors_secondary_doctor_assignments_secondary_doctor_idTodoctors?.user_id === user.id
+      user!.role === 'ADMIN' ||
+      (user!.role === 'DOCTOR' && (
+        assignment.doctors_secondary_doctor_assignments_primary_doctor_idTodoctors?.user_id === user!.id ||
+        assignment.doctors_secondary_doctor_assignments_secondary_doctor_idTodoctors?.user_id === user!.id
       ));
 
     if (!canModify) {
@@ -353,7 +352,7 @@ export async function PUT(request: NextRequest) {
         },
         doctors_secondary_doctor_assignments_primary_doctor_idTodoctors: {
           select: {
-            user: {
+            users_doctors_user_idTousers: {
               select: {
                 first_name: true,
                 last_name: true
@@ -363,7 +362,7 @@ export async function PUT(request: NextRequest) {
         },
         doctors_secondary_doctor_assignments_secondary_doctor_idTodoctors: {
           select: {
-            user: {
+            users_doctors_user_idTousers: {
               select: {
                 first_name: true,
                 last_name: true

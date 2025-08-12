@@ -124,15 +124,15 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
     }
 
     // Get total count for pagination
-    const total = await prisma.patient_symptoms.count({ where: whereClause })
+    const total = await prisma.symptom.count({ where: whereClause })
 
     // Fetch symptoms with related data
-    const patientSymptoms = await prisma.patient_symptoms.findMany({
+    const patientSymptoms = await prisma.symptom.findMany({
       where: whereClause,
       skip,
       take: limit,
       orderBy: {
-        [sortBy]: sortOrder
+        [sortBy as string]: sortOrder as 'asc' | 'desc'
       },
       include: {
         patient: {
@@ -159,11 +159,14 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
         name: `${record.patient.user.first_name} ${record.patient.user.last_name}`.trim(),
         email: record.patient.user.email
       },
-      symptoms: record.symptoms || [],
-      onsetDate: record.onset_date,
-      bodyMapping: record.body_mapping || [],
-      additionalNotes: record.additional_notes,
+      symptomName: record.symptom_name,
+      description: record.description,
+      onsetTime: record.onset_time,
+      bodyLocation: record.body_location || {},
       severity: record.severity,
+      triggers: record.triggers || [],
+      relievingFactors: record.relieving_factors || [],
+      associatedSymptoms: record.associated_symptoms || [],
       createdAt: record.created_at,
       updatedAt: record.updated_at
     }))
@@ -220,14 +223,8 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
         where: {
           id: symptomData.patientId,
           OR: [
-            { primary_doctor_id: session.user.profileId },
-            {
-              care_team: {
-                some: {
-                  hsp_id: session.user.profileId
-                }
-              }
-            }
+            { primary_care_doctor_id: session.user.profileId },
+            { primary_care_hsp_id: session.user.profileId }
           ]
         }
       })
@@ -251,27 +248,19 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
     }
 
     // Create symptom record with 2D/3D body mapping support
-    const symptomRecord = await prisma.patient_symptoms.create({
+    const symptomRecord = await prisma.symptom.create({
       data: {
         patient_id: targetPatientId,
-        symptoms: symptomData.symptoms.map(symptom => ({
-          name: symptom.name,
-          severity: symptom.severity,
-          duration: symptom.duration,
-          location: symptom.location,
-          description: symptom.description,
-          category: symptom.category || 'general'
-        })),
-        onset_date: symptomData.onsetDate,
-        body_mapping: symptomData.bodyMapping || [],
-        additional_notes: symptomData.additionalNotes,
-        severity: symptomData.symptoms.length > 0 
-          ? symptomData.symptoms.reduce((max, symptom) => 
-              symptom.severity === 'SEVERE' ? 'SEVERE' : 
-              symptom.severity === 'MODERATE' && max !== 'SEVERE' ? 'MODERATE' : max, 'MILD'
-            ) 
-          : 'MILD',
-        recorded_by: session.user.id,
+        symptom_name: symptomData.symptoms[0]?.name || 'General symptoms',
+        severity: typeof symptomData.symptoms[0]?.severity === 'number' 
+          ? symptomData.symptoms[0].severity 
+          : (symptomData.symptoms[0]?.severity === 'SEVERE' ? 5 : 
+             symptomData.symptoms[0]?.severity === 'MODERATE' ? 3 : 1),
+        description: symptomData.additionalNotes || symptomData.symptoms[0]?.description,
+        body_location: symptomData.bodyMapping || {},
+        onset_time: symptomData.onsetDate ? new Date(symptomData.onsetDate) : new Date(),
+        recorded_at: new Date(),
+        triggers: [],
         created_at: new Date(),
         updated_at: new Date()
       },
@@ -299,12 +288,13 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
         name: `${symptomRecord.patient.user.first_name} ${symptomRecord.patient.user.last_name}`.trim(),
         email: symptomRecord.patient.user.email
       },
-      symptoms: symptomRecord.symptoms,
-      onsetDate: symptomRecord.onset_date,
-      bodyMapping: symptomRecord.body_mapping,
-      additionalNotes: symptomRecord.additional_notes,
+      symptomName: symptomRecord.symptom_name,
+      description: symptomRecord.description,
+      onsetTime: symptomRecord.onset_time,
+      bodyLocation: symptomRecord.body_location,
       severity: symptomRecord.severity,
-      recordedBy: symptomRecord.recorded_by,
+      triggers: symptomRecord.triggers,
+      recordedAt: symptomRecord.recorded_at,
       createdAt: symptomRecord.created_at
     }
 

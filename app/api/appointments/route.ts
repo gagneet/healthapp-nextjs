@@ -318,9 +318,9 @@ export async function PUT(request: NextRequest) {
 
     // Check permissions
     const canModify = 
-      user.role === 'ADMIN' ||
-      (user.role === 'DOCTOR' && existingAppointment.doctors?.user_id === user.id) ||
-      (user.role === 'PATIENT' && existingAppointment.patients?.user_id === user.id);
+      user!.role === 'ADMIN' ||
+      (user!.role === 'DOCTOR' && existingAppointment.doctor?.user_id === user!.id) ||
+      (user!.role === 'PATIENT' && existingAppointment.patient?.user_id === user!.id);
 
     if (!canModify) {
       return NextResponse.json({
@@ -341,7 +341,7 @@ export async function PUT(request: NextRequest) {
         updated_at: new Date()
       },
       include: {
-        patients: {
+        patient: {
           select: {
             patient_id: true,
             user: {
@@ -352,9 +352,9 @@ export async function PUT(request: NextRequest) {
             }
           }
         },
-        doctors: {
+        doctor: {
           select: {
-            user: {
+            users_doctors_user_idTousers: {
               select: {
                 first_name: true,
                 last_name: true
