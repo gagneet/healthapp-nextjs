@@ -3,6 +3,7 @@ import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import { Toaster } from 'react-hot-toast'
 import { AuthProvider } from '@/lib/auth-context'
+import { SessionProvider } from '@/components/providers/SessionProvider'
 import ErrorBoundary from '@/components/ErrorBoundary'
 import GlobalErrorHandler from '@/components/GlobalErrorHandler'
 
@@ -31,7 +32,7 @@ export default function RootLayout({
       <body className={`${inter.className} h-full bg-gray-50`}>
         <ErrorBoundary>
           <GlobalErrorHandler />
-          <AuthProvider>
+          <SessionProvider>
             <div id="root" className="h-full">
               {children}
             </div>
@@ -55,7 +56,7 @@ export default function RootLayout({
                 },
               }}
             />
-          </AuthProvider>
+          </SessionProvider>
         </ErrorBoundary>
       </body>
     </html>

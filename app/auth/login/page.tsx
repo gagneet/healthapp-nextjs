@@ -7,8 +7,8 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { EyeIcon, EyeSlashIcon, HeartIcon } from '@heroicons/react/24/outline'
-import { useAuth } from '@/lib/auth-context'
-import { LoginCredentials, UserRole } from '@/types/auth'
+import { signIn, useSession } from 'next-auth/react'
+import { UserRole } from '@/types/auth'
 import toast from 'react-hot-toast'
 import { createLogger } from '@/lib/logger'
 
@@ -86,7 +86,7 @@ export default function LoginPage() {
   const [isClient, setIsClient] = useState(false)
   const router = useRouter()
   const searchParams = useSearchParams()
-  const { login, isAuthenticated, user } = useAuth()
+  const { data: session, status } = useSession()
   
   useEffect(() => {
     setIsClient(true)
@@ -113,26 +113,34 @@ export default function LoginPage() {
 
   // Redirect if already authenticated
   useEffect(() => {
-    if (isAuthenticated && user) {
-      const redirectPath = getRedirectPathForRole(user.role)
-      logger.debug('Auth state changed:', { isAuthenticated, userRole: user.role, redirectPath })
+    if (session?.user) {
+      const redirectPath = getRedirectPathForRole(session.user.role as UserRole)
+      logger.debug('Auth state changed:', { isAuthenticated: !!session, userRole: session.user.role, redirectPath })
       logger.info('User is authenticated, redirecting to:', redirectPath)
       router.push(redirectPath)
     }
-  }, [isAuthenticated, user, router])
+  }, [session, router])
 
   const onSubmit = async (data: LoginFormData) => {
     setIsLoading(true)
     logger.debug('Login attempt with:', { email: data.email, redirectPath: config.redirectPath })
     
     try {
-      const success = await login(data)
-      logger.debug('Login result:', success)
+      const result = await signIn('credentials', {
+        email: data.email,
+        password: data.password,
+        redirect: false,
+      })
       
-      if (success) {
-        // The auth context will handle the redirect based on the user's actual role
-        // We don't need to manually redirect here anymore since useEffect will handle it
-        logger.info('Login successful, auth context will handle redirect')
+      logger.debug('NextAuth signIn result:', result)
+      
+      if (result?.ok) {
+        logger.info('Login successful')
+        toast.success('Login successful!')
+        // NextAuth will handle the session, and the useEffect above will redirect
+      } else {
+        logger.warn('Login failed:', result?.error)
+        toast.error(result?.error || 'Login failed. Please check your credentials.')
       }
     } catch (error) {
       logger.error('Login error:', error)
