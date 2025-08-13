@@ -1,7 +1,5 @@
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '@/lib/prisma';
 import * as crypto from 'crypto';
-
-const prisma = new PrismaClient();
 
 export interface CreateLabOrderData {
   doctorId: string;

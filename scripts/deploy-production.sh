@@ -93,7 +93,6 @@ show_help() {
     echo ""
     echo "Environment Variables Required:"
     echo "  POSTGRES_PASSWORD       Database password"
-    echo "  JWT_SECRET              JWT signing secret"
     echo "  NEXTAUTH_SECRET         NextAuth secret key"
     echo "  REDIS_PASSWORD          Redis password"
     echo "  PGADMIN_PASSWORD        PgAdmin admin password"
@@ -229,7 +228,6 @@ check_env_vars() {
     local missing_vars=()
     
     [ -z "$POSTGRES_PASSWORD" ] && missing_vars+=("POSTGRES_PASSWORD")
-    [ -z "$JWT_SECRET" ] && missing_vars+=("JWT_SECRET")
     [ -z "$NEXTAUTH_SECRET" ] && missing_vars+=("NEXTAUTH_SECRET")
     [ -z "$REDIS_PASSWORD" ] && missing_vars+=("REDIS_PASSWORD")
     [ -z "$PGADMIN_PASSWORD" ] && missing_vars+=("PGADMIN_PASSWORD")
@@ -300,7 +298,6 @@ services:
       POSTGRES_USER: ${APP_NAME}_user
       POSTGRES_PASSWORD: \${POSTGRES_PASSWORD}
       DATABASE_URL: postgresql://${APP_NAME}_user:\${POSTGRES_PASSWORD}@postgres:5432/${APP_NAME}_prod?schema=public
-      JWT_SECRET: \${JWT_SECRET}
       NEXTAUTH_SECRET: \${NEXTAUTH_SECRET}
       NEXTAUTH_URL: https://${DOMAIN}
       NEXT_PUBLIC_API_URL: https://${DOMAIN}/api
@@ -466,7 +463,7 @@ deploy_stack() {
     create_stack_config
     
     # Export environment variables
-    export POSTGRES_PASSWORD JWT_SECRET NEXTAUTH_SECRET REDIS_PASSWORD PGADMIN_PASSWORD
+    export POSTGRES_PASSWORD NEXTAUTH_SECRET REDIS_PASSWORD PGADMIN_PASSWORD
     
     # Deploy to swarm
     echo -e "${BLUE}[INFO]${NC} Deploying to Docker Swarm..."

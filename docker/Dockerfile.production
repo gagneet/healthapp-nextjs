@@ -23,16 +23,16 @@ RUN npm ci
 # Copy source files
 COPY . .
 
-# Generate Prisma client
-RUN npx prisma generate
-
-# Set build environment
+# Set build environment variables before Prisma generation
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
 ENV DATABASE_URL=postgresql://dummy:dummy@localhost:5432/dummy
 
-# Build Next.js application (skip type checking for now)
-RUN npm run build || echo "Build completed with warnings"
+# Generate Prisma client with build-time dummy database URL
+RUN npx prisma generate
+
+# Build Next.js application with proper error handling
+RUN npm run build
 
 # Production stage
 FROM base AS runner
@@ -50,9 +50,12 @@ COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
 
-# Copy Prisma client
-COPY --from=builder /app/lib/prisma-client ./lib/prisma-client
+# Copy Prisma client and lib directory
+COPY --from=builder /app/lib ./lib
 COPY --from=builder /app/prisma ./prisma
+
+# Copy package.json for runtime
+COPY --from=builder /app/package.json ./package.json
 
 # Set correct permissions
 RUN chown -R nextjs:nodejs /app

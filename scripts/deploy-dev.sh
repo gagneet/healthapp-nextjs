@@ -17,10 +17,30 @@ STACK_NAME="healthapp-dev"
 STACK_FILE="docker/docker-stack.dev.yml"
 
 # Default values
+APP_NAME="healthapp"
+STACK_NAME="$APP_NAME-dev"
+DOMAIN="localhost"
+BRANCH="$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo 'master')"
+SCALE_APP=2
+SCALE_DB=1
+SCALE_REDIS=1
+SCALE_PGADMIN=1
+
+# Default ports
+PORT_APP=3002
+PORT_DB=5432
+PORT_REDIS=6379
+PORT_PGADMIN=5050
+
+# Default domains (same as main domain by default)
+DOMAIN_DB="$DOMAIN"
+DOMAIN_REDIS="$DOMAIN" 
+DOMAIN_PGADMIN="$DOMAIN"
+
+# Flags
 AUTO_YES=false
 RUN_MIGRATE=false
 RUN_SEED=false
-HOST_IP="localhost"
 
 # Help function
 show_help() {
@@ -45,11 +65,34 @@ show_help() {
     echo "  seed      Run database seeders"
     echo "  backup    Backup development database"
     echo ""
-    echo "Options:"
-    echo "  --migrate           Run migrations after deployment"
-    echo "  --seed              Run database seeders after deployment"
-    echo "  --host-ip IP        Set host IP address (default: localhost)"
-    echo "  --auto-yes          Skip confirmation prompts"
+    echo "Scaling Options:"
+    echo "  --scale N               Scale app service to N replicas (default: 2)"
+    echo "  --scale-db N            Scale database to N replicas (default: 1)"
+    echo "  --scale-redis N         Scale Redis to N replicas (default: 1)"
+    echo "  --scale-pgadmin N       Scale PgAdmin to N replicas (default: 1)"
+    echo ""
+    echo "Migration & Seeding:"
+    echo "  --migrate               Run database migrations (idempotent)"
+    echo "  --seed                  Run database seeders (idempotent)"
+    echo ""
+    echo "Network Configuration:"
+    echo "  --domain DOMAIN         Main application domain (default: localhost)"
+    echo "  --domain-db DOMAIN      Database domain/IP (default: same as --domain)"
+    echo "  --domain-redis DOMAIN   Redis domain/IP (default: same as --domain)"
+    echo "  --domain-pgadmin DOMAIN PgAdmin domain/IP (default: same as --domain)"
+    echo ""
+    echo "Port Configuration:"
+    echo "  --port-app PORT         Application port (default: 3002)"
+    echo "  --port-db PORT          Database port (default: 5432)"
+    echo "  --port-redis PORT       Redis port (default: 6379)"
+    echo "  --port-pgadmin PORT     PgAdmin port (default: 5050)"
+    echo ""
+    echo "Application Configuration:"
+    echo "  --app-name NAME         Stack and service name prefix (default: healthapp)"
+    echo "  --branch BRANCH         Git branch to deploy (default: current)"
+    echo ""
+    echo "Safety Options:"
+    echo "  --auto-yes              Skip confirmation prompts"
     echo "  -h, --help          Show this help message"
     echo ""
     echo "Examples:"
@@ -65,6 +108,22 @@ show_help() {
 parse_args() {
     while [[ $# -gt 0 ]]; do
         case $1 in
+            --scale)
+                SCALE_APP="$2"
+                shift 2
+                ;;
+            --scale-db)
+                SCALE_DB="$2"
+                shift 2
+                ;;
+            --scale-redis)
+                SCALE_REDIS="$2"
+                shift 2
+                ;;
+            --scale-pgadmin)
+                SCALE_PGADMIN="$2"
+                shift 2
+                ;;
             --migrate)
                 RUN_MIGRATE=true
                 shift
@@ -73,8 +132,45 @@ parse_args() {
                 RUN_SEED=true
                 shift
                 ;;
-            --host-ip)
-                HOST_IP="$2"
+            --domain)
+                DOMAIN="$2"
+                shift 2
+                ;;
+            --domain-db)
+                DOMAIN_DB="$2"
+                shift 2
+                ;;
+            --domain-redis)
+                DOMAIN_REDIS="$2"
+                shift 2
+                ;;
+            --domain-pgadmin)
+                DOMAIN_PGADMIN="$2"
+                shift 2
+                ;;
+            --port-app)
+                PORT_APP="$2"
+                shift 2
+                ;;
+            --port-db)
+                PORT_DB="$2"
+                shift 2
+                ;;
+            --port-redis)
+                PORT_REDIS="$2"
+                shift 2
+                ;;
+            --port-pgadmin)
+                PORT_PGADMIN="$2"
+                shift 2
+                ;;
+            --app-name)
+                APP_NAME="$2"
+                STACK_NAME="$APP_NAME-dev"
+                shift 2
+                ;;
+            --branch)
+                BRANCH="$2"
                 shift 2
                 ;;
             --auto-yes)
