@@ -13,7 +13,7 @@ services:
     networks:
       - healthapp-network
     ports:
-      - "5433:5432"
+      - "5432:5432"
     deploy:
       replicas: 1
       placement:
