@@ -115,7 +115,6 @@ export const authOptions: NextAuthOptions = {
       }
       // Default redirect after successful login
       return `${baseUrl}/dashboard`
-    }
   },
   secret: process.env.NEXTAUTH_SECRET,
   debug: process.env.NODE_ENV === "development",

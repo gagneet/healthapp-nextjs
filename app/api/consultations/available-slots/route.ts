@@ -14,7 +14,6 @@ export async function GET(request: NextRequest) {
         { error: 'Unauthorized' },
         { status: 401 }
       );
-    }
 
     const { searchParams } = new URL(request.url);
     const doctorId = searchParams.get('doctorId');
@@ -26,7 +25,6 @@ export async function GET(request: NextRequest) {
         { error: 'Doctor ID and date are required' },
         { status: 400 }
       );
-    }
 
     const result = await ConsultationBookingService.getAvailableSlots(
       doctorId,
@@ -39,7 +37,6 @@ export async function GET(request: NextRequest) {
         { error: result.error, message: result.message },
         { status: 500 }
       );
-    }
 
     return NextResponse.json({
       status: 'success',

@@ -31,6 +31,5 @@ export async function GET(request: NextRequest) {
         ]
       },
       message: 'Healthcare API is running successfully on Next.js App Router'
-    }
   });
 }

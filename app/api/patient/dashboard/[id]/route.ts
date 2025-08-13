@@ -16,11 +16,8 @@ export async function GET(
     const session = await getServerSession(authOptions);
     if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
     if (!['PATIENT', 'DOCTOR', 'HSP', 'admin'].includes(session.user.role)) {
       return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
-    }
-    }
 
     const user = session.user;
     const patientId = params.id;
@@ -30,7 +27,6 @@ export async function GET(
       return NextResponse.json(handleApiError({
         message: 'Access denied: You can only access your own dashboard'
       }), { status: 403 });
-    }
 
     // Get real patient dashboard data
     const dashboardData = await getPatientDashboard(patientId);

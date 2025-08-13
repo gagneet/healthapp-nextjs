@@ -89,12 +89,10 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
         break
       default:
         return createForbiddenResponse("Invalid role for symptom access")
-    }
 
     // Apply patient filter (for healthcare providers)
     if (patientId && ['DOCTOR', 'HSP', 'SYSTEM_ADMIN'].includes(session.user.role)) {
       whereClause.patient_id = patientId
-    }
 
     // Apply search filter on symptom names
     if (searchQuery) {
@@ -103,7 +101,6 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
           name: { contains: searchQuery, mode: 'insensitive' }
         }
       }
-    }
 
     // Apply category filter
     if (category) {
@@ -112,7 +109,6 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
           category: category.toLowerCase()
         }
       }
-    }
 
     // Apply severity filter
     if (severity) {
@@ -121,7 +117,6 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
           severity: severity.toUpperCase()
         }
       }
-    }
 
     // Get total count for pagination
     const total = await prisma.symptom.count({ where: whereClause })
@@ -245,7 +240,6 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
       }
 
       targetPatientId = session.user.profileId
-    }
 
     // Create symptom record with 2D/3D body mapping support
     const symptomRecord = await prisma.symptom.create({
@@ -296,7 +290,6 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
       triggers: symptomRecord.triggers,
       recordedAt: symptomRecord.recorded_at,
       createdAt: symptomRecord.created_at
-    }
 
     // TODO: Send alerts for severe symptoms to healthcare providers
     // TODO: Log audit trail for symptom recording

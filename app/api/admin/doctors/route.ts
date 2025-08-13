@@ -11,7 +11,6 @@ export async function GET(request: NextRequest) {
     const session = await getServerSession(authOptions);
     if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
     const user = session.user;
     if (error) {
       return NextResponse.json({ 
@@ -19,7 +18,6 @@ export async function GET(request: NextRequest) {
         statusCode: 401, 
         payload: { error: { status: 'unauthorized', message: error } } 
       }, { status: 401 });
-    }
 
     // Only admins can manage doctors
     if (!['ADMIN', 'PROVIDER_ADMIN'].includes(user!.role)) {
@@ -28,7 +26,6 @@ export async function GET(request: NextRequest) {
         statusCode: 403,
         payload: { error: { status: 'forbidden', message: 'Admin access required' } }
       }, { status: 403 });
-    }
 
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || '1');
@@ -46,7 +43,6 @@ export async function GET(request: NextRequest) {
           { user: { email: { contains: search, mode: 'insensitive' } } }
         ]
       };
-    }
 
     const [doctors, totalCount] = await Promise.all([
       prisma.doctors.findMany({
@@ -121,7 +117,6 @@ export async function POST(request: NextRequest) {
     const session = await getServerSession(authOptions);
     if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
     const user = session.user;
     if (error) {
       return NextResponse.json({ 
@@ -129,7 +124,6 @@ export async function POST(request: NextRequest) {
         statusCode: 401, 
         payload: { error: { status: 'unauthorized', message: error } } 
       }, { status: 401 });
-    }
 
     // Only admins can create doctors
     if (!['ADMIN', 'PROVIDER_ADMIN'].includes(user!.role)) {
@@ -138,7 +132,6 @@ export async function POST(request: NextRequest) {
         statusCode: 403,
         payload: { error: { status: 'forbidden', message: 'Admin access required' } }
       }, { status: 403 });
-    }
 
     const body = await request.json();
     const {
@@ -170,7 +163,6 @@ export async function POST(request: NextRequest) {
         statusCode: 409,
         payload: { error: { status: 'conflict', message: 'Email already exists' } }
       }, { status: 409 });
-    }
 
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 12);

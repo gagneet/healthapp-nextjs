@@ -11,7 +11,6 @@ export async function POST(request: NextRequest) {
         { error: 'Unauthorized' },
         { status: 401 }
       );
-    }
 
     // Only doctors can create consultations
     if (user.role !== 'DOCTOR') {
@@ -19,7 +18,6 @@ export async function POST(request: NextRequest) {
         { error: 'Only doctors can create video consultations' },
         { status: 403 }
       );
-    }
 
     const body = await request.json();
     const {
@@ -37,7 +35,6 @@ export async function POST(request: NextRequest) {
         { error: 'Patient ID and scheduled start time are required' },
         { status: 400 }
       );
-    }
 
     const result = await VideoConsultationService.createConsultation({
       doctorId: user.id,
@@ -55,7 +52,6 @@ export async function POST(request: NextRequest) {
         { error: result.error, message: result.message },
         { status: 500 }
       );
-    }
 
     return NextResponse.json({
       status: 'success',
@@ -80,7 +76,6 @@ export async function GET(request: NextRequest) {
         { error: 'Unauthorized' },
         { status: 401 }
       );
-    }
 
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || '1');
@@ -97,14 +92,12 @@ export async function GET(request: NextRequest) {
       // Get consultation history
       const userType = user.role === 'DOCTOR' ? 'doctor' : 'patient';
       result = await VideoConsultationService.getConsultationHistory(user.id, userType, page, limit);
-    }
 
     if (!result.success) {
       return NextResponse.json(
         { error: result.error, message: result.message },
         { status: 500 }
       );
-    }
 
     return NextResponse.json({
       status: 'success',

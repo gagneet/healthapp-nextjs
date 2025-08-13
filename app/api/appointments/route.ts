@@ -9,7 +9,6 @@ export async function GET(request: NextRequest) {
     const session = await getServerSession(authOptions);
     if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
     const user = session.user;
     if (error) {
       return NextResponse.json({ 
@@ -17,7 +16,6 @@ export async function GET(request: NextRequest) {
         statusCode: 401, 
         payload: { error: { status: 'unauthorized', message: error } } 
       }, { status: 401 });
-    }
 
     const { searchParams } = new URL(request.url);
     const patientId = searchParams.get('patient_id');
@@ -58,27 +56,22 @@ export async function GET(request: NextRequest) {
         }, { status: 403 });
       }
       whereClause.doctor_id = doctor.id;
-    }
 
     // Additional filters
     if (patientId && ['DOCTOR', 'HSP', 'ADMIN'].includes(user!.role)) {
       whereClause.patient_id = patientId;
-    }
     
     if (doctorId && ['ADMIN', 'HSP'].includes(user!.role)) {
       whereClause.doctor_id = doctorId;
-    }
     
     if (status) {
       whereClause.status = status;
-    }
     
     if (startDate && endDate) {
       whereClause.start_time = {
         gte: new Date(startDate),
         lte: new Date(endDate)
       };
-    }
 
     const [appointments, totalCount] = await Promise.all([
       prisma.appointment.findMany({
@@ -161,7 +154,6 @@ export async function POST(request: NextRequest) {
     const session = await getServerSession(authOptions);
     if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
     const user = session.user;
     if (error) {
       return NextResponse.json({ 
@@ -169,7 +161,6 @@ export async function POST(request: NextRequest) {
         statusCode: 401, 
         payload: { error: { status: 'unauthorized', message: error } } 
       }, { status: 401 });
-    }
 
     const body = await request.json();
     const {
@@ -196,7 +187,6 @@ export async function POST(request: NextRequest) {
           payload: { error: { status: 'forbidden', message: 'Can only book appointments for yourself' } }
         }, { status: 403 });
       }
-    }
 
     // Check if slot is available
     if (slot_id) {
@@ -211,7 +201,6 @@ export async function POST(request: NextRequest) {
           payload: { error: { status: 'conflict', message: 'Time slot not available' } }
         }, { status: 409 });
       }
-    }
 
     // Create appointment
     const appointment = await prisma.$transaction(async (tx) => {
@@ -299,7 +288,6 @@ export async function PUT(request: NextRequest) {
     const session = await getServerSession(authOptions);
     if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
     const user = session.user;
     if (error) {
       return NextResponse.json({ 
@@ -307,7 +295,6 @@ export async function PUT(request: NextRequest) {
         statusCode: 401, 
         payload: { error: { status: 'unauthorized', message: error } } 
       }, { status: 401 });
-    }
 
     const body = await request.json();
     const { id, status, notes, reschedule_date, reschedule_time } = body;
@@ -327,7 +314,6 @@ export async function PUT(request: NextRequest) {
         statusCode: 404,
         payload: { error: { status: 'not_found', message: 'Appointment not found' } }
       }, { status: 404 });
-    }
 
     // Check permissions
     const canModify = 
@@ -341,7 +327,6 @@ export async function PUT(request: NextRequest) {
         statusCode: 403,
         payload: { error: { status: 'forbidden', message: 'Cannot modify this appointment' } }
       }, { status: 403 });
-    }
 
     // Update appointment
     const updatedAppointment = await prisma.appointment.update({

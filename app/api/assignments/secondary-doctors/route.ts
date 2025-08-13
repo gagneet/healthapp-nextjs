@@ -10,7 +10,6 @@ export async function GET(request: NextRequest) {
     const session = await getServerSession(authOptions);
     if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
     const user = session.user;
     if (error) {
       return NextResponse.json({ 
@@ -18,7 +17,6 @@ export async function GET(request: NextRequest) {
         statusCode: 401, 
         payload: { error: { status: 'unauthorized', message: error } } 
       }, { status: 401 });
-    }
 
     const { searchParams } = new URL(request.url);
     const patientId = searchParams.get('patient_id');
@@ -56,20 +54,16 @@ export async function GET(request: NextRequest) {
         { primary_doctor_id: doctor.id },
         { secondary_doctor_id: doctor.id }
       ];
-    }
 
     // Additional filters
     if (patientId && ['ADMIN', 'HSP'].includes(user!.role)) {
       whereClause.patient_id = patientId;
-    }
     
     if (primaryDoctorId && ['ADMIN', 'HSP'].includes(user!.role)) {
       whereClause.primary_doctor_id = primaryDoctorId;
-    }
     
     if (status) {
       whereClause.status = status;
-    }
 
     const assignments = await prisma.secondary_doctor_assignments.findMany({
       where: whereClause,
@@ -148,7 +142,6 @@ export async function POST(request: NextRequest) {
     const session = await getServerSession(authOptions);
     if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
     const user = session.user;
     if (error) {
       return NextResponse.json({ 
@@ -156,7 +149,6 @@ export async function POST(request: NextRequest) {
         statusCode: 401, 
         payload: { error: { status: 'unauthorized', message: error } } 
       }, { status: 401 });
-    }
 
     // Only doctors can create secondary assignments
     if (user!.role !== 'DOCTOR') {
@@ -165,7 +157,6 @@ export async function POST(request: NextRequest) {
         statusCode: 403,
         payload: { error: { status: 'forbidden', message: 'Only doctors can create secondary assignments' } }
       }, { status: 403 });
-    }
 
     const body = await request.json();
     const {
@@ -190,7 +181,6 @@ export async function POST(request: NextRequest) {
         statusCode: 403,
         payload: { error: { status: 'forbidden', message: 'Doctor profile not found' } }
       }, { status: 403 });
-    }
 
     // Check if secondary doctor exists
     const secondaryDoctor = await prisma.doctors.findUnique({
@@ -203,7 +193,6 @@ export async function POST(request: NextRequest) {
         statusCode: 404,
         payload: { error: { status: 'not_found', message: 'Secondary doctor not found' } }
       }, { status: 404 });
-    }
 
     // Check for existing active assignment
     const existingAssignment = await prisma.secondary_doctor_assignments.findFirst({
@@ -221,7 +210,6 @@ export async function POST(request: NextRequest) {
         statusCode: 409,
         payload: { error: { status: 'conflict', message: 'Active assignment already exists' } }
       }, { status: 409 });
-    }
 
     const assignment = await prisma.secondary_doctor_assignments.create({
       data: {
@@ -292,7 +280,6 @@ export async function PUT(request: NextRequest) {
     const session = await getServerSession(authOptions);
     if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
     const user = session.user;
     if (error) {
       return NextResponse.json({ 
@@ -300,7 +287,6 @@ export async function PUT(request: NextRequest) {
         statusCode: 401, 
         payload: { error: { status: 'unauthorized', message: error } } 
       }, { status: 401 });
-    }
 
     const body = await request.json();
     const { assignment_id, status, collaboration_notes, response_notes } = body;
@@ -323,7 +309,6 @@ export async function PUT(request: NextRequest) {
         statusCode: 404,
         payload: { error: { status: 'not_found', message: 'Assignment not found' } }
       }, { status: 404 });
-    }
 
     // Check permissions
     const canModify = 
@@ -339,7 +324,6 @@ export async function PUT(request: NextRequest) {
         statusCode: 403,
         payload: { error: { status: 'forbidden', message: 'Cannot modify this assignment' } }
       }, { status: 403 });
-    }
 
     const updatedAssignment = await prisma.secondary_doctor_assignments.update({
       where: { id: assignment_id },

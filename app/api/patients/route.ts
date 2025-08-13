@@ -90,7 +90,6 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
         break
       default:
         return createForbiddenResponse("Invalid role for patient access")
-    }
 
     // Apply search filter
     if (searchQuery) {
@@ -111,12 +110,10 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
           medical_record_number: { contains: searchQuery, mode: 'insensitive' }
         }
       ]
-    }
 
     // Apply doctor filter
     if (doctorFilter) {
       whereClause.primary_doctor_id = doctorFilter
-    }
 
     // Apply status filter
     if (statusFilter) {
@@ -124,7 +121,6 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
         ...whereClause.user,
         account_status: statusFilter.toUpperCase()
       }
-    }
 
     // Get total count for pagination
     const total = await prisma.patient.count({ where: whereClause })
@@ -252,7 +248,6 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
         new Error("User with this email already exists"),
         400
       )
-    }
 
     // Generate business ID for patient
     const { businessId: patientBusinessId } = await generatePatientId()
@@ -324,7 +319,6 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
       allergies: result.patient.allergies,
       emergencyContact: result.patient.emergency_contacts,
       createdAt: result.patient.created_at
-    }
 
     // TODO: Send welcome email with temporary password
     // TODO: Log audit trail for patient creation

@@ -9,7 +9,6 @@ export async function GET(request: NextRequest) {
     const session = await getServerSession(authOptions);
     if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
     const user = session.user;
     if (error) {
       return NextResponse.json({ 
@@ -17,7 +16,6 @@ export async function GET(request: NextRequest) {
         statusCode: 401, 
         payload: { error: { status: 'unauthorized', message: error } } 
       }, { status: 401 });
-    }
 
     const { searchParams } = new URL(request.url);
     const patientId = searchParams.get('patient_id');
@@ -30,22 +28,18 @@ export async function GET(request: NextRequest) {
     
     if (patientId) {
       whereClause.patient_id = patientId;
-    }
     
     if (vitalId) {
       whereClause.vital_id = vitalId;
-    }
     
     if (startDate && endDate) {
       whereClause.created_at = {
         gte: new Date(startDate),
         lte: new Date(endDate)
       };
-    }
     
     if (alertLevel) {
       whereClause.alert_level = alertLevel;
-    }
 
     const readings = await prisma.vitalReading.findMany({
       where: whereClause,
@@ -98,7 +92,6 @@ export async function POST(request: NextRequest) {
     const session = await getServerSession(authOptions);
     if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
     const user = session.user;
     if (error) {
       return NextResponse.json({ 
@@ -106,7 +99,6 @@ export async function POST(request: NextRequest) {
         statusCode: 401, 
         payload: { error: { status: 'unauthorized', message: error } } 
       }, { status: 401 });
-    }
 
     const body = await request.json();
     const {
@@ -142,7 +134,6 @@ export async function POST(request: NextRequest) {
           alertLevel = 'warning';
         }
       }
-    }
 
     const reading = await prisma.vitalReading.create({
       data: {

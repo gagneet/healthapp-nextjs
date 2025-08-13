@@ -13,7 +13,6 @@ export async function POST(request: NextRequest) {
         { error: 'Unauthorized' },
         { status: 401 }
       );
-    }
 
     // Only doctors can create lab orders
     if (session.user.role !== 'DOCTOR') {
@@ -21,7 +20,6 @@ export async function POST(request: NextRequest) {
         { error: 'Only doctors can create lab orders' },
         { status: 403 }
       );
-    }
 
     const body = await request.json();
     const {
@@ -39,7 +37,6 @@ export async function POST(request: NextRequest) {
         { error: 'Patient ID and test codes are required' },
         { status: 400 }
       );
-    }
 
     const result = await LaboratoryService.createLabOrder({
       doctorId: session.user.id,
@@ -57,7 +54,6 @@ export async function POST(request: NextRequest) {
         { error: result.error, message: result.message },
         { status: 500 }
       );
-    }
 
     return NextResponse.json({
       status: 'success',
@@ -82,7 +78,6 @@ export async function GET(request: NextRequest) {
         { error: 'Unauthorized' },
         { status: 401 }
       );
-    }
 
     const { searchParams } = new URL(request.url);
     const status = searchParams.get('status');
@@ -95,7 +90,6 @@ export async function GET(request: NextRequest) {
         { error: result.error, message: result.message },
         { status: 500 }
       );
-    }
 
     return NextResponse.json({
       status: 'success',

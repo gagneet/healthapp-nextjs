@@ -98,7 +98,6 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
 
     if (!doctor) {
       return createErrorResponse(new Error("Doctor profile not found"), 404)
-    }
 
     // Calculate basic statistics
     const totalPatients = doctor.patients.length
@@ -154,7 +153,6 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
       settings: {
         // Placeholder - settings fields need to be resolved with proper schema
       }
-    }
 
     return createSuccessResponse(profileData)
   } catch (error) {

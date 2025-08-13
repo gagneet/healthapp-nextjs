@@ -17,7 +17,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(handleApiError({
         message: 'Too many registration attempts. Please try again later.'
       }), { status: 429 });
-    }
 
     const userData = await request.json();
 
@@ -26,7 +25,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(handleApiError({
         message: 'Email and password are required'
       }), { status: 400 });
-    }
 
     // Create user
     const createResult = await createUser(userData);
@@ -35,7 +33,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(handleApiError({
         message: createResult.message || 'User registration failed'
       }), { status: 400 });
-    }
 
     return NextResponse.json(formatApiSuccess(createResult.data, 'User registered successfully'), {
       status: 201

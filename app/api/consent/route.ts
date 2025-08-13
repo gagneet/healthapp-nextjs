@@ -9,7 +9,6 @@ export async function GET(request: NextRequest) {
     const session = await getServerSession(authOptions);
     if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
     const user = session.user;
     if (error) {
       return NextResponse.json({ 
@@ -17,7 +16,6 @@ export async function GET(request: NextRequest) {
         statusCode: 401, 
         payload: { error: { status: 'unauthorized', message: error } } 
       }, { status: 401 });
-    }
 
     let whereClause: any = {};
 
@@ -34,7 +32,6 @@ export async function GET(request: NextRequest) {
         }, { status: 403 });
       }
       whereClause.patient_id = patient.id;
-    }
 
     const { searchParams } = new URL(request.url);
     const patientId = searchParams.get('patient_id');
@@ -42,11 +39,9 @@ export async function GET(request: NextRequest) {
 
     if (patientId && ['DOCTOR', 'HSP', 'ADMIN'].includes(user!.role)) {
       whereClause.patient_id = patientId;
-    }
 
     if (consentType) {
       whereClause.consent_type = consentType;
-    }
 
     // Stub implementation - return empty data for now
     return NextResponse.json({
@@ -72,7 +67,6 @@ export async function POST(request: NextRequest) {
     const session = await getServerSession(authOptions);
     if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
     const user = session.user;
     if (error) {
       return NextResponse.json({ 
@@ -80,7 +74,6 @@ export async function POST(request: NextRequest) {
         statusCode: 401, 
         payload: { error: { status: 'unauthorized', message: error } } 
       }, { status: 401 });
-    }
 
     // Stub implementation - field name issues need to be resolved with proper schema
     return NextResponse.json({

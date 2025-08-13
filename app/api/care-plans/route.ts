@@ -96,17 +96,14 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
         break
       default:
         return createForbiddenResponse("Invalid role for care plan access")
-    }
 
     // Apply patient filter (for healthcare providers)
     if (patientId && ['DOCTOR', 'HSP', 'SYSTEM_ADMIN'].includes(session.user.role)) {
       whereClause.patient_id = patientId
-    }
 
     // Apply doctor filter (for admins)
     if (doctorId && session.user.role === 'SYSTEM_ADMIN') {
       whereClause.primary_doctor_id = doctorId
-    }
 
     // Apply search filter
     if (searchQuery) {
@@ -119,12 +116,10 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
           primary_diagnosis: { contains: searchQuery, mode: 'insensitive' }
         }
       ]
-    }
 
     // Apply status filter
     if (status) {
       whereClause.status = status.toUpperCase()
-    }
 
     // Get total count for pagination
     const total = await prisma.carePlan.count({ where: whereClause })

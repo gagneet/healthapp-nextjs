@@ -16,7 +16,6 @@ export async function POST(request: NextRequest) {
         { error: 'Unauthorized' },
         { status: 401 }
       );
-    }
 
     const body = await request.json();
     const {
@@ -34,7 +33,6 @@ export async function POST(request: NextRequest) {
         { error: 'Doctor ID and appointment date are required' },
         { status: 400 }
       );
-    }
 
     // For patients booking their own appointments, or doctors booking for their patients
     let patientId = session.user.id;
@@ -45,7 +43,6 @@ export async function POST(request: NextRequest) {
         { error: 'Only patients and doctors can book consultations' },
         { status: 403 }
       );
-    }
 
     const result = await ConsultationBookingService.bookConsultation({
       doctorId,
@@ -63,7 +60,6 @@ export async function POST(request: NextRequest) {
         { error: result.error, message: result.message },
         { status: 400 }
       );
-    }
 
     return NextResponse.json({
       status: 'success',

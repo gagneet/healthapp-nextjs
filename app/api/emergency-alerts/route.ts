@@ -22,17 +22,13 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(handleApiError({
         message: 'Too many requests. Please try again later.'
       }), { status: 429 });
-    }
 
     // Authenticate user
     const session = await getServerSession(authOptions);
     if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
     if (!['DOCTOR', 'HSP', 'admin'].includes(session.user.role)) {
       return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
-    }
-    }
 
     const { searchParams } = new URL(request.url);
     const queryParameters = {
@@ -65,11 +61,8 @@ export async function POST(request: NextRequest) {
     const session = await getServerSession(authOptions);
     if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
     if (!['DOCTOR', 'HSP', 'admin'].includes(session.user.role)) {
       return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
-    }
-    }
 
     const user = session.user;
     const alertData = await request.json();
@@ -79,7 +72,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(handleApiError({
         message: 'Patient ID, alert type, and severity are required'
       }), { status: 400 });
-    }
 
     // Add creation metadata
     alertData.createdBy = user.id || user.userId;

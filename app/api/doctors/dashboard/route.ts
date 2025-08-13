@@ -13,11 +13,8 @@ export async function GET(request: NextRequest) {
     const session = await getServerSession(authOptions);
     if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
     if (!['DOCTOR', 'admin'].includes(session.user.role)) {
       return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
-    }
-    }
 
     const user = session.user;
     const dashboardData = await getDoctorDashboard(user.id || user.userId);

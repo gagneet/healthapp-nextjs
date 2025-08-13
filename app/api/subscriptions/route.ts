@@ -9,7 +9,6 @@ export async function GET(request: NextRequest) {
     const session = await getServerSession(authOptions);
     if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
     const user = session.user;
     if (error) {
       return NextResponse.json({ 
@@ -17,7 +16,6 @@ export async function GET(request: NextRequest) {
         statusCode: 401, 
         payload: { error: { status: 'unauthorized', message: error } } 
       }, { status: 401 });
-    }
 
     const { searchParams } = new URL(request.url);
     const patientId = searchParams.get('patient_id');
@@ -41,16 +39,13 @@ export async function GET(request: NextRequest) {
         }, { status: 403 });
       }
       whereClause.patient_id = patient.id;
-    }
 
     // Additional filters
     if (patientId && ['DOCTOR', 'HSP', 'ADMIN', 'PROVIDER_ADMIN'].includes(user!.role)) {
       whereClause.patient_id = patientId;
-    }
     
     if (status) {
       whereClause.status = status;
-    }
 
     const [subscriptions, totalCount] = await Promise.all([
       prisma.patientSubscription.findMany({
@@ -128,7 +123,6 @@ export async function POST(request: NextRequest) {
     const session = await getServerSession(authOptions);
     if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
     const user = session.user;
     if (error) {
       return NextResponse.json({ 
@@ -136,7 +130,6 @@ export async function POST(request: NextRequest) {
         statusCode: 401, 
         payload: { error: { status: 'unauthorized', message: error } } 
       }, { status: 401 });
-    }
 
     // Only doctors can create patient subscriptions
     if (user!.role !== 'DOCTOR') {
@@ -145,7 +138,6 @@ export async function POST(request: NextRequest) {
         statusCode: 403,
         payload: { error: { status: 'forbidden', message: 'Only doctors can create subscriptions' } }
       }, { status: 403 });
-    }
 
     const body = await request.json();
     const {
@@ -173,7 +165,6 @@ export async function POST(request: NextRequest) {
         statusCode: 404,
         payload: { error: { status: 'not_found', message: 'Service plan not found' } }
       }, { status: 404 });
-    }
 
     // Calculate end date based on billing cycle
     const startDate = new Date(start_date);
@@ -189,7 +180,6 @@ export async function POST(request: NextRequest) {
     } else if (servicePlan.billing_cycle === 'one_time') {
       // For one-time payments, set end date to far future or keep same as start
       endDate.setFullYear(endDate.getFullYear() + 10);
-    }
 
     const subscription = await prisma.patientSubscription.create({
       data: {
@@ -251,7 +241,6 @@ export async function PUT(request: NextRequest) {
     const session = await getServerSession(authOptions);
     if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
     const user = session.user;
     if (error) {
       return NextResponse.json({ 
@@ -259,7 +248,6 @@ export async function PUT(request: NextRequest) {
         statusCode: 401, 
         payload: { error: { status: 'unauthorized', message: error } } 
       }, { status: 401 });
-    }
 
     const body = await request.json();
     const { id, status, auto_renewal, payment_method_id, notes } = body;
@@ -278,7 +266,6 @@ export async function PUT(request: NextRequest) {
         statusCode: 404,
         payload: { error: { status: 'not_found', message: 'Subscription not found' } }
       }, { status: 404 });
-    }
 
     // Check permissions
     const canModify = 
@@ -292,7 +279,6 @@ export async function PUT(request: NextRequest) {
         statusCode: 403,
         payload: { error: { status: 'forbidden', message: 'Cannot modify this subscription' } }
       }, { status: 403 });
-    }
 
     const updatedSubscription = await prisma.patientSubscription.update({
       where: { id },
@@ -349,7 +335,6 @@ async function getAvailablePlans(request: NextRequest) {
     const session = await getServerSession(authOptions);
     if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
     const user = session.user;
     if (error) {
       return NextResponse.json({ 
@@ -357,7 +342,6 @@ async function getAvailablePlans(request: NextRequest) {
         statusCode: 401, 
         payload: { error: { status: 'unauthorized', message: error } } 
       }, { status: 401 });
-    }
 
     const plans = await prisma.servicePlan.findMany({
       where: {

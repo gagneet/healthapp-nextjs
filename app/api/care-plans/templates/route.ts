@@ -62,7 +62,6 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
   try {
     let whereClause: any = {
       is_active: true // Only show active templates
-    }
 
     // Business Logic: Role-based access to templates
     if (session.user.role === 'DOCTOR') {
@@ -81,13 +80,11 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
     } else if (session.user.role === 'HSP') {
       // HSPs can see general templates only
       whereClause.speciality_id = null
-    }
     // System admins can see all templates (no additional restrictions)
 
     // Apply speciality filter (for admins)
     if (specialityId && session.user.role === 'SYSTEM_ADMIN') {
       whereClause.speciality_id = parseInt(specialityId)
-    }
 
     // Apply search filter
     if (searchQuery) {
@@ -100,14 +97,12 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
           description: { contains: searchQuery, mode: 'insensitive' }
         }
       ]
-    }
 
     // Apply diagnosis category filter
     if (diagnosisCategory) {
       whereClause.conditions = {
         has: diagnosisCategory
       }
-    }
 
     // Get total count for pagination
     const total = await prisma.care_plan_templates.count({ where: whereClause })

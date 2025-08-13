@@ -22,17 +22,13 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       return NextResponse.json(handleApiError({
         message: 'Too many requests. Please try again later.'
       }), { status: 429 });
-    }
 
     // Authenticate user - Only healthcare providers can update allergies
     const session = await getServerSession(authOptions);
     if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
     if (!['DOCTOR', 'HSP', 'admin'].includes(session.user.role)) {
       return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
-    }
-    }
 
     const user = session.user;
     const { id } = params;
@@ -42,7 +38,6 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       return NextResponse.json(handleApiError({
         message: 'Allergy ID is required'
       }), { status: 400 });
-    }
 
     // Add update metadata
     updateData.lastModifiedBy = user.id || user.userId;
@@ -66,11 +61,8 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
     const session = await getServerSession(authOptions);
     if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
     if (!['DOCTOR', 'admin'].includes(session.user.role)) {
       return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
-    }
-    }
 
     const user = session.user;
     const { id } = params;
@@ -79,7 +71,6 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
       return NextResponse.json(handleApiError({
         message: 'Allergy ID is required'
       }), { status: 400 });
-    }
 
     // Get deletion reason from request body
     const body = await request.json().catch(() => ({}));
@@ -106,11 +97,8 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
     const session = await getServerSession(authOptions);
     if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
     if (!['DOCTOR', 'admin'].includes(session.user.role)) {
       return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
-    }
-    }
 
     const user = session.user;
     const { id } = params;
@@ -119,7 +107,6 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
       return NextResponse.json(handleApiError({
         message: 'Allergy ID is required'
       }), { status: 400 });
-    }
 
     const body = await request.json().catch(() => ({}));
     const verificationNotes = body.notes || '';

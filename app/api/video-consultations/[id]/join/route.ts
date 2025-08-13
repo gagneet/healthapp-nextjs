@@ -16,7 +16,6 @@ export async function POST(
         { error: 'Unauthorized' },
         { status: 401 }
       );
-    }
 
     const consultationId = params.id;
     const userType = session.user.role === 'DOCTOR' ? 'doctor' : 'patient';
@@ -32,7 +31,6 @@ export async function POST(
         { error: result.error },
         { status: 403 }
       );
-    }
 
     return NextResponse.json({
       status: 'success',

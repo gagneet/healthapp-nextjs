@@ -13,7 +13,6 @@ export async function GET(request: NextRequest) {
         { error: 'Unauthorized' },
         { status: 401 }
       );
-    }
 
     const { searchParams } = new URL(request.url);
     const category = searchParams.get('category');
@@ -25,7 +24,6 @@ export async function GET(request: NextRequest) {
         { error: result.error },
         { status: 500 }
       );
-    }
 
     return NextResponse.json({
       status: 'success',

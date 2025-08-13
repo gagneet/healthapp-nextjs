@@ -21,17 +21,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(handleApiError({
         message: 'Too many requests. Please try again later.'
       }), { status: 429 });
-    }
 
     // Authenticate user
     const session = await getServerSession(authOptions);
     if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
     if (!['DOCTOR', 'HSP', 'admin'].includes(session.user.role)) {
       return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
-    }
-    }
 
     const user = session.user;
     const { patientId, medications, newMedication } = await request.json();
@@ -41,13 +37,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(handleApiError({
         message: 'Patient ID is required'
       }), { status: 400 });
-    }
 
     if (!medications || !Array.isArray(medications)) {
       return NextResponse.json(handleApiError({
         message: 'Medications array is required'
       }), { status: 400 });
-    }
 
     const interactionResults = await checkPatientDrugInteractions({
       patientId,
@@ -72,11 +66,8 @@ export async function GET(request: NextRequest) {
     const session = await getServerSession(authOptions);
     if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
     if (!['DOCTOR', 'HSP', 'admin'].includes(session.user.role)) {
       return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
-    }
-    }
 
     const { searchParams } = new URL(request.url);
     const patientId = searchParams.get('patientId');
@@ -85,7 +76,6 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(handleApiError({
         message: 'Patient ID is required'
       }), { status: 400 });
-    }
 
     // For future implementation - could return cached results or status
     return NextResponse.json(formatApiSuccess({
