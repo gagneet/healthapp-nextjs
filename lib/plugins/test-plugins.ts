@@ -4,7 +4,7 @@
  * Tests the plugin registry and mock device plugins
  */
 
-import { PluginRegistry, initializePluginRegistry } from './core/PluginRegistry.js';
+import { PluginRegistry, initializePluginRegistry } from '@/lib/plugins/core/PluginRegistry';
 
 async function testPluginSystem() {
   console.log('🚀 Starting Plugin System Test...\n');
@@ -167,7 +167,10 @@ async function testPluginSystem() {
 }
 
 // Run the test
-if (require.main === module) {
+// Check if this file is executed directly
+const isMainModule = import.meta.url === new URL(process.argv[1], 'file:').href;
+
+if (isMainModule) {
   testPluginSystem()
     .then(() => {
       console.log('\n🎉 Plugin System Test completed successfully!');

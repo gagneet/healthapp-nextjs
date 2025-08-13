@@ -20,9 +20,9 @@ import {
   PluginError,
   ApiRoute,
   DeviceCapability
-} from '../../../core/DevicePlugin.interface';
+} from '@/lib/plugins/core/DevicePlugin.interface';
 
-import { DataTransformer, validateVitalData } from '../../../core/DataTransformer';
+import { DataTransformer, validateVitalData } from '@/lib/plugins/core/DataTransformer';
 
 interface MockDeviceState {
   deviceId: string;

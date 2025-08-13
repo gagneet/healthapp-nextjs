@@ -1,14 +1,71 @@
 /**
  * Plugin System Demonstration
  * 
- * A simple Node.js script to demonstrate the plugin system functionality
- * This uses JavaScript to avoid TypeScript compilation issues during demo
+ * A TypeScript script to demonstrate the plugin system functionality
+ * Converted from JavaScript to follow Next.js best practices
  */
 
 console.log('🩺 Healthcare Device Plugin System Demo\n');
 
+// Types for demo
+interface DeviceReading {
+  readingType: string;
+  primaryValue: number;
+  secondaryValue?: number;
+  unit: string;
+  timestamp: Date;
+  context?: {
+    patientCondition?: string;
+    medicationTaken?: boolean;
+  };
+  quality?: {
+    score: number;
+  };
+}
+
+interface DeviceConnection {
+  deviceId: string;
+  isConnected: boolean;
+  lastSync: Date;
+  batteryLevel: number;
+  status: string;
+}
+
+interface PluginMetadata {
+  id: string;
+  name: string;
+  version: string;
+  description: string;
+  supportedDevices: string[];
+  supportedRegions: string[];
+  capabilities: {
+    readingTypes: string[];
+    supportsRealtime: boolean;
+    supportsHistorical: boolean;
+    supportsBulkSync: boolean;
+    maxHistoryDays: number;
+    minSyncInterval: number;
+  };
+}
+
+interface PluginConfig {
+  features?: {
+    mockData?: boolean;
+  };
+}
+
+interface DeviceConnectionConfig {
+  deviceId: string;
+  connectionParams?: Record<string, any>;
+}
+
 // Mock implementations for demonstration
 class MockBloodPressurePlugin {
+  public metadata: PluginMetadata;
+  private devices = new Map<string, any>();
+  private isInitialized = false;
+  private config?: PluginConfig;
+
   constructor() {
     this.metadata = {
       id: 'mock-bp',
@@ -26,11 +83,9 @@ class MockBloodPressurePlugin {
         minSyncInterval: 5000,
       },
     };
-    this.devices = new Map();
-    this.isInitialized = false;
   }
 
-  async initialize(config) {
+  async initialize(config: PluginConfig): Promise<void> {
     console.log('✅ Initializing Mock Blood Pressure Plugin...');
     this.config = config;
     this.isInitialized = true;
@@ -359,10 +414,17 @@ async function runPluginDemo() {
   }
 }
 
-// Run the demo
-runPluginDemo().then(() => {
-  process.exit(0);
-}).catch((error) => {
-  console.error('💥 Plugin demo failed:', error);
-  process.exit(1);
-});
+// Run the demo only if this file is executed directly
+const isMainModule = import.meta.url === new URL(process.argv[1], 'file:').href;
+
+if (isMainModule) {
+  runPluginDemo()
+    .then(() => {
+      console.log('🎉 Demo completed successfully!');
+      process.exit(0);
+    })
+    .catch((error) => {
+      console.error('💥 Plugin demo failed:', error);
+      process.exit(1);
+    });
+}

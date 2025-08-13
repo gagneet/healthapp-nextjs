@@ -4,8 +4,8 @@
  * Central configuration for all device plugins
  */
 
-import { PluginRegistryConfig } from '../core/PluginRegistry.js';
-import { PluginConfig } from '../core/DevicePlugin.interface.js';
+import { PluginRegistryConfig } from '@/lib/plugins/core/PluginRegistry';
+import { PluginConfig } from '@/lib/plugins/core/DevicePlugin.interface';
 
 /**
  * Environment-specific plugin configurations

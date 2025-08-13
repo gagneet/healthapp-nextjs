@@ -96,13 +96,15 @@ export class PluginRegistry extends EventEmitter {
       this.loadedPlugins.add(pluginId);
       
       // Initialize health tracking
+      const currentTime = Date.now();
       this.pluginHealth.set(pluginId, {
         pluginId,
         status: 'healthy',
         connectedDevices: 0,
         lastSync: null,
         errorCount: 0,
-        uptime: Date.now(),
+        uptime: 0, // Initialize uptime to 0
+        startTime: currentTime, // Store start time for uptime calculation
         apiCallsToday: 0,
       });
       
@@ -256,11 +258,11 @@ export class PluginRegistry extends EventEmitter {
   private getPluginPath(pluginId: string): string {
     // Map plugin ID to file path
     const pluginMappings: Record<string, string> = {
-      'mock-bp': '../devices/medical-devices/blood-pressure/mock/index.js',
-      'mock-glucose': '../devices/medical-devices/glucose/mock/index.js',
-      'fitbit': '../devices/wearables/fitbit/index.js',
-      'omron-bp': '../devices/medical-devices/blood-pressure/omron/index.js',
-      'generic-bluetooth': '../devices/medical-devices/generic-bluetooth/index.js',
+      'mock-bp': '../devices/medical-devices/blood-pressure/mock/index.ts',
+      'mock-glucose': '../devices/medical-devices/glucose/mock/index.ts',
+      'fitbit': '../devices/wearables/fitbit/index.ts',
+      'omron-bp': '../devices/medical-devices/blood-pressure/omron/index.ts',
+      'generic-bluetooth': '../devices/medical-devices/generic-bluetooth/index.ts',
     };
 
     const path = pluginMappings[pluginId];
@@ -367,8 +369,9 @@ export class PluginRegistry extends EventEmitter {
         const health = this.pluginHealth.get(pluginId);
         if (!health) continue;
 
-        // Update uptime
-        health.uptime = Date.now() - health.uptime;
+        // Update uptime - calculate elapsed time without overwriting start time
+        const currentTime = Date.now();
+        health.uptime = currentTime - health.startTime;
 
         // Plugin-specific health checks could be implemented here
         // For now, just verify the plugin is still responsive

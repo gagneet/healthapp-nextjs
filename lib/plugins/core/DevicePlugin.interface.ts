@@ -199,6 +199,7 @@ export interface PluginHealth {
   lastSync: Date | null;
   errorCount: number;
   uptime: number;
+  startTime: number; // Added for correct uptime calculation
   memoryUsage?: number;
   apiCallsToday: number;
   rateLimitStatus?: {

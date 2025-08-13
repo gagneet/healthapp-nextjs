@@ -6,18 +6,16 @@
  */
 
 import { EventEmitter } from 'events';
-import { getPluginRegistry } from '../core/PluginRegistry.js';
+import { getPluginRegistry } from '@/lib/plugins/core/PluginRegistry';
 import { 
   DevicePlugin, 
   DeviceConnection, 
   VitalData, 
   SyncResult,
   PluginError 
-} from '../core/DevicePlugin.interface.js';
-import { validateVitalData } from '../core/DataTransformer.js';
-
-// Import Prisma client (assuming it's available in the project)
-// import { PrismaClient } from '@prisma/client';
+} from '@/lib/plugins/core/DevicePlugin.interface';
+import { validateVitalData } from '@/lib/plugins/core/DataTransformer';
+import { PrismaClient } from '@prisma/client';
 
 export interface DeviceRegistration {
   id: string;
@@ -58,12 +56,12 @@ export interface SyncReport {
 }
 
 export class DeviceManagementService extends EventEmitter {
-  // private prisma: PrismaClient;
+  private prisma: PrismaClient;
   private syncInProgress = new Set<string>();
   
   constructor() {
     super();
-    // this.prisma = new PrismaClient();
+    this.prisma = new PrismaClient();
     this.setupEventHandlers();
   }
 
@@ -87,25 +85,21 @@ export class DeviceManagementService extends EventEmitter {
       }
 
       // Create device record in database
-      const deviceId = `device_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-      
-      // TODO: Implement database insertion using Prisma
-      /*
       const device = await this.prisma.connectedDevice.create({
         data: {
-          id: deviceId,
-          patientId: registration.patientId,
-          pluginId: registration.pluginId,
-          deviceName: registration.deviceName,
-          deviceType: registration.deviceType as any,
-          deviceIdentifier: registration.deviceIdentifier,
-          connectionType: registration.connectionType as any,
-          connectionConfig: registration.connectionConfig,
-          isActive: registration.isActive,
-          addedBy: registration.addedBy,
+          device_id: registration.deviceIdentifier,
+          patient_id: registration.patientId,
+          device_type: registration.deviceType as any,
+          device_name: registration.deviceName,
+          manufacturer: 'Unknown',
+          connection_type: registration.connectionType as any,
+          device_status: 'OFFLINE',
+          is_active: registration.isActive,
+          configuration: registration.connectionConfig,
         },
       });
-      */
+
+      const deviceId = device.id;
 
       this.emit('device:registered', {
         deviceId,
@@ -134,36 +128,34 @@ export class DeviceManagementService extends EventEmitter {
     console.log(`Connecting to device ${deviceId}`);
     
     try {
-      // TODO: Get device info from database
-      /*
+      // Get device info from database
       const deviceRecord = await this.prisma.connectedDevice.findUnique({
         where: { id: deviceId },
       });
-      */
-      
-      // Mock device record for now
-      const deviceRecord = {
-        id: deviceId,
-        pluginId: 'mock-bp',
-        deviceIdentifier: `mock-device-${deviceId}`,
-        connectionConfig: {},
-      };
 
       if (!deviceRecord) {
         throw new Error(`Device ${deviceId} not found`);
       }
 
+      const pluginId = this.determinePluginId(deviceRecord.device_type);
+      const deviceInfo = {
+        id: deviceRecord.id,
+        pluginId,
+        deviceIdentifier: deviceRecord.device_id,
+        connectionConfig: deviceRecord.configuration as Record<string, any> || {},
+      };
+
       const registry = getPluginRegistry();
-      const plugin = registry.getPlugin(deviceRecord.pluginId);
+      const plugin = registry.getPlugin(pluginId);
       if (!plugin) {
-        throw new Error(`Plugin ${deviceRecord.pluginId} not available`);
+        throw new Error(`Plugin ${pluginId} not available`);
       }
 
       // Attempt connection
       const connection = await plugin.connect({
-        deviceId: deviceRecord.deviceIdentifier,
+        deviceId: deviceInfo.deviceIdentifier,
         connectionParams: {
-          ...deviceRecord.connectionConfig,
+          ...deviceInfo.connectionConfig,
           ...connectionParams,
         },
         timeout: 30000, // 30 seconds
@@ -171,19 +163,17 @@ export class DeviceManagementService extends EventEmitter {
       });
 
       // Update device status in database
-      /*
       await this.prisma.connectedDevice.update({
         where: { id: deviceId },
         data: {
-          connectionStatus: 'CONNECTED',
-          lastConnected: new Date(),
+          device_status: 'ONLINE',
+          last_sync: new Date(),
         },
       });
-      */
 
       this.emit('device:connected', {
         deviceId,
-        pluginId: deviceRecord.pluginId,
+        pluginId,
         connection,
       });
 
@@ -549,11 +539,29 @@ export class DeviceManagementService extends EventEmitter {
   }
 
   /**
+   * Determine plugin ID based on device type
+   */
+  private determinePluginId(deviceType: string): string {
+    const deviceTypeMap: Record<string, string> = {
+      'BLOOD_PRESSURE_MONITOR': 'mock-bp',
+      'GLUCOSE_METER': 'mock-glucose',
+      'HEART_RATE_MONITOR': 'mock-hr',
+      'PULSE_OXIMETER': 'mock-oximeter',
+      'WEIGHT_SCALE': 'mock-weight',
+      'THERMOMETER': 'mock-temp',
+      'PEAK_FLOW_METER': 'mock-peak-flow',
+      'ECG_MONITOR': 'mock-ecg',
+    };
+    
+    return deviceTypeMap[deviceType] || 'mock-generic';
+  }
+
+  /**
    * Cleanup resources
    */
   async shutdown(): Promise<void> {
     console.log('Shutting down Device Management Service...');
-    // await this.prisma.$disconnect();
+    await this.prisma.$disconnect();
     this.removeAllListeners();
   }
 }
