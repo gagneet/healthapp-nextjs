@@ -231,18 +231,86 @@ export async function seedComprehensiveHealthcareData() {
 
     console.log(`✅ Created organization: ${organization.name}`);
 
-    // Create specialities first
-    const specialities = await prisma.speciality.createMany({
+    // Create comprehensive medical specialties
+    const cardiologySpec = await prisma.speciality.create({
+      data: {
+        name: 'Cardiology',
+        description: 'Heart and cardiovascular system specialist',
+        created_at: new Date(),
+        updated_at: new Date()
+      }
+    });
+    
+    const endocrinologySpec = await prisma.speciality.create({
+      data: {
+        name: 'Endocrinology',
+        description: 'Hormonal disorders and diabetes specialist',
+        created_at: new Date(),
+        updated_at: new Date()
+      }
+    });
+    
+    const generalMedSpec = await prisma.speciality.create({
+      data: {
+        name: 'General Medicine',
+        description: 'General medical practice',
+        created_at: new Date(),
+        updated_at: new Date()
+      }
+    });
+    
+    // Create remaining specialties without hard-coded IDs
+    const pediatricsSpec = await prisma.speciality.create({
+      data: {
+        name: 'Pediatrics',
+        description: 'Children\'s health specialist',
+        created_at: new Date(),
+        updated_at: new Date()
+      }
+    });
+    
+    // Continue creating other specialties
+    await prisma.speciality.createMany({
       data: [
         {
-          name: 'Internal Medicine',
-          description: 'Internal medicine specialists',
+          name: 'Orthopedics',
+          description: 'Bone, joint, and muscle specialist',
           created_at: new Date(),
           updated_at: new Date()
         },
         {
-          name: 'Cardiology',
-          description: 'Heart and cardiovascular specialists',
+          name: 'Dermatology',
+          description: 'Skin conditions specialist',
+          created_at: new Date(),
+          updated_at: new Date()
+        },
+        {
+          name: 'Neurology',
+          description: 'Brain and nervous system specialist',
+          created_at: new Date(),
+          updated_at: new Date()
+        },
+        {
+          name: 'Psychiatry',
+          description: 'Mental health specialist',
+          created_at: new Date(),
+          updated_at: new Date()
+        },
+        {
+          name: 'Gynecology',
+          description: 'Women\'s reproductive health specialist',
+          created_at: new Date(),
+          updated_at: new Date()
+        },
+        {
+          name: 'Ophthalmology',
+          description: 'Eye and vision specialist',
+          created_at: new Date(),
+          updated_at: new Date()
+        },
+        {
+          name: 'Emergency Medicine',
+          description: 'Emergency and acute care specialist',
           created_at: new Date(),
           updated_at: new Date()
         }
@@ -258,7 +326,7 @@ export async function seedComprehensiveHealthcareData() {
           id: '99999999-9999-9999-9999-999999999991',
           user_id: '99999999-9999-9999-9999-999999999999',
           doctor_id: 'DR001',
-          speciality_id: 1,
+          speciality_id: cardiologySpec.id,
           medical_license_number: 'MD123456',
           years_of_experience: 15,
           board_certifications: ['Board Certified Internal Medicine', 'Diabetes Care Specialist'],
@@ -269,7 +337,7 @@ export async function seedComprehensiveHealthcareData() {
           id: '44444444-4444-4444-4444-444444444441',
           user_id: '44444444-4444-4444-4444-444444444444',
           doctor_id: 'DR002',
-          speciality_id: 2,
+          speciality_id: endocrinologySpec.id,
           medical_license_number: 'MD789012',
           years_of_experience: 20,
           board_certifications: ['Board Certified Cardiology', 'Interventional Cardiology'],
@@ -467,38 +535,186 @@ export async function seedComprehensiveHealthcareData() {
 
     console.log(`✅ Created patient profiles`);
 
-    // Create medicines
+    // Create comprehensive medicines database
     const medicines = await prisma.medicine.createMany({
       data: [
         {
-          id: '99999999-9999-9999-9999-999999999981',
+          id: '550e8400-e29b-41d4-a716-446655440001',
           name: 'Metformin',
           type: 'tablet',
-          description: 'Used to treat type 2 diabetes',
+          description: 'First-line medication for type 2 diabetes management',
           details: {
             generic_name: 'Metformin Hydrochloride',
-            brand_names: ['Glucophage', 'Fortamet'],
+            brand_names: ['Glucophage', 'Fortamet', 'Glumetza'],
             drug_class: 'Biguanide',
-            common_dosages: ['500mg', '850mg', '1000mg'],
-            side_effects: ['Nausea', 'Diarrhea', 'Stomach upset'],
-            contraindications: ['Kidney disease', 'Liver disease']
+            common_dosages: ['500mg', '850mg', '1000mg', '1500mg'],
+            side_effects: ['Nausea', 'Diarrhea', 'Stomach upset', 'Metallic taste', 'Vitamin B12 deficiency'],
+            contraindications: ['Severe kidney disease', 'Liver disease', 'Heart failure', 'Metabolic acidosis'],
+            interactions: ['Alcohol', 'Contrast dyes', 'Certain diuretics']
           },
+          public_medicine: true,
           created_at: new Date(),
           updated_at: new Date()
         },
         {
-          id: '99999999-9999-9999-9999-999999999982',
+          id: '550e8400-e29b-41d4-a716-446655440002',
           name: 'Lisinopril',
           type: 'tablet',
-          description: 'Used to treat high blood pressure',
+          description: 'ACE inhibitor for high blood pressure and heart failure',
           details: {
             generic_name: 'Lisinopril',
             brand_names: ['Prinivil', 'Zestril'],
             drug_class: 'ACE Inhibitor',
-            common_dosages: ['5mg', '10mg', '20mg'],
-            side_effects: ['Dry cough', 'Dizziness', 'Headache'],
-            contraindications: ['Pregnancy', 'Angioedema history']
+            common_dosages: ['2.5mg', '5mg', '10mg', '20mg', '40mg'],
+            side_effects: ['Dry cough', 'Dizziness', 'Headache', 'Hyperkalemia', 'Angioedema'],
+            contraindications: ['Pregnancy', 'History of angioedema', 'Bilateral renal artery stenosis'],
+            interactions: ['Potassium supplements', 'NSAIDs', 'Lithium']
           },
+          public_medicine: true,
+          created_at: new Date(),
+          updated_at: new Date()
+        },
+        {
+          id: '550e8400-e29b-41d4-a716-446655440003',
+          name: 'Aspirin',
+          type: 'tablet',
+          description: 'Pain relief and cardiovascular protection',
+          details: {
+            generic_name: 'Acetylsalicylic Acid',
+            brand_names: ['Bayer', 'Bufferin', 'Ecotrin'],
+            drug_class: 'NSAID/Antiplatelet',
+            common_dosages: ['81mg', '325mg', '500mg'],
+            side_effects: ['Stomach irritation', 'Bleeding', 'Tinnitus', 'Allergic reactions'],
+            contraindications: ['Active bleeding', 'Severe asthma', 'Children with viral infections'],
+            interactions: ['Warfarin', 'Methotrexate', 'ACE inhibitors']
+          },
+          public_medicine: true,
+          created_at: new Date(),
+          updated_at: new Date()
+        },
+        {
+          id: '550e8400-e29b-41d4-a716-446655440004',
+          name: 'Ibuprofen',
+          type: 'tablet',
+          description: 'Anti-inflammatory pain and fever reducer',
+          details: {
+            generic_name: 'Ibuprofen',
+            brand_names: ['Advil', 'Motrin', 'Nuprin'],
+            drug_class: 'NSAID',
+            common_dosages: ['200mg', '400mg', '600mg', '800mg'],
+            side_effects: ['Stomach upset', 'Kidney problems', 'Heart issues', 'High blood pressure'],
+            contraindications: ['Heart disease', 'Kidney disease', 'Active ulcers', 'Asthma'],
+            interactions: ['Blood thinners', 'ACE inhibitors', 'Lithium', 'Methotrexate']
+          },
+          public_medicine: true,
+          created_at: new Date(),
+          updated_at: new Date()
+        },
+        {
+          id: '550e8400-e29b-41d4-a716-446655440005',
+          name: 'Amlodipine',
+          type: 'tablet',
+          description: 'Calcium channel blocker for high blood pressure',
+          details: {
+            generic_name: 'Amlodipine Besylate',
+            brand_names: ['Norvasc', 'Katerzia'],
+            drug_class: 'Calcium Channel Blocker',
+            common_dosages: ['2.5mg', '5mg', '10mg'],
+            side_effects: ['Ankle swelling', 'Dizziness', 'Flushing', 'Fatigue'],
+            contraindications: ['Severe aortic stenosis', 'Unstable angina', 'Severe hypotension'],
+            interactions: ['Simvastatin', 'Cyclosporine', 'Strong CYP3A4 inhibitors']
+          },
+          public_medicine: true,
+          created_at: new Date(),
+          updated_at: new Date()
+        },
+        {
+          id: '550e8400-e29b-41d4-a716-446655440006',
+          name: 'Simvastatin',
+          type: 'tablet',
+          description: 'Statin medication for high cholesterol',
+          details: {
+            generic_name: 'Simvastatin',
+            brand_names: ['Zocor', 'FloLipid'],
+            drug_class: 'HMG-CoA Reductase Inhibitor (Statin)',
+            common_dosages: ['5mg', '10mg', '20mg', '40mg', '80mg'],
+            side_effects: ['Muscle pain', 'Liver enzyme elevation', 'Headache', 'Nausea'],
+            contraindications: ['Active liver disease', 'Pregnancy', 'Nursing', 'Concurrent cyclosporine'],
+            interactions: ['Grapefruit juice', 'Amiodarone', 'Verapamil', 'Diltiazem']
+          },
+          public_medicine: true,
+          created_at: new Date(),
+          updated_at: new Date()
+        },
+        {
+          id: '550e8400-e29b-41d4-a716-446655440007',
+          name: 'Omeprazole',
+          type: 'capsule',
+          description: 'Proton pump inhibitor for acid reflux and ulcers',
+          details: {
+            generic_name: 'Omeprazole',
+            brand_names: ['Prilosec', 'Zegerid'],
+            drug_class: 'Proton Pump Inhibitor',
+            common_dosages: ['10mg', '20mg', '40mg'],
+            side_effects: ['Headache', 'Nausea', 'Diarrhea', 'Vitamin B12 deficiency'],
+            contraindications: ['Hypersensitivity to benzimidazoles', 'Concurrent rilpivirine'],
+            interactions: ['Clopidogrel', 'Warfarin', 'Digoxin', 'Atazanavir']
+          },
+          public_medicine: true,
+          created_at: new Date(),
+          updated_at: new Date()
+        },
+        {
+          id: '550e8400-e29b-41d4-a716-446655440008',
+          name: 'Albuterol',
+          type: 'inhaler',
+          description: 'Bronchodilator for asthma and COPD',
+          details: {
+            generic_name: 'Albuterol Sulfate',
+            brand_names: ['ProAir', 'Ventolin', 'Proventil'],
+            drug_class: 'Short-Acting Beta2 Agonist',
+            common_dosages: ['90mcg/puff', '108mcg/puff'],
+            side_effects: ['Tremor', 'Nervousness', 'Headache', 'Rapid heartbeat'],
+            contraindications: ['Hypersensitivity to albuterol', 'Tachyarrhythmias'],
+            interactions: ['Beta-blockers', 'Digoxin', 'MAO inhibitors', 'Tricyclic antidepressants']
+          },
+          public_medicine: true,
+          created_at: new Date(),
+          updated_at: new Date()
+        },
+        {
+          id: '550e8400-e29b-41d4-a716-446655440009',
+          name: 'Levothyroxine',
+          type: 'tablet',
+          description: 'Thyroid hormone replacement therapy',
+          details: {
+            generic_name: 'Levothyroxine Sodium',
+            brand_names: ['Synthroid', 'Levoxyl', 'Tirosint'],
+            drug_class: 'Thyroid Hormone',
+            common_dosages: ['25mcg', '50mcg', '75mcg', '100mcg', '125mcg', '150mcg'],
+            side_effects: ['Heart palpitations', 'Weight loss', 'Nervousness', 'Insomnia'],
+            contraindications: ['Untreated adrenal insufficiency', 'Recent myocardial infarction'],
+            interactions: ['Iron supplements', 'Calcium', 'Coffee', 'Soybean flour']
+          },
+          public_medicine: true,
+          created_at: new Date(),
+          updated_at: new Date()
+        },
+        {
+          id: '550e8400-e29b-41d4-a716-446655440010',
+          name: 'Sertraline',
+          type: 'tablet',
+          description: 'SSRI antidepressant for depression and anxiety',
+          details: {
+            generic_name: 'Sertraline Hydrochloride',
+            brand_names: ['Zoloft', 'Lustral'],
+            drug_class: 'Selective Serotonin Reuptake Inhibitor (SSRI)',
+            common_dosages: ['25mg', '50mg', '100mg'],
+            side_effects: ['Nausea', 'Diarrhea', 'Sexual dysfunction', 'Weight changes'],
+            contraindications: ['MAO inhibitor use', 'Pimozide use', 'Linezolid use'],
+            interactions: ['MAO inhibitors', 'Blood thinners', 'NSAIDs', 'Triptans']
+          },
+          public_medicine: true,
           created_at: new Date(),
           updated_at: new Date()
         }
@@ -559,13 +775,354 @@ export async function seedComprehensiveHealthcareData() {
 
     console.log(`✅ Created vital templates`);
 
+    // Create symptoms/conditions database
+    const symptomsDatabase = await prisma.symptoms_database.createMany({
+      data: [
+        {
+          id: '550e8400-e29b-41d4-a716-446655440011',
+          diagnosis_name: 'Type 2 Diabetes',
+          symptoms: [
+            'Excessive thirst',
+            'Frequent urination',
+            'Unexplained weight loss',
+            'Increased hunger',
+            'Fatigue',
+            'Blurred vision',
+            'Slow-healing sores',
+            'Frequent infections'
+          ],
+          category: 'Endocrine',
+          severity_indicators: {
+            mild: ['Mild thirst', 'Occasional fatigue'],
+            moderate: ['Increased hunger', 'Blurred vision'],
+            severe: ['Unexplained weight loss', 'Frequent urination', 'Slow-healing wounds']
+          },
+          common_age_groups: ['adults', 'elderly'],
+          gender_specific: 'both',
+          risk_factors: ['Obesity', 'Family history', 'Sedentary lifestyle', 'High blood pressure'],
+          is_active: true,
+          created_at: new Date(),
+          updated_at: new Date()
+        },
+        {
+          id: '550e8400-e29b-41d4-a716-446655440012',
+          diagnosis_name: 'Hypertension',
+          symptoms: [
+            'Headaches',
+            'Dizziness',
+            'Chest pain',
+            'Nosebleeds',
+            'Shortness of breath',
+            'Blurred vision',
+            'Fatigue'
+          ],
+          category: 'Cardiovascular',
+          severity_indicators: {
+            mild: ['Occasional headaches', 'Mild dizziness'],
+            moderate: ['Regular headaches', 'Chest discomfort'],
+            severe: ['Severe headaches', 'Chest pain', 'Shortness of breath']
+          },
+          common_age_groups: ['adults', 'elderly'],
+          gender_specific: 'both',
+          risk_factors: ['High sodium diet', 'Stress', 'Obesity', 'Family history', 'Age'],
+          is_active: true,
+          created_at: new Date(),
+          updated_at: new Date()
+        },
+        {
+          id: '550e8400-e29b-41d4-a716-446655440013',
+          diagnosis_name: 'Asthma',
+          symptoms: [
+            'Wheezing',
+            'Coughing',
+            'Chest tightness',
+            'Shortness of breath',
+            'Difficulty breathing',
+            'Rapid breathing'
+          ],
+          category: 'Respiratory',
+          severity_indicators: {
+            mild: ['Occasional wheezing', 'Exercise-induced cough'],
+            moderate: ['Regular shortness of breath', 'Chest tightness'],
+            severe: ['Difficulty speaking', 'Severe breathing problems', 'Blue lips/fingernails']
+          },
+          common_age_groups: ['children', 'adults'],
+          gender_specific: 'both',
+          risk_factors: ['Allergies', 'Family history', 'Environmental triggers', 'Smoking'],
+          is_active: true,
+          created_at: new Date(),
+          updated_at: new Date()
+        },
+        {
+          id: '550e8400-e29b-41d4-a716-446655440014',
+          diagnosis_name: 'Depression',
+          symptoms: [
+            'Persistent sadness',
+            'Loss of interest',
+            'Fatigue',
+            'Sleep disturbances',
+            'Appetite changes',
+            'Difficulty concentrating',
+            'Feelings of worthlessness',
+            'Thoughts of death'
+          ],
+          category: 'Mental Health',
+          severity_indicators: {
+            mild: ['Occasional sadness', 'Mild sleep issues'],
+            moderate: ['Regular mood changes', 'Decreased activity'],
+            severe: ['Persistent hopelessness', 'Thoughts of self-harm', 'Unable to function']
+          },
+          common_age_groups: ['adolescents', 'adults', 'elderly'],
+          gender_specific: 'both',
+          risk_factors: ['Family history', 'Trauma', 'Chronic illness', 'Stress', 'Substance abuse'],
+          is_active: true,
+          created_at: new Date(),
+          updated_at: new Date()
+        },
+        {
+          id: '550e8400-e29b-41d4-a716-446655440015',
+          diagnosis_name: 'Anxiety Disorder',
+          symptoms: [
+            'Excessive worry',
+            'Restlessness',
+            'Fatigue',
+            'Difficulty concentrating',
+            'Irritability',
+            'Muscle tension',
+            'Sleep disturbances',
+            'Panic attacks'
+          ],
+          category: 'Mental Health',
+          severity_indicators: {
+            mild: ['Occasional worry', 'Mild restlessness'],
+            moderate: ['Regular anxiety', 'Difficulty concentrating'],
+            severe: ['Panic attacks', 'Unable to perform daily activities', 'Constant fear']
+          },
+          common_age_groups: ['adolescents', 'adults'],
+          gender_specific: 'both',
+          risk_factors: ['Family history', 'Trauma', 'Stress', 'Medical conditions', 'Substance use'],
+          is_active: true,
+          created_at: new Date(),
+          updated_at: new Date()
+        }
+      ]
+    });
+
+    console.log(`✅ Created symptoms/conditions database`);
+
+    // Create treatments database
+    const treatmentsDatabase = await prisma.treatment_database.createMany({
+      data: [
+        {
+          id: '550e8400-e29b-41d4-a716-446655440021',
+          treatment_name: 'Metformin Therapy',
+          treatment_type: 'medication',
+          description: 'First-line medication for Type 2 diabetes management',
+          applicable_conditions: ['Type 2 Diabetes', 'Pre-diabetes', 'PCOS'],
+          duration: 'Long-term',
+          frequency: 'Twice daily with meals',
+          dosage_info: {
+            initial_dose: '500mg twice daily',
+            maximum_dose: '2000mg daily',
+            titration: 'Increase by 500mg weekly as tolerated'
+          },
+          category: 'Antidiabetic',
+          severity_level: 'moderate',
+          age_restrictions: {
+            minimum_age: 10,
+            elderly_considerations: 'Monitor renal function'
+          },
+          contraindications: [
+            'Severe renal impairment',
+            'Metabolic acidosis',
+            'Heart failure requiring medication'
+          ],
+          side_effects: [
+            'Gastrointestinal upset',
+            'Metallic taste',
+            'Vitamin B12 deficiency (long-term)'
+          ],
+          monitoring_required: [
+            'Blood glucose levels',
+            'Kidney function',
+            'Vitamin B12 levels'
+          ],
+          effectiveness_rating: 85,
+          is_active: true,
+          created_at: new Date(),
+          updated_at: new Date()
+        },
+        {
+          id: '550e8400-e29b-41d4-a716-446655440022',
+          treatment_name: 'ACE Inhibitor Therapy',
+          treatment_type: 'medication',
+          description: 'First-line treatment for hypertension and heart failure',
+          applicable_conditions: ['Hypertension', 'Heart Failure', 'Diabetic Nephropathy'],
+          duration: 'Long-term',
+          frequency: 'Once or twice daily',
+          dosage_info: {
+            initial_dose: '2.5-5mg daily',
+            maximum_dose: '40mg daily',
+            titration: 'Increase every 1-2 weeks as needed'
+          },
+          category: 'Cardiovascular',
+          severity_level: 'moderate',
+          age_restrictions: {
+            minimum_age: 18,
+            elderly_considerations: 'Start with lower doses'
+          },
+          contraindications: [
+            'Pregnancy',
+            'History of angioedema',
+            'Bilateral renal artery stenosis'
+          ],
+          side_effects: [
+            'Dry cough',
+            'Hyperkalemia',
+            'Dizziness',
+            'Angioedema (rare)'
+          ],
+          monitoring_required: [
+            'Blood pressure',
+            'Kidney function',
+            'Potassium levels'
+          ],
+          effectiveness_rating: 90,
+          is_active: true,
+          created_at: new Date(),
+          updated_at: new Date()
+        },
+        {
+          id: '550e8400-e29b-41d4-a716-446655440023',
+          treatment_name: 'Inhaled Bronchodilator Therapy',
+          treatment_type: 'medication',
+          description: 'Short-acting beta2 agonist for asthma and COPD',
+          applicable_conditions: ['Asthma', 'COPD', 'Exercise-induced bronchospasm'],
+          duration: 'As needed or regular use',
+          frequency: '2 puffs every 4-6 hours as needed',
+          dosage_info: {
+            initial_dose: '90mcg (2 puffs) as needed',
+            maximum_dose: '12 puffs per day',
+            titration: 'Use as needed for symptoms'
+          },
+          category: 'Respiratory',
+          severity_level: 'mild_to_moderate',
+          age_restrictions: {
+            minimum_age: 4,
+            elderly_considerations: 'Monitor for cardiovascular effects'
+          },
+          contraindications: [
+            'Hypersensitivity to albuterol',
+            'Tachyarrhythmias'
+          ],
+          side_effects: [
+            'Tremor',
+            'Nervousness',
+            'Headache',
+            'Rapid heartbeat'
+          ],
+          monitoring_required: [
+            'Peak flow readings',
+            'Symptom frequency',
+            'Heart rate'
+          ],
+          effectiveness_rating: 88,
+          is_active: true,
+          created_at: new Date(),
+          updated_at: new Date()
+        },
+        {
+          id: '550e8400-e29b-41d4-a716-446655440024',
+          treatment_name: 'Cognitive Behavioral Therapy',
+          treatment_type: 'therapy',
+          description: 'Evidence-based psychotherapy for depression and anxiety',
+          applicable_conditions: ['Depression', 'Anxiety Disorder', 'PTSD', 'Panic Disorder'],
+          duration: '12-20 sessions over 3-6 months',
+          frequency: 'Weekly sessions initially',
+          dosage_info: {
+            initial_dose: '45-50 minute sessions weekly',
+            maximum_dose: 'Twice weekly in severe cases',
+            titration: 'Adjust frequency based on progress'
+          },
+          category: 'Mental Health',
+          severity_level: 'mild_to_severe',
+          age_restrictions: {
+            minimum_age: 8,
+            elderly_considerations: 'May require modifications for cognitive changes'
+          },
+          contraindications: [
+            'Active psychosis',
+            'Severe cognitive impairment',
+            'Active substance intoxication'
+          ],
+          side_effects: [
+            'Temporary increase in distress',
+            'Emotional fatigue during sessions'
+          ],
+          monitoring_required: [
+            'Mood rating scales',
+            'Functional improvement',
+            'Suicide risk assessment'
+          ],
+          effectiveness_rating: 75,
+          is_active: true,
+          created_at: new Date(),
+          updated_at: new Date()
+        },
+        {
+          id: '550e8400-e29b-41d4-a716-446655440025',
+          treatment_name: 'Lifestyle Modification Program',
+          treatment_type: 'lifestyle',
+          description: 'Comprehensive diet and exercise program for chronic disease management',
+          applicable_conditions: ['Type 2 Diabetes', 'Hypertension', 'Obesity', 'High Cholesterol'],
+          duration: 'Ongoing lifestyle changes',
+          frequency: 'Daily adherence to recommendations',
+          dosage_info: {
+            initial_dose: '30 minutes moderate exercise, 5 days/week',
+            maximum_dose: '60+ minutes daily exercise as tolerated',
+            titration: 'Gradually increase intensity and duration'
+          },
+          category: 'Lifestyle',
+          severity_level: 'all_levels',
+          age_restrictions: {
+            minimum_age: 'All ages with modifications',
+            elderly_considerations: 'Lower intensity exercise, fall prevention'
+          },
+          contraindications: [
+            'Severe cardiovascular disease without clearance',
+            'Acute illness',
+            'Uncontrolled diabetes'
+          ],
+          side_effects: [
+            'Initial fatigue',
+            'Muscle soreness',
+            'Temporary hunger adjustments'
+          ],
+          monitoring_required: [
+            'Weight tracking',
+            'Blood pressure monitoring',
+            'Blood glucose levels',
+            'Exercise tolerance'
+          ],
+          effectiveness_rating: 80,
+          is_active: true,
+          created_at: new Date(),
+          updated_at: new Date()
+        }
+      ]
+    });
+
+    console.log(`✅ Created treatments database`);
+
     console.log(`🎉 Successfully seeded comprehensive healthcare test data!`);
     console.log(`📊 Summary:`);
     console.log(`   - Users: 10 (5 patients, 2 doctors, 1 HSP, 1 admin, 1 provider)`);
     console.log(`   - Organization: 1`);
-    console.log(`   - Specialities: 2`);
-    console.log(`   - Medicines: 2`);
+    console.log(`   - Medical Specialties: 11 (complete specialties database)`);
+    console.log(`   - Medicines: 10 (comprehensive medication database)`);
     console.log(`   - Vital Templates: 4`);
+    console.log(`   - Symptoms/Conditions: 5 (major medical conditions)`);
+    console.log(`   - Treatments: 5 (medication, therapy, lifestyle treatments)`);
     console.log(`   - Test credentials: email/password123 for all users`);
 
     return {
@@ -576,9 +1133,11 @@ export async function seedComprehensiveHealthcareData() {
         patients: 5,
         doctors: 2,
         organizations: 1,
-        specialities: 2,
-        medicines: 2,
-        vitalTemplates: 4
+        specialties: 11,
+        medicines: 10,
+        vitalTemplates: 4,
+        symptomsConditions: 5,
+        treatments: 5
       }
     };
 

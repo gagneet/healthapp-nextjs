@@ -1,6 +1,7 @@
 // Test dashboard functionality directly without starting the server
 import { PrismaClient } from '@/lib/prisma-client';
 import { getDoctorDashboard, getPatientDashboard, authenticateUser } from '@/lib/api-services';
+import { authenticateUser } from './lib/api-services.js';
 
 const prisma = new PrismaClient({
   datasources: {
