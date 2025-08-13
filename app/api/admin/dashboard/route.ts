@@ -1,3 +1,6 @@
+// Force dynamic rendering for API routes using headers/auth
+export const dynamic = 'force-dynamic'
+
 /**
  * Admin Dashboard API Route
  * Provides comprehensive system analytics and statistics for administrators

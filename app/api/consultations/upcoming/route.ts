@@ -1,3 +1,6 @@
+// Force dynamic rendering for API routes using headers/auth
+export const dynamic = "force-dynamic"
+
 import { NextRequest, NextResponse } from 'next/server';
 import ConsultationBookingService from '@/lib/services/ConsultationBookingService';
 import { getServerSession } from 'next-auth';

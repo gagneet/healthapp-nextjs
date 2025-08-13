@@ -1,3 +1,6 @@
+// Force dynamic rendering for API routes using headers/auth
+export const dynamic = "force-dynamic"
+
 import { NextRequest, NextResponse } from 'next/server';
 import { checkRateLimit } from '@/lib/auth-helpers';
 import { createUser, handleApiError, formatApiSuccess } from '@/lib/api-services';

@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requireAuth, checkRateLimit } from '@/lib/auth-helpers';
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { checkRateLimit } from "@/lib/auth-helpers";
 import { getPatients, handleApiError, formatApiSuccess } from '@/lib/api-services';
 
 /**
@@ -17,14 +19,16 @@ export async function GET(request: NextRequest) {
     }
 
     // Authenticate user and check permissions
-    const authResult = await requireAuth(request, ['DOCTOR', 'HSP', 'admin']);
-    if (authResult.error) {
-      return NextResponse.json(handleApiError(authResult.error), { 
-        status: authResult.error.status 
-      });
+    const session = await getServerSession(authOptions);
+    if (!session?.user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    if (!['DOCTOR', 'HSP', 'admin'].includes(session.user.role)) {
+      return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
+    }
     }
 
-    const { user } = authResult;
+    const user = session.user;
     const { searchParams } = new URL(request.url);
     
     // Extract pagination parameters

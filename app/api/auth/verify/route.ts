@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requireAuth } from '@/lib/auth-helpers';
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { handleApiError, formatApiSuccess } from '@/lib/api-services';
 
 /**
@@ -9,14 +10,12 @@ import { handleApiError, formatApiSuccess } from '@/lib/api-services';
 export async function GET(request: NextRequest) {
   try {
     // Authenticate user
-    const authResult = await requireAuth(request);
-    if (authResult.error) {
-      return NextResponse.json(handleApiError(authResult.error), { 
-        status: authResult.error.status 
-      });
+    const session = await getServerSession(authOptions);
+    if (!session?.user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { user } = authResult;
+    const user = session.user;
     
     // Return user information (excluding sensitive data)
     const userInfo = {

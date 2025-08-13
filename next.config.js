@@ -3,6 +3,9 @@ const nextConfig = {
   // Enable standalone output for Docker deployments
   output: 'standalone',
   
+  // Disable static optimization for dynamic application
+  trailingSlash: false,
+  
   typescript: {
     ignoreBuildErrors: true, // Temporarily ignore TypeScript errors for production build
   },
@@ -29,9 +32,14 @@ const nextConfig = {
     WATCHPACK_POLLING: process.env.WATCHPACK_POLLING,
   },
   
+  // Skip trailing slash redirect and URL normalization (moved out of experimental)
+  skipTrailingSlashRedirect: true,
+  skipMiddlewareUrlNormalize: true,
+  
   // Configure WebSocket hostname for Docker
   experimental: {
     forceSwcTransforms: true,
+    staticPageGenerationTimeout: 120,
     // Enable server-side caching for healthcare applications
     serverComponentsExternalPackages: ['prisma', '@prisma/client'],
   },

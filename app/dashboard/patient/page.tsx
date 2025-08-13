@@ -1,8 +1,11 @@
 'use client'
 
+// Force dynamic rendering for authenticated pages
+export const dynamic = 'force-dynamic'
+
 import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
-import dynamic from 'next/dynamic'
+import dynamicImport from 'next/dynamic'
 import {
   PlusIcon,
   ExclamationTriangleIcon,
@@ -24,7 +27,7 @@ import { useAuth } from '@/lib/auth-context'
 import { formatDate, formatDateTime } from '@/lib/utils'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell } from 'recharts'
 // Dynamically import the SymptomReporter to prevent SSR/hydration issues
-const SymptomReporter = dynamic(() => import('@/components/patient/symptom-reporter'), {
+const SymptomReporter = dynamicImport(() => import('@/components/patient/symptom-reporter'), {
   ssr: false,
   loading: () => (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">

@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requireAuth, checkRateLimit } from '@/lib/auth-helpers';
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { checkRateLimit } from "@/lib/auth-helpers";
 import { 
   getPatientAllergies, 
   createPatientAllergy, 
@@ -23,11 +25,13 @@ export async function GET(request: NextRequest) {
     }
 
     // Authenticate user
-    const authResult = await requireAuth(request, ['DOCTOR', 'HSP', 'PATIENT', 'admin']);
-    if (authResult.error) {
-      return NextResponse.json(handleApiError(authResult.error), { 
-        status: authResult.error.status 
-      });
+    const session = await getServerSession(authOptions);
+    if (!session?.user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    if (!['DOCTOR', 'HSP', 'PATIENT', 'admin'].includes(session.user.role)) {
+      return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
+    }
     }
 
     const { searchParams } = new URL(request.url);
@@ -65,14 +69,16 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     // Authenticate user - Only healthcare providers can add allergies
-    const authResult = await requireAuth(request, ['DOCTOR', 'HSP', 'admin']);
-    if (authResult.error) {
-      return NextResponse.json(handleApiError(authResult.error), { 
-        status: authResult.error.status 
-      });
+    const session = await getServerSession(authOptions);
+    if (!session?.user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    if (!['DOCTOR', 'HSP', 'admin'].includes(session.user.role)) {
+      return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
+    }
     }
 
-    const { user } = authResult;
+    const user = session.user;
     const allergyData = await request.json();
 
     // Required field validation
