@@ -12,6 +12,8 @@ services:
       - postgres_prod_data:/var/lib/postgresql/data
     networks:
       - healthapp-network
+    ports:
+      - "5433:5432"
     deploy:
       replicas: 1
       placement:
