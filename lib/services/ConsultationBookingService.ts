@@ -1,5 +1,5 @@
 import { PrismaClient } from '@prisma/client';
-import { VideoConsultationService } from './VideoConsultationService';
+import VideoConsultationService from './VideoConsultationService.js';
 
 const prisma = new PrismaClient();
 

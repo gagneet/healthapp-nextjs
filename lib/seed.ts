@@ -1194,7 +1194,7 @@ export async function clearTestData() {
       }
     });
 
-    await prisma.specialities.deleteMany({
+    await prisma.speciality.deleteMany({
       where: {
         id: {
           in: ['spec-internal-medicine', 'spec-cardiology']
@@ -1202,7 +1202,7 @@ export async function clearTestData() {
       }
     });
 
-    await prisma.medicines.deleteMany({
+    await prisma.medicine.deleteMany({
       where: {
         id: {
           in: ['med-metformin', 'med-lisinopril']

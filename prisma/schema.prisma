@@ -107,6 +107,9 @@ model User {
   resolved_emergency_alerts                                    EmergencyAlert[] @relation("EmergencyAlertResolved")
   vital_alert_rules                                            VitalAlertRule[]
   
+  // Phase 3: IoT Device Relationships
+  added_devices                                                ConnectedDevice[]
+  
   // Phase 4: Telemedicine Relationships
   created_consultations                                        VideoConsultation[] @relation("ConsultationCreatedBy")
   consultation_notes_created                                   ConsultationNote[] @relation("ConsultationNoteCreatedBy")
@@ -192,6 +195,10 @@ model Patient {
   medication_safety_alerts                                 MedicationSafetyAlert[]
   emergency_alerts                                         EmergencyAlert[]
   emergency_contacts_new                                   EmergencyContact[]
+  
+  // Phase 3: IoT Device Relationships
+  connected_devices                                        ConnectedDevice[]
+  device_readings                                          DeviceReading[]
   
   // Phase 4: Telemedicine Relationships
   video_consultations                                      VideoConsultation[]
@@ -536,6 +543,7 @@ model VitalReading {
   healthcare_providers HealthcareProvider?              @relation(fields: [validated_by], references: [id], onDelete: NoAction, onUpdate: NoAction)
   vital_type           VitalType                        @relation(fields: [vital_type_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   emergency_alerts     EmergencyAlert[]
+  device_readings      DeviceReading[]
 
   @@index([patient_id, reading_time, vital_type_id], map: "idx_vitals_patient_time_type")
   @@index([patient_id, vital_type_id, reading_time], map: "idx_vitals_patient_type_time_desc")
@@ -1951,6 +1959,7 @@ model EmergencyAlert {
   vital_reading         VitalReading?             @relation(fields: [vital_reading_id], references: [id])
   acknowledged_by_user  User?                     @relation("EmergencyAlertAcknowledged", fields: [acknowledged_by], references: [id])
   resolved_by_user      User?                     @relation("EmergencyAlertResolved", fields: [resolved_by], references: [id])
+  device_readings       DeviceReading[]           @relation("DeviceReadingToEmergencyAlert")
 
   @@index([patient_id, priority_level, acknowledged, resolved])
   @@index([alert_type, created_at])
@@ -2159,6 +2168,35 @@ enum GameChallengeType {
   WEIGHT_MANAGEMENT
   BLOOD_PRESSURE_CONTROL
   GLUCOSE_MANAGEMENT
+}
+
+// Phase 3: IoT Device Integration Enums
+enum DeviceType {
+  WEARABLE
+  BLOOD_PRESSURE
+  GLUCOSE_METER
+  PULSE_OXIMETER
+  THERMOMETER
+  ECG_MONITOR
+  SCALE
+  SPIROMETER
+  GENERIC_BLUETOOTH
+}
+
+enum DeviceStatus {
+  CONNECTED
+  DISCONNECTED
+  SYNCING
+  ERROR
+  MAINTENANCE
+}
+
+enum ConnectionType {
+  BLUETOOTH_LE
+  WIFI
+  API_OAUTH
+  MANUAL_ENTRY
+  BRIDGE_DEVICE
 }
 
 model VideoConsultation {
@@ -2444,4 +2482,132 @@ model GameChallengeProgress {
   @@index([patient_id, is_completed])
   @@index([challenge_type, end_date])
   @@map("game_challenge_progress")
+}
+
+// Phase 3: IoT Device Integration Models
+model ConnectedDevice {
+  id                      String            @id @default(uuid()) @db.Uuid
+  patient_id              String            @db.Uuid
+  plugin_id               String            @db.VarChar(100)
+  
+  // Device Information
+  device_name             String            @db.VarChar(255)
+  device_model            String?           @db.VarChar(255)
+  device_type             DeviceType
+  manufacturer            String?           @db.VarChar(255)
+  serial_number           String?           @db.VarChar(100)
+  firmware_version        String?           @db.VarChar(50)
+  
+  // Connection Configuration
+  connection_type         ConnectionType
+  device_identifier       String            @db.VarChar(255) // MAC address, serial, etc.
+  connection_config       Json?             @default("{}")
+  
+  // Connection Status
+  last_connected          DateTime?         @db.Timestamptz(6)
+  connection_status       DeviceStatus      @default(DISCONNECTED)
+  
+  // Sync Configuration
+  auto_sync_enabled       Boolean           @default(true)
+  sync_interval_minutes   Int               @default(15)
+  last_sync               DateTime?         @db.Timestamptz(6)
+  sync_error_count        Int               @default(0)
+  
+  // Device Management
+  is_active               Boolean           @default(true)
+  added_by                String            @db.Uuid
+  notes                   String?           @db.Text
+  
+  created_at              DateTime          @default(now()) @db.Timestamptz(6)
+  updated_at              DateTime          @updatedAt @db.Timestamptz(6)
+  
+  // Relations
+  patient                 Patient           @relation(fields: [patient_id], references: [id], onDelete: Cascade)
+  added_by_user           User              @relation(fields: [added_by], references: [id], onDelete: Restrict)
+  device_readings         DeviceReading[]
+  
+  @@unique([patient_id, device_identifier])
+  @@index([plugin_id, device_type])
+  @@index([patient_id, connection_status])
+  @@map("connected_devices")
+}
+
+model DeviceReading {
+  id                      String            @id @default(uuid()) @db.Uuid
+  device_id               String            @db.Uuid
+  patient_id              String            @db.Uuid
+  plugin_id               String            @db.VarChar(100)
+  vital_reading_id        String?           @db.Uuid
+  
+  // Reading Information
+  reading_type            String            @db.VarChar(100) // blood_pressure, glucose, weight, etc.
+  measurement_timestamp   DateTime          @db.Timestamptz(6)
+  received_timestamp      DateTime          @default(now()) @db.Timestamptz(6)
+  
+  // Data Storage
+  raw_data                Json              @default("{}")
+  processed_values        Json              @default("{}")
+  primary_value           Decimal?          @db.Decimal(10, 3)
+  secondary_value         Decimal?          @db.Decimal(10, 3)
+  measurement_unit        String?           @db.VarChar(50)
+  
+  // Data Quality
+  data_quality_score      Decimal?          @db.Decimal(3, 2)
+  is_validated            Boolean           @default(false)
+  validation_notes        String?           @db.Text
+  is_anomaly              Boolean           @default(false)
+  anomaly_reason          String?           @db.VarChar(255)
+  
+  // Context Information
+  reading_context         String?           @db.VarChar(255) // before_meal, after_exercise, etc.
+  symptoms_reported       String[]          @default([])
+  medication_taken        Boolean?
+  
+  // Alert Information
+  triggered_alerts        Boolean           @default(false)
+  alert_reasons           String[]          @default([])
+  
+  // Sync Information
+  sync_batch_id           String?           @db.Uuid
+  
+  created_at              DateTime          @default(now()) @db.Timestamptz(6)
+  
+  // Relations
+  device                  ConnectedDevice   @relation(fields: [device_id], references: [id], onDelete: Cascade)
+  patient                 Patient           @relation(fields: [patient_id], references: [id], onDelete: Cascade)
+  vital_reading           VitalReading?     @relation(fields: [vital_reading_id], references: [id], onDelete: SetNull)
+  emergency_alerts        EmergencyAlert[]  @relation("DeviceReadingToEmergencyAlert")
+  
+  @@index([patient_id, reading_type, measurement_timestamp])
+  @@index([device_id, measurement_timestamp])
+  @@index([plugin_id, reading_type])
+  @@index([triggered_alerts, measurement_timestamp])
+  @@map("device_readings")
+}
+
+model DevicePlugin {
+  id                      String            @id @db.VarChar(100)
+  name                    String            @db.VarChar(255)
+  version                 String            @db.VarChar(20)
+  description             String?           @db.Text
+  
+  // Plugin Configuration
+  supported_devices       DeviceType[]
+  supported_regions       String[]          @default([])
+  api_version             String            @db.VarChar(10)
+  default_config          Json              @default("{}")
+  oauth_config            Json?             @default("{}")
+  rate_limits             Json?             @default("{}")
+  
+  // Plugin Status
+  is_enabled              Boolean           @default(true)
+  requires_auth           Boolean           @default(false)
+  maintenance_mode        Boolean           @default(false)
+  
+  // Plugin Metadata
+  installed_at            DateTime          @default(now()) @db.Timestamptz(6)
+  last_updated            DateTime          @updatedAt @db.Timestamptz(6)
+  usage_count             Int               @default(0)
+  
+  @@map("device_plugins")
 }
