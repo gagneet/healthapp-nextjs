@@ -1,37 +1,57 @@
-# HealthApp Deployment Guide
+# Healthcare Management Platform - Production Deployment Guide
 
-This document provides comprehensive instructions for deploying the HealthApp platform across different environments using our clean separation architecture.
+This document provides comprehensive instructions for deploying the Healthcare Management Platform with **Phase 1 (Medical Safety), Phase 3 (IoT Integration), and Phase 4 (Telemedicine & Lab Integration)** across different environments.
 
-## Architecture Overview
+## 🏗️ **Current Architecture Overview**
 
-Our deployment architecture follows a clear separation pattern:
+### ✅ **Production-Ready Features (85% Complete)**
+- **Phase 1**: Medical Safety & Drug Interactions (100%)
+- **Phase 3**: IoT Device Integration & Advanced Monitoring (100%)
+- **Phase 4**: Telemedicine & Laboratory Integration (85%)
 
-- **Local Development**: Docker Compose for easy debugging and development
-- **Development/Testing**: Docker Swarm for scalability testing
-- **Production**: Docker Swarm with security hardening and high availability
+### 🎯 **Deployment Architecture**
+- **Next.js 14 Full-Stack**: Unified frontend and backend with API routes
+- **Prisma + PostgreSQL**: Type-safe database with 50+ healthcare models
+- **JWT Authentication**: Role-based access control for healthcare workflows
+- **Docker Containerization**: Production-ready with horizontal scaling
 
-## Port Configuration
+## 🔧 **Port Configuration**
 
 All environments use consistent ports:
 
-- **Frontend**: 3002
-- **Backend API**: 3005  
-- **PostgreSQL**: 5432
-- **PgAdmin**: 5050 (local/dev only)
+- **Next.js Application**: 3002 (Frontend + API Routes)
+- **PostgreSQL**: 5432/5433/5434 (Multi-environment)
+- **Redis Cache**: 6379
+- **WebRTC Video Server**: 8080 (External service)
+- **Lab Integration API**: 9000 (External service)
 
 ## Environment Configurations
 
-### 1. Local Development (Docker Compose)
+## 🚀 **Healthcare Platform Deployment Environments**
 
-**Purpose**: Local development with hot-reload and easy debugging
+### **1. Local Development (Docker Compose)**
+**Purpose**: Full-stack healthcare development with hot-reload and debugging
 
-**Command**: `./scripts/dev-local.sh [command]`
+#### **Quick Start:**
+```bash
+# Start complete healthcare platform
+./scripts/dev-local.sh start
 
-**Available Commands**:
+# Seed with comprehensive healthcare data
+DATABASE_URL="postgresql://healthapp_user:pg_password@localhost:5434/healthapp_dev?schema=public" npx prisma db seed
 
-- `start` - Start all services
+# Access platform
+# Frontend: http://localhost:3002
+# Database: localhost:5434
+```
+
+#### **Available Commands**:
+
+- `start` - Start complete healthcare platform stack
 - `stop` - Stop all services
-- `restart` - Restart all services
+- `restart` - Restart with fresh database migrations
+- `logs` - View aggregated logs from all services
+- `clean` - Clean up containers and volumes
 - `logs [service]` - Show logs
 - `status` - Show service status
 - `build` - Build/rebuild images
@@ -59,6 +79,24 @@ All environments use consistent ports:
 
 # Open shell in backend container
 ./scripts/dev-local.sh shell backend
+```
+
+#### **🎥 Phase 4: Telemedicine Configuration**
+
+```bash
+# Environment variables for video consultations
+WEBRTC_SERVER_URL=https://meet.adhere.live
+CONSULTATION_SECRET=secure-consultation-key
+RECORDING_ENABLED=true
+
+# Laboratory integration
+LAB_API_URL=https://api.lab-partner.com/v1
+LAB_API_KEY=your-lab-api-key
+LAB_WEBHOOK_SECRET=webhook-secret-key
+
+# External service health checks
+npm run health-check:webrtc
+npm run health-check:lab-api
 ```
 
 ### 2. Development Environment (Docker Swarm)
