@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { ConsultationBookingService } from '@/lib/services/ConsultationBookingService';
+import ConsultationBookingService from '@/lib/services/ConsultationBookingService';
 import jwt from 'jsonwebtoken';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret';
@@ -60,8 +60,8 @@ export async function GET(request: NextRequest) {
       meta: {
         date: result.date,
         doctorId: result.doctorId,
-        totalSlots: result.data.length,
-        availableSlots: result.data.filter(slot => slot.available).length
+        totalSlots: result.data?.length || 0,
+        availableSlots: result.data?.filter(slot => slot.available).length || 0
       },
       message: 'Available slots retrieved successfully'
     });

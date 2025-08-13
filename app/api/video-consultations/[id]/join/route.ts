@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { VideoConsultationService } from '@/lib/services/VideoConsultationService';
+import VideoConsultationService from '@/lib/services/VideoConsultationService';
 import jwt from 'jsonwebtoken';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret';

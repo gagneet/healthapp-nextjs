@@ -131,6 +131,13 @@ export class DataTransformer {
   }
 
   /**
+   * Get medical ranges for validation
+   */
+  static getMedicalRanges(): Record<string, MedicalRange[]> {
+    return this.medicalRanges;
+  }
+
+  /**
    * Validate vital data against medical ranges
    */
   static validateVitalData(data: VitalData, ageGroup: string = 'adult', gender?: string): ValidationResult {
@@ -139,7 +146,7 @@ export class DataTransformer {
     
     try {
       // Get medical ranges for this vital type
-      const ranges = this.medicalRanges[data.readingType];
+      const ranges = this.getMedicalRanges()[data.readingType];
       if (!ranges) {
         warnings.push(`No medical ranges defined for ${data.readingType}`);
         return { isValid: true, errors, warnings };
@@ -171,7 +178,7 @@ export class DataTransformer {
       
       // Validate secondary value if applicable (e.g., diastolic BP)
       if (data.secondaryValue !== undefined && data.readingType === 'blood_pressure') {
-        const diastolicRanges = this.medicalRanges['blood_pressure_diastolic'];
+        const diastolicRanges = this.getMedicalRanges()['blood_pressure_diastolic'];
         const diastolicRange = diastolicRanges?.find(r => 
           (!r.ageGroup || r.ageGroup === ageGroup) &&
           (!r.gender || r.gender === gender)
@@ -392,7 +399,7 @@ export class DataTransformer {
 }
 
 // Export utility functions
-export const MedicalRanges = DataTransformer['medicalRanges'];
+export const MedicalRanges = DataTransformer.getMedicalRanges();
 export const validateVitalData = DataTransformer.validateVitalData.bind(DataTransformer);
 export const transformToVitalData = DataTransformer.transformToVitalData.bind(DataTransformer);
 export const normalizeData = DataTransformer.normalizeData.bind(DataTransformer);
