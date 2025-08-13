@@ -25,6 +25,7 @@ export async function GET(request: NextRequest) {
     }
     if (!['DOCTOR', 'HSP', 'admin'].includes(session.user.role)) {
       return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
+    }
 
     const { searchParams } = new URL(request.url);
     const rxcui1 = searchParams.get('rxcui1');
@@ -35,6 +36,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(handleApiError({
         message: 'Either RxCUI codes or drug name is required'
       }), { status: 400 });
+    }
 
     // Mock RxNorm API response for now
     // In production, this would call the actual RxNorm API
@@ -77,6 +79,7 @@ export async function POST(request: NextRequest) {
     }
     if (!['admin'].includes(session.user.role)) {
       return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
+    }
 
     const user = session.user;
     const { rxcuiList, importAll } = await request.json();
@@ -86,11 +89,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(handleApiError({
         message: 'RxCUI list is required and must be an array'
       }), { status: 400 });
+    }
 
     if (rxcuiList.length > 100) {
       return NextResponse.json(handleApiError({
         message: 'Maximum 100 RxCUIs can be processed at once'
       }), { status: 400 });
+    }
 
     // Mock batch import results
     // In production, this would process each RxCUI and import drug interaction data

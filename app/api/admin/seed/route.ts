@@ -19,6 +19,7 @@ export async function POST(request: NextRequest) {
         statusCode: 403,
         payload: { error: { status: 'forbidden', message: 'Admin access required' } }
       }, { status: 403 });
+    }
 
     // Seeding disabled temporarily for build
     return NextResponse.json({
@@ -60,6 +61,7 @@ export async function GET(request: NextRequest) {
         statusCode: 403,
         payload: { error: { status: 'forbidden', message: 'Admin access required' } }
       }, { status: 403 });
+    }
 
     // Check if test data exists
     const { prisma } = await import('@/lib/prisma');

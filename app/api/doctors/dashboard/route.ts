@@ -16,6 +16,7 @@ export async function GET(request: NextRequest) {
     }
     if (!['DOCTOR', 'admin'].includes(session.user.role)) {
       return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
+    }
 
     const user = session.user;
     const dashboardData = await getDoctorDashboard(user.id || user.userId);

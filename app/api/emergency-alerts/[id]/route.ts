@@ -30,6 +30,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
     }
     if (!['DOCTOR', 'HSP', 'admin'].includes(session.user.role)) {
       return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
+    }
 
     const user = session.user;
     const { id } = params;
@@ -39,6 +40,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
       return NextResponse.json(handleApiError({
         message: 'Alert ID is required'
       }), { status: 400 });
+    }
 
     let result;
     const userId = user.id || user.userId;
@@ -77,6 +79,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
         return NextResponse.json(handleApiError({
           message: 'Invalid action. Must be acknowledge, resolve, or escalate'
         }), { status: 400 });
+    }
 
     return NextResponse.json(formatApiSuccess(result, `Emergency alert ${body.action}d successfully`));
   } catch (error) {

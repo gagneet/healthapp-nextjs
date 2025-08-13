@@ -36,6 +36,7 @@ export async function GET(request: NextRequest) {
           statusCode: 403,
           payload: { error: { status: 'forbidden', message: 'Patient profile not found' } }
         }, { status: 403 });
+    }
       }
       whereClause.patient_id = patient.id;
     } else if (user!.role === 'DOCTOR') {
@@ -49,6 +50,7 @@ export async function GET(request: NextRequest) {
           statusCode: 403,
           payload: { error: { status: 'forbidden', message: 'Doctor profile not found' } }
         }, { status: 403 });
+    }
       }
       whereClause.doctor_id = doctor.id;
 
@@ -176,6 +178,7 @@ export async function POST(request: NextRequest) {
           statusCode: 403,
           payload: { error: { status: 'forbidden', message: 'Can only book appointments for yourself' } }
         }, { status: 403 });
+    }
       }
 
     // Check if slot is available
@@ -312,6 +315,7 @@ export async function PUT(request: NextRequest) {
         statusCode: 403,
         payload: { error: { status: 'forbidden', message: 'Cannot modify this appointment' } }
       }, { status: 403 });
+    }
 
     // Update appointment
     const updatedAppointment = await prisma.appointment.update({

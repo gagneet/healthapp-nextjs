@@ -24,6 +24,7 @@ export async function GET(request: NextRequest) {
     }
     if (!['DOCTOR', 'HSP', 'admin'].includes(session.user.role)) {
       return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
+    }
 
     const { searchParams } = new URL(request.url);
     const searchParameters = {
@@ -54,6 +55,7 @@ export async function POST(request: NextRequest) {
     }
     if (!['DOCTOR', 'admin'].includes(session.user.role)) {
       return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
+    }
 
     const user = session.user;
     const medicationData = await request.json();

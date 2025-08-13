@@ -23,6 +23,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(handleApiError({
         message: 'Email and password are required'
       }), { status: 400 });
+    }
 
     // Authenticate user
     const authResult = await authenticateUser(email, password);

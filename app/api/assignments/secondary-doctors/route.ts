@@ -31,6 +31,7 @@ export async function GET(request: NextRequest) {
           statusCode: 403,
           payload: { error: { status: 'forbidden', message: 'Patient profile not found' } }
         }, { status: 403 });
+    }
       }
       whereClause.patient_id = patient.id;
     } else if (user!.role === 'DOCTOR') {
@@ -43,6 +44,7 @@ export async function GET(request: NextRequest) {
           statusCode: 403,
           payload: { error: { status: 'forbidden', message: 'Doctor profile not found' } }
         }, { status: 403 });
+    }
       }
       // Doctors can see assignments where they are primary or secondary
       whereClause.OR = [
@@ -147,6 +149,7 @@ export async function POST(request: NextRequest) {
         statusCode: 403,
         payload: { error: { status: 'forbidden', message: 'Only doctors can create secondary assignments' } }
       }, { status: 403 });
+    }
 
     const body = await request.json();
     const {
@@ -171,6 +174,7 @@ export async function POST(request: NextRequest) {
         statusCode: 403,
         payload: { error: { status: 'forbidden', message: 'Doctor profile not found' } }
       }, { status: 403 });
+    }
 
     // Check if secondary doctor exists
     const secondaryDoctor = await prisma.doctors.findUnique({
@@ -309,6 +313,7 @@ export async function PUT(request: NextRequest) {
         statusCode: 403,
         payload: { error: { status: 'forbidden', message: 'Cannot modify this assignment' } }
       }, { status: 403 });
+    }
 
     const updatedAssignment = await prisma.secondary_doctor_assignments.update({
       where: { id: assignment_id },

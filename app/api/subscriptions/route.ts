@@ -32,6 +32,7 @@ export async function GET(request: NextRequest) {
           statusCode: 403,
           payload: { error: { status: 'forbidden', message: 'Patient profile not found' } }
         }, { status: 403 });
+    }
       }
       whereClause.patient_id = patient.id;
 
@@ -128,6 +129,7 @@ export async function POST(request: NextRequest) {
         statusCode: 403,
         payload: { error: { status: 'forbidden', message: 'Only doctors can create subscriptions' } }
       }, { status: 403 });
+    }
 
     const body = await request.json();
     const {
@@ -264,6 +266,7 @@ export async function PUT(request: NextRequest) {
         statusCode: 403,
         payload: { error: { status: 'forbidden', message: 'Cannot modify this subscription' } }
       }, { status: 403 });
+    }
 
     const updatedSubscription = await prisma.patientSubscription.update({
       where: { id },

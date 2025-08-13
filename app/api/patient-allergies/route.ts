@@ -30,6 +30,7 @@ export async function GET(request: NextRequest) {
     }
     if (!['DOCTOR', 'HSP', 'PATIENT', 'admin'].includes(session.user.role)) {
       return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
+    }
 
     const { searchParams } = new URL(request.url);
     const patientId = searchParams.get('patientId');
@@ -39,6 +40,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(handleApiError({
         message: 'Patient ID is required'
       }), { status: 400 });
+    }
 
     const queryParameters = {
       patientId: patientId,
@@ -71,6 +73,7 @@ export async function POST(request: NextRequest) {
     }
     if (!['DOCTOR', 'HSP', 'admin'].includes(session.user.role)) {
       return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
+    }
 
     const user = session.user;
     const allergyData = await request.json();
@@ -80,6 +83,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(handleApiError({
         message: 'Patient ID, allergen, and severity are required'
       }), { status: 400 });
+    }
 
     // Add verification information
     allergyData.verifiedBy = user.id || user.userId;

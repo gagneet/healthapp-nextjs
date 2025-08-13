@@ -19,6 +19,7 @@ export async function GET(
     }
     if (!['DOCTOR', 'HSP', 'PATIENT', 'admin'].includes(session.user.role)) {
       return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
+    }
 
     const user = session.user;
     const patientId = params.id;
@@ -28,6 +29,7 @@ export async function GET(
       return NextResponse.json(handleApiError({
         message: 'Access denied: You can only access your own patient data'
       }), { status: 403 });
+    }
 
     const patientData = await getPatient(patientId);
     

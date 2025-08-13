@@ -25,6 +25,7 @@ export async function GET(request: NextRequest) {
           statusCode: 403,
           payload: { error: { status: 'forbidden', message: 'Patient profile not found' } }
         }, { status: 403 });
+    }
       }
       whereClause.patient_id = patient.id;
 
