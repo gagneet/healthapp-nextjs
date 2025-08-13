@@ -17,6 +17,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(handleApiError({
         message: 'Too many registration attempts. Please try again later.'
       }), { status: 429 });
+    }
 
     const userData = await request.json();
 

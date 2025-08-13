@@ -6,7 +6,7 @@
 
 import { NextRequest, NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
-import { authOptions } from "@/lib/auth"
+import { authOptions } from "@/app/api/auth/[...nextauth]/route"
 import { prisma } from "@/lib/prisma"
 import { 
   createSuccessResponse, 
@@ -62,8 +62,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
   const { page, limit, patientId, doctorId, searchQuery, status, sortBy, sortOrder } = paginationResult.data
   const skip = (page - 1) * limit
 
-  try {
-    let whereClause: any = {}
+  let whereClause: any = {}
 
     // Business Logic: Role-based data access control
     switch (session.user.role) {
@@ -96,14 +95,17 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
         break
       default:
         return createForbiddenResponse("Invalid role for care plan access")
+    }
 
     // Apply patient filter (for healthcare providers)
     if (patientId && ['DOCTOR', 'HSP', 'SYSTEM_ADMIN'].includes(session.user.role)) {
       whereClause.patient_id = patientId
+    }
 
     // Apply doctor filter (for admins)
     if (doctorId && session.user.role === 'SYSTEM_ADMIN') {
       whereClause.primary_doctor_id = doctorId
+    }
 
     // Apply search filter
     if (searchQuery) {
@@ -116,10 +118,12 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
           primary_diagnosis: { contains: searchQuery, mode: 'insensitive' }
         }
       ]
+    }
 
     // Apply status filter
     if (status) {
       whereClause.status = status.toUpperCase()
+    }
 
     // Get total count for pagination
     const total = await prisma.carePlan.count({ where: whereClause })
@@ -176,11 +180,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
         limit,
         total
       }
-    )
-  } catch (error) {
-    console.error("Failed to fetch care plans:", error)
-    throw error
-  }
+    );
 })
 
 /**

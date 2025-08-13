@@ -51,7 +51,6 @@ export async function GET(request: NextRequest) {
         }, { status: 403 });
       }
       whereClause.doctor_id = doctor.id;
-    }
 
     // Additional filters
     if (patientId && ['DOCTOR', 'HSP', 'ADMIN'].includes(user!.role)) {
@@ -162,10 +161,12 @@ export async function POST(request: NextRequest) {
       patient_id,
       doctor_id,
       start_time,
-      end_time,
-      appointment_type = 'CONSULTATION',
+      appointment_time,
       slot_id,
-      notes
+      appointment_type,
+      reason,
+      notes,
+      duration_minutes
     } = body;
 
     // Validate user permissions
@@ -188,59 +189,76 @@ export async function POST(request: NextRequest) {
         where: { id: slot_id }
       });
       
-      if (!slot || slot.is_booked) {
+      if (!slot || !slot.is_available) {
         return NextResponse.json({
           status: false,
           statusCode: 409,
-          payload: { error: { status: 'conflict', message: 'Time slot is not available' } }
+          payload: { error: { status: 'conflict', message: 'Time slot not available' } }
         }, { status: 409 });
       }
-    }
 
-    const appointment = await prisma.appointment.create({
-      data: {
-        patient_id,
-        doctor_id,
-        start_time: new Date(start_time),
-        end_time: new Date(end_time),
-        appointment_type,
-        status: 'SCHEDULED',
-        notes: notes || '',
-        slot_id
-      },
-      include: {
-        patient: {
-          select: {
-            user: {
-              select: {
-                first_name: true,
-                last_name: true,
-                email: true
+    // Create appointment
+    const appointment = await prisma.$transaction(async (tx) => {
+      // Create the appointment
+      const newAppointment = await tx.appointment.create({
+        data: {
+          patient_id,
+          doctor_id,
+          start_time: new Date(start_time),
+          end_time: new Date(new Date(start_time).getTime() + (duration_minutes || 30) * 60000),
+          slot_id,
+          description: `${appointment_type || 'Consultation'}: ${reason || 'General consultation'}`,
+          details: { 
+            appointment_type, 
+            reason, 
+            notes, 
+            duration_minutes: duration_minutes || 30,
+            booked_by: user!.id 
+          },
+          created_at: new Date(),
+          updated_at: new Date()
+        },
+        include: {
+          patient: {
+            select: {
+              patient_id: true,
+              user: {
+                select: {
+                  first_name: true,
+                  last_name: true,
+                  email: true
+                }
               }
             }
-          }
-        },
-        doctor: {
-          select: {
-            users_doctors_user_idTousers: {
-              select: {
-                first_name: true,
-                last_name: true,
-                email: true
+          },
+          doctor: {
+            select: {
+              users_doctors_user_idTousers: {
+                select: {
+                  first_name: true,
+                  last_name: true
+                }
+              },
+              specialities: {
+                select: {
+                  name: true
+                }
               }
             }
           }
         }
-      }
-    });
-
-    // Mark slot as booked if slot_id was provided
-    if (slot_id) {
-      await prisma.appointment_slots.update({
-        where: { id: slot_id },
-        data: { is_booked: true }
       });
-    }
+
+      // Mark slot as unavailable if slot_id provided
+      if (slot_id) {
+        await tx.appointment_slots.update({
+          where: { id: slot_id },
+          data: { is_available: false }
+        });
+      }
+
+      return newAppointment;
+    });
 
     return NextResponse.json({
       status: true,
@@ -269,75 +287,56 @@ export async function PUT(request: NextRequest) {
     const user = session.user;
 
     const body = await request.json();
-    const { id, status, notes, start_time, end_time } = body;
+    const { id, status, notes, reschedule_date, reschedule_time } = body;
 
-    if (!id) {
-      return NextResponse.json({
-        status: false,
-        statusCode: 400,
-        payload: { error: { status: 'error', message: 'Appointment ID is required' } }
-      }, { status: 400 });
-    }
-
-    // Check if user can update this appointment
-    const appointment = await prisma.appointment.findUnique({
+    // Get appointment to verify permissions
+    const existingAppointment = await prisma.appointment.findUnique({
       where: { id },
       include: {
-        patient: true,
-        doctor: true
+        patient: { select: { user_id: true } },
+        doctor: { select: { user_id: true } }
       }
     });
 
-    if (!appointment) {
+    if (!existingAppointment) {
       return NextResponse.json({
         status: false,
         statusCode: 404,
-        payload: { error: { status: 'error', message: 'Appointment not found' } }
+        payload: { error: { status: 'not_found', message: 'Appointment not found' } }
       }, { status: 404 });
+
+    // Check permissions
+    const canModify = 
+      user!.role === 'ADMIN' ||
+      (user!.role === 'DOCTOR' && existingAppointment.doctor?.user_id === user!.id) ||
+      (user!.role === 'PATIENT' && existingAppointment.patient?.user_id === user!.id);
+
+    if (!canModify) {
+      return NextResponse.json({
+        status: false,
+        statusCode: 403,
+        payload: { error: { status: 'forbidden', message: 'Cannot modify this appointment' } }
+      }, { status: 403 });
     }
 
-    // Permission checks
-    if (user!.role === 'PATIENT') {
-      const patient = await prisma.patient.findFirst({
-        where: { user_id: user!.id }
-      });
-      if (!patient || appointment.patient_id !== patient.id) {
-        return NextResponse.json({
-          status: false,
-          statusCode: 403,
-          payload: { error: { status: 'forbidden', message: 'Can only update your own appointments' } }
-        }, { status: 403 });
-      }
-    } else if (user!.role === 'DOCTOR') {
-      const doctor = await prisma.doctors.findFirst({
-        where: { user_id: user!.id }
-      });
-      if (!doctor || appointment.doctor_id !== doctor.id) {
-        return NextResponse.json({
-          status: false,
-          statusCode: 403,
-          payload: { error: { status: 'forbidden', message: 'Can only update your own appointments' } }
-        }, { status: 403 });
-      }
-    }
-
+    // Update appointment
     const updatedAppointment = await prisma.appointment.update({
       where: { id },
       data: {
         ...(status && { status }),
         ...(notes && { notes }),
-        ...(start_time && { start_time: new Date(start_time) }),
-        ...(end_time && { end_time: new Date(end_time) }),
+        ...(reschedule_date && { start_time: new Date(reschedule_date) }),
+        ...(reschedule_time && { appointment_time: reschedule_time }),
         updated_at: new Date()
       },
       include: {
         patient: {
           select: {
+            patient_id: true,
             user: {
               select: {
                 first_name: true,
-                last_name: true,
-                email: true
+                last_name: true
               }
             }
           }
@@ -347,8 +346,7 @@ export async function PUT(request: NextRequest) {
             users_doctors_user_idTousers: {
               select: {
                 first_name: true,
-                last_name: true,
-                email: true
+                last_name: true
               }
             }
           }

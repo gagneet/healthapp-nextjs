@@ -14,6 +14,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(handleApiError({
         message: 'Too many login attempts. Please try again later.'
       }), { status: 429 });
+    }
 
     const body = await request.json();
     const { email, password } = body;
@@ -32,6 +33,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(handleApiError({
         message: authResult.message || 'Authentication failed'
       }), { status: 401 });
+    }
 
     return NextResponse.json(formatApiSuccess(authResult.data, 'Authentication successful'));
   } catch (error) {
