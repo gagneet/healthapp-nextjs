@@ -16,6 +16,7 @@ export async function POST(
         { error: 'Unauthorized' },
         { status: 401 }
       );
+    }
 
     const consultationId = params.id;
     const body = await request.json();
@@ -32,6 +33,7 @@ export async function POST(
         { error: result.error, message: result.message },
         { status: 403 }
       );
+    }
 
     return NextResponse.json({
       status: 'success',

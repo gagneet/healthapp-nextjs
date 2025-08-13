@@ -6,7 +6,7 @@
 
 import { NextRequest, NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
-import { authOptions } from "@/lib/auth"
+import { authOptions } from "@/app/api/auth/[...nextauth]/route"
 import { prisma } from "@/lib/prisma"
 import { 
   createSuccessResponse, 
@@ -98,6 +98,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
 
     if (!doctor) {
       return createErrorResponse(new Error("Doctor profile not found"), 404)
+    }
 
     // Calculate basic statistics
     const totalPatients = doctor.patients.length
@@ -153,8 +154,9 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
       settings: {
         // Placeholder - settings fields need to be resolved with proper schema
       }
+    }
 
-    return createSuccessResponse(profileData)
+    return createSuccessResponse(profileData);
   } catch (error) {
     console.error("Failed to fetch doctor profile:", error)
     throw error

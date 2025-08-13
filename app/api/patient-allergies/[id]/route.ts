@@ -22,6 +22,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       return NextResponse.json(handleApiError({
         message: 'Too many requests. Please try again later.'
       }), { status: 429 });
+    }
 
     // Authenticate user - Only healthcare providers can update allergies
     const session = await getServerSession(authOptions);

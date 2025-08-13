@@ -68,8 +68,8 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
     switch (session.user.role) {
       case 'DOCTOR':
         // Doctors can only see their assigned patients
-        whereClause.primary_doctor_id = session.user.profileId
-        break
+        whereClause.primary_doctor_id = session.user.profileId;
+        break;
       case 'HSP':
         // HSPs can see patients through care team assignments
         // TODO: Implement care team relationship filtering
@@ -77,19 +77,20 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
           some: {
             hsp_id: session.user.profileId
           }
-        }
-        break
+        };
+        break;
       case 'SYSTEM_ADMIN':
         // System admins can see all patients
-        break
+        break;
       case 'HOSPITAL_ADMIN':
         // Hospital admins can see patients in their organization
         if (session.user.organizationId) {
-          whereClause.organization_id = session.user.organizationId
+          whereClause.organization_id = session.user.organizationId;
         }
-        break
+        break;
       default:
-        return createForbiddenResponse("Invalid role for patient access")
+        return createForbiddenResponse("Invalid role for patient access");
+    }
 
     // Apply search filter
     if (searchQuery) {
@@ -109,21 +110,24 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
         {
           medical_record_number: { contains: searchQuery, mode: 'insensitive' }
         }
-      ]
+      ];
+    }
 
     // Apply doctor filter
     if (doctorFilter) {
-      whereClause.primary_doctor_id = doctorFilter
+      whereClause.primary_doctor_id = doctorFilter;
+    }
 
     // Apply status filter
     if (statusFilter) {
       whereClause.user = {
         ...whereClause.user,
         account_status: statusFilter.toUpperCase()
-      }
+      };
+    }
 
     // Get total count for pagination
-    const total = await prisma.patient.count({ where: whereClause })
+    const total = await prisma.patient.count({ where: whereClause });
 
     // Fetch patients with user details
     const patients = await prisma.patient.findMany({
@@ -198,18 +202,18 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
       bloodType: patient.blood_type,
       createdAt: patient.created_at,
       updatedAt: patient.updated_at
-    }))
+    }));
 
     return createSuccessResponse(
       formattedPatients,
       200,
       { page, limit, total }
-    )
+    );
   } catch (error) {
-    console.error("Failed to fetch patients:", error)
-    throw error
+    console.error("Failed to fetch patients:", error);
+    throw error;
   }
-})
+});
 
 /**
  * POST /api/patients
@@ -247,10 +251,11 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
       return createErrorResponse(
         new Error("User with this email already exists"),
         400
-      )
+      );
+    }
 
     // Generate business ID for patient
-    const { businessId: patientBusinessId } = await generatePatientId()
+    const { businessId: patientBusinessId } = await generatePatientId();
 
     // Create user and patient records in transaction
     const result = await prisma.$transaction(async (tx) => {
@@ -293,8 +298,8 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
         }
       })
 
-      return { user, patient }
-    })
+      return { user, patient };
+    });
 
     // Format response
     const responseData = {
@@ -319,13 +324,14 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
       allergies: result.patient.allergies,
       emergencyContact: result.patient.emergency_contacts,
       createdAt: result.patient.created_at
+    };
 
     // TODO: Send welcome email with temporary password
     // TODO: Log audit trail for patient creation
 
-    return createSuccessResponse(responseData, 201)
+    return createSuccessResponse(responseData, 201);
   } catch (error) {
-    console.error("Failed to create patient:", error)
-    throw error
+    console.error("Failed to create patient:", error);
+    throw error;
   }
-})
+});

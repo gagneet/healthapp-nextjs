@@ -16,6 +16,7 @@ export async function GET(
         { error: 'Unauthorized' },
         { status: 401 }
       );
+    }
 
     const orderId = params.id;
     const userRole = session.user.role === 'DOCTOR' ? 'doctor' : 'patient';
@@ -27,6 +28,7 @@ export async function GET(
         { error: result.error },
         { status: result.error === 'Access denied' ? 403 : 404 }
       );
+    }
 
     return NextResponse.json({
       status: 'success',
@@ -60,6 +62,7 @@ export async function POST(
         { error: 'Invalid webhook secret' },
         { status: 401 }
       );
+    }
 
     const orderId = params.id;
     const body = await request.json();
@@ -78,6 +81,7 @@ export async function POST(
         { error: result.error, message: result.message },
         { status: 500 }
       );
+    }
 
     return NextResponse.json({
       status: 'success',

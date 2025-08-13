@@ -23,18 +23,22 @@ export async function GET(request: NextRequest) {
     
     if (patientId) {
       whereClause.patient_id = patientId;
+    }
     
     if (vitalId) {
       whereClause.vital_id = vitalId;
+    }
     
     if (startDate && endDate) {
       whereClause.created_at = {
         gte: new Date(startDate),
         lte: new Date(endDate)
       };
+    }
     
     if (alertLevel) {
       whereClause.alert_level = alertLevel;
+    }
 
     const readings = await prisma.vitalReading.findMany({
       where: whereClause,
@@ -124,6 +128,7 @@ export async function POST(request: NextRequest) {
           alertLevel = 'warning';
         }
       }
+    }
 
     const reading = await prisma.vitalReading.create({
       data: {

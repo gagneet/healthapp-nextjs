@@ -16,6 +16,7 @@ export async function POST(
         { error: 'Unauthorized' },
         { status: 401 }
       );
+    }
 
     // Only doctors can cancel lab orders
     if (session.user.role !== 'DOCTOR') {
@@ -23,6 +24,7 @@ export async function POST(
         { error: 'Only doctors can cancel lab orders' },
         { status: 403 }
       );
+    }
 
     const orderId = params.id;
     const body = await request.json();
@@ -33,6 +35,7 @@ export async function POST(
         { error: 'Cancellation reason is required' },
         { status: 400 }
       );
+    }
 
     const result = await LaboratoryService.cancelLabOrder(orderId, session.user.id, reason);
 
@@ -42,6 +45,7 @@ export async function POST(
         { error: result.error, message: result.message },
         { status: statusCode }
       );
+    }
 
     return NextResponse.json({
       status: 'success',

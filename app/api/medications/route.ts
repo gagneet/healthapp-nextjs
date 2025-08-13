@@ -16,6 +16,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(handleApiError({
         message: 'Too many requests. Please try again later.'
       }), { status: 429 });
+    }
 
     // Authenticate user
     const session = await getServerSession(authOptions);

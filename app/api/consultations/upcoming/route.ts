@@ -16,6 +16,7 @@ export async function GET(request: NextRequest) {
         { error: 'Unauthorized' },
         { status: 401 }
       );
+    }
 
     const { searchParams } = new URL(request.url);
     const limit = parseInt(searchParams.get('limit') || '5');
@@ -31,6 +32,7 @@ export async function GET(request: NextRequest) {
         { error: result.error, message: result.message },
         { status: 500 }
       );
+    }
 
     return NextResponse.json({
       status: 'success',

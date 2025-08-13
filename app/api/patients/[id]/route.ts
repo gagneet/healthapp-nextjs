@@ -37,6 +37,7 @@ export async function GET(
       return NextResponse.json(handleApiError({
         message: 'Patient not found'
       }), { status: 404 });
+    }
     
     return NextResponse.json(formatApiSuccess(patientData, 'Patient data retrieved successfully'));
   } catch (error) {

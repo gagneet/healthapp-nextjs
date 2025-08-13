@@ -32,16 +32,18 @@ export async function GET(request: NextRequest) {
           statusCode: 403,
           payload: { error: { status: 'forbidden', message: 'Patient profile not found' } }
         }, { status: 403 });
-    }
       }
       whereClause.patient_id = patient.id;
+    }
 
     // Additional filters
     if (patientId && ['DOCTOR', 'HSP', 'ADMIN', 'PROVIDER_ADMIN'].includes(user!.role)) {
       whereClause.patient_id = patientId;
+    }
     
     if (status) {
       whereClause.status = status;
+    }
 
     const [subscriptions, totalCount] = await Promise.all([
       prisma.patientSubscription.findMany({
@@ -157,6 +159,7 @@ export async function POST(request: NextRequest) {
         statusCode: 404,
         payload: { error: { status: 'not_found', message: 'Service plan not found' } }
       }, { status: 404 });
+    }
 
     // Calculate end date based on billing cycle
     const startDate = new Date(start_date);
@@ -172,6 +175,7 @@ export async function POST(request: NextRequest) {
     } else if (servicePlan.billing_cycle === 'one_time') {
       // For one-time payments, set end date to far future or keep same as start
       endDate.setFullYear(endDate.getFullYear() + 10);
+    }
 
     const subscription = await prisma.patientSubscription.create({
       data: {
@@ -253,6 +257,7 @@ export async function PUT(request: NextRequest) {
         statusCode: 404,
         payload: { error: { status: 'not_found', message: 'Subscription not found' } }
       }, { status: 404 });
+    }
 
     // Check permissions
     const canModify = 

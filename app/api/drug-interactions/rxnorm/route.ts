@@ -17,6 +17,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(handleApiError({
         message: 'Too many RxNorm API requests. Please try again later.'
       }), { status: 429 });
+    }
 
     // Authenticate user - only healthcare providers can access RxNorm
     const session = await getServerSession(authOptions);
@@ -57,7 +58,7 @@ export async function GET(request: NextRequest) {
     };
 
     // Log the RxNorm API usage for audit purposes
-    console.log(`RxNorm API accessed by user ${authResult.user?.id} for drug interaction check`);
+    console.log(`RxNorm API accessed by user ${session.user?.id} for drug interaction check`);
 
     return NextResponse.json(formatApiSuccess(mockRxNormData, 'RxNorm interaction data retrieved'));
   } catch (error) {
