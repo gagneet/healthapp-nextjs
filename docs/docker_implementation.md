@@ -705,3 +705,158 @@ The enhanced script now combines ALL advanced features:
 
 The deployment script is now the ultimate solution combining the best features from both deploy-stack.sh and deploy-dev.sh, providing maximum flexibility for
 both development and production deployments with granular IP control.
+
+## ✅ Complete Script Cleanup & Redesign
+
+Removed Unused Scripts (Cleaned up 10+ redundant files):
+
+- deploy-nextjs-*.sh variants
+- deploy-vm-*.sh variants
+- deploy-stack.sh (overly complex 43KB script)
+- backup-prod.sh, docker-cleanup.sh, etc.
+- Multiple redundant Docker files and compose files
+
+New Clean Architecture:
+
+| Script               | Technology     | Purpose                           |
+  |----------------------|----------------|-----------------------------------|
+| deploy-local.sh      | Docker Compose | Local development with hot-reload |
+| deploy-dev.sh        | Docker Swarm   | Development server deployment     |
+| deploy-test.sh       | Docker Swarm   | Test environment with CI/CD       |
+| deploy-production.sh | Docker Swarm   | Production deployment             |
+
+✅ All Your Required Parameters Implemented:
+
+1. --scale (Multi-server scaling)
+
+# Scale app to 4 replicas for performance
+./scripts/deploy-production.sh deploy --scale 4
+
+# Individual service scaling
+./scripts/deploy-production.sh deploy --scale 6 --scale-db 2 --scale-redis 2
+
+2. --migrate (Idempotent migrations)
+
+# Automatically run migrations after deployment
+./scripts/deploy-production.sh deploy --migrate
+
+# Migrations use Prisma (idempotent by design)
+./scripts/deploy-production.sh migrate
+
+3. --seed (Idempotent seeders)
+
+# Run seeders with deployment
+./scripts/deploy-production.sh deploy --seed --migrate
+
+# Seeders designed to be idempotent (safe to run multiple times)
+./scripts/deploy-production.sh seed
+
+4. --domain (Custom domain/IP)
+
+# Deploy to custom domain
+./scripts/deploy-production.sh deploy --domain healthapp.com
+
+# Use IP address
+./scripts/deploy-production.sh deploy --domain 192.168.1.100
+
+5. Custom Ports for All Services
+
+# Custom ports for all services
+./scripts/deploy-production.sh deploy \
+--port-app 8080 \
+--port-db 5433 \
+--port-redis 6380 \
+--port-pgadmin 5051
+
+6. --branch (Git branch checkout)
+
+# Deploy specific branch
+./scripts/deploy-production.sh deploy --branch feature/new-feature --migrate
+
+# Automatically fetches and checks out the branch
+./scripts/deploy-production.sh deploy --branch hotfix/critical-fix
+
+7. Custom Domains for Services
+
+# Multi-server deployment with different domains
+./scripts/deploy-production.sh deploy \
+--domain app.company.com \
+--domain-db db.company.com \
+--domain-redis cache.company.com \
+--domain-pgadmin admin.company.com
+
+8. --app-name (Custom stack naming)
+
+# Custom application name
+./scripts/deploy-production.sh deploy --app-name mycompany-health
+
+# Results in stack: mycompany-health-prod
+# Services: mycompany-health-prod_app, mycompany-health-prod_postgres, etc.
+
+✅ Docker Architecture Implementation:
+
+Local Development: Docker Compose
+
+- Hot-reload development environment
+- Volume mounts for code changes
+- Separate frontend/backend containers
+- Easy debugging and development
+
+Dev/Test/Production: Docker Swarm
+
+- Load balancing and high availability
+- Service scaling and orchestration
+- Rolling updates with zero downtime
+- Production-grade resource management
+
+✅ Advanced Features Added:
+
+Safety & Reliability:
+
+- Automatic pre-deployment backups
+- Health checks and deployment verification
+- Confirmation prompts for critical operations
+- Rollback capabilities for production
+
+Idempotent Operations:
+
+- Database migrations safe to run multiple times
+- Seeders designed to not duplicate data
+- Docker services update without data loss
+
+Multi-Environment Support:
+
+- Environment-specific configurations
+- Proper resource allocation per environment
+- Isolated networking and storage
+
+🚀 Example Usage:
+
+High-Availability Production Deployment:
+
+# Set required environment variables
+export POSTGRES_PASSWORD=secure_prod_password
+export JWT_SECRET=your-256-bit-secret-key
+export NEXTAUTH_SECRET=your-nextauth-secret-key
+export REDIS_PASSWORD=secure_redis_password
+export PGADMIN_PASSWORD=secure_admin_password
+
+# Deploy with scaling and custom configuration
+./scripts/deploy-production.sh deploy \
+--domain demo.adhere.live \
+--scale 4 \
+--scale-db 2 \
+--branch master \
+--migrate \
+--seed
+
+Local Development:
+
+# Start local development with custom ports
+./scripts/deploy-local.sh start \
+--port-app 3000 \
+--port-backend 3001 \
+--migrate \
+--seed
+
+All scripts are now production-ready, fully documented, and implement exactly the Docker Swarm architecture with all parameters you requested!
