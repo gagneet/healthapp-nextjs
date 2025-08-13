@@ -1,0 +1,85 @@
+# docker-stack.test-simple.yml - Docker Swarm stack for test environment with integrated Next.js
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: healthapp_test
+      POSTGRES_USER: healthapp_user
+      POSTGRES_PASSWORD: pg_password
+    volumes:
+      - postgres_test_data:/var/lib/postgresql/data
+    networks:
+      - healthapp-test-network
+    ports:
+      - "5432:5432"
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@healthapp.com
+      PGADMIN_DEFAULT_PASSWORD: admin123
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    ports:
+      - "5050:80"
+    networks:
+      - healthapp-test-network
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+
+  app:
+    image: healthapp-app:test
+    environment:
+      NODE_ENV: development
+      PORT: 3000
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: healthapp_test
+      POSTGRES_USER: healthapp_user
+      POSTGRES_PASSWORD: pg_password
+      DATABASE_URL: postgresql://healthapp_user:pg_password@postgres:5432/healthapp_test?schema=public
+      JWT_SECRET: test_jwt_secret_key_2024
+      NEXT_PUBLIC_API_URL: http://localhost:3000/api
+    ports:
+      - "3000:3000"
+    networks:
+      - healthapp-test-network
+    depends_on:
+      - postgres
+    deploy:
+      replicas: 1
+      update_config:
+        parallelism: 1
+        delay: 10s
+        order: start-first
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+      resources:
+        limits:
+          memory: 1024M
+        reservations:
+          memory: 512M
+
+volumes:
+  postgres_test_data:
+    driver: local
+
+networks:
+  healthapp-test-network:
+    driver: overlay
+    attachable: true

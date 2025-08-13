@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import LaboratoryService from '@/lib/services/LaboratoryService.js';
+import LaboratoryService from '@/lib/services/LaboratoryService';
 import jwt from 'jsonwebtoken';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret';

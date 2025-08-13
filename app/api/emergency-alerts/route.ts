@@ -32,7 +32,7 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url);
     const queryParameters = {
-      patientId: searchParams.get('patientId'),
+      patientId: searchParams.get('patientId') || undefined,
       alertType: searchParams.get('alertType') || '',
       severity: searchParams.get('severity') || '',
       status: searchParams.get('status') || '',
