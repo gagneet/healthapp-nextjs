@@ -685,6 +685,921 @@ export function handleApiError(error: any) {
 }
 
 /**
+ * Drug Interaction Services
+ */
+
+/**
+ * Get drug interactions based on search criteria
+ */
+export async function getDrugInteractions(searchParams: {
+  drug1?: string;
+  drug2?: string;
+  severity?: string;
+  search?: string;
+  page: number;
+  limit: number;
+}) {
+  try {
+    const skip = (searchParams.page - 1) * searchParams.limit;
+    
+    // Build where clause for drug interaction search
+    const whereClause: any = {};
+    
+    if (searchParams.drug1) {
+      whereClause.drug_name_one = {
+        contains: searchParams.drug1,
+        mode: 'insensitive',
+      };
+    }
+    
+    if (searchParams.drug2) {
+      whereClause.drug_name_two = {
+        contains: searchParams.drug2,
+        mode: 'insensitive',
+      };
+    }
+    
+    if (searchParams.severity) {
+      whereClause.severity_level = searchParams.severity.toUpperCase();
+    }
+    
+    if (searchParams.search) {
+      whereClause.OR = [
+        {
+          drug_name_one: {
+            contains: searchParams.search,
+            mode: 'insensitive',
+          },
+        },
+        {
+          drug_name_two: {
+            contains: searchParams.search,
+            mode: 'insensitive',
+          },
+        },
+        {
+          clinical_effect: {
+            contains: searchParams.search,
+            mode: 'insensitive',
+          },
+        },
+      ];
+    }
+
+    const [interactions, total] = await Promise.all([
+      prisma.drugInteraction.findMany({
+        where: whereClause,
+        skip,
+        take: searchParams.limit,
+        orderBy: {
+          severity_level: 'desc', // Show most severe first
+        },
+      }),
+      prisma.drugInteraction.count({ where: whereClause }),
+    ]);
+
+    return {
+      interactions: interactions.map(interaction => ({
+        id: interaction.id,
+        drugOneName: interaction.drug_name_one,
+        drugTwoName: interaction.drug_name_two,
+        rxnormId1: interaction.rxcui_one,
+        rxnormId2: interaction.rxcui_two,
+        severityLevel: interaction.severity_level,
+        clinicalEffects: interaction.clinical_effect,
+        interactionType: interaction.interaction_type,
+        managementAdvice: interaction.management_advice,
+        evidenceLevel: interaction.evidence_level,
+        source: interaction.source,
+        lastUpdated: interaction.last_updated,
+      })),
+      pagination: {
+        page: searchParams.page,
+        limit: searchParams.limit,
+        total,
+        totalPages: Math.ceil(total / searchParams.limit),
+      },
+    };
+  } catch (error) {
+    console.error('Get drug interactions error:', error);
+    throw new Error('Failed to retrieve drug interactions');
+  }
+}
+
+/**
+ * Create a new drug interaction record
+ */
+export async function createDrugInteraction(interactionData: {
+  drugOneName: string;
+  drugTwoName: string;
+  rxnormId1?: string;
+  rxnormId2?: string;
+  severityLevel: string;
+  clinicalEffects: string;
+  mechanismOfAction?: string;
+  managementAdvice?: string;
+  riskLevel?: string;
+  evidenceLevel?: string;
+  createdBy: string;
+}) {
+  try {
+    const interaction = await prisma.drugInteraction.create({
+      data: {
+        drug_name_one: interactionData.drugOneName,
+        drug_name_two: interactionData.drugTwoName,
+        rxcui_one: interactionData.rxnormId1 || '',
+        rxcui_two: interactionData.rxnormId2 || '',
+        severity_level: interactionData.severityLevel.toUpperCase() as any,
+        interaction_type: interactionData.mechanismOfAction || 'pharmacodynamic',
+        description: interactionData.clinicalEffects,
+        clinical_effect: interactionData.clinicalEffects,
+        management_advice: interactionData.managementAdvice || '',
+        evidence_level: interactionData.evidenceLevel?.toUpperCase() || 'MODERATE',
+      },
+    });
+
+    return {
+      id: interaction.id,
+      drugOneName: interaction.drug_name_one,
+      drugTwoName: interaction.drug_name_two,
+      severityLevel: interaction.severity_level,
+      clinicalEffects: interaction.clinical_effect,
+      createdAt: interaction.created_at,
+    };
+  } catch (error) {
+    console.error('Create drug interaction error:', error);
+    throw new Error('Failed to create drug interaction');
+  }
+}
+
+/**
+ * Check for drug interactions for a specific patient
+ */
+export async function checkPatientDrugInteractions(params: {
+  patientId: string;
+  medications: string[];
+  newMedication?: string;
+  requestedBy: string;
+}) {
+  try {
+    const { patientId, medications, newMedication, requestedBy } = params;
+    
+    // Get all medication combinations to check
+    const medicationsToCheck = newMedication 
+      ? [...medications, newMedication]
+      : medications;
+    
+    const interactionResults = [];
+    const criticalInteractions = [];
+    const warnings = [];
+
+    // Check each pair of medications
+    for (let i = 0; i < medicationsToCheck.length; i++) {
+      for (let j = i + 1; j < medicationsToCheck.length; j++) {
+        const drug1 = medicationsToCheck[i];
+        const drug2 = medicationsToCheck[j];
+        
+        // Query for interactions between these two drugs
+        const interactions = await prisma.drugInteraction.findMany({
+          where: {
+            OR: [
+              {
+                AND: [
+                  { drug_name_one: { contains: drug1, mode: 'insensitive' } },
+                  { drug_name_two: { contains: drug2, mode: 'insensitive' } },
+                ],
+              },
+              {
+                AND: [
+                  { drug_name_one: { contains: drug2, mode: 'insensitive' } },
+                  { drug_name_two: { contains: drug1, mode: 'insensitive' } },
+                ],
+              },
+            ],
+          },
+        });
+
+        if (interactions.length > 0) {
+          for (const interaction of interactions) {
+            const result = {
+              id: interaction.id,
+              drug1,
+              drug2,
+              severityLevel: interaction.severity_level,
+              clinicalEffects: interaction.clinical_effect,
+              interactionType: interaction.interaction_type,
+              managementAdvice: interaction.management_advice,
+              evidenceLevel: interaction.evidence_level,
+              isNewMedicationInvolved: newMedication && (drug1 === newMedication || drug2 === newMedication),
+            };
+
+            interactionResults.push(result);
+
+            // Categorize by severity
+            if (interaction.severity_level === 'CONTRAINDICATION' || interaction.severity_level === 'MAJOR') {
+              criticalInteractions.push(result);
+            } else if (interaction.severity_level === 'MODERATE') {
+              warnings.push(result);
+            }
+          }
+        }
+      }
+    }
+
+    // Create medication safety alerts for critical interactions
+    for (const criticalInteraction of criticalInteractions) {
+      await prisma.medicationSafetyAlert.create({
+        data: {
+          patient_id: patientId,
+          alert_type: 'DRUG_INTERACTION',
+          severity: criticalInteraction.severityLevel === 'CONTRAINDICATION' ? 'CRITICAL' : 'HIGH',
+          alert_title: 'Drug Interaction Alert',
+          alert_message: `Critical drug interaction: ${criticalInteraction.drug1} and ${criticalInteraction.drug2}`,
+          recommendation: criticalInteraction.managementAdvice,
+          requires_override: criticalInteraction.severityLevel === 'CONTRAINDICATION',
+          resolved_by: requestedBy,
+        },
+      });
+    }
+
+    return {
+      patientId,
+      totalInteractions: interactionResults.length,
+      criticalInteractionsCount: criticalInteractions.length,
+      warningsCount: warnings.length,
+      interactions: interactionResults,
+      criticalInteractions,
+      warnings,
+      recommendation: criticalInteractions.length > 0 
+        ? 'REVIEW_REQUIRED' 
+        : warnings.length > 0 
+        ? 'MONITOR_PATIENT' 
+        : 'NO_SIGNIFICANT_INTERACTIONS',
+      checkTimestamp: new Date().toISOString(),
+    };
+  } catch (error) {
+    console.error('Check patient drug interactions error:', error);
+    throw new Error('Failed to check drug interactions');
+  }
+}
+
+/**
+ * Patient Allergies Management Services
+ */
+
+/**
+ * Get patient allergies with filtering and pagination
+ */
+export async function getPatientAllergies(searchParams: {
+  patientId: string;
+  allergyType?: string;
+  severity?: string;
+  verified?: boolean;
+  search?: string;
+  page: number;
+  limit: number;
+}) {
+  try {
+    const skip = (searchParams.page - 1) * searchParams.limit;
+    
+    // Build where clause for allergy search
+    const whereClause: any = {
+      patient_id: searchParams.patientId,
+      is_active: true, // Only show active (not deleted) allergies
+    };
+    
+    if (searchParams.allergyType) {
+      whereClause.allergen_type = searchParams.allergyType.toUpperCase();
+    }
+    
+    if (searchParams.severity) {
+      whereClause.reaction_severity = searchParams.severity.toUpperCase();
+    }
+    
+    if (searchParams.verified !== undefined) {
+      whereClause.verified_by_doctor = searchParams.verified;
+    }
+    
+    if (searchParams.search) {
+      whereClause.OR = [
+        {
+          allergen_name: {
+            contains: searchParams.search,
+            mode: 'insensitive',
+          },
+        },
+        {
+          reaction_symptoms: {
+            contains: searchParams.search,
+            mode: 'insensitive',
+          },
+        },
+        {
+          notes: {
+            contains: searchParams.search,
+            mode: 'insensitive',
+          },
+        },
+      ];
+    }
+
+    const [allergies, total] = await Promise.all([
+      prisma.patientAllergy.findMany({
+        where: whereClause,
+        skip,
+        take: searchParams.limit,
+        include: {
+          patient: {
+            include: {
+              user: {
+                select: {
+                  first_name: true,
+                  last_name: true,
+                },
+              },
+            },
+          },
+          verified_by_user: {
+            select: {
+              first_name: true,
+              last_name: true,
+              role: true,
+            },
+          },
+        },
+        orderBy: [
+          { reaction_severity: 'desc' }, // Most severe first
+          { created_at: 'desc' },
+        ],
+      }),
+      prisma.patientAllergy.count({ where: whereClause }),
+    ]);
+
+    return {
+      allergies: allergies.map(allergy => ({
+        id: allergy.id,
+        patientId: allergy.patient_id,
+        patientName: `${allergy.patient.user.first_name} ${allergy.patient.user.last_name}`,
+        allergenName: allergy.allergen_name,
+        allergenType: allergy.allergen_type,
+        rxnormCode: allergy.allergen_rxnorm,
+        severityLevel: allergy.reaction_severity,
+        reactionSymptoms: allergy.reaction_symptoms,
+        onsetDate: allergy.onset_date,
+        isVerifiedByDoctor: allergy.verified_by_doctor,
+        verifiedBy: allergy.verified_by_user ? {
+          name: `${allergy.verified_by_user.first_name} ${allergy.verified_by_user.last_name}`,
+          role: allergy.verified_by_user.role,
+        } : null,
+        notes: allergy.notes,
+        createdAt: allergy.created_at,
+        updatedAt: allergy.updated_at,
+      })),
+      pagination: {
+        page: searchParams.page,
+        limit: searchParams.limit,
+        total,
+        totalPages: Math.ceil(total / searchParams.limit),
+      },
+      summary: {
+        totalAllergies: total,
+        verifiedAllergies: allergies.filter(a => a.verified_by_doctor).length,
+        criticalAllergies: allergies.filter(a => a.reaction_severity === 'SEVERE' || a.reaction_severity === 'ANAPHYLAXIS').length,
+      },
+    };
+  } catch (error) {
+    console.error('Get patient allergies error:', error);
+    throw new Error('Failed to retrieve patient allergies');
+  }
+}
+
+/**
+ * Create a new patient allergy record
+ */
+export async function createPatientAllergy(allergyData: {
+  patientId: string;
+  allergen: string;
+  allergenType?: string;
+  allergyType: string;
+  severity: string;
+  reactionDescription: string;
+  onsetDate?: string;
+  rxnormCode?: string;
+  notes?: string;
+  verifiedBy: string;
+  isVerified: boolean;
+}) {
+  try {
+    const allergy = await prisma.patientAllergy.create({
+      data: {
+        patient_id: allergyData.patientId,
+        allergen_name: allergyData.allergen,
+        allergen_type: allergyData.allergenType?.toUpperCase() as any || 'DRUG',
+        allergen_rxnorm: allergyData.rxnormCode,
+        reaction_severity: allergyData.severity.toUpperCase() as any,
+        reaction_symptoms: allergyData.reactionDescription,
+        onset_date: allergyData.onsetDate ? new Date(allergyData.onsetDate) : null,
+        notes: allergyData.notes,
+        verified_by_doctor: allergyData.isVerified,
+        verified_by: allergyData.verifiedBy,
+        is_active: true,
+      },
+      include: {
+        patient: {
+          include: {
+            user: {
+              select: {
+                first_name: true,
+                last_name: true,
+              },
+            },
+          },
+        },
+        verified_by_user: {
+          select: {
+            first_name: true,
+            last_name: true,
+            role: true,
+          },
+        },
+      },
+    });
+
+    return {
+      id: allergy.id,
+      patientId: allergy.patient_id,
+      patientName: `${allergy.patient.user.first_name} ${allergy.patient.user.last_name}`,
+      allergenName: allergy.allergen_name,
+      allergenType: allergy.allergen_type,
+      severityLevel: allergy.reaction_severity,
+      reactionSymptoms: allergy.reaction_symptoms,
+      isVerifiedByDoctor: allergy.verified_by_doctor,
+      verifiedBy: allergy.verified_by_user ? {
+        name: `${allergy.verified_by_user.first_name} ${allergy.verified_by_user.last_name}`,
+        role: allergy.verified_by_user.role,
+      } : null,
+      createdAt: allergy.created_at,
+    };
+  } catch (error) {
+    console.error('Create patient allergy error:', error);
+    throw new Error('Failed to create patient allergy');
+  }
+}
+
+/**
+ * Update a patient allergy record
+ */
+export async function updatePatientAllergy(allergyId: string, updateData: any) {
+  try {
+    // Prepare update data with correct field names
+    const dataToUpdate: any = {};
+    
+    if (updateData.allergen) dataToUpdate.allergen_name = updateData.allergen;
+    if (updateData.allergenType) dataToUpdate.allergen_type = updateData.allergenType.toUpperCase();
+    if (updateData.severity) dataToUpdate.reaction_severity = updateData.severity.toUpperCase();
+    if (updateData.reactionDescription) dataToUpdate.reaction_symptoms = updateData.reactionDescription;
+    if (updateData.onsetDate) dataToUpdate.onset_date = new Date(updateData.onsetDate);
+    if (updateData.notes) dataToUpdate.notes = updateData.notes;
+    if (updateData.rxnormCode) dataToUpdate.allergen_rxnorm = updateData.rxnormCode;
+
+    const updatedAllergy = await prisma.patientAllergy.update({
+      where: { id: allergyId },
+      data: dataToUpdate,
+    });
+
+    return {
+      id: updatedAllergy.id,
+      patientId: updatedAllergy.patient_id,
+      allergenName: updatedAllergy.allergen_name,
+      allergenType: updatedAllergy.allergen_type,
+      severityLevel: updatedAllergy.reaction_severity,
+      reactionSymptoms: updatedAllergy.reaction_symptoms,
+      updatedAt: updatedAllergy.updated_at,
+    };
+  } catch (error) {
+    console.error('Update patient allergy error:', error);
+    throw new Error('Failed to update patient allergy');
+  }
+}
+
+/**
+ * Delete (soft delete) a patient allergy record
+ */
+export async function deletePatientAllergy(allergyId: string, deleteData: {
+  deletedBy: string;
+  deletionReason: string;
+}) {
+  try {
+    const deletedAllergy = await prisma.patientAllergy.update({
+      where: { id: allergyId },
+      data: {
+        is_active: false,
+        notes: deleteData.deletionReason, // Store deletion reason in notes
+      },
+    });
+
+    return {
+      id: deletedAllergy.id,
+      isActive: deletedAllergy.is_active,
+      message: 'Allergy marked as inactive',
+    };
+  } catch (error) {
+    console.error('Delete patient allergy error:', error);
+    throw new Error('Failed to delete patient allergy');
+  }
+}
+
+/**
+ * Verify a patient allergy record
+ */
+export async function verifyPatientAllergy(allergyId: string, verificationData: {
+  verifiedBy: string;
+  verificationNotes?: string;
+}) {
+  try {
+    const verifiedAllergy = await prisma.patientAllergy.update({
+      where: { id: allergyId },
+      data: {
+        verified_by_doctor: true,
+        verified_by: verificationData.verifiedBy,
+        notes: verificationData.verificationNotes || null,
+      },
+      include: {
+        verified_by_user: {
+          select: {
+            first_name: true,
+            last_name: true,
+            role: true,
+          },
+        },
+      },
+    });
+
+    return {
+      id: verifiedAllergy.id,
+      isVerifiedByDoctor: verifiedAllergy.verified_by_doctor,
+      verifiedBy: verifiedAllergy.verified_by_user ? {
+        name: `${verifiedAllergy.verified_by_user.first_name} ${verifiedAllergy.verified_by_user.last_name}`,
+        role: verifiedAllergy.verified_by_user.role,
+      } : null,
+      notes: verifiedAllergy.notes,
+    };
+  } catch (error) {
+    console.error('Verify patient allergy error:', error);
+    throw new Error('Failed to verify patient allergy');
+  }
+}
+
+/**
+ * Emergency Response & Critical Care Services
+ */
+
+/**
+ * Get emergency alerts with filtering and pagination
+ */
+export async function getEmergencyAlerts(searchParams: {
+  patientId?: string;
+  alertType?: string;
+  severity?: string;
+  status?: string;
+  resolved?: boolean;
+  search?: string;
+  page: number;
+  limit: number;
+}) {
+  try {
+    const skip = (searchParams.page - 1) * searchParams.limit;
+    
+    // Build where clause for emergency alerts search
+    const whereClause: any = {};
+    
+    if (searchParams.patientId) {
+      whereClause.patient_id = searchParams.patientId;
+    }
+    
+    if (searchParams.alertType) {
+      whereClause.alert_type = searchParams.alertType.toUpperCase();
+    }
+    
+    if (searchParams.severity) {
+      whereClause.severity_level = searchParams.severity.toUpperCase();
+    }
+    
+    if (searchParams.status) {
+      whereClause.alert_status = searchParams.status.toUpperCase();
+    }
+    
+    if (searchParams.resolved !== undefined) {
+      whereClause.is_resolved = searchParams.resolved;
+    }
+    
+    if (searchParams.search) {
+      whereClause.OR = [
+        {
+          alert_message: {
+            contains: searchParams.search,
+            mode: 'insensitive',
+          },
+        },
+        {
+          clinical_context: {
+            contains: searchParams.search,
+            mode: 'insensitive',
+          },
+        },
+        {
+          resolution_notes: {
+            contains: searchParams.search,
+            mode: 'insensitive',
+          },
+        },
+      ];
+    }
+
+    const [alerts, total] = await Promise.all([
+      prisma.emergencyAlert.findMany({
+        where: whereClause,
+        skip,
+        take: searchParams.limit,
+        include: {
+          patient: {
+            include: {
+              user: {
+                select: {
+                  first_name: true,
+                  last_name: true,
+                },
+              },
+            },
+          },
+          vital_reading: {
+            select: {
+              measurement_value: true,
+              measurement_unit: true,
+              created_at: true,
+            },
+          },
+          acknowledged_by_user: {
+            select: {
+              first_name: true,
+              last_name: true,
+              role: true,
+            },
+          },
+          resolved_by_user: {
+            select: {
+              first_name: true,
+              last_name: true,
+              role: true,
+            },
+          },
+        },
+        orderBy: [
+          { severity_level: 'desc' }, // Most severe first
+          { triggered_at: 'desc' }, // Most recent first
+        ],
+      }),
+      prisma.emergencyAlert.count({ where: whereClause }),
+    ]);
+
+    return {
+      alerts: alerts.map(alert => ({
+        id: alert.id,
+        patientId: alert.patient_id,
+        patientName: `${alert.patient.user.first_name} ${alert.patient.user.last_name}`,
+        alertType: alert.alert_type,
+        severityLevel: alert.severity_level,
+        alertStatus: alert.alert_status,
+        alertMessage: alert.alert_message,
+        clinicalContext: alert.clinical_context,
+        triggeredAt: alert.triggered_at,
+        vitalReading: alert.vital_reading ? {
+          value: alert.vital_reading.measurement_value,
+          unit: alert.vital_reading.measurement_unit,
+          timestamp: alert.vital_reading.created_at,
+        } : null,
+        isAcknowledged: alert.is_acknowledged,
+        acknowledgedBy: alert.acknowledged_by_user ? {
+          name: `${alert.acknowledged_by_user.first_name} ${alert.acknowledged_by_user.last_name}`,
+          role: alert.acknowledged_by_user.role,
+        } : null,
+        acknowledgedAt: alert.acknowledged_at,
+        isResolved: alert.is_resolved,
+        resolvedBy: alert.resolved_by_user ? {
+          name: `${alert.resolved_by_user.first_name} ${alert.resolved_by_user.last_name}`,
+          role: alert.resolved_by_user.role,
+        } : null,
+        resolvedAt: alert.resolved_at,
+        resolutionNotes: alert.resolution_notes,
+        requiresEscalation: alert.requires_escalation,
+        escalationLevel: alert.escalation_level,
+        createdAt: alert.created_at,
+      })),
+      pagination: {
+        page: searchParams.page,
+        limit: searchParams.limit,
+        total,
+        totalPages: Math.ceil(total / searchParams.limit),
+      },
+      summary: {
+        totalAlerts: total,
+        activeAlerts: alerts.filter(a => !a.is_resolved).length,
+        criticalAlerts: alerts.filter(a => a.severity_level === 'CRITICAL' || a.severity_level === 'EMERGENCY').length,
+        unacknowledgedAlerts: alerts.filter(a => !a.is_acknowledged).length,
+      },
+    };
+  } catch (error) {
+    console.error('Get emergency alerts error:', error);
+    throw new Error('Failed to retrieve emergency alerts');
+  }
+}
+
+/**
+ * Create a new emergency alert
+ */
+export async function createEmergencyAlert(alertData: {
+  patientId: string;
+  alertType: string;
+  severity: string;
+  alertMessage: string;
+  clinicalContext?: string;
+  vitalReadingId?: string;
+  createdBy: string;
+  triggeredAt: string;
+}) {
+  try {
+    const alert = await prisma.emergencyAlert.create({
+      data: {
+        patient_id: alertData.patientId,
+        alert_type: alertData.alertType.toUpperCase() as any,
+        severity_level: alertData.severity.toUpperCase() as any,
+        alert_status: 'ACTIVE',
+        alert_message: alertData.alertMessage,
+        clinical_context: alertData.clinicalContext,
+        vital_reading_id: alertData.vitalReadingId,
+        triggered_at: new Date(alertData.triggeredAt),
+        requires_escalation: alertData.severity.toUpperCase() === 'EMERGENCY',
+        escalation_level: alertData.severity.toUpperCase() === 'EMERGENCY' ? 'IMMEDIATE' : null,
+        is_acknowledged: false,
+        is_resolved: false,
+      },
+      include: {
+        patient: {
+          include: {
+            user: {
+              select: {
+                first_name: true,
+                last_name: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    return {
+      id: alert.id,
+      patientId: alert.patient_id,
+      patientName: `${alert.patient.user.first_name} ${alert.patient.user.last_name}`,
+      alertType: alert.alert_type,
+      severityLevel: alert.severity_level,
+      alertMessage: alert.alert_message,
+      triggeredAt: alert.triggered_at,
+      requiresEscalation: alert.requires_escalation,
+      createdAt: alert.created_at,
+    };
+  } catch (error) {
+    console.error('Create emergency alert error:', error);
+    throw new Error('Failed to create emergency alert');
+  }
+}
+
+/**
+ * Acknowledge an emergency alert
+ */
+export async function acknowledgeEmergencyAlert(alertId: string, acknowledgeData: {
+  acknowledgedBy: string;
+  acknowledgeNotes?: string;
+}) {
+  try {
+    const acknowledgedAlert = await prisma.emergencyAlert.update({
+      where: { id: alertId },
+      data: {
+        is_acknowledged: true,
+        acknowledged_by: acknowledgeData.acknowledgedBy,
+        acknowledged_at: new Date(),
+        acknowledge_notes: acknowledgeData.acknowledgeNotes,
+      },
+      include: {
+        acknowledged_by_user: {
+          select: {
+            first_name: true,
+            last_name: true,
+            role: true,
+          },
+        },
+      },
+    });
+
+    return {
+      id: acknowledgedAlert.id,
+      isAcknowledged: acknowledgedAlert.is_acknowledged,
+      acknowledgedBy: {
+        name: `${acknowledgedAlert.acknowledged_by_user?.first_name} ${acknowledgedAlert.acknowledged_by_user?.last_name}`,
+        role: acknowledgedAlert.acknowledged_by_user?.role,
+      },
+      acknowledgedAt: acknowledgedAlert.acknowledged_at,
+      acknowledgeNotes: acknowledgedAlert.acknowledge_notes,
+    };
+  } catch (error) {
+    console.error('Acknowledge emergency alert error:', error);
+    throw new Error('Failed to acknowledge emergency alert');
+  }
+}
+
+/**
+ * Resolve an emergency alert
+ */
+export async function resolveEmergencyAlert(alertId: string, resolveData: {
+  resolvedBy: string;
+  resolutionNotes: string;
+  resolutionAction?: string;
+}) {
+  try {
+    const resolvedAlert = await prisma.emergencyAlert.update({
+      where: { id: alertId },
+      data: {
+        is_resolved: true,
+        alert_status: 'RESOLVED',
+        resolved_by: resolveData.resolvedBy,
+        resolved_at: new Date(),
+        resolution_notes: resolveData.resolutionNotes,
+        resolution_action: resolveData.resolutionAction?.toUpperCase() as any,
+      },
+      include: {
+        resolved_by_user: {
+          select: {
+            first_name: true,
+            last_name: true,
+            role: true,
+          },
+        },
+      },
+    });
+
+    return {
+      id: resolvedAlert.id,
+      isResolved: resolvedAlert.is_resolved,
+      alertStatus: resolvedAlert.alert_status,
+      resolvedBy: {
+        name: `${resolvedAlert.resolved_by_user?.first_name} ${resolvedAlert.resolved_by_user?.last_name}`,
+        role: resolvedAlert.resolved_by_user?.role,
+      },
+      resolvedAt: resolvedAlert.resolved_at,
+      resolutionNotes: resolvedAlert.resolution_notes,
+      resolutionAction: resolvedAlert.resolution_action,
+    };
+  } catch (error) {
+    console.error('Resolve emergency alert error:', error);
+    throw new Error('Failed to resolve emergency alert');
+  }
+}
+
+/**
+ * Escalate an emergency alert
+ */
+export async function escalateEmergencyAlert(alertId: string, escalateData: {
+  escalatedBy: string;
+  escalationReason: string;
+  escalationLevel?: string;
+}) {
+  try {
+    const escalatedAlert = await prisma.emergencyAlert.update({
+      where: { id: alertId },
+      data: {
+        requires_escalation: true,
+        escalation_level: escalateData.escalationLevel?.toUpperCase() as any || 'SUPERVISOR',
+        escalation_reason: escalateData.escalationReason,
+        escalated_at: new Date(),
+        alert_status: 'ESCALATED',
+      },
+    });
+
+    return {
+      id: escalatedAlert.id,
+      requiresEscalation: escalatedAlert.requires_escalation,
+      escalationLevel: escalatedAlert.escalation_level,
+      escalationReason: escalatedAlert.escalation_reason,
+      escalatedAt: escalatedAlert.escalated_at,
+      alertStatus: escalatedAlert.alert_status,
+    };
+  } catch (error) {
+    console.error('Escalate emergency alert error:', error);
+    throw new Error('Failed to escalate emergency alert');
+  }
+}
+
+/**
  * Utility function to format API success responses
  */
 export function formatApiSuccess(data: any, message: string = 'Success') {

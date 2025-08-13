@@ -1,0 +1,50 @@
+# docker-stack.postgres.yml - PostgreSQL only for test environment
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: healthapp_test
+      POSTGRES_USER: healthapp_user
+      POSTGRES_PASSWORD: pg_password
+    volumes:
+      - postgres_test_data:/var/lib/postgresql/data
+    networks:
+      - healthapp-test-network
+    ports:
+      - "5432:5432"
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@healthapp.com
+      PGADMIN_DEFAULT_PASSWORD: admin123
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    ports:
+      - "5050:80"
+    networks:
+      - healthapp-test-network
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+
+volumes:
+  postgres_test_data:
+    driver: local
+
+networks:
+  healthapp-test-network:
+    driver: overlay
+    attachable: true

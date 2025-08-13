@@ -1,9 +1,26 @@
 --
+-- Healthcare Management Platform - Complete PostgreSQL Schema
+-- Generated: 2025-08-13
+--
+-- This schema includes all phases of the healthcare platform:
+-- - Phase 1: Critical Safety & Compliance Features (Medical Safety, HIPAA)
+-- - Phase 3: Advanced Medical Device Integration (IoT Devices, Bluetooth)
+-- - Phase 4: Telemedicine & Advanced Features (Video Consultations, Lab Integration, Gamification)
+--
+-- Phases included:
+-- ✅ Phase 1: drug_interactions, patient_allergies, medication_safety_alerts, emergency_alerts
+-- ✅ Phase 3: connected_devices, device_readings, device_plugins (with Phase 3 device integration)
+-- ✅ Phase 4: video_consultations, lab_orders, patient_game_profiles, game_badges
+--
+-- Usage:
+-- To restore this schema: psql -U healthapp_user -d healthapp_dev < docs/postgresql-schema.sql
+-- To update schema: PGPASSWORD=pg_password pg_dump -h localhost -p 5434 -U healthapp_user -d healthapp_dev --schema-only --no-owner --no-privileges > docs/postgresql-schema.sql
+--
 -- PostgreSQL database dump
 --
 
 -- Dumped from database version 15.13
--- Dumped by pg_dump version 15.13
+-- Dumped by pg_dump version 16.9 (Ubuntu 16.9-0ubuntu0.24.04.1)
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -17,49 +34,227 @@ SET client_min_messages = warning;
 SET row_security = off;
 
 --
--- Name: pg_trgm; Type: EXTENSION; Schema: -; Owner: -
+-- Name: public; Type: SCHEMA; Schema: -; Owner: -
 --
 
-CREATE EXTENSION IF NOT EXISTS pg_trgm WITH SCHEMA public;
-
-
---
--- Name: EXTENSION pg_trgm; Type: COMMENT; Schema: -; Owner: 
---
-
-COMMENT ON EXTENSION pg_trgm IS 'text similarity measurement and index searching based on trigrams';
+-- *not* creating schema, since initdb creates it
 
 
 --
--- Name: pgcrypto; Type: EXTENSION; Schema: -; Owner: -
+-- Name: SCHEMA public; Type: COMMENT; Schema: -; Owner: -
 --
 
-CREATE EXTENSION IF NOT EXISTS pgcrypto WITH SCHEMA public;
-
-
---
--- Name: EXTENSION pgcrypto; Type: COMMENT; Schema: -; Owner: 
---
-
-COMMENT ON EXTENSION pgcrypto IS 'cryptographic functions';
+COMMENT ON SCHEMA public IS '';
 
 
 --
--- Name: uuid-ossp; Type: EXTENSION; Schema: -; Owner: -
+-- Name: AlertSeverity; Type: TYPE; Schema: public; Owner: -
 --
 
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp" WITH SCHEMA public;
-
-
---
--- Name: EXTENSION "uuid-ossp"; Type: COMMENT; Schema: -; Owner: 
---
-
-COMMENT ON EXTENSION "uuid-ossp" IS 'generate universally unique identifiers (UUIDs)';
+CREATE TYPE public."AlertSeverity" AS ENUM (
+    'LOW',
+    'MEDIUM',
+    'HIGH',
+    'CRITICAL'
+);
 
 
 --
--- Name: enum_adherence_records_adherence_type; Type: TYPE; Schema: public; Owner: healthapp_user
+-- Name: AllergenType; Type: TYPE; Schema: public; Owner: -
+--
+
+CREATE TYPE public."AllergenType" AS ENUM (
+    'MEDICATION',
+    'FOOD',
+    'ENVIRONMENTAL',
+    'LATEX',
+    'OTHER'
+);
+
+
+--
+-- Name: AllergySeverity; Type: TYPE; Schema: public; Owner: -
+--
+
+CREATE TYPE public."AllergySeverity" AS ENUM (
+    'MILD',
+    'MODERATE',
+    'SEVERE',
+    'ANAPHYLAXIS'
+);
+
+
+--
+-- Name: ConsultationPriority; Type: TYPE; Schema: public; Owner: -
+--
+
+CREATE TYPE public."ConsultationPriority" AS ENUM (
+    'ROUTINE',
+    'URGENT',
+    'EMERGENCY',
+    'FOLLOW_UP'
+);
+
+
+--
+-- Name: ConsultationStatus; Type: TYPE; Schema: public; Owner: -
+--
+
+CREATE TYPE public."ConsultationStatus" AS ENUM (
+    'SCHEDULED',
+    'IN_PROGRESS',
+    'COMPLETED',
+    'CANCELLED',
+    'NO_SHOW',
+    'RESCHEDULED',
+    'INTERRUPTED'
+);
+
+
+--
+-- Name: ConsultationType; Type: TYPE; Schema: public; Owner: -
+--
+
+CREATE TYPE public."ConsultationType" AS ENUM (
+    'VIDEO_CONSULTATION',
+    'AUDIO_CONSULTATION',
+    'CHAT_CONSULTATION',
+    'EMERGENCY_CONSULTATION',
+    'FOLLOW_UP_CONSULTATION',
+    'SPECIALIST_REFERRAL'
+);
+
+
+--
+-- Name: DrugInteractionSeverity; Type: TYPE; Schema: public; Owner: -
+--
+
+CREATE TYPE public."DrugInteractionSeverity" AS ENUM (
+    'MINOR',
+    'MODERATE',
+    'MAJOR',
+    'CONTRAINDICATION'
+);
+
+
+--
+-- Name: EmergencyAlertType; Type: TYPE; Schema: public; Owner: -
+--
+
+CREATE TYPE public."EmergencyAlertType" AS ENUM (
+    'VITAL_CRITICAL',
+    'MEDICATION_MISSED_CRITICAL',
+    'DEVICE_OFFLINE',
+    'PATIENT_UNRESPONSIVE',
+    'EMERGENCY_BUTTON',
+    'FALL_DETECTED',
+    'MEDICATION_OVERDOSE'
+);
+
+
+--
+-- Name: EmergencyPriority; Type: TYPE; Schema: public; Owner: -
+--
+
+CREATE TYPE public."EmergencyPriority" AS ENUM (
+    'LOW',
+    'MEDIUM',
+    'HIGH',
+    'EMERGENCY',
+    'LIFE_THREATENING'
+);
+
+
+--
+-- Name: GameBadgeType; Type: TYPE; Schema: public; Owner: -
+--
+
+CREATE TYPE public."GameBadgeType" AS ENUM (
+    'ADHERENCE_STREAK',
+    'APPOINTMENT_KEEPER',
+    'VITAL_TRACKER',
+    'EXERCISE_CHAMPION',
+    'MEDICATION_MASTER',
+    'HEALTH_IMPROVEMENT',
+    'GOAL_ACHIEVER'
+);
+
+
+--
+-- Name: GameChallengeType; Type: TYPE; Schema: public; Owner: -
+--
+
+CREATE TYPE public."GameChallengeType" AS ENUM (
+    'DAILY_MEDICATION',
+    'WEEKLY_VITALS',
+    'MONTHLY_CHECKUP',
+    'EXERCISE_MINUTES',
+    'WEIGHT_MANAGEMENT',
+    'BLOOD_PRESSURE_CONTROL',
+    'GLUCOSE_MANAGEMENT'
+);
+
+
+--
+-- Name: LabOrderStatus; Type: TYPE; Schema: public; Owner: -
+--
+
+CREATE TYPE public."LabOrderStatus" AS ENUM (
+    'ORDERED',
+    'SAMPLE_COLLECTED',
+    'IN_PROGRESS',
+    'COMPLETED',
+    'CANCELLED',
+    'REPORT_READY'
+);
+
+
+--
+-- Name: LabTestCategory; Type: TYPE; Schema: public; Owner: -
+--
+
+CREATE TYPE public."LabTestCategory" AS ENUM (
+    'BLOOD_CHEMISTRY',
+    'HEMATOLOGY',
+    'MICROBIOLOGY',
+    'PATHOLOGY',
+    'RADIOLOGY',
+    'CARDIOLOGY',
+    'ENDOCRINOLOGY',
+    'IMMUNOLOGY'
+);
+
+
+--
+-- Name: MedicationAlertType; Type: TYPE; Schema: public; Owner: -
+--
+
+CREATE TYPE public."MedicationAlertType" AS ENUM (
+    'DRUG_INTERACTION',
+    'ALLERGY_CONFLICT',
+    'DOSE_LIMIT_EXCEEDED',
+    'DUPLICATE_THERAPY',
+    'AGE_INAPPROPRIATE',
+    'CONTRAINDICATION',
+    'MONITORING_REQUIRED'
+);
+
+
+--
+-- Name: VitalConditionType; Type: TYPE; Schema: public; Owner: -
+--
+
+CREATE TYPE public."VitalConditionType" AS ENUM (
+    'GREATER_THAN',
+    'LESS_THAN',
+    'BETWEEN',
+    'OUTSIDE_RANGE',
+    'PERCENTAGE_CHANGE'
+);
+
+
+--
+-- Name: enum_adherence_records_adherence_type; Type: TYPE; Schema: public; Owner: -
 --
 
 CREATE TYPE public.enum_adherence_records_adherence_type AS ENUM (
@@ -73,10 +268,8 @@ CREATE TYPE public.enum_adherence_records_adherence_type AS ENUM (
 );
 
 
-ALTER TYPE public.enum_adherence_records_adherence_type OWNER TO healthapp_user;
-
 --
--- Name: enum_appointment_slots_slot_type; Type: TYPE; Schema: public; Owner: healthapp_user
+-- Name: enum_appointment_slots_slot_type; Type: TYPE; Schema: public; Owner: -
 --
 
 CREATE TYPE public.enum_appointment_slots_slot_type AS ENUM (
@@ -87,10 +280,8 @@ CREATE TYPE public.enum_appointment_slots_slot_type AS ENUM (
 );
 
 
-ALTER TYPE public.enum_appointment_slots_slot_type OWNER TO healthapp_user;
-
 --
--- Name: enum_appointments_organizer_type; Type: TYPE; Schema: public; Owner: healthapp_user
+-- Name: enum_appointments_organizer_type; Type: TYPE; Schema: public; Owner: -
 --
 
 CREATE TYPE public.enum_appointments_organizer_type AS ENUM (
@@ -103,10 +294,8 @@ CREATE TYPE public.enum_appointments_organizer_type AS ENUM (
 );
 
 
-ALTER TYPE public.enum_appointments_organizer_type OWNER TO healthapp_user;
-
 --
--- Name: enum_appointments_participant_one_type; Type: TYPE; Schema: public; Owner: healthapp_user
+-- Name: enum_appointments_participant_one_type; Type: TYPE; Schema: public; Owner: -
 --
 
 CREATE TYPE public.enum_appointments_participant_one_type AS ENUM (
@@ -116,10 +305,8 @@ CREATE TYPE public.enum_appointments_participant_one_type AS ENUM (
 );
 
 
-ALTER TYPE public.enum_appointments_participant_one_type OWNER TO healthapp_user;
-
 --
--- Name: enum_appointments_participant_two_type; Type: TYPE; Schema: public; Owner: healthapp_user
+-- Name: enum_appointments_participant_two_type; Type: TYPE; Schema: public; Owner: -
 --
 
 CREATE TYPE public.enum_appointments_participant_two_type AS ENUM (
@@ -129,10 +316,32 @@ CREATE TYPE public.enum_appointments_participant_two_type AS ENUM (
 );
 
 
-ALTER TYPE public.enum_appointments_participant_two_type OWNER TO healthapp_user;
+--
+-- Name: enum_dashboard_metrics_entity_type; Type: TYPE; Schema: public; Owner: -
+--
+
+CREATE TYPE public.enum_dashboard_metrics_entity_type AS ENUM (
+    'patient',
+    'doctor',
+    'organization',
+    'system'
+);
+
 
 --
--- Name: enum_medications_organizer_type; Type: TYPE; Schema: public; Owner: healthapp_user
+-- Name: enum_medication_logs_adherence_status; Type: TYPE; Schema: public; Owner: -
+--
+
+CREATE TYPE public.enum_medication_logs_adherence_status AS ENUM (
+    'taken',
+    'missed',
+    'late',
+    'partial'
+);
+
+
+--
+-- Name: enum_medications_organizer_type; Type: TYPE; Schema: public; Owner: -
 --
 
 CREATE TYPE public.enum_medications_organizer_type AS ENUM (
@@ -145,10 +354,71 @@ CREATE TYPE public.enum_medications_organizer_type AS ENUM (
 );
 
 
-ALTER TYPE public.enum_medications_organizer_type OWNER TO healthapp_user;
+--
+-- Name: enum_patient_alerts_alert_type; Type: TYPE; Schema: public; Owner: -
+--
+
+CREATE TYPE public.enum_patient_alerts_alert_type AS ENUM (
+    'medication',
+    'vital',
+    'appointment',
+    'symptom',
+    'system'
+);
+
 
 --
--- Name: enum_patient_subscriptions_status; Type: TYPE; Schema: public; Owner: healthapp_user
+-- Name: enum_patient_alerts_severity; Type: TYPE; Schema: public; Owner: -
+--
+
+CREATE TYPE public.enum_patient_alerts_severity AS ENUM (
+    'critical',
+    'high',
+    'medium',
+    'low'
+);
+
+
+--
+-- Name: enum_patient_consent_otp_otp_method; Type: TYPE; Schema: public; Owner: -
+--
+
+CREATE TYPE public.enum_patient_consent_otp_otp_method AS ENUM (
+    'sms',
+    'email',
+    'both'
+);
+
+
+--
+-- Name: enum_patient_provider_consent_history_consent_method; Type: TYPE; Schema: public; Owner: -
+--
+
+CREATE TYPE public.enum_patient_provider_consent_history_consent_method AS ENUM (
+    'sms',
+    'email',
+    'in_person',
+    'phone',
+    'automatic'
+);
+
+
+--
+-- Name: enum_patient_provider_consent_history_status; Type: TYPE; Schema: public; Owner: -
+--
+
+CREATE TYPE public.enum_patient_provider_consent_history_status AS ENUM (
+    'pending',
+    'consent_requested',
+    'approved',
+    'denied',
+    'expired',
+    'completed'
+);
+
+
+--
+-- Name: enum_patient_subscriptions_status; Type: TYPE; Schema: public; Owner: -
 --
 
 CREATE TYPE public.enum_patient_subscriptions_status AS ENUM (
@@ -161,10 +431,21 @@ CREATE TYPE public.enum_patient_subscriptions_status AS ENUM (
 );
 
 
-ALTER TYPE public.enum_patient_subscriptions_status OWNER TO healthapp_user;
+--
+-- Name: enum_patients_provider_consent_method; Type: TYPE; Schema: public; Owner: -
+--
+
+CREATE TYPE public.enum_patients_provider_consent_method AS ENUM (
+    'sms',
+    'email',
+    'in_person',
+    'phone',
+    'automatic'
+);
+
 
 --
--- Name: enum_payment_methods_type; Type: TYPE; Schema: public; Owner: healthapp_user
+-- Name: enum_payment_methods_type; Type: TYPE; Schema: public; Owner: -
 --
 
 CREATE TYPE public.enum_payment_methods_type AS ENUM (
@@ -174,10 +455,8 @@ CREATE TYPE public.enum_payment_methods_type AS ENUM (
 );
 
 
-ALTER TYPE public.enum_payment_methods_type OWNER TO healthapp_user;
-
 --
--- Name: enum_payments_payment_method; Type: TYPE; Schema: public; Owner: healthapp_user
+-- Name: enum_payments_payment_method; Type: TYPE; Schema: public; Owner: -
 --
 
 CREATE TYPE public.enum_payments_payment_method AS ENUM (
@@ -189,10 +468,8 @@ CREATE TYPE public.enum_payments_payment_method AS ENUM (
 );
 
 
-ALTER TYPE public.enum_payments_payment_method OWNER TO healthapp_user;
-
 --
--- Name: enum_payments_status; Type: TYPE; Schema: public; Owner: healthapp_user
+-- Name: enum_payments_status; Type: TYPE; Schema: public; Owner: -
 --
 
 CREATE TYPE public.enum_payments_status AS ENUM (
@@ -205,10 +482,29 @@ CREATE TYPE public.enum_payments_status AS ENUM (
 );
 
 
-ALTER TYPE public.enum_payments_status OWNER TO healthapp_user;
+--
+-- Name: enum_provider_change_history_practitioner_type; Type: TYPE; Schema: public; Owner: -
+--
+
+CREATE TYPE public.enum_provider_change_history_practitioner_type AS ENUM (
+    'doctor',
+    'hsp'
+);
+
 
 --
--- Name: enum_schedule_events_event_type; Type: TYPE; Schema: public; Owner: healthapp_user
+-- Name: enum_provider_change_history_status; Type: TYPE; Schema: public; Owner: -
+--
+
+CREATE TYPE public.enum_provider_change_history_status AS ENUM (
+    'active',
+    'processing',
+    'completed'
+);
+
+
+--
+-- Name: enum_schedule_events_event_type; Type: TYPE; Schema: public; Owner: -
 --
 
 CREATE TYPE public.enum_schedule_events_event_type AS ENUM (
@@ -222,10 +518,8 @@ CREATE TYPE public.enum_schedule_events_event_type AS ENUM (
 );
 
 
-ALTER TYPE public.enum_schedule_events_event_type OWNER TO healthapp_user;
-
 --
--- Name: enum_schedule_events_status; Type: TYPE; Schema: public; Owner: healthapp_user
+-- Name: enum_schedule_events_status; Type: TYPE; Schema: public; Owner: -
 --
 
 CREATE TYPE public.enum_schedule_events_status AS ENUM (
@@ -239,10 +533,8 @@ CREATE TYPE public.enum_schedule_events_status AS ENUM (
 );
 
 
-ALTER TYPE public.enum_schedule_events_status OWNER TO healthapp_user;
-
 --
--- Name: enum_scheduled_events_event_type; Type: TYPE; Schema: public; Owner: healthapp_user
+-- Name: enum_scheduled_events_event_type; Type: TYPE; Schema: public; Owner: -
 --
 
 CREATE TYPE public.enum_scheduled_events_event_type AS ENUM (
@@ -256,10 +548,8 @@ CREATE TYPE public.enum_scheduled_events_event_type AS ENUM (
 );
 
 
-ALTER TYPE public.enum_scheduled_events_event_type OWNER TO healthapp_user;
-
 --
--- Name: enum_scheduled_events_priority; Type: TYPE; Schema: public; Owner: healthapp_user
+-- Name: enum_scheduled_events_priority; Type: TYPE; Schema: public; Owner: -
 --
 
 CREATE TYPE public.enum_scheduled_events_priority AS ENUM (
@@ -270,10 +560,8 @@ CREATE TYPE public.enum_scheduled_events_priority AS ENUM (
 );
 
 
-ALTER TYPE public.enum_scheduled_events_priority OWNER TO healthapp_user;
-
 --
--- Name: enum_scheduled_events_status; Type: TYPE; Schema: public; Owner: healthapp_user
+-- Name: enum_scheduled_events_status; Type: TYPE; Schema: public; Owner: -
 --
 
 CREATE TYPE public.enum_scheduled_events_status AS ENUM (
@@ -287,10 +575,21 @@ CREATE TYPE public.enum_scheduled_events_status AS ENUM (
 );
 
 
-ALTER TYPE public.enum_scheduled_events_status OWNER TO healthapp_user;
+--
+-- Name: enum_secondary_doctor_assignments_consent_status; Type: TYPE; Schema: public; Owner: -
+--
+
+CREATE TYPE public.enum_secondary_doctor_assignments_consent_status AS ENUM (
+    'pending',
+    'requested',
+    'granted',
+    'denied',
+    'expired'
+);
+
 
 --
--- Name: enum_service_plans_billing_cycle; Type: TYPE; Schema: public; Owner: healthapp_user
+-- Name: enum_service_plans_billing_cycle; Type: TYPE; Schema: public; Owner: -
 --
 
 CREATE TYPE public.enum_service_plans_billing_cycle AS ENUM (
@@ -301,10 +600,8 @@ CREATE TYPE public.enum_service_plans_billing_cycle AS ENUM (
 );
 
 
-ALTER TYPE public.enum_service_plans_billing_cycle OWNER TO healthapp_user;
-
 --
--- Name: enum_user_roles_linked_with; Type: TYPE; Schema: public; Owner: healthapp_user
+-- Name: enum_user_roles_linked_with; Type: TYPE; Schema: public; Owner: -
 --
 
 CREATE TYPE public.enum_user_roles_linked_with AS ENUM (
@@ -317,10 +614,8 @@ CREATE TYPE public.enum_user_roles_linked_with AS ENUM (
 );
 
 
-ALTER TYPE public.enum_user_roles_linked_with OWNER TO healthapp_user;
-
 --
--- Name: enum_users_account_status; Type: TYPE; Schema: public; Owner: healthapp_user
+-- Name: enum_users_account_status; Type: TYPE; Schema: public; Owner: -
 --
 
 CREATE TYPE public.enum_users_account_status AS ENUM (
@@ -332,10 +627,8 @@ CREATE TYPE public.enum_users_account_status AS ENUM (
 );
 
 
-ALTER TYPE public.enum_users_account_status OWNER TO healthapp_user;
-
 --
--- Name: enum_users_gender; Type: TYPE; Schema: public; Owner: healthapp_user
+-- Name: enum_users_gender; Type: TYPE; Schema: public; Owner: -
 --
 
 CREATE TYPE public.enum_users_gender AS ENUM (
@@ -346,10 +639,8 @@ CREATE TYPE public.enum_users_gender AS ENUM (
 );
 
 
-ALTER TYPE public.enum_users_gender OWNER TO healthapp_user;
-
 --
--- Name: enum_users_role; Type: TYPE; Schema: public; Owner: healthapp_user
+-- Name: enum_users_role; Type: TYPE; Schema: public; Owner: -
 --
 
 CREATE TYPE public.enum_users_role AS ENUM (
@@ -362,30 +653,24 @@ CREATE TYPE public.enum_users_role AS ENUM (
 );
 
 
-ALTER TYPE public.enum_users_role OWNER TO healthapp_user;
-
 --
--- Name: update_updated_at_column(); Type: FUNCTION; Schema: public; Owner: healthapp_user
+-- Name: enum_vital_readings_alert_level; Type: TYPE; Schema: public; Owner: -
 --
 
-CREATE FUNCTION public.update_updated_at_column() RETURNS trigger
-    LANGUAGE plpgsql
-    AS $$
-      BEGIN
-          NEW.updated_at = NOW();
-          RETURN NEW;
-      END;
-      $$;
+CREATE TYPE public.enum_vital_readings_alert_level AS ENUM (
+    'normal',
+    'warning',
+    'critical',
+    'emergency'
+);
 
-
-ALTER FUNCTION public.update_updated_at_column() OWNER TO healthapp_user;
 
 SET default_tablespace = '';
 
 SET default_table_access_method = heap;
 
 --
--- Name: SequelizeMeta; Type: TABLE; Schema: public; Owner: healthapp_user
+-- Name: SequelizeMeta; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public."SequelizeMeta" (
@@ -393,10 +678,24 @@ CREATE TABLE public."SequelizeMeta" (
 );
 
 
-ALTER TABLE public."SequelizeMeta" OWNER TO healthapp_user;
+--
+-- Name: _prisma_migrations; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public._prisma_migrations (
+    id character varying(36) NOT NULL,
+    checksum character varying(64) NOT NULL,
+    finished_at timestamp with time zone,
+    migration_name character varying(255) NOT NULL,
+    logs text,
+    rolled_back_at timestamp with time zone,
+    started_at timestamp with time zone DEFAULT now() NOT NULL,
+    applied_steps_count integer DEFAULT 0 NOT NULL
+);
+
 
 --
--- Name: adherence_records; Type: TABLE; Schema: public; Owner: healthapp_user
+-- Name: adherence_records; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.adherence_records (
@@ -404,47 +703,43 @@ CREATE TABLE public.adherence_records (
     patient_id uuid NOT NULL,
     scheduled_event_id uuid,
     adherence_type public.enum_adherence_records_adherence_type NOT NULL,
-    due_at timestamp with time zone NOT NULL,
-    recorded_at timestamp with time zone,
+    due_at timestamp(6) with time zone NOT NULL,
+    recorded_at timestamp(6) with time zone,
     is_completed boolean DEFAULT false,
     is_partial boolean DEFAULT false,
     is_missed boolean DEFAULT false,
     response_data jsonb DEFAULT '{}'::jsonb,
     notes text,
     attachments jsonb DEFAULT '[]'::jsonb,
-    created_at timestamp with time zone,
-    updated_at timestamp with time zone,
-    deleted_at timestamp with time zone
+    created_at timestamp(6) with time zone,
+    updated_at timestamp(6) with time zone,
+    deleted_at timestamp(6) with time zone
 );
 
 
-ALTER TABLE public.adherence_records OWNER TO healthapp_user;
-
 --
--- Name: appointment_slots; Type: TABLE; Schema: public; Owner: healthapp_user
+-- Name: appointment_slots; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.appointment_slots (
     id uuid NOT NULL,
     doctor_id uuid NOT NULL,
     date date NOT NULL,
-    start_time time without time zone NOT NULL,
-    end_time time without time zone NOT NULL,
+    start_time time(6) without time zone NOT NULL,
+    end_time time(6) without time zone NOT NULL,
     max_appointments integer DEFAULT 1,
     booked_appointments integer DEFAULT 0,
     is_available boolean DEFAULT true,
     slot_type public.enum_appointment_slots_slot_type DEFAULT 'regular'::public.enum_appointment_slots_slot_type,
     notes text,
-    created_at timestamp with time zone NOT NULL,
-    updated_at timestamp with time zone NOT NULL,
-    deleted_at timestamp with time zone
+    created_at timestamp(6) with time zone NOT NULL,
+    updated_at timestamp(6) with time zone NOT NULL,
+    deleted_at timestamp(6) with time zone
 );
 
 
-ALTER TABLE public.appointment_slots OWNER TO healthapp_user;
-
 --
--- Name: appointments; Type: TABLE; Schema: public; Owner: healthapp_user
+-- Name: appointments; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.appointments (
@@ -460,24 +755,21 @@ CREATE TABLE public.appointments (
     description character varying(1000),
     start_date date,
     end_date date,
-    start_time timestamp with time zone,
-    end_time timestamp with time zone,
+    start_time timestamp(6) with time zone,
+    end_time timestamp(6) with time zone,
     rr_rule character varying(1000),
     details json,
-    created_at timestamp with time zone NOT NULL,
-    updated_at timestamp with time zone NOT NULL,
-    deleted_at timestamp with time zone,
+    created_at timestamp(6) with time zone NOT NULL,
+    updated_at timestamp(6) with time zone NOT NULL,
+    deleted_at timestamp(6) with time zone,
     doctor_id uuid,
-    hsp_id uuid,
     patient_id uuid,
     slot_id uuid
 );
 
 
-ALTER TABLE public.appointments OWNER TO healthapp_user;
-
 --
--- Name: audit_logs; Type: TABLE; Schema: public; Owner: healthapp_user
+-- Name: audit_logs; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.audit_logs (
@@ -499,135 +791,14 @@ CREATE TABLE public.audit_logs (
     encrypted_data jsonb,
     risk_level character varying(10) DEFAULT 'low'::character varying,
     security_alerts jsonb DEFAULT '[]'::jsonb,
-    retention_date timestamp with time zone,
-    "timestamp" timestamp with time zone NOT NULL,
-    created_at timestamp with time zone
+    retention_date timestamp(6) with time zone,
+    "timestamp" timestamp(6) with time zone NOT NULL,
+    created_at timestamp(6) with time zone
 );
 
 
-ALTER TABLE public.audit_logs OWNER TO healthapp_user;
-
 --
--- Name: COLUMN audit_logs.user_id; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.audit_logs.user_id IS 'User who performed the action';
-
-
---
--- Name: COLUMN audit_logs.user_role; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.audit_logs.user_role IS 'Role of the user at time of access';
-
-
---
--- Name: COLUMN audit_logs.action; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.audit_logs.action IS 'HTTP method (GET, POST, PUT, DELETE)';
-
-
---
--- Name: COLUMN audit_logs.resource; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.audit_logs.resource IS 'URL path of the accessed resource';
-
-
---
--- Name: COLUMN audit_logs.patient_id; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.audit_logs.patient_id IS 'Patient whose data was accessed';
-
-
---
--- Name: COLUMN audit_logs.phi_accessed; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.audit_logs.phi_accessed IS 'Whether PHI (Protected Health Information) was accessed';
-
-
---
--- Name: COLUMN audit_logs.access_granted; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.audit_logs.access_granted IS 'Whether access was granted or denied';
-
-
---
--- Name: COLUMN audit_logs.denial_reason; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.audit_logs.denial_reason IS 'Reason for access denial';
-
-
---
--- Name: COLUMN audit_logs.ip_address; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.audit_logs.ip_address IS 'IP address of the request';
-
-
---
--- Name: COLUMN audit_logs.user_agent; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.audit_logs.user_agent IS 'Browser/client user agent';
-
-
---
--- Name: COLUMN audit_logs.session_id; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.audit_logs.session_id IS 'Session identifier';
-
-
---
--- Name: COLUMN audit_logs.request_id; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.audit_logs.request_id IS 'Unique request identifier';
-
-
---
--- Name: COLUMN audit_logs.data_changes; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.audit_logs.data_changes IS 'What data was changed (before/after values)';
-
-
---
--- Name: COLUMN audit_logs.encrypted_data; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.audit_logs.encrypted_data IS 'Encrypted sensitive audit information';
-
-
---
--- Name: COLUMN audit_logs.security_alerts; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.audit_logs.security_alerts IS 'Any security alerts triggered by this access';
-
-
---
--- Name: COLUMN audit_logs.retention_date; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.audit_logs.retention_date IS 'When this audit entry can be archived (HIPAA: 6 years)';
-
-
---
--- Name: COLUMN audit_logs."timestamp"; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.audit_logs."timestamp" IS 'When the audited action occurred';
-
-
---
--- Name: care_plan_templates; Type: TABLE; Schema: public; Owner: healthapp_user
+-- Name: care_plan_templates; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.care_plan_templates (
@@ -646,16 +817,14 @@ CREATE TABLE public.care_plan_templates (
     version character varying(20) DEFAULT '1.0'::character varying,
     parent_template_id uuid,
     usage_count integer DEFAULT 0,
-    created_at timestamp with time zone NOT NULL,
-    updated_at timestamp with time zone NOT NULL,
-    deleted_at timestamp with time zone
+    created_at timestamp(6) with time zone NOT NULL,
+    updated_at timestamp(6) with time zone NOT NULL,
+    deleted_at timestamp(6) with time zone
 );
 
 
-ALTER TABLE public.care_plan_templates OWNER TO healthapp_user;
-
 --
--- Name: care_plans; Type: TABLE; Schema: public; Owner: healthapp_user
+-- Name: care_plans; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.care_plans (
@@ -679,10 +848,10 @@ CREATE TABLE public.care_plans (
     target_values jsonb DEFAULT '{}'::jsonb,
     medications jsonb DEFAULT '[]'::jsonb,
     medication_management jsonb DEFAULT '{}'::jsonb,
-    start_date timestamp with time zone NOT NULL,
-    end_date timestamp with time zone,
+    start_date timestamp(6) with time zone NOT NULL,
+    end_date timestamp(6) with time zone,
     review_frequency_months integer DEFAULT 3,
-    next_review_date timestamp with time zone,
+    next_review_date timestamp(6) with time zone,
     status character varying(20) DEFAULT 'ACTIVE'::character varying,
     priority character varying(20) DEFAULT 'MEDIUM'::character varying,
     primary_care_manager_id uuid,
@@ -699,235 +868,14 @@ CREATE TABLE public.care_plans (
     emergency_contacts jsonb DEFAULT '[]'::jsonb,
     details jsonb,
     channel_id character varying(255),
-    created_at timestamp with time zone,
-    updated_at timestamp with time zone,
-    deleted_at timestamp with time zone,
-    doctor_id uuid,
-    provider_id uuid
+    created_at timestamp(6) with time zone,
+    updated_at timestamp(6) with time zone,
+    deleted_at timestamp(6) with time zone
 );
 
 
-ALTER TABLE public.care_plans OWNER TO healthapp_user;
-
 --
--- Name: COLUMN care_plans.title; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.care_plans.title IS 'Title of the long-term care plan';
-
-
---
--- Name: COLUMN care_plans.description; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.care_plans.description IS 'Detailed description of the care plan';
-
-
---
--- Name: COLUMN care_plans.plan_type; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.care_plans.plan_type IS 'Always care_plan for this model';
-
-
---
--- Name: COLUMN care_plans.chronic_conditions; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.care_plans.chronic_conditions IS 'Chronic conditions being managed (diabetes, hypertension, etc.)';
-
-
---
--- Name: COLUMN care_plans.condition_severity; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.care_plans.condition_severity IS 'Severity levels for each chronic condition';
-
-
---
--- Name: COLUMN care_plans.risk_factors; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.care_plans.risk_factors IS 'Risk factors for condition progression';
-
-
---
--- Name: COLUMN care_plans.long_term_goals; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.care_plans.long_term_goals IS 'Long-term health objectives (6 months to years)';
-
-
---
--- Name: COLUMN care_plans.short_term_milestones; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.care_plans.short_term_milestones IS 'Short-term milestones toward long-term goals';
-
-
---
--- Name: COLUMN care_plans.interventions; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.care_plans.interventions IS 'Ongoing interventions and treatments';
-
-
---
--- Name: COLUMN care_plans.lifestyle_modifications; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.care_plans.lifestyle_modifications IS 'Diet, exercise, lifestyle changes';
-
-
---
--- Name: COLUMN care_plans.monitoring_parameters; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.care_plans.monitoring_parameters IS 'Vital signs, lab values to monitor regularly';
-
-
---
--- Name: COLUMN care_plans.monitoring_frequency; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.care_plans.monitoring_frequency IS 'How often to monitor each parameter';
-
-
---
--- Name: COLUMN care_plans.target_values; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.care_plans.target_values IS 'Target values for monitored parameters';
-
-
---
--- Name: COLUMN care_plans.medications; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.care_plans.medications IS 'Long-term medications for chronic conditions';
-
-
---
--- Name: COLUMN care_plans.medication_management; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.care_plans.medication_management IS 'Medication adherence strategies and monitoring';
-
-
---
--- Name: COLUMN care_plans.end_date; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.care_plans.end_date IS 'May be open-ended for chronic conditions';
-
-
---
--- Name: COLUMN care_plans.review_frequency_months; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.care_plans.review_frequency_months IS 'How often to review the care plan (in months)';
-
-
---
--- Name: COLUMN care_plans.primary_care_manager_id; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.care_plans.primary_care_manager_id IS 'Primary care coordinator (can be doctor or HSP)';
-
-
---
--- Name: COLUMN care_plans.care_team_members; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.care_plans.care_team_members IS 'List of care team members and their roles';
-
-
---
--- Name: COLUMN care_plans.specialist_referrals; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.care_plans.specialist_referrals IS 'Specialist consultations and referrals';
-
-
---
--- Name: COLUMN care_plans.patient_education_materials; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.care_plans.patient_education_materials IS 'Educational resources provided to patient';
-
-
---
--- Name: COLUMN care_plans.self_management_tasks; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.care_plans.self_management_tasks IS 'Tasks patient needs to perform';
-
-
---
--- Name: COLUMN care_plans.patient_goals; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.care_plans.patient_goals IS 'Goals set by the patient themselves';
-
-
---
--- Name: COLUMN care_plans.progress_notes; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.care_plans.progress_notes IS 'Ongoing progress documentation';
-
-
---
--- Name: COLUMN care_plans.outcome_measures; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.care_plans.outcome_measures IS 'Measurable outcomes and improvements';
-
-
---
--- Name: COLUMN care_plans.quality_of_life_scores; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.care_plans.quality_of_life_scores IS 'Quality of life assessments over time';
-
-
---
--- Name: COLUMN care_plans.emergency_action_plan; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.care_plans.emergency_action_plan IS 'What to do in case of emergency or exacerbation';
-
-
---
--- Name: COLUMN care_plans.warning_signs; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.care_plans.warning_signs IS 'Signs that indicate condition is worsening';
-
-
---
--- Name: COLUMN care_plans.emergency_contacts; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.care_plans.emergency_contacts IS 'Emergency contacts for this care plan';
-
-
---
--- Name: COLUMN care_plans.details; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.care_plans.details IS 'Legacy field for existing data';
-
-
---
--- Name: COLUMN care_plans.channel_id; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.care_plans.channel_id IS 'Legacy communication channel ID';
-
-
---
--- Name: clinics; Type: TABLE; Schema: public; Owner: healthapp_user
+-- Name: clinics; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.clinics (
@@ -936,6 +884,10 @@ CREATE TABLE public.clinics (
     doctor_id uuid NOT NULL,
     organization_id uuid,
     address jsonb DEFAULT '{}'::jsonb NOT NULL,
+    latitude numeric(10,8),
+    longitude numeric(11,8),
+    location_verified boolean DEFAULT false,
+    location_accuracy character varying(20),
     phone character varying(20),
     email character varying(255),
     website character varying(500),
@@ -951,93 +903,93 @@ CREATE TABLE public.clinics (
     established_year integer,
     facilities jsonb DEFAULT '[]'::jsonb,
     insurance_accepted text[] DEFAULT ARRAY[]::text[],
-    created_at timestamp with time zone DEFAULT now() NOT NULL,
-    updated_at timestamp with time zone DEFAULT now() NOT NULL,
-    deleted_at timestamp with time zone
+    created_at timestamp(6) with time zone NOT NULL,
+    updated_at timestamp(6) with time zone NOT NULL,
+    deleted_at timestamp(6) with time zone
 );
 
 
-ALTER TABLE public.clinics OWNER TO healthapp_user;
-
 --
--- Name: COLUMN clinics.address; Type: COMMENT; Schema: public; Owner: healthapp_user
+-- Name: consultation_notes; Type: TABLE; Schema: public; Owner: -
 --
 
-COMMENT ON COLUMN public.clinics.address IS 'Complete address with geo-location data';
-
-
---
--- Name: COLUMN clinics.operating_hours; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.clinics.operating_hours IS 'Weekly schedule with timings for each day';
+CREATE TABLE public.consultation_notes (
+    id uuid NOT NULL,
+    consultation_id uuid NOT NULL,
+    note_type character varying(50) NOT NULL,
+    content text NOT NULL,
+    "timestamp" timestamp(6) with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    created_by uuid NOT NULL
+);
 
 
 --
--- Name: COLUMN clinics.clinic_images; Type: COMMENT; Schema: public; Owner: healthapp_user
+-- Name: consultation_prescriptions; Type: TABLE; Schema: public; Owner: -
 --
 
-COMMENT ON COLUMN public.clinics.clinic_images IS 'Array of image URLs for clinic photos';
-
-
---
--- Name: COLUMN clinics.banner_image; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.clinics.banner_image IS 'Main banner image for the clinic';
-
-
---
--- Name: COLUMN clinics.is_primary; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.clinics.is_primary IS 'Indicates if this is the doctors primary clinic';
-
-
---
--- Name: COLUMN clinics.registration_number; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.clinics.registration_number IS 'Clinic registration number with local authorities';
+CREATE TABLE public.consultation_prescriptions (
+    id uuid NOT NULL,
+    consultation_id uuid NOT NULL,
+    medication_name character varying(255) NOT NULL,
+    dosage character varying(100) NOT NULL,
+    frequency character varying(100) NOT NULL,
+    duration_days integer NOT NULL,
+    quantity integer,
+    instructions text,
+    refills_allowed integer DEFAULT 0 NOT NULL,
+    ndc_code character varying(50),
+    generic_substitution boolean DEFAULT true NOT NULL,
+    pharmacy_instructions text,
+    created_at timestamp(6) with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
 
 
 --
--- Name: COLUMN clinics.facilities; Type: COMMENT; Schema: public; Owner: healthapp_user
+-- Name: dashboard_metrics; Type: TABLE; Schema: public; Owner: -
 --
 
-COMMENT ON COLUMN public.clinics.facilities IS 'List of facilities available at the clinic';
+CREATE TABLE public.dashboard_metrics (
+    id uuid NOT NULL,
+    entity_type public.enum_dashboard_metrics_entity_type NOT NULL,
+    entity_id uuid NOT NULL,
+    metric_type character varying(100) NOT NULL,
+    metric_data jsonb DEFAULT '{}'::jsonb NOT NULL,
+    calculated_at timestamp(6) with time zone NOT NULL,
+    valid_until timestamp(6) with time zone,
+    created_at timestamp(6) with time zone,
+    updated_at timestamp(6) with time zone
+);
 
 
 --
--- Name: doctor_availability; Type: TABLE; Schema: public; Owner: healthapp_user
+-- Name: doctor_availability; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.doctor_availability (
     id uuid NOT NULL,
     doctor_id uuid NOT NULL,
     day_of_week integer NOT NULL,
-    start_time time without time zone NOT NULL,
-    end_time time without time zone NOT NULL,
+    start_time time(6) without time zone NOT NULL,
+    end_time time(6) without time zone NOT NULL,
     is_available boolean DEFAULT true,
     slot_duration integer DEFAULT 30,
     max_appointments_per_slot integer DEFAULT 1,
-    break_start_time time without time zone,
-    break_end_time time without time zone,
-    created_at timestamp with time zone NOT NULL,
-    updated_at timestamp with time zone NOT NULL,
-    deleted_at timestamp with time zone
+    break_start_time time(6) without time zone,
+    break_end_time time(6) without time zone,
+    created_at timestamp(6) with time zone NOT NULL,
+    updated_at timestamp(6) with time zone NOT NULL,
+    deleted_at timestamp(6) with time zone
 );
 
 
-ALTER TABLE public.doctor_availability OWNER TO healthapp_user;
-
 --
--- Name: doctors; Type: TABLE; Schema: public; Owner: healthapp_user
+-- Name: doctors; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.doctors (
     id uuid NOT NULL,
     user_id uuid NOT NULL,
+    doctor_id character varying(50) NOT NULL,
     organization_id uuid,
     medical_license_number character varying(100) NOT NULL,
     npi_number character varying(20),
@@ -1050,7 +1002,7 @@ CREATE TABLE public.doctors (
     capabilities text[] DEFAULT ARRAY['prescribe_medications'::text, 'order_tests'::text, 'diagnose'::text, 'create_treatment_plans'::text, 'create_care_plans'::text, 'modify_medications'::text, 'monitor_vitals'::text, 'patient_education'::text, 'care_coordination'::text, 'emergency_response'::text],
     is_verified boolean DEFAULT false,
     verification_documents jsonb DEFAULT '[]'::jsonb,
-    verification_date timestamp with time zone,
+    verification_date timestamp(6) with time zone,
     verified_by uuid,
     consultation_fee numeric(10,2),
     availability_schedule jsonb DEFAULT '{"friday": {"end": "17:00", "start": "09:00", "available": true}, "monday": {"end": "17:00", "start": "09:00", "available": true}, "sunday": {"available": false}, "tuesday": {"end": "17:00", "start": "09:00", "available": true}, "saturday": {"available": false}, "thursday": {"end": "17:00", "start": "09:00", "available": true}, "wednesday": {"end": "17:00", "start": "09:00", "available": true}}'::jsonb,
@@ -1067,9 +1019,9 @@ CREATE TABLE public.doctors (
     average_rating numeric(3,2),
     total_reviews integer DEFAULT 0,
     is_available_online boolean DEFAULT true,
-    created_at timestamp with time zone,
-    updated_at timestamp with time zone,
-    deleted_at timestamp with time zone,
+    created_at timestamp(6) with time zone,
+    updated_at timestamp(6) with time zone,
+    deleted_at timestamp(6) with time zone,
     speciality_id integer,
     profile_picture_url text,
     banner_image_url text,
@@ -1083,157 +1035,124 @@ CREATE TABLE public.doctors (
 );
 
 
-ALTER TABLE public.doctors OWNER TO healthapp_user;
-
 --
--- Name: COLUMN doctors.medical_license_number; Type: COMMENT; Schema: public; Owner: healthapp_user
+-- Name: drug_interactions; Type: TABLE; Schema: public; Owner: -
 --
 
-COMMENT ON COLUMN public.doctors.medical_license_number IS 'State medical license number';
-
-
---
--- Name: COLUMN doctors.npi_number; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.doctors.npi_number IS 'National Provider Identifier';
-
-
---
--- Name: COLUMN doctors.board_certifications; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.doctors.board_certifications IS 'Board certification specialties';
-
-
---
--- Name: COLUMN doctors.medical_school; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.doctors.medical_school IS 'Medical school attended';
+CREATE TABLE public.drug_interactions (
+    id uuid NOT NULL,
+    rxcui_one character varying(50) NOT NULL,
+    rxcui_two character varying(50) NOT NULL,
+    drug_name_one character varying(255) NOT NULL,
+    drug_name_two character varying(255) NOT NULL,
+    severity_level public."DrugInteractionSeverity" NOT NULL,
+    interaction_type character varying(100) NOT NULL,
+    description text NOT NULL,
+    clinical_effect text NOT NULL,
+    management_advice text NOT NULL,
+    evidence_level character varying(10) NOT NULL,
+    source character varying(50) DEFAULT 'RxNorm'::character varying NOT NULL,
+    last_updated timestamp(6) with time zone NOT NULL,
+    created_at timestamp(6) with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
 
 
 --
--- Name: COLUMN doctors.residency_programs; Type: COMMENT; Schema: public; Owner: healthapp_user
+-- Name: emergency_alerts; Type: TABLE; Schema: public; Owner: -
 --
 
-COMMENT ON COLUMN public.doctors.residency_programs IS 'Residency and fellowship programs completed';
-
-
---
--- Name: COLUMN doctors.specialties; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.doctors.specialties IS 'Primary medical specialties';
-
-
---
--- Name: COLUMN doctors.sub_specialties; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.doctors.sub_specialties IS 'Sub-specialties';
-
-
---
--- Name: COLUMN doctors.capabilities; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.doctors.capabilities IS 'What this doctor is authorized to do';
-
-
---
--- Name: COLUMN doctors.is_verified; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.doctors.is_verified IS 'Whether medical credentials are verified';
+CREATE TABLE public.emergency_alerts (
+    id uuid NOT NULL,
+    patient_id uuid NOT NULL,
+    alert_type public."EmergencyAlertType" NOT NULL,
+    priority_level public."EmergencyPriority" NOT NULL,
+    vital_reading_id uuid,
+    triggered_by_rule character varying(255),
+    alert_title character varying(255) NOT NULL,
+    alert_message text NOT NULL,
+    clinical_context text,
+    acknowledged boolean DEFAULT false NOT NULL,
+    acknowledged_by uuid,
+    acknowledged_at timestamp(6) with time zone,
+    resolved boolean DEFAULT false NOT NULL,
+    resolved_by uuid,
+    resolved_at timestamp(6) with time zone,
+    resolution_notes text,
+    notifications_sent jsonb DEFAULT '[]'::jsonb NOT NULL,
+    escalation_level integer DEFAULT 0 NOT NULL,
+    max_escalations integer DEFAULT 3 NOT NULL,
+    created_at timestamp(6) with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    updated_at timestamp(6) with time zone NOT NULL
+);
 
 
 --
--- Name: COLUMN doctors.verification_documents; Type: COMMENT; Schema: public; Owner: healthapp_user
+-- Name: emergency_contacts; Type: TABLE; Schema: public; Owner: -
 --
 
-COMMENT ON COLUMN public.doctors.verification_documents IS 'Medical license and certification verification';
-
-
---
--- Name: COLUMN doctors.languages_spoken; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.doctors.languages_spoken IS 'Languages the doctor can communicate in';
-
-
---
--- Name: COLUMN doctors.signature_pic; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.doctors.signature_pic IS 'Digital signature for prescriptions';
-
-
---
--- Name: COLUMN doctors.profile_picture_url; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.doctors.profile_picture_url IS 'URL to doctor profile picture';
+CREATE TABLE public.emergency_contacts (
+    id uuid NOT NULL,
+    patient_id uuid NOT NULL,
+    name character varying(255) NOT NULL,
+    relationship character varying(100) NOT NULL,
+    phone character varying(20) NOT NULL,
+    email character varying(255),
+    address jsonb,
+    priority_order integer DEFAULT 1 NOT NULL,
+    can_receive_medical boolean DEFAULT false NOT NULL,
+    preferred_contact character varying(20) DEFAULT 'phone'::character varying NOT NULL,
+    is_active boolean DEFAULT true NOT NULL,
+    hipaa_authorized boolean DEFAULT false NOT NULL,
+    authorization_date timestamp(6) with time zone,
+    authorization_expires timestamp(6) with time zone,
+    created_at timestamp(6) with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    updated_at timestamp(6) with time zone NOT NULL
+);
 
 
 --
--- Name: COLUMN doctors.banner_image_url; Type: COMMENT; Schema: public; Owner: healthapp_user
+-- Name: game_badge_awards; Type: TABLE; Schema: public; Owner: -
 --
 
-COMMENT ON COLUMN public.doctors.banner_image_url IS 'URL to clinic/practice banner image';
-
-
---
--- Name: COLUMN doctors.qualification_details; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.doctors.qualification_details IS 'Detailed qualification information including degrees, universities, years';
-
-
---
--- Name: COLUMN doctors.registration_details; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.doctors.registration_details IS 'Medical registration details with councils and authorities';
+CREATE TABLE public.game_badge_awards (
+    id uuid NOT NULL,
+    patient_id uuid NOT NULL,
+    badge_type public."GameBadgeType" NOT NULL,
+    badge_name character varying(255) NOT NULL,
+    badge_description text,
+    points_awarded integer DEFAULT 0 NOT NULL,
+    awarded_date timestamp(6) with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    badge_icon character varying(255),
+    badge_color character varying(50),
+    achievement_data jsonb DEFAULT '{}'::jsonb
+);
 
 
 --
--- Name: COLUMN doctors.subscription_details; Type: COMMENT; Schema: public; Owner: healthapp_user
+-- Name: game_challenge_progress; Type: TABLE; Schema: public; Owner: -
 --
 
-COMMENT ON COLUMN public.doctors.subscription_details IS 'Payment gateway and subscription account details';
-
-
---
--- Name: COLUMN doctors.signature_image_url; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.doctors.signature_image_url IS 'URL to uploaded signature image';
-
-
---
--- Name: COLUMN doctors.signature_data; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.doctors.signature_data IS 'Digital signature data (base64 encoded)';
-
-
---
--- Name: COLUMN doctors.gender; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.doctors.gender IS 'Doctor gender for profile display';
+CREATE TABLE public.game_challenge_progress (
+    id uuid NOT NULL,
+    patient_id uuid NOT NULL,
+    challenge_type public."GameChallengeType" NOT NULL,
+    challenge_name character varying(255) NOT NULL,
+    target_value integer NOT NULL,
+    current_progress integer DEFAULT 0 NOT NULL,
+    start_date timestamp(6) with time zone NOT NULL,
+    end_date timestamp(6) with time zone NOT NULL,
+    is_completed boolean DEFAULT false NOT NULL,
+    completion_date timestamp(6) with time zone,
+    points_earned integer DEFAULT 0 NOT NULL,
+    challenge_rules jsonb DEFAULT '{}'::jsonb,
+    progress_data jsonb DEFAULT '{}'::jsonb,
+    created_at timestamp(6) with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    updated_at timestamp(6) with time zone NOT NULL
+);
 
 
 --
--- Name: COLUMN doctors.mobile_number; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.doctors.mobile_number IS 'Doctor mobile number (can be different from user phone)';
-
-
---
--- Name: healthcare_providers; Type: TABLE; Schema: public; Owner: healthapp_user
+-- Name: healthcare_providers; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.healthcare_providers (
@@ -1247,7 +1166,7 @@ CREATE TABLE public.healthcare_providers (
     years_of_experience integer,
     is_verified boolean DEFAULT false,
     verification_documents jsonb DEFAULT '[]'::jsonb,
-    verification_date timestamp with time zone,
+    verification_date timestamp(6) with time zone,
     verified_by uuid,
     consultation_fee numeric(10,2),
     availability_schedule jsonb DEFAULT '{"friday": {"end": "17:00", "start": "09:00", "available": true}, "monday": {"end": "17:00", "start": "09:00", "available": true}, "sunday": {"available": false}, "tuesday": {"end": "17:00", "start": "09:00", "available": true}, "saturday": {"available": false}, "thursday": {"end": "17:00", "start": "09:00", "available": true}, "wednesday": {"end": "17:00", "start": "09:00", "available": true}}'::jsonb,
@@ -1260,77 +1179,20 @@ CREATE TABLE public.healthcare_providers (
     active_care_plans integer DEFAULT 0,
     average_rating numeric(3,2),
     total_reviews integer DEFAULT 0,
-    created_at timestamp with time zone,
-    updated_at timestamp with time zone,
-    deleted_at timestamp with time zone
+    created_at timestamp(6) with time zone,
+    updated_at timestamp(6) with time zone,
+    deleted_at timestamp(6) with time zone
 );
 
 
-ALTER TABLE public.healthcare_providers OWNER TO healthapp_user;
-
 --
--- Name: COLUMN healthcare_providers.specialties; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.healthcare_providers.specialties IS 'Array of medical specialties';
-
-
---
--- Name: COLUMN healthcare_providers.sub_specialties; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.healthcare_providers.sub_specialties IS 'Array of sub-specialties';
-
-
---
--- Name: COLUMN healthcare_providers.qualifications; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.healthcare_providers.qualifications IS 'Educational qualifications and certifications';
-
-
---
--- Name: COLUMN healthcare_providers.is_verified; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.healthcare_providers.is_verified IS 'Whether provider credentials are verified';
-
-
---
--- Name: COLUMN healthcare_providers.verification_documents; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.healthcare_providers.verification_documents IS 'Verification documents and their status';
-
-
---
--- Name: COLUMN healthcare_providers.verification_date; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.healthcare_providers.verification_date IS 'When verification was completed';
-
-
---
--- Name: COLUMN healthcare_providers.verified_by; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.healthcare_providers.verified_by IS 'Who verified this provider';
-
-
---
--- Name: COLUMN healthcare_providers.availability_schedule; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.healthcare_providers.availability_schedule IS 'Weekly availability schedule';
-
-
---
--- Name: hsps; Type: TABLE; Schema: public; Owner: healthapp_user
+-- Name: hsps; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.hsps (
     id uuid NOT NULL,
     user_id uuid NOT NULL,
+    hsp_id character varying(50) NOT NULL,
     organization_id uuid,
     hsp_type character varying(50) NOT NULL,
     license_number character varying(100),
@@ -1345,7 +1207,7 @@ CREATE TABLE public.hsps (
     supervision_level character varying(20) DEFAULT 'direct'::character varying,
     is_verified boolean DEFAULT false,
     verification_documents jsonb DEFAULT '[]'::jsonb,
-    verification_date timestamp with time zone,
+    verification_date timestamp(6) with time zone,
     verified_by uuid,
     hourly_rate numeric(8,2),
     availability_schedule jsonb DEFAULT '{"friday": {"end": "18:00", "start": "08:00", "available": true}, "monday": {"end": "18:00", "start": "08:00", "available": true}, "sunday": {"available": false}, "tuesday": {"end": "18:00", "start": "08:00", "available": true}, "saturday": {"available": false}, "thursday": {"end": "18:00", "start": "08:00", "available": true}, "wednesday": {"end": "18:00", "start": "08:00", "available": true}}'::jsonb,
@@ -1359,121 +1221,116 @@ CREATE TABLE public.hsps (
     average_rating numeric(3,2),
     total_reviews integer DEFAULT 0,
     is_available boolean DEFAULT true,
-    created_at timestamp with time zone,
-    updated_at timestamp with time zone,
-    deleted_at timestamp with time zone
+    created_at timestamp(6) with time zone,
+    updated_at timestamp(6) with time zone,
+    deleted_at timestamp(6) with time zone
 );
 
 
-ALTER TABLE public.hsps OWNER TO healthapp_user;
-
 --
--- Name: COLUMN hsps.hsp_type; Type: COMMENT; Schema: public; Owner: healthapp_user
+-- Name: lab_orders; Type: TABLE; Schema: public; Owner: -
 --
 
-COMMENT ON COLUMN public.hsps.hsp_type IS 'Type of Healthcare Support Personnel';
-
-
---
--- Name: COLUMN hsps.license_number; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.hsps.license_number IS 'Professional license number (RN, LPN, etc.)';
-
-
---
--- Name: COLUMN hsps.certification_number; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.hsps.certification_number IS 'Certification number for specific HSP type';
-
-
---
--- Name: COLUMN hsps.certifications; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.hsps.certifications IS 'Professional certifications (CPR, ACLS, etc.)';
-
-
---
--- Name: COLUMN hsps.education; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.hsps.education IS 'Educational background and degrees';
+CREATE TABLE public.lab_orders (
+    id uuid NOT NULL,
+    order_number character varying(100) NOT NULL,
+    patient_id uuid NOT NULL,
+    doctor_id uuid NOT NULL,
+    consultation_id uuid,
+    order_date timestamp(6) with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    priority character varying(50) DEFAULT 'routine'::character varying NOT NULL,
+    status public."LabOrderStatus" DEFAULT 'ORDERED'::public."LabOrderStatus" NOT NULL,
+    category public."LabTestCategory" DEFAULT 'BLOOD_CHEMISTRY'::public."LabTestCategory" NOT NULL,
+    ordered_tests jsonb DEFAULT '[]'::jsonb NOT NULL,
+    clinical_indication text,
+    special_instructions text,
+    lab_facility_name character varying(255),
+    lab_facility_code character varying(100),
+    collection_date timestamp(6) with time zone,
+    expected_result_date timestamp(6) with time zone,
+    results_available boolean DEFAULT false NOT NULL,
+    results_data jsonb DEFAULT '{}'::jsonb,
+    results_pdf_url text,
+    critical_values boolean DEFAULT false NOT NULL,
+    created_at timestamp(6) with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    updated_at timestamp(6) with time zone NOT NULL
+);
 
 
 --
--- Name: COLUMN hsps.specializations; Type: COMMENT; Schema: public; Owner: healthapp_user
+-- Name: lab_results; Type: TABLE; Schema: public; Owner: -
 --
 
-COMMENT ON COLUMN public.hsps.specializations IS 'Areas of specialization within HSP role';
-
-
---
--- Name: COLUMN hsps.capabilities; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.hsps.capabilities IS 'What this HSP is authorized to do based on their type';
-
-
---
--- Name: COLUMN hsps.requires_supervision; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.hsps.requires_supervision IS 'Whether this HSP requires physician supervision';
-
-
---
--- Name: COLUMN hsps.supervising_doctor_id; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.hsps.supervising_doctor_id IS 'Doctor supervising this HSP';
+CREATE TABLE public.lab_results (
+    id uuid NOT NULL,
+    lab_order_id uuid NOT NULL,
+    test_name character varying(255) NOT NULL,
+    test_code character varying(50),
+    result_value character varying(255),
+    numeric_value numeric(10,3),
+    result_unit character varying(50),
+    reference_range character varying(255),
+    result_status character varying(50) DEFAULT 'final'::character varying NOT NULL,
+    abnormal_flag character varying(10),
+    critical_flag boolean DEFAULT false NOT NULL,
+    collection_date timestamp(6) with time zone,
+    result_date timestamp(6) with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    verified_date timestamp(6) with time zone,
+    method character varying(255),
+    specimen_type character varying(100),
+    comments text,
+    created_at timestamp(6) with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
 
 
 --
--- Name: COLUMN hsps.supervision_level; Type: COMMENT; Schema: public; Owner: healthapp_user
+-- Name: medication_logs; Type: TABLE; Schema: public; Owner: -
 --
 
-COMMENT ON COLUMN public.hsps.supervision_level IS 'Level of supervision required';
-
-
---
--- Name: COLUMN hsps.is_verified; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.hsps.is_verified IS 'Whether credentials are verified';
-
-
---
--- Name: COLUMN hsps.verification_documents; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.hsps.verification_documents IS 'License and certification verification';
+CREATE TABLE public.medication_logs (
+    id uuid NOT NULL,
+    medication_id uuid NOT NULL,
+    patient_id uuid NOT NULL,
+    scheduled_at timestamp(6) with time zone NOT NULL,
+    taken_at timestamp(6) with time zone,
+    dosage_taken character varying(100),
+    notes text,
+    adherence_status public.enum_medication_logs_adherence_status DEFAULT 'missed'::public.enum_medication_logs_adherence_status,
+    reminder_sent boolean DEFAULT false,
+    created_at timestamp(6) with time zone,
+    updated_at timestamp(6) with time zone
+);
 
 
 --
--- Name: COLUMN hsps.hourly_rate; Type: COMMENT; Schema: public; Owner: healthapp_user
+-- Name: medication_safety_alerts; Type: TABLE; Schema: public; Owner: -
 --
 
-COMMENT ON COLUMN public.hsps.hourly_rate IS 'Hourly compensation rate';
+CREATE TABLE public.medication_safety_alerts (
+    id uuid NOT NULL,
+    patient_id uuid NOT NULL,
+    medication_id uuid,
+    drug_interaction_id uuid,
+    patient_allergy_id uuid,
+    alert_type public."MedicationAlertType" NOT NULL,
+    severity public."AlertSeverity" NOT NULL,
+    alert_title character varying(255) NOT NULL,
+    alert_message text NOT NULL,
+    recommendation text,
+    requires_override boolean DEFAULT false NOT NULL,
+    resolved boolean DEFAULT false NOT NULL,
+    resolved_by uuid,
+    resolved_at timestamp(6) with time zone,
+    resolution_notes text,
+    override_reason text,
+    created_by uuid,
+    created_at timestamp(6) with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    updated_at timestamp(6) with time zone NOT NULL
+);
 
 
 --
--- Name: COLUMN hsps.languages_spoken; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.hsps.languages_spoken IS 'Languages the HSP can communicate in';
-
-
---
--- Name: COLUMN hsps.departments; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.hsps.departments IS 'Hospital departments or units where HSP works';
-
-
---
--- Name: medications; Type: TABLE; Schema: public; Owner: healthapp_user
+-- Name: medications; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.medications (
@@ -1483,20 +1340,19 @@ CREATE TABLE public.medications (
     organizer_id uuid NOT NULL,
     medicine_id uuid NOT NULL,
     description character varying(1000),
-    start_date timestamp with time zone,
-    end_date timestamp with time zone,
+    start_date timestamp(6) with time zone,
+    end_date timestamp(6) with time zone,
     rr_rule character varying(1000),
     details json,
-    created_at timestamp with time zone NOT NULL,
-    updated_at timestamp with time zone NOT NULL,
-    deleted_at timestamp with time zone
+    created_at timestamp(6) with time zone NOT NULL,
+    updated_at timestamp(6) with time zone NOT NULL,
+    deleted_at timestamp(6) with time zone,
+    care_plan_id uuid
 );
 
 
-ALTER TABLE public.medications OWNER TO healthapp_user;
-
 --
--- Name: medicines; Type: TABLE; Schema: public; Owner: healthapp_user
+-- Name: medicines; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.medicines (
@@ -1508,16 +1364,14 @@ CREATE TABLE public.medicines (
     creator_id integer,
     public_medicine boolean DEFAULT true,
     algolia_object_id character varying(255),
-    created_at timestamp with time zone NOT NULL,
-    updated_at timestamp with time zone NOT NULL,
-    deleted_at timestamp with time zone
+    created_at timestamp(6) with time zone NOT NULL,
+    updated_at timestamp(6) with time zone NOT NULL,
+    deleted_at timestamp(6) with time zone
 );
 
 
-ALTER TABLE public.medicines OWNER TO healthapp_user;
-
 --
--- Name: notifications; Type: TABLE; Schema: public; Owner: healthapp_user
+-- Name: notifications; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.notifications (
@@ -1532,15 +1386,15 @@ CREATE TABLE public.notifications (
     priority character varying(20) DEFAULT 'MEDIUM'::character varying,
     is_urgent boolean DEFAULT false,
     channels character varying(255)[] DEFAULT ARRAY['PUSH'::character varying(255)],
-    scheduled_for timestamp with time zone,
-    expires_at timestamp with time zone,
+    scheduled_for timestamp(6) with time zone,
+    expires_at timestamp(6) with time zone,
     status character varying(20) DEFAULT 'pending'::character varying,
-    sent_at timestamp with time zone,
-    delivered_at timestamp with time zone,
+    sent_at timestamp(6) with time zone,
+    delivered_at timestamp(6) with time zone,
     delivery_attempts integer DEFAULT 0,
     delivery_log jsonb DEFAULT '[]'::jsonb,
-    read_at timestamp with time zone,
-    acknowledged_at timestamp with time zone,
+    read_at timestamp(6) with time zone,
+    acknowledged_at timestamp(6) with time zone,
     related_appointment_id uuid,
     related_medication_id uuid,
     related_care_plan_id uuid,
@@ -1549,111 +1403,18 @@ CREATE TABLE public.notifications (
     requires_action boolean DEFAULT false,
     action_url character varying(500),
     action_taken boolean DEFAULT false,
-    action_taken_at timestamp with time zone,
+    action_taken_at timestamp(6) with time zone,
     template_id character varying(100),
     personalization_data jsonb DEFAULT '{}'::jsonb,
-    created_at timestamp with time zone,
-    updated_at timestamp with time zone,
-    deleted_at timestamp with time zone,
+    created_at timestamp(6) with time zone,
+    updated_at timestamp(6) with time zone,
+    deleted_at timestamp(6) with time zone,
     recipient_id uuid
 );
 
 
-ALTER TABLE public.notifications OWNER TO healthapp_user;
-
 --
--- Name: COLUMN notifications.title; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.notifications.title IS 'Notification title/subject';
-
-
---
--- Name: COLUMN notifications.message; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.notifications.message IS 'Notification content';
-
-
---
--- Name: COLUMN notifications.is_urgent; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.notifications.is_urgent IS 'Whether this is an urgent notification';
-
-
---
--- Name: COLUMN notifications.scheduled_for; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.notifications.scheduled_for IS 'When to send the notification (null = send immediately)';
-
-
---
--- Name: COLUMN notifications.expires_at; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.notifications.expires_at IS 'When this notification expires and should not be sent';
-
-
---
--- Name: COLUMN notifications.delivery_log; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.notifications.delivery_log IS 'Log of delivery attempts and results';
-
-
---
--- Name: COLUMN notifications.read_at; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.notifications.read_at IS 'When the notification was read';
-
-
---
--- Name: COLUMN notifications.acknowledged_at; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.notifications.acknowledged_at IS 'When the notification was acknowledged';
-
-
---
--- Name: COLUMN notifications.metadata; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.notifications.metadata IS 'Additional notification-specific data';
-
-
---
--- Name: COLUMN notifications.requires_action; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.notifications.requires_action IS 'Whether this notification requires user action';
-
-
---
--- Name: COLUMN notifications.action_url; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.notifications.action_url IS 'URL for action if required';
-
-
---
--- Name: COLUMN notifications.template_id; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.notifications.template_id IS 'Template used for this notification';
-
-
---
--- Name: COLUMN notifications.personalization_data; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.notifications.personalization_data IS 'Data used to personalize the notification';
-
-
---
--- Name: organizations; Type: TABLE; Schema: public; Owner: healthapp_user
+-- Name: organizations; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.organizations (
@@ -1667,30 +1428,98 @@ CREATE TABLE public.organizations (
     is_active boolean DEFAULT true,
     hipaa_covered_entity boolean DEFAULT true,
     business_associate_agreement jsonb,
-    created_at timestamp with time zone,
-    updated_at timestamp with time zone,
-    deleted_at timestamp with time zone
+    created_at timestamp(6) with time zone,
+    updated_at timestamp(6) with time zone,
+    deleted_at timestamp(6) with time zone
 );
 
 
-ALTER TABLE public.organizations OWNER TO healthapp_user;
-
 --
--- Name: COLUMN organizations.hipaa_covered_entity; Type: COMMENT; Schema: public; Owner: healthapp_user
+-- Name: patient_alerts; Type: TABLE; Schema: public; Owner: -
 --
 
-COMMENT ON COLUMN public.organizations.hipaa_covered_entity IS 'Whether this organization is a HIPAA covered entity';
+CREATE TABLE public.patient_alerts (
+    id uuid NOT NULL,
+    patient_id uuid NOT NULL,
+    alert_type public.enum_patient_alerts_alert_type NOT NULL,
+    severity public.enum_patient_alerts_severity DEFAULT 'medium'::public.enum_patient_alerts_severity,
+    title character varying(200) NOT NULL,
+    message text NOT NULL,
+    action_required boolean DEFAULT false,
+    acknowledged boolean DEFAULT false,
+    acknowledged_at timestamp(6) with time zone,
+    acknowledged_by uuid,
+    resolved boolean DEFAULT false,
+    resolved_at timestamp(6) with time zone,
+    metadata jsonb DEFAULT '{}'::jsonb,
+    created_at timestamp(6) with time zone,
+    updated_at timestamp(6) with time zone
+);
 
 
 --
--- Name: COLUMN organizations.business_associate_agreement; Type: COMMENT; Schema: public; Owner: healthapp_user
+-- Name: patient_allergies; Type: TABLE; Schema: public; Owner: -
 --
 
-COMMENT ON COLUMN public.organizations.business_associate_agreement IS 'BAA details if this organization is a business associate';
+CREATE TABLE public.patient_allergies (
+    id uuid NOT NULL,
+    patient_id uuid NOT NULL,
+    allergen_type public."AllergenType" NOT NULL,
+    allergen_name character varying(255) NOT NULL,
+    allergen_rxnorm character varying(50),
+    reaction_severity public."AllergySeverity" NOT NULL,
+    reaction_symptoms text,
+    onset_date date,
+    verified_by_doctor boolean DEFAULT false NOT NULL,
+    verified_by uuid,
+    notes text,
+    is_active boolean DEFAULT true NOT NULL,
+    created_at timestamp(6) with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    updated_at timestamp(6) with time zone NOT NULL
+);
 
 
 --
--- Name: patient_doctor_assignments; Type: TABLE; Schema: public; Owner: healthapp_user
+-- Name: patient_consent_otp; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.patient_consent_otp (
+    id uuid NOT NULL,
+    secondary_assignment_id uuid NOT NULL,
+    patient_id uuid NOT NULL,
+    primary_doctor_id uuid NOT NULL,
+    secondary_doctor_id uuid,
+    secondary_hsp_id uuid,
+    otp_code character varying(10) NOT NULL,
+    otp_method public.enum_patient_consent_otp_otp_method DEFAULT 'both'::public.enum_patient_consent_otp_otp_method,
+    patient_phone character varying(20),
+    patient_email character varying(255),
+    generated_at timestamp(6) with time zone,
+    expires_at timestamp(6) with time zone NOT NULL,
+    attempts_count integer DEFAULT 0,
+    max_attempts integer DEFAULT 3,
+    is_verified boolean DEFAULT false,
+    verified_at timestamp(6) with time zone,
+    is_expired boolean DEFAULT false,
+    is_blocked boolean DEFAULT false,
+    blocked_at timestamp(6) with time zone,
+    requested_by_user_id uuid NOT NULL,
+    request_ip_address inet,
+    request_user_agent text,
+    sms_sent boolean DEFAULT false,
+    sms_sent_at timestamp(6) with time zone,
+    sms_error text,
+    email_sent boolean DEFAULT false,
+    email_sent_at timestamp(6) with time zone,
+    email_error text,
+    created_at timestamp(6) with time zone,
+    updated_at timestamp(6) with time zone,
+    deleted_at timestamp(6) with time zone
+);
+
+
+--
+-- Name: patient_doctor_assignments; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.patient_doctor_assignments (
@@ -1707,101 +1536,49 @@ CREATE TABLE public.patient_doctor_assignments (
     patient_consent_status character varying(20) DEFAULT 'not_required'::character varying,
     consent_method character varying(20),
     consent_otp character varying(10),
-    consent_otp_expires_at timestamp with time zone,
-    consent_granted_at timestamp with time zone,
-    assignment_start_date timestamp with time zone,
-    assignment_end_date timestamp with time zone,
+    consent_otp_expires_at timestamp(6) with time zone,
+    consent_granted_at timestamp(6) with time zone,
+    assignment_start_date timestamp(6) with time zone,
+    assignment_end_date timestamp(6) with time zone,
     is_active boolean DEFAULT true,
     assignment_reason text,
     notes text,
     requires_same_organization boolean DEFAULT false,
-    created_at timestamp with time zone,
-    updated_at timestamp with time zone,
-    deleted_at timestamp with time zone
+    created_at timestamp(6) with time zone,
+    updated_at timestamp(6) with time zone,
+    deleted_at timestamp(6) with time zone
 );
 
 
-ALTER TABLE public.patient_doctor_assignments OWNER TO healthapp_user;
-
 --
--- Name: COLUMN patient_doctor_assignments.assignment_type; Type: COMMENT; Schema: public; Owner: healthapp_user
+-- Name: patient_game_profiles; Type: TABLE; Schema: public; Owner: -
 --
 
-COMMENT ON COLUMN public.patient_doctor_assignments.assignment_type IS 'Primary: Original doctor, Specialist: For specific care plans, Substitute: Same provider coverage, Transferred: Full transfer with consent';
-
-
---
--- Name: COLUMN patient_doctor_assignments.permissions; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.patient_doctor_assignments.permissions IS 'Granular permissions for this doctor-patient relationship';
-
-
---
--- Name: COLUMN patient_doctor_assignments.specialty_focus; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.patient_doctor_assignments.specialty_focus IS 'Specific specialties/conditions this assignment covers';
-
-
---
--- Name: COLUMN patient_doctor_assignments.care_plan_ids; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.patient_doctor_assignments.care_plan_ids IS 'Specific care plans this doctor is responsible for';
+CREATE TABLE public.patient_game_profiles (
+    id uuid NOT NULL,
+    patient_id uuid NOT NULL,
+    total_points integer DEFAULT 0 NOT NULL,
+    current_level integer DEFAULT 1 NOT NULL,
+    experience_points integer DEFAULT 0 NOT NULL,
+    medication_streak integer DEFAULT 0 NOT NULL,
+    appointment_streak integer DEFAULT 0 NOT NULL,
+    vitals_streak integer DEFAULT 0 NOT NULL,
+    longest_streak integer DEFAULT 0 NOT NULL,
+    badges_earned text[] DEFAULT ARRAY[]::text[],
+    challenges_completed text[] DEFAULT ARRAY[]::text[],
+    login_streak integer DEFAULT 0 NOT NULL,
+    last_activity timestamp(6) with time zone,
+    total_activities integer DEFAULT 0 NOT NULL,
+    gamification_enabled boolean DEFAULT true NOT NULL,
+    notifications_enabled boolean DEFAULT true NOT NULL,
+    public_profile boolean DEFAULT false NOT NULL,
+    created_at timestamp(6) with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    updated_at timestamp(6) with time zone NOT NULL
+);
 
 
 --
--- Name: COLUMN patient_doctor_assignments.assigned_by_doctor_id; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.patient_doctor_assignments.assigned_by_doctor_id IS 'Doctor who made this assignment';
-
-
---
--- Name: COLUMN patient_doctor_assignments.assigned_by_admin_id; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.patient_doctor_assignments.assigned_by_admin_id IS 'Provider admin who made this assignment';
-
-
---
--- Name: COLUMN patient_doctor_assignments.patient_consent_required; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.patient_doctor_assignments.patient_consent_required IS 'Whether patient consent is required for this assignment';
-
-
---
--- Name: COLUMN patient_doctor_assignments.consent_otp; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.patient_doctor_assignments.consent_otp IS 'OTP for consent verification';
-
-
---
--- Name: COLUMN patient_doctor_assignments.assignment_end_date; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.patient_doctor_assignments.assignment_end_date IS 'Optional end date for temporary assignments';
-
-
---
--- Name: COLUMN patient_doctor_assignments.assignment_reason; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.patient_doctor_assignments.assignment_reason IS 'Reason for this doctor assignment';
-
-
---
--- Name: COLUMN patient_doctor_assignments.requires_same_organization; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.patient_doctor_assignments.requires_same_organization IS 'Whether this assignment requires doctors to be in same organization';
-
-
---
--- Name: patient_provider_assignments; Type: TABLE; Schema: public; Owner: healthapp_user
+-- Name: patient_provider_assignments; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.patient_provider_assignments (
@@ -1809,17 +1586,46 @@ CREATE TABLE public.patient_provider_assignments (
     patient_id uuid NOT NULL,
     provider_id uuid NOT NULL,
     role character varying(50) DEFAULT 'primary'::character varying,
-    assigned_at timestamp with time zone,
+    assigned_at timestamp(6) with time zone,
     assigned_by uuid,
-    ended_at timestamp with time zone,
+    ended_at timestamp(6) with time zone,
     notes text
 );
 
 
-ALTER TABLE public.patient_provider_assignments OWNER TO healthapp_user;
+--
+-- Name: patient_provider_consent_history; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.patient_provider_consent_history (
+    id uuid NOT NULL,
+    patient_id uuid NOT NULL,
+    previous_provider_id uuid,
+    new_provider_id uuid NOT NULL,
+    doctor_id uuid,
+    hsp_id uuid,
+    consent_required boolean DEFAULT false,
+    consent_requested boolean DEFAULT false,
+    consent_requested_at timestamp(6) with time zone,
+    consent_given boolean DEFAULT false,
+    consent_given_at timestamp(6) with time zone,
+    consent_method public.enum_patient_provider_consent_history_consent_method,
+    consent_token character varying(100),
+    consent_token_expires_at timestamp(6) with time zone,
+    consent_verified boolean DEFAULT false,
+    consent_denied boolean DEFAULT false,
+    consent_denied_at timestamp(6) with time zone,
+    reason text,
+    initiated_by uuid,
+    status public.enum_patient_provider_consent_history_status DEFAULT 'pending'::public.enum_patient_provider_consent_history_status,
+    metadata jsonb DEFAULT '{}'::jsonb,
+    created_at timestamp(6) with time zone,
+    updated_at timestamp(6) with time zone
+);
+
 
 --
--- Name: patient_subscriptions; Type: TABLE; Schema: public; Owner: healthapp_user
+-- Name: patient_subscriptions; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.patient_subscriptions (
@@ -1836,21 +1642,19 @@ CREATE TABLE public.patient_subscriptions (
     payment_method_id character varying(255),
     stripe_subscription_id character varying(255),
     stripe_customer_id character varying(255),
-    last_payment_date timestamp with time zone,
+    last_payment_date timestamp(6) with time zone,
     last_payment_amount numeric(10,2),
     failure_count integer DEFAULT 0,
     metadata json DEFAULT '{}'::json,
-    created_at timestamp with time zone NOT NULL,
-    updated_at timestamp with time zone NOT NULL,
-    cancelled_at timestamp with time zone,
-    deleted_at timestamp with time zone
+    created_at timestamp(6) with time zone NOT NULL,
+    updated_at timestamp(6) with time zone NOT NULL,
+    cancelled_at timestamp(6) with time zone,
+    deleted_at timestamp(6) with time zone
 );
 
 
-ALTER TABLE public.patient_subscriptions OWNER TO healthapp_user;
-
 --
--- Name: patients; Type: TABLE; Schema: public; Owner: healthapp_user
+-- Name: patients; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.patients (
@@ -1877,143 +1681,27 @@ CREATE TABLE public.patients (
     care_coordinator_id uuid,
     care_coordinator_type character varying(10),
     overall_adherence_score numeric(5,2),
-    last_adherence_calculation timestamp with time zone,
+    last_adherence_calculation timestamp(6) with time zone,
     total_appointments integer DEFAULT 0,
     missed_appointments integer DEFAULT 0,
-    last_visit_date timestamp with time zone,
-    next_appointment_date timestamp with time zone,
+    last_visit_date timestamp(6) with time zone,
+    next_appointment_date timestamp(6) with time zone,
     is_active boolean DEFAULT true,
     requires_interpreter boolean DEFAULT false,
     has_mobility_issues boolean DEFAULT false,
-    created_at timestamp with time zone,
-    updated_at timestamp with time zone,
-    deleted_at timestamp with time zone
+    created_at timestamp(6) with time zone,
+    updated_at timestamp(6) with time zone,
+    deleted_at timestamp(6) with time zone,
+    linked_provider_id uuid,
+    provider_linked_at timestamp(6) with time zone,
+    provider_consent_given boolean DEFAULT false,
+    provider_consent_given_at timestamp(6) with time zone,
+    provider_consent_method public.enum_patients_provider_consent_method
 );
 
 
-ALTER TABLE public.patients OWNER TO healthapp_user;
-
 --
--- Name: COLUMN patients.medical_record_number; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.patients.medical_record_number IS 'Organization-specific patient identifier';
-
-
---
--- Name: COLUMN patients.patient_id; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.patients.patient_id IS 'Custom patient identifier - supports any format (numbers, alphanumeric, structured)';
-
-
---
--- Name: COLUMN patients.emergency_contacts; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.patients.emergency_contacts IS 'Array of emergency contact objects';
-
-
---
--- Name: COLUMN patients.insurance_information; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.patients.insurance_information IS 'Insurance details and coverage information';
-
-
---
--- Name: COLUMN patients.medical_history; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.patients.medical_history IS 'Past medical conditions and treatments';
-
-
---
--- Name: COLUMN patients.allergies; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.patients.allergies IS 'Known allergies and reactions';
-
-
---
--- Name: COLUMN patients.current_medications; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.patients.current_medications IS 'Current medications from external sources';
-
-
---
--- Name: COLUMN patients.height_cm; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.patients.height_cm IS 'Height in centimeters';
-
-
---
--- Name: COLUMN patients.weight_kg; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.patients.weight_kg IS 'Weight in kilograms';
-
-
---
--- Name: COLUMN patients.primary_language; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.patients.primary_language IS 'Primary language for communication';
-
-
---
--- Name: COLUMN patients.risk_factors; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.patients.risk_factors IS 'Clinical risk factors';
-
-
---
--- Name: COLUMN patients.primary_care_doctor_id; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.patients.primary_care_doctor_id IS 'Primary care physician';
-
-
---
--- Name: COLUMN patients.primary_care_hsp_id; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.patients.primary_care_hsp_id IS 'Primary HSP (if no doctor assigned)';
-
-
---
--- Name: COLUMN patients.care_coordinator_id; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.patients.care_coordinator_id IS 'Care coordinator (can be doctor or HSP)';
-
-
---
--- Name: COLUMN patients.care_coordinator_type; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.patients.care_coordinator_type IS 'Type of care coordinator';
-
-
---
--- Name: COLUMN patients.overall_adherence_score; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.patients.overall_adherence_score IS 'Overall medication adherence percentage';
-
-
---
--- Name: COLUMN patients.last_adherence_calculation; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.patients.last_adherence_calculation IS 'When adherence score was last calculated';
-
-
---
--- Name: payment_methods; Type: TABLE; Schema: public; Owner: healthapp_user
+-- Name: payment_methods; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.payment_methods (
@@ -2031,16 +1719,14 @@ CREATE TABLE public.payment_methods (
     is_active boolean DEFAULT true,
     billing_address json,
     metadata json DEFAULT '{}'::json,
-    created_at timestamp with time zone NOT NULL,
-    updated_at timestamp with time zone NOT NULL,
-    deleted_at timestamp with time zone
+    created_at timestamp(6) with time zone NOT NULL,
+    updated_at timestamp(6) with time zone NOT NULL,
+    deleted_at timestamp(6) with time zone
 );
 
 
-ALTER TABLE public.payment_methods OWNER TO healthapp_user;
-
 --
--- Name: payments; Type: TABLE; Schema: public; Owner: healthapp_user
+-- Name: payments; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.payments (
@@ -2062,17 +1748,36 @@ CREATE TABLE public.payments (
     billing_period_start date,
     billing_period_end date,
     metadata json DEFAULT '{}'::json,
-    created_at timestamp with time zone NOT NULL,
-    updated_at timestamp with time zone NOT NULL,
-    processed_at timestamp with time zone,
-    deleted_at timestamp with time zone
+    created_at timestamp(6) with time zone NOT NULL,
+    updated_at timestamp(6) with time zone NOT NULL,
+    processed_at timestamp(6) with time zone,
+    deleted_at timestamp(6) with time zone
 );
 
 
-ALTER TABLE public.payments OWNER TO healthapp_user;
+--
+-- Name: provider_change_history; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.provider_change_history (
+    id uuid NOT NULL,
+    practitioner_type public.enum_provider_change_history_practitioner_type NOT NULL,
+    practitioner_id uuid NOT NULL,
+    previous_provider_id uuid,
+    new_provider_id uuid NOT NULL,
+    change_date timestamp(6) with time zone NOT NULL,
+    affected_patients_count integer DEFAULT 0,
+    consent_required_count integer DEFAULT 0,
+    consent_obtained_count integer DEFAULT 0,
+    reason text,
+    status public.enum_provider_change_history_status DEFAULT 'active'::public.enum_provider_change_history_status,
+    created_at timestamp(6) with time zone,
+    updated_at timestamp(6) with time zone
+);
+
 
 --
--- Name: providers; Type: TABLE; Schema: public; Owner: healthapp_user
+-- Name: providers; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.providers (
@@ -2082,18 +1787,16 @@ CREATE TABLE public.providers (
     address character varying(255),
     city character varying(255),
     state character varying(255),
-    activated_on timestamp with time zone,
+    activated_on timestamp(6) with time zone,
     details json,
-    created_at timestamp with time zone NOT NULL,
-    updated_at timestamp with time zone NOT NULL,
-    deleted_at timestamp with time zone
+    created_at timestamp(6) with time zone NOT NULL,
+    updated_at timestamp(6) with time zone NOT NULL,
+    deleted_at timestamp(6) with time zone
 );
 
 
-ALTER TABLE public.providers OWNER TO healthapp_user;
-
 --
--- Name: schedule_events; Type: TABLE; Schema: public; Owner: healthapp_user
+-- Name: schedule_events; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.schedule_events (
@@ -2104,18 +1807,16 @@ CREATE TABLE public.schedule_events (
     details json,
     status public.enum_schedule_events_status DEFAULT 'pending'::public.enum_schedule_events_status NOT NULL,
     date date,
-    start_time timestamp with time zone,
-    end_time timestamp with time zone,
-    created_at timestamp with time zone,
-    updated_at timestamp with time zone,
-    deleted_at timestamp with time zone
+    start_time timestamp(6) with time zone,
+    end_time timestamp(6) with time zone,
+    created_at timestamp(6) with time zone,
+    updated_at timestamp(6) with time zone,
+    deleted_at timestamp(6) with time zone
 );
 
 
-ALTER TABLE public.schedule_events OWNER TO healthapp_user;
-
 --
--- Name: scheduled_events; Type: TABLE; Schema: public; Owner: healthapp_user
+-- Name: scheduled_events; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.scheduled_events (
@@ -2126,23 +1827,52 @@ CREATE TABLE public.scheduled_events (
     event_id uuid,
     title character varying(255) NOT NULL,
     description text,
-    scheduled_for timestamp with time zone NOT NULL,
+    scheduled_for timestamp(6) with time zone NOT NULL,
     timezone character varying(50) DEFAULT 'UTC'::character varying,
     status public.enum_scheduled_events_status DEFAULT 'SCHEDULED'::public.enum_scheduled_events_status,
     priority public.enum_scheduled_events_priority DEFAULT 'MEDIUM'::public.enum_scheduled_events_priority,
     event_data jsonb DEFAULT '{}'::jsonb,
-    completed_at timestamp with time zone,
+    completed_at timestamp(6) with time zone,
     completed_by uuid,
-    created_at timestamp with time zone,
-    updated_at timestamp with time zone,
-    deleted_at timestamp with time zone
+    created_at timestamp(6) with time zone,
+    updated_at timestamp(6) with time zone,
+    deleted_at timestamp(6) with time zone
 );
 
 
-ALTER TABLE public.scheduled_events OWNER TO healthapp_user;
+--
+-- Name: secondary_doctor_assignments; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.secondary_doctor_assignments (
+    id uuid NOT NULL,
+    patient_id uuid NOT NULL,
+    primary_doctor_id uuid NOT NULL,
+    secondary_doctor_id uuid,
+    secondary_hsp_id uuid,
+    assignment_reason text,
+    specialty_focus text[] DEFAULT ARRAY[]::text[],
+    care_plan_ids uuid[] DEFAULT ARRAY[]::uuid[],
+    primary_doctor_provider_id uuid,
+    secondary_doctor_provider_id uuid,
+    consent_required boolean DEFAULT true,
+    consent_status public.enum_secondary_doctor_assignments_consent_status DEFAULT 'pending'::public.enum_secondary_doctor_assignments_consent_status,
+    access_granted boolean DEFAULT false,
+    first_access_attempt_at timestamp(6) with time zone,
+    access_granted_at timestamp(6) with time zone,
+    consent_expires_at timestamp(6) with time zone,
+    consent_duration_months integer DEFAULT 6,
+    is_active boolean DEFAULT true,
+    assignment_start_date timestamp(6) with time zone,
+    assignment_end_date timestamp(6) with time zone,
+    created_at timestamp(6) with time zone,
+    updated_at timestamp(6) with time zone,
+    deleted_at timestamp(6) with time zone
+);
+
 
 --
--- Name: service_plans; Type: TABLE; Schema: public; Owner: healthapp_user
+-- Name: service_plans; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.service_plans (
@@ -2160,16 +1890,14 @@ CREATE TABLE public.service_plans (
     setup_fee numeric(10,2) DEFAULT 0,
     is_active boolean DEFAULT true,
     stripe_price_id character varying(255),
-    created_at timestamp with time zone NOT NULL,
-    updated_at timestamp with time zone NOT NULL,
-    deleted_at timestamp with time zone
+    created_at timestamp(6) with time zone NOT NULL,
+    updated_at timestamp(6) with time zone NOT NULL,
+    deleted_at timestamp(6) with time zone
 );
 
 
-ALTER TABLE public.service_plans OWNER TO healthapp_user;
-
 --
--- Name: specialities; Type: TABLE; Schema: public; Owner: healthapp_user
+-- Name: specialities; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.specialities (
@@ -2177,16 +1905,14 @@ CREATE TABLE public.specialities (
     name character varying(255) NOT NULL,
     description character varying(1000),
     user_created integer,
-    created_at timestamp with time zone NOT NULL,
-    updated_at timestamp with time zone NOT NULL,
-    deleted_at timestamp with time zone
+    created_at timestamp(6) with time zone NOT NULL,
+    updated_at timestamp(6) with time zone NOT NULL,
+    deleted_at timestamp(6) with time zone
 );
 
 
-ALTER TABLE public.specialities OWNER TO healthapp_user;
-
 --
--- Name: specialities_id_seq; Type: SEQUENCE; Schema: public; Owner: healthapp_user
+-- Name: specialities_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
 CREATE SEQUENCE public.specialities_id_seq
@@ -2198,17 +1924,15 @@ CREATE SEQUENCE public.specialities_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.specialities_id_seq OWNER TO healthapp_user;
-
 --
--- Name: specialities_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: healthapp_user
+-- Name: specialities_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
 ALTER SEQUENCE public.specialities_id_seq OWNED BY public.specialities.id;
 
 
 --
--- Name: symptoms; Type: TABLE; Schema: public; Owner: healthapp_user
+-- Name: symptoms; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.symptoms (
@@ -2219,22 +1943,20 @@ CREATE TABLE public.symptoms (
     severity integer,
     description text,
     body_location jsonb DEFAULT '{}'::jsonb,
-    onset_time timestamp with time zone,
-    recorded_at timestamp with time zone,
+    onset_time timestamp(6) with time zone,
+    recorded_at timestamp(6) with time zone,
     triggers jsonb DEFAULT '[]'::jsonb,
     relieving_factors jsonb DEFAULT '[]'::jsonb,
     associated_symptoms jsonb DEFAULT '[]'::jsonb,
     attachments jsonb DEFAULT '[]'::jsonb,
-    created_at timestamp with time zone,
-    updated_at timestamp with time zone,
-    deleted_at timestamp with time zone
+    created_at timestamp(6) with time zone,
+    updated_at timestamp(6) with time zone,
+    deleted_at timestamp(6) with time zone
 );
 
 
-ALTER TABLE public.symptoms OWNER TO healthapp_user;
-
 --
--- Name: symptoms_database; Type: TABLE; Schema: public; Owner: healthapp_user
+-- Name: symptoms_database; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.symptoms_database (
@@ -2247,65 +1969,14 @@ CREATE TABLE public.symptoms_database (
     gender_specific character varying(20),
     is_active boolean DEFAULT true,
     created_by uuid,
-    created_at timestamp with time zone,
-    updated_at timestamp with time zone,
-    deleted_at timestamp with time zone
+    created_at timestamp(6) with time zone,
+    updated_at timestamp(6) with time zone,
+    deleted_at timestamp(6) with time zone
 );
 
 
-ALTER TABLE public.symptoms_database OWNER TO healthapp_user;
-
 --
--- Name: COLUMN symptoms_database.diagnosis_name; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.symptoms_database.diagnosis_name IS 'Primary diagnosis name';
-
-
---
--- Name: COLUMN symptoms_database.symptoms; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.symptoms_database.symptoms IS 'Object with symptom names as keys and boolean values';
-
-
---
--- Name: COLUMN symptoms_database.category; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.symptoms_database.category IS 'Medical category (Cardiology, Neurology, etc.)';
-
-
---
--- Name: COLUMN symptoms_database.severity_indicators; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.symptoms_database.severity_indicators IS 'Symptoms that indicate severity levels';
-
-
---
--- Name: COLUMN symptoms_database.common_age_groups; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.symptoms_database.common_age_groups IS 'Age groups commonly affected';
-
-
---
--- Name: COLUMN symptoms_database.gender_specific; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.symptoms_database.gender_specific IS 'Gender specificity if applicable';
-
-
---
--- Name: COLUMN symptoms_database.created_by; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.symptoms_database.created_by IS 'Doctor/HSP who added this diagnosis';
-
-
---
--- Name: treatment_database; Type: TABLE; Schema: public; Owner: healthapp_user
+-- Name: treatment_database; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.treatment_database (
@@ -2327,128 +1998,14 @@ CREATE TABLE public.treatment_database (
     requires_specialist boolean DEFAULT false,
     prescription_required boolean DEFAULT false,
     created_by uuid,
-    created_at timestamp with time zone,
-    updated_at timestamp with time zone,
-    deleted_at timestamp with time zone
+    created_at timestamp(6) with time zone,
+    updated_at timestamp(6) with time zone,
+    deleted_at timestamp(6) with time zone
 );
 
 
-ALTER TABLE public.treatment_database OWNER TO healthapp_user;
-
 --
--- Name: COLUMN treatment_database.treatment_name; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.treatment_database.treatment_name IS 'Name of the treatment';
-
-
---
--- Name: COLUMN treatment_database.treatment_type; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.treatment_database.treatment_type IS 'Type of treatment';
-
-
---
--- Name: COLUMN treatment_database.description; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.treatment_database.description IS 'Detailed description of the treatment';
-
-
---
--- Name: COLUMN treatment_database.applicable_conditions; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.treatment_database.applicable_conditions IS 'Array of conditions this treatment applies to';
-
-
---
--- Name: COLUMN treatment_database.duration; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.treatment_database.duration IS 'Expected duration of treatment';
-
-
---
--- Name: COLUMN treatment_database.frequency; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.treatment_database.frequency IS 'How often the treatment should be administered';
-
-
---
--- Name: COLUMN treatment_database.dosage_info; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.treatment_database.dosage_info IS 'Dosage information if applicable';
-
-
---
--- Name: COLUMN treatment_database.category; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.treatment_database.category IS 'Medical category (Cardiology, Neurology, etc.)';
-
-
---
--- Name: COLUMN treatment_database.severity_level; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.treatment_database.severity_level IS 'Appropriate severity level for this treatment';
-
-
---
--- Name: COLUMN treatment_database.age_restrictions; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.treatment_database.age_restrictions IS 'Age restrictions or recommendations';
-
-
---
--- Name: COLUMN treatment_database.contraindications; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.treatment_database.contraindications IS 'When this treatment should not be used';
-
-
---
--- Name: COLUMN treatment_database.side_effects; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.treatment_database.side_effects IS 'Potential side effects';
-
-
---
--- Name: COLUMN treatment_database.monitoring_required; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.treatment_database.monitoring_required IS 'What needs to be monitored during treatment';
-
-
---
--- Name: COLUMN treatment_database.requires_specialist; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.treatment_database.requires_specialist IS 'Whether this treatment requires a specialist';
-
-
---
--- Name: COLUMN treatment_database.prescription_required; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.treatment_database.prescription_required IS 'Whether this treatment requires a prescription';
-
-
---
--- Name: COLUMN treatment_database.created_by; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.treatment_database.created_by IS 'Doctor/HSP who added this treatment';
-
-
---
--- Name: treatment_plans; Type: TABLE; Schema: public; Owner: healthapp_user
+-- Name: treatment_plans; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.treatment_plans (
@@ -2467,11 +2024,11 @@ CREATE TABLE public.treatment_plans (
     interventions jsonb DEFAULT '[]'::jsonb,
     medications jsonb DEFAULT '[]'::jsonb,
     instructions text,
-    start_date timestamp with time zone NOT NULL,
+    start_date timestamp(6) with time zone NOT NULL,
     expected_duration_days integer,
-    end_date timestamp with time zone,
+    end_date timestamp(6) with time zone,
     follow_up_required boolean DEFAULT true,
-    follow_up_date timestamp with time zone,
+    follow_up_date timestamp(6) with time zone,
     follow_up_instructions text,
     status character varying(20) DEFAULT 'ACTIVE'::character varying,
     priority character varying(20) DEFAULT 'MEDIUM'::character varying,
@@ -2482,163 +2039,14 @@ CREATE TABLE public.treatment_plans (
     warning_signs text[] DEFAULT ARRAY[]::text[],
     assigned_hsps uuid[] DEFAULT ARRAY[]::uuid[],
     care_team_notes jsonb DEFAULT '[]'::jsonb,
-    created_at timestamp with time zone,
-    updated_at timestamp with time zone,
-    deleted_at timestamp with time zone
+    created_at timestamp(6) with time zone,
+    updated_at timestamp(6) with time zone,
+    deleted_at timestamp(6) with time zone
 );
 
 
-ALTER TABLE public.treatment_plans OWNER TO healthapp_user;
-
 --
--- Name: COLUMN treatment_plans.doctor_id; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.treatment_plans.doctor_id IS 'Only doctors can create treatment plans';
-
-
---
--- Name: COLUMN treatment_plans.title; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.treatment_plans.title IS 'Brief title of the treatment plan';
-
-
---
--- Name: COLUMN treatment_plans.description; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.treatment_plans.description IS 'Detailed description of the treatment plan';
-
-
---
--- Name: COLUMN treatment_plans.plan_type; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.treatment_plans.plan_type IS 'Always treatment_plan for this model';
-
-
---
--- Name: COLUMN treatment_plans.primary_diagnosis; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.treatment_plans.primary_diagnosis IS 'Primary diagnosis being treated';
-
-
---
--- Name: COLUMN treatment_plans.secondary_diagnoses; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.treatment_plans.secondary_diagnoses IS 'Additional diagnoses';
-
-
---
--- Name: COLUMN treatment_plans.chief_complaint; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.treatment_plans.chief_complaint IS 'Patient''s primary complaint';
-
-
---
--- Name: COLUMN treatment_plans.symptoms; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.treatment_plans.symptoms IS 'List of symptoms being addressed';
-
-
---
--- Name: COLUMN treatment_plans.treatment_goals; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.treatment_plans.treatment_goals IS 'Short-term treatment objectives';
-
-
---
--- Name: COLUMN treatment_plans.interventions; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.treatment_plans.interventions IS 'Medical interventions and procedures';
-
-
---
--- Name: COLUMN treatment_plans.medications; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.treatment_plans.medications IS 'Prescribed medications for this treatment';
-
-
---
--- Name: COLUMN treatment_plans.instructions; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.treatment_plans.instructions IS 'Patient instructions and care guidance';
-
-
---
--- Name: COLUMN treatment_plans.expected_duration_days; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.treatment_plans.expected_duration_days IS 'Expected treatment duration in days';
-
-
---
--- Name: COLUMN treatment_plans.end_date; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.treatment_plans.end_date IS 'Planned or actual end date';
-
-
---
--- Name: COLUMN treatment_plans.follow_up_date; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.treatment_plans.follow_up_date IS 'Scheduled follow-up appointment';
-
-
---
--- Name: COLUMN treatment_plans.progress_notes; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.treatment_plans.progress_notes IS 'Progress updates and notes';
-
-
---
--- Name: COLUMN treatment_plans.outcome; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.treatment_plans.outcome IS 'Treatment outcome and results';
-
-
---
--- Name: COLUMN treatment_plans.emergency_contacts; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.treatment_plans.emergency_contacts IS 'Emergency contacts specific to this treatment';
-
-
---
--- Name: COLUMN treatment_plans.warning_signs; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.treatment_plans.warning_signs IS 'Warning signs to watch for';
-
-
---
--- Name: COLUMN treatment_plans.assigned_hsps; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.treatment_plans.assigned_hsps IS 'HSPs assigned to assist with this treatment';
-
-
---
--- Name: COLUMN treatment_plans.care_team_notes; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.treatment_plans.care_team_notes IS 'Notes from care team members';
-
-
---
--- Name: user_devices; Type: TABLE; Schema: public; Owner: healthapp_user
+-- Name: user_devices; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.user_devices (
@@ -2649,17 +2057,15 @@ CREATE TABLE public.user_devices (
     device_id character varying(255),
     is_active boolean DEFAULT true,
     notification_settings jsonb DEFAULT '{"vitals": true, "symptoms": true, "emergency": true, "reminders": true, "medications": true, "appointments": true}'::jsonb,
-    last_used_at timestamp with time zone,
-    created_at timestamp with time zone,
-    updated_at timestamp with time zone,
-    deleted_at timestamp with time zone
+    last_used_at timestamp(6) with time zone,
+    created_at timestamp(6) with time zone,
+    updated_at timestamp(6) with time zone,
+    deleted_at timestamp(6) with time zone
 );
 
 
-ALTER TABLE public.user_devices OWNER TO healthapp_user;
-
 --
--- Name: user_roles; Type: TABLE; Schema: public; Owner: healthapp_user
+-- Name: user_roles; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.user_roles (
@@ -2667,16 +2073,14 @@ CREATE TABLE public.user_roles (
     user_identity uuid NOT NULL,
     linked_with public.enum_user_roles_linked_with,
     linked_id uuid,
-    created_at timestamp with time zone NOT NULL,
-    updated_at timestamp with time zone NOT NULL,
-    deleted_at timestamp with time zone
+    created_at timestamp(6) with time zone NOT NULL,
+    updated_at timestamp(6) with time zone NOT NULL,
+    deleted_at timestamp(6) with time zone
 );
 
 
-ALTER TABLE public.user_roles OWNER TO healthapp_user;
-
 --
--- Name: users; Type: TABLE; Schema: public; Owner: healthapp_user
+-- Name: users; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.users (
@@ -2694,157 +2098,100 @@ CREATE TABLE public.users (
     email_verified boolean DEFAULT false,
     email_verification_token character varying(255),
     password_reset_token character varying(255),
-    password_reset_expires timestamp with time zone,
+    password_reset_expires timestamp(6) with time zone,
     two_factor_enabled boolean DEFAULT false,
     two_factor_secret character varying(255),
     failed_login_attempts integer DEFAULT 0,
-    locked_until timestamp with time zone,
-    last_login_at timestamp with time zone,
+    locked_until timestamp(6) with time zone,
+    last_login_at timestamp(6) with time zone,
     profile_picture_url character varying(500),
     timezone character varying(50) DEFAULT 'UTC'::character varying,
     locale character varying(10) DEFAULT 'en'::character varying,
     preferences jsonb DEFAULT '{"privacy": {"profile_visible": true, "share_data_for_research": false}, "accessibility": {"large_text": false, "high_contrast": false}, "notifications": {"sms": false, "push": true, "email": true}}'::jsonb,
-    terms_accepted_at timestamp with time zone,
-    privacy_policy_accepted_at timestamp with time zone,
-    hipaa_consent_date timestamp with time zone,
-    created_at timestamp with time zone,
-    updated_at timestamp with time zone,
-    deleted_at timestamp with time zone,
-    organization_id uuid,
+    terms_accepted_at timestamp(6) with time zone,
+    privacy_policy_accepted_at timestamp(6) with time zone,
+    hipaa_consent_date timestamp(6) with time zone,
+    created_at timestamp(6) with time zone,
+    updated_at timestamp(6) with time zone,
+    deleted_at timestamp(6) with time zone,
     full_name character varying(255)
 );
 
 
-ALTER TABLE public.users OWNER TO healthapp_user;
-
 --
--- Name: COLUMN users.terms_accepted_at; Type: COMMENT; Schema: public; Owner: healthapp_user
+-- Name: video_consultations; Type: TABLE; Schema: public; Owner: -
 --
 
-COMMENT ON COLUMN public.users.terms_accepted_at IS 'When user accepted terms of service';
+CREATE TABLE public.video_consultations (
+    id uuid NOT NULL,
+    consultation_id character varying(255) NOT NULL,
+    doctor_id uuid NOT NULL,
+    patient_id uuid NOT NULL,
+    appointment_id uuid,
+    consultation_type public."ConsultationType" DEFAULT 'VIDEO_CONSULTATION'::public."ConsultationType" NOT NULL,
+    status public."ConsultationStatus" DEFAULT 'SCHEDULED'::public."ConsultationStatus" NOT NULL,
+    priority public."ConsultationPriority" DEFAULT 'ROUTINE'::public."ConsultationPriority" NOT NULL,
+    scheduled_start timestamp(6) with time zone NOT NULL,
+    scheduled_end timestamp(6) with time zone NOT NULL,
+    actual_start timestamp(6) with time zone,
+    actual_end timestamp(6) with time zone,
+    timezone character varying(50) DEFAULT 'UTC'::character varying NOT NULL,
+    room_id character varying(255),
+    room_token text,
+    doctor_join_url text,
+    patient_join_url text,
+    recording_enabled boolean DEFAULT false NOT NULL,
+    recording_url text,
+    chief_complaint text,
+    presenting_symptoms text[] DEFAULT ARRAY[]::text[],
+    consultation_notes text,
+    diagnosis text,
+    treatment_plan text,
+    follow_up_required boolean DEFAULT false NOT NULL,
+    follow_up_date timestamp(6) with time zone,
+    connection_quality jsonb DEFAULT '{}'::jsonb,
+    technical_issues text[] DEFAULT ARRAY[]::text[],
+    duration_minutes integer,
+    consultation_fee numeric(10,2),
+    insurance_covered boolean DEFAULT false NOT NULL,
+    payment_status character varying(50) DEFAULT 'pending'::character varying,
+    created_by uuid NOT NULL,
+    created_at timestamp(6) with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    updated_at timestamp(6) with time zone NOT NULL
+);
 
 
 --
--- Name: COLUMN users.privacy_policy_accepted_at; Type: COMMENT; Schema: public; Owner: healthapp_user
+-- Name: vital_alert_rules; Type: TABLE; Schema: public; Owner: -
 --
 
-COMMENT ON COLUMN public.users.privacy_policy_accepted_at IS 'When user accepted privacy policy';
+CREATE TABLE public.vital_alert_rules (
+    id uuid NOT NULL,
+    vital_type character varying(100) NOT NULL,
+    is_active boolean DEFAULT true NOT NULL,
+    created_by uuid,
+    created_at timestamp(6) with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    updated_at timestamp(6) with time zone NOT NULL,
+    alert_level public."AlertSeverity" NOT NULL,
+    alert_message text NOT NULL,
+    applies_to_all boolean DEFAULT true NOT NULL,
+    condition_type public."VitalConditionType" NOT NULL,
+    description text,
+    gender_specific character varying(10),
+    max_age integer,
+    min_age integer,
+    name character varying(255) NOT NULL,
+    notification_delay integer DEFAULT 0 NOT NULL,
+    patient_conditions jsonb DEFAULT '[]'::jsonb,
+    threshold_max numeric(10,2),
+    threshold_min numeric(10,2),
+    threshold_value numeric(10,2),
+    unit character varying(20)
+);
 
 
 --
--- Name: COLUMN users.hipaa_consent_date; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.users.hipaa_consent_date IS 'When user provided HIPAA consent';
-
-
---
--- Name: COLUMN users.full_name; Type: COMMENT; Schema: public; Owner: healthapp_user
---
-
-COMMENT ON COLUMN public.users.full_name IS 'Complete name as entered by user';
-
-
---
--- Name: v_active_care_plans; Type: VIEW; Schema: public; Owner: healthapp_user
---
-
-CREATE VIEW public.v_active_care_plans AS
- SELECT cp.id,
-    cp.title AS name,
-    cp.status,
-    cp.priority,
-    cp.start_date,
-    cp.end_date,
-    p.id AS patient_id,
-    u_patient.first_name AS patient_first_name,
-    u_patient.last_name AS patient_last_name,
-    u_patient.email AS patient_email,
-    hp.id AS provider_id,
-    u_provider.first_name AS provider_first_name,
-    u_provider.last_name AS provider_last_name,
-    u_provider.email AS provider_email,
-    cp.created_at,
-    cp.updated_at
-   FROM ((((public.care_plans cp
-     JOIN public.patients p ON ((cp.patient_id = p.id)))
-     JOIN public.users u_patient ON ((p.user_id = u_patient.id)))
-     LEFT JOIN public.healthcare_providers hp ON ((cp.provider_id = hp.id)))
-     LEFT JOIN public.users u_provider ON ((hp.user_id = u_provider.id)))
-  WHERE ((cp.deleted_at IS NULL) AND (p.deleted_at IS NULL) AND (u_patient.deleted_at IS NULL) AND ((hp.deleted_at IS NULL) OR (hp.id IS NULL)) AND ((u_provider.deleted_at IS NULL) OR (u_provider.id IS NULL)) AND ((cp.status)::text = 'ACTIVE'::text));
-
-
-ALTER TABLE public.v_active_care_plans OWNER TO healthapp_user;
-
---
--- Name: v_patient_adherence_summary; Type: VIEW; Schema: public; Owner: healthapp_user
---
-
-CREATE VIEW public.v_patient_adherence_summary AS
- SELECT p.id AS patient_id,
-    u.first_name,
-    u.last_name,
-    u.email,
-    count(ar.id) AS total_events,
-    count(
-        CASE
-            WHEN ar.is_completed THEN 1
-            ELSE NULL::integer
-        END) AS completed_events,
-    count(
-        CASE
-            WHEN ar.is_missed THEN 1
-            ELSE NULL::integer
-        END) AS missed_events,
-    round((((count(
-        CASE
-            WHEN ar.is_completed THEN 1
-            ELSE NULL::integer
-        END))::numeric / (NULLIF(count(ar.id), 0))::numeric) * (100)::numeric), 2) AS adherence_percentage,
-    max(ar.recorded_at) AS last_activity,
-    p.created_at,
-    p.updated_at
-   FROM ((public.patients p
-     JOIN public.users u ON ((p.user_id = u.id)))
-     LEFT JOIN public.adherence_records ar ON (((p.id = ar.patient_id) AND (ar.due_at >= (now() - '30 days'::interval)))))
-  WHERE ((p.deleted_at IS NULL) AND (u.deleted_at IS NULL))
-  GROUP BY p.id, u.first_name, u.last_name, u.email, p.created_at, p.updated_at;
-
-
-ALTER TABLE public.v_patient_adherence_summary OWNER TO healthapp_user;
-
---
--- Name: v_upcoming_events; Type: VIEW; Schema: public; Owner: healthapp_user
---
-
-CREATE VIEW public.v_upcoming_events AS
- SELECT se.id,
-    se.event_type,
-    se.title,
-    se.scheduled_for,
-    se.priority,
-    se.status,
-    p.id AS patient_id,
-    u_patient.first_name AS patient_first_name,
-    u_patient.last_name AS patient_last_name,
-    hp.id AS provider_id,
-    u_provider.first_name AS provider_first_name,
-    u_provider.last_name AS provider_last_name,
-    se.created_at
-   FROM (((((public.scheduled_events se
-     JOIN public.patients p ON ((se.patient_id = p.id)))
-     JOIN public.users u_patient ON ((p.user_id = u_patient.id)))
-     LEFT JOIN public.care_plans cp ON ((se.care_plan_id = cp.id)))
-     LEFT JOIN public.healthcare_providers hp ON ((cp.provider_id = hp.id)))
-     LEFT JOIN public.users u_provider ON ((hp.user_id = u_provider.id)))
-  WHERE ((se.deleted_at IS NULL) AND (p.deleted_at IS NULL) AND (u_patient.deleted_at IS NULL) AND (se.scheduled_for >= now()) AND (se.status = ANY (ARRAY['SCHEDULED'::public.enum_scheduled_events_status, 'PENDING'::public.enum_scheduled_events_status])))
-  ORDER BY se.scheduled_for;
-
-
-ALTER TABLE public.v_upcoming_events OWNER TO healthapp_user;
-
---
--- Name: vital_readings; Type: TABLE; Schema: public; Owner: healthapp_user
+-- Name: vital_readings; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.vital_readings (
@@ -2852,25 +2199,30 @@ CREATE TABLE public.vital_readings (
     patient_id uuid NOT NULL,
     vital_type_id uuid NOT NULL,
     adherence_record_id uuid,
-    value numeric(10,2) NOT NULL,
+    value numeric(10,2),
     unit character varying(20),
-    reading_time timestamp with time zone NOT NULL,
+    reading_time timestamp(6) with time zone NOT NULL,
     device_info jsonb DEFAULT '{}'::jsonb,
     is_flagged boolean DEFAULT false,
     notes text,
     attachments jsonb DEFAULT '[]'::jsonb,
     is_validated boolean DEFAULT false,
     validated_by uuid,
-    created_at timestamp with time zone,
-    updated_at timestamp with time zone,
-    deleted_at timestamp with time zone
+    created_at timestamp(6) with time zone,
+    updated_at timestamp(6) with time zone,
+    deleted_at timestamp(6) with time zone,
+    systolic_value numeric(5,2),
+    diastolic_value numeric(5,2),
+    pulse_rate integer,
+    respiratory_rate integer,
+    oxygen_saturation numeric(5,2),
+    alert_level public.enum_vital_readings_alert_level DEFAULT 'normal'::public.enum_vital_readings_alert_level,
+    alert_reasons jsonb DEFAULT '[]'::jsonb
 );
 
 
-ALTER TABLE public.vital_readings OWNER TO healthapp_user;
-
 --
--- Name: vital_requirements; Type: TABLE; Schema: public; Owner: healthapp_user
+-- Name: vital_requirements; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.vital_requirements (
@@ -2878,19 +2230,17 @@ CREATE TABLE public.vital_requirements (
     care_plan_id uuid NOT NULL,
     vital_type_id uuid NOT NULL,
     frequency character varying(100) NOT NULL,
-    preferred_time time without time zone,
+    preferred_time time(6) without time zone,
     is_critical boolean DEFAULT false,
     monitoring_notes text,
-    created_at timestamp with time zone,
-    updated_at timestamp with time zone,
-    deleted_at timestamp with time zone
+    created_at timestamp(6) with time zone,
+    updated_at timestamp(6) with time zone,
+    deleted_at timestamp(6) with time zone
 );
 
 
-ALTER TABLE public.vital_requirements OWNER TO healthapp_user;
-
 --
--- Name: vital_templates; Type: TABLE; Schema: public; Owner: healthapp_user
+-- Name: vital_templates; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.vital_templates (
@@ -2898,16 +2248,14 @@ CREATE TABLE public.vital_templates (
     name character varying(255) NOT NULL,
     unit character varying(255),
     details json,
-    created_at timestamp with time zone NOT NULL,
-    updated_at timestamp with time zone NOT NULL,
-    deleted_at timestamp with time zone
+    created_at timestamp(6) with time zone NOT NULL,
+    updated_at timestamp(6) with time zone NOT NULL,
+    deleted_at timestamp(6) with time zone
 );
 
 
-ALTER TABLE public.vital_templates OWNER TO healthapp_user;
-
 --
--- Name: vital_types; Type: TABLE; Schema: public; Owner: healthapp_user
+-- Name: vital_types; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.vital_types (
@@ -2918,16 +2266,14 @@ CREATE TABLE public.vital_types (
     normal_range_max numeric(10,2),
     description text,
     validation_rules jsonb DEFAULT '{}'::jsonb,
-    created_at timestamp with time zone,
-    updated_at timestamp with time zone,
-    deleted_at timestamp with time zone
+    created_at timestamp(6) with time zone,
+    updated_at timestamp(6) with time zone,
+    deleted_at timestamp(6) with time zone
 );
 
 
-ALTER TABLE public.vital_types OWNER TO healthapp_user;
-
 --
--- Name: vitals; Type: TABLE; Schema: public; Owner: healthapp_user
+-- Name: vitals; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.vitals (
@@ -2936,25 +2282,23 @@ CREATE TABLE public.vitals (
     care_plan_id uuid NOT NULL,
     details json,
     description character varying(1000),
-    start_date timestamp with time zone,
-    end_date timestamp with time zone,
-    created_at timestamp with time zone NOT NULL,
-    updated_at timestamp with time zone NOT NULL,
-    deleted_at timestamp with time zone
+    start_date timestamp(6) with time zone,
+    end_date timestamp(6) with time zone,
+    created_at timestamp(6) with time zone NOT NULL,
+    updated_at timestamp(6) with time zone NOT NULL,
+    deleted_at timestamp(6) with time zone
 );
 
 
-ALTER TABLE public.vitals OWNER TO healthapp_user;
-
 --
--- Name: specialities id; Type: DEFAULT; Schema: public; Owner: healthapp_user
+-- Name: specialities id; Type: DEFAULT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.specialities ALTER COLUMN id SET DEFAULT nextval('public.specialities_id_seq'::regclass);
 
 
 --
--- Name: SequelizeMeta SequelizeMeta_pkey; Type: CONSTRAINT; Schema: public; Owner: healthapp_user
+-- Name: SequelizeMeta SequelizeMeta_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public."SequelizeMeta"
@@ -2962,7 +2306,15 @@ ALTER TABLE ONLY public."SequelizeMeta"
 
 
 --
--- Name: adherence_records adherence_records_pkey; Type: CONSTRAINT; Schema: public; Owner: healthapp_user
+-- Name: _prisma_migrations _prisma_migrations_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public._prisma_migrations
+    ADD CONSTRAINT _prisma_migrations_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: adherence_records adherence_records_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.adherence_records
@@ -2970,7 +2322,7 @@ ALTER TABLE ONLY public.adherence_records
 
 
 --
--- Name: appointment_slots appointment_slots_pkey; Type: CONSTRAINT; Schema: public; Owner: healthapp_user
+-- Name: appointment_slots appointment_slots_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.appointment_slots
@@ -2978,7 +2330,7 @@ ALTER TABLE ONLY public.appointment_slots
 
 
 --
--- Name: appointments appointments_pkey; Type: CONSTRAINT; Schema: public; Owner: healthapp_user
+-- Name: appointments appointments_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.appointments
@@ -2986,7 +2338,7 @@ ALTER TABLE ONLY public.appointments
 
 
 --
--- Name: audit_logs audit_logs_pkey; Type: CONSTRAINT; Schema: public; Owner: healthapp_user
+-- Name: audit_logs audit_logs_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.audit_logs
@@ -2994,7 +2346,7 @@ ALTER TABLE ONLY public.audit_logs
 
 
 --
--- Name: care_plan_templates care_plan_templates_pkey; Type: CONSTRAINT; Schema: public; Owner: healthapp_user
+-- Name: care_plan_templates care_plan_templates_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.care_plan_templates
@@ -3002,7 +2354,7 @@ ALTER TABLE ONLY public.care_plan_templates
 
 
 --
--- Name: care_plans care_plans_pkey; Type: CONSTRAINT; Schema: public; Owner: healthapp_user
+-- Name: care_plans care_plans_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.care_plans
@@ -3010,7 +2362,7 @@ ALTER TABLE ONLY public.care_plans
 
 
 --
--- Name: clinics clinics_pkey; Type: CONSTRAINT; Schema: public; Owner: healthapp_user
+-- Name: clinics clinics_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.clinics
@@ -3018,7 +2370,31 @@ ALTER TABLE ONLY public.clinics
 
 
 --
--- Name: doctor_availability doctor_availability_pkey; Type: CONSTRAINT; Schema: public; Owner: healthapp_user
+-- Name: consultation_notes consultation_notes_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.consultation_notes
+    ADD CONSTRAINT consultation_notes_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: consultation_prescriptions consultation_prescriptions_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.consultation_prescriptions
+    ADD CONSTRAINT consultation_prescriptions_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: dashboard_metrics dashboard_metrics_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.dashboard_metrics
+    ADD CONSTRAINT dashboard_metrics_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: doctor_availability doctor_availability_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.doctor_availability
@@ -3026,23 +2402,7 @@ ALTER TABLE ONLY public.doctor_availability
 
 
 --
--- Name: doctors doctors_medical_license_number_key; Type: CONSTRAINT; Schema: public; Owner: healthapp_user
---
-
-ALTER TABLE ONLY public.doctors
-    ADD CONSTRAINT doctors_medical_license_number_key UNIQUE (medical_license_number);
-
-
---
--- Name: doctors doctors_npi_number_key; Type: CONSTRAINT; Schema: public; Owner: healthapp_user
---
-
-ALTER TABLE ONLY public.doctors
-    ADD CONSTRAINT doctors_npi_number_key UNIQUE (npi_number);
-
-
---
--- Name: doctors doctors_pkey; Type: CONSTRAINT; Schema: public; Owner: healthapp_user
+-- Name: doctors doctors_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.doctors
@@ -3050,23 +2410,47 @@ ALTER TABLE ONLY public.doctors
 
 
 --
--- Name: doctors doctors_user_id_key; Type: CONSTRAINT; Schema: public; Owner: healthapp_user
+-- Name: drug_interactions drug_interactions_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY public.doctors
-    ADD CONSTRAINT doctors_user_id_key UNIQUE (user_id);
-
-
---
--- Name: healthcare_providers healthcare_providers_license_number_key; Type: CONSTRAINT; Schema: public; Owner: healthapp_user
---
-
-ALTER TABLE ONLY public.healthcare_providers
-    ADD CONSTRAINT healthcare_providers_license_number_key UNIQUE (license_number);
+ALTER TABLE ONLY public.drug_interactions
+    ADD CONSTRAINT drug_interactions_pkey PRIMARY KEY (id);
 
 
 --
--- Name: healthcare_providers healthcare_providers_pkey; Type: CONSTRAINT; Schema: public; Owner: healthapp_user
+-- Name: emergency_alerts emergency_alerts_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.emergency_alerts
+    ADD CONSTRAINT emergency_alerts_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: emergency_contacts emergency_contacts_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.emergency_contacts
+    ADD CONSTRAINT emergency_contacts_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: game_badge_awards game_badge_awards_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.game_badge_awards
+    ADD CONSTRAINT game_badge_awards_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: game_challenge_progress game_challenge_progress_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.game_challenge_progress
+    ADD CONSTRAINT game_challenge_progress_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: healthcare_providers healthcare_providers_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.healthcare_providers
@@ -3074,23 +2458,7 @@ ALTER TABLE ONLY public.healthcare_providers
 
 
 --
--- Name: healthcare_providers healthcare_providers_user_id_key; Type: CONSTRAINT; Schema: public; Owner: healthapp_user
---
-
-ALTER TABLE ONLY public.healthcare_providers
-    ADD CONSTRAINT healthcare_providers_user_id_key UNIQUE (user_id);
-
-
---
--- Name: hsps hsps_license_number_key; Type: CONSTRAINT; Schema: public; Owner: healthapp_user
---
-
-ALTER TABLE ONLY public.hsps
-    ADD CONSTRAINT hsps_license_number_key UNIQUE (license_number);
-
-
---
--- Name: hsps hsps_pkey; Type: CONSTRAINT; Schema: public; Owner: healthapp_user
+-- Name: hsps hsps_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.hsps
@@ -3098,15 +2466,39 @@ ALTER TABLE ONLY public.hsps
 
 
 --
--- Name: hsps hsps_user_id_key; Type: CONSTRAINT; Schema: public; Owner: healthapp_user
+-- Name: lab_orders lab_orders_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY public.hsps
-    ADD CONSTRAINT hsps_user_id_key UNIQUE (user_id);
+ALTER TABLE ONLY public.lab_orders
+    ADD CONSTRAINT lab_orders_pkey PRIMARY KEY (id);
 
 
 --
--- Name: medications medications_pkey; Type: CONSTRAINT; Schema: public; Owner: healthapp_user
+-- Name: lab_results lab_results_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.lab_results
+    ADD CONSTRAINT lab_results_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: medication_logs medication_logs_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.medication_logs
+    ADD CONSTRAINT medication_logs_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: medication_safety_alerts medication_safety_alerts_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.medication_safety_alerts
+    ADD CONSTRAINT medication_safety_alerts_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: medications medications_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.medications
@@ -3114,7 +2506,7 @@ ALTER TABLE ONLY public.medications
 
 
 --
--- Name: medicines medicines_pkey; Type: CONSTRAINT; Schema: public; Owner: healthapp_user
+-- Name: medicines medicines_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.medicines
@@ -3122,7 +2514,7 @@ ALTER TABLE ONLY public.medicines
 
 
 --
--- Name: notifications notifications_pkey; Type: CONSTRAINT; Schema: public; Owner: healthapp_user
+-- Name: notifications notifications_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.notifications
@@ -3130,15 +2522,7 @@ ALTER TABLE ONLY public.notifications
 
 
 --
--- Name: organizations organizations_license_number_key; Type: CONSTRAINT; Schema: public; Owner: healthapp_user
---
-
-ALTER TABLE ONLY public.organizations
-    ADD CONSTRAINT organizations_license_number_key UNIQUE (license_number);
-
-
---
--- Name: organizations organizations_pkey; Type: CONSTRAINT; Schema: public; Owner: healthapp_user
+-- Name: organizations organizations_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.organizations
@@ -3146,15 +2530,31 @@ ALTER TABLE ONLY public.organizations
 
 
 --
--- Name: patient_doctor_assignments patient_doctor_assignments_patient_id_doctor_id_key; Type: CONSTRAINT; Schema: public; Owner: healthapp_user
+-- Name: patient_alerts patient_alerts_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY public.patient_doctor_assignments
-    ADD CONSTRAINT patient_doctor_assignments_patient_id_doctor_id_key UNIQUE (patient_id, doctor_id);
+ALTER TABLE ONLY public.patient_alerts
+    ADD CONSTRAINT patient_alerts_pkey PRIMARY KEY (id);
 
 
 --
--- Name: patient_doctor_assignments patient_doctor_assignments_pkey; Type: CONSTRAINT; Schema: public; Owner: healthapp_user
+-- Name: patient_allergies patient_allergies_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.patient_allergies
+    ADD CONSTRAINT patient_allergies_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: patient_consent_otp patient_consent_otp_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.patient_consent_otp
+    ADD CONSTRAINT patient_consent_otp_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: patient_doctor_assignments patient_doctor_assignments_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.patient_doctor_assignments
@@ -3162,15 +2562,15 @@ ALTER TABLE ONLY public.patient_doctor_assignments
 
 
 --
--- Name: patient_provider_assignments patient_provider_assignments_patient_id_provider_id_key; Type: CONSTRAINT; Schema: public; Owner: healthapp_user
+-- Name: patient_game_profiles patient_game_profiles_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY public.patient_provider_assignments
-    ADD CONSTRAINT patient_provider_assignments_patient_id_provider_id_key UNIQUE (patient_id, provider_id);
+ALTER TABLE ONLY public.patient_game_profiles
+    ADD CONSTRAINT patient_game_profiles_pkey PRIMARY KEY (id);
 
 
 --
--- Name: patient_provider_assignments patient_provider_assignments_pkey; Type: CONSTRAINT; Schema: public; Owner: healthapp_user
+-- Name: patient_provider_assignments patient_provider_assignments_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.patient_provider_assignments
@@ -3178,7 +2578,15 @@ ALTER TABLE ONLY public.patient_provider_assignments
 
 
 --
--- Name: patient_subscriptions patient_subscriptions_pkey; Type: CONSTRAINT; Schema: public; Owner: healthapp_user
+-- Name: patient_provider_consent_history patient_provider_consent_history_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.patient_provider_consent_history
+    ADD CONSTRAINT patient_provider_consent_history_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: patient_subscriptions patient_subscriptions_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.patient_subscriptions
@@ -3186,31 +2594,7 @@ ALTER TABLE ONLY public.patient_subscriptions
 
 
 --
--- Name: patient_subscriptions patient_subscriptions_stripe_subscription_id_key; Type: CONSTRAINT; Schema: public; Owner: healthapp_user
---
-
-ALTER TABLE ONLY public.patient_subscriptions
-    ADD CONSTRAINT patient_subscriptions_stripe_subscription_id_key UNIQUE (stripe_subscription_id);
-
-
---
--- Name: patients patients_medical_record_number_key; Type: CONSTRAINT; Schema: public; Owner: healthapp_user
---
-
-ALTER TABLE ONLY public.patients
-    ADD CONSTRAINT patients_medical_record_number_key UNIQUE (medical_record_number);
-
-
---
--- Name: patients patients_patient_id_key; Type: CONSTRAINT; Schema: public; Owner: healthapp_user
---
-
-ALTER TABLE ONLY public.patients
-    ADD CONSTRAINT patients_patient_id_key UNIQUE (patient_id);
-
-
---
--- Name: patients patients_pkey; Type: CONSTRAINT; Schema: public; Owner: healthapp_user
+-- Name: patients patients_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.patients
@@ -3218,15 +2602,7 @@ ALTER TABLE ONLY public.patients
 
 
 --
--- Name: patients patients_user_id_key; Type: CONSTRAINT; Schema: public; Owner: healthapp_user
---
-
-ALTER TABLE ONLY public.patients
-    ADD CONSTRAINT patients_user_id_key UNIQUE (user_id);
-
-
---
--- Name: payment_methods payment_methods_pkey; Type: CONSTRAINT; Schema: public; Owner: healthapp_user
+-- Name: payment_methods payment_methods_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.payment_methods
@@ -3234,15 +2610,7 @@ ALTER TABLE ONLY public.payment_methods
 
 
 --
--- Name: payment_methods payment_methods_stripe_payment_method_id_key; Type: CONSTRAINT; Schema: public; Owner: healthapp_user
---
-
-ALTER TABLE ONLY public.payment_methods
-    ADD CONSTRAINT payment_methods_stripe_payment_method_id_key UNIQUE (stripe_payment_method_id);
-
-
---
--- Name: payments payments_pkey; Type: CONSTRAINT; Schema: public; Owner: healthapp_user
+-- Name: payments payments_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.payments
@@ -3250,15 +2618,15 @@ ALTER TABLE ONLY public.payments
 
 
 --
--- Name: payments payments_stripe_payment_intent_id_key; Type: CONSTRAINT; Schema: public; Owner: healthapp_user
+-- Name: provider_change_history provider_change_history_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY public.payments
-    ADD CONSTRAINT payments_stripe_payment_intent_id_key UNIQUE (stripe_payment_intent_id);
+ALTER TABLE ONLY public.provider_change_history
+    ADD CONSTRAINT provider_change_history_pkey PRIMARY KEY (id);
 
 
 --
--- Name: providers providers_pkey; Type: CONSTRAINT; Schema: public; Owner: healthapp_user
+-- Name: providers providers_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.providers
@@ -3266,7 +2634,7 @@ ALTER TABLE ONLY public.providers
 
 
 --
--- Name: schedule_events schedule_events_pkey; Type: CONSTRAINT; Schema: public; Owner: healthapp_user
+-- Name: schedule_events schedule_events_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.schedule_events
@@ -3274,7 +2642,7 @@ ALTER TABLE ONLY public.schedule_events
 
 
 --
--- Name: scheduled_events scheduled_events_pkey; Type: CONSTRAINT; Schema: public; Owner: healthapp_user
+-- Name: scheduled_events scheduled_events_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.scheduled_events
@@ -3282,7 +2650,15 @@ ALTER TABLE ONLY public.scheduled_events
 
 
 --
--- Name: service_plans service_plans_pkey; Type: CONSTRAINT; Schema: public; Owner: healthapp_user
+-- Name: secondary_doctor_assignments secondary_doctor_assignments_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.secondary_doctor_assignments
+    ADD CONSTRAINT secondary_doctor_assignments_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: service_plans service_plans_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.service_plans
@@ -3290,7 +2666,7 @@ ALTER TABLE ONLY public.service_plans
 
 
 --
--- Name: specialities specialities_pkey; Type: CONSTRAINT; Schema: public; Owner: healthapp_user
+-- Name: specialities specialities_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.specialities
@@ -3298,15 +2674,7 @@ ALTER TABLE ONLY public.specialities
 
 
 --
--- Name: symptoms_database symptoms_database_diagnosis_name_key; Type: CONSTRAINT; Schema: public; Owner: healthapp_user
---
-
-ALTER TABLE ONLY public.symptoms_database
-    ADD CONSTRAINT symptoms_database_diagnosis_name_key UNIQUE (diagnosis_name);
-
-
---
--- Name: symptoms_database symptoms_database_pkey; Type: CONSTRAINT; Schema: public; Owner: healthapp_user
+-- Name: symptoms_database symptoms_database_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.symptoms_database
@@ -3314,7 +2682,7 @@ ALTER TABLE ONLY public.symptoms_database
 
 
 --
--- Name: symptoms symptoms_pkey; Type: CONSTRAINT; Schema: public; Owner: healthapp_user
+-- Name: symptoms symptoms_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.symptoms
@@ -3322,7 +2690,7 @@ ALTER TABLE ONLY public.symptoms
 
 
 --
--- Name: treatment_database treatment_database_pkey; Type: CONSTRAINT; Schema: public; Owner: healthapp_user
+-- Name: treatment_database treatment_database_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.treatment_database
@@ -3330,15 +2698,7 @@ ALTER TABLE ONLY public.treatment_database
 
 
 --
--- Name: treatment_database treatment_database_treatment_name_key; Type: CONSTRAINT; Schema: public; Owner: healthapp_user
---
-
-ALTER TABLE ONLY public.treatment_database
-    ADD CONSTRAINT treatment_database_treatment_name_key UNIQUE (treatment_name);
-
-
---
--- Name: treatment_plans treatment_plans_pkey; Type: CONSTRAINT; Schema: public; Owner: healthapp_user
+-- Name: treatment_plans treatment_plans_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.treatment_plans
@@ -3346,7 +2706,7 @@ ALTER TABLE ONLY public.treatment_plans
 
 
 --
--- Name: user_devices user_devices_pkey; Type: CONSTRAINT; Schema: public; Owner: healthapp_user
+-- Name: user_devices user_devices_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.user_devices
@@ -3354,7 +2714,7 @@ ALTER TABLE ONLY public.user_devices
 
 
 --
--- Name: user_roles user_roles_pkey; Type: CONSTRAINT; Schema: public; Owner: healthapp_user
+-- Name: user_roles user_roles_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.user_roles
@@ -3362,15 +2722,7 @@ ALTER TABLE ONLY public.user_roles
 
 
 --
--- Name: users users_email_key; Type: CONSTRAINT; Schema: public; Owner: healthapp_user
---
-
-ALTER TABLE ONLY public.users
-    ADD CONSTRAINT users_email_key UNIQUE (email);
-
-
---
--- Name: users users_pkey; Type: CONSTRAINT; Schema: public; Owner: healthapp_user
+-- Name: users users_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.users
@@ -3378,7 +2730,23 @@ ALTER TABLE ONLY public.users
 
 
 --
--- Name: vital_readings vital_readings_pkey; Type: CONSTRAINT; Schema: public; Owner: healthapp_user
+-- Name: video_consultations video_consultations_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.video_consultations
+    ADD CONSTRAINT video_consultations_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: vital_alert_rules vital_alert_rules_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.vital_alert_rules
+    ADD CONSTRAINT vital_alert_rules_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: vital_readings vital_readings_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.vital_readings
@@ -3386,7 +2754,7 @@ ALTER TABLE ONLY public.vital_readings
 
 
 --
--- Name: vital_requirements vital_requirements_pkey; Type: CONSTRAINT; Schema: public; Owner: healthapp_user
+-- Name: vital_requirements vital_requirements_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.vital_requirements
@@ -3394,7 +2762,7 @@ ALTER TABLE ONLY public.vital_requirements
 
 
 --
--- Name: vital_templates vital_templates_pkey; Type: CONSTRAINT; Schema: public; Owner: healthapp_user
+-- Name: vital_templates vital_templates_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.vital_templates
@@ -3402,15 +2770,7 @@ ALTER TABLE ONLY public.vital_templates
 
 
 --
--- Name: vital_types vital_types_name_key; Type: CONSTRAINT; Schema: public; Owner: healthapp_user
---
-
-ALTER TABLE ONLY public.vital_types
-    ADD CONSTRAINT vital_types_name_key UNIQUE (name);
-
-
---
--- Name: vital_types vital_types_pkey; Type: CONSTRAINT; Schema: public; Owner: healthapp_user
+-- Name: vital_types vital_types_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.vital_types
@@ -3418,7 +2778,7 @@ ALTER TABLE ONLY public.vital_types
 
 
 --
--- Name: vitals vitals_pkey; Type: CONSTRAINT; Schema: public; Owner: healthapp_user
+-- Name: vitals vitals_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.vitals
@@ -3426,1681 +2786,2151 @@ ALTER TABLE ONLY public.vitals
 
 
 --
--- Name: adherence_records_adherence_type; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: adherence_records_adherence_type; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX adherence_records_adherence_type ON public.adherence_records USING btree (adherence_type);
 
 
 --
--- Name: adherence_records_due_at; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: adherence_records_due_at; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX adherence_records_due_at ON public.adherence_records USING btree (due_at);
 
 
 --
--- Name: adherence_records_is_completed_is_missed; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: adherence_records_is_completed_is_missed; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX adherence_records_is_completed_is_missed ON public.adherence_records USING btree (is_completed, is_missed);
 
 
 --
--- Name: adherence_records_patient_id; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: adherence_records_patient_id; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX adherence_records_patient_id ON public.adherence_records USING btree (patient_id);
 
 
 --
--- Name: adherence_records_patient_id_adherence_type_due_at; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: adherence_records_patient_id_adherence_type_due_at; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX adherence_records_patient_id_adherence_type_due_at ON public.adherence_records USING btree (patient_id, adherence_type, due_at);
 
 
 --
--- Name: adherence_records_patient_id_due_at; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: adherence_records_patient_id_due_at; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX adherence_records_patient_id_due_at ON public.adherence_records USING btree (patient_id, due_at);
 
 
 --
--- Name: adherence_records_scheduled_event_id; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: adherence_records_scheduled_event_id; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX adherence_records_scheduled_event_id ON public.adherence_records USING btree (scheduled_event_id);
 
 
 --
--- Name: appointment_slots_date_is_available; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: appointment_slots_date_is_available; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX appointment_slots_date_is_available ON public.appointment_slots USING btree (date, is_available);
 
 
 --
--- Name: appointment_slots_doctor_id_date_start_time; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: appointment_slots_doctor_id_date_start_time; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX appointment_slots_doctor_id_date_start_time ON public.appointment_slots USING btree (doctor_id, date, start_time);
 
 
 --
--- Name: appointment_slots_doctor_id_is_available; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: appointment_slots_doctor_id_is_available; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX appointment_slots_doctor_id_is_available ON public.appointment_slots USING btree (doctor_id, is_available);
 
 
 --
--- Name: appointments_organizer_id_organizer_type; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: appointments_organizer_id_organizer_type; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX appointments_organizer_id_organizer_type ON public.appointments USING btree (organizer_id, organizer_type);
 
 
 --
--- Name: appointments_participant_one_id_participant_one_type; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: appointments_participant_one_id_participant_one_type; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX appointments_participant_one_id_participant_one_type ON public.appointments USING btree (participant_one_id, participant_one_type);
 
 
 --
--- Name: appointments_participant_two_id_participant_two_type; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: appointments_participant_two_id_participant_two_type; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX appointments_participant_two_id_participant_two_type ON public.appointments USING btree (participant_two_id, participant_two_type);
 
 
 --
--- Name: appointments_slot_id; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: appointments_slot_id; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX appointments_slot_id ON public.appointments USING btree (slot_id);
 
 
 --
--- Name: appointments_start_date; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: appointments_start_date; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX appointments_start_date ON public.appointments USING btree (start_date);
 
 
 --
--- Name: audit_logs_access_granted; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: audit_logs_access_granted; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX audit_logs_access_granted ON public.audit_logs USING btree (access_granted);
 
 
 --
--- Name: audit_logs_action; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: audit_logs_action; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX audit_logs_action ON public.audit_logs USING btree (action);
 
 
 --
--- Name: audit_logs_ip_address; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: audit_logs_ip_address; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX audit_logs_ip_address ON public.audit_logs USING btree (ip_address);
 
 
 --
--- Name: audit_logs_organization_id; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: audit_logs_organization_id; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX audit_logs_organization_id ON public.audit_logs USING btree (organization_id);
 
 
 --
--- Name: audit_logs_patient_id; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: audit_logs_patient_id; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX audit_logs_patient_id ON public.audit_logs USING btree (patient_id);
 
 
 --
--- Name: audit_logs_patient_id_phi_accessed_timestamp; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: audit_logs_patient_id_phi_accessed_timestamp; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX audit_logs_patient_id_phi_accessed_timestamp ON public.audit_logs USING btree (patient_id, phi_accessed, "timestamp");
 
 
 --
--- Name: audit_logs_phi_accessed; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: audit_logs_phi_accessed; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX audit_logs_phi_accessed ON public.audit_logs USING btree (phi_accessed);
 
 
 --
--- Name: audit_logs_retention_date; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: audit_logs_retention_date; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX audit_logs_retention_date ON public.audit_logs USING btree (retention_date);
 
 
 --
--- Name: audit_logs_risk_level; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: audit_logs_risk_level; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX audit_logs_risk_level ON public.audit_logs USING btree (risk_level);
 
 
 --
--- Name: audit_logs_risk_level_access_granted_timestamp; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: audit_logs_risk_level_access_granted_timestamp; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX audit_logs_risk_level_access_granted_timestamp ON public.audit_logs USING btree (risk_level, access_granted, "timestamp");
 
 
 --
--- Name: audit_logs_session_id; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: audit_logs_session_id; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX audit_logs_session_id ON public.audit_logs USING btree (session_id);
 
 
 --
--- Name: audit_logs_timestamp; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: audit_logs_timestamp; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX audit_logs_timestamp ON public.audit_logs USING btree ("timestamp");
 
 
 --
--- Name: audit_logs_user_id; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: audit_logs_user_id; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX audit_logs_user_id ON public.audit_logs USING btree (user_id);
 
 
 --
--- Name: audit_logs_user_id_timestamp; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: audit_logs_user_id_timestamp; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX audit_logs_user_id_timestamp ON public.audit_logs USING btree (user_id, "timestamp");
 
 
 --
--- Name: care_plans_chronic_conditions; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: care_plans_chronic_conditions; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX care_plans_chronic_conditions ON public.care_plans USING gin (chronic_conditions);
 
 
 --
--- Name: care_plans_created_by_doctor_id; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: care_plans_created_by_doctor_id; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX care_plans_created_by_doctor_id ON public.care_plans USING btree (created_by_doctor_id);
 
 
 --
--- Name: care_plans_created_by_hsp_id; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: care_plans_created_by_hsp_id; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX care_plans_created_by_hsp_id ON public.care_plans USING btree (created_by_hsp_id);
 
 
 --
--- Name: care_plans_monitoring_parameters; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: care_plans_monitoring_parameters; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX care_plans_monitoring_parameters ON public.care_plans USING gin (monitoring_parameters);
 
 
 --
--- Name: care_plans_next_review_date; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: care_plans_next_review_date; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX care_plans_next_review_date ON public.care_plans USING btree (next_review_date);
 
 
 --
--- Name: care_plans_organization_id; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: care_plans_organization_id; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX care_plans_organization_id ON public.care_plans USING btree (organization_id);
 
 
 --
--- Name: care_plans_patient_id; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: care_plans_patient_id; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX care_plans_patient_id ON public.care_plans USING btree (patient_id);
 
 
 --
--- Name: care_plans_priority; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: care_plans_priority; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX care_plans_priority ON public.care_plans USING btree (priority);
 
 
 --
--- Name: care_plans_start_date; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: care_plans_start_date; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX care_plans_start_date ON public.care_plans USING btree (start_date);
 
 
 --
--- Name: care_plans_status; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: care_plans_status; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX care_plans_status ON public.care_plans USING btree (status);
 
 
 --
--- Name: clinics_doctor_id; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: clinics_doctor_id; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX clinics_doctor_id ON public.clinics USING btree (doctor_id);
 
 
 --
--- Name: clinics_is_active; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: clinics_is_active; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX clinics_is_active ON public.clinics USING btree (is_active);
 
 
 --
--- Name: clinics_is_primary; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: clinics_is_primary; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX clinics_is_primary ON public.clinics USING btree (is_primary);
 
 
 --
--- Name: clinics_organization_id; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: clinics_organization_id; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX clinics_organization_id ON public.clinics USING btree (organization_id);
 
 
 --
--- Name: doctor_availability_doctor_id_day_of_week; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: consultation_notes_consultation_id_note_type_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX consultation_notes_consultation_id_note_type_idx ON public.consultation_notes USING btree (consultation_id, note_type);
+
+
+--
+-- Name: consultation_prescriptions_consultation_id_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX consultation_prescriptions_consultation_id_idx ON public.consultation_prescriptions USING btree (consultation_id);
+
+
+--
+-- Name: dashboard_metrics_calculated_at_valid_until; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX dashboard_metrics_calculated_at_valid_until ON public.dashboard_metrics USING btree (calculated_at, valid_until);
+
+
+--
+-- Name: dashboard_metrics_entity_type_entity_id_metric_type; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX dashboard_metrics_entity_type_entity_id_metric_type ON public.dashboard_metrics USING btree (entity_type, entity_id, metric_type);
+
+
+--
+-- Name: doctor_availability_doctor_id_day_of_week; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX doctor_availability_doctor_id_day_of_week ON public.doctor_availability USING btree (doctor_id, day_of_week);
 
 
 --
--- Name: doctor_availability_doctor_id_is_available; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: doctor_availability_doctor_id_is_available; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX doctor_availability_doctor_id_is_available ON public.doctor_availability USING btree (doctor_id, is_available);
 
 
 --
--- Name: doctors_board_certifications; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: doctors_board_certifications; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX doctors_board_certifications ON public.doctors USING gin (board_certifications);
 
 
 --
--- Name: doctors_gender; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: doctors_doctor_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX doctors_doctor_id ON public.doctors USING btree (doctor_id);
+
+
+--
+-- Name: doctors_gender; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX doctors_gender ON public.doctors USING btree (gender);
 
 
 --
--- Name: doctors_is_verified; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: doctors_is_verified; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX doctors_is_verified ON public.doctors USING btree (is_verified);
 
 
 --
--- Name: doctors_is_verified_gender; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: doctors_is_verified_gender; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX doctors_is_verified_gender ON public.doctors USING btree (is_verified, gender);
 
 
 --
--- Name: doctors_medical_license_number; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: doctors_medical_license_number; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE UNIQUE INDEX doctors_medical_license_number ON public.doctors USING btree (medical_license_number);
 
 
 --
--- Name: doctors_npi_number; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: doctors_npi_number_key; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE UNIQUE INDEX doctors_npi_number ON public.doctors USING btree (npi_number) WHERE (npi_number IS NOT NULL);
+CREATE UNIQUE INDEX doctors_npi_number_key ON public.doctors USING btree (npi_number);
 
 
 --
--- Name: doctors_organization_id; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: doctors_organization_id; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX doctors_organization_id ON public.doctors USING btree (organization_id);
 
 
 --
--- Name: doctors_specialties; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: doctors_specialties; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX doctors_specialties ON public.doctors USING gin (specialties);
 
 
 --
--- Name: doctors_user_id; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: doctors_user_id; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE UNIQUE INDEX doctors_user_id ON public.doctors USING btree (user_id);
 
 
 --
--- Name: healthcare_providers_is_verified; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: drug_interactions_drug_name_one_drug_name_two_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX drug_interactions_drug_name_one_drug_name_two_idx ON public.drug_interactions USING btree (drug_name_one, drug_name_two);
+
+
+--
+-- Name: drug_interactions_rxcui_one_rxcui_two_key; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX drug_interactions_rxcui_one_rxcui_two_key ON public.drug_interactions USING btree (rxcui_one, rxcui_two);
+
+
+--
+-- Name: drug_interactions_severity_level_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX drug_interactions_severity_level_idx ON public.drug_interactions USING btree (severity_level);
+
+
+--
+-- Name: emergency_alerts_alert_type_created_at_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX emergency_alerts_alert_type_created_at_idx ON public.emergency_alerts USING btree (alert_type, created_at);
+
+
+--
+-- Name: emergency_alerts_patient_id_priority_level_acknowledged_res_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX emergency_alerts_patient_id_priority_level_acknowledged_res_idx ON public.emergency_alerts USING btree (patient_id, priority_level, acknowledged, resolved);
+
+
+--
+-- Name: emergency_alerts_resolved_created_at_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX emergency_alerts_resolved_created_at_idx ON public.emergency_alerts USING btree (resolved, created_at);
+
+
+--
+-- Name: emergency_contacts_patient_id_is_active_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX emergency_contacts_patient_id_is_active_idx ON public.emergency_contacts USING btree (patient_id, is_active);
+
+
+--
+-- Name: emergency_contacts_patient_id_priority_order_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX emergency_contacts_patient_id_priority_order_idx ON public.emergency_contacts USING btree (patient_id, priority_order);
+
+
+--
+-- Name: game_badge_awards_badge_type_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX game_badge_awards_badge_type_idx ON public.game_badge_awards USING btree (badge_type);
+
+
+--
+-- Name: game_badge_awards_patient_id_awarded_date_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX game_badge_awards_patient_id_awarded_date_idx ON public.game_badge_awards USING btree (patient_id, awarded_date);
+
+
+--
+-- Name: game_challenge_progress_challenge_type_end_date_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX game_challenge_progress_challenge_type_end_date_idx ON public.game_challenge_progress USING btree (challenge_type, end_date);
+
+
+--
+-- Name: game_challenge_progress_patient_id_is_completed_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX game_challenge_progress_patient_id_is_completed_idx ON public.game_challenge_progress USING btree (patient_id, is_completed);
+
+
+--
+-- Name: healthcare_providers_is_verified; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX healthcare_providers_is_verified ON public.healthcare_providers USING btree (is_verified);
 
 
 --
--- Name: healthcare_providers_license_number; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: healthcare_providers_license_number_key; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE UNIQUE INDEX healthcare_providers_license_number ON public.healthcare_providers USING btree (license_number) WHERE (license_number IS NOT NULL);
+CREATE UNIQUE INDEX healthcare_providers_license_number_key ON public.healthcare_providers USING btree (license_number);
 
 
 --
--- Name: healthcare_providers_organization_id; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: healthcare_providers_organization_id; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX healthcare_providers_organization_id ON public.healthcare_providers USING btree (organization_id);
 
 
 --
--- Name: healthcare_providers_specialties; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: healthcare_providers_specialties; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX healthcare_providers_specialties ON public.healthcare_providers USING gin (specialties);
 
 
 --
--- Name: healthcare_providers_user_id; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: healthcare_providers_user_id; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE UNIQUE INDEX healthcare_providers_user_id ON public.healthcare_providers USING btree (user_id);
 
 
 --
--- Name: healthcare_providers_verification_date; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: healthcare_providers_verification_date; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX healthcare_providers_verification_date ON public.healthcare_providers USING btree (verification_date);
 
 
 --
--- Name: hsps_departments; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: hsps_departments; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX hsps_departments ON public.hsps USING gin (departments);
 
 
 --
--- Name: hsps_hsp_type; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: hsps_hsp_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX hsps_hsp_id ON public.hsps USING btree (hsp_id);
+
+
+--
+-- Name: hsps_hsp_type; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX hsps_hsp_type ON public.hsps USING btree (hsp_type);
 
 
 --
--- Name: hsps_is_verified; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: hsps_is_verified; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX hsps_is_verified ON public.hsps USING btree (is_verified);
 
 
 --
--- Name: hsps_license_number; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: hsps_license_number_key; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE UNIQUE INDEX hsps_license_number ON public.hsps USING btree (license_number) WHERE (license_number IS NOT NULL);
+CREATE UNIQUE INDEX hsps_license_number_key ON public.hsps USING btree (license_number);
 
 
 --
--- Name: hsps_organization_id; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: hsps_organization_id; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX hsps_organization_id ON public.hsps USING btree (organization_id);
 
 
 --
--- Name: hsps_specializations; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: hsps_specializations; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX hsps_specializations ON public.hsps USING gin (specializations);
 
 
 --
--- Name: hsps_supervising_doctor_id; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: hsps_supervising_doctor_id; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX hsps_supervising_doctor_id ON public.hsps USING btree (supervising_doctor_id);
 
 
 --
--- Name: hsps_user_id; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: hsps_user_id; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE UNIQUE INDEX hsps_user_id ON public.hsps USING btree (user_id);
 
 
 --
--- Name: idx_appointments_doctor_time; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: idx_adherence_event_status_completed; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX idx_appointments_doctor_time ON public.appointments USING btree (doctor_id, start_time) WHERE (doctor_id IS NOT NULL);
-
-
---
--- Name: idx_appointments_hsp_time; Type: INDEX; Schema: public; Owner: healthapp_user
---
-
-CREATE INDEX idx_appointments_hsp_time ON public.appointments USING btree (hsp_id, start_time) WHERE (hsp_id IS NOT NULL);
+CREATE INDEX idx_adherence_event_status_completed ON public.adherence_records USING btree (scheduled_event_id, is_completed, recorded_at);
 
 
 --
--- Name: idx_assignments_consent_status_expires; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: idx_adherence_patient_due_status; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX idx_assignments_consent_status_expires ON public.patient_doctor_assignments USING btree (patient_consent_status, consent_otp_expires_at) WHERE (patient_consent_required = true);
+CREATE INDEX idx_adherence_patient_due_status ON public.adherence_records USING btree (patient_id, due_at, is_completed);
 
 
 --
--- Name: idx_assignments_doctor_active_created; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: idx_appointments_organizer_time; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_appointments_organizer_time ON public.appointments USING btree (organizer_type, organizer_id, start_time);
+
+
+--
+-- Name: idx_appointments_patient_time; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_appointments_patient_time ON public.appointments USING btree (patient_id, start_time);
+
+
+--
+-- Name: idx_appointments_provider_time; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_appointments_provider_time ON public.appointments USING btree (provider_id, start_time);
+
+
+--
+-- Name: idx_assignments_doctor_active_created; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX idx_assignments_doctor_active_created ON public.patient_doctor_assignments USING btree (doctor_id, is_active, created_at);
 
 
 --
--- Name: idx_assignments_patient_type_active; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: idx_assignments_patient_type_active; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX idx_assignments_patient_type_active ON public.patient_doctor_assignments USING btree (patient_id, assignment_type, is_active);
 
 
 --
--- Name: idx_audit_user_created_action; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: idx_audit_user_created_action; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX idx_audit_user_created_action ON public.audit_logs USING btree (user_id, created_at, action);
 
 
 --
--- Name: idx_careplans_patient_status_start; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: idx_careplans_patient_status_start_fixed; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX idx_careplans_patient_status_start ON public.care_plans USING btree (patient_id, status, start_date);
-
-
---
--- Name: idx_careplans_provider_status_created; Type: INDEX; Schema: public; Owner: healthapp_user
---
-
-CREATE INDEX idx_careplans_provider_status_created ON public.care_plans USING btree (provider_id, status, created_at);
+CREATE INDEX idx_careplans_patient_status_start_fixed ON public.care_plans USING btree (patient_id, status, start_date);
 
 
 --
--- Name: idx_patients_doctor_created_active; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: idx_clinics_coordinates; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_clinics_coordinates ON public.clinics USING btree (latitude, longitude);
+
+
+--
+-- Name: idx_clinics_location_verified; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_clinics_location_verified ON public.clinics USING btree (location_verified);
+
+
+--
+-- Name: idx_events_careplan_time_type; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_events_careplan_time_type ON public.scheduled_events USING btree (care_plan_id, scheduled_for, event_type);
+
+
+--
+-- Name: idx_events_patient_time_status; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_events_patient_time_status ON public.scheduled_events USING btree (patient_id, scheduled_for, status);
+
+
+--
+-- Name: idx_notifications_type_priority_created; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_notifications_type_priority_created ON public.notifications USING btree (type, priority, created_at);
+
+
+--
+-- Name: idx_patients_doctor_created_active; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX idx_patients_doctor_created_active ON public.patients USING btree (primary_care_doctor_id, created_at, is_active);
 
 
 --
--- Name: idx_patients_id_created; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: idx_patients_id_created; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX idx_patients_id_created ON public.patients USING btree (patient_id, created_at);
 
 
 --
--- Name: idx_patients_user_doctor; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: idx_patients_user_doctor; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX idx_patients_user_doctor ON public.patients USING btree (user_id, primary_care_doctor_id);
 
 
 --
--- Name: idx_providers_org_verified; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: idx_providers_org_verified; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX idx_providers_org_verified ON public.healthcare_providers USING btree (organization_id, is_verified);
 
 
 --
--- Name: idx_symptoms_careplan_onset; Type: INDEX; Schema: public; Owner: healthapp_user
---
-
-CREATE INDEX idx_symptoms_careplan_onset ON public.symptoms USING btree (care_plan_id, onset_time) WHERE (care_plan_id IS NOT NULL);
-
-
---
--- Name: idx_symptoms_patient_onset_severity; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: idx_symptoms_patient_onset_severity; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX idx_symptoms_patient_onset_severity ON public.symptoms USING btree (patient_id, onset_time, severity);
 
 
 --
--- Name: idx_templates_conditions; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: idx_templates_conditions; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX idx_templates_conditions ON public.care_plan_templates USING gin (conditions);
 
 
 --
--- Name: idx_templates_created_by; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: idx_templates_created_by; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX idx_templates_created_by ON public.care_plan_templates USING btree (created_by);
 
 
 --
--- Name: idx_templates_is_approved; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: idx_templates_is_approved; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX idx_templates_is_approved ON public.care_plan_templates USING btree (is_approved);
 
 
 --
--- Name: idx_templates_is_public; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: idx_templates_is_public; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX idx_templates_is_public ON public.care_plan_templates USING btree (is_public);
 
 
 --
--- Name: idx_templates_name; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: idx_templates_name; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX idx_templates_name ON public.care_plan_templates USING btree (name);
 
 
 --
--- Name: idx_templates_organization_id; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: idx_templates_organization_id; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX idx_templates_organization_id ON public.care_plan_templates USING btree (organization_id);
 
 
 --
--- Name: idx_templates_specialties; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: idx_templates_specialties; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX idx_templates_specialties ON public.care_plan_templates USING gin (specialties);
 
 
 --
--- Name: idx_templates_tags; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: idx_templates_tags; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX idx_templates_tags ON public.care_plan_templates USING gin (tags);
 
 
 --
--- Name: idx_userroles_identity_linked; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: idx_userroles_identity_linked; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX idx_userroles_identity_linked ON public.user_roles USING btree (user_identity, linked_with);
 
 
 --
--- Name: idx_users_email_status; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: idx_users_email_status; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX idx_users_email_status ON public.users USING btree (email, account_status);
 
 
 --
--- Name: idx_users_org_status; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: idx_users_role_status; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX idx_users_org_status ON public.users USING btree (organization_id, account_status) WHERE (organization_id IS NOT NULL);
+CREATE INDEX idx_users_role_status ON public.users USING btree (role, account_status);
 
 
 --
--- Name: idx_vitals_patient_time_type; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: idx_vitals_patient_time_type; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX idx_vitals_patient_time_type ON public.vital_readings USING btree (patient_id, reading_time, vital_type_id);
 
 
 --
--- Name: idx_vitals_patient_type_time_desc; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: idx_vitals_patient_type_time_desc; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX idx_vitals_patient_type_time_desc ON public.vital_readings USING btree (patient_id, vital_type_id, reading_time);
 
 
 --
--- Name: idx_vitals_time_patient; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: idx_vitals_time_patient; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX idx_vitals_time_patient ON public.vital_readings USING btree (reading_time, patient_id);
 
 
 --
--- Name: medications_medicine_id; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: lab_orders_doctor_id_order_date_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX lab_orders_doctor_id_order_date_idx ON public.lab_orders USING btree (doctor_id, order_date);
+
+
+--
+-- Name: lab_orders_order_number_key; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX lab_orders_order_number_key ON public.lab_orders USING btree (order_number);
+
+
+--
+-- Name: lab_orders_patient_id_status_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX lab_orders_patient_id_status_idx ON public.lab_orders USING btree (patient_id, status);
+
+
+--
+-- Name: lab_orders_status_expected_result_date_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX lab_orders_status_expected_result_date_idx ON public.lab_orders USING btree (status, expected_result_date);
+
+
+--
+-- Name: lab_results_critical_flag_result_date_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX lab_results_critical_flag_result_date_idx ON public.lab_results USING btree (critical_flag, result_date);
+
+
+--
+-- Name: lab_results_lab_order_id_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX lab_results_lab_order_id_idx ON public.lab_results USING btree (lab_order_id);
+
+
+--
+-- Name: lab_results_test_name_result_date_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX lab_results_test_name_result_date_idx ON public.lab_results USING btree (test_name, result_date);
+
+
+--
+-- Name: medication_logs_adherence_status_scheduled_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX medication_logs_adherence_status_scheduled_at ON public.medication_logs USING btree (adherence_status, scheduled_at);
+
+
+--
+-- Name: medication_logs_medication_id_scheduled_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX medication_logs_medication_id_scheduled_at ON public.medication_logs USING btree (medication_id, scheduled_at);
+
+
+--
+-- Name: medication_logs_patient_id_scheduled_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX medication_logs_patient_id_scheduled_at ON public.medication_logs USING btree (patient_id, scheduled_at);
+
+
+--
+-- Name: medication_safety_alerts_alert_type_created_at_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX medication_safety_alerts_alert_type_created_at_idx ON public.medication_safety_alerts USING btree (alert_type, created_at);
+
+
+--
+-- Name: medication_safety_alerts_patient_id_severity_resolved_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX medication_safety_alerts_patient_id_severity_resolved_idx ON public.medication_safety_alerts USING btree (patient_id, severity, resolved);
+
+
+--
+-- Name: medication_safety_alerts_resolved_created_at_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX medication_safety_alerts_resolved_created_at_idx ON public.medication_safety_alerts USING btree (resolved, created_at);
+
+
+--
+-- Name: medications_medicine_id; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX medications_medicine_id ON public.medications USING btree (medicine_id);
 
 
 --
--- Name: medications_organizer_type_organizer_id; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: medications_organizer_type_organizer_id; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX medications_organizer_type_organizer_id ON public.medications USING btree (organizer_type, organizer_id);
 
 
 --
--- Name: medications_participant_id; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: medications_participant_id; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX medications_participant_id ON public.medications USING btree (participant_id);
 
 
 --
--- Name: notifications_doctor_id; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: notifications_doctor_id; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX notifications_doctor_id ON public.notifications USING btree (doctor_id);
 
 
 --
--- Name: notifications_expires_at; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: notifications_expires_at; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX notifications_expires_at ON public.notifications USING btree (expires_at);
 
 
 --
--- Name: notifications_hsp_id; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: notifications_hsp_id; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX notifications_hsp_id ON public.notifications USING btree (hsp_id);
 
 
 --
--- Name: notifications_is_urgent; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: notifications_is_urgent; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX notifications_is_urgent ON public.notifications USING btree (is_urgent);
 
 
 --
--- Name: notifications_organization_id; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: notifications_organization_id; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX notifications_organization_id ON public.notifications USING btree (organization_id);
 
 
 --
--- Name: notifications_patient_id; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: notifications_patient_id; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX notifications_patient_id ON public.notifications USING btree (patient_id);
 
 
 --
--- Name: notifications_patient_id_status_created_at; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: notifications_patient_id_status_created_at; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX notifications_patient_id_status_created_at ON public.notifications USING btree (patient_id, status, created_at);
 
 
 --
--- Name: notifications_priority; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: notifications_priority; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX notifications_priority ON public.notifications USING btree (priority);
 
 
 --
--- Name: notifications_requires_action_action_taken; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: notifications_requires_action_action_taken; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX notifications_requires_action_action_taken ON public.notifications USING btree (requires_action, action_taken);
 
 
 --
--- Name: notifications_scheduled_for; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: notifications_scheduled_for; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX notifications_scheduled_for ON public.notifications USING btree (scheduled_for);
 
 
 --
--- Name: notifications_status; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: notifications_status; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX notifications_status ON public.notifications USING btree (status);
 
 
 --
--- Name: notifications_status_scheduled_for_expires_at; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: notifications_status_scheduled_for_expires_at; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX notifications_status_scheduled_for_expires_at ON public.notifications USING btree (status, scheduled_for, expires_at);
 
 
 --
--- Name: notifications_type; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: notifications_type; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX notifications_type ON public.notifications USING btree (type);
 
 
 --
--- Name: organizations_is_active; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: organizations_is_active; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX organizations_is_active ON public.organizations USING btree (is_active);
 
 
 --
--- Name: organizations_license_number; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: organizations_license_number_key; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE UNIQUE INDEX organizations_license_number ON public.organizations USING btree (license_number) WHERE (license_number IS NOT NULL);
+CREATE UNIQUE INDEX organizations_license_number_key ON public.organizations USING btree (license_number);
 
 
 --
--- Name: organizations_name; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: organizations_name; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX organizations_name ON public.organizations USING btree (name);
 
 
 --
--- Name: organizations_type; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: organizations_type; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX organizations_type ON public.organizations USING btree (type);
 
 
 --
--- Name: patient_doctor_assignments_assignment_type; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: patient_alerts_acknowledged_resolved; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX patient_alerts_acknowledged_resolved ON public.patient_alerts USING btree (acknowledged, resolved);
+
+
+--
+-- Name: patient_alerts_created_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX patient_alerts_created_at ON public.patient_alerts USING btree (created_at);
+
+
+--
+-- Name: patient_alerts_patient_id_alert_type_severity; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX patient_alerts_patient_id_alert_type_severity ON public.patient_alerts USING btree (patient_id, alert_type, severity);
+
+
+--
+-- Name: patient_allergies_allergen_type_allergen_name_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX patient_allergies_allergen_type_allergen_name_idx ON public.patient_allergies USING btree (allergen_type, allergen_name);
+
+
+--
+-- Name: patient_allergies_patient_id_is_active_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX patient_allergies_patient_id_is_active_idx ON public.patient_allergies USING btree (patient_id, is_active);
+
+
+--
+-- Name: patient_consent_otp_expires_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX patient_consent_otp_expires_at ON public.patient_consent_otp USING btree (expires_at);
+
+
+--
+-- Name: patient_consent_otp_generated_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX patient_consent_otp_generated_at ON public.patient_consent_otp USING btree (generated_at);
+
+
+--
+-- Name: patient_consent_otp_is_blocked; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX patient_consent_otp_is_blocked ON public.patient_consent_otp USING btree (is_blocked);
+
+
+--
+-- Name: patient_consent_otp_is_expired; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX patient_consent_otp_is_expired ON public.patient_consent_otp USING btree (is_expired);
+
+
+--
+-- Name: patient_consent_otp_is_verified; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX patient_consent_otp_is_verified ON public.patient_consent_otp USING btree (is_verified);
+
+
+--
+-- Name: patient_consent_otp_otp_code; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX patient_consent_otp_otp_code ON public.patient_consent_otp USING btree (otp_code);
+
+
+--
+-- Name: patient_consent_otp_patient_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX patient_consent_otp_patient_id ON public.patient_consent_otp USING btree (patient_id);
+
+
+--
+-- Name: patient_consent_otp_requested_by_user_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX patient_consent_otp_requested_by_user_id ON public.patient_consent_otp USING btree (requested_by_user_id);
+
+
+--
+-- Name: patient_consent_otp_secondary_assignment_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX patient_consent_otp_secondary_assignment_id ON public.patient_consent_otp USING btree (secondary_assignment_id);
+
+
+--
+-- Name: patient_doctor_assignments_assignment_type; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX patient_doctor_assignments_assignment_type ON public.patient_doctor_assignments USING btree (assignment_type);
 
 
 --
--- Name: patient_doctor_assignments_doctor_id; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: patient_doctor_assignments_doctor_id; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX patient_doctor_assignments_doctor_id ON public.patient_doctor_assignments USING btree (doctor_id);
 
 
 --
--- Name: patient_doctor_assignments_is_active; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: patient_doctor_assignments_is_active; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX patient_doctor_assignments_is_active ON public.patient_doctor_assignments USING btree (is_active);
 
 
 --
--- Name: patient_doctor_assignments_patient_consent_status; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: patient_doctor_assignments_patient_consent_status; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX patient_doctor_assignments_patient_consent_status ON public.patient_doctor_assignments USING btree (patient_consent_status);
 
 
 --
--- Name: patient_doctor_assignments_patient_id; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: patient_doctor_assignments_patient_id; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX patient_doctor_assignments_patient_id ON public.patient_doctor_assignments USING btree (patient_id);
 
 
 --
--- Name: patient_provider_assignments_patient_id; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: patient_game_profiles_patient_id_key; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX patient_provider_assignments_patient_id ON public.patient_provider_assignments USING btree (patient_id) WHERE (ended_at IS NULL);
-
-
---
--- Name: patient_provider_assignments_patient_id_provider_id; Type: INDEX; Schema: public; Owner: healthapp_user
---
-
-CREATE INDEX patient_provider_assignments_patient_id_provider_id ON public.patient_provider_assignments USING btree (patient_id, provider_id) WHERE (ended_at IS NULL);
-
---
--- Name: patient_provider_assignments_provider_id; Type: INDEX; Schema: public; Owner: healthapp_user
---
-
-CREATE INDEX patient_provider_assignments_provider_id ON public.patient_provider_assignments USING btree (provider_id) WHERE (ended_at IS NULL);
+CREATE UNIQUE INDEX patient_game_profiles_patient_id_key ON public.patient_game_profiles USING btree (patient_id);
 
 
 --
--- Name: patient_provider_role_unique; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: patient_game_profiles_patient_id_last_activity_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX patient_game_profiles_patient_id_last_activity_idx ON public.patient_game_profiles USING btree (patient_id, last_activity);
+
+
+--
+-- Name: patient_game_profiles_total_points_current_level_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX patient_game_profiles_total_points_current_level_idx ON public.patient_game_profiles USING btree (total_points, current_level);
+
+
+--
+-- Name: patient_provider_consent_history_consent_requested_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX patient_provider_consent_history_consent_requested_at ON public.patient_provider_consent_history USING btree (consent_requested_at);
+
+
+--
+-- Name: patient_provider_consent_history_doctor_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX patient_provider_consent_history_doctor_id ON public.patient_provider_consent_history USING btree (doctor_id);
+
+
+--
+-- Name: patient_provider_consent_history_hsp_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX patient_provider_consent_history_hsp_id ON public.patient_provider_consent_history USING btree (hsp_id);
+
+
+--
+-- Name: patient_provider_consent_history_new_provider_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX patient_provider_consent_history_new_provider_id ON public.patient_provider_consent_history USING btree (new_provider_id);
+
+
+--
+-- Name: patient_provider_consent_history_patient_id_status; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX patient_provider_consent_history_patient_id_status ON public.patient_provider_consent_history USING btree (patient_id, status);
+
+
+--
+-- Name: patient_provider_role_unique; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE UNIQUE INDEX patient_provider_role_unique ON public.patient_provider_assignments USING btree (patient_id, provider_id, role, ended_at);
 
 
 --
--- Name: patient_subscriptions_next_billing_date; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: patient_subscriptions_next_billing_date; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX patient_subscriptions_next_billing_date ON public.patient_subscriptions USING btree (next_billing_date);
 
 
 --
--- Name: patient_subscriptions_patient_id; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: patient_subscriptions_patient_id; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX patient_subscriptions_patient_id ON public.patient_subscriptions USING btree (patient_id);
 
 
 --
--- Name: patient_subscriptions_patient_id_provider_id; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: patient_subscriptions_patient_id_provider_id; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX patient_subscriptions_patient_id_provider_id ON public.patient_subscriptions USING btree (patient_id, provider_id);
 
 
 --
--- Name: patient_subscriptions_provider_id; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: patient_subscriptions_provider_id; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX patient_subscriptions_provider_id ON public.patient_subscriptions USING btree (provider_id);
 
 
 --
--- Name: patient_subscriptions_service_plan_id; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: patient_subscriptions_service_plan_id; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX patient_subscriptions_service_plan_id ON public.patient_subscriptions USING btree (service_plan_id);
 
 
 --
--- Name: patient_subscriptions_status; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: patient_subscriptions_status; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX patient_subscriptions_status ON public.patient_subscriptions USING btree (status);
 
 
 --
--- Name: patient_subscriptions_stripe_customer_id; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: patient_subscriptions_stripe_customer_id; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX patient_subscriptions_stripe_customer_id ON public.patient_subscriptions USING btree (stripe_customer_id);
 
 
 --
--- Name: patient_subscriptions_stripe_subscription_id; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: patient_subscriptions_stripe_subscription_id; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX patient_subscriptions_stripe_subscription_id ON public.patient_subscriptions USING btree (stripe_subscription_id);
 
 
 --
--- Name: patients_allergies; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: patient_subscriptions_stripe_subscription_id_key; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX patient_subscriptions_stripe_subscription_id_key ON public.patient_subscriptions USING btree (stripe_subscription_id);
+
+
+--
+-- Name: patients_allergies; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX patients_allergies ON public.patients USING gin (allergies);
 
 
 --
--- Name: patients_is_active; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: patients_is_active; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX patients_is_active ON public.patients USING btree (is_active);
 
 
 --
--- Name: patients_medical_history; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: patients_linked_provider_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX patients_linked_provider_id ON public.patients USING btree (linked_provider_id);
+
+
+--
+-- Name: patients_medical_history; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX patients_medical_history ON public.patients USING gin (medical_history);
 
 
 --
--- Name: patients_medical_record_number; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: patients_medical_record_number_key; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE UNIQUE INDEX patients_medical_record_number ON public.patients USING btree (medical_record_number) WHERE (medical_record_number IS NOT NULL);
+CREATE UNIQUE INDEX patients_medical_record_number_key ON public.patients USING btree (medical_record_number);
 
 
 --
--- Name: patients_organization_id; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: patients_organization_id; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX patients_organization_id ON public.patients USING btree (organization_id);
 
 
 --
--- Name: patients_primary_care_doctor_id; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: patients_patient_id_key; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX patients_patient_id_key ON public.patients USING btree (patient_id);
+
+
+--
+-- Name: patients_primary_care_doctor_id; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX patients_primary_care_doctor_id ON public.patients USING btree (primary_care_doctor_id);
 
 
 --
--- Name: patients_primary_care_hsp_id; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: patients_primary_care_hsp_id; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX patients_primary_care_hsp_id ON public.patients USING btree (primary_care_hsp_id);
 
 
 --
--- Name: patients_risk_level; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: patients_provider_consent_given; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX patients_provider_consent_given ON public.patients USING btree (provider_consent_given);
+
+
+--
+-- Name: patients_provider_linked_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX patients_provider_linked_at ON public.patients USING btree (provider_linked_at);
+
+
+--
+-- Name: patients_risk_level; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX patients_risk_level ON public.patients USING btree (risk_level);
 
 
 --
--- Name: patients_user_id; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: patients_user_id; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE UNIQUE INDEX patients_user_id ON public.patients USING btree (user_id);
 
 
 --
--- Name: payment_methods_is_active; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: payment_methods_is_active; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX payment_methods_is_active ON public.payment_methods USING btree (is_active);
 
 
 --
--- Name: payment_methods_is_default; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: payment_methods_is_default; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX payment_methods_is_default ON public.payment_methods USING btree (is_default);
 
 
 --
--- Name: payment_methods_patient_id; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: payment_methods_patient_id; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX payment_methods_patient_id ON public.payment_methods USING btree (patient_id);
 
 
 --
--- Name: payment_methods_stripe_payment_method_id; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: payment_methods_stripe_payment_method_id; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX payment_methods_stripe_payment_method_id ON public.payment_methods USING btree (stripe_payment_method_id);
 
 
 --
--- Name: payment_methods_type; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: payment_methods_stripe_payment_method_id_key; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX payment_methods_stripe_payment_method_id_key ON public.payment_methods USING btree (stripe_payment_method_id);
+
+
+--
+-- Name: payment_methods_type; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX payment_methods_type ON public.payment_methods USING btree (type);
 
 
 --
--- Name: payments_billing_period_start_billing_period_end; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: payments_billing_period_start_billing_period_end; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX payments_billing_period_start_billing_period_end ON public.payments USING btree (billing_period_start, billing_period_end);
 
 
 --
--- Name: payments_created_at; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: payments_created_at; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX payments_created_at ON public.payments USING btree (created_at);
 
 
 --
--- Name: payments_patient_id; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: payments_patient_id; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX payments_patient_id ON public.payments USING btree (patient_id);
 
 
 --
--- Name: payments_provider_id; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: payments_provider_id; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX payments_provider_id ON public.payments USING btree (provider_id);
 
 
 --
--- Name: payments_status; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: payments_status; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX payments_status ON public.payments USING btree (status);
 
 
 --
--- Name: payments_stripe_payment_intent_id; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: payments_stripe_payment_intent_id; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX payments_stripe_payment_intent_id ON public.payments USING btree (stripe_payment_intent_id);
 
 
 --
--- Name: payments_subscription_id; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: payments_stripe_payment_intent_id_key; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX payments_stripe_payment_intent_id_key ON public.payments USING btree (stripe_payment_intent_id);
+
+
+--
+-- Name: payments_subscription_id; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX payments_subscription_id ON public.payments USING btree (subscription_id);
 
 
 --
--- Name: providers_user_id; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: provider_change_history_change_date; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX provider_change_history_change_date ON public.provider_change_history USING btree (change_date);
+
+
+--
+-- Name: provider_change_history_new_provider_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX provider_change_history_new_provider_id ON public.provider_change_history USING btree (new_provider_id);
+
+
+--
+-- Name: provider_change_history_practitioner_type_practitioner_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX provider_change_history_practitioner_type_practitioner_id ON public.provider_change_history USING btree (practitioner_type, practitioner_id);
+
+
+--
+-- Name: provider_change_history_status; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX provider_change_history_status ON public.provider_change_history USING btree (status);
+
+
+--
+-- Name: providers_user_id; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX providers_user_id ON public.providers USING btree (user_id);
 
 
 --
--- Name: schedule_events_event_id_event_type; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: schedule_events_event_id_event_type; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX schedule_events_event_id_event_type ON public.schedule_events USING btree (event_id, event_type);
 
 
 --
--- Name: schedule_events_event_type_status_date_start_time; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: schedule_events_event_type_status_date_start_time; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX schedule_events_event_type_status_date_start_time ON public.schedule_events USING btree (event_type, status, date, start_time);
 
 
 --
--- Name: schedule_events_status_date; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: schedule_events_status_date; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX schedule_events_status_date ON public.schedule_events USING btree (status, date);
 
 
 --
--- Name: scheduled_events_care_plan_id; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: scheduled_events_care_plan_id; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX scheduled_events_care_plan_id ON public.scheduled_events USING btree (care_plan_id);
 
 
 --
--- Name: scheduled_events_event_type; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: secondary_doctor_assignments_access_granted; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX scheduled_events_event_type ON public.scheduled_events USING btree (event_type) WHERE (deleted_at IS NULL);
-
-
---
--- Name: scheduled_events_patient_id; Type: INDEX; Schema: public; Owner: healthapp_user
---
-
-CREATE INDEX scheduled_events_patient_id ON public.scheduled_events USING btree (patient_id) WHERE (deleted_at IS NULL);
+CREATE INDEX secondary_doctor_assignments_access_granted ON public.secondary_doctor_assignments USING btree (access_granted);
 
 
 --
--- Name: scheduled_events_patient_id_scheduled_for; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: secondary_doctor_assignments_consent_expires_at; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX scheduled_events_patient_id_scheduled_for ON public.scheduled_events USING btree (patient_id, scheduled_for) WHERE (deleted_at IS NULL);
-
-
---
--- Name: scheduled_events_priority; Type: INDEX; Schema: public; Owner: healthapp_user
---
-
-CREATE INDEX scheduled_events_priority ON public.scheduled_events USING btree (priority) WHERE (deleted_at IS NULL);
+CREATE INDEX secondary_doctor_assignments_consent_expires_at ON public.secondary_doctor_assignments USING btree (consent_expires_at);
 
 
 --
--- Name: scheduled_events_scheduled_for; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: secondary_doctor_assignments_consent_status; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX scheduled_events_scheduled_for ON public.scheduled_events USING btree (scheduled_for) WHERE (deleted_at IS NULL);
-
-
---
--- Name: scheduled_events_status; Type: INDEX; Schema: public; Owner: healthapp_user
---
-
-CREATE INDEX scheduled_events_status ON public.scheduled_events USING btree (status) WHERE (deleted_at IS NULL);
+CREATE INDEX secondary_doctor_assignments_consent_status ON public.secondary_doctor_assignments USING btree (consent_status);
 
 
 --
--- Name: service_plans_billing_cycle; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: secondary_doctor_assignments_is_active; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX secondary_doctor_assignments_is_active ON public.secondary_doctor_assignments USING btree (is_active);
+
+
+--
+-- Name: secondary_doctor_assignments_patient_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX secondary_doctor_assignments_patient_id ON public.secondary_doctor_assignments USING btree (patient_id);
+
+
+--
+-- Name: secondary_doctor_assignments_primary_doctor_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX secondary_doctor_assignments_primary_doctor_id ON public.secondary_doctor_assignments USING btree (primary_doctor_id);
+
+
+--
+-- Name: secondary_doctor_assignments_secondary_doctor_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX secondary_doctor_assignments_secondary_doctor_id ON public.secondary_doctor_assignments USING btree (secondary_doctor_id);
+
+
+--
+-- Name: secondary_doctor_assignments_secondary_hsp_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX secondary_doctor_assignments_secondary_hsp_id ON public.secondary_doctor_assignments USING btree (secondary_hsp_id);
+
+
+--
+-- Name: service_plans_billing_cycle; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX service_plans_billing_cycle ON public.service_plans USING btree (billing_cycle);
 
 
 --
--- Name: service_plans_is_active; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: service_plans_is_active; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX service_plans_is_active ON public.service_plans USING btree (is_active);
 
 
 --
--- Name: service_plans_name; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: service_plans_name; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX service_plans_name ON public.service_plans USING btree (name);
 
 
 --
--- Name: service_plans_price; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: service_plans_price; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX service_plans_price ON public.service_plans USING btree (price);
 
 
 --
--- Name: service_plans_provider_id; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: service_plans_provider_id; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX service_plans_provider_id ON public.service_plans USING btree (provider_id);
 
 
 --
--- Name: service_plans_service_type; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: service_plans_service_type; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX service_plans_service_type ON public.service_plans USING btree (service_type);
 
 
 --
--- Name: symptoms_care_plan_id; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: symptoms_care_plan_id; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX symptoms_care_plan_id ON public.symptoms USING btree (care_plan_id);
 
 
 --
--- Name: symptoms_database_category; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: symptoms_database_category; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX symptoms_database_category ON public.symptoms_database USING btree (category);
 
 
 --
--- Name: symptoms_database_diagnosis_name; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: symptoms_database_diagnosis_name; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE UNIQUE INDEX symptoms_database_diagnosis_name ON public.symptoms_database USING btree (diagnosis_name);
 
 
 --
--- Name: symptoms_database_is_active; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: symptoms_database_is_active; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX symptoms_database_is_active ON public.symptoms_database USING btree (is_active);
 
 
 --
--- Name: symptoms_database_symptoms; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: symptoms_database_symptoms; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX symptoms_database_symptoms ON public.symptoms_database USING gin (symptoms);
 
 
 --
--- Name: symptoms_onset_time; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: symptoms_onset_time; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX symptoms_onset_time ON public.symptoms USING btree (onset_time);
 
 
 --
--- Name: symptoms_patient_id; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: symptoms_patient_id; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX symptoms_patient_id ON public.symptoms USING btree (patient_id);
 
 
 --
--- Name: symptoms_patient_id_recorded_at; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: symptoms_patient_id_recorded_at; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX symptoms_patient_id_recorded_at ON public.symptoms USING btree (patient_id, recorded_at);
 
 
 --
--- Name: symptoms_recorded_at; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: symptoms_recorded_at; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX symptoms_recorded_at ON public.symptoms USING btree (recorded_at);
 
 
 --
--- Name: symptoms_severity; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: symptoms_severity; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX symptoms_severity ON public.symptoms USING btree (severity);
 
 
 --
--- Name: symptoms_symptom_name; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: symptoms_symptom_name; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX symptoms_symptom_name ON public.symptoms USING btree (symptom_name);
 
 
 --
--- Name: treatment_database_applicable_conditions; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: treatment_database_applicable_conditions; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX treatment_database_applicable_conditions ON public.treatment_database USING gin (applicable_conditions);
 
 
 --
--- Name: treatment_database_category; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: treatment_database_category; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX treatment_database_category ON public.treatment_database USING btree (category);
 
 
 --
--- Name: treatment_database_is_active; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: treatment_database_is_active; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX treatment_database_is_active ON public.treatment_database USING btree (is_active);
 
 
 --
--- Name: treatment_database_severity_level; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: treatment_database_severity_level; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX treatment_database_severity_level ON public.treatment_database USING btree (severity_level);
 
 
 --
--- Name: treatment_database_treatment_name; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: treatment_database_treatment_name; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE UNIQUE INDEX treatment_database_treatment_name ON public.treatment_database USING btree (treatment_name);
 
 
 --
--- Name: treatment_database_treatment_type; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: treatment_database_treatment_type; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX treatment_database_treatment_type ON public.treatment_database USING btree (treatment_type);
 
 
 --
--- Name: treatment_plans_doctor_id; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: treatment_plans_doctor_id; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX treatment_plans_doctor_id ON public.treatment_plans USING btree (doctor_id);
 
 
 --
--- Name: treatment_plans_end_date; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: treatment_plans_end_date; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX treatment_plans_end_date ON public.treatment_plans USING btree (end_date);
 
 
 --
--- Name: treatment_plans_follow_up_date; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: treatment_plans_follow_up_date; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX treatment_plans_follow_up_date ON public.treatment_plans USING btree (follow_up_date);
 
 
 --
--- Name: treatment_plans_organization_id; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: treatment_plans_organization_id; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX treatment_plans_organization_id ON public.treatment_plans USING btree (organization_id);
 
 
 --
--- Name: treatment_plans_patient_id; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: treatment_plans_patient_id; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX treatment_plans_patient_id ON public.treatment_plans USING btree (patient_id);
 
 
 --
--- Name: treatment_plans_primary_diagnosis; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: treatment_plans_primary_diagnosis; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX treatment_plans_primary_diagnosis ON public.treatment_plans USING btree (primary_diagnosis);
 
 
 --
--- Name: treatment_plans_priority; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: treatment_plans_priority; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX treatment_plans_priority ON public.treatment_plans USING btree (priority);
 
 
 --
--- Name: treatment_plans_secondary_diagnoses; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: treatment_plans_secondary_diagnoses; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX treatment_plans_secondary_diagnoses ON public.treatment_plans USING gin (secondary_diagnoses);
 
 
 --
--- Name: treatment_plans_start_date; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: treatment_plans_start_date; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX treatment_plans_start_date ON public.treatment_plans USING btree (start_date);
 
 
 --
--- Name: treatment_plans_status; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: treatment_plans_status; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX treatment_plans_status ON public.treatment_plans USING btree (status);
 
 
 --
--- Name: treatment_plans_symptoms; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: treatment_plans_symptoms; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX treatment_plans_symptoms ON public.treatment_plans USING gin (symptoms);
 
 
 --
--- Name: unique_primary_clinic_per_doctor; Type: INDEX; Schema: public; Owner: healthapp_user
---
-
-CREATE UNIQUE INDEX unique_primary_clinic_per_doctor ON public.clinics USING btree (doctor_id, is_primary) WHERE ((is_primary = true) AND (deleted_at IS NULL));
-
-
---
--- Name: unique_primary_doctor_per_patient; Type: INDEX; Schema: public; Owner: healthapp_user
---
-
-CREATE UNIQUE INDEX unique_primary_doctor_per_patient ON public.patient_doctor_assignments USING btree (patient_id, assignment_type) WHERE (((assignment_type)::text = 'primary'::text) AND (is_active = true));
-
-
---
--- Name: user_devices_device_type; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: user_devices_device_type; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX user_devices_device_type ON public.user_devices USING btree (device_type);
 
 
 --
--- Name: user_devices_is_active; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: user_devices_is_active; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX user_devices_is_active ON public.user_devices USING btree (is_active);
 
 
 --
--- Name: user_devices_last_used_at; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: user_devices_last_used_at; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX user_devices_last_used_at ON public.user_devices USING btree (last_used_at);
 
 
 --
--- Name: user_devices_push_token; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: user_devices_push_token; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX user_devices_push_token ON public.user_devices USING btree (push_token);
 
 
 --
--- Name: user_devices_user_id; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: user_devices_user_id; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX user_devices_user_id ON public.user_devices USING btree (user_id);
 
 
 --
--- Name: user_devices_user_id_push_token; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: user_devices_user_id_push_token; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE UNIQUE INDEX user_devices_user_id_push_token ON public.user_devices USING btree (user_id, push_token);
 
 
 --
--- Name: users_account_status; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: users_account_status; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX users_account_status ON public.users USING btree (account_status);
 
 
 --
--- Name: users_email; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: users_email_key; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE UNIQUE INDEX users_email ON public.users USING btree (email) WHERE (deleted_at IS NULL);
+CREATE UNIQUE INDEX users_email_key ON public.users USING btree (email);
 
 
 --
--- Name: users_email_verified; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: users_email_verified; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX users_email_verified ON public.users USING btree (email_verified);
 
 
 --
--- Name: users_full_name; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: users_full_name; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX users_full_name ON public.users USING btree (full_name);
 
 
 --
--- Name: users_last_login_at; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: users_last_login_at; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX users_last_login_at ON public.users USING btree (last_login_at);
 
 
 --
--- Name: users_phone; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: users_phone; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX users_phone ON public.users USING btree (phone);
 
 
 --
--- Name: users_role; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: users_role; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX users_role ON public.users USING btree (role);
 
 
 --
--- Name: vital_readings_is_flagged; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: video_consultations_consultation_id_key; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX video_consultations_consultation_id_key ON public.video_consultations USING btree (consultation_id);
+
+
+--
+-- Name: video_consultations_consultation_type_priority_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX video_consultations_consultation_type_priority_idx ON public.video_consultations USING btree (consultation_type, priority);
+
+
+--
+-- Name: video_consultations_doctor_id_scheduled_start_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX video_consultations_doctor_id_scheduled_start_idx ON public.video_consultations USING btree (doctor_id, scheduled_start);
+
+
+--
+-- Name: video_consultations_patient_id_status_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX video_consultations_patient_id_status_idx ON public.video_consultations USING btree (patient_id, status);
+
+
+--
+-- Name: video_consultations_room_id_key; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX video_consultations_room_id_key ON public.video_consultations USING btree (room_id);
+
+
+--
+-- Name: video_consultations_status_scheduled_start_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX video_consultations_status_scheduled_start_idx ON public.video_consultations USING btree (status, scheduled_start);
+
+
+--
+-- Name: vital_alert_rules_alert_level_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX vital_alert_rules_alert_level_idx ON public.vital_alert_rules USING btree (alert_level);
+
+
+--
+-- Name: vital_alert_rules_vital_type_is_active_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX vital_alert_rules_vital_type_is_active_idx ON public.vital_alert_rules USING btree (vital_type, is_active);
+
+
+--
+-- Name: vital_readings_alert_level_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX vital_readings_alert_level_idx ON public.vital_readings USING btree (alert_level);
+
+
+--
+-- Name: vital_readings_blood_pressure_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX vital_readings_blood_pressure_idx ON public.vital_readings USING btree (systolic_value, diastolic_value);
+
+
+--
+-- Name: vital_readings_is_flagged; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX vital_readings_is_flagged ON public.vital_readings USING btree (is_flagged);
 
 
 --
--- Name: vital_readings_is_validated; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: vital_readings_is_validated; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX vital_readings_is_validated ON public.vital_readings USING btree (is_validated);
 
 
 --
--- Name: vital_readings_patient_id; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: vital_readings_patient_id; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX vital_readings_patient_id ON public.vital_readings USING btree (patient_id);
 
 
 --
--- Name: vital_readings_patient_id_vital_type_id_reading_time; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: vital_readings_patient_id_vital_type_id_reading_time; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX vital_readings_patient_id_vital_type_id_reading_time ON public.vital_readings USING btree (patient_id, vital_type_id, reading_time);
 
 
 --
--- Name: vital_readings_reading_time; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: vital_readings_reading_time; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX vital_readings_reading_time ON public.vital_readings USING btree (reading_time);
 
 
 --
--- Name: vital_readings_vital_type_id; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: vital_readings_vital_type_id; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX vital_readings_vital_type_id ON public.vital_readings USING btree (vital_type_id);
 
 
 --
--- Name: vital_requirements_care_plan_id; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: vital_requirements_care_plan_id; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX vital_requirements_care_plan_id ON public.vital_requirements USING btree (care_plan_id);
 
 
 --
--- Name: vital_requirements_care_plan_id_vital_type_id; Type: INDEX; Schema: public; Owner: healthapp_user
---
-
-CREATE UNIQUE INDEX vital_requirements_care_plan_id_vital_type_id ON public.vital_requirements USING btree (care_plan_id, vital_type_id) WHERE (deleted_at IS NULL);
-
-
---
--- Name: vital_requirements_frequency; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: vital_requirements_frequency; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX vital_requirements_frequency ON public.vital_requirements USING btree (frequency);
 
 
 --
--- Name: vital_requirements_is_critical; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: vital_requirements_is_critical; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX vital_requirements_is_critical ON public.vital_requirements USING btree (is_critical);
 
 
 --
--- Name: vital_requirements_vital_type_id; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: vital_requirements_vital_type_id; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX vital_requirements_vital_type_id ON public.vital_requirements USING btree (vital_type_id);
 
 
 --
--- Name: vital_types_name; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: vital_types_name; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE UNIQUE INDEX vital_types_name ON public.vital_types USING btree (name);
 
 
 --
--- Name: vital_types_unit; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: vital_types_unit; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX vital_types_unit ON public.vital_types USING btree (unit);
 
 
 --
--- Name: vitals_care_plan_id; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: vitals_care_plan_id; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX vitals_care_plan_id ON public.vitals USING btree (care_plan_id);
 
 
 --
--- Name: vitals_vital_template_id; Type: INDEX; Schema: public; Owner: healthapp_user
+-- Name: vitals_vital_template_id; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX vitals_vital_template_id ON public.vitals USING btree (vital_template_id);
 
 
 --
--- Name: appointments update_appointments_updated_at; Type: TRIGGER; Schema: public; Owner: healthapp_user
---
-
-CREATE TRIGGER update_appointments_updated_at BEFORE UPDATE ON public.appointments FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
-
-
---
--- Name: care_plans update_care_plans_updated_at; Type: TRIGGER; Schema: public; Owner: healthapp_user
---
-
-CREATE TRIGGER update_care_plans_updated_at BEFORE UPDATE ON public.care_plans FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
-
-
---
--- Name: healthcare_providers update_healthcare_providers_updated_at; Type: TRIGGER; Schema: public; Owner: healthapp_user
---
-
-CREATE TRIGGER update_healthcare_providers_updated_at BEFORE UPDATE ON public.healthcare_providers FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
-
-
---
--- Name: medications update_medications_updated_at; Type: TRIGGER; Schema: public; Owner: healthapp_user
---
-
-CREATE TRIGGER update_medications_updated_at BEFORE UPDATE ON public.medications FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
-
-
---
--- Name: notifications update_notifications_updated_at; Type: TRIGGER; Schema: public; Owner: healthapp_user
---
-
-CREATE TRIGGER update_notifications_updated_at BEFORE UPDATE ON public.notifications FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
-
-
---
--- Name: patients update_patients_updated_at; Type: TRIGGER; Schema: public; Owner: healthapp_user
---
-
-CREATE TRIGGER update_patients_updated_at BEFORE UPDATE ON public.patients FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
-
-
---
--- Name: scheduled_events update_scheduled_events_updated_at; Type: TRIGGER; Schema: public; Owner: healthapp_user
---
-
-CREATE TRIGGER update_scheduled_events_updated_at BEFORE UPDATE ON public.scheduled_events FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
-
-
---
--- Name: users update_users_updated_at; Type: TRIGGER; Schema: public; Owner: healthapp_user
---
-
-CREATE TRIGGER update_users_updated_at BEFORE UPDATE ON public.users FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
-
-
---
--- Name: adherence_records adherence_records_patient_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: healthapp_user
+-- Name: adherence_records adherence_records_patient_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.adherence_records
-    ADD CONSTRAINT adherence_records_patient_id_fkey FOREIGN KEY (patient_id) REFERENCES public.patients(id) ON UPDATE CASCADE ON DELETE CASCADE;
+    ADD CONSTRAINT adherence_records_patient_id_fkey FOREIGN KEY (patient_id) REFERENCES public.patients(id);
 
 
 --
--- Name: adherence_records adherence_records_scheduled_event_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: healthapp_user
+-- Name: adherence_records adherence_records_scheduled_event_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.adherence_records
-    ADD CONSTRAINT adherence_records_scheduled_event_id_fkey FOREIGN KEY (scheduled_event_id) REFERENCES public.scheduled_events(id) ON UPDATE CASCADE ON DELETE SET NULL;
+    ADD CONSTRAINT adherence_records_scheduled_event_id_fkey FOREIGN KEY (scheduled_event_id) REFERENCES public.scheduled_events(id);
 
 
 --
--- Name: appointment_slots appointment_slots_doctor_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: healthapp_user
+-- Name: appointment_slots appointment_slots_doctor_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.appointment_slots
@@ -5108,7 +4938,7 @@ ALTER TABLE ONLY public.appointment_slots
 
 
 --
--- Name: appointments appointments_doctor_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: healthapp_user
+-- Name: appointments appointments_doctor_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.appointments
@@ -5116,15 +4946,7 @@ ALTER TABLE ONLY public.appointments
 
 
 --
--- Name: appointments appointments_hsp_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: healthapp_user
---
-
-ALTER TABLE ONLY public.appointments
-    ADD CONSTRAINT appointments_hsp_id_fkey FOREIGN KEY (hsp_id) REFERENCES public.hsps(id) ON UPDATE CASCADE ON DELETE SET NULL;
-
-
---
--- Name: appointments appointments_patient_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: healthapp_user
+-- Name: appointments appointments_patient_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.appointments
@@ -5132,15 +4954,15 @@ ALTER TABLE ONLY public.appointments
 
 
 --
--- Name: appointments appointments_provider_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: healthapp_user
+-- Name: appointments appointments_provider_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.appointments
-    ADD CONSTRAINT appointments_provider_id_fkey FOREIGN KEY (provider_id) REFERENCES public.users(id) ON UPDATE CASCADE ON DELETE SET NULL;
+    ADD CONSTRAINT appointments_provider_id_fkey FOREIGN KEY (provider_id) REFERENCES public.users(id);
 
 
 --
--- Name: appointments appointments_slot_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: healthapp_user
+-- Name: appointments appointments_slot_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.appointments
@@ -5148,7 +4970,7 @@ ALTER TABLE ONLY public.appointments
 
 
 --
--- Name: audit_logs audit_logs_organization_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: healthapp_user
+-- Name: audit_logs audit_logs_organization_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.audit_logs
@@ -5156,7 +4978,7 @@ ALTER TABLE ONLY public.audit_logs
 
 
 --
--- Name: audit_logs audit_logs_patient_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: healthapp_user
+-- Name: audit_logs audit_logs_patient_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.audit_logs
@@ -5164,7 +4986,7 @@ ALTER TABLE ONLY public.audit_logs
 
 
 --
--- Name: audit_logs audit_logs_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: healthapp_user
+-- Name: audit_logs audit_logs_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.audit_logs
@@ -5172,7 +4994,7 @@ ALTER TABLE ONLY public.audit_logs
 
 
 --
--- Name: care_plan_templates care_plan_templates_approved_by_fkey; Type: FK CONSTRAINT; Schema: public; Owner: healthapp_user
+-- Name: care_plan_templates care_plan_templates_approved_by_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.care_plan_templates
@@ -5180,7 +5002,7 @@ ALTER TABLE ONLY public.care_plan_templates
 
 
 --
--- Name: care_plan_templates care_plan_templates_created_by_fkey; Type: FK CONSTRAINT; Schema: public; Owner: healthapp_user
+-- Name: care_plan_templates care_plan_templates_created_by_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.care_plan_templates
@@ -5188,7 +5010,7 @@ ALTER TABLE ONLY public.care_plan_templates
 
 
 --
--- Name: care_plan_templates care_plan_templates_organization_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: healthapp_user
+-- Name: care_plan_templates care_plan_templates_organization_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.care_plan_templates
@@ -5196,7 +5018,7 @@ ALTER TABLE ONLY public.care_plan_templates
 
 
 --
--- Name: care_plan_templates care_plan_templates_parent_template_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: healthapp_user
+-- Name: care_plan_templates care_plan_templates_parent_template_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.care_plan_templates
@@ -5204,7 +5026,7 @@ ALTER TABLE ONLY public.care_plan_templates
 
 
 --
--- Name: care_plans care_plans_created_by_doctor_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: healthapp_user
+-- Name: care_plans care_plans_created_by_doctor_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.care_plans
@@ -5212,31 +5034,23 @@ ALTER TABLE ONLY public.care_plans
 
 
 --
--- Name: care_plans care_plans_created_by_hsp_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: healthapp_user
+-- Name: care_plans care_plans_created_by_hsp_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.care_plans
-    ADD CONSTRAINT care_plans_created_by_hsp_id_fkey FOREIGN KEY (created_by_hsp_id) REFERENCES public.hsps(id) ON UPDATE CASCADE ON DELETE SET NULL;
+    ADD CONSTRAINT care_plans_created_by_hsp_id_fkey FOREIGN KEY (created_by_hsp_id) REFERENCES public.hsps(id);
 
 
 --
--- Name: care_plans care_plans_doctor_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: healthapp_user
---
-
-ALTER TABLE ONLY public.care_plans
-    ADD CONSTRAINT care_plans_doctor_id_fkey FOREIGN KEY (doctor_id) REFERENCES public.doctors(id) ON UPDATE CASCADE ON DELETE SET NULL;
-
-
---
--- Name: care_plans care_plans_organization_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: healthapp_user
+-- Name: care_plans care_plans_organization_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.care_plans
-    ADD CONSTRAINT care_plans_organization_id_fkey FOREIGN KEY (organization_id) REFERENCES public.organizations(id) ON UPDATE CASCADE ON DELETE SET NULL;
+    ADD CONSTRAINT care_plans_organization_id_fkey FOREIGN KEY (organization_id) REFERENCES public.organizations(id);
 
 
 --
--- Name: care_plans care_plans_patient_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: healthapp_user
+-- Name: care_plans care_plans_patient_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.care_plans
@@ -5244,15 +5058,7 @@ ALTER TABLE ONLY public.care_plans
 
 
 --
--- Name: care_plans care_plans_provider_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: healthapp_user
---
-
-ALTER TABLE ONLY public.care_plans
-    ADD CONSTRAINT care_plans_provider_id_fkey FOREIGN KEY (provider_id) REFERENCES public.healthcare_providers(id) ON UPDATE CASCADE ON DELETE SET NULL;
-
-
---
--- Name: clinics clinics_doctor_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: healthapp_user
+-- Name: clinics clinics_doctor_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.clinics
@@ -5260,15 +5066,39 @@ ALTER TABLE ONLY public.clinics
 
 
 --
--- Name: clinics clinics_organization_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: healthapp_user
+-- Name: clinics clinics_organization_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.clinics
-    ADD CONSTRAINT clinics_organization_id_fkey FOREIGN KEY (organization_id) REFERENCES public.organizations(id) ON UPDATE CASCADE ON DELETE SET NULL;
+    ADD CONSTRAINT clinics_organization_id_fkey FOREIGN KEY (organization_id) REFERENCES public.organizations(id);
 
 
 --
--- Name: doctor_availability doctor_availability_doctor_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: healthapp_user
+-- Name: consultation_notes consultation_notes_consultation_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.consultation_notes
+    ADD CONSTRAINT consultation_notes_consultation_id_fkey FOREIGN KEY (consultation_id) REFERENCES public.video_consultations(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- Name: consultation_notes consultation_notes_created_by_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.consultation_notes
+    ADD CONSTRAINT consultation_notes_created_by_fkey FOREIGN KEY (created_by) REFERENCES public.users(id) ON UPDATE CASCADE ON DELETE RESTRICT;
+
+
+--
+-- Name: consultation_prescriptions consultation_prescriptions_consultation_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.consultation_prescriptions
+    ADD CONSTRAINT consultation_prescriptions_consultation_id_fkey FOREIGN KEY (consultation_id) REFERENCES public.video_consultations(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- Name: doctor_availability doctor_availability_doctor_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.doctor_availability
@@ -5276,7 +5106,7 @@ ALTER TABLE ONLY public.doctor_availability
 
 
 --
--- Name: doctors doctors_organization_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: healthapp_user
+-- Name: doctors doctors_organization_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.doctors
@@ -5284,7 +5114,7 @@ ALTER TABLE ONLY public.doctors
 
 
 --
--- Name: doctors doctors_speciality_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: healthapp_user
+-- Name: doctors doctors_speciality_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.doctors
@@ -5292,7 +5122,7 @@ ALTER TABLE ONLY public.doctors
 
 
 --
--- Name: doctors doctors_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: healthapp_user
+-- Name: doctors doctors_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.doctors
@@ -5300,79 +5130,239 @@ ALTER TABLE ONLY public.doctors
 
 
 --
--- Name: doctors doctors_verified_by_fkey; Type: FK CONSTRAINT; Schema: public; Owner: healthapp_user
+-- Name: doctors doctors_verified_by_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.doctors
-    ADD CONSTRAINT doctors_verified_by_fkey FOREIGN KEY (verified_by) REFERENCES public.users(id) ON UPDATE CASCADE ON DELETE SET NULL;
+    ADD CONSTRAINT doctors_verified_by_fkey FOREIGN KEY (verified_by) REFERENCES public.users(id);
 
 
 --
--- Name: healthcare_providers healthcare_providers_organization_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: healthapp_user
+-- Name: emergency_alerts emergency_alerts_acknowledged_by_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.emergency_alerts
+    ADD CONSTRAINT emergency_alerts_acknowledged_by_fkey FOREIGN KEY (acknowledged_by) REFERENCES public.users(id) ON UPDATE CASCADE ON DELETE SET NULL;
+
+
+--
+-- Name: emergency_alerts emergency_alerts_patient_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.emergency_alerts
+    ADD CONSTRAINT emergency_alerts_patient_id_fkey FOREIGN KEY (patient_id) REFERENCES public.patients(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- Name: emergency_alerts emergency_alerts_resolved_by_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.emergency_alerts
+    ADD CONSTRAINT emergency_alerts_resolved_by_fkey FOREIGN KEY (resolved_by) REFERENCES public.users(id) ON UPDATE CASCADE ON DELETE SET NULL;
+
+
+--
+-- Name: emergency_alerts emergency_alerts_vital_reading_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.emergency_alerts
+    ADD CONSTRAINT emergency_alerts_vital_reading_id_fkey FOREIGN KEY (vital_reading_id) REFERENCES public.vital_readings(id) ON UPDATE CASCADE ON DELETE SET NULL;
+
+
+--
+-- Name: emergency_contacts emergency_contacts_patient_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.emergency_contacts
+    ADD CONSTRAINT emergency_contacts_patient_id_fkey FOREIGN KEY (patient_id) REFERENCES public.patients(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- Name: game_badge_awards game_badge_awards_patient_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.game_badge_awards
+    ADD CONSTRAINT game_badge_awards_patient_id_fkey FOREIGN KEY (patient_id) REFERENCES public.patient_game_profiles(patient_id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- Name: game_challenge_progress game_challenge_progress_patient_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.game_challenge_progress
+    ADD CONSTRAINT game_challenge_progress_patient_id_fkey FOREIGN KEY (patient_id) REFERENCES public.patient_game_profiles(patient_id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- Name: healthcare_providers healthcare_providers_organization_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.healthcare_providers
-    ADD CONSTRAINT healthcare_providers_organization_id_fkey FOREIGN KEY (organization_id) REFERENCES public.organizations(id) ON UPDATE CASCADE ON DELETE SET NULL;
+    ADD CONSTRAINT healthcare_providers_organization_id_fkey FOREIGN KEY (organization_id) REFERENCES public.organizations(id);
 
 
 --
--- Name: healthcare_providers healthcare_providers_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: healthapp_user
---
-
-ALTER TABLE ONLY public.healthcare_providers
-    ADD CONSTRAINT healthcare_providers_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON UPDATE CASCADE ON DELETE CASCADE;
-
-
---
--- Name: healthcare_providers healthcare_providers_verified_by_fkey; Type: FK CONSTRAINT; Schema: public; Owner: healthapp_user
+-- Name: healthcare_providers healthcare_providers_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.healthcare_providers
-    ADD CONSTRAINT healthcare_providers_verified_by_fkey FOREIGN KEY (verified_by) REFERENCES public.users(id) ON UPDATE CASCADE ON DELETE SET NULL;
+    ADD CONSTRAINT healthcare_providers_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
 
 
 --
--- Name: hsps hsps_organization_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: healthapp_user
+-- Name: healthcare_providers healthcare_providers_verified_by_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY public.hsps
-    ADD CONSTRAINT hsps_organization_id_fkey FOREIGN KEY (organization_id) REFERENCES public.organizations(id) ON UPDATE CASCADE ON DELETE SET NULL;
-
-
---
--- Name: hsps hsps_supervising_doctor_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: healthapp_user
---
-
-ALTER TABLE ONLY public.hsps
-    ADD CONSTRAINT hsps_supervising_doctor_id_fkey FOREIGN KEY (supervising_doctor_id) REFERENCES public.doctors(id) ON UPDATE CASCADE ON DELETE SET NULL;
+ALTER TABLE ONLY public.healthcare_providers
+    ADD CONSTRAINT healthcare_providers_verified_by_fkey FOREIGN KEY (verified_by) REFERENCES public.users(id);
 
 
 --
--- Name: hsps hsps_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: healthapp_user
+-- Name: hsps hsps_organization_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.hsps
-    ADD CONSTRAINT hsps_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON UPDATE CASCADE ON DELETE CASCADE;
+    ADD CONSTRAINT hsps_organization_id_fkey FOREIGN KEY (organization_id) REFERENCES public.organizations(id);
 
 
 --
--- Name: hsps hsps_verified_by_fkey; Type: FK CONSTRAINT; Schema: public; Owner: healthapp_user
+-- Name: hsps hsps_supervising_doctor_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.hsps
-    ADD CONSTRAINT hsps_verified_by_fkey FOREIGN KEY (verified_by) REFERENCES public.users(id) ON UPDATE CASCADE ON DELETE SET NULL;
+    ADD CONSTRAINT hsps_supervising_doctor_id_fkey FOREIGN KEY (supervising_doctor_id) REFERENCES public.doctors(id);
 
 
 --
--- Name: medications medications_medicine_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: healthapp_user
+-- Name: hsps hsps_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.hsps
+    ADD CONSTRAINT hsps_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
+
+
+--
+-- Name: hsps hsps_verified_by_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.hsps
+    ADD CONSTRAINT hsps_verified_by_fkey FOREIGN KEY (verified_by) REFERENCES public.users(id);
+
+
+--
+-- Name: lab_orders lab_orders_consultation_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.lab_orders
+    ADD CONSTRAINT lab_orders_consultation_id_fkey FOREIGN KEY (consultation_id) REFERENCES public.video_consultations(id) ON UPDATE CASCADE ON DELETE SET NULL;
+
+
+--
+-- Name: lab_orders lab_orders_doctor_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.lab_orders
+    ADD CONSTRAINT lab_orders_doctor_id_fkey FOREIGN KEY (doctor_id) REFERENCES public.doctors(id) ON UPDATE CASCADE ON DELETE RESTRICT;
+
+
+--
+-- Name: lab_orders lab_orders_patient_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.lab_orders
+    ADD CONSTRAINT lab_orders_patient_id_fkey FOREIGN KEY (patient_id) REFERENCES public.patients(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- Name: lab_results lab_results_lab_order_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.lab_results
+    ADD CONSTRAINT lab_results_lab_order_id_fkey FOREIGN KEY (lab_order_id) REFERENCES public.lab_orders(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- Name: medication_logs medication_logs_medication_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.medication_logs
+    ADD CONSTRAINT medication_logs_medication_id_fkey FOREIGN KEY (medication_id) REFERENCES public.medications(id) ON UPDATE CASCADE;
+
+
+--
+-- Name: medication_logs medication_logs_patient_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.medication_logs
+    ADD CONSTRAINT medication_logs_patient_id_fkey FOREIGN KEY (patient_id) REFERENCES public.patients(id) ON UPDATE CASCADE;
+
+
+--
+-- Name: medication_safety_alerts medication_safety_alerts_created_by_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.medication_safety_alerts
+    ADD CONSTRAINT medication_safety_alerts_created_by_fkey FOREIGN KEY (created_by) REFERENCES public.users(id) ON UPDATE CASCADE ON DELETE SET NULL;
+
+
+--
+-- Name: medication_safety_alerts medication_safety_alerts_drug_interaction_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.medication_safety_alerts
+    ADD CONSTRAINT medication_safety_alerts_drug_interaction_id_fkey FOREIGN KEY (drug_interaction_id) REFERENCES public.drug_interactions(id) ON UPDATE CASCADE ON DELETE SET NULL;
+
+
+--
+-- Name: medication_safety_alerts medication_safety_alerts_medication_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.medication_safety_alerts
+    ADD CONSTRAINT medication_safety_alerts_medication_id_fkey FOREIGN KEY (medication_id) REFERENCES public.medications(id) ON UPDATE CASCADE ON DELETE SET NULL;
+
+
+--
+-- Name: medication_safety_alerts medication_safety_alerts_patient_allergy_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.medication_safety_alerts
+    ADD CONSTRAINT medication_safety_alerts_patient_allergy_id_fkey FOREIGN KEY (patient_allergy_id) REFERENCES public.patient_allergies(id) ON UPDATE CASCADE ON DELETE SET NULL;
+
+
+--
+-- Name: medication_safety_alerts medication_safety_alerts_patient_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.medication_safety_alerts
+    ADD CONSTRAINT medication_safety_alerts_patient_id_fkey FOREIGN KEY (patient_id) REFERENCES public.patients(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- Name: medication_safety_alerts medication_safety_alerts_resolved_by_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.medication_safety_alerts
+    ADD CONSTRAINT medication_safety_alerts_resolved_by_fkey FOREIGN KEY (resolved_by) REFERENCES public.users(id) ON UPDATE CASCADE ON DELETE SET NULL;
+
+
+--
+-- Name: medications medications_care_plan_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.medications
-    ADD CONSTRAINT medications_medicine_id_fkey FOREIGN KEY (medicine_id) REFERENCES public.medicines(id) ON UPDATE CASCADE ON DELETE CASCADE;
+    ADD CONSTRAINT medications_care_plan_id_fkey FOREIGN KEY (care_plan_id) REFERENCES public.care_plans(id) ON UPDATE CASCADE ON DELETE SET NULL;
 
 
 --
--- Name: notifications notifications_doctor_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: healthapp_user
+-- Name: medications medications_medicine_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.medications
+    ADD CONSTRAINT medications_medicine_id_fkey FOREIGN KEY (medicine_id) REFERENCES public.medicines(id) ON UPDATE CASCADE;
+
+
+--
+-- Name: notifications notifications_doctor_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.notifications
@@ -5380,7 +5370,7 @@ ALTER TABLE ONLY public.notifications
 
 
 --
--- Name: notifications notifications_hsp_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: healthapp_user
+-- Name: notifications notifications_hsp_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.notifications
@@ -5388,7 +5378,7 @@ ALTER TABLE ONLY public.notifications
 
 
 --
--- Name: notifications notifications_organization_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: healthapp_user
+-- Name: notifications notifications_organization_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.notifications
@@ -5396,7 +5386,7 @@ ALTER TABLE ONLY public.notifications
 
 
 --
--- Name: notifications notifications_patient_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: healthapp_user
+-- Name: notifications notifications_patient_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.notifications
@@ -5404,7 +5394,7 @@ ALTER TABLE ONLY public.notifications
 
 
 --
--- Name: notifications notifications_recipient_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: healthapp_user
+-- Name: notifications notifications_recipient_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.notifications
@@ -5412,7 +5402,7 @@ ALTER TABLE ONLY public.notifications
 
 
 --
--- Name: notifications notifications_related_appointment_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: healthapp_user
+-- Name: notifications notifications_related_appointment_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.notifications
@@ -5420,7 +5410,7 @@ ALTER TABLE ONLY public.notifications
 
 
 --
--- Name: notifications notifications_related_care_plan_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: healthapp_user
+-- Name: notifications notifications_related_care_plan_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.notifications
@@ -5428,7 +5418,7 @@ ALTER TABLE ONLY public.notifications
 
 
 --
--- Name: notifications notifications_related_medication_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: healthapp_user
+-- Name: notifications notifications_related_medication_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.notifications
@@ -5436,7 +5426,7 @@ ALTER TABLE ONLY public.notifications
 
 
 --
--- Name: notifications notifications_related_treatment_plan_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: healthapp_user
+-- Name: notifications notifications_related_treatment_plan_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.notifications
@@ -5444,71 +5434,191 @@ ALTER TABLE ONLY public.notifications
 
 
 --
--- Name: patient_doctor_assignments patient_doctor_assignments_assigned_by_admin_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: healthapp_user
+-- Name: patient_alerts patient_alerts_patient_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.patient_alerts
+    ADD CONSTRAINT patient_alerts_patient_id_fkey FOREIGN KEY (patient_id) REFERENCES public.patients(id) ON UPDATE CASCADE;
+
+
+--
+-- Name: patient_allergies patient_allergies_patient_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.patient_allergies
+    ADD CONSTRAINT patient_allergies_patient_id_fkey FOREIGN KEY (patient_id) REFERENCES public.patients(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- Name: patient_allergies patient_allergies_verified_by_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.patient_allergies
+    ADD CONSTRAINT patient_allergies_verified_by_fkey FOREIGN KEY (verified_by) REFERENCES public.users(id) ON UPDATE CASCADE ON DELETE SET NULL;
+
+
+--
+-- Name: patient_consent_otp patient_consent_otp_patient_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.patient_consent_otp
+    ADD CONSTRAINT patient_consent_otp_patient_id_fkey FOREIGN KEY (patient_id) REFERENCES public.patients(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- Name: patient_consent_otp patient_consent_otp_primary_doctor_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.patient_consent_otp
+    ADD CONSTRAINT patient_consent_otp_primary_doctor_id_fkey FOREIGN KEY (primary_doctor_id) REFERENCES public.doctors(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- Name: patient_consent_otp patient_consent_otp_requested_by_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.patient_consent_otp
+    ADD CONSTRAINT patient_consent_otp_requested_by_user_id_fkey FOREIGN KEY (requested_by_user_id) REFERENCES public.users(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- Name: patient_consent_otp patient_consent_otp_secondary_assignment_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.patient_consent_otp
+    ADD CONSTRAINT patient_consent_otp_secondary_assignment_id_fkey FOREIGN KEY (secondary_assignment_id) REFERENCES public.secondary_doctor_assignments(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- Name: patient_consent_otp patient_consent_otp_secondary_doctor_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.patient_consent_otp
+    ADD CONSTRAINT patient_consent_otp_secondary_doctor_id_fkey FOREIGN KEY (secondary_doctor_id) REFERENCES public.doctors(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- Name: patient_consent_otp patient_consent_otp_secondary_hsp_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.patient_consent_otp
+    ADD CONSTRAINT patient_consent_otp_secondary_hsp_id_fkey FOREIGN KEY (secondary_hsp_id) REFERENCES public.hsps(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- Name: patient_doctor_assignments patient_doctor_assignments_assigned_by_admin_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.patient_doctor_assignments
-    ADD CONSTRAINT patient_doctor_assignments_assigned_by_admin_id_fkey FOREIGN KEY (assigned_by_admin_id) REFERENCES public.users(id) ON UPDATE CASCADE ON DELETE SET NULL;
+    ADD CONSTRAINT patient_doctor_assignments_assigned_by_admin_id_fkey FOREIGN KEY (assigned_by_admin_id) REFERENCES public.users(id);
 
 
 --
--- Name: patient_doctor_assignments patient_doctor_assignments_assigned_by_doctor_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: healthapp_user
---
-
-ALTER TABLE ONLY public.patient_doctor_assignments
-    ADD CONSTRAINT patient_doctor_assignments_assigned_by_doctor_id_fkey FOREIGN KEY (assigned_by_doctor_id) REFERENCES public.doctors(id) ON UPDATE CASCADE ON DELETE SET NULL;
-
-
---
--- Name: patient_doctor_assignments patient_doctor_assignments_doctor_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: healthapp_user
+-- Name: patient_doctor_assignments patient_doctor_assignments_assigned_by_doctor_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.patient_doctor_assignments
-    ADD CONSTRAINT patient_doctor_assignments_doctor_id_fkey FOREIGN KEY (doctor_id) REFERENCES public.doctors(id) ON UPDATE CASCADE ON DELETE CASCADE;
+    ADD CONSTRAINT patient_doctor_assignments_assigned_by_doctor_id_fkey FOREIGN KEY (assigned_by_doctor_id) REFERENCES public.doctors(id);
 
 
 --
--- Name: patient_doctor_assignments patient_doctor_assignments_patient_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: healthapp_user
+-- Name: patient_doctor_assignments patient_doctor_assignments_doctor_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.patient_doctor_assignments
-    ADD CONSTRAINT patient_doctor_assignments_patient_id_fkey FOREIGN KEY (patient_id) REFERENCES public.patients(id) ON UPDATE CASCADE ON DELETE CASCADE;
+    ADD CONSTRAINT patient_doctor_assignments_doctor_id_fkey FOREIGN KEY (doctor_id) REFERENCES public.doctors(id) ON DELETE CASCADE;
 
 
 --
--- Name: patient_provider_assignments patient_provider_assignments_assigned_by_fkey; Type: FK CONSTRAINT; Schema: public; Owner: healthapp_user
+-- Name: patient_doctor_assignments patient_doctor_assignments_patient_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.patient_doctor_assignments
+    ADD CONSTRAINT patient_doctor_assignments_patient_id_fkey FOREIGN KEY (patient_id) REFERENCES public.patients(id) ON DELETE CASCADE;
+
+
+--
+-- Name: patient_game_profiles patient_game_profiles_patient_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.patient_game_profiles
+    ADD CONSTRAINT patient_game_profiles_patient_id_fkey FOREIGN KEY (patient_id) REFERENCES public.patients(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- Name: patient_provider_assignments patient_provider_assignments_assigned_by_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.patient_provider_assignments
-    ADD CONSTRAINT patient_provider_assignments_assigned_by_fkey FOREIGN KEY (assigned_by) REFERENCES public.users(id) ON UPDATE CASCADE ON DELETE SET NULL;
+    ADD CONSTRAINT patient_provider_assignments_assigned_by_fkey FOREIGN KEY (assigned_by) REFERENCES public.users(id);
 
 
 --
--- Name: patient_provider_assignments patient_provider_assignments_patient_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: healthapp_user
---
-
-ALTER TABLE ONLY public.patient_provider_assignments
-    ADD CONSTRAINT patient_provider_assignments_patient_id_fkey FOREIGN KEY (patient_id) REFERENCES public.patients(id) ON UPDATE CASCADE ON DELETE CASCADE;
-
-
---
--- Name: patient_provider_assignments patient_provider_assignments_provider_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: healthapp_user
+-- Name: patient_provider_assignments patient_provider_assignments_patient_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.patient_provider_assignments
-    ADD CONSTRAINT patient_provider_assignments_provider_id_fkey FOREIGN KEY (provider_id) REFERENCES public.healthcare_providers(id) ON UPDATE CASCADE ON DELETE CASCADE;
+    ADD CONSTRAINT patient_provider_assignments_patient_id_fkey FOREIGN KEY (patient_id) REFERENCES public.patients(id);
 
 
 --
--- Name: patient_subscriptions patient_subscriptions_patient_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: healthapp_user
+-- Name: patient_provider_assignments patient_provider_assignments_provider_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.patient_provider_assignments
+    ADD CONSTRAINT patient_provider_assignments_provider_id_fkey FOREIGN KEY (provider_id) REFERENCES public.healthcare_providers(id);
+
+
+--
+-- Name: patient_provider_consent_history patient_provider_consent_history_doctor_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.patient_provider_consent_history
+    ADD CONSTRAINT patient_provider_consent_history_doctor_id_fkey FOREIGN KEY (doctor_id) REFERENCES public.doctors(id) ON DELETE SET NULL;
+
+
+--
+-- Name: patient_provider_consent_history patient_provider_consent_history_hsp_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.patient_provider_consent_history
+    ADD CONSTRAINT patient_provider_consent_history_hsp_id_fkey FOREIGN KEY (hsp_id) REFERENCES public.hsps(id) ON DELETE SET NULL;
+
+
+--
+-- Name: patient_provider_consent_history patient_provider_consent_history_new_provider_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.patient_provider_consent_history
+    ADD CONSTRAINT patient_provider_consent_history_new_provider_id_fkey FOREIGN KEY (new_provider_id) REFERENCES public.organizations(id) ON DELETE CASCADE;
+
+
+--
+-- Name: patient_provider_consent_history patient_provider_consent_history_patient_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.patient_provider_consent_history
+    ADD CONSTRAINT patient_provider_consent_history_patient_id_fkey FOREIGN KEY (patient_id) REFERENCES public.patients(id) ON DELETE CASCADE;
+
+
+--
+-- Name: patient_provider_consent_history patient_provider_consent_history_previous_provider_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.patient_provider_consent_history
+    ADD CONSTRAINT patient_provider_consent_history_previous_provider_id_fkey FOREIGN KEY (previous_provider_id) REFERENCES public.organizations(id) ON DELETE SET NULL;
+
+
+--
+-- Name: patient_subscriptions patient_subscriptions_patient_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.patient_subscriptions
-    ADD CONSTRAINT patient_subscriptions_patient_id_fkey FOREIGN KEY (patient_id) REFERENCES public.patients(id);
+    ADD CONSTRAINT patient_subscriptions_patient_id_fkey FOREIGN KEY (patient_id) REFERENCES public.patients(id) ON UPDATE CASCADE ON DELETE CASCADE;
 
 
 --
--- Name: patient_subscriptions patient_subscriptions_provider_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: healthapp_user
+-- Name: patient_subscriptions patient_subscriptions_provider_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.patient_subscriptions
@@ -5516,7 +5626,7 @@ ALTER TABLE ONLY public.patient_subscriptions
 
 
 --
--- Name: patient_subscriptions patient_subscriptions_service_plan_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: healthapp_user
+-- Name: patient_subscriptions patient_subscriptions_service_plan_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.patient_subscriptions
@@ -5524,7 +5634,15 @@ ALTER TABLE ONLY public.patient_subscriptions
 
 
 --
--- Name: patients patients_organization_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: healthapp_user
+-- Name: patients patients_linked_provider_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.patients
+    ADD CONSTRAINT patients_linked_provider_id_fkey FOREIGN KEY (linked_provider_id) REFERENCES public.organizations(id) ON UPDATE CASCADE ON DELETE SET NULL;
+
+
+--
+-- Name: patients patients_organization_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.patients
@@ -5532,7 +5650,7 @@ ALTER TABLE ONLY public.patients
 
 
 --
--- Name: patients patients_primary_care_doctor_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: healthapp_user
+-- Name: patients patients_primary_care_doctor_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.patients
@@ -5540,15 +5658,15 @@ ALTER TABLE ONLY public.patients
 
 
 --
--- Name: patients patients_primary_care_hsp_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: healthapp_user
+-- Name: patients patients_primary_care_hsp_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.patients
-    ADD CONSTRAINT patients_primary_care_hsp_id_fkey FOREIGN KEY (primary_care_hsp_id) REFERENCES public.hsps(id) ON UPDATE CASCADE ON DELETE SET NULL;
+    ADD CONSTRAINT patients_primary_care_hsp_id_fkey FOREIGN KEY (primary_care_hsp_id) REFERENCES public.hsps(id);
 
 
 --
--- Name: patients patients_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: healthapp_user
+-- Name: patients patients_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.patients
@@ -5556,7 +5674,7 @@ ALTER TABLE ONLY public.patients
 
 
 --
--- Name: payment_methods payment_methods_patient_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: healthapp_user
+-- Name: payment_methods payment_methods_patient_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.payment_methods
@@ -5564,7 +5682,7 @@ ALTER TABLE ONLY public.payment_methods
 
 
 --
--- Name: payments payments_patient_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: healthapp_user
+-- Name: payments payments_patient_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.payments
@@ -5572,7 +5690,7 @@ ALTER TABLE ONLY public.payments
 
 
 --
--- Name: payments payments_provider_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: healthapp_user
+-- Name: payments payments_provider_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.payments
@@ -5580,7 +5698,7 @@ ALTER TABLE ONLY public.payments
 
 
 --
--- Name: payments payments_subscription_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: healthapp_user
+-- Name: payments payments_subscription_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.payments
@@ -5588,79 +5706,143 @@ ALTER TABLE ONLY public.payments
 
 
 --
--- Name: providers providers_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: healthapp_user
+-- Name: provider_change_history provider_change_history_new_provider_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.provider_change_history
+    ADD CONSTRAINT provider_change_history_new_provider_id_fkey FOREIGN KEY (new_provider_id) REFERENCES public.organizations(id) ON DELETE CASCADE;
+
+
+--
+-- Name: provider_change_history provider_change_history_previous_provider_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.provider_change_history
+    ADD CONSTRAINT provider_change_history_previous_provider_id_fkey FOREIGN KEY (previous_provider_id) REFERENCES public.organizations(id) ON DELETE SET NULL;
+
+
+--
+-- Name: providers providers_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.providers
-    ADD CONSTRAINT providers_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON UPDATE CASCADE ON DELETE CASCADE;
+    ADD CONSTRAINT providers_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id);
 
 
 --
--- Name: scheduled_events scheduled_events_care_plan_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: healthapp_user
---
-
-ALTER TABLE ONLY public.scheduled_events
-    ADD CONSTRAINT scheduled_events_care_plan_id_fkey FOREIGN KEY (care_plan_id) REFERENCES public.care_plans(id) ON UPDATE CASCADE ON DELETE SET NULL;
-
-
---
--- Name: scheduled_events scheduled_events_completed_by_fkey; Type: FK CONSTRAINT; Schema: public; Owner: healthapp_user
+-- Name: scheduled_events scheduled_events_care_plan_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.scheduled_events
-    ADD CONSTRAINT scheduled_events_completed_by_fkey FOREIGN KEY (completed_by) REFERENCES public.users(id) ON UPDATE CASCADE ON DELETE SET NULL;
+    ADD CONSTRAINT scheduled_events_care_plan_id_fkey FOREIGN KEY (care_plan_id) REFERENCES public.care_plans(id);
 
 
 --
--- Name: scheduled_events scheduled_events_patient_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: healthapp_user
+-- Name: scheduled_events scheduled_events_completed_by_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.scheduled_events
-    ADD CONSTRAINT scheduled_events_patient_id_fkey FOREIGN KEY (patient_id) REFERENCES public.patients(id) ON UPDATE CASCADE ON DELETE CASCADE;
+    ADD CONSTRAINT scheduled_events_completed_by_fkey FOREIGN KEY (completed_by) REFERENCES public.users(id);
 
 
 --
--- Name: service_plans service_plans_provider_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: healthapp_user
+-- Name: scheduled_events scheduled_events_patient_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.scheduled_events
+    ADD CONSTRAINT scheduled_events_patient_id_fkey FOREIGN KEY (patient_id) REFERENCES public.patients(id);
+
+
+--
+-- Name: secondary_doctor_assignments secondary_doctor_assignments_patient_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.secondary_doctor_assignments
+    ADD CONSTRAINT secondary_doctor_assignments_patient_id_fkey FOREIGN KEY (patient_id) REFERENCES public.patients(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- Name: secondary_doctor_assignments secondary_doctor_assignments_primary_doctor_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.secondary_doctor_assignments
+    ADD CONSTRAINT secondary_doctor_assignments_primary_doctor_id_fkey FOREIGN KEY (primary_doctor_id) REFERENCES public.doctors(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- Name: secondary_doctor_assignments secondary_doctor_assignments_primary_doctor_provider_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.secondary_doctor_assignments
+    ADD CONSTRAINT secondary_doctor_assignments_primary_doctor_provider_id_fkey FOREIGN KEY (primary_doctor_provider_id) REFERENCES public.organizations(id) ON UPDATE CASCADE ON DELETE SET NULL;
+
+
+--
+-- Name: secondary_doctor_assignments secondary_doctor_assignments_secondary_doctor_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.secondary_doctor_assignments
+    ADD CONSTRAINT secondary_doctor_assignments_secondary_doctor_id_fkey FOREIGN KEY (secondary_doctor_id) REFERENCES public.doctors(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- Name: secondary_doctor_assignments secondary_doctor_assignments_secondary_doctor_provider_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.secondary_doctor_assignments
+    ADD CONSTRAINT secondary_doctor_assignments_secondary_doctor_provider_id_fkey FOREIGN KEY (secondary_doctor_provider_id) REFERENCES public.organizations(id) ON UPDATE CASCADE ON DELETE SET NULL;
+
+
+--
+-- Name: secondary_doctor_assignments secondary_doctor_assignments_secondary_hsp_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.secondary_doctor_assignments
+    ADD CONSTRAINT secondary_doctor_assignments_secondary_hsp_id_fkey FOREIGN KEY (secondary_hsp_id) REFERENCES public.hsps(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- Name: service_plans service_plans_provider_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.service_plans
-    ADD CONSTRAINT service_plans_provider_id_fkey FOREIGN KEY (provider_id) REFERENCES public.healthcare_providers(id);
+    ADD CONSTRAINT service_plans_provider_id_fkey FOREIGN KEY (provider_id) REFERENCES public.healthcare_providers(id) ON UPDATE CASCADE ON DELETE CASCADE;
 
 
 --
--- Name: symptoms symptoms_care_plan_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: healthapp_user
---
-
-ALTER TABLE ONLY public.symptoms
-    ADD CONSTRAINT symptoms_care_plan_id_fkey FOREIGN KEY (care_plan_id) REFERENCES public.care_plans(id) ON UPDATE CASCADE ON DELETE SET NULL;
-
-
---
--- Name: symptoms symptoms_patient_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: healthapp_user
+-- Name: symptoms symptoms_care_plan_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.symptoms
-    ADD CONSTRAINT symptoms_patient_id_fkey FOREIGN KEY (patient_id) REFERENCES public.patients(id) ON UPDATE CASCADE ON DELETE CASCADE;
+    ADD CONSTRAINT symptoms_care_plan_id_fkey FOREIGN KEY (care_plan_id) REFERENCES public.care_plans(id);
 
 
 --
--- Name: treatment_plans treatment_plans_doctor_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: healthapp_user
+-- Name: symptoms symptoms_patient_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.symptoms
+    ADD CONSTRAINT symptoms_patient_id_fkey FOREIGN KEY (patient_id) REFERENCES public.patients(id);
+
+
+--
+-- Name: treatment_plans treatment_plans_doctor_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.treatment_plans
-    ADD CONSTRAINT treatment_plans_doctor_id_fkey FOREIGN KEY (doctor_id) REFERENCES public.doctors(id) ON UPDATE CASCADE ON DELETE CASCADE;
+    ADD CONSTRAINT treatment_plans_doctor_id_fkey FOREIGN KEY (doctor_id) REFERENCES public.doctors(id) ON UPDATE CASCADE;
 
 
 --
--- Name: treatment_plans treatment_plans_organization_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: healthapp_user
+-- Name: treatment_plans treatment_plans_organization_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.treatment_plans
-    ADD CONSTRAINT treatment_plans_organization_id_fkey FOREIGN KEY (organization_id) REFERENCES public.organizations(id) ON UPDATE CASCADE ON DELETE SET NULL;
+    ADD CONSTRAINT treatment_plans_organization_id_fkey FOREIGN KEY (organization_id) REFERENCES public.organizations(id);
 
 
 --
--- Name: treatment_plans treatment_plans_patient_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: healthapp_user
+-- Name: treatment_plans treatment_plans_patient_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.treatment_plans
@@ -5668,93 +5850,126 @@ ALTER TABLE ONLY public.treatment_plans
 
 
 --
--- Name: user_devices user_devices_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: healthapp_user
+-- Name: user_devices user_devices_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.user_devices
-    ADD CONSTRAINT user_devices_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON UPDATE CASCADE ON DELETE CASCADE;
+    ADD CONSTRAINT user_devices_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id);
 
 
 --
--- Name: user_roles user_roles_user_identity_fkey; Type: FK CONSTRAINT; Schema: public; Owner: healthapp_user
+-- Name: user_roles user_roles_user_identity_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.user_roles
-    ADD CONSTRAINT user_roles_user_identity_fkey FOREIGN KEY (user_identity) REFERENCES public.users(id) ON UPDATE CASCADE ON DELETE CASCADE;
+    ADD CONSTRAINT user_roles_user_identity_fkey FOREIGN KEY (user_identity) REFERENCES public.users(id);
 
 
 --
--- Name: users users_organization_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: healthapp_user
+-- Name: video_consultations video_consultations_appointment_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY public.users
-    ADD CONSTRAINT users_organization_id_fkey FOREIGN KEY (organization_id) REFERENCES public.organizations(id) ON UPDATE CASCADE ON DELETE SET NULL;
+ALTER TABLE ONLY public.video_consultations
+    ADD CONSTRAINT video_consultations_appointment_id_fkey FOREIGN KEY (appointment_id) REFERENCES public.appointments(id) ON UPDATE CASCADE ON DELETE SET NULL;
 
 
 --
--- Name: vital_readings vital_readings_adherence_record_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: healthapp_user
+-- Name: video_consultations video_consultations_created_by_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.video_consultations
+    ADD CONSTRAINT video_consultations_created_by_fkey FOREIGN KEY (created_by) REFERENCES public.users(id) ON UPDATE CASCADE ON DELETE RESTRICT;
+
+
+--
+-- Name: video_consultations video_consultations_doctor_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.video_consultations
+    ADD CONSTRAINT video_consultations_doctor_id_fkey FOREIGN KEY (doctor_id) REFERENCES public.doctors(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- Name: video_consultations video_consultations_patient_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.video_consultations
+    ADD CONSTRAINT video_consultations_patient_id_fkey FOREIGN KEY (patient_id) REFERENCES public.patients(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- Name: vital_alert_rules vital_alert_rules_created_by_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.vital_alert_rules
+    ADD CONSTRAINT vital_alert_rules_created_by_fkey FOREIGN KEY (created_by) REFERENCES public.users(id) ON UPDATE CASCADE ON DELETE SET NULL;
+
+
+--
+-- Name: vital_readings vital_readings_adherence_record_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.vital_readings
-    ADD CONSTRAINT vital_readings_adherence_record_id_fkey FOREIGN KEY (adherence_record_id) REFERENCES public.adherence_records(id) ON UPDATE CASCADE ON DELETE SET NULL;
+    ADD CONSTRAINT vital_readings_adherence_record_id_fkey FOREIGN KEY (adherence_record_id) REFERENCES public.adherence_records(id);
 
 
 --
--- Name: vital_readings vital_readings_patient_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: healthapp_user
---
-
-ALTER TABLE ONLY public.vital_readings
-    ADD CONSTRAINT vital_readings_patient_id_fkey FOREIGN KEY (patient_id) REFERENCES public.patients(id) ON UPDATE CASCADE ON DELETE CASCADE;
-
-
---
--- Name: vital_readings vital_readings_validated_by_fkey; Type: FK CONSTRAINT; Schema: public; Owner: healthapp_user
+-- Name: vital_readings vital_readings_patient_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.vital_readings
-    ADD CONSTRAINT vital_readings_validated_by_fkey FOREIGN KEY (validated_by) REFERENCES public.healthcare_providers(id) ON UPDATE CASCADE ON DELETE SET NULL;
+    ADD CONSTRAINT vital_readings_patient_id_fkey FOREIGN KEY (patient_id) REFERENCES public.patients(id) ON UPDATE CASCADE;
 
 
 --
--- Name: vital_readings vital_readings_vital_type_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: healthapp_user
+-- Name: vital_readings vital_readings_validated_by_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.vital_readings
-    ADD CONSTRAINT vital_readings_vital_type_id_fkey FOREIGN KEY (vital_type_id) REFERENCES public.vital_types(id) ON UPDATE CASCADE ON DELETE CASCADE;
+    ADD CONSTRAINT vital_readings_validated_by_fkey FOREIGN KEY (validated_by) REFERENCES public.healthcare_providers(id);
 
 
 --
--- Name: vital_requirements vital_requirements_care_plan_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: healthapp_user
+-- Name: vital_readings vital_readings_vital_type_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.vital_readings
+    ADD CONSTRAINT vital_readings_vital_type_id_fkey FOREIGN KEY (vital_type_id) REFERENCES public.vital_types(id);
+
+
+--
+-- Name: vital_requirements vital_requirements_care_plan_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.vital_requirements
-    ADD CONSTRAINT vital_requirements_care_plan_id_fkey FOREIGN KEY (care_plan_id) REFERENCES public.care_plans(id) ON UPDATE CASCADE ON DELETE CASCADE;
+    ADD CONSTRAINT vital_requirements_care_plan_id_fkey FOREIGN KEY (care_plan_id) REFERENCES public.care_plans(id);
 
 
 --
--- Name: vital_requirements vital_requirements_vital_type_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: healthapp_user
+-- Name: vital_requirements vital_requirements_vital_type_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.vital_requirements
-    ADD CONSTRAINT vital_requirements_vital_type_id_fkey FOREIGN KEY (vital_type_id) REFERENCES public.vital_types(id) ON UPDATE CASCADE ON DELETE CASCADE;
+    ADD CONSTRAINT vital_requirements_vital_type_id_fkey FOREIGN KEY (vital_type_id) REFERENCES public.vital_types(id);
 
 
 --
--- Name: vitals vitals_care_plan_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: healthapp_user
---
-
-ALTER TABLE ONLY public.vitals
-    ADD CONSTRAINT vitals_care_plan_id_fkey FOREIGN KEY (care_plan_id) REFERENCES public.care_plans(id) ON UPDATE CASCADE ON DELETE CASCADE;
-
-
---
--- Name: vitals vitals_vital_template_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: healthapp_user
+-- Name: vitals vitals_care_plan_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.vitals
-    ADD CONSTRAINT vitals_vital_template_id_fkey FOREIGN KEY (vital_template_id) REFERENCES public.vital_templates(id) ON UPDATE CASCADE ON DELETE CASCADE;
+    ADD CONSTRAINT vitals_care_plan_id_fkey FOREIGN KEY (care_plan_id) REFERENCES public.care_plans(id) ON UPDATE CASCADE;
+
+
+--
+-- Name: vitals vitals_vital_template_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.vitals
+    ADD CONSTRAINT vitals_vital_template_id_fkey FOREIGN KEY (vital_template_id) REFERENCES public.vital_templates(id) ON UPDATE CASCADE;
 
 
 --
 -- PostgreSQL database dump complete
 --
+

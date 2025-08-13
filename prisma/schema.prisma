@@ -98,6 +98,21 @@ model User {
   scheduled_events                                             scheduled_events[]
   user_devices                                                 UserDevice[]
   user_roles                                                   user_roles[]
+  
+  // Medical Safety Relationships
+  verified_patient_allergies                                   PatientAllergy[]
+  resolved_medication_alerts                                   MedicationSafetyAlert[]
+  created_medication_alerts                                    MedicationSafetyAlert[] @relation("SafetyAlertCreatedBy")
+  acknowledged_emergency_alerts                                EmergencyAlert[] @relation("EmergencyAlertAcknowledged")
+  resolved_emergency_alerts                                    EmergencyAlert[] @relation("EmergencyAlertResolved")
+  vital_alert_rules                                            VitalAlertRule[]
+  
+  // Phase 3: IoT Device Relationships
+  added_devices                                                ConnectedDevice[]
+  
+  // Phase 4: Telemedicine Relationships
+  created_consultations                                        VideoConsultation[] @relation("ConsultationCreatedBy")
+  consultation_notes_created                                   ConsultationNote[] @relation("ConsultationNoteCreatedBy")
 
   @@index([email, account_status], map: "idx_users_email_status")
   @@index([role, account_status], map: "idx_users_role_status")
@@ -174,6 +189,21 @@ model Patient {
   symptoms                                                 Symptom[]
   treatment_plans                                          treatment_plans[]
   vital_readings                                           VitalReading[]
+  
+  // Medical Safety Relationships
+  patient_allergies                                        PatientAllergy[]
+  medication_safety_alerts                                 MedicationSafetyAlert[]
+  emergency_alerts                                         EmergencyAlert[]
+  emergency_contacts_new                                   EmergencyContact[]
+  
+  // Phase 3: IoT Device Relationships
+  connected_devices                                        ConnectedDevice[]
+  device_readings                                          DeviceReading[]
+  
+  // Phase 4: Telemedicine Relationships
+  video_consultations                                      VideoConsultation[]
+  lab_orders                                               LabOrder[]
+  game_profile                                             PatientGameProfile?
 
   @@index([primary_care_doctor_id, created_at, is_active], map: "idx_patients_doctor_created_active")
   @@index([patient_id, created_at], map: "idx_patients_id_created")
@@ -394,6 +424,7 @@ model Medication {
   care_plan       CarePlan?                        @relation("prescribed_medications", fields: [care_plan_id], references: [id])
   medicine        Medicine                         @relation(fields: [medicine_id], references: [id], onDelete: NoAction)
   notifications   Notification[]
+  safety_alerts   MedicationSafetyAlert[]
 
   @@index([medicine_id], map: "medications_medicine_id")
   @@index([organizer_type, organizer_id], map: "medications_organizer_type_organizer_id")
@@ -429,6 +460,9 @@ model Appointment {
   users                User?                                   @relation(fields: [provider_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   appointment_slots    appointment_slots?                      @relation(fields: [slot_id], references: [id])
   notifications        Notification[]
+  
+  // Phase 4: Telemedicine Relationships
+  video_consultations  VideoConsultation[]
 
   @@index([organizer_id, organizer_type], map: "appointments_organizer_id_organizer_type")
   @@index([participant_one_id, participant_one_type], map: "appointments_participant_one_id_participant_one_type")
@@ -508,6 +542,8 @@ model VitalReading {
   patient              Patient                          @relation(fields: [patient_id], references: [id], onDelete: NoAction)
   healthcare_providers HealthcareProvider?              @relation(fields: [validated_by], references: [id], onDelete: NoAction, onUpdate: NoAction)
   vital_type           VitalType                        @relation(fields: [vital_type_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  emergency_alerts     EmergencyAlert[]
+  device_readings      DeviceReading[]
 
   @@index([patient_id, reading_time, vital_type_id], map: "idx_vitals_patient_time_type")
   @@index([patient_id, vital_type_id, reading_time], map: "idx_vitals_patient_type_time_desc")
@@ -965,6 +1001,10 @@ model doctors {
   secondary_doctor_assignments_secondary_doctor_assignments_primary_doctor_idTodoctors   secondary_doctor_assignments[]     @relation("secondary_doctor_assignments_primary_doctor_idTodoctors")
   secondary_doctor_assignments_secondary_doctor_assignments_secondary_doctor_idTodoctors secondary_doctor_assignments[]     @relation("secondary_doctor_assignments_secondary_doctor_idTodoctors")
   treatment_plans                                                                        treatment_plans[]
+  
+  // Phase 4: Telemedicine Relationships
+  video_consultations                                                                    VideoConsultation[]
+  lab_orders                                                                             LabOrder[]
 
   @@index([board_certifications], map: "doctors_board_certifications", type: Gin)
   @@index([gender], map: "doctors_gender")
@@ -1787,4 +1827,787 @@ enum enum_vital_readings_alert_level {
   warning
   critical
   emergency
+}
+
+// ============================================================================
+// MEDICAL SAFETY & DRUG INTERACTION MODELS
+// Critical safety features for healthcare platform
+// ============================================================================
+
+model DrugInteraction {
+  id                   String   @id @default(uuid()) @db.Uuid
+  rxcui_one           String   @db.VarChar(50)  // RxNorm identifier for first drug
+  rxcui_two           String   @db.VarChar(50)  // RxNorm identifier for second drug
+  drug_name_one       String   @db.VarChar(255)
+  drug_name_two       String   @db.VarChar(255)
+  severity_level      DrugInteractionSeverity
+  interaction_type    String   @db.VarChar(100) // "pharmacokinetic", "pharmacodynamic", "duplicate"
+  description         String   @db.Text
+  clinical_effect     String   @db.Text
+  management_advice   String   @db.Text
+  evidence_level      String   @db.VarChar(10)  // "HIGH", "MODERATE", "LOW"
+  source              String   @default("RxNorm") @db.VarChar(50)
+  last_updated        DateTime @updatedAt @db.Timestamptz(6)
+  created_at          DateTime @default(now()) @db.Timestamptz(6)
+
+  medication_safety_alerts MedicationSafetyAlert[]
+
+  @@unique([rxcui_one, rxcui_two])
+  @@index([severity_level])
+  @@index([drug_name_one, drug_name_two])
+  @@map("drug_interactions")
+}
+
+model PatientAllergy {
+  id                     String                    @id @default(uuid()) @db.Uuid
+  patient_id             String                    @db.Uuid
+  allergen_type          AllergenType
+  allergen_name          String                    @db.VarChar(255)
+  allergen_rxnorm        String?                   @db.VarChar(50) // RxNorm code if medication
+  reaction_severity      AllergySeverity
+  reaction_symptoms      String?                   @db.Text
+  onset_date             DateTime?                 @db.Date
+  verified_by_doctor     Boolean                   @default(false)
+  verified_by            String?                   @db.Uuid
+  notes                  String?                   @db.Text
+  is_active              Boolean                   @default(true)
+  created_at             DateTime                  @default(now()) @db.Timestamptz(6)
+  updated_at             DateTime                  @updatedAt @db.Timestamptz(6)
+
+  patient                Patient                   @relation(fields: [patient_id], references: [id], onDelete: Cascade)
+  verified_by_user       User?                     @relation(fields: [verified_by], references: [id])
+  medication_safety_alerts MedicationSafetyAlert[]
+
+  @@index([patient_id, is_active])
+  @@index([allergen_type, allergen_name])
+  @@map("patient_allergies")
+}
+
+model MedicationSafetyAlert {
+  id                    String                    @id @default(uuid()) @db.Uuid
+  patient_id            String                    @db.Uuid
+  medication_id         String?                   @db.Uuid
+  drug_interaction_id   String?                   @db.Uuid
+  patient_allergy_id    String?                   @db.Uuid
+  alert_type            MedicationAlertType
+  severity              AlertSeverity
+  alert_title           String                    @db.VarChar(255)
+  alert_message         String                    @db.Text
+  recommendation        String?                   @db.Text
+  requires_override     Boolean                   @default(false)
+  
+  // Resolution tracking
+  resolved              Boolean                   @default(false)
+  resolved_by           String?                   @db.Uuid
+  resolved_at           DateTime?                 @db.Timestamptz(6)
+  resolution_notes      String?                   @db.Text
+  override_reason       String?                   @db.Text
+  
+  // Metadata
+  created_by            String?                   @db.Uuid
+  created_at            DateTime                  @default(now()) @db.Timestamptz(6)
+  updated_at            DateTime                  @updatedAt @db.Timestamptz(6)
+
+  patient               Patient                   @relation(fields: [patient_id], references: [id], onDelete: Cascade)
+  medication            Medication?               @relation(fields: [medication_id], references: [id])
+  drug_interaction      DrugInteraction?          @relation(fields: [drug_interaction_id], references: [id])
+  patient_allergy       PatientAllergy?           @relation(fields: [patient_allergy_id], references: [id])
+  resolved_by_user      User?                     @relation(fields: [resolved_by], references: [id])
+  created_by_user       User?                     @relation("SafetyAlertCreatedBy", fields: [created_by], references: [id])
+
+  @@index([patient_id, severity, resolved])
+  @@index([alert_type, created_at])
+  @@index([resolved, created_at])
+  @@map("medication_safety_alerts")
+}
+
+// ============================================================================
+// EMERGENCY RESPONSE & CRITICAL CARE MODELS
+// Real-time monitoring and emergency alert system
+// ============================================================================
+
+model EmergencyAlert {
+  id                    String                    @id @default(uuid()) @db.Uuid
+  patient_id            String                    @db.Uuid
+  alert_type            EmergencyAlertType
+  priority_level        EmergencyPriority
+  vital_reading_id      String?                   @db.Uuid
+  triggered_by_rule     String?                   @db.VarChar(255) // Rule ID that triggered alert
+  alert_title           String                    @db.VarChar(255)
+  alert_message         String                    @db.Text
+  clinical_context      String?                   @db.Text
+  
+  // Response tracking
+  acknowledged          Boolean                   @default(false)
+  acknowledged_by       String?                   @db.Uuid
+  acknowledged_at       DateTime?                 @db.Timestamptz(6)
+  resolved              Boolean                   @default(false)
+  resolved_by           String?                   @db.Uuid
+  resolved_at           DateTime?                 @db.Timestamptz(6)
+  resolution_notes      String?                   @db.Text
+  
+  // Emergency contact notifications
+  notifications_sent    Json                      @default("[]") // Array of sent notifications
+  escalation_level      Int                       @default(0)
+  max_escalations       Int                       @default(3)
+  
+  // Metadata
+  created_at            DateTime                  @default(now()) @db.Timestamptz(6)
+  updated_at            DateTime                  @updatedAt @db.Timestamptz(6)
+
+  patient               Patient                   @relation(fields: [patient_id], references: [id], onDelete: Cascade)
+  vital_reading         VitalReading?             @relation(fields: [vital_reading_id], references: [id])
+  acknowledged_by_user  User?                     @relation("EmergencyAlertAcknowledged", fields: [acknowledged_by], references: [id])
+  resolved_by_user      User?                     @relation("EmergencyAlertResolved", fields: [resolved_by], references: [id])
+  device_readings       DeviceReading[]           @relation("DeviceReadingToEmergencyAlert")
+
+  @@index([patient_id, priority_level, acknowledged, resolved])
+  @@index([alert_type, created_at])
+  @@index([resolved, created_at])
+  @@map("emergency_alerts")
+}
+
+model VitalAlertRule {
+  id                    String                    @id @default(uuid()) @db.Uuid
+  name                  String                    @db.VarChar(255)
+  description           String?                   @db.Text
+  vital_type            String                    @db.VarChar(100) // "blood_pressure", "heart_rate", "oxygen_saturation"
+  condition_type        VitalConditionType       // "greater_than", "less_than", "between", "outside_range"
+  threshold_value       Decimal?                  @db.Decimal(10,2)
+  threshold_min         Decimal?                  @db.Decimal(10,2)
+  threshold_max         Decimal?                  @db.Decimal(10,2)
+  unit                  String?                   @db.VarChar(20)
+  alert_level           AlertSeverity
+  alert_message         String                    @db.Text
+  notification_delay    Int                       @default(0) // Seconds before notification
+  
+  // Age/demographic conditions
+  min_age               Int?
+  max_age               Int?
+  gender_specific       String?                   @db.VarChar(10) // "MALE", "FEMALE", null for both
+  
+  // Rule management
+  is_active             Boolean                   @default(true)
+  applies_to_all        Boolean                   @default(true) // If false, specify patient groups
+  patient_conditions    Json?                     @default("[]") // Array of conditions this rule applies to
+  
+  // Metadata
+  created_by            String?                   @db.Uuid
+  created_at            DateTime                  @default(now()) @db.Timestamptz(6)
+  updated_at            DateTime                  @updatedAt @db.Timestamptz(6)
+
+  created_by_user       User?                     @relation(fields: [created_by], references: [id])
+
+  @@index([vital_type, is_active])
+  @@index([alert_level])
+  @@map("vital_alert_rules")
+}
+
+model EmergencyContact {
+  id                    String                    @id @default(uuid()) @db.Uuid
+  patient_id            String                    @db.Uuid
+  name                  String                    @db.VarChar(255)
+  relationship          String                    @db.VarChar(100) // "spouse", "parent", "child", "sibling", "friend"
+  phone                 String                    @db.VarChar(20)
+  email                 String?                   @db.VarChar(255)
+  address               Json?                     // Full address object
+  priority_order        Int                       @default(1) // 1 = primary contact
+  can_receive_medical   Boolean                   @default(false) // Can receive medical information
+  preferred_contact     String                    @default("phone") @db.VarChar(20) // "phone", "email", "sms"
+  is_active             Boolean                   @default(true)
+  
+  // HIPAA authorization
+  hipaa_authorized      Boolean                   @default(false)
+  authorization_date    DateTime?                 @db.Timestamptz(6)
+  authorization_expires DateTime?                 @db.Timestamptz(6)
+  
+  created_at            DateTime                  @default(now()) @db.Timestamptz(6)
+  updated_at            DateTime                  @updatedAt @db.Timestamptz(6)
+
+  patient               Patient                   @relation(fields: [patient_id], references: [id], onDelete: Cascade)
+
+  @@index([patient_id, priority_order])
+  @@index([patient_id, is_active])
+  @@map("emergency_contacts")
+}
+
+// ============================================================================
+// ENHANCED ENUMS FOR MEDICAL SAFETY
+// ============================================================================
+
+enum DrugInteractionSeverity {
+  MINOR
+  MODERATE
+  MAJOR
+  CONTRAINDICATION
+}
+
+enum AllergenType {
+  MEDICATION
+  FOOD
+  ENVIRONMENTAL
+  LATEX
+  OTHER
+}
+
+enum AllergySeverity {
+  MILD
+  MODERATE
+  SEVERE
+  ANAPHYLAXIS
+}
+
+enum MedicationAlertType {
+  DRUG_INTERACTION
+  ALLERGY_CONFLICT
+  DOSE_LIMIT_EXCEEDED
+  DUPLICATE_THERAPY
+  AGE_INAPPROPRIATE
+  CONTRAINDICATION
+  MONITORING_REQUIRED
+}
+
+enum AlertSeverity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum EmergencyAlertType {
+  VITAL_CRITICAL
+  MEDICATION_MISSED_CRITICAL
+  DEVICE_OFFLINE
+  PATIENT_UNRESPONSIVE
+  EMERGENCY_BUTTON
+  FALL_DETECTED
+  MEDICATION_OVERDOSE
+}
+
+enum EmergencyPriority {
+  LOW
+  MEDIUM
+  HIGH
+  EMERGENCY
+  LIFE_THREATENING
+}
+
+enum VitalConditionType {
+  GREATER_THAN
+  LESS_THAN
+  BETWEEN
+  OUTSIDE_RANGE
+  PERCENTAGE_CHANGE
+}
+
+// ============================================
+// PHASE 4: TELEMEDICINE & CONSULTATION MODELS
+// ============================================
+
+enum ConsultationType {
+  VIDEO_CONSULTATION
+  AUDIO_CONSULTATION
+  CHAT_CONSULTATION
+  EMERGENCY_CONSULTATION
+  FOLLOW_UP_CONSULTATION
+  SPECIALIST_REFERRAL
+}
+
+enum ConsultationStatus {
+  SCHEDULED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+  RESCHEDULED
+  INTERRUPTED
+}
+
+enum ConsultationPriority {
+  ROUTINE
+  URGENT
+  EMERGENCY
+  FOLLOW_UP
+}
+
+enum LabOrderStatus {
+  ORDERED
+  SAMPLE_COLLECTED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  REPORT_READY
+}
+
+enum LabTestCategory {
+  BLOOD_CHEMISTRY
+  HEMATOLOGY
+  MICROBIOLOGY
+  PATHOLOGY
+  RADIOLOGY
+  CARDIOLOGY
+  ENDOCRINOLOGY
+  IMMUNOLOGY
+}
+
+enum GameBadgeType {
+  ADHERENCE_STREAK
+  APPOINTMENT_KEEPER
+  VITAL_TRACKER
+  EXERCISE_CHAMPION
+  MEDICATION_MASTER
+  HEALTH_IMPROVEMENT
+  GOAL_ACHIEVER
+}
+
+enum GameChallengeType {
+  DAILY_MEDICATION
+  WEEKLY_VITALS
+  MONTHLY_CHECKUP
+  EXERCISE_MINUTES
+  WEIGHT_MANAGEMENT
+  BLOOD_PRESSURE_CONTROL
+  GLUCOSE_MANAGEMENT
+}
+
+// Phase 3: IoT Device Integration Enums
+enum DeviceType {
+  WEARABLE
+  BLOOD_PRESSURE
+  GLUCOSE_METER
+  PULSE_OXIMETER
+  THERMOMETER
+  ECG_MONITOR
+  SCALE
+  SPIROMETER
+  GENERIC_BLUETOOTH
+}
+
+enum DeviceStatus {
+  CONNECTED
+  DISCONNECTED
+  SYNCING
+  ERROR
+  MAINTENANCE
+}
+
+enum ConnectionType {
+  BLUETOOTH_LE
+  WIFI
+  API_OAUTH
+  MANUAL_ENTRY
+  BRIDGE_DEVICE
+}
+
+model VideoConsultation {
+  id                    String              @id @default(uuid()) @db.Uuid
+  consultation_id       String              @unique @db.VarChar(255)
+  doctor_id             String              @db.Uuid
+  patient_id            String              @db.Uuid
+  appointment_id        String?             @db.Uuid
+  consultation_type     ConsultationType    @default(VIDEO_CONSULTATION)
+  status                ConsultationStatus  @default(SCHEDULED)
+  priority              ConsultationPriority @default(ROUTINE)
+  
+  // Scheduling
+  scheduled_start       DateTime            @db.Timestamptz(6)
+  scheduled_end         DateTime            @db.Timestamptz(6)
+  actual_start          DateTime?           @db.Timestamptz(6)
+  actual_end            DateTime?           @db.Timestamptz(6)
+  timezone              String              @default("UTC") @db.VarChar(50)
+  
+  // Video/Audio Room Configuration
+  room_id               String?             @unique @db.VarChar(255)
+  room_token            String?             @db.Text
+  doctor_join_url       String?             @db.Text
+  patient_join_url      String?             @db.Text
+  recording_enabled     Boolean             @default(false)
+  recording_url         String?             @db.Text
+  
+  // Consultation Details
+  chief_complaint       String?             @db.Text
+  presenting_symptoms   String[]            @default([])
+  consultation_notes    String?             @db.Text
+  diagnosis             String?             @db.Text
+  treatment_plan        String?             @db.Text
+  follow_up_required    Boolean             @default(false)
+  follow_up_date        DateTime?           @db.Timestamptz(6)
+  
+  // Technical Details
+  connection_quality    Json?               @default("{}")
+  technical_issues      String[]            @default([])
+  duration_minutes      Int?
+  
+  // Billing & Insurance
+  consultation_fee      Decimal?            @db.Decimal(10, 2)
+  insurance_covered     Boolean             @default(false)
+  payment_status        String?             @default("pending") @db.VarChar(50)
+  
+  // Metadata
+  created_by            String              @db.Uuid
+  created_at            DateTime            @default(now()) @db.Timestamptz(6)
+  updated_at            DateTime            @updatedAt @db.Timestamptz(6)
+  
+  // Relations
+  doctor                doctors             @relation(fields: [doctor_id], references: [id], onDelete: Cascade)
+  patient               Patient             @relation(fields: [patient_id], references: [id], onDelete: Cascade)
+  appointment           Appointment?        @relation(fields: [appointment_id], references: [id])
+  creator               User                @relation("ConsultationCreatedBy", fields: [created_by], references: [id])
+  prescriptions         ConsultationPrescription[]
+  lab_orders            LabOrder[]
+  consultation_notes_entries ConsultationNote[]
+  
+  @@index([doctor_id, scheduled_start])
+  @@index([patient_id, status])
+  @@index([status, scheduled_start])
+  @@index([consultation_type, priority])
+  @@map("video_consultations")
+}
+
+model ConsultationPrescription {
+  id                    String              @id @default(uuid()) @db.Uuid
+  consultation_id       String              @db.Uuid
+  medication_name       String              @db.VarChar(255)
+  dosage                String              @db.VarChar(100)
+  frequency             String              @db.VarChar(100)
+  duration_days         Int
+  quantity              Int?
+  instructions          String?             @db.Text
+  refills_allowed       Int                 @default(0)
+  
+  // E-Prescription Details
+  ndc_code              String?             @db.VarChar(50)
+  generic_substitution  Boolean             @default(true)
+  pharmacy_instructions String?             @db.Text
+  
+  created_at            DateTime            @default(now()) @db.Timestamptz(6)
+  
+  // Relations
+  consultation          VideoConsultation   @relation(fields: [consultation_id], references: [id], onDelete: Cascade)
+  
+  @@index([consultation_id])
+  @@map("consultation_prescriptions")
+}
+
+model ConsultationNote {
+  id                    String              @id @default(uuid()) @db.Uuid
+  consultation_id       String              @db.Uuid
+  note_type             String              @db.VarChar(50) // "subjective", "objective", "assessment", "plan"
+  content               String              @db.Text
+  timestamp             DateTime            @default(now()) @db.Timestamptz(6)
+  created_by            String              @db.Uuid
+  
+  // Relations
+  consultation          VideoConsultation   @relation(fields: [consultation_id], references: [id], onDelete: Cascade)
+  creator               User                @relation("ConsultationNoteCreatedBy", fields: [created_by], references: [id])
+  
+  @@index([consultation_id, note_type])
+  @@map("consultation_notes")
+}
+
+model LabOrder {
+  id                    String              @id @default(uuid()) @db.Uuid
+  order_number          String              @unique @db.VarChar(100)
+  patient_id            String              @db.Uuid
+  doctor_id             String              @db.Uuid
+  consultation_id       String?             @db.Uuid
+  
+  // Order Details
+  order_date            DateTime            @default(now()) @db.Timestamptz(6)
+  priority              String              @default("routine") @db.VarChar(50)
+  status                LabOrderStatus      @default(ORDERED)
+  category              LabTestCategory     @default(BLOOD_CHEMISTRY)
+  
+  // Tests Ordered
+  ordered_tests         Json                @default("[]") // Array of test codes and names
+  clinical_indication   String?             @db.Text
+  special_instructions  String?             @db.Text
+  
+  // Lab Facility
+  lab_facility_name     String?             @db.VarChar(255)
+  lab_facility_code     String?             @db.VarChar(100)
+  collection_date       DateTime?           @db.Timestamptz(6)
+  expected_result_date  DateTime?           @db.Timestamptz(6)
+  
+  // Results
+  results_available     Boolean             @default(false)
+  results_data          Json?               @default("{}")
+  results_pdf_url       String?             @db.Text
+  critical_values       Boolean             @default(false)
+  
+  created_at            DateTime            @default(now()) @db.Timestamptz(6)
+  updated_at            DateTime            @updatedAt @db.Timestamptz(6)
+  
+  // Relations
+  patient               Patient             @relation(fields: [patient_id], references: [id], onDelete: Cascade)
+  doctor                doctors             @relation(fields: [doctor_id], references: [id])
+  consultation          VideoConsultation? @relation(fields: [consultation_id], references: [id])
+  results               LabResult[]
+  
+  @@index([patient_id, status])
+  @@index([doctor_id, order_date])
+  @@index([status, expected_result_date])
+  @@map("lab_orders")
+}
+
+model LabResult {
+  id                    String              @id @default(uuid()) @db.Uuid
+  lab_order_id          String              @db.Uuid
+  test_name             String              @db.VarChar(255)
+  test_code             String?             @db.VarChar(50)
+  
+  // Result Values
+  result_value          String?             @db.VarChar(255)
+  numeric_value         Decimal?            @db.Decimal(10, 3)
+  result_unit           String?             @db.VarChar(50)
+  reference_range       String?             @db.VarChar(255)
+  
+  // Status & Flags
+  result_status         String              @default("final") @db.VarChar(50)
+  abnormal_flag         String?             @db.VarChar(10) // "H", "L", "HH", "LL", etc.
+  critical_flag         Boolean             @default(false)
+  
+  // Timestamps
+  collection_date       DateTime?           @db.Timestamptz(6)
+  result_date           DateTime            @default(now()) @db.Timestamptz(6)
+  verified_date         DateTime?           @db.Timestamptz(6)
+  
+  // Additional Info
+  method                String?             @db.VarChar(255)
+  specimen_type         String?             @db.VarChar(100)
+  comments              String?             @db.Text
+  
+  created_at            DateTime            @default(now()) @db.Timestamptz(6)
+  
+  // Relations
+  lab_order             LabOrder            @relation(fields: [lab_order_id], references: [id], onDelete: Cascade)
+  
+  @@index([lab_order_id])
+  @@index([test_name, result_date])
+  @@index([critical_flag, result_date])
+  @@map("lab_results")
+}
+
+model PatientGameProfile {
+  id                    String              @id @default(uuid()) @db.Uuid
+  patient_id            String              @unique @db.Uuid
+  
+  // Gaming Stats
+  total_points          Int                 @default(0)
+  current_level         Int                 @default(1)
+  experience_points     Int                 @default(0)
+  
+  // Streak Tracking
+  medication_streak     Int                 @default(0)
+  appointment_streak    Int                 @default(0)
+  vitals_streak         Int                 @default(0)
+  longest_streak        Int                 @default(0)
+  
+  // Achievement Tracking
+  badges_earned         String[]            @default([])
+  challenges_completed  String[]            @default([])
+  
+  // Engagement Metrics
+  login_streak          Int                 @default(0)
+  last_activity         DateTime?           @db.Timestamptz(6)
+  total_activities      Int                 @default(0)
+  
+  // Preferences
+  gamification_enabled  Boolean             @default(true)
+  notifications_enabled Boolean             @default(true)
+  public_profile        Boolean             @default(false)
+  
+  created_at            DateTime            @default(now()) @db.Timestamptz(6)
+  updated_at            DateTime            @updatedAt @db.Timestamptz(6)
+  
+  // Relations
+  patient               Patient             @relation(fields: [patient_id], references: [id], onDelete: Cascade)
+  badge_awards          GameBadgeAward[]
+  challenge_progress    GameChallengeProgress[]
+  
+  @@index([total_points, current_level])
+  @@index([patient_id, last_activity])
+  @@map("patient_game_profiles")
+}
+
+model GameBadgeAward {
+  id                    String              @id @default(uuid()) @db.Uuid
+  patient_id            String              @db.Uuid
+  badge_type            GameBadgeType
+  badge_name            String              @db.VarChar(255)
+  badge_description     String?             @db.Text
+  points_awarded        Int                 @default(0)
+  awarded_date          DateTime            @default(now()) @db.Timestamptz(6)
+  
+  // Badge Metadata
+  badge_icon            String?             @db.VarChar(255)
+  badge_color           String?             @db.VarChar(50)
+  achievement_data      Json?               @default("{}")
+  
+  // Relations
+  game_profile          PatientGameProfile  @relation(fields: [patient_id], references: [patient_id], onDelete: Cascade)
+  
+  @@index([patient_id, awarded_date])
+  @@index([badge_type])
+  @@map("game_badge_awards")
+}
+
+model GameChallengeProgress {
+  id                    String              @id @default(uuid()) @db.Uuid
+  patient_id            String              @db.Uuid
+  challenge_type        GameChallengeType
+  challenge_name        String              @db.VarChar(255)
+  
+  // Progress Tracking
+  target_value          Int
+  current_progress      Int                 @default(0)
+  start_date            DateTime            @db.Timestamptz(6)
+  end_date              DateTime            @db.Timestamptz(6)
+  
+  // Status
+  is_completed          Boolean             @default(false)
+  completion_date       DateTime?           @db.Timestamptz(6)
+  points_earned         Int                 @default(0)
+  
+  // Challenge Data
+  challenge_rules       Json?               @default("{}")
+  progress_data         Json?               @default("{}")
+  
+  created_at            DateTime            @default(now()) @db.Timestamptz(6)
+  updated_at            DateTime            @updatedAt @db.Timestamptz(6)
+  
+  // Relations
+  game_profile          PatientGameProfile  @relation(fields: [patient_id], references: [patient_id], onDelete: Cascade)
+  
+  @@index([patient_id, is_completed])
+  @@index([challenge_type, end_date])
+  @@map("game_challenge_progress")
+}
+
+// Phase 3: IoT Device Integration Models
+model ConnectedDevice {
+  id                      String            @id @default(uuid()) @db.Uuid
+  patient_id              String            @db.Uuid
+  plugin_id               String            @db.VarChar(100)
+  
+  // Device Information
+  device_name             String            @db.VarChar(255)
+  device_model            String?           @db.VarChar(255)
+  device_type             DeviceType
+  manufacturer            String?           @db.VarChar(255)
+  serial_number           String?           @db.VarChar(100)
+  firmware_version        String?           @db.VarChar(50)
+  
+  // Connection Configuration
+  connection_type         ConnectionType
+  device_identifier       String            @db.VarChar(255) // MAC address, serial, etc.
+  connection_config       Json?             @default("{}")
+  
+  // Connection Status
+  last_connected          DateTime?         @db.Timestamptz(6)
+  connection_status       DeviceStatus      @default(DISCONNECTED)
+  
+  // Sync Configuration
+  auto_sync_enabled       Boolean           @default(true)
+  sync_interval_minutes   Int               @default(15)
+  last_sync               DateTime?         @db.Timestamptz(6)
+  sync_error_count        Int               @default(0)
+  
+  // Device Management
+  is_active               Boolean           @default(true)
+  added_by                String            @db.Uuid
+  notes                   String?           @db.Text
+  
+  created_at              DateTime          @default(now()) @db.Timestamptz(6)
+  updated_at              DateTime          @updatedAt @db.Timestamptz(6)
+  
+  // Relations
+  patient                 Patient           @relation(fields: [patient_id], references: [id], onDelete: Cascade)
+  added_by_user           User              @relation(fields: [added_by], references: [id], onDelete: Restrict)
+  device_readings         DeviceReading[]
+  
+  @@unique([patient_id, device_identifier])
+  @@index([plugin_id, device_type])
+  @@index([patient_id, connection_status])
+  @@map("connected_devices")
+}
+
+model DeviceReading {
+  id                      String            @id @default(uuid()) @db.Uuid
+  device_id               String            @db.Uuid
+  patient_id              String            @db.Uuid
+  plugin_id               String            @db.VarChar(100)
+  vital_reading_id        String?           @db.Uuid
+  
+  // Reading Information
+  reading_type            String            @db.VarChar(100) // blood_pressure, glucose, weight, etc.
+  measurement_timestamp   DateTime          @db.Timestamptz(6)
+  received_timestamp      DateTime          @default(now()) @db.Timestamptz(6)
+  
+  // Data Storage
+  raw_data                Json              @default("{}")
+  processed_values        Json              @default("{}")
+  primary_value           Decimal?          @db.Decimal(10, 3)
+  secondary_value         Decimal?          @db.Decimal(10, 3)
+  measurement_unit        String?           @db.VarChar(50)
+  
+  // Data Quality
+  data_quality_score      Decimal?          @db.Decimal(3, 2)
+  is_validated            Boolean           @default(false)
+  validation_notes        String?           @db.Text
+  is_anomaly              Boolean           @default(false)
+  anomaly_reason          String?           @db.VarChar(255)
+  
+  // Context Information
+  reading_context         String?           @db.VarChar(255) // before_meal, after_exercise, etc.
+  symptoms_reported       String[]          @default([])
+  medication_taken        Boolean?
+  
+  // Alert Information
+  triggered_alerts        Boolean           @default(false)
+  alert_reasons           String[]          @default([])
+  
+  // Sync Information
+  sync_batch_id           String?           @db.Uuid
+  
+  created_at              DateTime          @default(now()) @db.Timestamptz(6)
+  
+  // Relations
+  device                  ConnectedDevice   @relation(fields: [device_id], references: [id], onDelete: Cascade)
+  patient                 Patient           @relation(fields: [patient_id], references: [id], onDelete: Cascade)
+  vital_reading           VitalReading?     @relation(fields: [vital_reading_id], references: [id], onDelete: SetNull)
+  emergency_alerts        EmergencyAlert[]  @relation("DeviceReadingToEmergencyAlert")
+  
+  @@index([patient_id, reading_type, measurement_timestamp])
+  @@index([device_id, measurement_timestamp])
+  @@index([plugin_id, reading_type])
+  @@index([triggered_alerts, measurement_timestamp])
+  @@map("device_readings")
+}
+
+model DevicePlugin {
+  id                      String            @id @db.VarChar(100)
+  name                    String            @db.VarChar(255)
+  version                 String            @db.VarChar(20)
+  description             String?           @db.Text
+  
+  // Plugin Configuration
+  supported_devices       DeviceType[]
+  supported_regions       String[]          @default([])
+  api_version             String            @db.VarChar(10)
+  default_config          Json              @default("{}")
+  oauth_config            Json?             @default("{}")
+  rate_limits             Json?             @default("{}")
+  
+  // Plugin Status
+  is_enabled              Boolean           @default(true)
+  requires_auth           Boolean           @default(false)
+  maintenance_mode        Boolean           @default(false)
+  
+  // Plugin Metadata
+  installed_at            DateTime          @default(now()) @db.Timestamptz(6)
+  last_updated            DateTime          @updatedAt @db.Timestamptz(6)
+  usage_count             Int               @default(0)
+  
+  @@map("device_plugins")
 }
