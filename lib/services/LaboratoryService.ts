@@ -192,7 +192,7 @@ export class LaboratoryService {
           order_number: orderNumber,
           doctor_id: data.doctorId,
           patient_id: data.patientId,
-          test_codes: data.testCodes,
+          ordered_tests: data.testCodes,
           priority: data.priority,
           status: 'pending',
           fasting_required: data.fastingRequired || fastingRequired,
@@ -282,7 +282,7 @@ export class LaboratoryService {
         resultsData.testResults.map(result => 
           prisma.labResult.create({
             data: {
-              order_id: resultsData.orderId,
+              lab_order_id: resultsData.orderId,
               test_code: result.testCode,
               test_name: result.testName,
               result_value: result.result,
@@ -489,7 +489,7 @@ export class LaboratoryService {
           name: `${order.doctor.user.first_name} ${order.doctor.user.last_name}`,
           npi: order.doctor.medical_license_number
         },
-        tests: order.test_codes,
+        tests: order.ordered_tests,
         priority: order.priority,
         specialInstructions: order.special_instructions
       };

@@ -15,6 +15,7 @@ process.env.NEXTAUTH_URL = 'http://localhost:3000'
 // Global test setup
 declare global {
   var prisma: PrismaClient
+  var testSpecialtyId: string
   var testUser: {
     id: string
     email: string
@@ -36,8 +37,24 @@ beforeAll(async () => {
   // Connect to test database
   await globalThis.prisma.$connect()
   
+  // Create test specialty for doctors
+  const testSpecialty = await globalThis.prisma.speciality.upsert({
+    where: { name: 'General Medicine' },
+    update: {},
+    create: {
+      name: 'General Medicine',
+      description: 'General medical practice for testing',
+      created_at: new Date(),
+      updated_at: new Date()
+    }
+  })
+  
+  // Store specialty ID for test utilities
+  globalThis.testSpecialtyId = testSpecialty.id
+  
   console.log('🧪 Healthcare Test Suite Initialized')
   console.log('📊 Database:', process.env.DATABASE_URL?.split('@')[1])
+  console.log('🏥 Test Specialty Created:', testSpecialty.name)
 })
 
 // Test database cleanup
@@ -92,7 +109,7 @@ export const createTestDoctor = async (userId: string) => {
     data: {
       id: userId,
       license_number: `LIC${Date.now()}`,
-      speciality_id: '1', // Will need to create specialties in setup
+      speciality_id: globalThis.testSpecialtyId,
       years_of_experience: 5,
       consultation_fee: 150.00,
       is_available: true,

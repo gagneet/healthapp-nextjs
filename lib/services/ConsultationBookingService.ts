@@ -1,5 +1,5 @@
 import { PrismaClient } from '@prisma/client';
-import { VideoConsultationService } from './VideoConsultationService.js';
+import { VideoConsultationService } from './VideoConsultationService';
 
 const prisma = new PrismaClient();
 
@@ -48,12 +48,21 @@ export class ConsultationBookingService {
         data: {
           doctor_id: data.doctorId,
           patient_id: data.patientId,
-          appointment_date: data.appointmentDate,
-          duration_minutes: data.duration,
-          status: 'scheduled',
-          appointment_type: 'video_consultation',
-          reason: data.reason,
-          notes: data.notes,
+          organizer_type: 'DOCTOR',
+          organizer_id: data.doctorId,
+          participant_one_type: 'DOCTOR',
+          participant_one_id: data.doctorId,
+          participant_two_type: 'PATIENT',
+          participant_two_id: data.patientId,
+          start_time: data.appointmentDate,
+          end_time: new Date(data.appointmentDate.getTime() + (data.duration * 60 * 1000)),
+          description: data.reason,
+          details: {
+            consultationType: data.consultationType,
+            priority: data.priority,
+            notes: data.notes,
+            duration: data.duration
+          },
           created_at: new Date(),
           updated_at: new Date(),
         }
@@ -260,7 +269,7 @@ export class ConsultationBookingService {
       const updatedAppointment = await prisma.appointment.update({
         where: { id: appointmentId },
         data: {
-          appointment_date: newDateTime,
+          start_time: newDateTime,
           status: 'scheduled',
           updated_at: new Date()
         }
@@ -271,8 +280,8 @@ export class ConsultationBookingService {
         await prisma.videoConsultation.update({
           where: { id: appointment.VideoConsultation[0].id },
           data: {
-            scheduled_start_time: newDateTime,
-            status: 'scheduled',
+            scheduled_start: newDateTime,
+            status: 'SCHEDULED',
             updated_at: new Date()
           }
         });

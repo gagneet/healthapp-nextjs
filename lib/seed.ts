@@ -232,80 +232,83 @@ export async function seedComprehensiveHealthcareData() {
     console.log(`✅ Created organization: ${organization.name}`);
 
     // Create comprehensive medical specialties
-    const specialities = await prisma.speciality.createMany({
+    const cardiologySpec = await prisma.speciality.create({
+      data: {
+        name: 'Cardiology',
+        description: 'Heart and cardiovascular system specialist',
+        created_at: new Date(),
+        updated_at: new Date()
+      }
+    });
+    
+    const endocrinologySpec = await prisma.speciality.create({
+      data: {
+        name: 'Endocrinology',
+        description: 'Hormonal disorders and diabetes specialist',
+        created_at: new Date(),
+        updated_at: new Date()
+      }
+    });
+    
+    const generalMedSpec = await prisma.speciality.create({
+      data: {
+        name: 'General Medicine',
+        description: 'General medical practice',
+        created_at: new Date(),
+        updated_at: new Date()
+      }
+    });
+    
+    // Create remaining specialties without hard-coded IDs
+    const pediatricsSpec = await prisma.speciality.create({
+      data: {
+        name: 'Pediatrics',
+        description: 'Children\'s health specialist',
+        created_at: new Date(),
+        updated_at: new Date()
+      }
+    });
+    
+    // Continue creating other specialties
+    await prisma.speciality.createMany({
       data: [
         {
-          id: 1,
-          name: 'Cardiology',
-          description: 'Heart and cardiovascular system specialist',
-          created_at: new Date(),
-          updated_at: new Date()
-        },
-        {
-          id: 2,
-          name: 'Endocrinology',
-          description: 'Hormonal disorders and diabetes specialist',
-          created_at: new Date(),
-          updated_at: new Date()
-        },
-        {
-          id: 3,
-          name: 'General Medicine',
-          description: 'General medical practice',
-          created_at: new Date(),
-          updated_at: new Date()
-        },
-        {
-          id: 4,
-          name: 'Pediatrics',
-          description: 'Children\'s health specialist',
-          created_at: new Date(),
-          updated_at: new Date()
-        },
-        {
-          id: 5,
           name: 'Orthopedics',
           description: 'Bone, joint, and muscle specialist',
           created_at: new Date(),
           updated_at: new Date()
         },
         {
-          id: 6,
           name: 'Dermatology',
           description: 'Skin conditions specialist',
           created_at: new Date(),
           updated_at: new Date()
         },
         {
-          id: 7,
           name: 'Neurology',
           description: 'Brain and nervous system specialist',
           created_at: new Date(),
           updated_at: new Date()
         },
         {
-          id: 8,
           name: 'Psychiatry',
           description: 'Mental health specialist',
           created_at: new Date(),
           updated_at: new Date()
         },
         {
-          id: 9,
           name: 'Gynecology',
           description: 'Women\'s reproductive health specialist',
           created_at: new Date(),
           updated_at: new Date()
         },
         {
-          id: 10,
           name: 'Ophthalmology',
           description: 'Eye and vision specialist',
           created_at: new Date(),
           updated_at: new Date()
         },
         {
-          id: 11,
           name: 'Emergency Medicine',
           description: 'Emergency and acute care specialist',
           created_at: new Date(),
@@ -323,7 +326,7 @@ export async function seedComprehensiveHealthcareData() {
           id: '99999999-9999-9999-9999-999999999991',
           user_id: '99999999-9999-9999-9999-999999999999',
           doctor_id: 'DR001',
-          speciality_id: 1,
+          speciality_id: cardiologySpec.id,
           medical_license_number: 'MD123456',
           years_of_experience: 15,
           board_certifications: ['Board Certified Internal Medicine', 'Diabetes Care Specialist'],
@@ -334,7 +337,7 @@ export async function seedComprehensiveHealthcareData() {
           id: '44444444-4444-4444-4444-444444444441',
           user_id: '44444444-4444-4444-4444-444444444444',
           doctor_id: 'DR002',
-          speciality_id: 2,
+          speciality_id: endocrinologySpec.id,
           medical_license_number: 'MD789012',
           years_of_experience: 20,
           board_certifications: ['Board Certified Cardiology', 'Interventional Cardiology'],

@@ -1,5 +1,5 @@
 import { PrismaClient } from '@prisma/client';
-import crypto from 'crypto';
+import * as crypto from 'crypto';
 
 const prisma = new PrismaClient();
 
@@ -44,12 +44,14 @@ export class VideoConsultationService {
           room_token: roomToken,
           doctor_join_url: this.generateJoinUrl(roomId, 'doctor', data.doctorId),
           patient_join_url: this.generateJoinUrl(roomId, 'patient', data.patientId),
-          scheduled_start_time: data.scheduledStartTime,
+          scheduled_start: data.scheduledStartTime,
+          scheduled_end: new Date(data.scheduledStartTime.getTime() + (data.duration * 60 * 1000)),
           duration_minutes: data.duration,
-          consultation_type: data.consultationType,
-          priority: data.priority,
-          status: 'scheduled',
-          notes: data.notes,
+          consultation_type: data.consultationType.toUpperCase() as any,
+          priority: data.priority.toUpperCase() as any,
+          status: 'SCHEDULED' as any,
+          consultation_notes: data.notes,
+          created_by: data.doctorId,
           recording_enabled: this.shouldEnableRecording(data.consultationType),
           created_at: new Date(),
           updated_at: new Date(),
@@ -133,8 +135,8 @@ export class VideoConsultationService {
         return canJoin;
       }
 
-      // Update consultation status to active if first join
-      if (consultation.status === 'scheduled') {
+      // Update consultation status to in_progress if first join
+      if (consultation.status === 'SCHEDULED') {
         await prisma.videoConsultation.update({
           where: { id: consultation.id },
           data: {
@@ -199,8 +201,8 @@ export class VideoConsultationService {
       const updatedConsultation = await prisma.videoConsultation.update({
         where: { id: consultation.id },
         data: {
-          status: 'completed',
-          actual_end_time: new Date(),
+          status: 'COMPLETED' as any,
+          actual_end: new Date(),
           summary,
           updated_at: new Date(),
         }
@@ -361,10 +363,10 @@ export class VideoConsultationService {
 
     // Check if consultation is still valid (not expired)
     const now = new Date();
-    const scheduledTime = new Date(consultation.scheduled_start_time);
-    const maxJoinTime = new Date(scheduledTime.getTime() + (consultation.duration_minutes * 60 * 1000) + (30 * 60 * 1000)); // 30min grace period
+    const scheduledTime = new Date(consultation.scheduled_start);
+    const maxJoinTime = new Date(scheduledTime.getTime() + (consultation.duration_minutes || 60) * 60 * 1000 + (30 * 60 * 1000)); // 30min grace period
 
-    if (now > maxJoinTime && consultation.status !== 'active') {
+    if (now > maxJoinTime && consultation.status !== 'IN_PROGRESS') {
       return {
         success: false,
         error: 'Consultation has expired'
@@ -380,7 +382,7 @@ export class VideoConsultationService {
   async getActiveConsultations(userId: string, userType: 'doctor' | 'patient') {
     try {
       const whereClause = {
-        status: 'active',
+        status: 'IN_PROGRESS' as any,
         ...(userType === 'doctor' ? { doctor_id: userId } : { patient_id: userId })
       };
 
@@ -411,7 +413,7 @@ export class VideoConsultationService {
             }
           }
         },
-        orderBy: { actual_start_time: 'desc' },
+        orderBy: { actual_start: 'desc' },
       });
 
       return {
