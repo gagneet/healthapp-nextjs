@@ -48,21 +48,20 @@ docker-compose --version
 ## 🏗️ Architecture Overview
 
 ### Technology Stack
-- **Frontend**: Next.js 14 with TypeScript
-- **Backend**: Node.js/Express with TypeScript (dev/test) or integrated Next.js API (production)
+- **Full-Stack**: Next.js 14 with TypeScript (unified frontend/backend)
 - **Database**: PostgreSQL 15 with Prisma ORM
-- **Authentication**: NextAuth.js with database sessions
-- **Cache**: Redis for session storage and caching
-- **Orchestration**: Docker Compose (local) / Docker Swarm (others)
+- **Authentication**: NextAuth.js with PrismaAdapter and database sessions  
+- **Cache**: Redis for enhanced session management and caching
+- **Orchestration**: Docker Compose (local) / Docker Swarm (dev/test/prod)
+- **Deployment**: Universal deployment scripts for all environments
 
 ### Service Architecture
 
 | Service | Local (Compose) | Dev/Test/Prod (Swarm) | Purpose |
 |---------|-----------------|----------------------|---------|
-| **Frontend** | next.js:dev | healthapp:production | User interface |
-| **Backend** | express:dev | integrated with frontend | API services (dev/test only) |
-| **Database** | postgres:15-alpine | postgres:15-alpine | Data persistence |
-| **Cache** | redis:7-alpine | redis:7-alpine | Session & caching |
+| **Application** | next.js:dev | healthapp:production | Full-stack Next.js with API routes |
+| **Database** | postgres:15-alpine | postgres:15-alpine | Data persistence + NextAuth sessions |
+| **Cache** | redis:7-alpine | redis:7-alpine | Session storage & caching |
 | **Admin** | pgadmin4 | pgadmin4 | Database administration |
 
 ## 🚀 Deployment Environments
@@ -70,26 +69,26 @@ docker-compose --version
 ### Local Development (Docker Compose)
 - **Purpose**: Developer workstations with hot-reload
 - **Technology**: Docker Compose
-- **Ports**: Frontend(3002), Backend(3005), DB(5434), Redis(6379), PgAdmin(5050)
+- **Ports**: App(3002), DB(5434), Redis(6379), PgAdmin(5050)
 - **Features**: Hot-reload, development debugging, relaxed security
 
 ### Development Server (Docker Swarm)
 - **Purpose**: Team development server with load balancing
 - **Technology**: Docker Swarm
-- **Ports**: Frontend(3002), Backend(3005), DB(5432), Redis(6379), PgAdmin(5050)
-- **Features**: Multi-replica services, service discovery, moderate security
+- **Ports**: App(3002), DB(5432), Redis(6379), PgAdmin(5050)
+- **Features**: Multi-replica services, service discovery, NextAuth.js integration
 
 ### Test Environment (Docker Swarm)
 - **Purpose**: Automated testing and QA validation
 - **Technology**: Docker Swarm  
-- **Ports**: Frontend(3003), Backend(3006), DB(5433), Redis(6380), PgAdmin(5051)
+- **Ports**: App(3003), DB(5433), Redis(6380), PgAdmin(5051)
 - **Features**: Test automation, CI/CD integration, isolated testing
 
 ### Production (Docker Swarm)
 - **Purpose**: Live production deployment
 - **Technology**: Docker Swarm
-- **Ports**: Frontend(3002), DB(5432), Redis(6379), PgAdmin(5050)
-- **Features**: High availability, auto-scaling, security hardened, monitoring
+- **Ports**: App(3002), DB(5432), Redis(6379), PgAdmin(5050)
+- **Features**: High availability, auto-scaling, NextAuth.js security, monitoring
 
 ## 🚀 Quick Start
 
@@ -122,15 +121,14 @@ docker swarm init
 ### 3. Production Deployment
 
 ```bash
-# Set required environment variables
+# Set required NextAuth.js environment variables
+export NEXTAUTH_SECRET=your-32-char-nextauth-secret
 export POSTGRES_PASSWORD=secure_prod_password
-export JWT_SECRET=your-256-bit-secret-key
-export NEXTAUTH_SECRET=your-nextauth-secret-key
 export REDIS_PASSWORD=secure_redis_password
 export PGADMIN_PASSWORD=secure_admin_password
 
-# Deploy to production
-./scripts/deploy-production.sh deploy --domain demo.adhere.live --scale 4 --migrate
+# Deploy to production with universal script
+./scripts/deploy.sh prod deploy --domain demo.adhere.live --scale 4 --migrate
 ```
 
 ## 🎯 Environment-Specific Deployment
@@ -210,7 +208,17 @@ cleanup   # Clean up test environment
 **Script**: `./scripts/deploy-production.sh`
 
 ```bash
-# Production deployment with all options
+# Set required NextAuth.js environment variables first
+export NEXTAUTH_SECRET=your-32-char-nextauth-secret
+export POSTGRES_PASSWORD=secure_prod_password
+
+# Production deployment with universal script
+./scripts/deploy.sh prod deploy \
+  --domain demo.adhere.live \
+  --scale 4 \
+  --migrate
+
+# Alternative: Production deployment with dedicated script
 ./scripts/deploy-production.sh deploy \
   --domain demo.adhere.live \
   --scale 4 \

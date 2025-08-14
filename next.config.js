@@ -1,16 +1,17 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Enable standalone output for Docker deployments
+  // Disable static optimization entirely for dynamic healthcare app
   output: 'standalone',
-  
-  // Disable static optimization for dynamic application
   trailingSlash: false,
   
-  // Skip static generation during Docker build
-  ...(process.env.SKIP_BUILD_STATIC_GENERATION === '1' && {
-    trailingSlash: false,
-    skipTrailingSlashRedirect: true,
-  }),
+  // Completely disable static generation
+  generateStaticParams: () => [],
+  
+  // Force all pages and API routes to be dynamic
+  experimental: {
+    forceSwcTransforms: true,
+    serverComponentsExternalPackages: ['prisma', '@prisma/client'],
+  },
   
   typescript: {
     ignoreBuildErrors: true, // Temporarily ignore TypeScript errors for production build
@@ -19,6 +20,9 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: true, // Ignore ESLint errors during build  
   },
+  
+  // Disable static export - this is a dynamic healthcare application
+  distDir: '.next',
   
   productionBrowserSourceMaps: false,
   
@@ -108,10 +112,12 @@ const nextConfig = {
     ];
   },
   
+  
   // Handle static generation issues for Docker builds
   generateBuildId: async () => {
     return 'healthapp-' + Date.now();
   },
+  
 };
 
 export default nextConfig;

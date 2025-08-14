@@ -26,17 +26,18 @@ COPY . .
 # Accept database URL as build argument
 ARG DATABASE_URL=postgresql://dummy:dummy@localhost:5432/dummy
 
-# Set build environment variables before Prisma generation
+# Set build environment variables for dynamic healthcare app
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
 ENV DATABASE_URL=$DATABASE_URL
-# Skip static page generation for dynamic healthcare app  
-ENV SKIP_BUILD_STATIC_GENERATION=1
+# Force dynamic rendering - skip static generation
+ENV NEXT_BUILD_OUTPUT_TYPE=standalone
+ENV NEXT_FORCE_DYNAMIC=1
 
 # Generate Prisma client with build-time dummy database URL
 RUN npx prisma generate
 
-# Build Next.js application 
+# Build Next.js standalone application
 RUN npm run build
 
 # Production stage

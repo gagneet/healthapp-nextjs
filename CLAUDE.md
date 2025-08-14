@@ -4,38 +4,38 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is the **Healthcare Management Platform** - a modern, full-stack TypeScript application built with Next.js 14 frontend and Node.js/Express backend. The system manages patients, doctors, medications, care plans, appointments, and vital signs tracking. It's designed to help healthcare providers monitor patient medication adherence and overall care management with real-time capabilities.
+This is the **Healthcare Management Platform** - a modern, full-stack TypeScript application built with Next.js 14 with NextAuth.js authentication. The system manages patients, doctors, medications, care plans, appointments, and vital signs tracking. It's designed to help healthcare providers monitor patient medication adherence and overall care management with real-time capabilities.
 
 ## Development Commands
 
 ```bash
-# Frontend Development (Next.js)
-npm run dev                    # Start Next.js development server (port 3002)
+# Next.js Full-Stack Development
+npm run dev                    # Start Next.js development server (port 3000)
 npm run build                  # Build Next.js production bundle
 npm start                      # Start Next.js production server
 npm run lint                   # Run Next.js ESLint
 npm run type-check             # TypeScript type checking
 
-# Backend Development (Node.js/Express)
-npm run backend:dev            # Start backend development server with nodemon (port 3005)
-npm run backend:start          # Start backend production server
-npm run backend:build          # Build TypeScript backend to dist/
-npm run backend:prod           # Build and start production backend
+# Database Management (Prisma)
+npx prisma generate            # Generate Prisma client
+npx prisma migrate dev         # Create and apply migration
+npx prisma migrate deploy      # Apply migrations in production
+npx prisma db seed            # Seed database with initial data
+npx prisma studio             # Open Prisma Studio (database GUI)
 
-# Database Management
-npm run migrate                # Run all pending migrations
-npm run migrate:undo           # Undo last migration
-npm run seed                   # Run all seeders
-npm run seed:undo             # Undo all seeders
-npm run migrations:build       # Build TypeScript migrations for Sequelize CLI
+# Deployment Scripts
+./scripts/deploy-local.sh start --migrate --seed    # Local development
+./scripts/deploy.sh dev deploy --migrate --seed     # Development server
+./scripts/deploy.sh test deploy --test               # Test environment
+./scripts/deploy.sh prod deploy --domain <domain>   # Production deployment
 
 # Testing
-npm test                      # Run Jest test suite with --detectOpenHandles
+npm test                      # Run Jest test suite
 npm run test:watch            # Run tests in watch mode
 npm run test:coverage         # Generate test coverage report
 
 # Code Quality
-npm run lint:backend          # Run ESLint on src/
+npm run lint                  # Run ESLint
 npm run lint:fix              # Auto-fix ESLint issues
 ```
 
@@ -43,15 +43,15 @@ npm run lint:fix              # Auto-fix ESLint issues
 
 ### Core Technology Stack
 
-- **Frontend**: Next.js 14 with App Router + TypeScript
-- **Backend**: Node.js (>=22.18.0 LTS) + Express.js with TypeScript
-- **Database**: PostgreSQL with Sequelize ORM
-- **Authentication**: JWT with role-based access control  
-- **Security**: Helmet, CORS, rate limiting, input validation
-- **Caching**: Redis integration for sessions and caching
+- **Full-Stack**: Next.js 14 with App Router + TypeScript (unified frontend/backend)
+- **Database**: PostgreSQL with Prisma ORM
+- **Authentication**: NextAuth.js with PrismaAdapter and role-based access control  
+- **Security**: NextAuth.js sessions, input validation, role-based access
+- **Caching**: Redis integration for enhanced session management
 - **Cloud Storage**: AWS S3 SDK v3 for file uploads
 - **Real-time**: Socket.io ready for notifications
-- **Testing**: Jest with Node.js environment
+- **Testing**: Jest with TypeScript support
+- **Deployment**: Universal Docker Swarm deployment scripts (dev/test/prod)
 
 ### Business Logic Rules
 
@@ -83,28 +83,33 @@ npm run lint:fix              # Auto-fix ESLint issues
 - **Doctor Clinic**: Doctor can have own Clinic and be linked to a Provider
 - **Assignment Rules**: HSP cannot assign/link Medicine to Patient (Doctor-only privilege)
 
-### Current Architecture: Next.js + Node.js Separation
+### Current Architecture: Next.js Full-Stack with NextAuth.js
 
-The application uses a **separated frontend/backend architecture**:
+The application uses a **modern Next.js full-stack architecture**:
 
-1. **Next.js Frontend** (TypeScript) - Port 3002
-   - Handles UI/UX, routing, client-side state
-   - Uses Next.js rewrites to proxy API calls to backend
-   - No Next.js API routes (removed for build optimization)
+1. **Next.js Full-Stack Application** (TypeScript) - Port 3002
+   - Handles both frontend UI/UX and backend API routes  
+   - Next.js API routes provide REST endpoints
+   - NextAuth.js handles authentication with database sessions
 
-2. **Node.js Backend** (TypeScript) - Port 3005  
-   - Handles all business logic, database operations, authentication
-   - Express.js REST API with comprehensive endpoints
-   - JWT authentication and role-based authorization
+2. **Database Layer** (PostgreSQL with Prisma)  
+   - PostgreSQL database with Prisma ORM
+   - Database-backed sessions via NextAuth.js PrismaAdapter
+   - Type-safe database operations and migrations
 
-3. **API Proxying Strategy**
-   - Frontend calls `/api/*` routes
-   - Next.js `rewrites()` proxies to `http://backend:3005/api/*`
-   - This eliminates build issues with backend dependencies in frontend
+3. **Authentication & Session Management**
+   - NextAuth.js with PrismaAdapter for database sessions
+   - Role-based access control for healthcare workflows
+   - Enhanced security over stateless JWT tokens
+
+4. **Deployment Architecture**
+   - Universal Docker Swarm deployment for dev/test/prod
+   - Database-first deployment approach
+   - Environment-specific configurations and scaling
 
 ### Database Architecture
 
-The application uses Sequelize with PostgreSQL and the following core models:
+The application uses Prisma with PostgreSQL and the following core models:
 
 **User Management**:
 - `User` (base user table) → `UserRole` (many-to-many roles)
@@ -144,23 +149,15 @@ healthapp-nextjs/
 ├── components/             # React components
 │   ├── ui/                 # Base UI components
 │   └── dashboard/          # Dashboard-specific components
-├── lib/                    # Frontend utilities
-│   ├── auth-context.tsx    # Authentication context
+├── lib/                    # Utilities and configurations
+│   ├── auth.ts             # NextAuth.js configuration
+│   ├── prisma.ts           # Prisma client
 │   └── utils.ts            # Utility functions
 ├── types/                  # TypeScript type definitions
-├── src/                    # Node.js Backend (TypeScript)
-│   ├── config/             # Database, JWT, constants
-│   ├── controllers/        # Route handlers (TypeScript)
-│   ├── middleware/         # Auth, validation, error handling
-│   ├── models/             # Sequelize models (TypeScript)
-│   ├── routes/             # API route definitions
-│   ├── services/           # Business logic services
-│   ├── utils/              # Helper functions
-│   ├── migrations/         # Database schema migrations (TypeScript)
-│   ├── seeders/            # Initial data seeding (TypeScript)
-│   └── server.ts           # Express server entry point
-├── dist/                   # Compiled JavaScript (backend)
-├── dist-migrations/        # Compiled migrations for Sequelize CLI
+├── prisma/                 # Database schema and migrations
+│   ├── schema.prisma       # Database schema definition
+│   ├── migrations/         # Prisma migrations
+│   └── seed.ts             # Database seeding script
 ├── docker/                 # Docker configurations
 ├── scripts/                # Deployment and utility scripts
 └── docs/                   # Documentation
@@ -181,22 +178,22 @@ healthapp-nextjs/
 - Modern async/await patterns throughout
 
 **Authentication & Authorization**:
-- JWT-based authentication with Bearer tokens
-- Role-based access control via `USER_CATEGORIES` constants
-- Middleware chain: `authenticate` → `authorize(...roles)` → controller
-- Service layer separation for auth business logic
+- NextAuth.js with PrismaAdapter for database sessions
+- Role-based access control via healthcare role enforcement
+- API route protection: `getServerSession()` → role validation → controller
+- Database-backed sessions for enhanced security over JWT tokens
 
 **Database Patterns**:
-- All models use Sequelize with PostgreSQL
+- All models use Prisma with PostgreSQL
 - Consistent naming (camelCase in code, snake_case in DB)
-- Associations defined centrally in `src/models/associations.ts`
-- Migration-driven schema management with versioned changes
+- Relations defined in Prisma schema with type safety
+- Prisma migration-driven schema management with versioned changes
 - Seeded data for initial system setup (specialists, medicines, vital templates)
 - Connection pooling configured for production scalability
 - Database timezone set to UTC (+00:00)
 
 **Service Layer Architecture**:
-- `AuthService.ts` - Authentication and user management logic
+- NextAuth.js integration - Modern authentication with database sessions
 - `PatientService.ts` - Patient data processing and business rules
 - `MedicationService.ts` - Medication management and adherence tracking
 - `SchedulingService.ts` - Appointment and scheduling logic
@@ -256,7 +253,7 @@ All API responses follow a consistent structure via `responseFormatter.ts`:
 ### API Development
 
 - Controllers should be thin - business logic belongs in the service layer
-- Use the established service classes: AuthService, PatientService, MedicationService, SchedulingService
+- Use NextAuth.js for authentication and established service classes: PatientService, MedicationService, SchedulingService
 - Utilize middleware for cross-cutting concerns (auth, validation, logging, rate limiting)
 - Follow consistent error handling via `errorHandler.ts` middleware
 - Use `responseFormatter.ts` for consistent API responses
@@ -298,10 +295,10 @@ The codebase now includes a complete, production-ready implementation:
 
 #### ✅ Complete TypeScript Stack
 
-- Frontend: Next.js 14 with TypeScript and App Router
-- Backend: Node.js/Express with TypeScript
-- Database: PostgreSQL with TypeScript Sequelize models
-- Migrations: TypeScript migrations with proper compilation
+- Full-Stack: Next.js 14 with TypeScript and App Router (unified frontend/backend)
+- Database: PostgreSQL with Prisma ORM and type-safe operations
+- Authentication: NextAuth.js with PrismaAdapter for database sessions
+- Migrations: Prisma migrations with proper schema evolution
 
 #### ✅ Complete Route Layer
 
@@ -312,17 +309,18 @@ The codebase now includes a complete, production-ready implementation:
 
 #### ✅ Service Layer Architecture
 
-- AuthService: User authentication and JWT management
+- NextAuth.js: Modern authentication with database sessions
 - PatientService: Patient data processing and business rules
 - MedicationService: Medication adherence and tracking logic
 - SchedulingService: Appointment and calendar management
 
 #### ✅ Database Infrastructure
 
-- Migration system with versioned schema changes
+- Prisma migration system with versioned schema changes
 - Seeded initial data (specialists, medicines, vital templates)
-- 20+ comprehensive models with proper associations
+- 40+ comprehensive models with proper relations (Prisma schema)
 - PostgreSQL optimization with proper indexing
+- NextAuth.js session tables integrated
 
 #### ✅ Modern Development Stack
 
@@ -330,6 +328,16 @@ The codebase now includes a complete, production-ready implementation:
 - ESLint configuration for code quality
 - Enhanced Jest testing setup with coverage reporting
 - Docker containerization for development and production
+
+#### ✅ Universal Deployment Infrastructure
+
+- **Universal Scripts**: Single deployment system (`./scripts/deploy.sh`) for all environments
+- **Multi-Environment Support**: Dedicated dev/test/prod configurations with proper isolation
+- **Docker Swarm**: Production-ready orchestration with auto-scaling capabilities
+- **Database-First Approach**: Proper migration and seeding in deployment pipeline
+- **Zero-Downtime Updates**: Rolling updates for production environments
+- **Environment Variables**: Secure NextAuth.js credential management
+- **Automated Testing**: Integrated test execution in deployment workflows
 
 ### Ready-to-Implement Features
 

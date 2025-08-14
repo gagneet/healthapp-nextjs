@@ -73,11 +73,11 @@ services:
         reservations:
           memory: 128M
 
-  backend:
-    image: healthapp-backend:test
+  app:
+    image: healthapp:test
     environment:
       NODE_ENV: development
-      PORT: 5001
+      PORT: 3002
       
       # Database Configuration
       POSTGRES_HOST: postgres
@@ -93,64 +93,23 @@ services:
       
       # Application URLs
       FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3002}
-      BACKEND_URL: ${BACKEND_URL:-http://localhost:5001}
-      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:5001/api}
+      BACKEND_URL: ${BACKEND_URL:-http://localhost:3002}
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:3002/api}
       
       # Redis Configuration
       REDIS_HOST: redis
       REDIS_PORT: 6379
       REDIS_PASSWORD: ${REDIS_PASSWORD:-secure_test_redis}
       REDIS_URL: redis://:${REDIS_PASSWORD:-secure_test_redis}@redis:6379
-      
-      # CORS Configuration
-      CORS_ORIGIN: ${FRONTEND_URL:-http://localhost:3002}
     ports:
-      - "${HOST_PORT_BACKEND:-5001}:5001"
+      - "${HOST_PORT_APP:-3002}:3002"
     networks:
       - healthapp-network
     depends_on:
       - postgres
       - redis
     deploy:
-      replicas: ${REPLICAS_BACKEND:-2}
-      update_config:
-        parallelism: 1
-        delay: 10s
-        order: start-first
-      restart_policy:
-        condition: on-failure
-        delay: 5s
-        max_attempts: 3
-      resources:
-        limits:
-          memory: 1024M
-        reservations:
-          memory: 512M
-
-  frontend:
-    image: healthapp-frontend:test
-    environment:
-      NODE_ENV: development
-      PORT: 3002
-      
-      # NextAuth Configuration
-      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET:-test-nextauth-secret-2024-secure-key}
-      NEXTAUTH_URL: ${NEXTAUTH_URL:-http://localhost:3002}
-      
-      # API Configuration
-      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:5001/api}
-      BACKEND_URL: http://backend:5001
-      
-      # Database URL (for NextAuth adapter)
-      DATABASE_URL: postgresql://${POSTGRES_USER:-healthapp_user}:${POSTGRES_PASSWORD:-secure_test_password}@postgres:5432/${POSTGRES_DB:-healthapp_test}?schema=public
-    ports:
-      - "${HOST_PORT_FRONTEND:-3002}:3002"
-    networks:
-      - healthapp-network
-    depends_on:
-      - backend
-    deploy:
-      replicas: ${REPLICAS_FRONTEND:-2}
+      replicas: ${REPLICAS_APP:-2}
       update_config:
         parallelism: 1
         delay: 10s

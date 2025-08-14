@@ -5,12 +5,11 @@ This directory contains clean, organized deployment scripts for all environments
 ## 🏗️ Architecture Overview
 
 **Healthcare Management Platform** - Modern full-stack TypeScript application:
-- **Frontend**: Next.js 14 with App Router + TypeScript
-- **Backend**: Node.js/Express + TypeScript (for dev/test) or integrated Next.js API (for production)
+- **Full-Stack**: Next.js 14 with App Router + TypeScript (unified frontend/backend)
 - **Database**: PostgreSQL with Prisma ORM
-- **Authentication**: NextAuth.js with database sessions
-- **Cache**: Redis for sessions and performance
-- **Deployment**: Docker with environment-specific configurations
+- **Authentication**: NextAuth.js with PrismaAdapter and database sessions
+- **Cache**: Redis for enhanced session management and performance  
+- **Deployment**: Universal Docker Swarm deployment with environment-specific configurations
 
 ## 📁 Script Structure
 
@@ -18,6 +17,7 @@ This directory contains clean, organized deployment scripts for all environments
 
 | Script | Environment | Purpose | Architecture |
 |--------|-------------|---------|--------------|
+| `deploy.sh` | **Universal** | **Universal deployment for dev/test/prod** | **Docker Swarm** |
 | `deploy-local.sh` | Local Development | Hot-reload development | Docker Compose |
 | `deploy-dev.sh` | Development Server | Team development server | Docker Swarm |
 | `deploy-test.sh` | Test/CI Environment | Automated testing & QA | Docker Swarm |
@@ -25,16 +25,27 @@ This directory contains clean, organized deployment scripts for all environments
 
 ### Port Allocation
 
-| Environment | Frontend | Backend | PostgreSQL | Redis | PgAdmin |
-|-------------|----------|---------|------------|-------|---------|
-| **Local** | 3002 | 3005 | 5434 | 6379 | 5050 |
-| **Dev** | 3002 | 3005 | 5432 | 6379 | 5050 |
-| **Test** | 3003 | 3006 | 5433 | 6380 | 5051 |
-| **Production** | 3002 | - | 5432 | 6379 | 5050 |
+| Environment | Application | PostgreSQL | Redis | PgAdmin |
+|-------------|-------------|------------|-------|---------|
+| **Local** | 3002 | 5434 | 6379 | 5050 |
+| **Dev** | 3002 | 5432 | 6379 | 5050 |
+| **Test** | 3003 | 5433 | 6380 | 5051 |
+| **Production** | 3002 | 5432 | 6379 | 5050 |
 
-*Note: Production uses integrated Next.js API routes instead of separate backend*
+*Note: All environments use Next.js full-stack architecture with integrated API routes and NextAuth.js*
 
 ## 🚀 Quick Start
+
+### Universal Deployment System
+
+Use the **universal deployment script** for all environments:
+
+```bash
+# Universal deployment script syntax
+./scripts/deploy.sh [environment] [command] [options]
+# Environments: dev, test, prod
+# Commands: deploy, stop, logs, status, migrate, seed, scale
+```
 
 ### Local Development
 ```bash
@@ -50,45 +61,47 @@ This directory contains clean, organized deployment scripts for all environments
 
 ### Development Server
 ```bash
-# Deploy to development server with Docker Swarm
+# Deploy to development server using universal script
+./scripts/deploy.sh dev deploy --host-ip 192.168.1.100 --migrate --seed
+
+# Alternative: Use dedicated script
 ./scripts/deploy-dev.sh deploy --host-ip 192.168.1.100 --migrate --seed
 
-# Update services
-./scripts/deploy-dev.sh update
-
 # View status
-./scripts/deploy-dev.sh status
+./scripts/deploy.sh dev status
 ```
 
 ### Test Environment
 ```bash
-# Deploy test environment and run tests
-./scripts/deploy-test.sh deploy --migrate --seed --test
+# Deploy test environment and run tests using universal script
+./scripts/deploy.sh test deploy --migrate --seed --test
 
 # Run tests only
-./scripts/deploy-test.sh test
+./scripts/deploy.sh test test
 
 # Cleanup test environment
-./scripts/deploy-test.sh cleanup
+./scripts/deploy.sh test cleanup
 ```
 
 ### Production Deployment
 ```bash
-# Set required environment variables
+# Set required NextAuth.js environment variables
+export NEXTAUTH_SECRET=your-32-char-nextauth-secret
 export POSTGRES_PASSWORD=secure_prod_password
-export JWT_SECRET=your-256-bit-secret-key
-export NEXTAUTH_SECRET=your-nextauth-secret-key
 export REDIS_PASSWORD=secure_redis_password
 export PGADMIN_PASSWORD=secure_admin_password
 
-# Deploy to production
+# Deploy to production using universal script
+./scripts/deploy.sh prod deploy --domain demo.adhere.live --migrate
+
+# Alternative: Use dedicated script
 ./scripts/deploy-production.sh deploy --domain demo.adhere.live --migrate
 
 # Zero-downtime update
-./scripts/deploy-production.sh update
+./scripts/deploy.sh prod update
 
 # Create backup
-./scripts/deploy-production.sh backup
+./scripts/deploy.sh prod backup
 ```
 
 ## 📋 Common Commands
@@ -131,9 +144,8 @@ Every script supports these commands:
 
 **Required for Production:**
 ```bash
+NEXTAUTH_SECRET=your-32-char-nextauth-secret
 POSTGRES_PASSWORD=your_secure_password
-JWT_SECRET=your_256_bit_secret_key
-NEXTAUTH_SECRET=your_nextauth_secret_key
 REDIS_PASSWORD=your_redis_password
 PGADMIN_PASSWORD=your_pgadmin_password
 ```
