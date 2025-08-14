@@ -1,7 +1,7 @@
 /**
  * Auth.js v5 Configuration for Healthcare Management Platform
- * Implements unified authentication with credentials + social providers
- * Uses JWT sessions with proper security for healthcare compliance
+ * Implements unified authentication with credentials + social providers + 2FA
+ * Uses database sessions with healthcare-specific security features
  */
 
 import NextAuth from "next-auth"
@@ -9,6 +9,7 @@ import { PrismaAdapter } from "@auth/prisma-adapter"
 import CredentialsProvider from "next-auth/providers/credentials"
 import GoogleProvider from "next-auth/providers/google"
 import bcrypt from "bcryptjs"
+import { authenticator } from "otplib"
 import { prisma } from "@/lib/prisma"
 import { z } from "zod"
 
@@ -16,10 +17,11 @@ import { z } from "zod"
 type HealthcareRole = "DOCTOR" | "HSP" | "PATIENT" | "SYSTEM_ADMIN" | "HOSPITAL_ADMIN" | "CAREGIVER"
 type AccountStatus = "ACTIVE" | "INACTIVE" | "SUSPENDED" | "PENDING_VERIFICATION" | "DEACTIVATED"
 
-// Credentials validation schema with enhanced security
+// Credentials validation schema with enhanced security and 2FA
 const loginSchema = z.object({
   email: z.string().email("Invalid email format"),
-  password: z.string().min(8, "Password must be at least 8 characters")
+  password: z.string().min(8, "Password must be at least 8 characters"),
+  totpCode: z.string().optional()
 })
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
@@ -39,6 +41,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           label: "Password", 
           type: "password",
           placeholder: "Enter your password"
+        },
+        totpCode: {
+          label: "2FA Code",
+          type: "text",
+          placeholder: "Enter 6-digit 2FA code (if enabled)"
         }
       },
       
@@ -61,16 +68,24 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
               id: true,
               email: true,
               password_hash: true,
+              // Auth.js v5 compatible fields
+              name: true,
+              image: true,
+              emailVerified: true,
+              // Healthcare fields
               role: true,
               first_name: true,
               last_name: true,
               full_name: true,
               profile_picture_url: true,
               account_status: true,
-              email_verified: true,
+              email_verified: true, // Legacy field
               failed_login_attempts: true,
               locked_until: true,
-              last_login: true,
+              last_login_at: true,
+              // 2FA fields (CRITICAL - was missing!)
+              two_factor_enabled: true,
+              two_factor_secret: true,
               // Healthcare-specific profiles
               doctors_doctors_user_idTousers: {
                 select: {
@@ -147,13 +162,40 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             throw new Error("Invalid credentials")
           }
 
+          // 2FA Verification for Healthcare Security
+          if (user.two_factor_enabled) {
+            const { totpCode } = validatedFields.data
+            
+            if (!totpCode) {
+              throw new Error("2FA code is required for this account")
+            }
+            
+            // Verify TOTP code
+            const isValidTOTP = authenticator.verify({
+              token: totpCode,
+              secret: user.two_factor_secret!,
+              window: 1 // Allow 1 time step tolerance (30 seconds before/after)
+            })
+            
+            if (!isValidTOTP) {
+              // Increment failed attempts for invalid 2FA
+              await prisma.user.update({
+                where: { id: user.id },
+                data: {
+                  failed_login_attempts: { increment: 1 }
+                }
+              })
+              throw new Error("Invalid 2FA code")
+            }
+          }
+
           // Reset failed attempts and update last login on successful authentication
           await prisma.user.update({
             where: { id: user.id },
             data: {
               failed_login_attempts: 0,
               locked_until: null,
-              last_login: new Date()
+              last_login_at: new Date()
             }
           })
 
@@ -180,19 +222,21 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
               break
           }
 
-          // Return user object for session
+          // Return user object for session (Auth.js v5 compatible)
           return {
             id: user.id,
             email: user.email,
-            name: user.full_name || `${user.first_name} ${user.last_name}`.trim() || user.email.split('@')[0],
+            // Auth.js v5 expects these exact field names - use the actual schema fields
+            name: user.name || user.full_name || `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email.split('@')[0],
+            image: user.image || user.profile_picture_url,
+            emailVerified: user.emailVerified, // This is now the correct DateTime? field from schema
+            // Healthcare-specific fields (custom)
             role: user.role,
             businessId: businessId,
             profileId: profileData?.id || null,
             accountStatus: user.account_status,
             organizationId: profileData?.organization_id || null,
             profileData: profileData,
-            image: user.profile_picture_url,
-            emailVerified: user.email_verified ? new Date(user.email_verified) : null,
             // Healthcare business logic flags
             canPrescribeMedication: user.role === "DOCTOR",
             canAccessPatientData: ["DOCTOR", "HSP", "SYSTEM_ADMIN", "HOSPITAL_ADMIN"].includes(user.role),
@@ -289,11 +333,33 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             if (existingUser.accounts.length === 0) {
               console.log(`Linking ${account.provider} account to existing user: ${user.email}`)
             }
+            // Update user info with OAuth data if available
+            await prisma.user.update({
+              where: { id: existingUser.id },
+              data: {
+                name: existingUser.name || user.name,
+                image: existingUser.image || user.image,
+                emailVerified: existingUser.emailVerified || new Date()
+              }
+            })
             return true
           }
           
-          // For new social users, create with default role
+          // For new OAuth users, create with Auth.js v5 compatible fields
           console.log(`Creating new user from ${account.provider}: ${user.email}`)
+          await prisma.user.create({
+            data: {
+              email: user.email!,
+              name: user.name || user.email!.split('@')[0],
+              image: user.image,
+              emailVerified: new Date(), // OAuth users are auto-verified
+              role: "PATIENT", // Default role for OAuth users
+              account_status: "ACTIVE", // OAuth users start active
+              first_name: user.name?.split(' ')[0] || user.email!.split('@')[0],
+              last_name: user.name?.split(' ').slice(1).join(' '),
+              full_name: user.name || user.email!.split('@')[0]
+            }
+          })
           return true
           
         } catch (error) {
@@ -315,35 +381,93 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   },
   
   session: {
-    strategy: "jwt", // Using JWT for Auth.js v5 compatibility
-    maxAge: 8 * 60 * 60, // 8 hours for healthcare security
-    updateAge: 60 * 60, // 1 hour
+    strategy: "database", // Using database sessions for healthcare audit requirements
+    maxAge: 30 * 60, // 30 minutes for healthcare security compliance
+    updateAge: 5 * 60, // Update every 5 minutes for activity tracking
   },
   
   events: {
     async signIn({ user, account, isNewUser }) {
       console.log(`User ${user.email} signed in via ${account?.provider}`)
       
-      // Update last login for database users
-      if (account?.provider === "credentials") {
-        try {
-          await prisma.user.update({
-            where: { email: user.email! },
-            data: { last_login: new Date() }
+      try {
+        // Create healthcare audit log entry
+        if (user.id) {
+          await prisma.auditLog.create({
+            data: {
+              user_id: user.id,
+              action: "SIGN_IN",
+              resource: "authentication",
+              access_granted: true,
+              user_role: (user as any).role || "UNKNOWN",
+              details: {
+                provider: account?.provider || "unknown",
+                isNewUser: isNewUser || false,
+                userAgent: "unknown", // Will be captured in middleware
+                ipAddress: "0.0.0.0" // Will be captured in middleware
+              },
+              timestamp: new Date()
+            }
+          }).catch(error => {
+            console.error("Failed to create audit log:", error)
           })
-        } catch (error) {
-          console.error("Failed to update last login:", error)
         }
-      }
-      
-      // Log new user creation
-      if (isNewUser) {
-        console.log(`New user created: ${user.email} via ${account?.provider}`)
+        
+        // Update last login for all users
+        await prisma.user.update({
+          where: { email: user.email! },
+          data: { last_login_at: new Date() }
+        })
+        
+        // Update OAuth account last used time
+        if (account?.provider !== "credentials" && account?.provider) {
+          await prisma.account.updateMany({
+            where: {
+              userId: user.id!,
+              provider: account.provider
+            },
+            data: {
+              last_used_at: new Date(),
+              provider_email: user.email,
+              provider_name: user.name
+            }
+          }).catch(error => {
+            console.error("Failed to update OAuth account:", error)
+          })
+        }
+        
+        // Log new user creation
+        if (isNewUser) {
+          console.log(`New user created: ${user.email} via ${account?.provider}`)
+        }
+      } catch (error) {
+        console.error("Sign-in event error:", error)
       }
     },
     
     async signOut({ session, token }) {
       console.log(`User signed out: ${session?.user?.email || token?.email}`)
+      
+      try {
+        // Create healthcare audit log entry for sign out
+        const userId = session?.user?.id || (token as any)?.id
+        if (userId) {
+          await prisma.auditLog.create({
+            data: {
+              user_id: userId,
+              action: "SIGN_OUT",
+              resource: "authentication",
+              access_granted: true,
+              user_role: (session?.user as any)?.role || (token as any)?.role || "UNKNOWN",
+              timestamp: new Date()
+            }
+          }).catch(error => {
+            console.error("Failed to create sign-out audit log:", error)
+          })
+        }
+      } catch (error) {
+        console.error("Sign-out event error:", error)
+      }
     }
   },
   

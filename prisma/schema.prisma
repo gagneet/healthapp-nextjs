@@ -49,7 +49,14 @@ model Organization {
 model User {
   id                                                           String                         @id @default(uuid()) @db.Uuid
   email                                                        String                         @unique @db.VarChar(255)
-  password_hash                                                String                         @db.VarChar(255)
+  password_hash                                                String?                        @db.VarChar(255)
+  
+  // Auth.js v5 required fields
+  name                                                         String?                        @db.VarChar(255)
+  image                                                        String?                        @db.VarChar(500)
+  emailVerified                                                DateTime?                      @map("email_verified_at") @db.Timestamptz(6)
+  
+  // Healthcare-specific fields
   role                                                         enum_users_role
   account_status                                               enum_users_account_status?     @default(PENDING_VERIFICATION)
   first_name                                                   String?                        @db.VarChar(100)
@@ -58,6 +65,8 @@ model User {
   phone                                                        String?                        @db.VarChar(20)
   date_of_birth                                                DateTime?                      @db.Date
   gender                                                       enum_users_gender?
+  
+  // Legacy email verification (keeping for backward compatibility)
   email_verified                                               Boolean?                       @default(false)
   email_verification_token                                     String?                        @db.VarChar(255)
   password_reset_token                                         String?                        @db.VarChar(255)
@@ -67,6 +76,8 @@ model User {
   failed_login_attempts                                        Int?                           @default(0)
   locked_until                                                 DateTime?                      @db.Timestamptz(6)
   last_login_at                                                DateTime?                      @db.Timestamptz(6)
+  
+  // Legacy profile picture (keeping for backward compatibility, but `image` is primary for Auth.js)
   profile_picture_url                                          String?                        @db.VarChar(500)
   timezone                                                     String?                        @default("UTC") @db.VarChar(50)
   locale                                                       String?                        @default("en") @db.VarChar(10)
@@ -100,7 +111,6 @@ model User {
   user_roles                                                   user_roles[]
   
   // Authentication relationships
-  healthcare_sessions                                          HealthcareSession[]
   accounts                                                     Account[]
   sessions                                                     Session[]
   account_links                                                AccountLink[]
@@ -132,25 +142,6 @@ model User {
   @@map("users")
 }
 
-// Healthcare Session Management (Custom Auth System)
-model HealthcareSession {
-  id                    String    @id @default(uuid()) @db.Uuid
-  user_id               String    @db.Uuid
-  session_token         String    @unique @db.VarChar(255)
-  expires_at            DateTime  @db.Timestamptz(6)
-  ip_address            String?   @db.VarChar(45)
-  user_agent            String?   @db.Text
-  created_at            DateTime  @default(now()) @db.Timestamptz(6)
-  last_accessed_at      DateTime? @db.Timestamptz(6)
-
-  // Relations
-  users_users_idTousers User      @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
-
-  @@index([user_id], map: "healthcare_sessions_user_id")
-  @@index([session_token], map: "healthcare_sessions_token")
-  @@index([expires_at], map: "healthcare_sessions_expires")
-  @@map("healthcare_sessions")
-}
 
 // NextAuth.js tables for future OAuth integration (Google, Microsoft, Facebook, OKTA)
 model Account {
@@ -167,9 +158,16 @@ model Account {
   id_token          String? @db.Text
   session_state     String?
   
+  // Healthcare-specific OAuth metadata
+  provider_email    String? @db.VarChar(255)
+  provider_name     String? @db.VarChar(255)
+  linked_at         DateTime @default(now()) @db.Timestamptz(6)
+  last_used_at      DateTime? @db.Timestamptz(6)
+  
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
+  @@index([userId, provider])
   @@map("accounts")
 }
 
@@ -178,8 +176,19 @@ model Session {
   sessionToken String   @unique
   userId       String   @db.Uuid
   expires      DateTime
+  
+  // Healthcare-specific session tracking fields
+  ip_address            String?   @db.VarChar(45)
+  user_agent            String?   @db.Text
+  created_at            DateTime  @default(now()) @db.Timestamptz(6)
+  last_accessed_at      DateTime? @updatedAt @db.Timestamptz(6)
+  healthcare_context    Json?     @default("{}")
+  
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@index([userId], map: "sessions_user_id")
+  @@index([expires], map: "sessions_expires")
+  @@index([ip_address], map: "sessions_ip_address")
   @@map("sessions")
 }
 

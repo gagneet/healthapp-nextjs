@@ -144,22 +144,56 @@ export async function POST(request: NextRequest) {
     try {
       // Create user within a transaction to ensure data consistency
       const result = await prisma.$transaction(async (tx) => {
-        // Create base user record
+        // Create base user record with Auth.js v5 compatible fields
         const newUser = await tx.user.create({
           data: {
             email,
             password_hash: passwordHash,
+            
+            // ✅ Auth.js v5 required fields
+            name: fullName, // Required by Auth.js v5
+            image: null, // Profile picture can be set later
+            emailVerified: null, // Will be set when email is verified (DateTime)
+            
+            // ✅ Healthcare-specific fields
             first_name: firstName,
             last_name: lastName,
             full_name: fullName,
             role,
             phone: phone || null,
             date_of_birth: dateOfBirth ? new Date(dateOfBirth) : null,
-            account_status: "ACTIVE", // Users are active by default, can be changed based on business requirements
-            email_verified: false, // Will be verified through email confirmation
+            account_status: "PENDING_VERIFICATION", // Better default for healthcare
+            email_verified: false, // Legacy field for backward compatibility
+            two_factor_enabled: false, // Default 2FA to disabled
+            failed_login_attempts: 0,
             password_changed_at: new Date(),
             created_at: new Date(),
-            updated_at: new Date()
+            updated_at: new Date(),
+            
+            // ✅ Healthcare compliance fields
+            hipaa_consent_date: null, // Will be set when user accepts HIPAA terms
+            terms_accepted_at: null,
+            privacy_policy_accepted_at: null,
+            
+            // ✅ Generate email verification token
+            email_verification_token: crypto.randomUUID(), // For email verification flow
+            
+            // ✅ Default preferences for healthcare
+            preferences: {
+              privacy: {
+                profile_visible: true,
+                share_data_for_research: false
+              },
+              accessibility: {
+                large_text: false,
+                high_contrast: false
+              },
+              notifications: {
+                sms: false,
+                push: true,
+                email: true
+              }
+            }
           }
         })
 
@@ -220,13 +254,27 @@ export async function POST(request: NextRequest) {
         user: {
           id: result.user.id,
           email: result.user.email,
-          name: result.user.full_name,
+          name: result.user.name, // Now using Auth.js v5 compatible field
           firstName: result.user.first_name,
           lastName: result.user.last_name,
           role: result.user.role,
           accountStatus: result.user.account_status,
           profileId: result.profile?.id || null,
-          businessId: result.profile?.doctor_id || result.profile?.patient_id || result.profile?.hsp_id || null
+          businessId: result.profile?.doctor_id || result.profile?.patient_id || result.profile?.hsp_id || null,
+          requiresVerification: role !== "PATIENT", // Doctors and HSPs need verification
+          requiresEmailVerification: true,
+          requiresHipaaConsent: true,
+          emailVerificationToken: result.user.email_verification_token
+        },
+        nextSteps: {
+          emailVerification: "Check your email for verification link",
+          ...(role === "DOCTOR" && {
+            doctorVerification: "Upload medical license and credentials for verification"
+          }),
+          ...(role === "HSP" && {
+            hspVerification: "Upload certifications and credentials for verification"
+          }),
+          hipaaConsent: "Review and accept HIPAA privacy policies"
         }
       }, { status: 201 })
 
