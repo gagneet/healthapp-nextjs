@@ -6,7 +6,7 @@
 
 import { NextRequest, NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
-import { authOptions } from "@/lib/auth"
+import { authOptions } from "@/app/api/auth/[...nextauth]/route"
 import { prisma } from "@/lib/prisma"
 import { 
   createSuccessResponse, 
@@ -62,8 +62,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
   const { page, limit, patientId, doctorId, searchQuery, status, sortBy, sortOrder } = paginationResult.data
   const skip = (page - 1) * limit
 
-  try {
-    let whereClause: any = {}
+  let whereClause: any = {}
 
     // Business Logic: Role-based data access control
     switch (session.user.role) {
@@ -181,11 +180,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
         limit,
         total
       }
-    )
-  } catch (error) {
-    console.error("Failed to fetch care plans:", error)
-    throw error
-  }
+    );
 })
 
 /**

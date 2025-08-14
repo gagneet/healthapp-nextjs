@@ -26,6 +26,7 @@
   "scripts": {
     "dev": "next dev -p 3002",
     "build": "next build",
+    "build:docker": "next build && echo 'Docker build completed - skipping static export for dynamic auth pages'",
     "start": "next start -p 3002",
     "lint": "next lint",
     "type-check": "tsc --noEmit",
@@ -112,7 +113,7 @@
     "morgan": "^1.10.0",
     "multer": "^2.0.2",
     "next": "^14.2.0",
-    "next-auth": "^4.24.0",
+    "next-auth": "^4.24.11",
     "node-cron": "^3.0.3",
     "nodemailer": "^6.10.1",
     "pg": "^8.11.3",

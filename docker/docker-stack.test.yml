@@ -5,17 +5,17 @@ services:
   postgres:
     image: postgres:15-alpine
     environment:
-      POSTGRES_DB: healthapp_test
-      POSTGRES_USER: healthapp_user
-      POSTGRES_PASSWORD: pg_password
+      POSTGRES_DB: ${POSTGRES_DB:-healthapp_prod}
+      POSTGRES_USER: ${POSTGRES_USER:-healthapp_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-secure_prod_password}
     volumes:
       - postgres_test_data:/var/lib/postgresql/data
     networks:
-      - healthapp-test-network
+      - healthapp-network
     ports:
-      - "5432:5432"
+      - "${HOST_PORT_DB:-5432}:5432"
     deploy:
-      replicas: 1
+      replicas: ${REPLICAS_POSTGRES:-1}
       placement:
         constraints:
           - node.role == manager
@@ -23,46 +23,96 @@ services:
         condition: on-failure
         delay: 5s
         max_attempts: 3
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 256M
+
+  redis:
+    image: redis:7-alpine
+    command: redis-server --requirepass ${REDIS_PASSWORD:-secure_prod_redis}
+    volumes:
+      - redis_test_data:/data
+    networks:
+      - healthapp-network
+    ports:
+      - "${HOST_PORT_REDIS:-6379}:6379"
+    deploy:
+      replicas: ${REPLICAS_REDIS:-1}
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+      resources:
+        limits:
+          memory: 256M
+        reservations:
+          memory: 128M
 
   pgadmin:
     image: dpage/pgadmin4:latest
     environment:
       PGADMIN_DEFAULT_EMAIL: admin@healthapp.com
-      PGADMIN_DEFAULT_PASSWORD: admin123
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-secure_admin_password}
       PGADMIN_CONFIG_SERVER_MODE: 'False'
+    volumes:
+      - pgadmin_test_data:/var/lib/pgadmin
     ports:
-      - "5050:80"
+      - "${HOST_PORT_PGADMIN:-5050}:80"
     networks:
-      - healthapp-test-network
+      - healthapp-network
     deploy:
-      replicas: 1
+      replicas: ${REPLICAS_PGADMIN:-1}
       placement:
         constraints:
           - node.role == manager
+      resources:
+        limits:
+          memory: 256M
+        reservations:
+          memory: 128M
 
-  backend:
-    image: healthapp-backend:test
+  app:
+    image: healthapp:prod
     environment:
       NODE_ENV: development
-      PORT: 3004
+      PORT: 3002
+      
+      # Database Configuration
       POSTGRES_HOST: postgres
       POSTGRES_PORT: 5432
-      POSTGRES_DB: healthapp_test
-      POSTGRES_USER: healthapp_user
-      POSTGRES_PASSWORD: pg_password
-      DATABASE_URL: postgresql://healthapp_user:pg_password@postgres:5432/healthapp_test?schema=public
-      JWT_SECRET: test_jwt_secret_key_2024
-      CORS_ORIGIN: http://localhost:3000
-      BACKEND_URL: http://localhost:3004
-      FRONTEND_URL: http://localhost:3000
+      POSTGRES_DB: ${POSTGRES_DB:-healthapp_prod}
+      POSTGRES_USER: ${POSTGRES_USER:-healthapp_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-secure_prod_password}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-healthapp_user}:${POSTGRES_PASSWORD:-secure_prod_password}@postgres:5432/${POSTGRES_DB:-healthapp_prod}?schema=public
+      
+      # NextAuth Configuration
+      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET:-prod-nextauth-secret-2024-secure-key}
+      NEXTAUTH_URL: ${NEXTAUTH_URL:-https://demo.adhere.live}
+      
+      # Application URLs
+      FRONTEND_URL: ${FRONTEND_URL:-https://demo.adhere.live}
+      BACKEND_URL: ${BACKEND_URL:-https://demo.adhere.live}
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-https://demo.adhere.live/api}
+      
+      # Redis Configuration
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-secure_prod_redis}
+      REDIS_URL: redis://:${REDIS_PASSWORD:-secure_prod_redis}@redis:6379
     ports:
-      - "3004:3004"
+      - target: 3002
+        published: 3002
+        protocol: tcp
+        mode: ingress
     networks:
-      - healthapp-test-network
+      - healthapp-network
     depends_on:
       - postgres
+      - redis
     deploy:
-      replicas: 1
+      replicas: 2
       update_config:
         parallelism: 1
         delay: 10s
@@ -77,41 +127,12 @@ services:
         reservations:
           memory: 512M
 
-  frontend:
-    image: healthapp-frontend:test
-    environment:
-      NODE_ENV: development
-      PORT: 3000
-      NEXT_PUBLIC_API_URL: http://localhost:3004
-      BACKEND_URL: http://backend:3004
-      DATABASE_URL: postgresql://healthapp_user:pg_password@postgres:5432/healthapp_test?schema=public
-    ports:
-      - "3000:3000"
-    networks:
-      - healthapp-test-network
-    depends_on:
-      - backend
-    deploy:
-      replicas: 1
-      update_config:
-        parallelism: 1
-        delay: 10s
-        order: start-first
-      restart_policy:
-        condition: on-failure
-        delay: 5s
-        max_attempts: 3
-      resources:
-        limits:
-          memory: 1024M
-        reservations:
-          memory: 512M
+networks:
+  healthapp-network:
+    driver: overlay
+    attachable: true
 
 volumes:
   postgres_test_data:
-    driver: local
-
-networks:
-  healthapp-test-network:
-    driver: overlay
-    attachable: true
+  redis_test_data:
+  pgadmin_test_data:

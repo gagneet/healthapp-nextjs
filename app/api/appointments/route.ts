@@ -1,18 +1,16 @@
 // app/api/appointments/route.ts - Appointments management API
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { verifyAuth } from '@/lib/auth-utils';
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
 export async function GET(request: NextRequest) {
   try {
-    const { user, error } = await verifyAuth(request);
-    if (error) {
-      return NextResponse.json({ 
-        status: false, 
-        statusCode: 401, 
-        payload: { error: { status: 'unauthorized', message: error } } 
-      }, { status: 401 });
+    const session = await getServerSession(authOptions);
+    if (!session?.user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+    const user = session.user;
 
     const { searchParams } = new URL(request.url);
     const patientId = searchParams.get('patient_id');
@@ -153,26 +151,21 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const { user, error } = await verifyAuth(request);
-    if (error) {
-      return NextResponse.json({ 
-        status: false, 
-        statusCode: 401, 
-        payload: { error: { status: 'unauthorized', message: error } } 
-      }, { status: 401 });
+    const session = await getServerSession(authOptions);
+    if (!session?.user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+    const user = session.user;
 
     const body = await request.json();
     const {
       patient_id,
       doctor_id,
       start_time,
-      appointment_time,
+      end_time,
+      appointment_type = 'CONSULTATION',
       slot_id,
-      appointment_type,
-      reason,
-      notes,
-      duration_minutes
+      notes
     } = body;
 
     // Validate user permissions
@@ -195,77 +188,59 @@ export async function POST(request: NextRequest) {
         where: { id: slot_id }
       });
       
-      if (!slot || !slot.is_available) {
+      if (!slot || slot.is_booked) {
         return NextResponse.json({
           status: false,
           statusCode: 409,
-          payload: { error: { status: 'conflict', message: 'Time slot not available' } }
+          payload: { error: { status: 'conflict', message: 'Time slot is not available' } }
         }, { status: 409 });
       }
     }
 
-    // Create appointment
-    const appointment = await prisma.$transaction(async (tx) => {
-      // Create the appointment
-      const newAppointment = await tx.appointment.create({
-        data: {
-          patient_id,
-          doctor_id,
-          start_time: new Date(start_time),
-          end_time: new Date(new Date(start_time).getTime() + (duration_minutes || 30) * 60000),
-          slot_id,
-          description: `${appointment_type || 'Consultation'}: ${reason || 'General consultation'}`,
-          details: { 
-            appointment_type, 
-            reason, 
-            notes, 
-            duration_minutes: duration_minutes || 30,
-            booked_by: user!.id 
-          },
-          created_at: new Date(),
-          updated_at: new Date()
-        },
-        include: {
-          patient: {
-            select: {
-              patient_id: true,
-              user: {
-                select: {
-                  first_name: true,
-                  last_name: true,
-                  email: true
-                }
+    const appointment = await prisma.appointment.create({
+      data: {
+        patient_id,
+        doctor_id,
+        start_time: new Date(start_time),
+        end_time: new Date(end_time),
+        appointment_type,
+        status: 'SCHEDULED',
+        notes: notes || '',
+        slot_id
+      },
+      include: {
+        patient: {
+          select: {
+            user: {
+              select: {
+                first_name: true,
+                last_name: true,
+                email: true
               }
             }
-          },
-          doctor: {
-            select: {
-              users_doctors_user_idTousers: {
-                select: {
-                  first_name: true,
-                  last_name: true
-                }
-              },
-              specialities: {
-                select: {
-                  name: true
-                }
+          }
+        },
+        doctor: {
+          select: {
+            users_doctors_user_idTousers: {
+              select: {
+                first_name: true,
+                last_name: true,
+                email: true
               }
             }
           }
         }
-      });
-
-      // Mark slot as unavailable if slot_id provided
-      if (slot_id) {
-        await tx.appointment_slots.update({
-          where: { id: slot_id },
-          data: { is_available: false }
-        });
       }
-
-      return newAppointment;
     });
+
+    // Mark slot as booked if slot_id was provided
+    if (slot_id) {
+      await prisma.appointment_slots.update({
+        where: { id: slot_id },
+        data: { is_booked: true }
+      });
+    }
 
     return NextResponse.json({
       status: true,
@@ -287,67 +262,82 @@ export async function POST(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
-    const { user, error } = await verifyAuth(request);
-    if (error) {
-      return NextResponse.json({ 
-        status: false, 
-        statusCode: 401, 
-        payload: { error: { status: 'unauthorized', message: error } } 
-      }, { status: 401 });
+    const session = await getServerSession(authOptions);
+    if (!session?.user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+    const user = session.user;
 
     const body = await request.json();
-    const { id, status, notes, reschedule_date, reschedule_time } = body;
+    const { id, status, notes, start_time, end_time } = body;
 
-    // Get appointment to verify permissions
-    const existingAppointment = await prisma.appointment.findUnique({
+    if (!id) {
+      return NextResponse.json({
+        status: false,
+        statusCode: 400,
+        payload: { error: { status: 'error', message: 'Appointment ID is required' } }
+      }, { status: 400 });
+    }
+
+    // Check if user can update this appointment
+    const appointment = await prisma.appointment.findUnique({
       where: { id },
       include: {
-        patient: { select: { user_id: true } },
-        doctor: { select: { user_id: true } }
+        patient: true,
+        doctor: true
       }
     });
 
-    if (!existingAppointment) {
+    if (!appointment) {
       return NextResponse.json({
         status: false,
         statusCode: 404,
-        payload: { error: { status: 'not_found', message: 'Appointment not found' } }
+        payload: { error: { status: 'error', message: 'Appointment not found' } }
       }, { status: 404 });
     }
 
-    // Check permissions
-    const canModify = 
-      user!.role === 'ADMIN' ||
-      (user!.role === 'DOCTOR' && existingAppointment.doctor?.user_id === user!.id) ||
-      (user!.role === 'PATIENT' && existingAppointment.patient?.user_id === user!.id);
-
-    if (!canModify) {
-      return NextResponse.json({
-        status: false,
-        statusCode: 403,
-        payload: { error: { status: 'forbidden', message: 'Cannot modify this appointment' } }
-      }, { status: 403 });
+    // Permission checks
+    if (user!.role === 'PATIENT') {
+      const patient = await prisma.patient.findFirst({
+        where: { user_id: user!.id }
+      });
+      if (!patient || appointment.patient_id !== patient.id) {
+        return NextResponse.json({
+          status: false,
+          statusCode: 403,
+          payload: { error: { status: 'forbidden', message: 'Can only update your own appointments' } }
+        }, { status: 403 });
+      }
+    } else if (user!.role === 'DOCTOR') {
+      const doctor = await prisma.doctors.findFirst({
+        where: { user_id: user!.id }
+      });
+      if (!doctor || appointment.doctor_id !== doctor.id) {
+        return NextResponse.json({
+          status: false,
+          statusCode: 403,
+          payload: { error: { status: 'forbidden', message: 'Can only update your own appointments' } }
+        }, { status: 403 });
+      }
     }
 
-    // Update appointment
     const updatedAppointment = await prisma.appointment.update({
       where: { id },
       data: {
         ...(status && { status }),
         ...(notes && { notes }),
-        ...(reschedule_date && { start_time: new Date(reschedule_date) }),
-        ...(reschedule_time && { appointment_time: reschedule_time }),
+        ...(start_time && { start_time: new Date(start_time) }),
+        ...(end_time && { end_time: new Date(end_time) }),
         updated_at: new Date()
       },
       include: {
         patient: {
           select: {
-            patient_id: true,
             user: {
               select: {
                 first_name: true,
-                last_name: true
+                last_name: true,
+                email: true
               }
             }
           }
@@ -357,7 +347,8 @@ export async function PUT(request: NextRequest) {
             users_doctors_user_idTousers: {
               select: {
                 first_name: true,
-                last_name: true
+                last_name: true,
+                email: true
               }
             }
           }

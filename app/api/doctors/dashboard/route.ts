@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requireAuth } from '@/lib/auth-helpers';
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { getDoctorDashboard, handleApiError, formatApiSuccess } from '@/lib/api-services';
 
 /**
@@ -9,14 +10,15 @@ import { getDoctorDashboard, handleApiError, formatApiSuccess } from '@/lib/api-
 export async function GET(request: NextRequest) {
   try {
     // Authenticate user and check if they're a doctor
-    const authResult = await requireAuth(request, ['DOCTOR', 'admin']);
-    if (authResult.error) {
-      return NextResponse.json(handleApiError(authResult.error), { 
-        status: authResult.error.status 
-      });
+    const session = await getServerSession(authOptions);
+    if (!session?.user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    if (!['DOCTOR', 'admin'].includes(session.user.role)) {
+      return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
     }
 
-    const { user } = authResult;
+    const user = session.user;
     const dashboardData = await getDoctorDashboard(user.id || user.userId);
     
     return NextResponse.json(formatApiSuccess(dashboardData, 'Dashboard data retrieved successfully'));

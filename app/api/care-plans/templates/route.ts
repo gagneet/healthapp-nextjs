@@ -6,7 +6,7 @@
 
 import { NextRequest, NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
-import { authOptions } from "@/lib/auth"
+import { authOptions } from "@/app/api/auth/[...nextauth]/route"
 import { prisma } from "@/lib/prisma"
 import { 
   createSuccessResponse, 
@@ -59,8 +59,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
   const { page, limit, specialityId, searchQuery, diagnosisCategory, sortBy, sortOrder } = paginationResult.data
   const skip = (page - 1) * limit
 
-  try {
-    let whereClause: any = {
+  let whereClause: any = {
       is_active: true // Only show active templates
     }
 
@@ -133,11 +132,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
         limit,
         total
       }
-    )
-  } catch (error) {
-    console.error("Failed to fetch care plan templates:", error)
-    throw error
-  }
+    );
 })
 
 /**

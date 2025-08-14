@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requireAuth, checkRateLimit } from '@/lib/auth-helpers';
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { checkRateLimit } from "@/lib/auth-helpers";
 import { 
   updatePatientAllergy, 
   deletePatientAllergy, 
@@ -23,14 +25,15 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     }
 
     // Authenticate user - Only healthcare providers can update allergies
-    const authResult = await requireAuth(request, ['DOCTOR', 'HSP', 'admin']);
-    if (authResult.error) {
-      return NextResponse.json(handleApiError(authResult.error), { 
-        status: authResult.error.status 
-      });
+    const session = await getServerSession(authOptions);
+    if (!session?.user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    if (!['DOCTOR', 'HSP', 'admin'].includes(session.user.role)) {
+      return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
     }
 
-    const { user } = authResult;
+    const user = session.user;
     const { id } = params;
     const updateData = await request.json();
 
@@ -59,14 +62,15 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
 export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
   try {
     // Authenticate user - Only healthcare providers can delete allergies
-    const authResult = await requireAuth(request, ['DOCTOR', 'admin']);
-    if (authResult.error) {
-      return NextResponse.json(handleApiError(authResult.error), { 
-        status: authResult.error.status 
-      });
+    const session = await getServerSession(authOptions);
+    if (!session?.user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    if (!['DOCTOR', 'admin'].includes(session.user.role)) {
+      return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
     }
 
-    const { user } = authResult;
+    const user = session.user;
     const { id } = params;
 
     if (!id) {
@@ -97,14 +101,15 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
 export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
   try {
     // Authenticate user - Only doctors can verify allergies
-    const authResult = await requireAuth(request, ['DOCTOR', 'admin']);
-    if (authResult.error) {
-      return NextResponse.json(handleApiError(authResult.error), { 
-        status: authResult.error.status 
-      });
+    const session = await getServerSession(authOptions);
+    if (!session?.user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    if (!['DOCTOR', 'admin'].includes(session.user.role)) {
+      return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
     }
 
-    const { user } = authResult;
+    const user = session.user;
     const { id } = params;
 
     if (!id) {

@@ -1,18 +1,16 @@
 // app/api/subscriptions/route.ts - Subscription management API
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { verifyAuth } from '@/lib/auth-utils';
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
 export async function GET(request: NextRequest) {
   try {
-    const { user, error } = await verifyAuth(request);
-    if (error) {
-      return NextResponse.json({ 
-        status: false, 
-        statusCode: 401, 
-        payload: { error: { status: 'unauthorized', message: error } } 
-      }, { status: 401 });
+    const session = await getServerSession(authOptions);
+    if (!session?.user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+    const user = session.user;
 
     const { searchParams } = new URL(request.url);
     const patientId = searchParams.get('patient_id');
@@ -120,14 +118,11 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const { user, error } = await verifyAuth(request);
-    if (error) {
-      return NextResponse.json({ 
-        status: false, 
-        statusCode: 401, 
-        payload: { error: { status: 'unauthorized', message: error } } 
-      }, { status: 401 });
+    const session = await getServerSession(authOptions);
+    if (!session?.user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+    const user = session.user;
 
     // Only doctors can create patient subscriptions
     if (user!.role !== 'DOCTOR') {
@@ -239,14 +234,11 @@ export async function POST(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
-    const { user, error } = await verifyAuth(request);
-    if (error) {
-      return NextResponse.json({ 
-        status: false, 
-        statusCode: 401, 
-        payload: { error: { status: 'unauthorized', message: error } } 
-      }, { status: 401 });
+    const session = await getServerSession(authOptions);
+    if (!session?.user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+    const user = session.user;
 
     const body = await request.json();
     const { id, status, auto_renewal, payment_method_id, notes } = body;
@@ -333,14 +325,11 @@ export async function PUT(request: NextRequest) {
 // GET available service plans
 async function getAvailablePlans(request: NextRequest) {
   try {
-    const { user, error } = await verifyAuth(request);
-    if (error) {
-      return NextResponse.json({ 
-        status: false, 
-        statusCode: 401, 
-        payload: { error: { status: 'unauthorized', message: error } } 
-      }, { status: 401 });
+    const session = await getServerSession(authOptions);
+    if (!session?.user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+    const user = session.user;
 
     const plans = await prisma.servicePlan.findMany({
       where: {

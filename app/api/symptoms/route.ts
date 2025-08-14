@@ -58,12 +58,11 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
   const category = searchParams.get('category')
   const severity = searchParams.get('severity')
 
-  try {
-    // Build where clause based on user role and filters
-    let whereClause: any = {}
+  // Build where clause based on user role and filters
+  let whereClause: any = {}
 
-    // Business Logic: Role-based data access
-    switch (session.user.role) {
+  // Business Logic: Role-based data access
+  switch (session.user.role) {
       case 'PATIENT':
         // Patients can only see their own symptoms
         whereClause.patient_id = session.user.profileId
@@ -89,45 +88,45 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
         break
       default:
         return createForbiddenResponse("Invalid role for symptom access")
-    }
+  }
 
-    // Apply patient filter (for healthcare providers)
-    if (patientId && ['DOCTOR', 'HSP', 'SYSTEM_ADMIN'].includes(session.user.role)) {
-      whereClause.patient_id = patientId
-    }
+  // Apply patient filter (for healthcare providers)
+  if (patientId && ['DOCTOR', 'HSP', 'SYSTEM_ADMIN'].includes(session.user.role)) {
+    whereClause.patient_id = patientId
+  }
 
-    // Apply search filter on symptom names
-    if (searchQuery) {
-      whereClause.symptoms = {
-        some: {
-          name: { contains: searchQuery, mode: 'insensitive' }
-        }
+  // Apply search filter on symptom names
+  if (searchQuery) {
+    whereClause.symptoms = {
+      some: {
+        name: { contains: searchQuery, mode: 'insensitive' }
       }
     }
+  }
 
-    // Apply category filter
-    if (category) {
-      whereClause.symptoms = {
-        some: {
-          category: category.toLowerCase()
-        }
+  // Apply category filter
+  if (category) {
+    whereClause.symptoms = {
+      some: {
+        category: category.toLowerCase()
       }
     }
+  }
 
-    // Apply severity filter
-    if (severity) {
-      whereClause.symptoms = {
-        some: {
-          severity: severity.toUpperCase()
-        }
+  // Apply severity filter
+  if (severity) {
+    whereClause.symptoms = {
+      some: {
+        severity: severity.toUpperCase()
       }
     }
+  }
 
-    // Get total count for pagination
-    const total = await prisma.symptom.count({ where: whereClause })
+  // Get total count for pagination
+  const total = await prisma.symptom.count({ where: whereClause })
 
-    // Fetch symptoms with related data
-    const patientSymptoms = await prisma.symptom.findMany({
+  // Fetch symptoms with related data
+  const patientSymptoms = await prisma.symptom.findMany({
       where: whereClause,
       skip,
       take: limit,
@@ -175,11 +174,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
       formattedSymptoms,
       200,
       { page, limit, total }
-    )
-  } catch (error) {
-    console.error("Failed to fetch symptoms:", error)
-    throw error
-  }
+    );
 })
 
 /**
@@ -207,9 +202,7 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
   }
 
   const symptomData = validationResult.data
-
-  try {
-    let targetPatientId: string
+  let targetPatientId: string
 
     // Business Logic: Determine which patient the symptoms are for
     if (symptomData.patientId) {
@@ -301,9 +294,5 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
     // TODO: Send alerts for severe symptoms to healthcare providers
     // TODO: Log audit trail for symptom recording
 
-    return createSuccessResponse(responseData, 201)
-  } catch (error) {
-    console.error("Failed to record symptoms:", error)
-    throw error
-  }
+    return createSuccessResponse(responseData, 201);
 })

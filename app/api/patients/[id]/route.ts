@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requireAuth } from '@/lib/auth-helpers';
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { getPatient, handleApiError, formatApiSuccess } from '@/lib/api-services';
 
 /**
@@ -12,14 +13,15 @@ export async function GET(
 ) {
   try {
     // Authenticate user
-    const authResult = await requireAuth(request, ['DOCTOR', 'HSP', 'PATIENT', 'admin']);
-    if (authResult.error) {
-      return NextResponse.json(handleApiError(authResult.error), { 
-        status: authResult.error.status 
-      });
+    const session = await getServerSession(authOptions);
+    if (!session?.user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    if (!['DOCTOR', 'HSP', 'PATIENT', 'admin'].includes(session.user.role)) {
+      return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
     }
 
-    const { user } = authResult;
+    const user = session.user;
     const patientId = params.id;
 
     // Additional authorization: patients can only access their own data

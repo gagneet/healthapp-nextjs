@@ -1,5 +1,8 @@
 'use client'
 
+// Force dynamic rendering for authenticated pages
+export const dynamic = 'force-dynamic'
+
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/lib/auth-context'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'

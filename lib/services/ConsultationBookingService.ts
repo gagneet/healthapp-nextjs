@@ -1,7 +1,5 @@
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '@/lib/prisma';
 import VideoConsultationService from './VideoConsultationService';
-
-const prisma = new PrismaClient();
 
 export interface BookConsultationData {
   doctorId: string;

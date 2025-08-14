@@ -1,18 +1,16 @@
 // app/api/admin/seed/route.ts - Admin seeding API
 import { NextRequest, NextResponse } from 'next/server';
-import { verifyAuth } from '@/lib/auth-utils';
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 // import { seedComprehensiveHealthcareData, clearTestData } from '@/lib/seed';
 
 export async function POST(request: NextRequest) {
   try {
-    const { user, error } = await verifyAuth(request);
-    if (error) {
-      return NextResponse.json({ 
-        status: false, 
-        statusCode: 401, 
-        payload: { error: { status: 'unauthorized', message: error } } 
-      }, { status: 401 });
+    const session = await getServerSession(authOptions);
+    if (!session?.user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+    const user = session.user;
 
     // Only admins can trigger seeding
     if (user!.role !== 'ADMIN') {
@@ -50,14 +48,11 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
-    const { user, error } = await verifyAuth(request);
-    if (error) {
-      return NextResponse.json({ 
-        status: false, 
-        statusCode: 401, 
-        payload: { error: { status: 'unauthorized', message: error } } 
-      }, { status: 401 });
+    const session = await getServerSession(authOptions);
+    if (!session?.user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+    const user = session.user;
 
     // Only admins can check seeding status
     if (user!.role !== 'ADMIN') {

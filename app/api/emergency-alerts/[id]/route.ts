@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requireAuth, checkRateLimit } from '@/lib/auth-helpers';
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { checkRateLimit } from "@/lib/auth-helpers";
 import { 
   acknowledgeEmergencyAlert, 
   resolveEmergencyAlert, 
@@ -23,14 +25,15 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
     }
 
     // Authenticate user
-    const authResult = await requireAuth(request, ['DOCTOR', 'HSP', 'admin']);
-    if (authResult.error) {
-      return NextResponse.json(handleApiError(authResult.error), { 
-        status: authResult.error.status 
-      });
+    const session = await getServerSession(authOptions);
+    if (!session?.user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    if (!['DOCTOR', 'HSP', 'admin'].includes(session.user.role)) {
+      return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
     }
 
-    const { user } = authResult;
+    const user = session.user;
     const { id } = params;
     const body = await request.json();
 

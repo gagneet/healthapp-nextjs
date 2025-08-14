@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requireAuth, checkRateLimit } from '@/lib/auth-helpers';
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { checkRateLimit } from "@/lib/auth-helpers";
 import { handleApiError, formatApiSuccess } from '@/lib/api-services';
 
 /**
@@ -18,11 +20,12 @@ export async function GET(request: NextRequest) {
     }
 
     // Authenticate user - only healthcare providers can access RxNorm
-    const authResult = await requireAuth(request, ['DOCTOR', 'HSP', 'admin']);
-    if (authResult.error) {
-      return NextResponse.json(handleApiError(authResult.error), { 
-        status: authResult.error.status 
-      });
+    const session = await getServerSession(authOptions);
+    if (!session?.user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    if (!['DOCTOR', 'HSP', 'admin'].includes(session.user.role)) {
+      return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
     }
 
     const { searchParams } = new URL(request.url);
@@ -55,7 +58,7 @@ export async function GET(request: NextRequest) {
     };
 
     // Log the RxNorm API usage for audit purposes
-    console.log(`RxNorm API accessed by user ${authResult.user?.id} for drug interaction check`);
+    console.log(`RxNorm API accessed by user ${session.user?.id} for drug interaction check`);
 
     return NextResponse.json(formatApiSuccess(mockRxNormData, 'RxNorm interaction data retrieved'));
   } catch (error) {
@@ -71,14 +74,15 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     // Admin only - importing drug data requires elevated privileges
-    const authResult = await requireAuth(request, ['admin']);
-    if (authResult.error) {
-      return NextResponse.json(handleApiError(authResult.error), { 
-        status: authResult.error.status 
-      });
+    const session = await getServerSession(authOptions);
+    if (!session?.user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    if (!['admin'].includes(session.user.role)) {
+      return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
     }
 
-    const { user } = authResult;
+    const user = session.user;
     const { rxcuiList, importAll } = await request.json();
 
     // Validation

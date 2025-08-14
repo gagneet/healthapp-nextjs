@@ -1,28 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import LaboratoryService from '@/lib/services/LaboratoryService';
-import jwt from 'jsonwebtoken';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret';
 
-async function getUserFromToken(request: NextRequest) {
-  try {
-    const authHeader = request.headers.get('authorization');
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return null;
-    }
-
-    const token = authHeader.substring(7);
-    const decoded = jwt.verify(token, JWT_SECRET) as any;
-    return decoded;
-  } catch (error) {
-    return null;
-  }
-}
 
 export async function POST(request: NextRequest) {
   try {
-    const user = await getUserFromToken(request);
-    if (!user) {
+    const session = await getServerSession(authOptions);
+    if (!session?.user) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
@@ -30,7 +16,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Only doctors can create lab orders
-    if (user.role !== 'DOCTOR') {
+    if (session.user.role !== 'DOCTOR') {
       return NextResponse.json(
         { error: 'Only doctors can create lab orders' },
         { status: 403 }
@@ -56,7 +42,7 @@ export async function POST(request: NextRequest) {
     }
 
     const result = await LaboratoryService.createLabOrder({
-      doctorId: user.id,
+      doctorId: session.user.id,
       patientId,
       testCodes,
       priority,
@@ -90,8 +76,8 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
-    const user = await getUserFromToken(request);
-    if (!user) {
+    const session = await getServerSession(authOptions);
+    if (!session?.user) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
@@ -101,8 +87,8 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const status = searchParams.get('status');
 
-    const userRole = user.role === 'DOCTOR' ? 'doctor' : 'patient';
-    const result = await LaboratoryService.getLabOrders(user.id, userRole, status || undefined);
+    const userRole = session.user.role === 'DOCTOR' ? 'doctor' : 'patient';
+    const result = await LaboratoryService.getLabOrders(session.user.id, userRole, status || undefined);
 
     if (!result.success) {
       return NextResponse.json(

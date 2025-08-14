@@ -1,18 +1,16 @@
 // app/api/consent/route.ts - Patient consent management API
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { verifyAuth } from '@/lib/auth-utils';
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
 export async function GET(request: NextRequest) {
   try {
-    const { user, error } = await verifyAuth(request);
-    if (error) {
-      return NextResponse.json({ 
-        status: false, 
-        statusCode: 401, 
-        payload: { error: { status: 'unauthorized', message: error } } 
-      }, { status: 401 });
+    const session = await getServerSession(authOptions);
+    if (!session?.user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+    const user = session.user;
 
     let whereClause: any = {};
 
@@ -33,22 +31,34 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url);
     const patientId = searchParams.get('patient_id');
-    const consentType = searchParams.get('consent_type');
 
     if (patientId && ['DOCTOR', 'HSP', 'ADMIN'].includes(user!.role)) {
       whereClause.patient_id = patientId;
     }
 
-    if (consentType) {
-      whereClause.consent_type = consentType;
-    }
+    const consents = await prisma.patient_consent.findMany({
+      where: whereClause,
+      include: {
+        patient: {
+          select: {
+            user: {
+              select: {
+                first_name: true,
+                last_name: true,
+                email: true
+              }
+            }
+          }
+        }
+      },
+      orderBy: { created_at: 'desc' }
+    });
 
-    // Stub implementation - return empty data for now
     return NextResponse.json({
       status: true,
       statusCode: 200,
       payload: {
-        data: { consents: [] },
+        data: { consents },
         message: 'Consent records retrieved successfully'
       }
     });
@@ -64,21 +74,76 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const { user, error } = await verifyAuth(request);
-    if (error) {
-      return NextResponse.json({ 
-        status: false, 
-        statusCode: 401, 
-        payload: { error: { status: 'unauthorized', message: error } } 
-      }, { status: 401 });
+    const session = await getServerSession(authOptions);
+    if (!session?.user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    const user = session.user;
+
+    const body = await request.json();
+    const {
+      patient_id,
+      consent_type,
+      consent_given,
+      consent_details,
+      expiry_date
+    } = body;
+
+    // Validation
+    if (!patient_id || !consent_type || consent_given === undefined) {
+      return NextResponse.json({
+        status: false,
+        statusCode: 400,
+        payload: { error: { status: 'error', message: 'Patient ID, consent type, and consent status are required' } }
+      }, { status: 400 });
     }
 
-    // Stub implementation - field name issues need to be resolved with proper schema
+    // Permission check
+    if (user!.role === 'PATIENT') {
+      const patient = await prisma.patient.findFirst({
+        where: { user_id: user!.id }
+      });
+      if (!patient || patient.id !== patient_id) {
+        return NextResponse.json({
+          status: false,
+          statusCode: 403,
+          payload: { error: { status: 'forbidden', message: 'Can only manage your own consent' } }
+        }, { status: 403 });
+      }
+    }
+
+    const consent = await prisma.patient_consent.create({
+      data: {
+        patient_id,
+        consent_type,
+        consent_given,
+        consent_details: consent_details || '',
+        granted_by: user!.id,
+        expiry_date: expiry_date ? new Date(expiry_date) : null
+      },
+      include: {
+        patient: {
+          select: {
+            user: {
+              select: {
+                first_name: true,
+                last_name: true,
+                email: true
+              }
+            }
+          }
+        }
+      }
+    });
+
     return NextResponse.json({
-      status: false,
-      statusCode: 501,
-      payload: { error: { status: 'not_implemented', message: 'Consent creation not yet implemented' } }
-    }, { status: 501 });
+      status: true,
+      statusCode: 201,
+      payload: {
+        data: { consent },
+        message: 'Consent record created successfully'
+      }
+    });
   } catch (error) {
     console.error('Error creating consent record:', error);
     return NextResponse.json({

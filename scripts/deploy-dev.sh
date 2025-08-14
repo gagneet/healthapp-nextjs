@@ -1,11 +1,7 @@
 #!/bin/bash
 
-# deploy-dev.sh - Deploy to development environment using Docker Swarm
+# deploy-dev.sh - Development environment deployment
 # Usage: ./scripts/deploy-dev.sh [COMMAND] [OPTIONS]
-# Examples:
-#   ./scripts/deploy-dev.sh deploy --migrate --seed
-#   ./scripts/deploy-dev.sh deploy --frontend-ip 192.168.1.10 --backend-ip 192.168.1.11
-#   ./scripts/deploy-dev.sh deploy --auto-yes
 
 set -e
 
@@ -21,22 +17,112 @@ STACK_NAME="healthapp-dev"
 STACK_FILE="docker/docker-stack.dev.yml"
 
 # Default values
+APP_NAME="healthapp"
+STACK_NAME="$APP_NAME-dev"
+DOMAIN="localhost"
+BRANCH="$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo 'master')"
+SCALE_APP=2
+SCALE_DB=1
+SCALE_REDIS=1
+SCALE_PGADMIN=1
+
+# Default ports
+PORT_APP=3002
+PORT_DB=5432
+PORT_REDIS=6379
+PORT_PGADMIN=5050
+
+# Default domains (same as main domain by default)
+DOMAIN_DB="$DOMAIN"
+DOMAIN_REDIS="$DOMAIN" 
+DOMAIN_PGADMIN="$DOMAIN"
+
+# Flags
 AUTO_YES=false
 RUN_MIGRATE=false
 RUN_SEED=false
-FRONTEND_IP="localhost"
-BACKEND_IP="localhost" 
-POSTGRES_IP="localhost"
-REDIS_IP="localhost"
+
+# Help function
+show_help() {
+    echo "🏥 HealthApp Development Environment Deployment"
+    echo "=============================================="
+    echo ""
+    echo "Environment: Development server deployment"
+    echo "Architecture: Next.js 14 + Node.js backend + PostgreSQL + Redis"
+    echo "Deployment: Docker Swarm with load balancing"
+    echo "Ports: Frontend(3002), Backend(3005), PostgreSQL(5432), Redis(6379), PgAdmin(5050)"
+    echo ""
+    echo "Usage: $0 [COMMAND] [OPTIONS]"
+    echo ""
+    echo "Commands:"
+    echo "  deploy    Deploy development stack to swarm"
+    echo "  update    Update running services"
+    echo "  stop      Remove stack from swarm"
+    echo "  logs      Show service logs"
+    echo "  status    Show service status and health"
+    echo "  scale     Scale specific service"
+    echo "  migrate   Run database migrations"
+    echo "  seed      Run database seeders"
+    echo "  backup    Backup development database"
+    echo ""
+    echo "Scaling Options:"
+    echo "  --scale N               Scale app service to N replicas (default: 2)"
+    echo "  --scale-db N            Scale database to N replicas (default: 1)"
+    echo "  --scale-redis N         Scale Redis to N replicas (default: 1)"
+    echo "  --scale-pgadmin N       Scale PgAdmin to N replicas (default: 1)"
+    echo ""
+    echo "Migration & Seeding:"
+    echo "  --migrate               Run database migrations (idempotent)"
+    echo "  --seed                  Run database seeders (idempotent)"
+    echo ""
+    echo "Network Configuration:"
+    echo "  --domain DOMAIN         Main application domain (default: localhost)"
+    echo "  --domain-db DOMAIN      Database domain/IP (default: same as --domain)"
+    echo "  --domain-redis DOMAIN   Redis domain/IP (default: same as --domain)"
+    echo "  --domain-pgadmin DOMAIN PgAdmin domain/IP (default: same as --domain)"
+    echo ""
+    echo "Port Configuration:"
+    echo "  --port-app PORT         Application port (default: 3002)"
+    echo "  --port-db PORT          Database port (default: 5432)"
+    echo "  --port-redis PORT       Redis port (default: 6379)"
+    echo "  --port-pgadmin PORT     PgAdmin port (default: 5050)"
+    echo ""
+    echo "Application Configuration:"
+    echo "  --app-name NAME         Stack and service name prefix (default: healthapp)"
+    echo "  --branch BRANCH         Git branch to deploy (default: current)"
+    echo ""
+    echo "Safety Options:"
+    echo "  --auto-yes              Skip confirmation prompts"
+    echo "  -h, --help          Show this help message"
+    echo ""
+    echo "Examples:"
+    echo "  $0 deploy --migrate --seed"
+    echo "  $0 deploy --host-ip 192.168.1.100"
+    echo "  $0 scale frontend 3"
+    echo "  $0 logs backend"
+    echo "  $0 backup"
+    echo ""
+}
 
 # Parse command line arguments
 parse_args() {
-    COMMAND=""
     while [[ $# -gt 0 ]]; do
         case $1 in
-            deploy|update|stop|logs|status|build|scale|migrate|seed)
-                COMMAND="$1"
-                shift
+            --scale)
+                SCALE_APP="$2"
+                shift 2
+                ;;
+            --scale-db)
+                SCALE_DB="$2"
+                shift 2
+                ;;
+            --scale-redis)
+                SCALE_REDIS="$2"
+                shift 2
+                ;;
+            --scale-pgadmin)
+                SCALE_PGADMIN="$2"
+                shift 2
                 ;;
             --migrate)
                 RUN_MIGRATE=true
@@ -46,170 +132,135 @@ parse_args() {
                 RUN_SEED=true
                 shift
                 ;;
+            --domain)
+                DOMAIN="$2"
+                shift 2
+                ;;
+            --domain-db)
+                DOMAIN_DB="$2"
+                shift 2
+                ;;
+            --domain-redis)
+                DOMAIN_REDIS="$2"
+                shift 2
+                ;;
+            --domain-pgadmin)
+                DOMAIN_PGADMIN="$2"
+                shift 2
+                ;;
+            --port-app)
+                PORT_APP="$2"
+                shift 2
+                ;;
+            --port-db)
+                PORT_DB="$2"
+                shift 2
+                ;;
+            --port-redis)
+                PORT_REDIS="$2"
+                shift 2
+                ;;
+            --port-pgadmin)
+                PORT_PGADMIN="$2"
+                shift 2
+                ;;
+            --app-name)
+                APP_NAME="$2"
+                STACK_NAME="$APP_NAME-dev"
+                shift 2
+                ;;
+            --branch)
+                BRANCH="$2"
+                shift 2
+                ;;
             --auto-yes)
                 AUTO_YES=true
                 shift
-                ;;
-            --frontend-ip)
-                FRONTEND_IP="$2"
-                shift 2
-                ;;
-            --backend-ip)
-                BACKEND_IP="$2"
-                shift 2
-                ;;
-            --postgres-ip)
-                POSTGRES_IP="$2"
-                shift 2
-                ;;
-            --redis-ip)
-                REDIS_IP="$2"
-                shift 2
-                ;;
-            --all-ip)
-                FRONTEND_IP="$2"
-                BACKEND_IP="$2"
-                POSTGRES_IP="$2"
-                REDIS_IP="$2"
-                shift 2
                 ;;
             -h|--help)
                 show_help
                 exit 0
                 ;;
             *)
-                if [ -z "$COMMAND" ]; then
-                    COMMAND="$1"
-                else
-                    # Store additional arguments (like service names)
-                    EXTRA_ARGS="$EXTRA_ARGS $1"
-                fi
-                shift
+                break
                 ;;
         esac
     done
 }
 
-# Help function
-show_help() {
-    echo "🏥 HealthApp Development Deployment Script"
-    echo "=========================================="
-    echo ""
-    echo "Usage: $0 [COMMAND] [OPTIONS]"
-    echo ""
-    echo "Commands:"
-    echo "  deploy    Deploy the stack to swarm"
-    echo "  update    Update running services"
-    echo "  stop      Remove the stack from swarm"
-    echo "  logs      Show service logs"
-    echo "  status    Show service status"
-    echo "  build     Build and push images"
-    echo "  scale     Scale specific service"
-    echo "  migrate   Run database migrations"
-    echo "  seed      Run database seeders"
-    echo ""
-    echo "Options:"
-    echo "  --migrate             Run migrations after deployment"
-    echo "  --seed                Run seeders after deployment"
-    echo "  --auto-yes            Skip confirmation prompts"
-    echo "  --frontend-ip IP      Deploy frontend to specific IP"
-    echo "  --backend-ip IP       Deploy backend to specific IP"
-    echo "  --postgres-ip IP      Deploy PostgreSQL to specific IP"
-    echo "  --redis-ip IP         Deploy Redis to specific IP"
-    echo "  --all-ip IP           Deploy all services to same IP"
-    echo "  -h, --help            Show this help message"
-    echo ""
-    echo "Examples:"
-    echo "  $0 deploy                                    # Deploy development stack"
-    echo "  $0 deploy --migrate --seed                   # Deploy with DB setup"
-    echo "  $0 deploy --all-ip 192.168.1.100           # Deploy all to one server"
-    echo "  $0 deploy --frontend-ip 192.168.1.10 --backend-ip 192.168.1.11  # Multi-server"
-    echo "  $0 logs backend                              # Show backend service logs"
-    echo "  $0 scale backend 3                           # Scale backend to 3 replicas"
-    echo ""
-}
-
-# Check if Docker Swarm is initialized
+# Check Docker Swarm
 check_swarm() {
     if ! docker info --format '{{.Swarm.LocalNodeState}}' | grep -q active; then
-        echo -e "${YELLOW}[WARNING]${NC} Docker Swarm is not active. Initializing..."
+        echo -e "${YELLOW}[WARNING]${NC} Docker Swarm not active. Initializing..."
         docker swarm init
         echo -e "${GREEN}[SUCCESS]${NC} Docker Swarm initialized!"
     fi
 }
 
-# Build and push images
+# Build development images
 build_images() {
     echo -e "${BLUE}[INFO]${NC} Building development images..."
     
-    # Build backend image
-    echo -e "${BLUE}[INFO]${NC} Building backend image..."
     docker build -f docker/Dockerfile.local --target backend-dev -t healthapp-backend:dev .
-    
-    # Build frontend image
-    echo -e "${BLUE}[INFO]${NC} Building frontend image..."
     docker build -f docker/Dockerfile.local --target frontend-dev -t healthapp-frontend:dev .
     
-    echo -e "${GREEN}[SUCCESS]${NC} Images built successfully!"
+    echo -e "${GREEN}[SUCCESS]${NC} Development images built!"
 }
 
 # Deploy stack
 deploy_stack() {
     echo -e "${BLUE}[INFO]${NC} Deploying HealthApp development stack..."
-    echo -e "${BLUE}[INFO]${NC} Configuration:"
-    echo -e "${BLUE}[INFO]${NC}   Frontend:  $FRONTEND_IP:3002"
-    echo -e "${BLUE}[INFO]${NC}   Backend:   $BACKEND_IP:3005"
-    echo -e "${BLUE}[INFO]${NC}   PostgreSQL:$POSTGRES_IP:5432"
-    echo -e "${BLUE}[INFO]${NC}   Redis:     $REDIS_IP:6379"
+    echo -e "${BLUE}[INFO]${NC} Host IP: $HOST_IP"
     
-    # Export environment variables for stack deployment
-    export FRONTEND_IP BACKEND_IP POSTGRES_IP REDIS_IP
-    export FRONTEND_URL="http://$FRONTEND_IP:3002"
-    export BACKEND_URL="http://$BACKEND_IP:3005"
-    export POSTGRES_HOST="$POSTGRES_IP"
-    export REDIS_HOST="$REDIS_IP"
+    export HOST_IP
+    export FRONTEND_URL="http://$HOST_IP:3002"
+    export BACKEND_URL="http://$HOST_IP:3005"
+    export POSTGRES_HOST="$HOST_IP"
+    export REDIS_HOST="$HOST_IP"
     
+    # Set development environment variables
+    export POSTGRES_DB=healthapp_dev
+    export POSTGRES_USER=healthapp_user
+    export POSTGRES_PASSWORD=dev_password
+    export JWT_SECRET=dev_jwt_secret_key_2024
+    export REDIS_PASSWORD=dev_redis_password
+    
+    build_images
     docker stack deploy -c $STACK_FILE $STACK_NAME
     
-    echo -e "${GREEN}[SUCCESS]${NC} Stack deployed successfully!"
-    echo -e "${BLUE}[INFO]${NC} Frontend: http://$FRONTEND_IP:3002"
-    echo -e "${BLUE}[INFO]${NC} Backend API: http://$BACKEND_IP:3005"
-    echo -e "${BLUE}[INFO]${NC} PgAdmin: http://$FRONTEND_IP:5050"
-    echo ""
+    echo -e "${GREEN}[SUCCESS]${NC} Development stack deployed!"
+    echo -e "${BLUE}[INFO]${NC} Frontend: http://$HOST_IP:3002"
+    echo -e "${BLUE}[INFO]${NC} Backend API: http://$HOST_IP:3005"
+    echo -e "${BLUE}[INFO]${NC} PgAdmin: http://$HOST_IP:5050"
     
-    # Run migrations if requested
-    if [ "$RUN_MIGRATE" = true ]; then
-        echo -e "${YELLOW}[INFO]${NC} Running database migrations..."
-        sleep 15  # Wait for services to be ready
-        run_migrations
-    fi
-    
-    # Run seeders if requested
-    if [ "$RUN_SEED" = true ]; then
-        echo -e "${YELLOW}[INFO]${NC} Running database seeders..."
-        if [ "$RUN_MIGRATE" = false ]; then
-            sleep 15  # Wait for services to be ready if migrations weren't run
+    if [ "$RUN_MIGRATE" = true ] || [ "$RUN_SEED" = true ]; then
+        echo -e "${BLUE}[INFO]${NC} Waiting for services to be ready..."
+        sleep 30
+        
+        if [ "$RUN_MIGRATE" = true ]; then
+            run_migrations
         fi
-        run_seeders
+        
+        if [ "$RUN_SEED" = true ]; then
+            run_seeders
+        fi
     fi
-    
-    echo -e "${YELLOW}[NEXT]${NC} Run './scripts/deploy-dev.sh logs' to see logs"
-    echo -e "${YELLOW}[NEXT]${NC} Run './scripts/deploy-dev.sh status' to check service status"
 }
 
 # Update services
 update_services() {
     echo -e "${BLUE}[INFO]${NC} Updating development services..."
+    build_images
     docker service update --force ${STACK_NAME}_backend
     docker service update --force ${STACK_NAME}_frontend
-    echo -e "${GREEN}[SUCCESS]${NC} Services updated successfully!"
+    echo -e "${GREEN}[SUCCESS]${NC} Services updated!"
 }
 
 # Stop stack
 stop_stack() {
-    echo -e "${BLUE}[INFO]${NC} Removing HealthApp development stack..."
+    echo -e "${BLUE}[INFO]${NC} Removing development stack..."
     docker stack rm $STACK_NAME
-    echo -e "${GREEN}[SUCCESS]${NC} Stack removed successfully!"
+    echo -e "${GREEN}[SUCCESS]${NC} Stack removed!"
 }
 
 # Show logs
@@ -230,12 +281,12 @@ show_logs() {
 
 # Show status
 show_status() {
-    echo -e "${BLUE}[INFO]${NC} HealthApp Development Stack Status:"
+    echo -e "${BLUE}[INFO]${NC} Development Stack Status:"
     echo ""
     docker stack services $STACK_NAME
     echo ""
-    echo -e "${BLUE}[INFO]${NC} Service Details:"
-    docker service ps ${STACK_NAME} --no-trunc
+    echo -e "${BLUE}[INFO]${NC} Service Tasks:"
+    docker stack ps $STACK_NAME --no-trunc
 }
 
 # Scale service
@@ -250,92 +301,78 @@ scale_service() {
     
     echo -e "${BLUE}[INFO]${NC} Scaling ${STACK_NAME}_$service to $replicas replicas..."
     docker service scale ${STACK_NAME}_$service=$replicas
-    echo -e "${GREEN}[SUCCESS]${NC} Service scaled successfully!"
+    echo -e "${GREEN}[SUCCESS]${NC} Service scaled!"
 }
 
-# Run database migrations
+# Run migrations
 run_migrations() {
     echo -e "${BLUE}[INFO]${NC} Running database migrations..."
     
-    # Wait for backend service to be ready
-    echo -e "${BLUE}[INFO]${NC} Waiting for backend service..."
-    sleep 10
-    
-    # Get a backend container ID
     CONTAINER_ID=$(docker ps --filter "name=${STACK_NAME}_backend" --format "{{.ID}}" | head -n1)
-    
     if [ -z "$CONTAINER_ID" ]; then
-        echo -e "${RED}[ERROR]${NC} No backend containers found"
+        echo -e "${RED}[ERROR]${NC} Backend container not found"
         exit 1
     fi
     
-    # Ensure TypeScript migrations are compiled for Sequelize CLI
-    echo -e "${BLUE}[INFO]${NC} Compiling TypeScript migrations/seeders for development..."
     docker exec $CONTAINER_ID npm run migrations:build
-    
-    # Then run migrations
     docker exec $CONTAINER_ID npm run migrate
     echo -e "${GREEN}[SUCCESS]${NC} Migrations completed!"
 }
 
-# Run database seeders
+# Run seeders
 run_seeders() {
     echo -e "${BLUE}[INFO]${NC} Running database seeders..."
     
-    # Get a backend container ID
     CONTAINER_ID=$(docker ps --filter "name=${STACK_NAME}_backend" --format "{{.ID}}" | head -n1)
-    
     if [ -z "$CONTAINER_ID" ]; then
-        echo -e "${RED}[ERROR]${NC} No backend containers found"
+        echo -e "${RED}[ERROR]${NC} Backend container not found"
         exit 1
     fi
     
-    # Ensure TypeScript migrations/seeders are compiled (seeders need this too)
-    echo -e "${BLUE}[INFO]${NC} Ensuring TypeScript migrations/seeders are compiled..."
     docker exec $CONTAINER_ID npm run migrations:build
-    
-    # Then run seeders
     docker exec $CONTAINER_ID npm run seed
     echo -e "${GREEN}[SUCCESS]${NC} Seeders completed!"
 }
 
-# Main script logic
-main() {
-    # Parse command line arguments
-    parse_args "$@"
+# Backup database
+backup_database() {
+    echo -e "${BLUE}[INFO]${NC} Creating development database backup..."
     
-    # Check if no command was specified
-    if [ -z "$COMMAND" ]; then
-        echo -e "${YELLOW}[WARNING]${NC} No command specified"
-        show_help
+    BACKUP_FILE="healthapp_dev_backup_$(date +%Y%m%d_%H%M%S).sql"
+    CONTAINER_ID=$(docker ps --filter "name=${STACK_NAME}_postgres" --format "{{.ID}}" | head -n1)
+    
+    if [ -z "$CONTAINER_ID" ]; then
+        echo -e "${RED}[ERROR]${NC} PostgreSQL container not found"
         exit 1
     fi
     
+    docker exec $CONTAINER_ID pg_dump -U healthapp_user healthapp_dev > $BACKUP_FILE
+    echo -e "${GREEN}[SUCCESS]${NC} Database backup created: $BACKUP_FILE"
+}
+
+# Main function
+main() {
+    parse_args "$@"
     check_swarm
     
-    case $COMMAND in
+    case ${1:-""} in
         deploy)
-            build_images
             deploy_stack
             ;;
         update)
-            build_images
             update_services
             ;;
         stop)
             stop_stack
             ;;
         logs)
-            show_logs $EXTRA_ARGS
+            show_logs $2
             ;;
         status)
             show_status
             ;;
-        build)
-            build_images
-            ;;
         scale)
-            scale_service $EXTRA_ARGS
+            scale_service $2 $3
             ;;
         migrate)
             run_migrations
@@ -343,13 +380,21 @@ main() {
         seed)
             run_seeders
             ;;
+        backup)
+            backup_database
+            ;;
+        -h|--help|help)
+            show_help
+            ;;
+        "")
+            show_help
+            ;;
         *)
-            echo -e "${RED}[ERROR]${NC} Unknown command: $COMMAND"
+            echo -e "${RED}[ERROR]${NC} Unknown command: $1"
             show_help
             exit 1
             ;;
     esac
 }
 
-# Run main function with all arguments
 main "$@"

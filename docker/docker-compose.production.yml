@@ -1,0 +1,165 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database (Production)
+  postgres:
+    image: postgres:15-alpine
+    container_name: healthapp-postgres-prod
+    environment:
+      POSTGRES_DB: healthapp_prod
+      POSTGRES_USER: healthapp_user
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-CHANGE_THIS_PRODUCTION_PASSWORD}
+      POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --lc-collate=C --lc-ctype=C"
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data_prod:/var/lib/postgresql/data
+      - postgres_backups:/var/lib/postgresql/backups
+      - ./postgres-init:/docker-entrypoint-initdb.d
+    networks:
+      - healthapp-network
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U healthapp_user -d healthapp_prod"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Redis Cache (Production)
+  redis:
+    image: redis:7-alpine
+    container_name: healthapp-redis-prod
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-CHANGE_THIS_REDIS_PRODUCTION_PASSWORD}
+    command: redis-server --requirepass ${REDIS_PASSWORD:-CHANGE_THIS_REDIS_PRODUCTION_PASSWORD} --appendonly yes --save 900 1 --save 300 10 --save 60 10000
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data_prod:/data
+      - redis_backups:/backups
+    networks:
+      - healthapp-network
+    restart: always
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Next.js Application (Production)
+  app:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.production
+    container_name: healthapp-app-prod
+    environment:
+      NODE_ENV: production
+      PORT: 3002
+      HOST_IP: ${HOST_IP:-localhost}
+      DB_HOST_IP: postgres
+      REDIS_HOST_IP: redis
+    env_file:
+      - ../env_files/.env.production
+    ports:
+      - "3002:3002"
+    volumes:
+      - ../logs:/app/logs
+      - app_uploads:/app/uploads
+    networks:
+      - healthapp-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: always
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3002/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 512M
+
+  # Nginx Reverse Proxy (Production)
+  nginx:
+    image: nginx:alpine
+    container_name: healthapp-nginx-prod
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/ssl:ro
+      - nginx_cache:/var/cache/nginx
+    networks:
+      - healthapp-network
+    depends_on:
+      - app
+    restart: always
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Backup Service (Production)
+  backup:
+    image: postgres:15-alpine
+    container_name: healthapp-backup-prod
+    environment:
+      POSTGRES_DB: healthapp_prod
+      POSTGRES_USER: healthapp_user
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-CHANGE_THIS_PRODUCTION_PASSWORD}
+      PGPASSWORD: ${POSTGRES_PASSWORD:-CHANGE_THIS_PRODUCTION_PASSWORD}
+    volumes:
+      - postgres_backups:/backups
+      - ./scripts:/scripts:ro
+    networks:
+      - healthapp-network
+    depends_on:
+      - postgres
+    restart: "no"
+    command: /scripts/backup-db.sh
+    profiles:
+      - backup
+
+volumes:
+  postgres_data_prod:
+    driver: local
+  postgres_backups:
+    driver: local
+  redis_data_prod:
+    driver: local
+  redis_backups:
+    driver: local
+  app_uploads:
+    driver: local
+  nginx_cache:
+    driver: local
+
+networks:
+  healthapp-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.21.0.0/16

@@ -41,12 +41,13 @@ A **production-ready healthcare management system** built with **Next.js 14** fu
 
 ## 🏗️ Architecture
 
-This application uses a **modern Next.js full-stack architecture**:
+This application uses a **modern Next.js full-stack architecture** with **NextAuth.js authentication**:
 
 - **Full-Stack**: Next.js 14 with API routes handling both frontend and backend
-- **Database**: PostgreSQL with Prisma ORM for type-safe database operations
-- **Authentication**: NextAuth.js with healthcare role-based permissions
-- **Deployment**: Docker Compose, VM local, and hybrid deployment options
+- **Database**: PostgreSQL with Prisma ORM for type-safe database operations  
+- **Authentication**: NextAuth.js with PrismaAdapter and healthcare role-based permissions
+- **Deployment**: Universal Docker Swarm deployment scripts for dev/test/prod environments
+- **Session Management**: Database-backed sessions with NextAuth.js for enhanced security
 
 ```text
 healthapp-nextjs/
@@ -119,42 +120,57 @@ healthapp-nextjs/
 
 ### Installation Options
 
-Choose your preferred deployment method:
+Choose your preferred deployment method using the **universal deployment system**:
 
-#### **Option 1: Full Development Environment (Docker Compose)**
+#### **Option 1: Local Development Environment**
 
-Complete development setup with all services:
+Complete development setup with Docker Compose:
 
 ```bash
 # Clone repository
 git clone <repository-url>
 cd healthapp-nextjs
 
-# Deploy full development environment
-./scripts/deploy-nextjs-dev.sh --auto-yes --migrate --seed --domain localhost
+# Deploy local development environment
+./scripts/deploy.sh dev deploy --migrate --seed
+# OR use the dedicated local script
+./scripts/deploy-local.sh start --migrate --seed
 ```
 
 **Includes**: PostgreSQL, Redis, Next.js app, PgAdmin, Redis Commander, MailHog
 
-#### **Option 2: VM Local Installation**
+#### **Option 2: Development Server (Docker Swarm)**
 
-For VM deployment with local PostgreSQL:
-
-```bash
-# Deploy on VM with local PostgreSQL
-./scripts/deploy-vm-local.sh --domain your.domain.com --local-db
-```
-
-#### **Option 3: Hybrid Setup**
-
-Containerized database with local Next.js:
+For team development server deployment:
 
 ```bash
-# Hybrid deployment
-./scripts/deploy-vm-hybrid.sh --domain your.domain.com
+# Deploy development server with Docker Swarm
+./scripts/deploy.sh dev deploy --host-ip 192.168.1.100 --migrate --seed
 ```
 
-#### **Option 4: Manual Setup**
+#### **Option 3: Test Environment**
+
+For automated testing and QA:
+
+```bash
+# Deploy test environment with automated testing
+./scripts/deploy.sh test deploy --migrate --seed --test
+```
+
+#### **Option 4: Production Deployment**
+
+For production deployment with high availability:
+
+```bash
+# Set required NextAuth environment variables
+export NEXTAUTH_SECRET=your-nextauth-secret
+export POSTGRES_PASSWORD=secure_password
+
+# Deploy to production
+./scripts/deploy.sh prod deploy --domain demo.adhere.live --migrate
+```
+
+#### **Option 5: Manual Setup**
 
 ```bash
 # Clone and install
@@ -187,15 +203,24 @@ npm run dev
 
 ### Environment Variables
 
+#### **Required Environment Variables**
+
 | Variable | Description | Example |
 |----------|-------------|---------|
 | `NODE_ENV` | Environment mode | `development` |
 | `PORT` | Application port | `3000` |
 | `NEXTAUTH_URL` | NextAuth.js URL | `http://localhost:3000` |
-| `NEXTAUTH_SECRET` | NextAuth.js secret | `your-nextauth-secret` |
-| `JWT_SECRET` | JWT signing secret | `your-jwt-secret` |
+| `NEXTAUTH_SECRET` | NextAuth.js secret (32+ chars) | `your-nextauth-secret-32-chars-min` |
 | `DATABASE_URL` | PostgreSQL connection | `postgresql://user:pass@localhost:5432/healthapp` |
 | `NEXT_PUBLIC_API_URL` | Public API URL | `http://localhost:3000/api` |
+
+#### **Production Environment Variables**
+
+| Variable | Description | Example |
+|----------|-------------|---------|
+| `POSTGRES_PASSWORD` | Database password | `secure_production_password` |
+| `REDIS_PASSWORD` | Redis password | `secure_redis_password` |
+| `PGADMIN_PASSWORD` | PgAdmin password | `secure_admin_password` |
 
 ### Healthcare Role Configuration
 
@@ -229,10 +254,10 @@ All API responses follow a consistent healthcare-compliant structure:
 
 ### Authentication
 
-NextAuth.js manages authentication with healthcare role enforcement:
+NextAuth.js with PrismaAdapter manages authentication with healthcare role enforcement:
 
 ```typescript
-// API route example with role protection
+// API route example with NextAuth.js role protection
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 
@@ -245,6 +270,12 @@ export async function GET(request: NextRequest) {
   // Healthcare business logic...
 }
 ```
+
+**NextAuth.js Features:**
+- Database-backed sessions with PrismaAdapter
+- Healthcare role-based access control
+- Secure session management
+- Integration with PostgreSQL user management
 
 ### Core API Endpoints
 
@@ -360,20 +391,29 @@ if (session.user.role !== 'DOCTOR') {
 
 ## 🐳 Deployment Options
 
+### Universal Deployment System
+
+Use the **universal deployment script** for all environments:
+
+```bash
+# Universal deployment script syntax
+./scripts/deploy.sh [environment] [command] [options]
+# Environments: dev, test, prod
+# Commands: deploy, stop, logs, status, migrate, seed, scale
+```
+
 ### Development Environment
 
 Full containerized development setup:
 
 ```bash
 # Start complete development environment
-./scripts/deploy-nextjs-dev.sh \
-  --auto-yes \
-  --migrate \
-  --seed \
-  --domain localhost
+./scripts/deploy.sh dev deploy --migrate --seed --domain localhost
+# OR use dedicated local script
+./scripts/deploy-local.sh start --migrate --seed
 
 # Services included:
-# - Next.js application (port 3000)
+# - Next.js application (port 3002)
 # - PostgreSQL database (port 5432) 
 # - Redis cache (port 6379)
 # - PgAdmin (port 5050)
@@ -381,64 +421,100 @@ Full containerized development setup:
 # - MailHog email testing (port 8025)
 ```
 
-### Production Deployment
-
-#### VM with Local PostgreSQL
+### Test Environment
 
 ```bash
-# Production deployment on VM
-./scripts/deploy-vm-local.sh \
-  --domain your-healthcare-app.com \
-  --local-db
+# Deploy test environment with automated testing
+./scripts/deploy.sh test deploy --migrate --seed --test
+
+# Run tests only
+./scripts/deploy.sh test test
 
 # Includes:
-# - Local PostgreSQL installation
-# - Next.js production build
-# - Nginx reverse proxy
-# - SSL certificate setup (manual)
-# - Systemd service configuration
+# - Automated test execution
+# - Separate port allocation (3003, 5433, etc.)
+# - CI/CD integration ready
 ```
 
-#### Hybrid Container Setup
+### Production Deployment
 
 ```bash
-# Containerized database with local Next.js
-./scripts/deploy-vm-hybrid.sh \
-  --domain your-healthcare-app.com
+# Set required NextAuth.js environment variables
+export NEXTAUTH_SECRET="your-32-char-nextauth-secret"
+export POSTGRES_PASSWORD="secure_production_password"
+export REDIS_PASSWORD="secure_redis_password"
+export PGADMIN_PASSWORD="secure_admin_password"
+
+# Deploy to production with Docker Swarm
+./scripts/deploy.sh prod deploy \
+  --domain your-healthcare-app.com \
+  --scale 4 \
+  --migrate
+
+# Zero-downtime updates
+./scripts/deploy.sh prod update
+
+# Create backups
+./scripts/deploy.sh prod backup
 
 # Includes:
-# - PostgreSQL container
-# - Redis container  
-# - Local Next.js production build
-# - Systemd service management
+# - Docker Swarm orchestration
+# - High availability scaling
+# - Automated health checks
+# - Zero-downtime deployments
+# - Database-first deployment approach
 ```
 
 ### Service Management
 
+#### Docker Swarm Services (Production/Test/Dev)
+
 ```bash
-# Check application status
-sudo systemctl status healthapp-nextjs
+# Check service status
+./scripts/deploy.sh prod status
 
-# View application logs
-sudo journalctl -u healthapp-nextjs -f
+# View service logs
+./scripts/deploy.sh prod logs
+./scripts/deploy.sh prod logs app  # specific service
 
-# Restart application
-sudo systemctl restart healthapp-nextjs
+# Scale services
+./scripts/deploy.sh prod scale 6
+
+# Update services (zero-downtime)
+./scripts/deploy.sh prod update
 
 # Database management
-psql -h localhost -p 5432 -U healthapp_user -d healthapp_dev
+docker exec -it $(docker ps -q -f name=postgres) psql -U healthapp_user -d healthapp
+```
+
+#### Local Development Services
+
+```bash
+# Check service status
+./scripts/deploy-local.sh status
+
+# View logs
+./scripts/deploy-local.sh logs
+
+# Restart services
+./scripts/deploy-local.sh restart
+
+# Database access
+docker exec -it healthapp-postgres psql -U healthapp_user -d healthapp
 ```
 
 ## 🔒 Security & Healthcare Compliance
 
 ### Security Features
 
-- **NextAuth.js**: Modern authentication with secure session management
+- **NextAuth.js with PrismaAdapter**: Modern authentication with database-backed sessions
+- **Enhanced Session Security**: Database sessions instead of JWT tokens
 - **Role-Based Access Control**: Healthcare workflow compliance
 - **Input Validation**: Zod schemas for all healthcare data
 - **SQL Injection Protection**: Prisma ORM parameterized queries
 - **XSS Protection**: Next.js built-in security features
 - **Healthcare Audit Logging**: Complete activity tracking
+- **Environment Security**: Secure credential management for multi-environment deployments
 
 ### HIPAA Compliance Features
 
@@ -506,25 +582,36 @@ Healthcare-specific testing includes:
 - **Performance Metrics**: Database query optimization
 - **Health Checks**: Built-in API health endpoints
 
-## 🔄 Migration from Express Backend
+## 🔄 Migration Completed: JWT → NextAuth.js + Docker Infrastructure
 
-This application has been **completely migrated** from Express.js to pure Next.js:
+This application has been **successfully migrated** from JWT-based authentication to **NextAuth.js** with comprehensive **Docker deployment infrastructure**:
 
-### Migration Benefits
+### ✅ **Completed Migration Benefits**
 
-- **Unified Stack**: Single Next.js application instead of separate frontend/backend
+- **Modern Authentication**: NextAuth.js with PrismaAdapter instead of custom JWT handling
+- **Enhanced Security**: Database-backed sessions replace stateless JWT tokens
+- **Unified Deployment**: Universal Docker Swarm deployment scripts for all environments
 - **Better Type Safety**: End-to-end TypeScript with Prisma
-- **Modern Authentication**: NextAuth.js instead of custom JWT handling
-- **Simplified Deployment**: Single application deployment
-- **Better Performance**: Next.js optimizations and server-side rendering
+- **Scalable Infrastructure**: Database-first deployment approach with Docker Swarm
+- **Multi-Environment Support**: Dedicated dev/test/prod deployment configurations
 
-### Key Changes
+### ✅ **Key Migration Changes Completed**
 
-- **API Routes**: Migrated from Express routes to Next.js API routes
-- **Authentication**: NextAuth.js with healthcare role management
-- **Database**: PostgreSQL with Prisma instead of MySQL/Sequelize
-- **Validation**: Zod schemas for healthcare data validation
-- **Business Logic**: Role-based healthcare workflow enforcement
+- **Authentication System**: JWT → NextAuth.js with PrismaAdapter and database sessions
+- **Deployment Infrastructure**: Added universal deployment scripts supporting dev/test/prod
+- **Docker Architecture**: Comprehensive Docker Swarm configuration with scaling support
+- **Environment Management**: Proper environment variable handling for NextAuth.js
+- **Database Integration**: Enhanced PostgreSQL integration with Prisma for session management
+- **Security Enhancement**: Role-based healthcare workflow enforcement with NextAuth.js
+
+### 🚀 **New Deployment Capabilities**
+
+- **Universal Scripts**: Single deployment system for all environments (`./scripts/deploy.sh`)
+- **Docker Swarm**: Production-ready orchestration with auto-scaling
+- **Database-First**: Proper migration and seeding in deployment pipeline
+- **Zero-Downtime Updates**: Rolling updates for production environments
+- **Environment Isolation**: Separate configurations and port allocations
+- **Automated Testing**: Integrated test execution in deployment pipeline
 
 ## 🤝 Contributing
 
