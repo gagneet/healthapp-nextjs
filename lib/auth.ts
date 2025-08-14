@@ -229,7 +229,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             // Auth.js v5 expects these exact field names - use the actual schema fields
             name: user.name || user.full_name || `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email.split('@')[0],
             image: user.image || user.profile_picture_url,
-            emailVerified: user.emailVerified, // This is now the correct DateTime? field from schema
+            emailVerified: user.emailVerified, // Correct Prisma field name
             // Healthcare-specific fields (custom)
             role: user.role,
             businessId: businessId,
@@ -381,7 +381,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   },
   
   session: {
-    strategy: "database", // Using database sessions for healthcare audit requirements
+    strategy: "jwt", // Using JWT strategy for credentials provider compatibility
     maxAge: 30 * 60, // 30 minutes for healthcare security compliance
     updateAge: 5 * 60, // Update every 5 minutes for activity tracking
   },
@@ -473,6 +473,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   
   // Enable debug in development
   debug: process.env.NODE_ENV === "development",
+  
+  // Trust host configuration for deployment
+  trustHost: true, // Allow all hosts for deployment flexibility
   
   // Security configuration
   secret: process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET,

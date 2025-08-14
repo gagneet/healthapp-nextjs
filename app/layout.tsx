@@ -3,7 +3,6 @@ import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import { Toaster } from 'react-hot-toast'
 import { AuthProvider } from '@/lib/auth-context'
-import { SessionProvider } from '@/components/providers/SessionProvider'
 
 // Force all pages to be dynamic (no static generation)
 export const dynamic = 'force-dynamic'
@@ -36,33 +35,31 @@ export default function RootLayout({
       <body className={`${inter.className} h-full bg-gray-50`}>
         <ErrorBoundary>
           <GlobalErrorHandler />
-          <SessionProvider>
-            <AuthProvider>
-              <div id="root" className="h-full">
-                {children}
-              </div>
-              <Toaster 
-                position="top-center"
-                toastOptions={{
-                  duration: 4000,
+          <AuthProvider>
+            <div id="root" className="h-full">
+              {children}
+            </div>
+            <Toaster 
+              position="top-center"
+              toastOptions={{
+                duration: 4000,
+                style: {
+                  background: '#363636',
+                  color: '#fff',
+                },
+                success: {
                   style: {
-                    background: '#363636',
-                    color: '#fff',
+                    background: '#22c55e',
                   },
-                  success: {
-                    style: {
-                      background: '#22c55e',
-                    },
+                },
+                error: {
+                  style: {
+                    background: '#ef4444',
                   },
-                  error: {
-                    style: {
-                      background: '#ef4444',
-                    },
-                  },
-                }}
-              />
-            </AuthProvider>
-          </SessionProvider>
+                },
+              }}
+            />
+          </AuthProvider>
         </ErrorBoundary>
       </body>
     </html>

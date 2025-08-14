@@ -250,13 +250,14 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
           profilePictureUrl: patient.doctors.users_doctors_user_idTousers.profile_picture_url,
           
           email: patient.doctors.users_doctors_user_idTousers.email
-      } : null,
-      height: patient.height_cm,
-      weight: patient.weight_kg,
-      bloodType: patient.blood_type,
-      createdAt: patient.created_at,
-      updatedAt: patient.updated_at
-    }));
+        } : null,
+        height: patient.height_cm,
+        weight: patient.weight_kg,
+        bloodType: patient.blood_type,
+        createdAt: patient.created_at,
+        updatedAt: patient.updated_at
+      }
+    });
 
     return createSuccessResponse(
       formattedPatients,
