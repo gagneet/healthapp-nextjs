@@ -5,9 +5,9 @@ services:
   postgres:
     image: postgres:15-alpine
     environment:
-      POSTGRES_DB: ${POSTGRES_DB:-healthapp_test}
+      POSTGRES_DB: ${POSTGRES_DB:-healthapp_prod}
       POSTGRES_USER: ${POSTGRES_USER:-healthapp_user}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-secure_test_password}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-secure_prod_password}
     volumes:
       - postgres_test_data:/var/lib/postgresql/data
     networks:
@@ -31,7 +31,7 @@ services:
 
   redis:
     image: redis:7-alpine
-    command: redis-server --requirepass ${REDIS_PASSWORD:-secure_test_redis}
+    command: redis-server --requirepass ${REDIS_PASSWORD:-secure_prod_redis}
     volumes:
       - redis_test_data:/data
     networks:
@@ -74,7 +74,7 @@ services:
           memory: 128M
 
   app:
-    image: healthapp:test
+    image: healthapp:prod
     environment:
       NODE_ENV: development
       PORT: 3002
@@ -82,13 +82,13 @@ services:
       # Database Configuration
       POSTGRES_HOST: postgres
       POSTGRES_PORT: 5432
-      POSTGRES_DB: ${POSTGRES_DB:-healthapp_test}
+      POSTGRES_DB: ${POSTGRES_DB:-healthapp_prod}
       POSTGRES_USER: ${POSTGRES_USER:-healthapp_user}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-secure_test_password}
-      DATABASE_URL: postgresql://${POSTGRES_USER:-healthapp_user}:${POSTGRES_PASSWORD:-secure_test_password}@postgres:5432/${POSTGRES_DB:-healthapp_test}?schema=public
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-secure_prod_password}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-healthapp_user}:${POSTGRES_PASSWORD:-secure_prod_password}@postgres:5432/${POSTGRES_DB:-healthapp_prod}?schema=public
       
       # NextAuth Configuration
-      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET:-test-nextauth-secret-2024-secure-key}
+      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET:-prod-nextauth-secret-2024-secure-key}
       NEXTAUTH_URL: ${NEXTAUTH_URL:-https://demo.adhere.live}
       
       # Application URLs
@@ -99,20 +99,20 @@ services:
       # Redis Configuration
       REDIS_HOST: redis
       REDIS_PORT: 6379
-      REDIS_PASSWORD: ${REDIS_PASSWORD:-secure_test_redis}
-      REDIS_URL: redis://:${REDIS_PASSWORD:-secure_test_redis}@redis:6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-secure_prod_redis}
+      REDIS_URL: redis://:${REDIS_PASSWORD:-secure_prod_redis}@redis:6379
     ports:
       - target: 3002
         published: 3002
         protocol: tcp
-        mode: host
+        mode: ingress
     networks:
       - healthapp-network
     depends_on:
       - postgres
       - redis
     deploy:
-      replicas: ${REPLICAS_APP:-2}
+      replicas: 2
       update_config:
         parallelism: 1
         delay: 10s
