@@ -89,12 +89,12 @@ services:
       
       # NextAuth Configuration
       NEXTAUTH_SECRET: ${NEXTAUTH_SECRET:-test-nextauth-secret-2024-secure-key}
-      NEXTAUTH_URL: ${NEXTAUTH_URL:-http://localhost:3002}
+      NEXTAUTH_URL: ${NEXTAUTH_URL:-https://demo.adhere.live}
       
       # Application URLs
-      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3002}
-      BACKEND_URL: ${BACKEND_URL:-http://localhost:3002}
-      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:3002/api}
+      FRONTEND_URL: ${FRONTEND_URL:-https://demo.adhere.live}
+      BACKEND_URL: ${BACKEND_URL:-https://demo.adhere.live}
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-https://demo.adhere.live/api}
       
       # Redis Configuration
       REDIS_HOST: redis
@@ -102,7 +102,10 @@ services:
       REDIS_PASSWORD: ${REDIS_PASSWORD:-secure_test_redis}
       REDIS_URL: redis://:${REDIS_PASSWORD:-secure_test_redis}@redis:6379
     ports:
-      - "${HOST_PORT_APP:-3002}:3002"
+      - target: 3002
+        published: 3002
+        protocol: tcp
+        mode: host
     networks:
       - healthapp-network
     depends_on:
