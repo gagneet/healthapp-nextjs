@@ -395,20 +395,21 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       try {
         // Create healthcare audit log entry
         if (user.id) {
-          await prisma.auditLog.create({
+          await prisma.AuditLog.create({
             data: {
               user_id: user.id,
               action: "SIGN_IN",
               resource: "authentication",
               access_granted: true,
               user_role: (user as any).role || "UNKNOWN",
-              details: {
+              data_changes: {
                 provider: account?.provider || "unknown",
                 isNewUser: isNewUser || false,
                 userAgent: "unknown", // Will be captured in middleware
                 ipAddress: "0.0.0.0" // Will be captured in middleware
               },
-              timestamp: new Date()
+              timestamp: new Date(),
+              created_at: new Date()
             }
           }).catch(error => {
             console.error("Failed to create audit log:", error)

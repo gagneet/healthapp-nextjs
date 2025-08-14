@@ -63,27 +63,32 @@ export type TransitionUser = HealthcareUser & LegacyUserFields
 // ✅ Helper functions for backward compatibility
 export const userHelpers = {
   // Get display name with fallback
-  getDisplayName: (user: TransitionUser): string => {
+  getDisplayName: (user: TransitionUser | null): string => {
+    if (!user) return 'User'
     return user.name || user.full_name || `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email?.split('@')[0] || 'User'
   },
   
   // Get profile image with fallback
-  getProfileImage: (user: TransitionUser): string | null => {
+  getProfileImage: (user: TransitionUser | null): string | null => {
+    if (!user) return null
     return user.image || user.profile_picture_url || null
   },
   
   // Get first name with fallback
-  getFirstName: (user: TransitionUser): string => {
+  getFirstName: (user: TransitionUser | null): string => {
+    if (!user) return 'User'
     return user.first_name || user.name?.split(' ')[0] || user.email?.split('@')[0] || 'User'
   },
   
   // Get last name with fallback
-  getLastName: (user: TransitionUser): string => {
+  getLastName: (user: TransitionUser | null): string => {
+    if (!user) return ''
     return user.last_name || user.name?.split(' ').slice(1).join(' ') || ''
   },
   
   // Check if email is verified
-  isEmailVerified: (user: TransitionUser): boolean => {
+  isEmailVerified: (user: TransitionUser | null): boolean => {
+    if (!user) return false
     return !!user.emailVerified || !!user.email_verified
   }
 }
