@@ -1,10 +1,11 @@
 /**
  * Type definitions for NextAuth.js with Healthcare Management Platform extensions
- * Extends default NextAuth types to include healthcare-specific properties
+ * Auth.js v5 compatible with backward compatibility for legacy fields
+ * Migration-safe: supports both new and legacy field names during transition
  */
 
 import { DefaultSession, DefaultUser } from "next-auth"
-import { JWT, DefaultJWT } from "next-auth/jwt"
+import { JWT } from "next-auth/jwt"
 
 // Healthcare user roles
 type HealthcareRole = "DOCTOR" | "HSP" | "PATIENT" | "SYSTEM_ADMIN" | "HOSPITAL_ADMIN" | "CAREGIVER"
@@ -55,67 +56,114 @@ type HealthcareProfileData = DoctorProfile | PatientProfile | HSPProfile | Provi
 
 declare module "next-auth" {
   /**
-   * Extended User interface for healthcare management
+   * Extended User interface for healthcare management - Auth.js v5 compatible
    */
   interface User extends DefaultUser {
+    // ✅ Auth.js v5 standard fields
     id: string
-    role: HealthcareRole
-    businessId: string | null
-    profileId: string | null
-    accountStatus: AccountStatus
-    organizationId: string | null
-    profileData: HealthcareProfileData
-    emailVerified: boolean | null
+    name?: string | null
+    email?: string | null
+    image?: string | null
+    emailVerified?: Date | null
     
-    // Healthcare business logic permissions
+    // ✅ Healthcare-specific fields
+    role: HealthcareRole
+    businessId?: string | null
+    profileId?: string | null
+    accountStatus: AccountStatus
+    organizationId?: string | null
+    profileData?: HealthcareProfileData
+    
+    // ✅ Healthcare business logic permissions
     canPrescribeMedication: boolean
     canAccessPatientData: boolean
     canManageProviders: boolean
     canViewAllPatients: boolean
     
+    // ✅ LEGACY FIELDS - Keep for backward compatibility during transition
+    /** @deprecated Use name instead */
+    full_name?: string
+    /** @deprecated Use image instead */
+    profile_picture_url?: string
+    /** @deprecated Use name.split(' ')[0] instead */
+    first_name?: string
+    /** @deprecated Use name.split(' ').slice(1).join(' ') instead */
+    last_name?: string
+    
     // Audit trail
-    lastLoginAt: Date | null
+    lastLoginAt?: Date | null
   }
 
   /**
-   * Extended Session interface for healthcare management
+   * Extended Session interface for healthcare management - Auth.js v5 compatible
    */
   interface Session extends DefaultSession {
     user: {
+      // ✅ Auth.js v5 standard fields
       id: string
-      role: HealthcareRole
-      businessId: string | null
-      profileId: string | null
-      accountStatus: AccountStatus
-      organizationId: string | null
-      profileData: HealthcareProfileData
+      name?: string | null
+      email?: string | null
+      image?: string | null
+      emailVerified?: Date | null
       
-      // Healthcare business logic permissions
+      // ✅ Healthcare-specific extensions
+      role: HealthcareRole
+      businessId?: string | null
+      profileId?: string | null
+      accountStatus: AccountStatus
+      organizationId?: string | null
+      profileData?: HealthcareProfileData
+      
+      // ✅ Healthcare business logic flags
       canPrescribeMedication: boolean
       canAccessPatientData: boolean
       canManageProviders: boolean
       canViewAllPatients: boolean
+      
+      // ✅ LEGACY FIELDS - Keep for backward compatibility during transition
+      /** @deprecated Use name instead */
+      full_name?: string
+      /** @deprecated Use image instead */
+      profile_picture_url?: string
+      /** @deprecated Use name.split(' ')[0] instead */
+      first_name?: string
+      /** @deprecated Use name.split(' ').slice(1).join(' ') instead */
+      last_name?: string
     } & DefaultSession["user"]
   }
 }
 
 declare module "next-auth/jwt" {
   /**
-   * Extended JWT interface for healthcare management
+   * Extended JWT interface for healthcare management - Auth.js v5 compatible
    */
-  interface JWT extends DefaultJWT {
-    role: HealthcareRole
-    businessId: string | null
-    profileId: string | null
-    accountStatus: AccountStatus
-    organizationId: string | null
-    profileData: HealthcareProfileData
+  interface JWT {
+    // ✅ Auth.js v5 standard fields
+    id?: string
+    name?: string | null
+    email?: string | null
+    picture?: string | null
     
-    // Healthcare business logic permissions
-    canPrescribeMedication: boolean
-    canAccessPatientData: boolean
-    canManageProviders: boolean
-    canViewAllPatients: boolean
+    // ✅ Healthcare-specific fields
+    role?: HealthcareRole
+    businessId?: string | null
+    profileId?: string | null
+    accountStatus?: AccountStatus
+    organizationId?: string | null
+    profileData?: HealthcareProfileData
+    canPrescribeMedication?: boolean
+    canAccessPatientData?: boolean
+    canManageProviders?: boolean
+    canViewAllPatients?: boolean
+    
+    // ✅ Session management
+    lastActivity?: number
+    
+    // Standard JWT fields
+    sub?: string
+    iat?: number
+    exp?: number
+    jti?: string
   }
 }
 

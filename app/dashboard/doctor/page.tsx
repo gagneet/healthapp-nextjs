@@ -18,6 +18,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { useAuth } from '@/lib/auth-context'
 import { DashboardStats, Patient, CriticalAlert, RecentActivity } from '@/types/dashboard'
 import { formatDate, getAdherenceColor, getInitials } from '@/lib/utils'
+import { userHelpers } from '@/types/auth'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts'
 import PatientQuickView from '@/components/dashboard/patient-quick-view'
 
@@ -152,7 +153,7 @@ export default function DoctorDashboard() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">
-            Welcome back, Dr. {user?.last_name || user?.full_name?.split(' ').slice(-1)[0]}
+            Welcome back, Dr. {userHelpers.getLastName(user) || userHelpers.getFirstName(user)}
           </h1>
           <p className="text-gray-600 mt-1">
             Here's what's happening with your patients today.

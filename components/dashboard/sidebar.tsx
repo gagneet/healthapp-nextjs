@@ -72,7 +72,7 @@ const navigationItems = {
 export function Sidebar({ userRole }: SidebarProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const pathname = usePathname()
-  const { user, logout } = useAuth()
+  const { user, getDisplayName, getProfileImage, getFirstName, getLastName } = useAuth()
 
   const navigation = navigationItems[userRole] || navigationItems.doctor
 
@@ -150,23 +150,23 @@ function SidebarContent({ navigation, pathname, user, onLogout, onClose }: Sideb
       <div className="p-4 border-b border-gray-200">
         <div className="flex items-center">
           <div className="flex-shrink-0">
-            {user?.profile_picture_url ? (
+            {getProfileImage() ? (
               <img
                 className="h-10 w-10 rounded-full object-cover"
-                src={user.profile_picture_url}
-                alt={user?.first_name || user?.email}
+                src={getProfileImage()!}
+                alt={getDisplayName()}
               />
             ) : (
               <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
                 <span className="text-sm font-medium text-blue-700">
-                  {user?.first_name?.[0]}{user?.last_name?.[0]}
+                  {getFirstName()?.[0]}{getLastName()?.[0]}
                 </span>
               </div>
             )}
           </div>
           <div className="ml-3">
             <p className="text-sm font-medium text-gray-900">
-              {user?.first_name} {user?.last_name}
+              {getDisplayName()}
             </p>
             <p className="text-xs text-gray-500 capitalize">
               {user?.role?.toLowerCase().replace('_', ' ')}

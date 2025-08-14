@@ -24,6 +24,7 @@ import {
 } from '@heroicons/react/24/outline'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { useAuth } from '@/lib/auth-context'
+import { userHelpers } from '@/types/auth'
 import { formatDate, formatDateTime } from '@/lib/utils'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell } from 'recharts'
 // Dynamically import the SymptomReporter to prevent SSR/hydration issues
@@ -120,7 +121,7 @@ const COLORS = {
 const CHART_COLORS = [COLORS.success, COLORS.warning, COLORS.danger, COLORS.info]
 
 export default function PatientDashboard() {
-  const { user } = useAuth()
+  const { user, getFirstName } = useAuth()
   const [isLoading, setIsLoading] = useState(true)
   const [dashboardData, setDashboardData] = useState<PatientDashboardData | null>(null)
   const [showSymptomReporter, setShowSymptomReporter] = useState(false)
@@ -255,7 +256,7 @@ export default function PatientDashboard() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-xl font-bold text-gray-900">My Health</h1>
-            <p className="text-sm text-gray-600">Welcome back, {user?.first_name}</p>
+            <p className="text-sm text-gray-600">Welcome back, {getFirstName()}</p>
           </div>
           <button
             onClick={() => setShowSymptomReporter(true)}

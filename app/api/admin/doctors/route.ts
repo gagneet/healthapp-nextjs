@@ -2,7 +2,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/lib/auth";
 import bcrypt from 'bcryptjs';
 import { randomUUID } from 'crypto';
 
@@ -33,11 +33,17 @@ export async function GET(request: NextRequest) {
     
     if (search) {
       whereClause = {
-        OR: [
-          { first_name: { contains: search, mode: 'insensitive' } },
-          { last_name: { contains: search, mode: 'insensitive' } },
-          { user: { email: { contains: search, mode: 'insensitive' } } }
-        ]
+        users_doctors_user_idTousers: {
+          OR: [
+            // ✅ Auth.js v5 fields
+            { name: { contains: search, mode: 'insensitive' } },
+            // ✅ Legacy fields for backward compatibility  
+            { first_name: { contains: search, mode: 'insensitive' } },
+            { last_name: { contains: search, mode: 'insensitive' } },
+            { full_name: { contains: search, mode: 'insensitive' } },
+            { email: { contains: search, mode: 'insensitive' } }
+          ]
+        }
       };
     }
 
@@ -49,10 +55,19 @@ export async function GET(request: NextRequest) {
             select: {
               id: true,
               email: true,
-              phone: true,
-              account_status: true,
+              // ✅ Auth.js v5 fields
+              name: true,
+              image: true,
+              emailVerified: true,
+              // ✅ Legacy fields for backward compatibility
+              first_name: true,
+              last_name: true,
+              full_name: true,
+              profile_picture_url: true,
               email_verified: true,
-              
+              // ✅ Additional fields
+              phone: true,
+              account_status: true
             }
           },
           specialities: {

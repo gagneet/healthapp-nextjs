@@ -6,7 +6,7 @@
 
 import { NextRequest, NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
-import { authOptions } from "@/app/api/auth/[...nextauth]/route"
+import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { 
   createSuccessResponse, 
@@ -48,14 +48,22 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
           select: {
             id: true,
             email: true,
+            // ✅ Auth.js v5 fields
+            name: true,
+            image: true,
+            emailVerified: true,
+            // ✅ Legacy fields for backward compatibility
             first_name: true,
             last_name: true,
+            full_name: true,
+            profile_picture_url: true,
+            email_verified: true,
+            // ✅ Additional fields
             middle_name: true,
             phone: true,
             date_of_birth: true,
             gender: true,
             account_status: true,
-            profile_picture_url: true,
             timezone: true,
             locale: true,
             created_at: true,
@@ -108,22 +116,43 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
       ? Math.round((completedAppointments / recentAppointments) * 100) 
       : 0
 
-    // Format comprehensive response
+    // ✅ Helper to get name with fallbacks
+    const userName = doctor.users_doctors_user_idTousers.name || 
+                    doctor.users_doctors_user_idTousers.full_name ||
+                    `${doctor.users_doctors_user_idTousers.first_name || ''} ${doctor.users_doctors_user_idTousers.last_name || ''}`.trim()
+
+    const userImage = doctor.users_doctors_user_idTousers.image || 
+                     doctor.users_doctors_user_idTousers.profile_picture_url
+
+    const userEmailVerified = doctor.users_doctors_user_idTousers.emailVerified || 
+                             (doctor.users_doctors_user_idTousers.email_verified ? new Date() : null)
+
+    // Format comprehensive response with dual field support
     const profileData = {
       id: doctor.id,
       doctorId: doctor.doctor_id,
       user: {
         id: doctor.users_doctors_user_idTousers.id,
         email: doctor.users_doctors_user_idTousers.email,
-        name: `${doctor.users_doctors_user_idTousers.first_name} ${doctor.users_doctors_user_idTousers.last_name}`.trim(),
+        
+        // ✅ Auth.js v5 standard fields (preferred)
+        name: userName,
+        image: userImage,
+        emailVerified: userEmailVerified,
+        
+        // ✅ Legacy fields (for backward compatibility)
         firstName: doctor.users_doctors_user_idTousers.first_name,
         lastName: doctor.users_doctors_user_idTousers.last_name,
+        fullName: doctor.users_doctors_user_idTousers.full_name,
+        profilePictureUrl: doctor.users_doctors_user_idTousers.profile_picture_url,
+        emailVerifiedLegacy: doctor.users_doctors_user_idTousers.email_verified,
+        
+        // ✅ Additional healthcare fields
         middleName: doctor.users_doctors_user_idTousers.middle_name,
         phone: doctor.users_doctors_user_idTousers.phone,
         dateOfBirth: doctor.users_doctors_user_idTousers.date_of_birth,
         gender: doctor.users_doctors_user_idTousers.gender,
         accountStatus: doctor.users_doctors_user_idTousers.account_status,
-        profilePictureUrl: doctor.users_doctors_user_idTousers.profile_picture_url,
         timezone: doctor.users_doctors_user_idTousers.timezone,
         locale: doctor.users_doctors_user_idTousers.locale,
         lastLoginAt: doctor.users_doctors_user_idTousers.created_at
