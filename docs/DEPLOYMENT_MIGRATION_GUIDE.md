@@ -2,7 +2,22 @@
 
 ## Overview
 
-The HealthApp deployment has been **migrated to Docker Swarm exclusively**. This guide explains the migration from Docker Compose to Docker Swarm and the enhanced deployment capabilities.
+The HealthApp deployment has been **migrated to Docker Swarm exclusively** with **Auth.js v5 integration**. This guide explains the migration from Docker Compose to Docker Swarm and the enhanced deployment capabilities.
+
+## 🆕 **Latest Updates (August 2025)**
+
+### ✅ **Auth.js v5 Integration Completed**
+- **Modern Authentication Framework**: Migrated from Auth.js v4 to v5
+- **Enhanced Session Management**: Database-backed sessions with PrismaAdapter
+- **Healthcare Role Integration**: Full integration with healthcare role-based access control
+- **Automatic Migration**: All deployments include Auth.js v5 compatibility migrations
+- **Field Compatibility**: Seamless backward compatibility with legacy user fields
+
+### ✅ **Migration Infrastructure Consolidated**
+- **Single Migration System**: Consolidated multiple migration folders into unified Prisma structure
+- **Idempotent Operations**: All migrations and seeders support repeated execution without conflicts
+- **Comprehensive Test Data**: Restored complete healthcare test data (2 doctors, 5 patients, 1 admin, 1 provider/HSP)
+- **Zero-Downtime Deployments**: Backward-compatible migrations ensure seamless updates
 
 ## ✅ **What's New**
 

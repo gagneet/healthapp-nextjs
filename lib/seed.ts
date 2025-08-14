@@ -41,11 +41,21 @@ export async function seedComprehensiveHealthcareData() {
     // Hash password for all test users
     const hashedPassword = await bcrypt.hash('password123', 12);
 
-    // Create test users with all roles
+    // Helper function to create user with Auth.js v5 fields
+    const createUserData = (userData: any) => ({
+      ...userData,
+      // Auth.js v5 required fields
+      name: `${userData.first_name} ${userData.last_name}`.trim(),
+      email_verified_at: userData.email_verified ? userData.created_at : null,
+      image: null,
+    });
+
+    // Create test users with all roles (idempotent)
     const testUsers = await prisma.user.createMany({
+      skipDuplicates: true,
       data: [
         // 5 Patients
-        {
+        createUserData({
           id: '77777777-7777-7777-7777-777777777777',
           email: 'patient1@healthapp.com',
           password_hash: hashedPassword,
@@ -59,8 +69,8 @@ export async function seedComprehensiveHealthcareData() {
           email_verified: true,
           created_at: new Date('2024-01-01'),
           updated_at: new Date()
-        },
-        {
+        }),
+        createUserData({
           id: '88888888-8888-8888-8888-888888888888',
           email: 'patient2@healthapp.com',
           password_hash: hashedPassword,
@@ -74,8 +84,8 @@ export async function seedComprehensiveHealthcareData() {
           email_verified: true,
           created_at: new Date('2024-01-02'),
           updated_at: new Date()
-        },
-        {
+        }),
+        createUserData({
           id: '11111111-1111-1111-1111-111111111111',
           email: 'patient3@healthapp.com',
           password_hash: hashedPassword,
@@ -89,8 +99,8 @@ export async function seedComprehensiveHealthcareData() {
           email_verified: true,
           created_at: new Date('2024-01-03'),
           updated_at: new Date()
-        },
-        {
+        }),
+        createUserData({
           id: '22222222-2222-2222-2222-222222222222',
           email: 'patient4@healthapp.com',
           password_hash: hashedPassword,
@@ -104,8 +114,8 @@ export async function seedComprehensiveHealthcareData() {
           email_verified: true,
           created_at: new Date('2024-01-04'),
           updated_at: new Date()
-        },
-        {
+        }),
+        createUserData({
           id: '33333333-3333-3333-3333-333333333333',
           email: 'patient5@healthapp.com',
           password_hash: hashedPassword,
@@ -119,9 +129,9 @@ export async function seedComprehensiveHealthcareData() {
           email_verified: true,
           created_at: new Date('2024-01-05'),
           updated_at: new Date()
-        },
+        }),
         // 2 Doctors
-        {
+        createUserData({
           id: '99999999-9999-9999-9999-999999999999',
           email: 'doctor1@healthapp.com',
           password_hash: hashedPassword,
@@ -135,8 +145,8 @@ export async function seedComprehensiveHealthcareData() {
           email_verified: true,
           created_at: new Date('2024-01-01'),
           updated_at: new Date()
-        },
-        {
+        }),
+        createUserData({
           id: '44444444-4444-4444-4444-444444444444',
           email: 'doctor2@healthapp.com',
           password_hash: hashedPassword,
@@ -150,9 +160,9 @@ export async function seedComprehensiveHealthcareData() {
           email_verified: true,
           created_at: new Date('2024-01-01'),
           updated_at: new Date()
-        },
+        }),
         // HSP
-        {
+        createUserData({
           id: '55555555-5555-5555-5555-555555555555',
           email: 'hsp@healthapp.com',
           password_hash: hashedPassword,
@@ -166,9 +176,9 @@ export async function seedComprehensiveHealthcareData() {
           email_verified: true,
           created_at: new Date('2024-01-01'),
           updated_at: new Date()
-        },
+        }),
         // Admin
-        {
+        createUserData({
           id: '66666666-6666-6666-6666-666666666666',
           email: 'admin@healthapp.com',
           password_hash: hashedPassword,
@@ -182,9 +192,9 @@ export async function seedComprehensiveHealthcareData() {
           email_verified: true,
           created_at: new Date('2024-01-01'),
           updated_at: new Date()
-        },
+        }),
         // Provider Admin
-        {
+        createUserData({
           id: '10101010-1010-1010-1010-101010101010',
           email: 'provider@healthapp.com',
           password_hash: hashedPassword,
@@ -198,15 +208,17 @@ export async function seedComprehensiveHealthcareData() {
           email_verified: true,
           created_at: new Date('2024-01-01'),
           updated_at: new Date()
-        }
+        })
       ]
     });
 
     console.log(`✅ Created ${testUsers.count} test users`);
 
-    // Create organization first
-    const organization = await prisma.organization.create({
-      data: {
+    // Create organization first (idempotent)
+    const organization = await prisma.organization.upsert({
+      where: { id: 'org-healthcare-main' },
+      update: {},
+      create: {
         id: 'org-healthcare-main',
         name: 'HealthApp Medical Center',
         type: 'hospital',
@@ -231,9 +243,11 @@ export async function seedComprehensiveHealthcareData() {
 
     console.log(`✅ Created organization: ${organization.name}`);
 
-    // Create comprehensive medical specialties
-    const cardiologySpec = await prisma.speciality.create({
-      data: {
+    // Create comprehensive medical specialties (idempotent)
+    const cardiologySpec = await prisma.speciality.upsert({
+      where: { name: 'Cardiology' },
+      update: {},
+      create: {
         name: 'Cardiology',
         description: 'Heart and cardiovascular system specialist',
         created_at: new Date(),
@@ -241,8 +255,10 @@ export async function seedComprehensiveHealthcareData() {
       }
     });
     
-    const endocrinologySpec = await prisma.speciality.create({
-      data: {
+    const endocrinologySpec = await prisma.speciality.upsert({
+      where: { name: 'Endocrinology' },
+      update: {},
+      create: {
         name: 'Endocrinology',
         description: 'Hormonal disorders and diabetes specialist',
         created_at: new Date(),
@@ -250,8 +266,10 @@ export async function seedComprehensiveHealthcareData() {
       }
     });
     
-    const generalMedSpec = await prisma.speciality.create({
-      data: {
+    const generalMedSpec = await prisma.speciality.upsert({
+      where: { name: 'General Medicine' },
+      update: {},
+      create: {
         name: 'General Medicine',
         description: 'General medical practice',
         created_at: new Date(),
@@ -259,9 +277,11 @@ export async function seedComprehensiveHealthcareData() {
       }
     });
     
-    // Create remaining specialties without hard-coded IDs
-    const pediatricsSpec = await prisma.speciality.create({
-      data: {
+    // Create remaining specialties without hard-coded IDs (idempotent)
+    const pediatricsSpec = await prisma.speciality.upsert({
+      where: { name: 'Pediatrics' },
+      update: {},
+      create: {
         name: 'Pediatrics',
         description: 'Children\'s health specialist',
         created_at: new Date(),
@@ -269,8 +289,9 @@ export async function seedComprehensiveHealthcareData() {
       }
     });
     
-    // Continue creating other specialties
+    // Continue creating other specialties (idempotent)
     await prisma.speciality.createMany({
+      skipDuplicates: true,
       data: [
         {
           name: 'Orthopedics',
@@ -319,8 +340,9 @@ export async function seedComprehensiveHealthcareData() {
 
     console.log(`✅ Created specialities`);
 
-    // Create doctor profiles
+    // Create doctor profiles (idempotent)
     const doctorProfiles = await prisma.doctors.createMany({
+      skipDuplicates: true,
       data: [
         {
           id: '99999999-9999-9999-9999-999999999991',
@@ -349,9 +371,11 @@ export async function seedComprehensiveHealthcareData() {
 
     console.log(`✅ Created doctor profiles`);
 
-    // Create HSP profile
-    const hspProfile = await prisma.hsps.create({
-      data: {
+    // Create HSP profile (idempotent)
+    const hspProfile = await prisma.hsps.upsert({
+      where: { id: '55555555-5555-5555-5555-555555555551' },
+      update: {},
+      create: {
         id: '55555555-5555-5555-5555-555555555551',
         user_id: '55555555-5555-5555-5555-555555555555',
         hsp_id: 'HSP001',
@@ -366,9 +390,11 @@ export async function seedComprehensiveHealthcareData() {
 
     console.log(`✅ Created HSP profile`);
 
-    // Create provider
-    const provider = await prisma.providers.create({
-      data: {
+    // Create provider (idempotent)
+    const provider = await prisma.providers.upsert({
+      where: { id: '10101010-1010-1010-1010-101010101011' },
+      update: {},
+      create: {
         id: '10101010-1010-1010-1010-101010101011',
         user_id: '10101010-1010-1010-1010-101010101010',
         name: 'HealthApp Provider System',
@@ -388,8 +414,9 @@ export async function seedComprehensiveHealthcareData() {
 
     console.log(`✅ Created provider`);
 
-    // Create patient profiles with detailed medical data
+    // Create patient profiles with detailed medical data (idempotent)
     const patientProfiles = await prisma.patient.createMany({
+      skipDuplicates: true,
       data: [
         {
           id: 'pat-sarah-johnson',
@@ -535,8 +562,9 @@ export async function seedComprehensiveHealthcareData() {
 
     console.log(`✅ Created patient profiles`);
 
-    // Create comprehensive medicines database
+    // Create comprehensive medicines database (idempotent)
     const medicines = await prisma.medicine.createMany({
+      skipDuplicates: true,
       data: [
         {
           id: '550e8400-e29b-41d4-a716-446655440001',
@@ -723,8 +751,9 @@ export async function seedComprehensiveHealthcareData() {
 
     console.log(`✅ Created medicines`);
 
-    // Create vital templates
+    // Create vital templates (idempotent)
     const vitalTemplates = await prisma.vital_templates.createMany({
+      skipDuplicates: true,
       data: [
         {
           id: 'vital-blood-pressure',
@@ -775,8 +804,9 @@ export async function seedComprehensiveHealthcareData() {
 
     console.log(`✅ Created vital templates`);
 
-    // Create symptoms/conditions database
+    // Create symptoms/conditions database (idempotent)
     const symptomsDatabase = await prisma.symptoms_database.createMany({
+      skipDuplicates: true,
       data: [
         {
           id: '550e8400-e29b-41d4-a716-446655440011',
@@ -910,8 +940,9 @@ export async function seedComprehensiveHealthcareData() {
 
     console.log(`✅ Created symptoms/conditions database`);
 
-    // Create treatments database
+    // Create treatments database (idempotent)
     const treatmentsDatabase = await prisma.treatment_database.createMany({
+      skipDuplicates: true,
       data: [
         {
           id: '550e8400-e29b-41d4-a716-446655440021',

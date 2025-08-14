@@ -280,7 +280,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         token.profileId = user.profileId
         token.accountStatus = user.accountStatus
         token.organizationId = user.organizationId
-        token.profileData = user.profileData
+        // Serialize profileData to avoid DataCloneError (remove complex objects)
+        token.profileData = user.profileData ? JSON.parse(JSON.stringify(user.profileData)) : null
         token.canPrescribeMedication = user.canPrescribeMedication
         token.canAccessPatientData = user.canAccessPatientData
         token.canManageProviders = user.canManageProviders
@@ -298,7 +299,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         session.user.profileId = token.profileId as string | null
         session.user.accountStatus = token.accountStatus as AccountStatus
         session.user.organizationId = token.organizationId as string | null
-        session.user.profileData = token.profileData
+        // Only send serializable data to avoid DataCloneError
+        session.user.profileData = token.profileData ? JSON.parse(JSON.stringify(token.profileData)) : null
         session.user.canPrescribeMedication = token.canPrescribeMedication as boolean
         session.user.canAccessPatientData = token.canAccessPatientData as boolean
         session.user.canManageProviders = token.canManageProviders as boolean

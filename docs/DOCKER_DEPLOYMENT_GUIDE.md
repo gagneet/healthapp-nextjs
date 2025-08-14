@@ -2,6 +2,21 @@
 
 This comprehensive guide covers deploying the Healthcare Management Platform using Docker Compose (local) and Docker Swarm (dev/test/production) with all deployment scripts and configurations.
 
+## 🆕 Latest Updates (August 2025)
+
+### ✅ **Auth.js v5 Migration Completed**
+- **Modern Authentication**: Upgraded from Auth.js v4 to v5 with improved performance
+- **Database Sessions**: Enhanced security with PrismaAdapter integration  
+- **Field Compatibility**: Automatic field mapping between legacy and Auth.js v5 schemas
+- **Migration Included**: All deployments now include Auth.js v5 compatibility migrations
+- **Healthcare Roles**: Full integration with role-based healthcare access control
+
+### ✅ **Migration Infrastructure Consolidated**
+- **Unified Migrations**: Consolidated multiple migration folders into single Prisma structure
+- **Idempotent Operations**: All migrations and seeders now support repeated execution
+- **Comprehensive Test Data**: Restored complete seed data (2 doctors, 5 patients, 1 admin, 1 provider)
+- **Backward Compatible**: Zero-disruption deployment with proper field mapping
+
 ## 📋 Table of Contents
 
 1. [Prerequisites](#prerequisites)
