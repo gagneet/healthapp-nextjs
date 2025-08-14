@@ -40,17 +40,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       role: session.user.role || 'PATIENT',
       account_status: session.user.accountStatus || 'ACTIVE',
       profile_picture_url: session.user.image,
-      businessId: session.user.businessId,
-      profileId: session.user.profileId,
-      organizationId: session.user.organizationId,
-      profileData: session.user.profileData,
-      // Healthcare permissions
+      business_id: session.user.businessId,
+      profile_id: session.user.profileId,
+      organization_id: session.user.organizationId,
+      profile_data: session.user.profileData,
+      // Healthcare permissions from enhanced session
       canPrescribeMedication: session.user.canPrescribeMedication || false,
       canAccessPatientData: session.user.canAccessPatientData || false,
       canManageProviders: session.user.canManageProviders || false,
       canViewAllPatients: session.user.canViewAllPatients || false,
     } as User : null,
-    token: null, // NextAuth uses httpOnly cookies, no client-side token
+    token: null, // Auth.js v5 uses httpOnly cookies, no client-side token
     isLoading: status === 'loading',
     isAuthenticated: status === 'authenticated',
   }
@@ -64,7 +64,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       })
 
       if (result?.error) {
-        toast.error(result.error)
+        toast.error('Invalid email or password')
         return false
       }
 
@@ -76,6 +76,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       toast.error('Login failed')
       return false
     } catch (error) {
+      console.error('Login error:', error)
       toast.error('Network error occurred')
       return false
     }
@@ -83,11 +84,32 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const register = async (data: RegisterData): Promise<boolean> => {
     try {
-      // For now, redirect to custom healthcare auth for registration
-      // since NextAuth credentials provider doesn't handle registration
-      toast.info('Registration not implemented with NextAuth yet')
-      return false
+      const response = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: data.email,
+          password: data.password,
+          confirmPassword: data.confirmPassword || data.password,
+          firstName: data.firstName,
+          lastName: data.lastName,
+          role: data.role || 'PATIENT',
+          phone: data.phone,
+          dateOfBirth: data.dateOfBirth,
+        }),
+      })
+
+      const result = await response.json()
+
+      if (response.ok) {
+        toast.success('Account created successfully! Please sign in.')
+        return true
+      } else {
+        toast.error(result.error || 'Registration failed')
+        return false
+      }
     } catch (error) {
+      console.error('Registration error:', error)
       toast.error('Network error occurred')
       return false
     }
@@ -101,6 +123,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       })
       toast.success('Logged out successfully')
     } catch (error) {
+      console.error('Logout error:', error)
       toast.error('Logout failed')
     }
   }

@@ -1,13 +1,11 @@
 /**
  * Next.js Middleware for Healthcare Management Platform
- * Implements hybrid authentication with role-based route protection
- * Supports both custom healthcare auth and NextAuth.js OAuth
+ * Implements NextAuth.js authentication with role-based route protection
  */
 
 import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
-import { HealthcareAuth } from "@/lib/auth/healthcare-auth"
-import { getToken } from "next-auth/jwt"
+import { auth } from "@/lib/auth"
 
 export async function middleware(req: NextRequest) {
   const pathname = req.nextUrl.pathname
@@ -24,29 +22,19 @@ export async function middleware(req: NextRequest) {
     return NextResponse.next()
   }
 
-  // Try custom healthcare authentication first
+  // Get Auth.js v5 session via auth function
+  const session = await auth()
   let user: any = null
-  let authType = 'none'
 
-  // Check healthcare session
-  const healthcareSession = await HealthcareAuth.getCurrentSession()
-  if (healthcareSession) {
+  if (session?.user) {
     user = {
-      id: healthcareSession.user.id,
-      email: healthcareSession.user.email,
-      role: healthcareSession.user.role,
-      accountStatus: healthcareSession.user.account_status,
-      canAccessPatientData: HealthcareAuth.getHealthcarePermissions(healthcareSession.user).canAccessPatientData,
-      canPrescribeMedication: HealthcareAuth.getHealthcarePermissions(healthcareSession.user).canPrescribeMedication,
-      canManageProviders: HealthcareAuth.getHealthcarePermissions(healthcareSession.user).canManageProviders
-    }
-    authType = 'healthcare'
-  } else {
-    // Fallback to NextAuth token (for future OAuth integration)
-    const nextAuthToken = await getToken({ req })
-    if (nextAuthToken) {
-      user = nextAuthToken
-      authType = 'nextauth'
+      id: session.user.id,
+      email: session.user.email,
+      role: session.user.role,
+      accountStatus: session.user.accountStatus || 'ACTIVE',
+      canAccessPatientData: session.user.canAccessPatientData || false,
+      canPrescribeMedication: session.user.canPrescribeMedication || false,
+      canManageProviders: session.user.canManageProviders || false
     }
   }
 

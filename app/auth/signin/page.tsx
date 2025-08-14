@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { useHealthcareAuth } from '@/lib/auth/useHealthcareAuth'
+import { useAuth } from '@/lib/auth-context'
 
 export default function SignIn() {
   const [email, setEmail] = useState('')
@@ -13,7 +13,7 @@ export default function SignIn() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const callbackUrl = searchParams.get('callbackUrl') || '/dashboard'
-  const { login, isAuthenticated } = useHealthcareAuth()
+  const { login, isAuthenticated } = useAuth()
 
   // Redirect if already authenticated
   useEffect(() => {
@@ -28,12 +28,12 @@ export default function SignIn() {
     setError('')
 
     try {
-      const result = await login(email, password)
+      const result = await login({ email, password })
 
-      if (result.success) {
+      if (result) {
         router.push(callbackUrl)
       } else {
-        setError(result.error || 'Invalid credentials')
+        setError('Invalid credentials')
       }
     } catch (error) {
       console.error('Login error:', error)

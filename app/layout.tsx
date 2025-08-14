@@ -3,11 +3,11 @@ import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import { Toaster } from 'react-hot-toast'
 import { AuthProvider } from '@/lib/auth-context'
+import { SessionProvider } from '@/components/providers/SessionProvider'
 
 // Force all pages to be dynamic (no static generation)
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
-import { SessionProvider } from '@/components/providers/SessionProvider'
 import ErrorBoundary from '@/components/ErrorBoundary'
 import GlobalErrorHandler from '@/components/GlobalErrorHandler'
 

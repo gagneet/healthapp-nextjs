@@ -1,16 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { getServerSession } from "@/lib/auth";
 import { handleApiError, formatApiSuccess } from '@/lib/api-services';
 
 /**
  * GET /api/auth/verify
- * Verify current JWT token
+ * Verify current Auth.js v5 session
  */
 export async function GET(request: NextRequest) {
   try {
-    // Authenticate user
-    const session = await getServerSession(authOptions);
+    // Authenticate user with Auth.js v5
+    const session = await getServerSession();
     if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -19,12 +18,19 @@ export async function GET(request: NextRequest) {
     
     // Return user information (excluding sensitive data)
     const userInfo = {
-      id: user.id || user.userId,
+      id: user.id,
       email: user.email,
-      role: user.role || user.category,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      isActive: user.isActive !== false
+      role: user.role,
+      name: user.name,
+      businessId: user.businessId,
+      profileId: user.profileId,
+      accountStatus: user.accountStatus,
+      organizationId: user.organizationId,
+      // Healthcare permissions
+      canPrescribeMedication: user.canPrescribeMedication,
+      canAccessPatientData: user.canAccessPatientData,
+      canManageProviders: user.canManageProviders,
+      canViewAllPatients: user.canViewAllPatients
     };
 
     return NextResponse.json(formatApiSuccess(userInfo, 'Token verified successfully'));
