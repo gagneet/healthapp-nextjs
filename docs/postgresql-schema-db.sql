@@ -1,170 +1,3 @@
--- Healthcare Management Platform PostgreSQL Schema
--- Generated for Auth.js v5 + Healthcare Application
--- Updated: 2025-08-14
--- Compatible with Prisma ORM and Auth.js v5
-
--- =============================================
--- ENUMS (Custom Types)
--- =============================================
-
--- User roles for healthcare platform
-CREATE TYPE enum_users_role AS ENUM (
-    'PATIENT',
-    'DOCTOR', 
-    'HSP',
-    'SYSTEM_ADMIN',
-    'HOSPITAL_ADMIN',
-    'CAREGIVER'
-);
-
--- Account status for user management
-CREATE TYPE enum_users_account_status AS ENUM (
-    'ACTIVE',
-    'INACTIVE',
-    'SUSPENDED',
-    'PENDING_VERIFICATION',
-    'DEACTIVATED'
-);
-
--- Gender options
-CREATE TYPE enum_users_gender AS ENUM (
-    'MALE',
-    'FEMALE',
-    'OTHER',
-    'PREFER_NOT_TO_SAY'
-);
-
--- Appointment statuses
-CREATE TYPE enum_appointments_status AS ENUM (
-    'SCHEDULED',
-    'CONFIRMED',
-    'IN_PROGRESS',
-    'COMPLETED',
-    'CANCELLED',
-    'NO_SHOW',
-    'RESCHEDULED'
-);
-
--- Care plan statuses
-CREATE TYPE enum_care_plans_status AS ENUM (
-    'ACTIVE',
-    'INACTIVE',
-    'COMPLETED',
-    'DISCONTINUED',
-    'PENDING_APPROVAL'
-);
-
--- Medication adherence levels
-CREATE TYPE enum_medication_adherence_level AS ENUM (
-    'EXCELLENT',
-    'GOOD',
-    'FAIR',
-    'POOR',
-    'UNKNOWN'
-);
-
--- =============================================
--- AUTH.JS V5 REQUIRED TABLES
--- =============================================
-
--- Users table (extends Auth.js schema for healthcare)
-CREATE TABLE users (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    email VARCHAR(255) UNIQUE NOT NULL,
-    email_verified TIMESTAMPTZ,
-    name VARCHAR(255),
-    image VARCHAR(500),
-    password_hash VARCHAR(255), -- For credentials users
-    role enum_users_role NOT NULL DEFAULT 'PATIENT',
-    account_status enum_users_account_status DEFAULT 'PENDING_VERIFICATION',
-    
-    -- Personal information
-    first_name VARCHAR(100),
-    last_name VARCHAR(100),
-    middle_name VARCHAR(100),
-    full_name VARCHAR(255),
-    phone VARCHAR(20),
-    date_of_birth DATE,
-    gender enum_users_gender,
-    profile_picture_url VARCHAR(500),
-    
-    -- Security fields
-    two_factor_enabled BOOLEAN DEFAULT FALSE,
-    two_factor_secret VARCHAR(255),
-    failed_login_attempts INTEGER DEFAULT 0,
-    locked_until TIMESTAMPTZ,
-    last_login TIMESTAMPTZ,
-    password_changed_at TIMESTAMPTZ DEFAULT NOW(),
-    
-    -- Privacy and preferences
-    email_verification_token VARCHAR(255),
-    password_reset_token VARCHAR(255),
-    password_reset_expires TIMESTAMPTZ,
-    timezone VARCHAR(50) DEFAULT 'UTC',
-    locale VARCHAR(10) DEFAULT 'en',
-    preferences JSON DEFAULT '{"privacy": {"profile_visible": true, "share_data_for_research": false}, "accessibility": {"large_text": false, "high_contrast": false}, "notifications": {"sms": false, "push": true, "email": true}}',
-    
-    -- Legal compliance
-    terms_accepted_at TIMESTAMPTZ,
-    privacy_policy_accepted_at TIMESTAMPTZ,
-    hipaa_consent_date TIMESTAMPTZ,
-    
-    -- Timestamps
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW(),
-    deleted_at TIMESTAMPTZ
-);
-
--- Auth.js Accounts table (OAuth providers)
-CREATE TABLE accounts (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    type VARCHAR(255) NOT NULL,
-    provider VARCHAR(255) NOT NULL,
-    provider_account_id VARCHAR(255) NOT NULL,
-    refresh_token TEXT,
-    access_token TEXT,
-    expires_at INTEGER,
-    token_type VARCHAR(255),
-    scope VARCHAR(255),
-    id_token TEXT,
-    session_state VARCHAR(255),
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW(),
-    UNIQUE(provider, provider_account_id)
-);
-
--- Auth.js Sessions table  
-CREATE TABLE sessions (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    session_token VARCHAR(255) UNIQUE NOT NULL,
-    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    expires TIMESTAMPTZ NOT NULL,
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW()
-);
-
--- Auth.js Verification tokens table
-CREATE TABLE verification_tokens (
-    identifier VARCHAR(255) NOT NULL,
-    token VARCHAR(255) NOT NULL,
-    expires TIMESTAMPTZ NOT NULL,
-    PRIMARY KEY (identifier, token)
-);
-
--- This schema includes all phases of the healthcare platform:
--- - Phase 1: Critical Safety & Compliance Features (Medical Safety, HIPAA)
--- - Phase 3: Advanced Medical Device Integration (IoT Devices, Bluetooth)
--- - Phase 4: Telemedicine & Advanced Features (Video Consultations, Lab Integration, Gamification)
---
--- Phases included:
--- ✅ Phase 1: drug_interactions, patient_allergies, medication_safety_alerts, emergency_alerts
--- ✅ Phase 3: connected_devices, device_readings, device_plugins (with Phase 3 device integration)
--- ✅ Phase 4: video_consultations, lab_orders, patient_game_profiles, game_badges
---
--- Usage:
--- To restore this schema: psql -U healthapp_user -d healthapp_dev < docs/postgresql-schema.sql
--- To update schema: PGPASSWORD=pg_password pg_dump -h localhost -p 5434 -U healthapp_user -d healthapp_dev --schema-only --no-owner --no-privileges > docs/postgresql-schema.sql
 --
 -- PostgreSQL database dump
 --
@@ -182,20 +15,6 @@ SET check_function_bodies = false;
 SET xmloption = content;
 SET client_min_messages = warning;
 SET row_security = off;
-
---
--- Name: public; Type: SCHEMA; Schema: -; Owner: -
---
-
--- *not* creating schema, since initdb creates it
-
-
---
--- Name: SCHEMA public; Type: COMMENT; Schema: -; Owner: -
---
-
-COMMENT ON SCHEMA public IS '';
-
 
 --
 -- Name: AlertSeverity; Type: TYPE; Schema: public; Owner: -
@@ -231,6 +50,19 @@ CREATE TYPE public."AllergySeverity" AS ENUM (
     'MODERATE',
     'SEVERE',
     'ANAPHYLAXIS'
+);
+
+
+--
+-- Name: ConnectionType; Type: TYPE; Schema: public; Owner: -
+--
+
+CREATE TYPE public."ConnectionType" AS ENUM (
+    'BLUETOOTH_LE',
+    'WIFI',
+    'API_OAUTH',
+    'MANUAL_ENTRY',
+    'BRIDGE_DEVICE'
 );
 
 
@@ -272,6 +104,36 @@ CREATE TYPE public."ConsultationType" AS ENUM (
     'EMERGENCY_CONSULTATION',
     'FOLLOW_UP_CONSULTATION',
     'SPECIALIST_REFERRAL'
+);
+
+
+--
+-- Name: DeviceStatus; Type: TYPE; Schema: public; Owner: -
+--
+
+CREATE TYPE public."DeviceStatus" AS ENUM (
+    'CONNECTED',
+    'DISCONNECTED',
+    'SYNCING',
+    'ERROR',
+    'MAINTENANCE'
+);
+
+
+--
+-- Name: DeviceType; Type: TYPE; Schema: public; Owner: -
+--
+
+CREATE TYPE public."DeviceType" AS ENUM (
+    'WEARABLE',
+    'BLOOD_PRESSURE',
+    'GLUCOSE_METER',
+    'PULSE_OXIMETER',
+    'THERMOMETER',
+    'ECG_MONITOR',
+    'SCALE',
+    'SPIROMETER',
+    'GENERIC_BLUETOOTH'
 );
 
 
@@ -829,6 +691,16 @@ CREATE TABLE public."SequelizeMeta" (
 
 
 --
+-- Name: _DeviceReadingToEmergencyAlert; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public."_DeviceReadingToEmergencyAlert" (
+    "A" uuid NOT NULL,
+    "B" uuid NOT NULL
+);
+
+
+--
 -- Name: _prisma_migrations; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -841,6 +713,43 @@ CREATE TABLE public._prisma_migrations (
     rolled_back_at timestamp with time zone,
     started_at timestamp with time zone DEFAULT now() NOT NULL,
     applied_steps_count integer DEFAULT 0 NOT NULL
+);
+
+
+--
+-- Name: account_links; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.account_links (
+    id uuid NOT NULL,
+    user_id uuid NOT NULL,
+    provider character varying(50) NOT NULL,
+    provider_account_id character varying(255) NOT NULL,
+    provider_email character varying(255),
+    linked_at timestamp(6) with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    last_used_at timestamp(6) with time zone,
+    is_primary boolean DEFAULT false NOT NULL,
+    metadata jsonb DEFAULT '{}'::jsonb
+);
+
+
+--
+-- Name: accounts; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.accounts (
+    id text NOT NULL,
+    "userId" uuid NOT NULL,
+    type text NOT NULL,
+    provider text NOT NULL,
+    "providerAccountId" text NOT NULL,
+    refresh_token text,
+    access_token text,
+    expires_at integer,
+    token_type text,
+    scope text,
+    id_token text,
+    session_state text
 );
 
 
@@ -1060,6 +969,37 @@ CREATE TABLE public.clinics (
 
 
 --
+-- Name: connected_devices; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.connected_devices (
+    id uuid NOT NULL,
+    patient_id uuid NOT NULL,
+    plugin_id character varying(100) NOT NULL,
+    device_name character varying(255) NOT NULL,
+    device_model character varying(255),
+    device_type public."DeviceType" NOT NULL,
+    manufacturer character varying(255),
+    serial_number character varying(100),
+    firmware_version character varying(50),
+    connection_type public."ConnectionType" NOT NULL,
+    device_identifier character varying(255) NOT NULL,
+    connection_config jsonb DEFAULT '{}'::jsonb,
+    last_connected timestamp(6) with time zone,
+    connection_status public."DeviceStatus" DEFAULT 'DISCONNECTED'::public."DeviceStatus" NOT NULL,
+    auto_sync_enabled boolean DEFAULT true NOT NULL,
+    sync_interval_minutes integer DEFAULT 15 NOT NULL,
+    last_sync timestamp(6) with time zone,
+    sync_error_count integer DEFAULT 0 NOT NULL,
+    is_active boolean DEFAULT true NOT NULL,
+    added_by uuid NOT NULL,
+    notes text,
+    created_at timestamp(6) with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    updated_at timestamp(6) with time zone NOT NULL
+);
+
+
+--
 -- Name: consultation_notes; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -1108,6 +1048,63 @@ CREATE TABLE public.dashboard_metrics (
     valid_until timestamp(6) with time zone,
     created_at timestamp(6) with time zone,
     updated_at timestamp(6) with time zone
+);
+
+
+--
+-- Name: device_plugins; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.device_plugins (
+    id character varying(100) NOT NULL,
+    name character varying(255) NOT NULL,
+    version character varying(20) NOT NULL,
+    description text,
+    supported_devices public."DeviceType"[],
+    supported_regions text[] DEFAULT ARRAY[]::text[],
+    api_version character varying(10) NOT NULL,
+    default_config jsonb DEFAULT '{}'::jsonb NOT NULL,
+    oauth_config jsonb DEFAULT '{}'::jsonb,
+    rate_limits jsonb DEFAULT '{}'::jsonb,
+    is_enabled boolean DEFAULT true NOT NULL,
+    requires_auth boolean DEFAULT false NOT NULL,
+    maintenance_mode boolean DEFAULT false NOT NULL,
+    installed_at timestamp(6) with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    last_updated timestamp(6) with time zone NOT NULL,
+    usage_count integer DEFAULT 0 NOT NULL
+);
+
+
+--
+-- Name: device_readings; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.device_readings (
+    id uuid NOT NULL,
+    device_id uuid NOT NULL,
+    patient_id uuid NOT NULL,
+    plugin_id character varying(100) NOT NULL,
+    vital_reading_id uuid,
+    reading_type character varying(100) NOT NULL,
+    measurement_timestamp timestamp(6) with time zone NOT NULL,
+    received_timestamp timestamp(6) with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    raw_data jsonb DEFAULT '{}'::jsonb NOT NULL,
+    processed_values jsonb DEFAULT '{}'::jsonb NOT NULL,
+    primary_value numeric(10,3),
+    secondary_value numeric(10,3),
+    measurement_unit character varying(50),
+    data_quality_score numeric(3,2),
+    is_validated boolean DEFAULT false NOT NULL,
+    validation_notes text,
+    is_anomaly boolean DEFAULT false NOT NULL,
+    anomaly_reason character varying(255),
+    reading_context character varying(255),
+    symptoms_reported text[] DEFAULT ARRAY[]::text[],
+    medication_taken boolean,
+    triggered_alerts boolean DEFAULT false NOT NULL,
+    alert_reasons text[] DEFAULT ARRAY[]::text[],
+    sync_batch_id uuid,
+    created_at timestamp(6) with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 
 
@@ -1332,6 +1329,22 @@ CREATE TABLE public.healthcare_providers (
     created_at timestamp(6) with time zone,
     updated_at timestamp(6) with time zone,
     deleted_at timestamp(6) with time zone
+);
+
+
+--
+-- Name: healthcare_sessions; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.healthcare_sessions (
+    id uuid NOT NULL,
+    user_id uuid NOT NULL,
+    session_token character varying(255) NOT NULL,
+    expires_at timestamp(6) with time zone NOT NULL,
+    ip_address character varying(45),
+    user_agent text,
+    created_at timestamp(6) with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    last_accessed_at timestamp(6) with time zone
 );
 
 
@@ -2047,6 +2060,18 @@ CREATE TABLE public.service_plans (
 
 
 --
+-- Name: sessions; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.sessions (
+    id text NOT NULL,
+    "sessionToken" text NOT NULL,
+    "userId" uuid NOT NULL,
+    expires timestamp(3) without time zone NOT NULL
+);
+
+
+--
 -- Name: specialities; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -2269,6 +2294,17 @@ CREATE TABLE public.users (
 
 
 --
+-- Name: verificationtokens; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.verificationtokens (
+    identifier text NOT NULL,
+    token text NOT NULL,
+    expires timestamp(3) without time zone NOT NULL
+);
+
+
+--
 -- Name: video_consultations; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -2456,11 +2492,35 @@ ALTER TABLE ONLY public."SequelizeMeta"
 
 
 --
+-- Name: _DeviceReadingToEmergencyAlert _DeviceReadingToEmergencyAlert_AB_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public."_DeviceReadingToEmergencyAlert"
+    ADD CONSTRAINT "_DeviceReadingToEmergencyAlert_AB_pkey" PRIMARY KEY ("A", "B");
+
+
+--
 -- Name: _prisma_migrations _prisma_migrations_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public._prisma_migrations
     ADD CONSTRAINT _prisma_migrations_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: account_links account_links_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.account_links
+    ADD CONSTRAINT account_links_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: accounts accounts_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.accounts
+    ADD CONSTRAINT accounts_pkey PRIMARY KEY (id);
 
 
 --
@@ -2520,6 +2580,14 @@ ALTER TABLE ONLY public.clinics
 
 
 --
+-- Name: connected_devices connected_devices_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.connected_devices
+    ADD CONSTRAINT connected_devices_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: consultation_notes consultation_notes_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -2541,6 +2609,22 @@ ALTER TABLE ONLY public.consultation_prescriptions
 
 ALTER TABLE ONLY public.dashboard_metrics
     ADD CONSTRAINT dashboard_metrics_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: device_plugins device_plugins_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.device_plugins
+    ADD CONSTRAINT device_plugins_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: device_readings device_readings_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.device_readings
+    ADD CONSTRAINT device_readings_pkey PRIMARY KEY (id);
 
 
 --
@@ -2605,6 +2689,14 @@ ALTER TABLE ONLY public.game_challenge_progress
 
 ALTER TABLE ONLY public.healthcare_providers
     ADD CONSTRAINT healthcare_providers_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: healthcare_sessions healthcare_sessions_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.healthcare_sessions
+    ADD CONSTRAINT healthcare_sessions_pkey PRIMARY KEY (id);
 
 
 --
@@ -2816,6 +2908,14 @@ ALTER TABLE ONLY public.service_plans
 
 
 --
+-- Name: sessions sessions_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.sessions
+    ADD CONSTRAINT sessions_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: specialities specialities_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -2933,6 +3033,48 @@ ALTER TABLE ONLY public.vital_types
 
 ALTER TABLE ONLY public.vitals
     ADD CONSTRAINT vitals_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: _DeviceReadingToEmergencyAlert_B_index; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX "_DeviceReadingToEmergencyAlert_B_index" ON public."_DeviceReadingToEmergencyAlert" USING btree ("B");
+
+
+--
+-- Name: account_links_provider; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX account_links_provider ON public.account_links USING btree (provider);
+
+
+--
+-- Name: account_links_provider_account; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX account_links_provider_account ON public.account_links USING btree (provider, provider_account_id);
+
+
+--
+-- Name: account_links_user_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX account_links_user_id ON public.account_links USING btree (user_id);
+
+
+--
+-- Name: account_links_user_provider; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX account_links_user_provider ON public.account_links USING btree (user_id, provider);
+
+
+--
+-- Name: accounts_provider_providerAccountId_key; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX "accounts_provider_providerAccountId_key" ON public.accounts USING btree (provider, "providerAccountId");
 
 
 --
@@ -3237,6 +3379,27 @@ CREATE INDEX clinics_organization_id ON public.clinics USING btree (organization
 
 
 --
+-- Name: connected_devices_patient_id_connection_status_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX connected_devices_patient_id_connection_status_idx ON public.connected_devices USING btree (patient_id, connection_status);
+
+
+--
+-- Name: connected_devices_patient_id_device_identifier_key; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX connected_devices_patient_id_device_identifier_key ON public.connected_devices USING btree (patient_id, device_identifier);
+
+
+--
+-- Name: connected_devices_plugin_id_device_type_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX connected_devices_plugin_id_device_type_idx ON public.connected_devices USING btree (plugin_id, device_type);
+
+
+--
 -- Name: consultation_notes_consultation_id_note_type_idx; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -3262,6 +3425,34 @@ CREATE INDEX dashboard_metrics_calculated_at_valid_until ON public.dashboard_met
 --
 
 CREATE UNIQUE INDEX dashboard_metrics_entity_type_entity_id_metric_type ON public.dashboard_metrics USING btree (entity_type, entity_id, metric_type);
+
+
+--
+-- Name: device_readings_device_id_measurement_timestamp_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX device_readings_device_id_measurement_timestamp_idx ON public.device_readings USING btree (device_id, measurement_timestamp);
+
+
+--
+-- Name: device_readings_patient_id_reading_type_measurement_timesta_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX device_readings_patient_id_reading_type_measurement_timesta_idx ON public.device_readings USING btree (patient_id, reading_type, measurement_timestamp);
+
+
+--
+-- Name: device_readings_plugin_id_reading_type_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX device_readings_plugin_id_reading_type_idx ON public.device_readings USING btree (plugin_id, reading_type);
+
+
+--
+-- Name: device_readings_triggered_alerts_measurement_timestamp_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX device_readings_triggered_alerts_measurement_timestamp_idx ON public.device_readings USING btree (triggered_alerts, measurement_timestamp);
 
 
 --
@@ -3472,6 +3663,34 @@ CREATE UNIQUE INDEX healthcare_providers_user_id ON public.healthcare_providers 
 --
 
 CREATE INDEX healthcare_providers_verification_date ON public.healthcare_providers USING btree (verification_date);
+
+
+--
+-- Name: healthcare_sessions_expires; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX healthcare_sessions_expires ON public.healthcare_sessions USING btree (expires_at);
+
+
+--
+-- Name: healthcare_sessions_session_token_key; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX healthcare_sessions_session_token_key ON public.healthcare_sessions USING btree (session_token);
+
+
+--
+-- Name: healthcare_sessions_token; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX healthcare_sessions_token ON public.healthcare_sessions USING btree (session_token);
+
+
+--
+-- Name: healthcare_sessions_user_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX healthcare_sessions_user_id ON public.healthcare_sessions USING btree (user_id);
 
 
 --
@@ -4609,6 +4828,13 @@ CREATE INDEX service_plans_service_type ON public.service_plans USING btree (ser
 
 
 --
+-- Name: sessions_sessionToken_key; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX "sessions_sessionToken_key" ON public.sessions USING btree ("sessionToken");
+
+
+--
 -- Name: symptoms_care_plan_id; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -4896,6 +5122,20 @@ CREATE INDEX users_role ON public.users USING btree (role);
 
 
 --
+-- Name: verificationtokens_identifier_token_key; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX verificationtokens_identifier_token_key ON public.verificationtokens USING btree (identifier, token);
+
+
+--
+-- Name: verificationtokens_token_key; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX verificationtokens_token_key ON public.verificationtokens USING btree (token);
+
+
+--
 -- Name: video_consultations_consultation_id_key; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -5064,6 +5304,38 @@ CREATE INDEX vitals_vital_template_id ON public.vitals USING btree (vital_templa
 
 
 --
+-- Name: _DeviceReadingToEmergencyAlert _DeviceReadingToEmergencyAlert_A_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public."_DeviceReadingToEmergencyAlert"
+    ADD CONSTRAINT "_DeviceReadingToEmergencyAlert_A_fkey" FOREIGN KEY ("A") REFERENCES public.device_readings(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- Name: _DeviceReadingToEmergencyAlert _DeviceReadingToEmergencyAlert_B_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public."_DeviceReadingToEmergencyAlert"
+    ADD CONSTRAINT "_DeviceReadingToEmergencyAlert_B_fkey" FOREIGN KEY ("B") REFERENCES public.emergency_alerts(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- Name: account_links account_links_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.account_links
+    ADD CONSTRAINT account_links_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- Name: accounts accounts_userId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.accounts
+    ADD CONSTRAINT "accounts_userId_fkey" FOREIGN KEY ("userId") REFERENCES public.users(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
 -- Name: adherence_records adherence_records_patient_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -5224,6 +5496,22 @@ ALTER TABLE ONLY public.clinics
 
 
 --
+-- Name: connected_devices connected_devices_added_by_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.connected_devices
+    ADD CONSTRAINT connected_devices_added_by_fkey FOREIGN KEY (added_by) REFERENCES public.users(id) ON UPDATE CASCADE ON DELETE RESTRICT;
+
+
+--
+-- Name: connected_devices connected_devices_patient_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.connected_devices
+    ADD CONSTRAINT connected_devices_patient_id_fkey FOREIGN KEY (patient_id) REFERENCES public.patients(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
 -- Name: consultation_notes consultation_notes_consultation_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -5245,6 +5533,30 @@ ALTER TABLE ONLY public.consultation_notes
 
 ALTER TABLE ONLY public.consultation_prescriptions
     ADD CONSTRAINT consultation_prescriptions_consultation_id_fkey FOREIGN KEY (consultation_id) REFERENCES public.video_consultations(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- Name: device_readings device_readings_device_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.device_readings
+    ADD CONSTRAINT device_readings_device_id_fkey FOREIGN KEY (device_id) REFERENCES public.connected_devices(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- Name: device_readings device_readings_patient_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.device_readings
+    ADD CONSTRAINT device_readings_patient_id_fkey FOREIGN KEY (patient_id) REFERENCES public.patients(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- Name: device_readings device_readings_vital_reading_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.device_readings
+    ADD CONSTRAINT device_readings_vital_reading_id_fkey FOREIGN KEY (vital_reading_id) REFERENCES public.vital_readings(id) ON UPDATE CASCADE ON DELETE SET NULL;
 
 
 --
@@ -5365,6 +5677,14 @@ ALTER TABLE ONLY public.healthcare_providers
 
 ALTER TABLE ONLY public.healthcare_providers
     ADD CONSTRAINT healthcare_providers_verified_by_fkey FOREIGN KEY (verified_by) REFERENCES public.users(id);
+
+
+--
+-- Name: healthcare_sessions healthcare_sessions_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.healthcare_sessions
+    ADD CONSTRAINT healthcare_sessions_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
 
 
 --
@@ -5957,6 +6277,14 @@ ALTER TABLE ONLY public.secondary_doctor_assignments
 
 ALTER TABLE ONLY public.service_plans
     ADD CONSTRAINT service_plans_provider_id_fkey FOREIGN KEY (provider_id) REFERENCES public.healthcare_providers(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- Name: sessions sessions_userId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.sessions
+    ADD CONSTRAINT "sessions_userId_fkey" FOREIGN KEY ("userId") REFERENCES public.users(id) ON UPDATE CASCADE ON DELETE CASCADE;
 
 
 --
