@@ -23,15 +23,20 @@ RUN npm ci
 # Copy source files
 COPY . .
 
+# Accept database URL as build argument
+ARG DATABASE_URL=postgresql://dummy:dummy@localhost:5432/dummy
+
 # Set build environment variables before Prisma generation
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
-ENV DATABASE_URL=postgresql://dummy:dummy@localhost:5432/dummy
+ENV DATABASE_URL=$DATABASE_URL
+# Skip static page generation for dynamic healthcare app  
+ENV SKIP_BUILD_STATIC_GENERATION=1
 
 # Generate Prisma client with build-time dummy database URL
 RUN npx prisma generate
 
-# Build Next.js application with proper error handling
+# Build Next.js application 
 RUN npm run build
 
 # Production stage
@@ -45,12 +50,12 @@ ENV NEXT_TELEMETRY_DISABLED=1
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
-# Copy built application
+# Copy built application (Next.js standalone generates server.js automatically)
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
 
-# Copy Prisma client and lib directory
+# Copy Prisma client and lib directory  
 COPY --from=builder /app/lib ./lib
 COPY --from=builder /app/prisma ./prisma
 

@@ -202,9 +202,7 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
   }
 
   const symptomData = validationResult.data
-
-  try {
-    let targetPatientId: string
+  let targetPatientId: string
 
     // Business Logic: Determine which patient the symptoms are for
     if (symptomData.patientId) {
@@ -240,6 +238,7 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
       }
 
       targetPatientId = session.user.profileId
+    }
 
     // Create symptom record with 2D/3D body mapping support
     const symptomRecord = await prisma.symptom.create({
