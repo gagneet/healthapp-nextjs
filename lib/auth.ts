@@ -182,74 +182,110 @@ export const authOptions: AuthOptions = {
   ],
   
   session: {
-    strategy: "jwt" as const,
+    strategy: "database" as const,
     maxAge: 8 * 60 * 60, // 8 hours for healthcare security
     updateAge: 2 * 60 * 60, // Update session every 2 hours
   },
 
   callbacks: {
-    async jwt({ token, user, trigger }) {
-      // Include healthcare-specific data in JWT
-      if (user) {
-        token.role = user.role
-        token.businessId = user.businessId
-        token.profileId = user.profileId
-        token.accountStatus = user.accountStatus
-        token.organizationId = user.organizationId
-        token.profileData = user.profileData
-        
-        // Healthcare permissions
-        token.canPrescribeMedication = user.canPrescribeMedication
-        token.canAccessPatientData = user.canAccessPatientData
-        token.canManageProviders = user.canManageProviders
-        token.canViewAllPatients = user.canViewAllPatients
-
-        // Update last login timestamp for audit trail
-        await prisma.user.update({
+    async session({ session, user }) {
+      // With database strategy, user comes from the database via PrismaAdapter
+      if (session.user && user) {
+        // Get fresh user data with healthcare profiles
+        const fullUser = await prisma.user.findUnique({
           where: { id: user.id },
-          data: { last_login_at: new Date() }
-        })
-      }
-
-      // Handle session updates (e.g., profile changes)
-      if (trigger === "update" && token.sub) {
-        const updatedUser = await prisma.user.findUnique({
-          where: { id: token.sub },
           select: {
+            id: true,
+            email: true,
+            role: true,
+            first_name: true,
+            last_name: true,
+            full_name: true,
             account_status: true,
             profile_picture_url: true,
-            full_name: true,
-            first_name: true,
-            last_name: true
+            // Include healthcare profiles
+            doctors_doctors_user_idTousers: {
+              select: {
+                id: true,
+                doctor_id: true,
+                medical_license_number: true,
+                speciality_id: true,
+                organization_id: true
+              }
+            },
+            patient: {
+              select: {
+                id: true,
+                patient_id: true,
+                medical_record_number: true,
+                primary_care_doctor_id: true
+              }
+            },
+            hsps_hsps_user_idTousers: {
+              select: {
+                id: true,
+                hsp_id: true,
+                license_number: true,
+                organization_id: true
+              }
+            },
+            healthcare_provider: {
+              select: {
+                id: true,
+                organization_id: true
+              }
+            }
           }
         })
 
-        if (updatedUser) {
-          token.accountStatus = updatedUser.account_status || 'PENDING_VERIFICATION'
-          token.picture = updatedUser.profile_picture_url
-          token.name = updatedUser.full_name || `${updatedUser.first_name} ${updatedUser.last_name}`.trim()
+        if (fullUser) {
+          // Determine profile data based on role
+          let profileData: any = null
+          let businessId: string | null = null
+
+          switch (fullUser.role) {
+            case "DOCTOR":
+              profileData = fullUser.doctors_doctors_user_idTousers
+              businessId = profileData?.doctor_id || null
+              break
+            case "PATIENT":
+              profileData = fullUser.patient
+              businessId = profileData?.patient_id || null
+              break
+            case "HSP":
+              profileData = fullUser.hsps_hsps_user_idTousers
+              businessId = profileData?.hsp_id || null
+              break
+            case "SYSTEM_ADMIN":
+            case "HOSPITAL_ADMIN":
+              profileData = fullUser.healthcare_provider || { id: fullUser.id }
+              businessId = fullUser.id
+              break
+          }
+
+          // Update session with healthcare data
+          session.user.id = fullUser.id
+          session.user.role = fullUser.role as HealthcareRole
+          session.user.businessId = businessId
+          session.user.profileId = profileData?.id || null
+          session.user.accountStatus = fullUser.account_status as AccountStatus || 'PENDING_VERIFICATION'
+          session.user.organizationId = profileData?.organization_id || null
+          session.user.profileData = profileData
+          session.user.name = fullUser.full_name || `${fullUser.first_name} ${fullUser.last_name}`.trim()
+          session.user.image = fullUser.profile_picture_url
+
+          // Healthcare permissions
+          session.user.canPrescribeMedication = fullUser.role === "DOCTOR"
+          session.user.canAccessPatientData = ["DOCTOR", "HSP", "SYSTEM_ADMIN", "HOSPITAL_ADMIN"].includes(fullUser.role)
+          session.user.canManageProviders = ["SYSTEM_ADMIN", "HOSPITAL_ADMIN"].includes(fullUser.role)
+          session.user.canViewAllPatients = ["SYSTEM_ADMIN"].includes(fullUser.role)
+
+          // Update last login for audit trail
+          await prisma.user.update({
+            where: { id: fullUser.id },
+            data: { last_login_at: new Date() }
+          })
         }
-      }
-
-      return token
-    },
-
-    async session({ session, token }) {
-      // Pass healthcare-specific data to client session
-      if (session.user && token) {
-        session.user.id = token.sub!
-        session.user.role = token.role as HealthcareRole
-        session.user.businessId = token.businessId as string
-        session.user.profileId = token.profileId as string
-        session.user.accountStatus = token.accountStatus as AccountStatus
-        session.user.organizationId = token.organizationId as string
-        session.user.profileData = token.profileData
-        
-        // Healthcare permissions
-        session.user.canPrescribeMedication = token.canPrescribeMedication as boolean
-        session.user.canAccessPatientData = token.canAccessPatientData as boolean
-        session.user.canManageProviders = token.canManageProviders as boolean
-        session.user.canViewAllPatients = token.canViewAllPatients as boolean
       }
 
       return session
@@ -279,12 +315,12 @@ export const authOptions: AuthOptions = {
       }
     },
 
-    async signOut({ session, token }) {
+    async signOut({ session }) {
       // Audit logging for logout events
-      if (token?.sub) {
+      if (session?.user?.id) {
         await prisma.auditLog.create({
           data: {
-            user_id: token.sub,
+            user_id: session.user.id,
             action: "LOGOUT",
             resource: "AUTHENTICATION",
             patient_id: null,
