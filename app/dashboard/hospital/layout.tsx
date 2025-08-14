@@ -2,7 +2,7 @@
 
 import { ReactNode } from 'react'
 import { Sidebar } from '@/components/dashboard/sidebar'
-import { withAuth } from '@/lib/auth-context'
+// Removed withAuth import - using RouteGuardLayout instead
 
 interface HospitalLayoutProps {
   children: ReactNode
@@ -21,4 +21,4 @@ function HospitalLayout({ children }: HospitalLayoutProps) {
   )
 }
 
-export default withAuth(HospitalLayout, ['HOSPITAL_ADMIN', 'PROVIDER_ADMIN'])
+export default HospitalLayout
