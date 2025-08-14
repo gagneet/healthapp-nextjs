@@ -99,6 +99,12 @@ model User {
   user_devices                                                 UserDevice[]
   user_roles                                                   user_roles[]
 
+  // Authentication relationships
+  healthcare_sessions HealthcareSession[]
+  accounts            Account[]
+  sessions            Session[]
+  account_links       AccountLink[]
+
   // Medical Safety Relationships
   verified_patient_allergies    PatientAllergy[]
   resolved_medication_alerts    MedicationSafetyAlert[]
@@ -123,6 +129,88 @@ model User {
   @@index([phone], map: "users_phone")
   @@index([role], map: "users_role")
   @@map("users")
+}
+
+// Healthcare Session Management (Custom Auth System)
+model HealthcareSession {
+  id               String    @id @default(uuid()) @db.Uuid
+  user_id          String    @db.Uuid
+  session_token    String    @unique @db.VarChar(255)
+  expires_at       DateTime  @db.Timestamptz(6)
+  ip_address       String?   @db.VarChar(45)
+  user_agent       String?   @db.Text
+  created_at       DateTime  @default(now()) @db.Timestamptz(6)
+  last_accessed_at DateTime? @db.Timestamptz(6)
+
+  // Relations
+  users_users_idTousers User @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([user_id], map: "healthcare_sessions_user_id")
+  @@index([session_token], map: "healthcare_sessions_token")
+  @@index([expires_at], map: "healthcare_sessions_expires")
+  @@map("healthcare_sessions")
+}
+
+// NextAuth.js tables for future OAuth integration (Google, Microsoft, Facebook, OKTA)
+model Account {
+  id                String  @id @default(cuid())
+  userId            String  @db.Uuid
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String   @db.Uuid
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verificationtokens")
+}
+
+// Account Linking for hybrid auth (username/password + OAuth)
+model AccountLink {
+  id                  String    @id @default(uuid()) @db.Uuid
+  user_id             String    @db.Uuid
+  provider            String    @db.VarChar(50) // "google", "microsoft", "facebook", "okta"
+  provider_account_id String    @db.VarChar(255)
+  provider_email      String?   @db.VarChar(255)
+  linked_at           DateTime  @default(now()) @db.Timestamptz(6)
+  last_used_at        DateTime? @db.Timestamptz(6)
+  is_primary          Boolean   @default(false)
+  metadata            Json?     @default("{}")
+
+  // Relations
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@unique([user_id, provider], map: "account_links_user_provider")
+  @@unique([provider, provider_account_id], map: "account_links_provider_account")
+  @@index([user_id], map: "account_links_user_id")
+  @@index([provider], map: "account_links_provider")
+  @@map("account_links")
 }
 
 model Patient {

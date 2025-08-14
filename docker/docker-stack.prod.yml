@@ -73,11 +73,12 @@ services:
         reservations:
           memory: 128M
 
-  backend:
-    image: healthapp-backend:prod
+  # Single Next.js Full-Stack Application (Frontend + API Routes)
+  app:
+    image: healthapp:prod
     environment:
       NODE_ENV: production
-      PORT: 5001
+      PORT: 3002
       
       # Database Configuration
       POSTGRES_HOST: postgres
@@ -101,59 +102,13 @@ services:
       REDIS_PORT: 6379
       REDIS_PASSWORD: ${REDIS_PASSWORD}
       REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379
-      
-      # CORS Configuration
-      CORS_ORIGIN: ${FRONTEND_URL}
-    ports:
-      - "${HOST_PORT_BACKEND:-5001}:5001"
-    networks:
-      - healthapp-network
-    depends_on:
-      - postgres
-      - redis
-    deploy:
-      replicas: ${REPLICAS_BACKEND:-2}
-      update_config:
-        parallelism: 1
-        delay: 10s
-        order: start-first
-        failure_action: rollback
-      rollback_config:
-        parallelism: 1
-        delay: 10s
-      restart_policy:
-        condition: on-failure
-        delay: 5s
-        max_attempts: 3
-        window: 120s
-      resources:
-        limits:
-          memory: 2048M
-        reservations:
-          memory: 1024M
-
-  frontend:
-    image: healthapp-frontend:prod
-    environment:
-      NODE_ENV: production
-      PORT: 3002
-      
-      # NextAuth Configuration
-      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET}
-      NEXTAUTH_URL: ${NEXTAUTH_URL}
-      
-      # API Configuration
-      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
-      BACKEND_URL: http://backend:5001
-      
-      # Database URL (for NextAuth adapter)
-      DATABASE_URL: postgresql://${POSTGRES_USER:-healthapp_user}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-healthapp_prod}?schema=public
     ports:
       - "${HOST_PORT_FRONTEND:-3002}:3002"
     networks:
       - healthapp-network
     depends_on:
-      - backend
+      - postgres
+      - redis
     deploy:
       replicas: ${REPLICAS_FRONTEND:-2}
       update_config:

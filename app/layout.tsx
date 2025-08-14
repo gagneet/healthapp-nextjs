@@ -37,29 +37,31 @@ export default function RootLayout({
         <ErrorBoundary>
           <GlobalErrorHandler />
           <SessionProvider>
-            <div id="root" className="h-full">
-              {children}
-            </div>
-            <Toaster 
-              position="top-center"
-              toastOptions={{
-                duration: 4000,
-                style: {
-                  background: '#363636',
-                  color: '#fff',
-                },
-                success: {
+            <AuthProvider>
+              <div id="root" className="h-full">
+                {children}
+              </div>
+              <Toaster 
+                position="top-center"
+                toastOptions={{
+                  duration: 4000,
                   style: {
-                    background: '#22c55e',
+                    background: '#363636',
+                    color: '#fff',
                   },
-                },
-                error: {
-                  style: {
-                    background: '#ef4444',
+                  success: {
+                    style: {
+                      background: '#22c55e',
+                    },
                   },
-                },
-              }}
-            />
+                  error: {
+                    style: {
+                      background: '#ef4444',
+                    },
+                  },
+                }}
+              />
+            </AuthProvider>
           </SessionProvider>
         </ErrorBoundary>
       </body>

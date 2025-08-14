@@ -1,28 +1,26 @@
 'use client'
 
-import { getProviders, signIn, getSession } from 'next-auth/react'
 import { useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
+import { useHealthcareAuth } from '@/lib/auth/useHealthcareAuth'
 
 export default function SignIn() {
-  const [providers, setProviders] = useState<any>(null)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [userRole, setUserRole] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
   
   const router = useRouter()
   const searchParams = useSearchParams()
   const callbackUrl = searchParams.get('callbackUrl') || '/dashboard'
+  const { login, isAuthenticated } = useHealthcareAuth()
 
+  // Redirect if already authenticated
   useEffect(() => {
-    const setUpProviders = async () => {
-      const res = await getProviders()
-      setProviders(res)
+    if (isAuthenticated) {
+      router.push(callbackUrl)
     }
-    setUpProviders()
-  }, [])
+  }, [isAuthenticated, callbackUrl, router])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -30,19 +28,15 @@ export default function SignIn() {
     setError('')
 
     try {
-      const result = await signIn('credentials', {
-        email,
-        password,
-        userRole,
-        redirect: false,
-      })
+      const result = await login(email, password)
 
-      if (result?.error) {
-        setError('Invalid credentials')
-      } else {
+      if (result.success) {
         router.push(callbackUrl)
+      } else {
+        setError(result.error || 'Invalid credentials')
       }
     } catch (error) {
+      console.error('Login error:', error)
       setError('An error occurred during sign in')
     } finally {
       setIsLoading(false)
@@ -96,23 +90,6 @@ export default function SignIn() {
             />
           </div>
 
-          <div>
-            <label htmlFor="userRole" className="sr-only">User Role</label>
-            <select
-              id="userRole"
-              name="userRole"
-              value={userRole}
-              onChange={(e) => setUserRole(e.target.value)}
-              className="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-            >
-              <option value="">Select Role (Optional)</option>
-              <option value="DOCTOR">Doctor</option>
-              <option value="PATIENT">Patient</option>
-              <option value="HSP">Health Service Provider</option>
-              <option value="HOSPITAL_ADMIN">Hospital Admin</option>
-              <option value="SYSTEM_ADMIN">System Admin</option>
-            </select>
-          </div>
 
           <div>
             <button

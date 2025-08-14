@@ -322,8 +322,7 @@ setup_environment() {
     fi
 
     # Scaling configuration
-    export REPLICAS_FRONTEND="$REPLICAS"
-    export REPLICAS_BACKEND="$REPLICAS"
+    export REPLICAS_FRONTEND="$REPLICAS"  # App service replicas (Next.js full-stack)
     export REPLICAS_POSTGRES="1"  # Always 1 for database
     export REPLICAS_REDIS="1"     # Always 1 for Redis
     export REPLICAS_PGADMIN="1"   # Always 1 for PgAdmin
@@ -372,13 +371,12 @@ build_images() {
         return
     fi
 
-    log_info "Building Docker images..."
+    log_info "Building Docker image..."
     
-    # Build images with environment-specific tags
-    docker build -t "healthapp-frontend:$ENVIRONMENT" -f docker/Dockerfile.production .
-    docker build -t "healthapp-backend:$ENVIRONMENT" -f docker/Dockerfile.production .
+    # Build single Next.js full-stack application image
+    docker build -t "healthapp:$ENVIRONMENT" -f docker/Dockerfile.production .
     
-    log_success "Images built successfully"
+    log_success "Image built successfully"
 }
 
 deploy_stack() {
@@ -410,9 +408,16 @@ run_migrations() {
     if [ "$MIGRATE" = true ]; then
         log_info "Running database migrations..."
         
-        # Run migrations in the backend container
-        docker service exec $(docker service ps "$STACK_NAME"_backend --format "{{.ID}}" | head -1) \
-            npx prisma migrate deploy
+        # Get running app container ID
+        local container_id=$(docker ps --filter "name=$STACK_NAME"_app --format "{{.ID}}" | head -1)
+        
+        if [ -z "$container_id" ]; then
+            log_error "No running app containers found"
+            exit 1
+        fi
+        
+        # Run migrations in the app container (Next.js full-stack)
+        docker exec "$container_id" npx prisma migrate deploy
         
         log_success "Migrations completed"
     fi
@@ -422,9 +427,16 @@ run_seeds() {
     if [ "$SEED" = true ]; then
         log_info "Running database seeds..."
         
-        # Run seeds in the backend container  
-        docker service exec $(docker service ps "$STACK_NAME"_backend --format "{{.ID}}" | head -1) \
-            npx prisma db seed
+        # Get running app container ID
+        local container_id=$(docker ps --filter "name=$STACK_NAME"_app --format "{{.ID}}" | head -1)
+        
+        if [ -z "$container_id" ]; then
+            log_error "No running app containers found"
+            exit 1
+        fi
+        
+        # Run seeds in the app container (Next.js full-stack)
+        docker exec "$container_id" npx prisma db seed
         
         log_success "Seeds completed"
     fi
@@ -457,12 +469,11 @@ scale_service() {
     local service_replicas="$REPLICAS"
     
     if [ -n "$service_replicas" ]; then
-        log_info "Scaling services to $service_replicas replicas..."
+        log_info "Scaling app service to $service_replicas replicas..."
         
-        docker service scale "$STACK_NAME"_frontend="$service_replicas"
-        docker service scale "$STACK_NAME"_backend="$service_replicas"
+        docker service scale "$STACK_NAME"_app="$service_replicas"
         
-        log_success "Services scaled to $service_replicas replicas"
+        log_success "App service scaled to $service_replicas replicas"
     else
         log_error "No replica count specified"
         exit 1
