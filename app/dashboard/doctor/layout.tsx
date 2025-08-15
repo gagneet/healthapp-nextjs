@@ -2,7 +2,7 @@
 
 import { ReactNode, useState } from 'react'
 import DoctorSidebar, { SidebarToggle } from '@/components/dashboard/doctor-sidebar'
-import { withAuth } from '@/lib/auth-context'
+// Removed withAuth import - using RouteGuardLayout instead
 import RouteGuardLayout from '@/components/RouteGuardLayout'
 
 interface DoctorLayoutProps {
@@ -34,4 +34,4 @@ function DoctorLayout({ children }: DoctorLayoutProps) {
   )
 }
 
-export default withAuth(DoctorLayout, ['DOCTOR'])
+export default DoctorLayout

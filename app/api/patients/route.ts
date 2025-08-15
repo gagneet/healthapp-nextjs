@@ -4,8 +4,7 @@
  */
 
 import { NextRequest, NextResponse } from "next/server"
-import { getServerSession } from "next-auth"
-import { authOptions } from "@/lib/auth"
+import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { 
   createSuccessResponse, 
@@ -28,7 +27,7 @@ import { generatePatientId } from "@/lib/id-generation"
  * Business Logic: Only doctors, HSPs, and admins can access patient lists
  */
 export const GET = withErrorHandling(async (request: NextRequest) => {
-  const session = await getServerSession(authOptions)
+  const session = await auth()
   
   if (!session) {
     return createUnauthorizedResponse()
@@ -92,14 +91,18 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
         return createForbiddenResponse("Invalid role for patient access");
     }
 
-    // Apply search filter
+    // Apply search filter with dual field support
     if (searchQuery) {
       whereClause.OR = [
         {
           user: {
             OR: [
+              // ✅ Auth.js v5 fields
+              { name: { contains: searchQuery, mode: 'insensitive' } },
+              // ✅ Legacy fields for backward compatibility
               { first_name: { contains: searchQuery, mode: 'insensitive' } },
               { last_name: { contains: searchQuery, mode: 'insensitive' } },
+              { full_name: { contains: searchQuery, mode: 'insensitive' } },
               { email: { contains: searchQuery, mode: 'insensitive' } }
             ]
           }
@@ -150,8 +153,17 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
           select: {
             id: true,
             email: true,
+            // ✅ Auth.js v5 fields
+            name: true,
+            image: true,
+            emailVerified: true,
+            // ✅ Legacy fields for backward compatibility
             first_name: true,
             last_name: true,
+            full_name: true,
+            profile_picture_url: true,
+            email_verified: true,
+            // ✅ Additional fields
             phone: true,
             date_of_birth: true,
             gender: true,
@@ -166,9 +178,15 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
             doctor_id: true,
             users_doctors_user_idTousers: {
               select: {
+                email: true,
+                // ✅ Auth.js v5 fields
+                name: true,
+                image: true,
+                // ✅ Legacy fields for backward compatibility
                 first_name: true,
                 last_name: true,
-                email: true
+                full_name: true,
+                profile_picture_url: true
               }
             }
           }
@@ -177,32 +195,68 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
     })
 
     // Format response data
-    const formattedPatients = patients.map(patient => ({
-      id: patient.id,
-      patientId: patient.patient_id,
-      medicalRecordNumber: patient.medical_record_number,
-      user: {
-        id: patient.user.id,
-        email: patient.user.email,
-        name: `${patient.user.first_name} ${patient.user.last_name}`.trim(),
-        firstName: patient.user.first_name,
-        lastName: patient.user.last_name,
-        phone: patient.user.phone,
-        dateOfBirth: patient.user.date_of_birth,
-        gender: patient.user.gender,
-        accountStatus: patient.user.account_status
-      },
-      primaryDoctor: patient.doctors ? {
-        doctorId: patient.doctors.doctor_id,
-        name: `${patient.doctors.users_doctors_user_idTousers.first_name} ${patient.doctors.users_doctors_user_idTousers.last_name}`.trim(),
-        email: patient.doctors.users_doctors_user_idTousers.email
-      } : null,
-      height: patient.height_cm,
-      weight: patient.weight_kg,
-      bloodType: patient.blood_type,
-      createdAt: patient.created_at,
-      updatedAt: patient.updated_at
-    }));
+    const formattedPatients = patients.map(patient => {
+      // ✅ Helper to get name with fallbacks
+      const userName = patient.user.name || 
+                      patient.user.full_name ||
+                      `${patient.user.first_name || ''} ${patient.user.last_name || ''}`.trim()
+      
+      const userImage = patient.user.image || patient.user.profile_picture_url
+      
+      const doctorName = patient.doctors ? 
+        (patient.doctors.users_doctors_user_idTousers.name ||
+         patient.doctors.users_doctors_user_idTousers.full_name ||
+         `${patient.doctors.users_doctors_user_idTousers.first_name || ''} ${patient.doctors.users_doctors_user_idTousers.last_name || ''}`.trim())
+        : null
+
+      return {
+        id: patient.id,
+        patientId: patient.patient_id,
+        medicalRecordNumber: patient.medical_record_number,
+        user: {
+          id: patient.user.id,
+          email: patient.user.email,
+          
+          // ✅ Auth.js v5 standard fields (preferred)
+          name: userName,
+          image: userImage,
+          emailVerified: patient.user.emailVerified,
+          
+          // ✅ Legacy fields (for backward compatibility)
+          firstName: patient.user.first_name,
+          lastName: patient.user.last_name,
+          fullName: patient.user.full_name,
+          profilePictureUrl: patient.user.profile_picture_url,
+          emailVerifiedLegacy: patient.user.email_verified,
+          
+          // ✅ Additional healthcare fields
+          phone: patient.user.phone,
+          dateOfBirth: patient.user.date_of_birth,
+          gender: patient.user.gender,
+          accountStatus: patient.user.account_status
+        },
+        primaryDoctor: patient.doctors ? {
+          doctorId: patient.doctors.doctor_id,
+          
+          // ✅ Auth.js v5 standard fields (preferred)
+          name: doctorName,
+          image: patient.doctors.users_doctors_user_idTousers.image || patient.doctors.users_doctors_user_idTousers.profile_picture_url,
+          
+          // ✅ Legacy fields (for backward compatibility)  
+          firstName: patient.doctors.users_doctors_user_idTousers.first_name,
+          lastName: patient.doctors.users_doctors_user_idTousers.last_name,
+          fullName: patient.doctors.users_doctors_user_idTousers.full_name,
+          profilePictureUrl: patient.doctors.users_doctors_user_idTousers.profile_picture_url,
+          
+          email: patient.doctors.users_doctors_user_idTousers.email
+        } : null,
+        height: patient.height_cm,
+        weight: patient.weight_kg,
+        bloodType: patient.blood_type,
+        createdAt: patient.created_at,
+        updatedAt: patient.updated_at
+      }
+    });
 
     return createSuccessResponse(
       formattedPatients,
@@ -221,7 +275,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
  * Business Logic: Only doctors and admins can create patient records
  */
 export const POST = withErrorHandling(async (request: NextRequest) => {
-  const session = await getServerSession(authOptions)
+  const session = await auth()
   
   if (!session) {
     return createUnauthorizedResponse()
@@ -259,21 +313,39 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
 
     // Create user and patient records in transaction
     const result = await prisma.$transaction(async (tx) => {
-      // Create user record
+      // ✅ Generate names for dual field support
+      const fullName = `${patientData.firstName} ${patientData.lastName}`.trim()
+      
+      // Create user record with dual field support
       const user = await tx.user.create({
         data: {
           email: patientData.email,
+          
+          // ✅ Auth.js v5 required fields
+          name: fullName, // Required by Auth.js v5
+          image: null, // Profile picture can be set later
+          emailVerified: null, // Will be set when email is verified (DateTime)
+          
+          // ✅ Legacy fields for backward compatibility
           first_name: patientData.firstName,
           last_name: patientData.lastName,
+          full_name: fullName,
+          profile_picture_url: null, // Legacy field
+          email_verified: false, // Legacy boolean field
+          
+          // ✅ Additional healthcare fields
           middle_name: patientData.middleName,
           phone: patientData.phone,
           date_of_birth: patientData.dateOfBirth,
           gender: patientData.gender,
           role: 'PATIENT',
           account_status: 'ACTIVE',
-          // Generate a temporary password - patient should reset on first login
+          
+          // ✅ Security fields
           password_hash: '$2b$12$defaulthash', // This should be a properly hashed temporary password
-          email_verified: false,
+          two_factor_enabled: false,
+          failed_login_attempts: 0,
+          password_changed_at: new Date(),
           created_at: new Date(),
           updated_at: new Date()
         }
@@ -302,6 +374,10 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
     });
 
     // Format response
+    // ✅ Format response with dual field support
+    const userName = result.user.name || result.user.full_name || `${result.user.first_name || ''} ${result.user.last_name || ''}`.trim()
+    const userImage = result.user.image || result.user.profile_picture_url
+
     const responseData = {
       id: result.patient.id,
       patientId: result.patient.patient_id,
@@ -309,9 +385,20 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
       user: {
         id: result.user.id,
         email: result.user.email,
-        name: `${result.user.first_name} ${result.user.last_name}`.trim(),
+        
+        // ✅ Auth.js v5 standard fields (preferred)
+        name: userName,
+        image: userImage,
+        emailVerified: result.user.emailVerified,
+        
+        // ✅ Legacy fields (for backward compatibility)
         firstName: result.user.first_name,
         lastName: result.user.last_name,
+        fullName: result.user.full_name,
+        profilePictureUrl: result.user.profile_picture_url,
+        emailVerifiedLegacy: result.user.email_verified,
+        
+        // ✅ Additional healthcare fields
         phone: result.user.phone,
         dateOfBirth: result.user.date_of_birth,
         gender: result.user.gender,

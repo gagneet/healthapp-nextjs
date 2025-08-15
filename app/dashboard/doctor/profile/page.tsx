@@ -23,6 +23,7 @@ import {
 } from '@heroicons/react/24/outline'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { useAuth } from '@/lib/auth-context'
+import { userHelpers } from '@/types/auth'
 import { apiRequest } from '@/lib/api'
 import { formatDate } from '@/lib/utils'
 import toast from 'react-hot-toast'
@@ -247,7 +248,7 @@ export default function DoctorProfilePage() {
               {profile.profile_picture_url ? (
                 <img
                   src={profile.profile_picture_url}
-                  alt="Profile"
+                  alt={userHelpers.getDisplayName(user)}
                   className="h-24 w-24 rounded-full object-cover"
                 />
               ) : (
@@ -266,7 +267,7 @@ export default function DoctorProfilePage() {
           </div>
           <div className="flex-1">
             <h1 className="text-2xl font-bold">
-              Dr. {user?.first_name} {user?.last_name}
+              Dr. {userHelpers.getLastName(user) || userHelpers.getFirstName(user)}
             </h1>
             <p className="text-blue-100">{profile.speciality?.name || 'Specialty not specified'}</p>
             <div className="flex items-center space-x-4 mt-2">

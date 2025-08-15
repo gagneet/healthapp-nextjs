@@ -257,12 +257,11 @@ All API responses follow a consistent healthcare-compliant structure:
 NextAuth.js with PrismaAdapter manages authentication with healthcare role enforcement:
 
 ```typescript
-// API route example with NextAuth.js role protection
-import { getServerSession } from "next-auth"
-import { authOptions } from "@/lib/auth"
+// API route example with Auth.js v5 protection
+import { auth } from "@/lib/auth"
 
 export async function GET(request: NextRequest) {
-  const session = await getServerSession(authOptions)
+  const session = await auth()
   
   if (!session || !['DOCTOR', 'HSP'].includes(session.user.role)) {
     return new Response('Unauthorized', { status: 401 })
@@ -271,10 +270,12 @@ export async function GET(request: NextRequest) {
 }
 ```
 
-**NextAuth.js Features:**
+**Auth.js v5 Features:**
+- Modern authentication framework with improved performance
 - Database-backed sessions with PrismaAdapter
-- Healthcare role-based access control
-- Secure session management
+- Healthcare role-based access control with custom business logic
+- Enhanced session management with healthcare-specific timeouts (30 min)
+- Backward-compatible field mapping for seamless migration
 - Integration with PostgreSQL user management
 
 ### Core API Endpoints
@@ -582,9 +583,17 @@ Healthcare-specific testing includes:
 - **Performance Metrics**: Database query optimization
 - **Health Checks**: Built-in API health endpoints
 
-## 🔄 Migration Completed: JWT → NextAuth.js + Docker Infrastructure
+## 🔄 Migration Completed: Auth.js v5 + Enhanced Infrastructure
 
-This application has been **successfully migrated** from JWT-based authentication to **NextAuth.js** with comprehensive **Docker deployment infrastructure**:
+This application has been **successfully migrated to Auth.js v5** with comprehensive **Docker deployment infrastructure** and enhanced authentication:
+
+### ✅ **Latest: Auth.js v5 Migration (August 2025)**
+
+- **Modern Auth.js v5**: Latest authentication framework with improved performance
+- **Enhanced Field Mapping**: Proper mapping between legacy and Auth.js v5 fields
+- **Database Schema Updates**: Automated migration for Auth.js v5 compatibility
+- **Backward Compatibility**: Seamless migration preserving all existing user data
+- **Improved Session Management**: Enhanced JWT strategy with healthcare-specific timeouts
 
 ### ✅ **Completed Migration Benefits**
 

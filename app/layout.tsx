@@ -7,7 +7,6 @@ import { AuthProvider } from '@/lib/auth-context'
 // Force all pages to be dynamic (no static generation)
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
-import { SessionProvider } from '@/components/providers/SessionProvider'
 import ErrorBoundary from '@/components/ErrorBoundary'
 import GlobalErrorHandler from '@/components/GlobalErrorHandler'
 
@@ -36,7 +35,7 @@ export default function RootLayout({
       <body className={`${inter.className} h-full bg-gray-50`}>
         <ErrorBoundary>
           <GlobalErrorHandler />
-          <SessionProvider>
+          <AuthProvider>
             <div id="root" className="h-full">
               {children}
             </div>
@@ -60,7 +59,7 @@ export default function RootLayout({
                 },
               }}
             />
-          </SessionProvider>
+          </AuthProvider>
         </ErrorBoundary>
       </body>
     </html>

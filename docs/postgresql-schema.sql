@@ -1,7 +1,157 @@
---
--- Healthcare Management Platform - Complete PostgreSQL Schema
--- Generated: 2025-08-13
---
+-- Healthcare Management Platform PostgreSQL Schema
+-- Generated for Auth.js v5 + Healthcare Application
+-- Updated: 2025-08-14
+-- Compatible with Prisma ORM and Auth.js v5
+
+-- =============================================
+-- ENUMS (Custom Types)
+-- =============================================
+
+-- User roles for healthcare platform
+CREATE TYPE enum_users_role AS ENUM (
+    'PATIENT',
+    'DOCTOR', 
+    'HSP',
+    'SYSTEM_ADMIN',
+    'HOSPITAL_ADMIN',
+    'CAREGIVER'
+);
+
+-- Account status for user management
+CREATE TYPE enum_users_account_status AS ENUM (
+    'ACTIVE',
+    'INACTIVE',
+    'SUSPENDED',
+    'PENDING_VERIFICATION',
+    'DEACTIVATED'
+);
+
+-- Gender options
+CREATE TYPE enum_users_gender AS ENUM (
+    'MALE',
+    'FEMALE',
+    'OTHER',
+    'PREFER_NOT_TO_SAY'
+);
+
+-- Appointment statuses
+CREATE TYPE enum_appointments_status AS ENUM (
+    'SCHEDULED',
+    'CONFIRMED',
+    'IN_PROGRESS',
+    'COMPLETED',
+    'CANCELLED',
+    'NO_SHOW',
+    'RESCHEDULED'
+);
+
+-- Care plan statuses
+CREATE TYPE enum_care_plans_status AS ENUM (
+    'ACTIVE',
+    'INACTIVE',
+    'COMPLETED',
+    'DISCONTINUED',
+    'PENDING_APPROVAL'
+);
+
+-- Medication adherence levels
+CREATE TYPE enum_medication_adherence_level AS ENUM (
+    'EXCELLENT',
+    'GOOD',
+    'FAIR',
+    'POOR',
+    'UNKNOWN'
+);
+
+-- =============================================
+-- AUTH.JS V5 REQUIRED TABLES
+-- =============================================
+
+-- Users table (extends Auth.js schema for healthcare)
+CREATE TABLE users (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    email VARCHAR(255) UNIQUE NOT NULL,
+    email_verified TIMESTAMPTZ,
+    name VARCHAR(255),
+    image VARCHAR(500),
+    password_hash VARCHAR(255), -- For credentials users
+    role enum_users_role NOT NULL DEFAULT 'PATIENT',
+    account_status enum_users_account_status DEFAULT 'PENDING_VERIFICATION',
+    
+    -- Personal information
+    first_name VARCHAR(100),
+    last_name VARCHAR(100),
+    middle_name VARCHAR(100),
+    full_name VARCHAR(255),
+    phone VARCHAR(20),
+    date_of_birth DATE,
+    gender enum_users_gender,
+    profile_picture_url VARCHAR(500),
+    
+    -- Security fields
+    two_factor_enabled BOOLEAN DEFAULT FALSE,
+    two_factor_secret VARCHAR(255),
+    failed_login_attempts INTEGER DEFAULT 0,
+    locked_until TIMESTAMPTZ,
+    last_login TIMESTAMPTZ,
+    password_changed_at TIMESTAMPTZ DEFAULT NOW(),
+    
+    -- Privacy and preferences
+    email_verification_token VARCHAR(255),
+    password_reset_token VARCHAR(255),
+    password_reset_expires TIMESTAMPTZ,
+    timezone VARCHAR(50) DEFAULT 'UTC',
+    locale VARCHAR(10) DEFAULT 'en',
+    preferences JSON DEFAULT '{"privacy": {"profile_visible": true, "share_data_for_research": false}, "accessibility": {"large_text": false, "high_contrast": false}, "notifications": {"sms": false, "push": true, "email": true}}',
+    
+    -- Legal compliance
+    terms_accepted_at TIMESTAMPTZ,
+    privacy_policy_accepted_at TIMESTAMPTZ,
+    hipaa_consent_date TIMESTAMPTZ,
+    
+    -- Timestamps
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ
+);
+
+-- Auth.js Accounts table (OAuth providers)
+CREATE TABLE accounts (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    type VARCHAR(255) NOT NULL,
+    provider VARCHAR(255) NOT NULL,
+    provider_account_id VARCHAR(255) NOT NULL,
+    refresh_token TEXT,
+    access_token TEXT,
+    expires_at INTEGER,
+    token_type VARCHAR(255),
+    scope VARCHAR(255),
+    id_token TEXT,
+    session_state VARCHAR(255),
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW(),
+    UNIQUE(provider, provider_account_id)
+);
+
+-- Auth.js Sessions table  
+CREATE TABLE sessions (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    session_token VARCHAR(255) UNIQUE NOT NULL,
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    expires TIMESTAMPTZ NOT NULL,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Auth.js Verification tokens table
+CREATE TABLE verification_tokens (
+    identifier VARCHAR(255) NOT NULL,
+    token VARCHAR(255) NOT NULL,
+    expires TIMESTAMPTZ NOT NULL,
+    PRIMARY KEY (identifier, token)
+);
+
 -- This schema includes all phases of the healthcare platform:
 -- - Phase 1: Critical Safety & Compliance Features (Medical Safety, HIPAA)
 -- - Phase 3: Advanced Medical Device Integration (IoT Devices, Bluetooth)

@@ -1,21 +1,23 @@
 // app/api/admin/doctors/route.ts - Admin doctor management API
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { auth } from '@/lib/auth';
 import bcrypt from 'bcryptjs';
 import { randomUUID } from 'crypto';
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await auth();
     if (!session?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({
+        status: false,
+        statusCode: 401,
+        payload: { error: { status: 'unauthorized', message: 'Authentication required' } }
+      }, { status: 401 });
     }
-    const user = session.user;
 
     // Only admins can manage doctors
-    if (!['ADMIN', 'PROVIDER_ADMIN'].includes(user!.role)) {
+    if (!['SYSTEM_ADMIN', 'HOSPITAL_ADMIN'].includes(session.user.role)) {
       return NextResponse.json({
         status: false,
         statusCode: 403,
@@ -33,11 +35,17 @@ export async function GET(request: NextRequest) {
     
     if (search) {
       whereClause = {
-        OR: [
-          { first_name: { contains: search, mode: 'insensitive' } },
-          { last_name: { contains: search, mode: 'insensitive' } },
-          { user: { email: { contains: search, mode: 'insensitive' } } }
-        ]
+        users_doctors_user_idTousers: {
+          OR: [
+            // ✅ Auth.js v5 fields
+            { name: { contains: search, mode: 'insensitive' } },
+            // ✅ Legacy fields for backward compatibility  
+            { first_name: { contains: search, mode: 'insensitive' } },
+            { last_name: { contains: search, mode: 'insensitive' } },
+            { full_name: { contains: search, mode: 'insensitive' } },
+            { email: { contains: search, mode: 'insensitive' } }
+          ]
+        }
       };
     }
 
@@ -49,10 +57,19 @@ export async function GET(request: NextRequest) {
             select: {
               id: true,
               email: true,
-              phone: true,
-              account_status: true,
+              // ✅ Auth.js v5 fields
+              name: true,
+              image: true,
+              emailVerified: true,
+              // ✅ Legacy fields for backward compatibility
+              first_name: true,
+              last_name: true,
+              full_name: true,
+              profile_picture_url: true,
               email_verified: true,
-              
+              // ✅ Additional fields
+              phone: true,
+              account_status: true
             }
           },
           specialities: {
@@ -111,14 +128,17 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await auth();
     if (!session?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({
+        status: false,
+        statusCode: 401,
+        payload: { error: { status: 'unauthorized', message: 'Authentication required' } }
+      }, { status: 401 });
     }
-    const user = session.user;
 
     // Only admins can create doctors
-    if (!['ADMIN', 'PROVIDER_ADMIN'].includes(user!.role)) {
+    if (!['SYSTEM_ADMIN', 'HOSPITAL_ADMIN'].includes(session.user.role)) {
       return NextResponse.json({
         status: false,
         statusCode: 403,
@@ -163,13 +183,20 @@ export async function POST(request: NextRequest) {
 
     // Create user and doctor in transaction
     const result = await prisma.$transaction(async (tx) => {
-      // Create user
+      // Create user with Auth.js v5 compatibility
+      const fullName = `${first_name} ${last_name}`.trim();
       const newUser = await tx.user.create({
         data: {
           email,
           password_hash: hashedPassword,
+          // Auth.js v5 fields
+          name: fullName,
+          email_verified_at: new Date(),
+          image: null,
+          // Legacy fields for backward compatibility
           first_name,
           last_name,
+          full_name: fullName,
           phone: mobile_number,
           date_of_birth: date_of_birth ? new Date(date_of_birth) : null,
           gender,

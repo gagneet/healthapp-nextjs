@@ -1,29 +1,35 @@
 // app/api/assignments/secondary-doctors/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { auth } from '@/lib/auth';
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await auth();
     if (!session?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({
+        status: false,
+        statusCode: 401,
+        payload: { error: { status: 'unauthorized', message: 'Authentication required' } }
+      }, { status: 401 });
     }
-    const user = session.user;
 
     // Only allow specific roles to view secondary doctor assignments
-    if (!['ADMIN', 'DOCTOR', 'PATIENT'].includes(user!.role)) {
-      return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
+    if (!['SYSTEM_ADMIN', 'HOSPITAL_ADMIN', 'DOCTOR', 'PATIENT'].includes(session.user.role)) {
+      return NextResponse.json({
+        status: false,
+        statusCode: 403,
+        payload: { error: { status: 'forbidden', message: 'Insufficient permissions' } }
+      }, { status: 403 });
     }
 
     let whereClause: any = {};
 
     // Role-based filtering
-    if (user!.role === 'PATIENT') {
+    if (session.user.role === 'PATIENT') {
       // Patients can only see their own secondary doctor assignments
       const patient = await prisma.patient.findFirst({
-        where: { user_id: user!.id }
+        where: { user_id: session.user.id }
       });
       if (!patient) {
         return NextResponse.json({
@@ -33,9 +39,9 @@ export async function GET(request: NextRequest) {
         }, { status: 403 });
       }
       whereClause.patient_id = patient.id;
-    } else if (user!.role === 'DOCTOR') {
+    } else if (session.user.role === 'DOCTOR') {
       const doctor = await prisma.doctors.findFirst({
-        where: { user_id: user!.id }
+        where: { user_id: session.user.id }
       });
       if (!doctor) {
         return NextResponse.json({
@@ -54,7 +60,7 @@ export async function GET(request: NextRequest) {
     const assignments = await prisma.secondary_doctor_assignments.findMany({
       where: whereClause,
       include: {
-        patient: {
+        patients: {
           select: {
             id: true,
             patient_id: true,
@@ -62,12 +68,13 @@ export async function GET(request: NextRequest) {
               select: {
                 first_name: true,
                 last_name: true,
-                email: true
+                email: true,
+                phone: true
               }
             }
           }
         },
-        primary_doctor: {
+        doctors_secondary_doctor_assignments_primary_doctor_idTodoctors: {
           select: {
             id: true,
             users_doctors_user_idTousers: {
@@ -84,7 +91,7 @@ export async function GET(request: NextRequest) {
             }
           }
         },
-        secondary_doctor: {
+        doctors_secondary_doctor_assignments_secondary_doctor_idTodoctors: {
           select: {
             id: true,
             users_doctors_user_idTousers: {
@@ -97,6 +104,18 @@ export async function GET(request: NextRequest) {
             specialities: {
               select: {
                 name: true
+              }
+            }
+          }
+        },
+        hsps: {
+          select: {
+            id: true,
+            users: {
+              select: {
+                first_name: true,
+                last_name: true,
+                email: true
               }
             }
           }
@@ -125,15 +144,22 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await auth();
     if (!session?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({
+        status: false,
+        statusCode: 401,
+        payload: { error: { status: 'unauthorized', message: 'Authentication required' } }
+      }, { status: 401 });
     }
-    const user = session.user;
 
     // Only doctors and admins can create secondary assignments
-    if (!['ADMIN', 'DOCTOR'].includes(user!.role)) {
-      return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
+    if (!['SYSTEM_ADMIN', 'HOSPITAL_ADMIN', 'DOCTOR'].includes(session.user.role)) {
+      return NextResponse.json({
+        status: false,
+        statusCode: 403,
+        payload: { error: { status: 'forbidden', message: 'Insufficient permissions' } }
+      }, { status: 403 });
     }
 
     const body = await request.json();
@@ -141,25 +167,36 @@ export async function POST(request: NextRequest) {
       patient_id,
       primary_doctor_id,
       secondary_doctor_id,
-      assignment_type,
-      notes,
-      start_date,
-      end_date
+      secondary_hsp_id,
+      assignment_reason,
+      specialty_focus,
+      care_plan_ids,
+      consent_duration_months = 6,
+      assignment_start_date,
+      assignment_end_date
     } = body;
 
     // Validation
-    if (!patient_id || !primary_doctor_id || !secondary_doctor_id) {
+    if (!patient_id || !primary_doctor_id) {
       return NextResponse.json({
         status: false,
         statusCode: 400,
-        payload: { error: { status: 'error', message: 'Patient, primary doctor, and secondary doctor are required' } }
+        payload: { error: { status: 'validation_error', message: 'Patient and primary doctor are required' } }
+      }, { status: 400 });
+    }
+
+    if (!secondary_doctor_id && !secondary_hsp_id) {
+      return NextResponse.json({
+        status: false,
+        statusCode: 400,
+        payload: { error: { status: 'validation_error', message: 'Either secondary doctor or secondary HSP is required' } }
       }, { status: 400 });
     }
 
     // Check if user has permission to create this assignment
-    if (user!.role === 'DOCTOR') {
+    if (session.user.role === 'DOCTOR') {
       const doctor = await prisma.doctors.findFirst({
-        where: { user_id: user!.id }
+        where: { user_id: session.user.id }
       });
       if (!doctor || doctor.id !== primary_doctor_id) {
         return NextResponse.json({
@@ -170,20 +207,40 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Generate unique ID for assignment
+    const { randomUUID } = await import('crypto');
+    const assignmentId = randomUUID();
+
+    // Calculate consent expiration date
+    const consentExpiresAt = new Date();
+    consentExpiresAt.setMonth(consentExpiresAt.getMonth() + consent_duration_months);
+
     const assignment = await prisma.secondary_doctor_assignments.create({
       data: {
+        id: assignmentId,
         patient_id,
         primary_doctor_id,
-        secondary_doctor_id,
-        assignment_type: assignment_type || 'CONSULTATION',
-        status: 'ACTIVE',
-        notes: notes || '',
-        start_date: start_date ? new Date(start_date) : new Date(),
-        end_date: end_date ? new Date(end_date) : null
+        secondary_doctor_id: secondary_doctor_id || null,
+        secondary_hsp_id: secondary_hsp_id || null,
+        assignment_reason: assignment_reason || null,
+        specialty_focus: specialty_focus || [],
+        care_plan_ids: care_plan_ids || [],
+        consent_required: true,
+        consent_status: 'pending',
+        access_granted: false,
+        consent_expires_at: consentExpiresAt,
+        consent_duration_months,
+        is_active: true,
+        assignment_start_date: assignment_start_date ? new Date(assignment_start_date) : new Date(),
+        assignment_end_date: assignment_end_date ? new Date(assignment_end_date) : null,
+        created_at: new Date(),
+        updated_at: new Date()
       },
       include: {
-        patient: {
+        patients: {
           select: {
+            id: true,
+            patient_id: true,
             user: {
               select: {
                 first_name: true,
@@ -193,8 +250,9 @@ export async function POST(request: NextRequest) {
             }
           }
         },
-        primary_doctor: {
+        doctors_secondary_doctor_assignments_primary_doctor_idTodoctors: {
           select: {
+            id: true,
             users_doctors_user_idTousers: {
               select: {
                 first_name: true,
@@ -203,9 +261,21 @@ export async function POST(request: NextRequest) {
             }
           }
         },
-        secondary_doctor: {
+        doctors_secondary_doctor_assignments_secondary_doctor_idTodoctors: {
           select: {
+            id: true,
             users_doctors_user_idTousers: {
+              select: {
+                first_name: true,
+                last_name: true
+              }
+            }
+          }
+        },
+        hsps: {
+          select: {
+            id: true,
+            users: {
               select: {
                 first_name: true,
                 last_name: true

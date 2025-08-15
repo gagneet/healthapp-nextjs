@@ -18,6 +18,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { useAuth } from '@/lib/auth-context'
 import { DashboardStats, Patient, CriticalAlert, RecentActivity } from '@/types/dashboard'
 import { formatDate, getAdherenceColor, getInitials } from '@/lib/utils'
+import { userHelpers } from '@/types/auth'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts'
 import PatientQuickView from '@/components/dashboard/patient-quick-view'
 
@@ -67,22 +68,16 @@ export default function DoctorDashboard() {
       setIsLoading(true)
       setError(null)
       
-      const token = localStorage.getItem('authToken')
-      if (!token) {
-        throw new Error('No authentication token found')
-      }
-
       const headers = {
-        'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json',
       }
 
-      // Fetch all dashboard data concurrently
+      // Fetch all dashboard data concurrently with credentials for session cookies
       const [statsRes, patientsRes, alertsRes, analyticsRes] = await Promise.all([
-        fetch('/api/doctors/dashboard', { headers }),
-        fetch('/api/doctors/recent-patients?limit=5', { headers }),
-        fetch('/api/doctors/critical-alerts?limit=5', { headers }),
-        fetch('/api/doctors/adherence-analytics', { headers })
+        fetch('/api/doctors/dashboard', { headers, credentials: 'include' }),
+        fetch('/api/doctors/recent-patients?limit=5', { headers, credentials: 'include' }),
+        fetch('/api/doctors/critical-alerts?limit=5', { headers, credentials: 'include' }),
+        fetch('/api/doctors/adherence-analytics', { headers, credentials: 'include' })
       ])
 
       // Check all responses
@@ -158,7 +153,7 @@ export default function DoctorDashboard() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">
-            Welcome back, Dr. {user?.last_name}
+            Welcome back, Dr. {userHelpers.getLastName(user) || userHelpers.getFirstName(user)}
           </h1>
           <p className="text-gray-600 mt-1">
             Here's what's happening with your patients today.

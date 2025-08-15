@@ -47,26 +47,37 @@ model Organization {
 }
 
 model User {
-  id                                                           String                         @id @default(uuid()) @db.Uuid
-  email                                                        String                         @unique @db.VarChar(255)
-  password_hash                                                String                         @db.VarChar(255)
-  role                                                         enum_users_role
-  account_status                                               enum_users_account_status?     @default(PENDING_VERIFICATION)
-  first_name                                                   String?                        @db.VarChar(100)
-  last_name                                                    String?                        @db.VarChar(100)
-  middle_name                                                  String?                        @db.VarChar(100)
-  phone                                                        String?                        @db.VarChar(20)
-  date_of_birth                                                DateTime?                      @db.Date
-  gender                                                       enum_users_gender?
-  email_verified                                               Boolean?                       @default(false)
-  email_verification_token                                     String?                        @db.VarChar(255)
-  password_reset_token                                         String?                        @db.VarChar(255)
-  password_reset_expires                                       DateTime?                      @db.Timestamptz(6)
-  two_factor_enabled                                           Boolean?                       @default(false)
-  two_factor_secret                                            String?                        @db.VarChar(255)
-  failed_login_attempts                                        Int?                           @default(0)
-  locked_until                                                 DateTime?                      @db.Timestamptz(6)
-  last_login_at                                                DateTime?                      @db.Timestamptz(6)
+  id            String  @id @default(uuid()) @db.Uuid
+  email         String  @unique @db.VarChar(255)
+  password_hash String? @db.VarChar(255)
+
+  // Auth.js v5 required fields
+  name          String?   @db.VarChar(255)
+  image         String?   @db.VarChar(500)
+  emailVerified DateTime? @map("email_verified_at") @db.Timestamptz(6)
+
+  // Healthcare-specific fields
+  role           enum_users_role
+  account_status enum_users_account_status? @default(PENDING_VERIFICATION)
+  first_name     String?                    @db.VarChar(100)
+  last_name      String?                    @db.VarChar(100)
+  middle_name    String?                    @db.VarChar(100)
+  phone          String?                    @db.VarChar(20)
+  date_of_birth  DateTime?                  @db.Date
+  gender         enum_users_gender?
+
+  // Legacy email verification (keeping for backward compatibility)
+  email_verified           Boolean?  @default(false)
+  email_verification_token String?   @db.VarChar(255)
+  password_reset_token     String?   @db.VarChar(255)
+  password_reset_expires   DateTime? @db.Timestamptz(6)
+  two_factor_enabled       Boolean?  @default(false)
+  two_factor_secret        String?   @db.VarChar(255)
+  failed_login_attempts    Int?      @default(0)
+  locked_until             DateTime? @db.Timestamptz(6)
+  last_login_at            DateTime? @db.Timestamptz(6)
+
+  // Legacy profile picture (keeping for backward compatibility, but `image` is primary for Auth.js)
   profile_picture_url                                          String?                        @db.VarChar(500)
   timezone                                                     String?                        @default("UTC") @db.VarChar(50)
   locale                                                       String?                        @default("en") @db.VarChar(10)
@@ -99,6 +110,11 @@ model User {
   user_devices                                                 UserDevice[]
   user_roles                                                   user_roles[]
 
+  // Authentication relationships
+  accounts      Account[]
+  sessions      Session[]
+  account_links AccountLink[]
+
   // Medical Safety Relationships
   verified_patient_allergies    PatientAllergy[]
   resolved_medication_alerts    MedicationSafetyAlert[]
@@ -123,6 +139,86 @@ model User {
   @@index([phone], map: "users_phone")
   @@index([role], map: "users_role")
   @@map("users")
+}
+
+// NextAuth.js tables for future OAuth integration (Google, Microsoft, Facebook, OKTA)
+model Account {
+  id                String  @id @default(cuid())
+  userId            String  @db.Uuid
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  // Healthcare-specific OAuth metadata
+  provider_email String?   @db.VarChar(255)
+  provider_name  String?   @db.VarChar(255)
+  linked_at      DateTime  @default(now()) @db.Timestamptz(6)
+  last_used_at   DateTime? @db.Timestamptz(6)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId, provider])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String   @db.Uuid
+  expires      DateTime
+
+  // Healthcare-specific session tracking fields
+  ip_address         String?   @db.VarChar(45)
+  user_agent         String?   @db.Text
+  created_at         DateTime  @default(now()) @db.Timestamptz(6)
+  last_accessed_at   DateTime? @updatedAt @db.Timestamptz(6)
+  healthcare_context Json?     @default("{}")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId], map: "sessions_user_id")
+  @@index([expires], map: "sessions_expires")
+  @@index([ip_address], map: "sessions_ip_address")
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verificationtokens")
+}
+
+// Account Linking for hybrid auth (username/password + OAuth)
+model AccountLink {
+  id                  String    @id @default(uuid()) @db.Uuid
+  user_id             String    @db.Uuid
+  provider            String    @db.VarChar(50) // "google", "microsoft", "facebook", "okta"
+  provider_account_id String    @db.VarChar(255)
+  provider_email      String?   @db.VarChar(255)
+  linked_at           DateTime  @default(now()) @db.Timestamptz(6)
+  last_used_at        DateTime? @db.Timestamptz(6)
+  is_primary          Boolean   @default(false)
+  metadata            Json?     @default("{}")
+
+  // Relations
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@unique([user_id, provider], map: "account_links_user_provider")
+  @@unique([provider, provider_account_id], map: "account_links_provider_account")
+  @@index([user_id], map: "account_links_user_id")
+  @@index([provider], map: "account_links_provider")
+  @@map("account_links")
 }
 
 model Patient {

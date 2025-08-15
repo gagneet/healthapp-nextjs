@@ -20,6 +20,7 @@ import {
   ArrowDownTrayIcon,
 } from '@heroicons/react/24/outline'
 import { useAuth } from '@/lib/auth-context'
+import { userHelpers } from '@/types/auth'
 import NotificationDrawer from './notification-drawer'
 
 interface SidebarProps {
@@ -46,7 +47,7 @@ const quickActions = [
 
 export default function PatientSidebar({ isOpen, setIsOpen }: SidebarProps) {
   const pathname = usePathname()
-  const { user, logout } = useAuth()
+  const { user, logout, getDisplayName, getFirstName, getLastName } = useAuth()
   const [showNotifications, setShowNotifications] = useState(false)
 
   const isActive = (href: string) => {
@@ -97,12 +98,12 @@ export default function PatientSidebar({ isOpen, setIsOpen }: SidebarProps) {
             <div className="flex items-center space-x-3">
               <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
                 <span className="text-sm font-medium text-green-600">
-                  {user?.first_name?.[0]}{user?.last_name?.[0]}
+                  {getFirstName()?.[0]}{getLastName()?.[0]}
                 </span>
               </div>
               <div>
                 <p className="text-sm font-medium text-gray-900">
-                  {user?.first_name} {user?.last_name}
+                  {getDisplayName()}
                 </p>
                 <p className="text-xs text-gray-500">{user?.email}</p>
               </div>

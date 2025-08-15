@@ -1,20 +1,24 @@
 // app/api/subscriptions/route.ts - Subscription management API
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { auth } from '@/lib/auth';
+import { randomUUID } from 'crypto';
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await auth();
     if (!session?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({
+        status: false,
+        statusCode: 401,
+        payload: { error: { status: 'unauthorized', message: 'Authentication required' } }
+      }, { status: 401 });
     }
-    const user = session.user;
 
     const { searchParams } = new URL(request.url);
     const patientId = searchParams.get('patient_id');
     const status = searchParams.get('status');
+    const providerId = searchParams.get('provider_id');
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '20');
     const offset = (page - 1) * limit;
@@ -22,9 +26,9 @@ export async function GET(request: NextRequest) {
     let whereClause: any = {};
 
     // Role-based access control
-    if (user!.role === 'PATIENT') {
+    if (session.user.role === 'PATIENT') {
       const patient = await prisma.patient.findFirst({
-        where: { user_id: user!.id }
+        where: { user_id: session.user.id }
       });
       if (!patient) {
         return NextResponse.json({
@@ -34,11 +38,27 @@ export async function GET(request: NextRequest) {
         }, { status: 403 });
       }
       whereClause.patient_id = patient.id;
+    } else if (session.user.role === 'DOCTOR') {
+      const doctor = await prisma.doctors.findFirst({
+        where: { user_id: session.user.id }
+      });
+      if (doctor && !patientId) {
+        // Show subscriptions for doctor's patients
+        const doctorPatients = await prisma.patient.findMany({
+          where: { primary_care_doctor_id: doctor.id },
+          select: { id: true }
+        });
+        whereClause.patient_id = { in: doctorPatients.map(p => p.id) };
+      }
     }
 
     // Additional filters
-    if (patientId && ['DOCTOR', 'HSP', 'ADMIN', 'PROVIDER_ADMIN'].includes(user!.role)) {
+    if (patientId && ['DOCTOR', 'HSP', 'SYSTEM_ADMIN', 'HOSPITAL_ADMIN'].includes(session.user.role)) {
       whereClause.patient_id = patientId;
+    }
+
+    if (providerId && ['SYSTEM_ADMIN', 'HOSPITAL_ADMIN'].includes(session.user.role)) {
+      whereClause.provider_id = providerId;
     }
     
     if (status) {

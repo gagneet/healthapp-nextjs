@@ -4,6 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useAuth } from '@/lib/auth-context'
+import { userHelpers } from '@/types/auth'
 import {
   Bars3Icon,
   XMarkIcon,
@@ -33,7 +34,7 @@ export default function AdminLayout({
 }) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const pathname = usePathname()
-  const { user, logout } = useAuth()
+  const { user, logout, getDisplayName, getFirstName, getLastName } = useAuth()
 
   return (
     <div className="h-screen flex overflow-hidden bg-gray-100">
@@ -86,7 +87,7 @@ export default function AdminLayout({
                 </div>
                 <div>
                   <p className="text-sm font-medium text-gray-900">
-                    {user?.first_name} {user?.last_name}
+                    {getDisplayName()}
                   </p>
                   <p className="text-xs text-gray-500">{user?.email}</p>
                 </div>
@@ -140,12 +141,12 @@ export default function AdminLayout({
                 <div className="flex items-center space-x-3 mb-4">
                   <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
                     <span className="text-sm font-medium text-blue-600">
-                      {user?.first_name?.[0]}{user?.last_name?.[0]}
+                      {getFirstName()?.[0]}{getLastName()?.[0]}
                     </span>
                   </div>
                   <div>
                     <p className="text-sm font-medium text-gray-900">
-                      {user?.first_name} {user?.last_name}
+                      {getDisplayName()}
                     </p>
                     <p className="text-xs text-gray-500">{user?.email}</p>
                   </div>
