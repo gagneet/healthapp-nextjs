@@ -1,11 +1,11 @@
 // app/api/assignments/secondary-doctors/route.ts
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from "@/lib/auth";
+import { getServerSession } from "@/lib/auth";
 import { prisma } from '@/lib/prisma';
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await auth();
+    const session = await getServerSession();
     if (!session?.user) {
       return NextResponse.json({
         status: false,
@@ -28,7 +28,7 @@ export async function GET(request: NextRequest) {
     // Role-based filtering
     if (session.user.role === 'PATIENT') {
       // Patients can only see their own secondary doctor assignments
-      const patient = await prisma.patient.findFirst({
+      const patient = await prisma.Patient.findFirst({
         where: { user_id: session.user.id }
       });
       if (!patient) {
@@ -144,7 +144,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await auth();
+    const session = await getServerSession();
     if (!session?.user) {
       return NextResponse.json({
         status: false,

@@ -2,7 +2,7 @@
 export const dynamic = "force-dynamic"
 
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from "@/lib/auth";
+import { getServerSession } from "@/lib/auth";
 import { checkRateLimit } from '@/lib/auth-helpers';
 import { createUser, handleApiError, formatApiSuccess } from '@/lib/api-services';
 

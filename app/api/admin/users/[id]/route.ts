@@ -1,6 +1,6 @@
 // app/api/admin/users/[id]/route.ts - Individual user management API
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from "@/lib/auth";
+import { getServerSession } from "@/lib/auth";
 import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
 
@@ -10,7 +10,7 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    const session = await auth();
+    const session = await getServerSession();
     if (!session?.user) {
       return NextResponse.json({
         status: false,
@@ -29,7 +29,7 @@ export async function GET(
       }, { status: 403 });
     }
 
-    const user = await prisma.user.findUnique({
+    const user = await prisma.User.findUnique({
       where: { id: userId },
       select: {
         id: true,
@@ -168,7 +168,7 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   try {
-    const session = await auth();
+    const session = await getServerSession();
     if (!session?.user) {
       return NextResponse.json({
         status: false,
@@ -211,7 +211,7 @@ export async function PUT(
     }
 
     // Find existing user
-    const existingUser = await prisma.user.findUnique({
+    const existingUser = await prisma.User.findUnique({
       where: { id: userId }
     });
 
@@ -263,7 +263,7 @@ export async function PUT(
       updateData.password_hash = await bcrypt.hash(password, 12);
     }
 
-    const updatedUser = await prisma.user.update({
+    const updatedUser = await prisma.User.update({
       where: { id: userId },
       data: updateData,
       select: {
@@ -306,7 +306,7 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    const session = await auth();
+    const session = await getServerSession();
     if (!session?.user) {
       return NextResponse.json({
         status: false,
@@ -327,7 +327,7 @@ export async function DELETE(
     const userId = params.id;
 
     // Check if user exists
-    const existingUser = await prisma.user.findUnique({
+    const existingUser = await prisma.User.findUnique({
       where: { id: userId }
     });
 
@@ -349,7 +349,7 @@ export async function DELETE(
     }
 
     // Soft delete - deactivate user
-    await prisma.user.update({
+    await prisma.User.update({
       where: { id: userId },
       data: {
         account_status: 'INACTIVE',

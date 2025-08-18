@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from "@/lib/auth";
+import { getServerSession } from "@/lib/auth";
 import { getDoctorDashboard, handleApiError, formatApiSuccess } from '@/lib/api-services';
 
 /**
@@ -9,7 +9,7 @@ import { getDoctorDashboard, handleApiError, formatApiSuccess } from '@/lib/api-
 export async function GET(request: NextRequest) {
   try {
     // Authenticate user and check if they're a doctor
-    const session = await auth();
+    const session = await getServerSession();
     if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }

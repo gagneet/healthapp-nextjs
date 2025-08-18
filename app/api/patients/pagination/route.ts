@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from "@/lib/auth";
+import { getServerSession } from "@/lib/auth";
 import { checkRateLimit } from "@/lib/auth-helpers";
 import { getPatients, handleApiError, formatApiSuccess } from '@/lib/api-services';
 
@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Authenticate user and check permissions
-    const session = await auth();
+    const session = await getServerSession();
     if (!session?.user) {
       return NextResponse.json({
         status: false,
@@ -43,7 +43,7 @@ export async function GET(request: NextRequest) {
       limit: parseInt(searchParams.get('limit') || '10'),
       search: searchParams.get('search') || '',
       sortBy: searchParams.get('sortBy') || 'createdAt',
-      sortOrder: (searchParams.get('sortOrder') || 'DESC') as 'asc' | 'desc'
+      sortOrder: (searchParams.get('sortOrder') || 'desc') as 'asc' | 'desc'
     };
 
     const patientsData = await getPatients(user.id || user.userId, pagination);

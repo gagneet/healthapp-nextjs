@@ -1,12 +1,12 @@
 // app/api/consent/route.ts - Patient consent management API
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from "@/lib/auth";
+import { getServerSession } from "@/lib/auth";
 import { prisma } from '@/lib/prisma';
 
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await auth();
+    const session = await getServerSession();
     if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
 
     // Role-based access control
     if (user!.role === 'PATIENT') {
-      const patient = await prisma.patient.findFirst({
+      const patient = await prisma.Patient.findFirst({
         where: { user_id: user!.id }
       });
       if (!patient) {
@@ -74,7 +74,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await auth();
+    const session = await getServerSession();
     if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -100,7 +100,7 @@ export async function POST(request: NextRequest) {
 
     // Permission check
     if (user!.role === 'PATIENT') {
-      const patient = await prisma.patient.findFirst({
+      const patient = await prisma.Patient.findFirst({
         where: { user_id: user!.id }
       });
       if (!patient || patient.id !== patient_id) {

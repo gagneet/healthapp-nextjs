@@ -5,7 +5,7 @@
  */
 
 import { NextRequest, NextResponse } from "next/server"
-import { auth } from "@/lib/auth";
+import { getServerSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma"
 import { 
   createSuccessResponse, 
@@ -25,7 +25,7 @@ import {
  * Business Logic: Patients can view their own symptoms, healthcare providers can view patient symptoms
  */
 export const GET = withErrorHandling(async (request: NextRequest) => {
-  const session = await auth()
+  const session = await getServerSession()
   
   if (!session) {
     return createUnauthorizedResponse()
@@ -182,7 +182,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
  * Business Logic: Patients can record their own symptoms, healthcare providers can record for patients
  */
 export const POST = withErrorHandling(async (request: NextRequest) => {
-  const session = await auth()
+  const session = await getServerSession()
   
   if (!session) {
     return createUnauthorizedResponse()
@@ -211,7 +211,7 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
       }
 
       // Verify healthcare provider has access to the patient
-      const patientAccess = await prisma.patient.findFirst({
+      const patientAccess = await prisma.Patient.findFirst({
         where: {
           id: symptomData.patientId,
           OR: [

@@ -5,7 +5,7 @@
  */
 
 import { NextRequest, NextResponse } from "next/server"
-import { auth } from "@/lib/auth";
+import { getServerSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma"
 import { z } from "zod"
 
@@ -22,7 +22,7 @@ const hipaaConsentSchema = z.object({
 export async function POST(request: NextRequest) {
   try {
     // Check authentication
-    const session = await auth()
+    const session = await getServerSession()
     if (!session?.user?.id) {
       return NextResponse.json(
         { error: "Authentication required" },
@@ -69,7 +69,7 @@ export async function POST(request: NextRequest) {
     
     try {
       // Record all consents with timestamps
-      const updatedUser = await prisma.user.update({
+      const updatedUser = await prisma.User.update({
         where: { id: session.user.id },
         data: {
           hipaa_consent_date: new Date(),
@@ -174,7 +174,7 @@ export async function POST(request: NextRequest) {
 export async function GET(request: NextRequest) {
   try {
     // Check authentication
-    const session = await auth()
+    const session = await getServerSession()
     if (!session?.user?.id) {
       return NextResponse.json(
         { error: "Authentication required" },
@@ -183,7 +183,7 @@ export async function GET(request: NextRequest) {
     }
     
     // Get user's current consent status
-    const user = await prisma.user.findUnique({
+    const user = await prisma.User.findUnique({
       where: { id: session.user.id },
       select: {
         id: true,

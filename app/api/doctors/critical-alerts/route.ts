@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from "@/lib/auth";
+import { getServerSession } from "@/lib/auth";
 import { prisma } from '@/lib/prisma';
+import { MedicationAlertType, EmergencyPriority, AlertSeverity } from '@prisma/client';
 
 /**
  * GET /api/doctors/critical-alerts
@@ -8,7 +9,7 @@ import { prisma } from '@/lib/prisma';
  */
 export async function GET(request: NextRequest) {
   try {
-    const session = await auth();
+    const session = await getServerSession();
     if (!session?.user) {
       return NextResponse.json({
         status: false,
@@ -45,17 +46,18 @@ export async function GET(request: NextRequest) {
     // Get critical alerts from multiple sources
     const [emergencyAlerts, medicationAlerts, vitalAlerts] = await Promise.all([
       // Emergency alerts
-      prisma.emergency_alerts.findMany({
+      prisma.EmergencyAlert.findMany({
         where: {
-          patients: {
+          patient: {
             primary_care_doctor_id: doctor.id,
             is_active: true
           },
-          status: 'ACTIVE',
-          severity_level: { in: ['CRITICAL', 'HIGH'] }
+          acknowledged: false,
+          resolved: false,
+          priority_level: { in: [EmergencyPriority.EMERGENCY, EmergencyPriority.HIGH] }
         },
         include: {
-          patients: {
+          patient: {
             include: {
               user: {
                 select: {
@@ -74,17 +76,17 @@ export async function GET(request: NextRequest) {
       }),
 
       // Medication safety alerts
-      prisma.medication_safety_alerts.findMany({
+      prisma.MedicationSafetyAlert.findMany({
         where: {
-          patients: {
+          patient: {
             primary_care_doctor_id: doctor.id,
             is_active: true
           },
-          status: 'ACTIVE',
-          alert_type: { in: ['DRUG_INTERACTION', 'ALLERGY_WARNING', 'DOSAGE_CONCERN'] }
+          resolved: false,
+          alert_type: { in: [MedicationAlertType.DRUG_INTERACTION, MedicationAlertType.ALLERGY_CONFLICT, MedicationAlertType.DOSE_LIMIT_EXCEEDED] }
         },
         include: {
-          patients: {
+          patient: {
             include: {
               user: {
                 select: {
@@ -103,16 +105,16 @@ export async function GET(request: NextRequest) {
       }),
 
       // Critical vital readings
-      prisma.vital_readings.findMany({
+      prisma.VitalReading.findMany({
         where: {
-          patients: {
+          patient: {
             primary_care_doctor_id: doctor.id,
             is_active: true
           },
           alert_level: { in: ['critical', 'emergency'] }
         },
         include: {
-          patients: {
+          patient: {
             include: {
               user: {
                 select: {
@@ -123,7 +125,7 @@ export async function GET(request: NextRequest) {
               }
             }
           },
-          vital_types: {
+          vital_type: {
             select: {
               name: true,
               unit: true
@@ -142,33 +144,33 @@ export async function GET(request: NextRequest) {
       ...emergencyAlerts.map(alert => ({
         id: alert.id,
         type: 'emergency',
-        severity: alert.severity_level,
-        title: alert.alert_type || 'Emergency Alert',
-        description: alert.description,
-        patientName: `${alert.patients?.user?.first_name || ''} ${alert.patients?.user?.last_name || ''}`.trim(),
-        patientId: alert.patients?.patient_id,
+        severity: alert.priority_level,
+        title: alert.alert_title,
+        description: alert.alert_message,
+        patientName: `${alert.patient?.User?.first_name || ''} ${alert.patient?.User?.last_name || ''}`.trim(),
+        patientId: alert.patient?.patient_id,
         timestamp: alert.created_at,
-        status: alert.status
+        status: alert.acknowledged ? 'ACKNOWLEDGED' : 'ACTIVE'
       })),
       ...medicationAlerts.map(alert => ({
         id: alert.id,
         type: 'medication',
-        severity: alert.severity_level || 'HIGH',
-        title: alert.alert_type || 'Medication Alert',
-        description: alert.description,
-        patientName: `${alert.patients?.user?.first_name || ''} ${alert.patients?.user?.last_name || ''}`.trim(),
-        patientId: alert.patients?.patient_id,
+        severity: alert.severity || 'HIGH',
+        title: alert.alert_title,
+        description: alert.alert_message,
+        patientName: `${alert.patient?.User?.first_name || ''} ${alert.patient?.User?.last_name || ''}`.trim(),
+        patientId: alert.patient?.patient_id,
         timestamp: alert.created_at,
-        status: alert.status
+        status: alert.resolved ? 'RESOLVED' : 'ACTIVE'
       })),
       ...vitalAlerts.map(alert => ({
         id: alert.id,
         type: 'vital',
         severity: alert.alert_level?.toUpperCase() || 'HIGH',
-        title: `${alert.vital_types?.name || 'Vital'} Alert`,
-        description: `${alert.vital_types?.name || 'Vital'}: ${alert.value} ${alert.vital_types?.unit || ''}`,
-        patientName: `${alert.patients?.user?.first_name || ''} ${alert.patients?.user?.last_name || ''}`.trim(),
-        patientId: alert.patients?.patient_id,
+        title: `${alert.vital_type?.name || 'Vital'} Alert`,
+        description: `${alert.vital_type?.name || 'Vital'}: ${alert.value} ${alert.vital_type?.unit || ''}`,
+        patientName: `${alert.patient?.User?.first_name || ''} ${alert.patient?.User?.last_name || ''}`.trim(),
+        patientId: alert.patient?.patient_id,
         timestamp: alert.created_at,
         status: 'ACTIVE'
       }))

@@ -1,13 +1,17 @@
 'use client'
 
 import React, { createContext, useContext, ReactNode, useEffect, useState } from 'react'
-import { useSession, SessionProvider } from 'next-auth/react'
+import { useSession, SessionProvider, signOut, signIn } from 'next-auth/react'
 import { TransitionUser, userHelpers, HealthcareRole } from '@/types/auth'
 
 interface AuthContextType {
   user: TransitionUser | null
   loading: boolean
   isAuthenticated: boolean
+  
+  // ✅ Authentication methods
+  login: (credentials: { email: string; password: string }) => Promise<boolean>
+  logout: () => Promise<void>
   
   // ✅ Convenience methods with fallbacks
   getDisplayName: () => string
@@ -80,6 +84,40 @@ function AuthContextProvider({ children }: { children: React.ReactNode }) {
     user,
     loading: status === 'loading',
     isAuthenticated: !!user,
+    
+    // ✅ Authentication methods
+    login: async (credentials: { email: string; password: string }) => {
+      try {
+        const result = await signIn('credentials', {
+          email: credentials.email,
+          password: credentials.password,
+          redirect: false
+        })
+        
+        if (result?.error) {
+          console.error('Login error:', result.error)
+          return false
+        }
+        
+        return result?.ok || false
+      } catch (error) {
+        console.error('Login error:', error)
+        return false
+      }
+    },
+    
+    logout: async () => {
+      try {
+        await signOut({ 
+          callbackUrl: '/auth/signin',
+          redirect: true 
+        })
+      } catch (error) {
+        console.error('Logout error:', error)
+        // Force redirect to signin page even if signOut fails
+        window.location.href = '/auth/signin'
+      }
+    },
     
     // ✅ Convenience methods with fallbacks
     getDisplayName: () => user ? userHelpers.getDisplayName(user) : '',
