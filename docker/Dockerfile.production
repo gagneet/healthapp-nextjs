@@ -58,10 +58,10 @@ COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
 
-# Copy Prisma client, lib directory, and node_modules/@prisma/client
+# Copy Prisma client, lib directory, and FULL node_modules for seeding
 COPY --from=builder /app/lib ./lib
 COPY --from=builder /app/prisma ./prisma
-COPY --from=builder /app/node_modules/@prisma/client ./node_modules/@prisma/client
+COPY --from=builder /app/node_modules ./node_modules
 
 # Copy package.json for runtime
 COPY --from=builder /app/package.json ./package.json

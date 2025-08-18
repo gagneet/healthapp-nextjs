@@ -41,51 +41,68 @@ A **production-ready healthcare management system** built with **Next.js 14** fu
 
 ## 🏗️ Architecture
 
-This application uses a **modern Next.js full-stack architecture** with **NextAuth.js authentication**:
+This application uses a **modern Next.js 14 full-stack architecture** with **Auth.js v5 authentication**:
 
-- **Full-Stack**: Next.js 14 with API routes handling both frontend and backend
-- **Database**: PostgreSQL with Prisma ORM for type-safe database operations  
-- **Authentication**: NextAuth.js with PrismaAdapter and healthcare role-based permissions
-- **Deployment**: Universal Docker Swarm deployment scripts for dev/test/prod environments
-- **Session Management**: Database-backed sessions with NextAuth.js for enhanced security
+- **Full-Stack**: Next.js 14 with App Router and API routes handling both frontend and backend
+- **Database**: PostgreSQL with Prisma ORM v6+ for type-safe database operations  
+- **Authentication**: Auth.js v5 (NextAuth.js v5) with PrismaAdapter and database-backed sessions
+- **Security**: Role-based access control with healthcare-specific business logic enforcement
+- **Deployment**: Universal Docker Swarm deployment scripts with automated database migrations
+- **Session Management**: Database-backed sessions with Auth.js v5 for enhanced security over JWT tokens
 
 ```text
 healthapp-nextjs/
-├── 🔧 Next.js Full-Stack Application
+├── 🔧 Next.js 14 Full-Stack Application
 │   ├── app/                  # Next.js 14 App Router
 │   │   ├── api/              # API routes (backend functionality)
 │   │   │   ├── admin/        # Admin management APIs
+│   │   │   ├── auth/         # Auth.js v5 authentication endpoints
+│   │   │   ├── doctors/      # Doctor management and dashboard APIs
+│   │   │   ├── patients/     # Patient management APIs
 │   │   │   ├── appointments/ # Appointment scheduling
 │   │   │   ├── care-plans/   # Care plan management  
-│   │   │   ├── patients/     # Patient management
+│   │   │   ├── medications/  # Medication tracking APIs
+│   │   │   ├── vitals/       # Vital signs monitoring
 │   │   │   ├── symptoms/     # Symptom reporting
-│   │   │   └── vitals/       # Vital signs tracking
-│   │   ├── auth/             # Authentication pages
-│   │   └── dashboard/        # Role-based dashboards
-│   │       ├── doctor/       # Doctor interface
-│   │       ├── patient/      # Patient interface
+│   │   │   ├── lab/          # Laboratory integration
+│   │   │   ├── video-consultations/ # Telemedicine APIs
+│   │   │   └── health/       # Health check endpoint
+│   │   ├── auth/             # Authentication UI pages
+│   │   └── dashboard/        # Role-based dashboard pages
+│   │       ├── doctor/       # Doctor interface with real-time data
+│   │       ├── patient/      # Patient interface with care tracking
 │   │       ├── hospital/     # HSP interface
-│   │       └── admin/        # Admin interface
+│   │       └── admin/        # System admin interface
 │   ├── components/           # React components
-│   │   ├── ui/               # Base UI components
-│   │   └── dashboard/        # Dashboard-specific components
+│   │   ├── ui/               # Base UI components (3D body diagram, etc.)
+│   │   ├── dashboard/        # Dashboard-specific components
+│   │   ├── video-consultation/ # Telemedicine components
+│   │   └── providers/        # Context providers
 │   ├── lib/                  # Utilities and configurations
-│   │   ├── auth.ts           # NextAuth.js configuration
-│   │   ├── prisma.ts         # Prisma client
-│   │   └── validations/      # Zod schemas for validation
+│   │   ├── auth.ts           # Auth.js v5 configuration with healthcare roles
+│   │   ├── prisma.ts         # Prisma client with connection pooling
+│   │   ├── api-services.ts   # Healthcare API service functions
+│   │   ├── seed.ts           # TypeScript-based database seeding
+│   │   └── services/         # Business logic services
 │   └── types/                # TypeScript definitions
-├── 🗄️ Database & Schema
+├── 🗄️ Database & Schema (Prisma v6+)
 │   └── prisma/
-│       ├── schema.prisma     # Database schema definition
-│       └── seed.ts           # Initial data seeding
-├── 🐳 Deployment Configurations
-│   ├── docker/               # Docker configurations
-│   └── scripts/              # Deployment scripts
-└── 🚀 Production Features
-    ├── NextAuth.js authentication with healthcare roles
-    ├── Prisma ORM with PostgreSQL for data integrity
-    ├── Role-based API access control and business logic
-    └── Multi-environment deployment strategies
+│       ├── schema.prisma     # 46+ healthcare models with proper relations
+│       ├── migrations/       # Versioned database migrations
+│       └── seed files        # Production-ready seeding system
+├── 🐳 Universal Deployment System
+│   ├── docker/               # Multi-stage production Dockerfiles
+│   └── scripts/              # Universal deploy.sh for dev/test/prod
+│       └── deploy.sh         # Single script with environment support
+└── 🚀 Production Features (2025)
+    ├── Auth.js v5 with database sessions and healthcare RBAC
+    ├── Prisma ORM v6+ with PostgreSQL and connection pooling
+    ├── Real-time dashboard APIs with medical safety features
+    ├── Docker Swarm deployment with proper service orchestration
+    ├── Medical device integration and IoT data streaming
+    ├── Telemedicine with WebRTC video consultations
+    ├── Laboratory integration with test ordering and results
+    └── Enhanced security with audit logging and compliance features
 ```
 
 ## ✨ Key Features
@@ -102,21 +119,25 @@ healthapp-nextjs/
 
 ### Technical Features
 
-- **🔐 NextAuth.js Authentication**: Modern authentication with role-based access
-- **🚀 Full-Stack Next.js**: Unified development experience with API routes
-- **📱 Responsive Design**: Mobile-first healthcare interfaces
-- **🎯 Type Safety**: End-to-end TypeScript with Prisma
-- **🔍 Advanced Search**: Full-text search with PostgreSQL
-- **🛡️ Healthcare Compliance**: Role-based data access and audit logging
-- **♿ Accessibility**: WCAG 2.1 compliant healthcare interfaces
+- **🔐 Auth.js v5 Authentication**: Modern authentication with database sessions and healthcare RBAC
+- **🚀 Next.js 14 Full-Stack**: App Router with unified frontend/backend development
+- **📱 Responsive Design**: Mobile-first healthcare interfaces optimized for clinical workflows
+- **🎯 Type Safety**: End-to-end TypeScript with Prisma ORM v6+ and strict type checking
+- **🔍 Advanced Search**: Full-text search with PostgreSQL and healthcare-specific queries
+- **🛡️ Healthcare Compliance**: HIPAA-compliant data handling with comprehensive audit logging
+- **♿ Accessibility**: WCAG 2.1 AA compliant interfaces for healthcare accessibility
+- **🐳 Universal Deployment**: Single deployment script supporting dev/test/prod environments
+- **⚡ Real-time APIs**: Live dashboard data with proper database relationships
+- **🔒 Medical Safety**: Drug interaction checking, allergy management, and emergency alerts
 
 ## 🚀 Quick Start
 
 ### Prerequisites
 
-- **Node.js** 18+ LTS or higher
+- **Node.js** 22+ LTS (required for latest Auth.js v5 and ES modules)
 - **PostgreSQL** 15+ (or Docker for containerized setup)
-- **Docker** (optional, for containerized deployment)
+- **Docker** & **Docker Swarm** (recommended for production deployment)
+- **TypeScript** knowledge (the entire system is TypeScript-first)
 
 ### Installation Options
 
@@ -162,12 +183,13 @@ For automated testing and QA:
 For production deployment with high availability:
 
 ```bash
-# Set required NextAuth environment variables
-export NEXTAUTH_SECRET=your-nextauth-secret
-export POSTGRES_PASSWORD=secure_password
+# Set required Auth.js v5 environment variables
+export NEXTAUTH_SECRET=healthcare-nextauth-secret-2024-secure
+export POSTGRES_PASSWORD=secure_prod_password
+export REDIS_PASSWORD=secure_redis_password
 
-# Deploy to production
-./scripts/deploy.sh prod deploy --domain demo.adhere.live --migrate
+# Deploy to production with full stack
+./scripts/deploy.sh prod deploy --domain demo.adhere.live --migrate --seed --auto-yes
 ```
 
 #### **Option 5: Manual Setup**
@@ -193,11 +215,65 @@ npm run dev
 
 ### Access Your Application
 
-- **Healthcare App**: [http://localhost:3000](http://localhost:3000) (or your domain)
-- **Doctor Dashboard**: [http://localhost:3000/dashboard/doctor](http://localhost:3000/dashboard/doctor)  
-- **Patient Dashboard**: [http://localhost:3000/dashboard/patient](http://localhost:3000/dashboard/patient)
-- **Admin Dashboard**: [http://localhost:3000/dashboard/admin](http://localhost:3000/dashboard/admin)
-- **Database Admin** (dev): [http://localhost:5050](http://localhost:5050) (if using Docker setup)
+- **Healthcare App**: [http://localhost:3002](http://localhost:3002) (Next.js full-stack application)
+- **Doctor Dashboard**: [http://localhost:3002/dashboard/doctor](http://localhost:3002/dashboard/doctor)  
+- **Patient Dashboard**: [http://localhost:3002/dashboard/patient](http://localhost:3002/dashboard/patient)
+- **Admin Dashboard**: [http://localhost:3002/dashboard/admin](http://localhost:3002/dashboard/admin)
+- **Health Check**: [http://localhost:3002/api/health](http://localhost:3002/api/health)
+
+### Test User Accounts
+
+**Doctor Accounts** (for testing healthcare provider features):
+- Email: `doctor@healthapp.com` / Password: `TempPassword123!`  
+- Email: `doctor1@healthapp.com` / Password: `TempPassword123!`
+
+**Other Test Accounts** (seeded with development data):
+- Various patient, HSP, and admin accounts with password: `TempPassword123!` (or from `SEED_DEFAULT_PASSWORD` env var)
+
+### Administrative Interfaces (Docker Setup)
+- **Database Admin (PgAdmin)**: [http://localhost:5050](http://localhost:5050)
+- **Redis Commander**: [http://localhost:8081](http://localhost:8081) (if available)
+- **System Monitoring**: Health check endpoint for uptime monitoring
+
+## 🐛 Troubleshooting
+
+### Common Deployment Issues
+
+**1. Database Connection Errors**
+```bash
+# Check if PostgreSQL is ready
+docker exec $(docker ps -q -f name=postgres) pg_isready -U healthapp_user
+
+# Check deployment status
+./scripts/deploy.sh [env] status
+```
+
+**2. Seeding Failures**  
+```bash
+# Check container logs
+docker logs $(docker ps -q -f name=app)
+
+# Re-run seeds manually
+docker exec $(docker ps -q -f name=app) npm run seed
+```
+
+**3. Auth.js v5 Session Issues**
+- Ensure `NEXTAUTH_SECRET` is set and consistent across deployments
+- Verify database sessions table exists after migration
+- Check browser cookies are not blocking cross-site requests
+
+**4. Docker Swarm Service Issues**
+```bash
+# Check service status
+docker stack services healthapp-[env]
+
+# View service logs  
+docker service logs healthapp-[env]_app -f
+```
+
+**5. Port Conflicts**
+- Default ports: 3002 (app), 5432 (postgres), 6379 (redis), 5050 (pgadmin)
+- Configure different ports in `.env.[environment]` files if needed
 
 ## 🔧 Configuration
 
@@ -254,37 +330,42 @@ All API responses follow a consistent healthcare-compliant structure:
 
 ### Authentication
 
-NextAuth.js with PrismaAdapter manages authentication with healthcare role enforcement:
+Auth.js v5 (NextAuth.js v5) with PrismaAdapter manages authentication with healthcare RBAC:
 
 ```typescript
 // API route example with Auth.js v5 protection
-import { auth } from "@/lib/auth"
+import { getServerSession } from "@/lib/auth"
 
 export async function GET(request: NextRequest) {
-  const session = await auth()
+  const session = await getServerSession()
   
-  if (!session || !['DOCTOR', 'HSP'].includes(session.user.role)) {
-    return new Response('Unauthorized', { status: 401 })
+  if (!session?.user || !['DOCTOR', 'HSP'].includes(session.user.role)) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
-  // Healthcare business logic...
+  
+  // Healthcare business logic with role enforcement...
+  const dashboardData = await getDoctorDashboard(session.user.id)
+  return NextResponse.json(formatApiSuccess(dashboardData))
 }
 ```
 
-**Auth.js v5 Features:**
-- Modern authentication framework with improved performance
-- Database-backed sessions with PrismaAdapter
-- Healthcare role-based access control with custom business logic
-- Enhanced session management with healthcare-specific timeouts (30 min)
-- Backward-compatible field mapping for seamless migration
-- Integration with PostgreSQL user management
+**Auth.js v5 Features (Latest 2025):**
+- **Database Sessions**: Enhanced security with PrismaAdapter instead of JWT tokens
+- **Healthcare RBAC**: Role-based access control with medical business logic enforcement  
+- **Improved Performance**: Faster session handling and reduced client-side overhead
+- **TypeScript-First**: Full type safety with healthcare role definitions
+- **Medical Compliance**: Extended session timeouts and audit logging for healthcare workflows
+- **Production-Ready**: PostgreSQL integration with connection pooling and migration support
 
 ### Core API Endpoints
 
-#### 🔐 Authentication
+#### 🔐 Authentication (Auth.js v5)
 
-- `POST /api/auth/signin` - NextAuth.js sign in
-- `POST /api/auth/signout` - Sign out
-- `GET /api/auth/session` - Get current session
+- `POST /api/auth/signin` - Auth.js v5 credential sign in
+- `POST /api/auth/signout` - Sign out with session cleanup
+- `GET /api/auth/session` - Get current session with healthcare roles
+- `GET /api/auth/[...nextauth]` - Auth.js v5 handler for all auth routes
+- `POST /api/auth/register` - User registration with healthcare role assignment
 
 #### 👥 Patient Management
 
@@ -293,11 +374,14 @@ export async function GET(request: NextRequest) {
 - `POST /api/patients` - Create new patient
 - `PUT /api/patients/[id]` - Update patient information
 
-#### 👨‍⚕️ Doctor Management
+#### 👨‍⚕️ Doctor Management (Real-time APIs)
 
-- `GET /api/doctors/profile` - Get doctor profile
+- `GET /api/doctors/dashboard` - Get doctor dashboard with live statistics
+- `GET /api/doctors/profile` - Get doctor profile with speciality info
 - `PUT /api/doctors/profile` - Update doctor profile
-- `GET /api/doctors/patients` - Get assigned patients
+- `GET /api/doctors/recent-patients` - Get recent patient activity
+- `GET /api/doctors/critical-alerts` - Get urgent patient alerts
+- `GET /api/doctors/adherence-analytics` - Get medication adherence data
 
 #### 💊 Care Plans & Medications
 
@@ -317,6 +401,53 @@ export async function GET(request: NextRequest) {
 - `POST /api/vitals` - Record vital signs
 - `GET /api/vitals/[patientId]` - Get patient vitals
 - `POST /api/symptoms` - Report symptoms with body mapping
+
+#### 🩺 Medical Safety & Integrations (New 2025)
+
+- `GET /api/drug-interactions/check` - Check medication interactions
+- `GET /api/patient-allergies` - Get patient allergy information
+- `POST /api/emergency-alerts` - Create emergency medical alerts
+- `GET /api/lab/tests` - Get available laboratory tests
+- `POST /api/lab/orders` - Order laboratory tests
+- `GET /api/video-consultations` - Telemedicine consultation management
+- `GET /api/health` - System health check with database connectivity
+
+## 🚀 Latest Updates (January 2025)
+
+### ✅ **Recently Fixed Issues**
+
+1. **Auth.js v5 Migration Completed**
+   - Upgraded from NextAuth.js v4 to Auth.js v5 with database sessions
+   - Fixed authentication credential validation and password hashing
+   - Implemented healthcare-specific role-based access control
+
+2. **Production Deployment System**
+   - Fixed Docker container dependency management for seeding
+   - Implemented proper database migration timing with service health checks
+   - Added comprehensive Docker Swarm deployment with service orchestration
+
+3. **Real Dashboard APIs**
+   - Replaced mock data with real Prisma database queries
+   - Fixed dashboard statistics to show actual patient counts and appointments
+   - Implemented proper healthcare relationship modeling
+
+4. **TypeScript Consistency**  
+   - Eliminated JavaScript/ES module files in favor of TypeScript-first approach
+   - Fixed import path issues and webpack build errors
+   - Implemented proper TypeScript compilation for database seeding
+
+5. **Medical Safety Features**
+   - Added drug interaction checking with RxNorm integration
+   - Implemented patient allergy management and emergency alerts
+   - Enhanced vital sign monitoring with medical alert thresholds
+
+### 🔧 **Key Technical Improvements**
+
+- **Database Connection Pooling**: Prisma v6+ with retry logic for production reliability
+- **Enhanced Security**: HIPAA-compliant audit logging and role-based data access
+- **Performance Optimization**: Real-time API responses with proper database indexing
+- **Medical Device Integration**: IoT device plugin architecture for health monitoring
+- **Telemedicine Platform**: WebRTC video consultations with recording capabilities
 
 #### 🏥 Admin Management
 

@@ -540,8 +540,8 @@ run_seeds() {
             exit 1
         fi
         
-        # Run seeds in the app container (Next.js full-stack)
-        docker exec "$container_id" npx prisma db seed
+        # Run seeds in the app container using npm script (avoids npx tsx module resolution issues)
+        docker exec "$container_id" npm run seed
         
         log_success "Seeds completed"
     fi
