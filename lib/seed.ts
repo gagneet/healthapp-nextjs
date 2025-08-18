@@ -5,6 +5,12 @@ import { generateDoctorId, generateHspId, generatePatientId } from './id-generat
 
 const prisma = new PrismaClient();
 
+// Generate secure password hash
+async function generateSecurePasswordHash(password: string): Promise<string> {
+  const saltRounds = 12; // Higher security for production
+  return await bcrypt.hash(password, saltRounds);
+}
+
 export async function seedComprehensiveHealthcareData() {
   console.log('📊 Seeding comprehensive healthcare test data...');
 
@@ -14,12 +20,13 @@ export async function seedComprehensiveHealthcareData() {
       where: {
         email: {
           in: [
+            'doctor@healthapp.com',
+            'doctor1@healthapp.com',
             'patient1@healthapp.com',
             'patient2@healthapp.com', 
             'patient3@healthapp.com',
             'patient4@healthapp.com',
             'patient5@healthapp.com',
-            'doctor1@healthapp.com',
             'doctor2@healthapp.com',
             'hsp@healthapp.com',
             'admin@healthapp.com',
@@ -38,8 +45,12 @@ export async function seedComprehensiveHealthcareData() {
       };
     }
 
-    // Hash password for all test users
-    const hashedPassword = await bcrypt.hash('password123', 12);
+    // Use environment variable or default test password for consistency
+    const defaultPassword = process.env.SEED_DEFAULT_PASSWORD || 'TempPassword123!';
+    const hashedPassword = await bcrypt.hash(defaultPassword, 12);
+    
+    // Also create basic doctor accounts that deployment expects
+    const basicDoctorPassword = await bcrypt.hash('TempPassword123!', 12);
 
     // Helper function to create user with Auth.js v5 fields
     const createUserData = (userData: any) => ({
@@ -54,6 +65,37 @@ export async function seedComprehensiveHealthcareData() {
     const testUsers = await prisma.user.createMany({
       skipDuplicates: true,
       data: [
+        // Basic doctor accounts needed for deployment
+        createUserData({
+          id: '00000000-0000-0000-0000-000000000001',
+          email: 'doctor@healthapp.com',
+          password_hash: basicDoctorPassword,
+          role: 'DOCTOR',
+          first_name: 'Dr. John',
+          last_name: 'Smith',
+          phone: '+1-555-0001',
+          date_of_birth: new Date('1975-01-15'),
+          gender: 'MALE',
+          account_status: 'ACTIVE',
+          email_verified: true,
+          created_at: new Date('2024-01-01'),
+          updated_at: new Date()
+        }),
+        createUserData({
+          id: '00000000-0000-0000-0000-000000000002', 
+          email: 'doctor1@healthapp.com',
+          password_hash: basicDoctorPassword,
+          role: 'DOCTOR',
+          first_name: 'Dr. Jane',
+          last_name: 'Doe',
+          phone: '+1-555-0002',
+          date_of_birth: new Date('1978-05-20'),
+          gender: 'FEMALE',
+          account_status: 'ACTIVE',
+          email_verified: true,
+          created_at: new Date('2024-01-01'),
+          updated_at: new Date()
+        }),
         // 5 Patients
         createUserData({
           id: '77777777-7777-7777-7777-777777777777',
@@ -1154,7 +1196,9 @@ export async function seedComprehensiveHealthcareData() {
     console.log(`   - Vital Templates: 4`);
     console.log(`   - Symptoms/Conditions: 5 (major medical conditions)`);
     console.log(`   - Treatments: 5 (medication, therapy, lifestyle treatments)`);
-    console.log(`   - Test credentials: email/password123 for all users`);
+    console.log(`   - Basic doctor credentials: doctor@healthapp.com / TempPassword123!`);
+    console.log(`   - Basic doctor credentials: doctor1@healthapp.com / TempPassword123!`);
+    console.log(`   - Other test credentials: email/${defaultPassword} for all other users`);
 
     return {
       success: true,

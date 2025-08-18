@@ -508,26 +508,141 @@ export async function createPatient(patientData: {
  */
 export async function getDoctorDashboard(doctorUserId: string) {
   try {
-    // TODO: Implement full doctor dashboard with proper relationship fixes
-    // For now, return basic mock data to get the build working
+    // Get doctor user data with profile
+    const doctor = await prisma.user.findUnique({
+      where: { id: doctorUserId },
+      include: {
+        doctors_doctors_user_idTousers: {
+          include: {
+            speciality: true,
+            organization: true
+          }
+        }
+      }
+    });
+
+    if (!doctor || doctor.role !== 'DOCTOR') {
+      throw new Error('Doctor not found or invalid role');
+    }
+
+    const doctorProfile = doctor.doctors_doctors_user_idTousers;
+
+    // Get statistics for this doctor
+    const [totalPatients, todayAppointments, activeCarePlans, recentVitalsCount] = await Promise.all([
+      // Total patients assigned to this doctor
+      prisma.patient.count({
+        where: {
+          primary_care_doctor_id: doctorProfile?.id || 'none'
+        }
+      }),
+      
+      // Today's appointments
+      prisma.appointment.count({
+        where: {
+          doctor_id: doctorProfile?.id || 'none',
+          appointment_date: {
+            gte: new Date(new Date().setHours(0, 0, 0, 0)),
+            lt: new Date(new Date().setHours(23, 59, 59, 999))
+          },
+          status: { in: ['SCHEDULED', 'IN_PROGRESS'] }
+        }
+      }),
+
+      // Active care plans
+      prisma.carePlan.count({
+        where: {
+          doctor_id: doctorProfile?.id || 'none',
+          status: 'ACTIVE'
+        }
+      }),
+
+      // Recent vitals count (last 7 days)
+      prisma.vitalReading.count({
+        where: {
+          patient: {
+            primary_care_doctor_id: doctorProfile?.id || 'none'
+          },
+          created_at: {
+            gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
+          }
+        }
+      })
+    ]);
+
+    // Get recent patients (last 5 modified)
+    const recentPatients = await prisma.patient.findMany({
+      where: {
+        primary_care_doctor_id: doctorProfile?.id || 'none'
+      },
+      include: {
+        User: {
+          select: {
+            first_name: true,
+            last_name: true,
+            email: true
+          }
+        }
+      },
+      orderBy: { updated_at: 'desc' },
+      take: 5
+    });
+
+    // Get upcoming appointments (next 3)
+    const upcomingAppointments = await prisma.appointment.findMany({
+      where: {
+        doctor_id: doctorProfile?.id || 'none',
+        appointment_date: {
+          gte: new Date()
+        },
+        status: 'SCHEDULED'
+      },
+      include: {
+        Patient: {
+          include: {
+            User: {
+              select: {
+                first_name: true,
+                last_name: true
+              }
+            }
+          }
+        }
+      },
+      orderBy: { appointment_date: 'asc' },
+      take: 3
+    });
+
     return {
       doctor: {
-        id: 'mock-doctor-id',
-        name: 'Dr. John Doe',
-        email: 'doctor@example.com',
-        speciality: 'General Medicine',
+        id: doctor.id,
+        name: `${doctor.first_name} ${doctor.last_name}`.trim(),
+        email: doctor.email,
+        speciality: doctorProfile?.speciality?.name || 'General Medicine',
+        license: doctorProfile?.medical_license_number,
+        experience: doctorProfile?.years_of_experience
       },
       statistics: {
-        totalPatients: 0,
-        todayAppointments: 0,
-        activeCarePlans: 0,
-        recentVitalsCount: 0,
+        totalPatients,
+        todayAppointments,
+        activeCarePlans,
+        recentVitalsCount,
       },
       recentActivity: {
-        vitals: [],
-        recentPatients: [],
+        recentPatients: recentPatients.map(patient => ({
+          id: patient.id,
+          name: `${patient.User?.first_name} ${patient.User?.last_name}`.trim(),
+          email: patient.User?.email,
+          lastVisit: patient.updated_at
+        })),
+        vitals: [], // Can be populated with recent vital readings if needed
       },
-      upcomingAppointments: [],
+      upcomingAppointments: upcomingAppointments.map(apt => ({
+        id: apt.id,
+        patientName: `${apt.Patient?.User?.first_name} ${apt.Patient?.User?.last_name}`.trim(),
+        date: apt.appointment_date,
+        type: apt.appointment_type,
+        status: apt.status
+      })),
       timestamp: new Date().toISOString(),
     };
   } catch (error) {

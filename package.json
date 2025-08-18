@@ -40,7 +40,7 @@
     "migrate": "npx prisma migrate deploy",
     "migrate:dev": "npx prisma migrate dev",
     "migrate:reset": "npx prisma migrate reset --force",
-    "seed": "node lib/seed-production.mjs",
+    "seed": "npx tsx lib/seed.ts",
     "seed:prod": "npx prisma db seed",
     "db:generate": "npx prisma generate",
     "db:pull": "npx prisma db pull",

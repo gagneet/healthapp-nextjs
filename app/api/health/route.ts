@@ -22,8 +22,8 @@ export async function GET(request: NextRequest) {
     if (dbHealth.connected) {
       try {
         const [userCount, patientCount, doctorCount] = await Promise.all([
-          prisma.User.count(),
-          prisma.Patient.count(),
+          prisma.user.count(),
+          prisma.patient.count(), 
           prisma.doctors.count()
         ]);
         
