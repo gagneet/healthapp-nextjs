@@ -246,14 +246,10 @@ export async function getPatients(doctorId: string, pagination: {
   try {
     const skip = (pagination.page - 1) * pagination.limit;
     
-    // Build where clause
+    // Build where clause - use primary care doctor relationship
     const whereClause: any = {
-      patient_doctor_assignments: {
-        some: {
-          doctor_id: doctorId,
-          is_active: true,
-        },
-      },
+      primary_care_doctor_id: doctorId,
+      is_active: true,
     };
 
     // Add search functionality
@@ -327,12 +323,18 @@ export async function getPatients(doctorId: string, pagination: {
             },
           },
         },
-        orderBy: {
-          [pagination.sortBy === 'name' ? 'user' : pagination.sortBy || 'created_at']: 
-            pagination.sortBy === 'name' 
-              ? { first_name: pagination.sortOrder || 'asc' }
-              : pagination.sortOrder || 'desc'
-        },
+        orderBy: (() => {
+          // Handle name sorting specially
+          if (pagination.sortBy === 'name') {
+            return { user: { first_name: pagination.sortOrder || 'asc' } };
+          }
+          
+          // Handle field name mapping and default sorting
+          const sortField = pagination.sortBy === 'createdAt' ? 'created_at' : (pagination.sortBy || 'created_at');
+          const sortOrder = pagination.sortOrder || 'desc';
+          
+          return { [sortField]: sortOrder };
+        })(),
       }),
       prisma.patient.count({ where: whereClause }),
     ]);

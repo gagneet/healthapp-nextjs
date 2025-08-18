@@ -1,17 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { auth } from "@/lib/auth";
 import VideoConsultationService from '@/lib/services/VideoConsultationService';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await auth();
     if (!session?.user) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
       );
     }
+
+    const user = session.user;
 
     // Only doctors can create consultations
     if (user.role !== 'DOCTOR') {
@@ -74,7 +75,7 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await auth();
     if (!session?.user) {
       return NextResponse.json(
         { error: 'Unauthorized' },
@@ -82,6 +83,8 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    const user = session.user;
+    
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '10');

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { auth } from "@/lib/auth";
 
 /**
  * Main API info endpoint - adapted from src/routes/index.ts

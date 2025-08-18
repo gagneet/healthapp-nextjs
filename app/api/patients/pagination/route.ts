@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/lib/auth';
+import { auth } from "@/lib/auth";
 import { checkRateLimit } from "@/lib/auth-helpers";
 import { getPatients, handleApiError, formatApiSuccess } from '@/lib/api-services';
 

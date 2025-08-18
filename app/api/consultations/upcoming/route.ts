@@ -2,15 +2,15 @@
 export const dynamic = "force-dynamic"
 
 import { NextRequest, NextResponse } from 'next/server';
+import { auth } from "@/lib/auth";
 import ConsultationBookingService from '@/lib/services/ConsultationBookingService';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+
 
 
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await auth();
     if (!session?.user) {
       return NextResponse.json(
         { error: 'Unauthorized' },
