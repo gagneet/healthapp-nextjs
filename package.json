@@ -40,7 +40,7 @@
     "migrate": "npx prisma migrate deploy",
     "migrate:dev": "npx prisma migrate dev",
     "migrate:reset": "npx prisma migrate reset --force",
-    "seed": "node --loader ts-node/esm lib/seed.ts",
+    "seed": "node lib/seed-production.mjs",
     "seed:prod": "npx prisma db seed",
     "db:generate": "npx prisma generate",
     "db:pull": "npx prisma db pull",
@@ -137,6 +137,9 @@
     "winston": "^3.11.0",
     "winston-daily-rotate-file": "^5.0.0",
     "zod": "^3.25.76"
+  },
+  "prisma": {
+    "seed": "npm run seed"
   },
   "engines": {
     "node": ">=22.18.0"

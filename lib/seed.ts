@@ -1,5 +1,5 @@
 // lib/seed.ts - Prisma-based seeding for comprehensive healthcare test data
-import { PrismaClient } from './prisma-client';
+import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 import { generateDoctorId, generateHspId, generatePatientId } from './id-generation.js';
 
@@ -1182,74 +1182,77 @@ export async function clearTestData() {
   console.log('🗑️ Clearing test data...');
   
   try {
-    // Delete in reverse dependency order
-    await prisma.patient.deleteMany({
-      where: {
-        patient_id: {
-          startsWith: 'PAT-2024-'
+    // Wrap all delete operations in a transaction to ensure atomicity
+    await prisma.$transaction(async (tx) => {
+      // Delete in reverse dependency order
+      await tx.patient.deleteMany({
+        where: {
+          patient_id: {
+            startsWith: 'PAT-2024-'
+          }
         }
-      }
-    });
+      });
 
-    await prisma.doctors.deleteMany({
-      where: {
-        id: {
-          in: ['doc-emily-rodriguez', 'doc-robert-smith']
+      await tx.doctors.deleteMany({
+        where: {
+          id: {
+            in: ['DOC-2024-001', 'DOC-2024-002'] // Use consistent IDs
+          }
         }
-      }
-    });
+      });
 
-    await prisma.hsps.deleteMany({
-      where: {
-        id: 'hsp-maria-garcia'
-      }
-    });
-
-    await prisma.providers.deleteMany({
-      where: {
-        id: 'prov-healthcare-system'
-      }
-    });
-
-    await prisma.user.deleteMany({
-      where: {
-        email: {
-          endsWith: '@healthapp.com'
+      await tx.hsps.deleteMany({
+        where: {
+          id: 'HSP-2024-001' // Use consistent ID
         }
-      }
-    });
+      });
 
-    await prisma.organization.deleteMany({
-      where: {
-        id: 'org-healthcare-main'
-      }
-    });
-
-    await prisma.speciality.deleteMany({
-      where: {
-        id: {
-          in: ['spec-internal-medicine', 'spec-cardiology']
+      await tx.providers.deleteMany({
+        where: {
+          id: 'PROV-2024-001' // Use consistent ID
         }
-      }
-    });
+      });
 
-    await prisma.medicine.deleteMany({
-      where: {
-        id: {
-          in: ['med-metformin', 'med-lisinopril']
+      await tx.user.deleteMany({
+        where: {
+          email: {
+            endsWith: '@healthapp.com'
+          }
         }
-      }
-    });
+      });
 
-    await prisma.vital_templates.deleteMany({
-      where: {
-        id: {
-          in: ['vital-blood-pressure', 'vital-heart-rate', 'vital-weight', 'vital-blood-glucose']
+      await tx.organization.deleteMany({
+        where: {
+          id: 'ORG-2024-001' // Use consistent ID
         }
-      }
+      });
+
+      await tx.speciality.deleteMany({
+        where: {
+          id: {
+            in: ['SPEC-2024-001', 'SPEC-2024-002'] // Use consistent IDs
+          }
+        }
+      });
+
+      await tx.medicine.deleteMany({
+        where: {
+          id: {
+            in: ['MED-2024-001', 'MED-2024-002'] // Use consistent IDs
+          }
+        }
+      });
+
+      await tx.vital_templates.deleteMany({
+        where: {
+          id: {
+            in: ['VITAL-2024-001', 'VITAL-2024-002', 'VITAL-2024-003', 'VITAL-2024-004'] // Use consistent IDs
+          }
+        }
+      });
     });
 
-    console.log('✅ Test data cleared successfully');
+    console.log('✅ Test data cleared successfully in transaction');
   } catch (error) {
     console.error('❌ Error clearing test data:', error);
     throw error;
