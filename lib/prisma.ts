@@ -43,20 +43,57 @@ export async function disconnectPrisma() {
 }
 
 /**
- * Database connection health check
+ * Database connection health check with retry logic for Docker Swarm
  */
 export async function checkDatabaseConnection(): Promise<{
   connected: boolean;
   error?: string;
 }> {
-  try {
-    await prisma.$queryRaw`SELECT 1`;
-    return { connected: true };
-  } catch (error) {
-    return {
-      connected: false,
-      error: error instanceof Error ? error.message : 'Unknown database error',
-    };
+  const maxRetries = 5;
+  const retryDelay = 2000; // 2 seconds
+  
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      await prisma.$queryRaw`SELECT 1`;
+      if (attempt > 1) {
+        console.log(`✅ Database connected on attempt ${attempt}`);
+      }
+      return { connected: true };
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown database error';
+      
+      if (attempt === maxRetries) {
+        console.error(`❌ Database connection failed after ${maxRetries} attempts:`, errorMessage);
+        return {
+          connected: false,
+          error: errorMessage,
+        };
+      }
+      
+      console.log(`⏳ Database connection attempt ${attempt}/${maxRetries} failed, retrying in ${retryDelay}ms...`);
+      await new Promise(resolve => setTimeout(resolve, retryDelay));
+    }
+  }
+  
+  return {
+    connected: false,
+    error: 'Max retries exceeded',
+  };
+}
+
+/**
+ * Wait for database to be ready (used during application startup)
+ */
+export async function waitForDatabase(): Promise<boolean> {
+  console.log('🔄 Waiting for database connection...');
+  const result = await checkDatabaseConnection();
+  
+  if (result.connected) {
+    console.log('✅ Database is ready');
+    return true;
+  } else {
+    console.error('❌ Database is not available:', result.error);
+    return false;
   }
 }
 

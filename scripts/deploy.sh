@@ -186,10 +186,14 @@ parse_args() {
     COMMAND="$1"
     shift
 
+    # Initialize variables to track command line overrides
+    CMD_LINE_DOMAIN=""
+
     # Parse remaining arguments
     while [[ $# -gt 0 ]]; do
         case $1 in
             --domain)
+                CMD_LINE_DOMAIN="$2"
                 DOMAIN="$2"
                 shift 2
                 ;;
@@ -303,9 +307,12 @@ setup_environment() {
     # Restore the deployment environment (command-line takes precedence)
     export ENVIRONMENT="$DEPLOYMENT_ENV"
 
-    # Use domain from .env file or command line override
-    if [ -n "${DOMAIN:-}" ]; then
-        log_info "Using domain from configuration: $DOMAIN"
+    # Command line --domain parameter takes precedence over .env files
+    if [ -n "$CMD_LINE_DOMAIN" ]; then
+        export DOMAIN="$CMD_LINE_DOMAIN"
+        log_info "Using domain from command line: $DOMAIN"
+    elif [ -n "${DOMAIN:-}" ] && [ "$DOMAIN" != "localhost" ]; then
+        log_info "Using domain from .env file: $DOMAIN"
     else
         log_error "DOMAIN not specified in .env file or command line"
         exit 1
