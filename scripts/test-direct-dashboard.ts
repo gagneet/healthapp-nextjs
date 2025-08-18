@@ -1,5 +1,5 @@
 // Test core dashboard functionality by directly querying data
-import { PrismaClient } from '@/lib/prisma-client';
+import { PrismaClient } from '@/prisma/index';
 import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient({
