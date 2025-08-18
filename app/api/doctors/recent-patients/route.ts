@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from "@/lib/auth";
+import { getServerSession } from "@/lib/auth";
 import { prisma } from '@/lib/prisma';
 
 /**
@@ -8,7 +8,7 @@ import { prisma } from '@/lib/prisma';
  */
 export async function GET(request: NextRequest) {
   try {
-    const session = await auth();
+    const session = await getServerSession();
     if (!session?.user) {
       return NextResponse.json({
         status: false,
@@ -43,7 +43,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Get recent patients based on last visit or medication activity
-    const recentPatients = await prisma.patients.findMany({
+    const recentPatients = await prisma.Patient.findMany({
       where: {
         primary_care_doctor_id: doctor.id,
         is_active: true
@@ -67,11 +67,10 @@ export async function GET(request: NextRequest) {
         },
         appointments: {
           select: {
-            appointment_date: true,
-            status: true
+            start_date: true
           },
           orderBy: {
-            appointment_date: 'desc'
+            start_date: 'desc'
           },
           take: 1
         }
@@ -93,8 +92,7 @@ export async function GET(request: NextRequest) {
       name: `${patient.user?.first_name || ''} ${patient.user?.last_name || ''}`.trim(),
       email: patient.user?.email,
       lastActivity: patient.last_visit_date || patient.vital_readings?.[0]?.created_at || patient.updated_at,
-      lastAppointment: patient.appointments?.[0]?.appointment_date,
-      appointmentStatus: patient.appointments?.[0]?.status,
+      lastAppointment: patient.appointments?.[0]?.start_date,
       riskLevel: patient.risk_level || 'low'
     }));
 

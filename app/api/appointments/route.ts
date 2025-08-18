@@ -1,12 +1,12 @@
 // app/api/appointments/route.ts - Appointments management API
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from "@/lib/auth";
+import { getServerSession } from "@/lib/auth";
 import { prisma } from '@/lib/prisma';
 
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await auth();
+    const session = await getServerSession();
     if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
     // Role-based filtering
     if (user!.role === 'PATIENT') {
       // Patients can only see their own appointments
-      const patient = await prisma.patient.findFirst({
+      const patient = await prisma.Patient.findFirst({
         where: { user_id: user!.id }
       });
       if (!patient) {
@@ -74,7 +74,7 @@ export async function GET(request: NextRequest) {
     }
 
     const [appointments, totalCount] = await Promise.all([
-      prisma.appointment.findMany({
+      prisma.Appointment.findMany({
         where: whereClause,
         include: {
           patient: {
@@ -120,7 +120,7 @@ export async function GET(request: NextRequest) {
         take: limit,
         orderBy: { start_time: 'desc' }
       }),
-      prisma.appointment.count({ where: whereClause })
+      prisma.Appointment.count({ where: whereClause })
     ]);
 
     return NextResponse.json({
@@ -151,7 +151,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await auth();
+    const session = await getServerSession();
     if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -170,7 +170,7 @@ export async function POST(request: NextRequest) {
 
     // Validate user permissions
     if (user!.role === 'PATIENT') {
-      const patient = await prisma.patient.findFirst({
+      const patient = await prisma.Patient.findFirst({
         where: { user_id: user!.id }
       });
       if (!patient || patient.id !== patient_id) {
@@ -197,7 +197,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const appointment = await prisma.appointment.create({
+    const appointment = await prisma.Appointment.create({
       data: {
         patient_id,
         doctor_id,
@@ -262,7 +262,7 @@ export async function POST(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
-    const session = await auth();
+    const session = await getServerSession();
     if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -280,7 +280,7 @@ export async function PUT(request: NextRequest) {
     }
 
     // Check if user can update this appointment
-    const appointment = await prisma.appointment.findUnique({
+    const appointment = await prisma.Appointment.findUnique({
       where: { id },
       include: {
         patient: true,
@@ -298,7 +298,7 @@ export async function PUT(request: NextRequest) {
 
     // Permission checks
     if (user!.role === 'PATIENT') {
-      const patient = await prisma.patient.findFirst({
+      const patient = await prisma.Patient.findFirst({
         where: { user_id: user!.id }
       });
       if (!patient || appointment.patient_id !== patient.id) {
@@ -321,7 +321,7 @@ export async function PUT(request: NextRequest) {
       }
     }
 
-    const updatedAppointment = await prisma.appointment.update({
+    const updatedAppointment = await prisma.Appointment.update({
       where: { id },
       data: {
         ...(status && { status }),

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from "@/lib/auth";
+import { getServerSession } from "@/lib/auth";
 import { prisma, checkDatabaseConnection } from '@/lib/prisma';
 import { handleApiError, formatApiSuccess } from '@/lib/api-services';
 
@@ -14,8 +14,8 @@ export async function GET(request: NextRequest) {
     
     // Get basic statistics
     const [userCount, patientCount, doctorCount] = await Promise.all([
-      prisma.user.count(),
-      prisma.patient.count(),
+      prisma.User.count(),
+      prisma.Patient.count(),
       prisma.doctors.count()
     ]);
     

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from "@/lib/auth";
+import { getServerSession } from "@/lib/auth";
 
 import { checkRateLimit } from "@/lib/auth-helpers";
 import { 
@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Authenticate user
-    const session = await auth();
+    const session = await getServerSession();
     if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -58,7 +58,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     // Authenticate user with admin/doctor permissions
-    const session = await auth();
+    const session = await getServerSession();
     if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from "@/lib/auth";
+import { getServerSession } from "@/lib/auth";
 
 import { checkRateLimit } from "@/lib/auth-helpers";
 import { 
@@ -25,7 +25,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
     }
 
     // Authenticate user
-    const session = await auth();
+    const session = await getServerSession();
     if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from "@/lib/auth";
+import { getServerSession } from "@/lib/auth";
 import LaboratoryService from '@/lib/services/LaboratoryService';
 
 
@@ -7,7 +7,7 @@ import LaboratoryService from '@/lib/services/LaboratoryService';
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await auth();
+    const session = await getServerSession();
     if (!session?.user) {
       return NextResponse.json(
         { error: 'Unauthorized' },

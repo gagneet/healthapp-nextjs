@@ -1,11 +1,11 @@
 // app/api/admin/system/stats/route.ts - System statistics and overview API
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from "@/lib/auth";
+import { getServerSession } from "@/lib/auth";
 import { prisma } from '@/lib/prisma';
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await auth();
+    const session = await getServerSession();
     if (!session?.user) {
       return NextResponse.json({
         status: false,
@@ -42,9 +42,9 @@ export async function GET(request: NextRequest) {
       totalVitals,
       totalSecondaryAssignments
     ] = await Promise.all([
-      prisma.user.count(),
+      prisma.User.count(),
       prisma.doctors.count(),
-      prisma.patient.count(),
+      prisma.Patient.count(),
       prisma.hsps.count(),
       prisma.appointments.count(),
       prisma.care_plans.count(),
@@ -54,19 +54,19 @@ export async function GET(request: NextRequest) {
     ]);
 
     // User statistics by role and status
-    const usersByRole = await prisma.user.groupBy({
+    const usersByRole = await prisma.User.groupBy({
       by: ['role'],
       _count: { id: true },
       orderBy: { _count: { id: 'desc' } }
     });
 
-    const usersByStatus = await prisma.user.groupBy({
+    const usersByStatus = await prisma.User.groupBy({
       by: ['account_status'],
       _count: { id: true }
     });
 
     // Recent activity (last 30 days)
-    const recentUsers = await prisma.user.count({
+    const recentUsers = await prisma.User.count({
       where: {
         created_at: {
           gte: periodDate
@@ -91,11 +91,11 @@ export async function GET(request: NextRequest) {
     });
 
     // System health metrics
-    const activeUsers = await prisma.user.count({
+    const activeUsers = await prisma.User.count({
       where: { account_status: 'ACTIVE' }
     });
 
-    const verifiedUsers = await prisma.user.count({
+    const verifiedUsers = await prisma.User.count({
       where: { email_verified: true }
     });
 
@@ -170,7 +170,7 @@ export async function GET(request: NextRequest) {
       });
 
       // Recent system activity
-      const recentActivity = await prisma.user.findMany({
+      const recentActivity = await prisma.User.findMany({
         where: {
           created_at: {
             gte: periodDate

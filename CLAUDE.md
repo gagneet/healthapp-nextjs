@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is the **Healthcare Management Platform** - a modern, full-stack TypeScript application built with Next.js 14 with NextAuth.js authentication. The system manages patients, doctors, medications, care plans, appointments, and vital signs tracking. It's designed to help healthcare providers monitor patient medication adherence and overall care management with real-time capabilities.
+This is the **Healthcare Management Platform** - a modern, full-stack TypeScript application built with Next.js 14 with Auth.js v5 (NextAuth.js v5) authentication. The system manages patients, doctors, medications, care plans, appointments, and vital signs tracking. It's designed to help healthcare providers monitor patient medication adherence and overall care management with real-time capabilities.
 
 ## Development Commands
 
@@ -45,8 +45,8 @@ npm run lint:fix              # Auto-fix ESLint issues
 
 - **Full-Stack**: Next.js 14 with App Router + TypeScript (unified frontend/backend)
 - **Database**: PostgreSQL with Prisma ORM
-- **Authentication**: NextAuth.js with PrismaAdapter and role-based access control  
-- **Security**: NextAuth.js sessions, input validation, role-based access
+- **Authentication**: Auth.js v5 (NextAuth.js v5) with PrismaAdapter and role-based access control  
+- **Security**: Auth.js v5 database sessions, input validation, role-based access
 - **Caching**: Redis integration for enhanced session management
 - **Cloud Storage**: AWS S3 SDK v3 for file uploads
 - **Real-time**: Socket.io ready for notifications
@@ -83,22 +83,22 @@ npm run lint:fix              # Auto-fix ESLint issues
 - **Doctor Clinic**: Doctor can have own Clinic and be linked to a Provider
 - **Assignment Rules**: HSP cannot assign/link Medicine to Patient (Doctor-only privilege)
 
-### Current Architecture: Next.js Full-Stack with NextAuth.js
+### Current Architecture: Next.js Full-Stack with Auth.js v5
 
 The application uses a **modern Next.js full-stack architecture**:
 
 1. **Next.js Full-Stack Application** (TypeScript) - Port 3002
    - Handles both frontend UI/UX and backend API routes  
    - Next.js API routes provide REST endpoints
-   - NextAuth.js handles authentication with database sessions
+   - Auth.js v5 handles authentication with database sessions
 
 2. **Database Layer** (PostgreSQL with Prisma)  
    - PostgreSQL database with Prisma ORM
-   - Database-backed sessions via NextAuth.js PrismaAdapter
+   - Database-backed sessions via Auth.js v5 PrismaAdapter
    - Type-safe database operations and migrations
 
 3. **Authentication & Session Management**
-   - NextAuth.js with PrismaAdapter for database sessions
+   - Auth.js v5 with PrismaAdapter for database sessions
    - Role-based access control for healthcare workflows
    - Enhanced security over stateless JWT tokens
 
@@ -150,7 +150,7 @@ healthapp-nextjs/
 │   ├── ui/                 # Base UI components
 │   └── dashboard/          # Dashboard-specific components
 ├── lib/                    # Utilities and configurations
-│   ├── auth.ts             # NextAuth.js configuration
+│   ├── auth.ts             # Auth.js v5 configuration
 │   ├── prisma.ts           # Prisma client
 │   └── utils.ts            # Utility functions
 ├── types/                  # TypeScript type definitions
@@ -178,7 +178,7 @@ healthapp-nextjs/
 - Modern async/await patterns throughout
 
 **Authentication & Authorization**:
-- NextAuth.js with PrismaAdapter for database sessions
+- Auth.js v5 with PrismaAdapter for database sessions
 - Role-based access control via healthcare role enforcement
 - API route protection: `getServerSession()` → role validation → controller
 - Database-backed sessions for enhanced security over JWT tokens
@@ -193,7 +193,7 @@ healthapp-nextjs/
 - Database timezone set to UTC (+00:00)
 
 **Service Layer Architecture**:
-- NextAuth.js integration - Modern authentication with database sessions
+- Auth.js v5 integration - Modern authentication with database sessions
 - `PatientService.ts` - Patient data processing and business rules
 - `MedicationService.ts` - Medication management and adherence tracking
 - `SchedulingService.ts` - Appointment and scheduling logic
@@ -253,7 +253,7 @@ All API responses follow a consistent structure via `responseFormatter.ts`:
 ### API Development
 
 - Controllers should be thin - business logic belongs in the service layer
-- Use NextAuth.js for authentication and established service classes: PatientService, MedicationService, SchedulingService
+- Use Auth.js v5 for authentication and established service classes: PatientService, MedicationService, SchedulingService
 - Utilize middleware for cross-cutting concerns (auth, validation, logging, rate limiting)
 - Follow consistent error handling via `errorHandler.ts` middleware
 - Use `responseFormatter.ts` for consistent API responses
@@ -297,7 +297,7 @@ The codebase now includes a complete, production-ready implementation:
 
 - Full-Stack: Next.js 14 with TypeScript and App Router (unified frontend/backend)
 - Database: PostgreSQL with Prisma ORM and type-safe operations
-- Authentication: NextAuth.js with PrismaAdapter for database sessions
+- Authentication: Auth.js v5 with PrismaAdapter for database sessions
 - Migrations: Prisma migrations with proper schema evolution
 
 #### ✅ Complete Route Layer
@@ -309,7 +309,7 @@ The codebase now includes a complete, production-ready implementation:
 
 #### ✅ Service Layer Architecture
 
-- NextAuth.js: Modern authentication with database sessions
+- Auth.js v5: Modern authentication with database sessions
 - PatientService: Patient data processing and business rules
 - MedicationService: Medication adherence and tracking logic
 - SchedulingService: Appointment and calendar management
@@ -320,7 +320,7 @@ The codebase now includes a complete, production-ready implementation:
 - Seeded initial data (specialists, medicines, vital templates)
 - 40+ comprehensive models with proper relations (Prisma schema)
 - PostgreSQL optimization with proper indexing
-- NextAuth.js session tables integrated
+- Auth.js v5 session tables integrated
 
 #### ✅ Modern Development Stack
 
@@ -336,7 +336,7 @@ The codebase now includes a complete, production-ready implementation:
 - **Docker Swarm**: Production-ready orchestration with auto-scaling capabilities
 - **Database-First Approach**: Proper migration and seeding in deployment pipeline
 - **Zero-Downtime Updates**: Rolling updates for production environments
-- **Environment Variables**: Secure NextAuth.js credential management
+- **Environment Variables**: Secure Auth.js v5 credential management
 - **Automated Testing**: Integrated test execution in deployment workflows
 
 ### Ready-to-Implement Features
@@ -388,7 +388,14 @@ The dependencies and structure are in place for:
 - **API STRATEGY**: Use Next.js rewrites to proxy to backend, not Next.js API routes
 - **REQUIREMENT**: Follow modern full-stack TypeScript patterns and best practices
 
-### 1.4 Healthcare Business Logic Compliance ✅
+### 1.4 Auth.js v5 Authentication Standards ✅
+- **VERSION**: Always use Auth.js v5 (NextAuth.js v5), not v4 or earlier versions
+- **AUTHENTICATION**: Use `getServerSession()` for API route authentication, never legacy `auth()` function
+- **DATABASE SESSIONS**: Use PrismaAdapter for database-backed sessions, not JWT tokens
+- **ROLE ENFORCEMENT**: Implement strict role-based access control with healthcare business rules
+- **SESSION MANAGEMENT**: Use Auth.js v5 session management for secure healthcare data access
+
+### 1.5 Healthcare Business Logic Compliance ✅
 - **ENFORCEMENT**: Strictly enforce role-based permission rules in both frontend and backend
 - **VALIDATION**: Always validate user permissions before executing healthcare operations
 - **AUDIT**: Implement proper audit logging for all healthcare data modifications
@@ -760,6 +767,76 @@ app.use('/api', apiLimiter);
 ```
 
 These coding rules ensure maintainable, secure, and compliant healthcare application development while leveraging modern TypeScript and Next.js best practices.
+
+## 8. Critical Schema-First Development Rule
+
+### 8.1 Schema Verification Before Code Changes ⚠️ CRITICAL
+- **MANDATORY**: Always check the actual Prisma schema first before making any database-related code changes
+- **PROHIBITION**: Never assume model names, relationship names, or field names without verifying against schema
+- **REQUIREMENT**: Use `grep -A20 "model ModelName" prisma/schema.prisma` to verify exact model definitions
+- **STANDARD**: Align all API route code to match the exact schema definitions, not the other way around
+- **BEST PRACTICE**: Follow Prisma and PostgreSQL naming conventions as defined in the schema
+- **VALIDATION**: Always verify relationship field names (e.g., `patient` vs `Patient`) before using in queries
+- **COMPLIANCE**: Ensure all database operations align with the established Prisma schema structure
+
+### 8.2 Prisma Model Naming Convention Verification
+```typescript
+// ✅ GOOD: Always check schema first
+// Schema shows: model Patient { ... } @@map("patients")  
+// Schema shows: model doctors { ... }
+// Schema shows: model EmergencyAlert { ... } @@map("emergency_alerts")
+
+// Then use correct Prisma client calls:
+const patient = await prisma.Patient.findFirst() // PascalCase model
+const doctor = await prisma.doctors.findFirst()  // snake_case model  
+const alert = await prisma.EmergencyAlert.findMany() // PascalCase model
+
+// ❌ BAD: Assuming model names without checking schema
+const patient = await prisma.patients.findFirst() // Wrong if schema uses "Patient"
+const alert = await prisma.emergency_alerts.findMany() // Wrong if schema uses "EmergencyAlert"
+```
+
+### 8.3 Relationship Name Verification
+```typescript
+// ✅ GOOD: Check schema for exact relationship field names
+// Schema: model EmergencyAlert { patient Patient @relation(...) }
+const alerts = await prisma.EmergencyAlert.findMany({
+  include: { patient: { include: { User: true } } }  // Use exact relationship name from schema
+})
+
+// ❌ BAD: Assuming relationship names
+const alerts = await prisma.EmergencyAlert.findMany({
+  include: { patients: { include: { user: true } } }  // Wrong relationship names
+})
+```
+
+### 8.4 Prisma and PostgreSQL Best Practices Alignment ⚠️ CRITICAL
+- **SCHEMA AUTHORITY**: The Prisma schema in `prisma/schema.prisma` is the single source of truth
+- **MODEL CONVENTIONS**: Follow the exact model naming as defined in schema (PascalCase vs snake_case)
+- **FIELD VALIDATION**: Always verify field existence before using in queries (e.g., `start_date` vs `appointment_date`)
+- **RELATIONSHIP ACCURACY**: Use correct relationship field names (e.g., `user` vs `User`, `patient` vs `Patient`)
+- **TYPE SAFETY**: Leverage Prisma's TypeScript generation for compile-time validation
+- **POSTGRESQL COMPLIANCE**: Ensure all operations align with PostgreSQL constraints and data types
+- **MIGRATION FIRST**: Never modify schema assumptions without checking migration history
+
+```typescript
+// ✅ GOOD: Schema-first approach
+// 1. Check schema: model AdherenceRecord { patient Patient @relation(...) }
+// 2. Use correct relationship name:
+const records = await prisma.AdherenceRecord.findMany({
+  where: { patient: { primary_care_doctor_id: doctorId } }  // Lowercase 'patient' per schema
+})
+
+// ❌ BAD: Assumption-based approach  
+const records = await prisma.AdherenceRecord.findMany({
+  where: { Patient: { primary_care_doctor_id: doctorId } }  // Wrong! Assumes capital 'Patient'
+})
+```
+
+### 8.4 Systematic Cross-Application Fixes
+- **REQUIREMENT**: When fixing schema inconsistencies, check ALL dashboards (Doctor, Patient, Provider, Admin)
+- **STANDARD**: Use grep to find all instances of incorrect model usage across the entire codebase
+- **ENFORCEMENT**: Fix all related API routes, not just the one causing immediate errors
 
 # important-instruction-reminders
 Do what has been asked; nothing more, nothing less.

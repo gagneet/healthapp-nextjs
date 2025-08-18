@@ -1,13 +1,13 @@
 // app/api/admin/doctors/route.ts - Admin doctor management API
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from "@/lib/auth";
+import { getServerSession } from "@/lib/auth";
 import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
 import { randomUUID } from 'crypto';
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await auth();
+    const session = await getServerSession();
     if (!session?.user) {
       return NextResponse.json({
         status: false,
@@ -128,7 +128,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await auth();
+    const session = await getServerSession();
     if (!session?.user) {
       return NextResponse.json({
         status: false,
@@ -166,7 +166,7 @@ export async function POST(request: NextRequest) {
     } = body;
 
     // Check if user already exists
-    const existingUser = await prisma.user.findUnique({
+    const existingUser = await prisma.User.findUnique({
       where: { email }
     });
 

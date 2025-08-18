@@ -1,12 +1,12 @@
 // app/api/payments/route.ts - Payment management API
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from "@/lib/auth";
+import { getServerSession } from "@/lib/auth";
 import { prisma } from '@/lib/prisma';
 import { randomUUID } from 'crypto';
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await auth();
+    const session = await getServerSession();
     if (!session?.user) {
       return NextResponse.json({
         status: false,
@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
 
     // Role-based access control
     if (session.user.role === 'PATIENT') {
-      const patient = await prisma.patient.findFirst({
+      const patient = await prisma.Patient.findFirst({
         where: { user_id: session.user.id }
       });
       if (!patient) {
@@ -47,7 +47,7 @@ export async function GET(request: NextRequest) {
       });
       if (doctor && !patientId) {
         // Show payments for doctor's patients
-        const doctorPatients = await prisma.patient.findMany({
+        const doctorPatients = await prisma.Patient.findMany({
           where: { primary_care_doctor_id: doctor.id },
           select: { id: true }
         });
@@ -193,7 +193,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await auth();
+    const session = await getServerSession();
     if (!session?.user) {
       return NextResponse.json({
         status: false,
@@ -257,7 +257,7 @@ export async function POST(request: NextRequest) {
       const doctor = await prisma.doctors.findFirst({
         where: { user_id: session.user.id }
       });
-      const patient = await prisma.patient.findUnique({
+      const patient = await prisma.Patient.findUnique({
         where: { id: patient_id }
       });
       

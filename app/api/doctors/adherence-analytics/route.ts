@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from "@/lib/auth";
+import { getServerSession } from "@/lib/auth";
 import { prisma } from '@/lib/prisma';
 
 /**
@@ -8,7 +8,7 @@ import { prisma } from '@/lib/prisma';
  */
 export async function GET(request: NextRequest) {
   try {
-    const session = await auth();
+    const session = await getServerSession();
     if (!session?.user) {
       return NextResponse.json({
         status: false,
@@ -47,9 +47,9 @@ export async function GET(request: NextRequest) {
     // Get adherence data for doctor's patients
     const [adherenceRecords, patientsStats] = await Promise.all([
       // Adherence records for the time period
-      prisma.adherence_records.findMany({
+      prisma.AdherenceRecord.findMany({
         where: {
-          patients: {
+          patient: {
             primary_care_doctor_id: doctor.id,
             is_active: true
           },
@@ -58,7 +58,7 @@ export async function GET(request: NextRequest) {
           }
         },
         include: {
-          patients: {
+          patient: {
             select: {
               id: true,
               patient_id: true,
@@ -78,7 +78,7 @@ export async function GET(request: NextRequest) {
       }),
 
       // Overall patient statistics
-      prisma.patients.findMany({
+      prisma.Patient.findMany({
         where: {
           primary_care_doctor_id: doctor.id,
           is_active: true
@@ -137,9 +137,9 @@ export async function GET(request: NextRequest) {
         const dayEnd = new Date(date);
         dayEnd.setDate(dayEnd.getDate() + 1);
 
-        const dayRecords = await prisma.adherence_records.findMany({
+        const dayRecords = await prisma.AdherenceRecord.findMany({
           where: {
-            patients: {
+            patient: {
               primary_care_doctor_id: doctor.id,
               is_active: true
             },
@@ -150,7 +150,9 @@ export async function GET(request: NextRequest) {
           }
         });
 
-        const dayScores = dayRecords.map(r => r.adherence_score).filter(s => s !== null);
+        const dayScores = dayRecords.filter(r => r.is_completed).map(r => 100).concat(
+          dayRecords.filter(r => r.is_missed).map(r => 0)
+        );
         const dayAverage = dayScores.length > 0 
           ? dayScores.reduce((sum, score) => sum + score, 0) / dayScores.length
           : null;

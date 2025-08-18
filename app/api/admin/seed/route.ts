@@ -1,12 +1,12 @@
 // app/api/admin/seed/route.ts - Admin seeding API
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from "@/lib/auth";
+import { getServerSession } from "@/lib/auth";
 
 // import { seedComprehensiveHealthcareData, clearTestData } from '@/lib/seed';
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await auth();
+    const session = await getServerSession();
     if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await auth();
+    const session = await getServerSession();
     if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -65,7 +65,7 @@ export async function GET(request: NextRequest) {
 
     // Check if test data exists
     const { prisma } = await import('@/lib/prisma');
-    const testUsers = await prisma.user.count({
+    const testUsers = await prisma.User.count({
       where: {
         email: {
           endsWith: '@healthapp.com'
@@ -73,7 +73,7 @@ export async function GET(request: NextRequest) {
       }
     });
 
-    const testPatients = await prisma.patient.count({
+    const testPatients = await prisma.Patient.count({
       where: {
         patient_id: {
           startsWith: 'PAT-2024-'
