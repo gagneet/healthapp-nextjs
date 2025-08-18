@@ -92,9 +92,9 @@ export async function GET(request: NextRequest) {
       patientId: patient.patient_id,
       name: `${patient.user?.first_name || ''} ${patient.user?.last_name || ''}`.trim(),
       email: patient.user?.email,
-      lastActivity: patient.last_visit_date || patient.vital_readings[0]?.created_at || patient.updated_at,
-      lastAppointment: patient.appointments[0]?.appointment_date,
-      appointmentStatus: patient.appointments[0]?.status,
+      lastActivity: patient.last_visit_date || patient.vital_readings?.[0]?.created_at || patient.updated_at,
+      lastAppointment: patient.appointments?.[0]?.appointment_date,
+      appointmentStatus: patient.appointments?.[0]?.status,
       riskLevel: patient.risk_level || 'low'
     }));
 
