@@ -312,7 +312,7 @@ setup_environment() {
 
     # Database configuration
     export POSTGRES_DB="healthapp_$ENVIRONMENT"
-    export DATABASE_URL="postgresql://${POSTGRES_USER:-healthapp_user}:${POSTGRES_PASSWORD:-secure_password}@postgres:5432/$POSTGRES_DB?schema=public"
+    export DATABASE_URL="postgresql://${POSTGRES_USER:-healthapp_user}:${POSTGRES_PASSWORD:-secure_password}@tasks.${STACK_NAME}_postgres:5432/$POSTGRES_DB?schema=public"
 
     # NextAuth configuration (replacing JWT)
     export NEXTAUTH_URL="$FRONTEND_URL"

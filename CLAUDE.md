@@ -768,9 +768,46 @@ app.use('/api', apiLimiter);
 
 These coding rules ensure maintainable, secure, and compliant healthcare application development while leveraging modern TypeScript and Next.js best practices.
 
-## 8. Critical Schema-First Development Rule
+## 8. Critical System-Wide Impact Rules
 
-### 8.1 Schema Verification Before Code Changes ⚠️ CRITICAL
+### 8.1 NO ISOLATION TESTING - System-Wide Impact Analysis ⚠️ CRITICAL
+- **MANDATORY**: Never fix issues in isolation without considering system-wide implications
+- **PROHIBITION**: Do not make changes to shared components, utilities, or configurations without full system analysis
+- **REQUIREMENT**: Before any code change, analyze ALL functions, components, and systems that may use the same code
+- **VALIDATION**: Test changes across ALL affected areas (authentication, database, frontend, backend, deployment)
+- **ANALYSIS**: For any configuration change (DATABASE_URL, environment variables, Docker settings), check impact on:
+  - Authentication and session management
+  - Database connectivity and migrations
+  - Frontend API calls and data flow
+  - Deployment and containerization
+  - All user roles and dashboard functionality
+- **STANDARD**: One fix should not break other functionality - verify end-to-end system health
+
+### 8.2 Comprehensive Impact Assessment Process
+```typescript
+// ✅ GOOD: Before changing DATABASE_URL
+// 1. Check: How does AUTH.JS v5 use DATABASE_URL?
+// 2. Check: How does Prisma use DATABASE_URL?
+// 3. Check: How do migrations use DATABASE_URL?
+// 4. Check: How does Docker Swarm service discovery work?
+// 5. Check: Will this affect session storage?
+// 6. Check: Will this affect user authentication?
+// 7. Test: All critical user flows after change
+
+// ❌ BAD: Changing DATABASE_URL without system-wide analysis
+// Just fix database connectivity without considering auth implications
+```
+
+### 8.3 Pre-Change Verification Checklist
+- **Database Changes**: Test authentication, migrations, seeding, all API routes
+- **Authentication Changes**: Test all user roles, session management, API access
+- **Docker/Deployment Changes**: Test all services, networking, data persistence
+- **API Route Changes**: Test frontend integration, error handling, response formatting
+- **Configuration Changes**: Test development, test, and production environments
+
+## 9. Critical Schema-First Development Rule
+
+### 9.1 Schema Verification Before Code Changes ⚠️ CRITICAL
 - **MANDATORY**: Always check the actual Prisma schema first before making any database-related code changes
 - **PROHIBITION**: Never assume model names, relationship names, or field names without verifying against schema
 - **REQUIREMENT**: Use `grep -A20 "model ModelName" prisma/schema.prisma` to verify exact model definitions
@@ -779,7 +816,7 @@ These coding rules ensure maintainable, secure, and compliant healthcare applica
 - **VALIDATION**: Always verify relationship field names (e.g., `patient` vs `Patient`) before using in queries
 - **COMPLIANCE**: Ensure all database operations align with the established Prisma schema structure
 
-### 8.2 Prisma Model Naming Convention Verification
+### 9.2 Prisma Model Naming Convention Verification
 ```typescript
 // ✅ GOOD: Always check schema first
 // Schema shows: model Patient { ... } @@map("patients")  
@@ -796,7 +833,7 @@ const patient = await prisma.patients.findFirst() // Wrong if schema uses "Patie
 const alert = await prisma.emergency_alerts.findMany() // Wrong if schema uses "EmergencyAlert"
 ```
 
-### 8.3 Relationship Name Verification
+### 9.3 Relationship Name Verification
 ```typescript
 // ✅ GOOD: Check schema for exact relationship field names
 // Schema: model EmergencyAlert { patient Patient @relation(...) }
