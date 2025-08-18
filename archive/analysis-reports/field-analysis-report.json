@@ -1,0 +1,850 @@
+{
+  "timestamp": "2025-08-12T08:51:12.538Z",
+  "summary": {
+    "totalPrismaFields": 450,
+    "totalFieldReferences": 399,
+    "unmatchedFields": 243,
+    "scanErrors": 0
+  },
+  "mismatches": [
+    {
+      "field": "first_name",
+      "count": 53,
+      "files": [
+        "/app/api/admin/dashboard/route.ts",
+        "/app/api/admin/doctors/route.ts",
+        "/app/api/appointments/route.ts",
+        "/app/api/assignments/secondary-doctors/route.ts",
+        "/app/api/care-plans/route.ts",
+        "/app/api/doctors/profile/route.ts",
+        "/app/api/patients/route.ts",
+        "/app/api/subscriptions/route.ts",
+        "/app/api/symptoms/route.ts",
+        "/app/api/vitals/readings/route.ts",
+        "/app/api/vitals/route.ts",
+        "/app/dashboard/admin/doctors/page.tsx",
+        "/app/dashboard/admin/layout.tsx",
+        "/lib/api-services.ts",
+        "/lib/auth-utils.ts",
+        "/lib/auth.ts",
+        "/components/dashboard/doctor-sidebar.tsx",
+        "/components/dashboard/patient-sidebar.tsx",
+        "/components/dashboard/sidebar.tsx",
+        "/src/models/User.ts"
+      ],
+      "types": [
+        "select",
+        "data",
+        "property_access"
+      ],
+      "possibleMatches": []
+    },
+    {
+      "field": "last_name",
+      "count": 53,
+      "files": [
+        "/app/api/admin/dashboard/route.ts",
+        "/app/api/admin/doctors/route.ts",
+        "/app/api/appointments/route.ts",
+        "/app/api/assignments/secondary-doctors/route.ts",
+        "/app/api/care-plans/route.ts",
+        "/app/api/doctors/profile/route.ts",
+        "/app/api/patients/route.ts",
+        "/app/api/subscriptions/route.ts",
+        "/app/api/symptoms/route.ts",
+        "/app/api/vitals/readings/route.ts",
+        "/app/api/vitals/route.ts",
+        "/app/dashboard/admin/doctors/page.tsx",
+        "/app/dashboard/admin/layout.tsx",
+        "/lib/api-services.ts",
+        "/lib/auth-utils.ts",
+        "/lib/auth.ts",
+        "/components/dashboard/doctor-sidebar.tsx",
+        "/components/dashboard/patient-sidebar.tsx",
+        "/components/dashboard/sidebar.tsx",
+        "/src/models/User.ts"
+      ],
+      "types": [
+        "select",
+        "data",
+        "property_access"
+      ],
+      "possibleMatches": []
+    },
+    {
+      "field": "account_status",
+      "count": 12,
+      "files": [
+        "/app/api/admin/dashboard/route.ts",
+        "/app/api/admin/doctors/route.ts",
+        "/app/api/doctors/profile/route.ts",
+        "/app/api/patients/route.ts",
+        "/lib/api-services.ts",
+        "/lib/auth-utils.ts",
+        "/lib/auth.ts",
+        "/src/controllers/authController.ts",
+        "/src/models/User.ts",
+        "/src/routes/enhancedAuth.ts"
+      ],
+      "types": [
+        "select",
+        "property_access",
+        "data",
+        "where"
+      ],
+      "possibleMatches": [
+        "access_granted"
+      ]
+    },
+    {
+      "field": "last_login_at",
+      "count": 5,
+      "files": [
+        "/app/api/admin/dashboard/route.ts",
+        "/app/api/admin/doctors/route.ts",
+        "/app/api/doctors/profile/route.ts",
+        "/lib/api-services.ts",
+        "/lib/auth.ts"
+      ],
+      "types": [
+        "select",
+        "data"
+      ],
+      "possibleMatches": [
+        "last_visit_date",
+        "last_used_at"
+      ]
+    },
+    {
+      "field": "gte",
+      "count": 13,
+      "files": [
+        "/app/api/admin/dashboard/route.ts",
+        "/app/api/doctors/profile/route.ts",
+        "/lib/api-services.ts",
+        "/lib/prisma.ts"
+      ],
+      "types": [
+        "where"
+      ],
+      "possibleMatches": []
+    },
+    {
+      "field": "lte",
+      "count": 2,
+      "files": [
+        "/app/api/admin/dashboard/route.ts"
+      ],
+      "types": [
+        "where"
+      ],
+      "possibleMatches": []
+    },
+    {
+      "field": "Note",
+      "count": 2,
+      "files": [
+        "/app/api/admin/dashboard/route.ts",
+        "/src/services/SubscriptionService.ts"
+      ],
+      "types": [
+        "where",
+        "data"
+      ],
+      "possibleMatches": [
+        "notes"
+      ]
+    },
+    {
+      "field": "email_verified",
+      "count": 5,
+      "files": [
+        "/app/api/admin/dashboard/route.ts",
+        "/app/api/admin/doctors/route.ts",
+        "/app/api/patients/route.ts",
+        "/lib/auth-utils.ts"
+      ],
+      "types": [
+        "where",
+        "select",
+        "data"
+      ],
+      "possibleMatches": [
+        "email_sent_at"
+      ]
+    },
+    {
+      "field": "doctor_assignments",
+      "count": 1,
+      "files": [
+        "/app/api/admin/doctors/route.ts"
+      ],
+      "types": [
+        "select"
+      ],
+      "possibleMatches": []
+    },
+    {
+      "field": "pagination",
+      "count": 4,
+      "files": [
+        "/app/api/admin/doctors/route.ts",
+        "/app/api/appointments/route.ts",
+        "/app/api/subscriptions/route.ts",
+        "/app/api/vitals/route.ts"
+      ],
+      "types": [
+        "data"
+      ],
+      "possibleMatches": []
+    },
+    {
+      "field": "total",
+      "count": 4,
+      "files": [
+        "/app/api/admin/doctors/route.ts",
+        "/app/api/appointments/route.ts",
+        "/app/api/subscriptions/route.ts",
+        "/app/api/vitals/route.ts"
+      ],
+      "types": [
+        "data"
+      ],
+      "possibleMatches": []
+    },
+    {
+      "field": "totalPages",
+      "count": 4,
+      "files": [
+        "/app/api/admin/doctors/route.ts",
+        "/app/api/appointments/route.ts",
+        "/app/api/subscriptions/route.ts",
+        "/app/api/vitals/route.ts"
+      ],
+      "types": [
+        "data"
+      ],
+      "possibleMatches": []
+    },
+    {
+      "field": "password_hash",
+      "count": 3,
+      "files": [
+        "/app/api/admin/doctors/route.ts",
+        "/lib/api-services.ts"
+      ],
+      "types": [
+        "data"
+      ],
+      "possibleMatches": []
+    },
+    {
+      "field": "date_of_birth",
+      "count": 10,
+      "files": [
+        "/app/api/admin/doctors/route.ts",
+        "/app/api/doctors/profile/route.ts",
+        "/app/api/patients/route.ts",
+        "/app/dashboard/doctor/patients/[id]/page.tsx",
+        "/app/dashboard/patient/profile/page.tsx",
+        "/lib/api-services.ts"
+      ],
+      "types": [
+        "data",
+        "select",
+        "property_access"
+      ],
+      "possibleMatches": [
+        "data_changes"
+      ]
+    },
+    {
+      "field": "medical_license_number",
+      "count": 2,
+      "files": [
+        "/app/api/admin/doctors/route.ts",
+        "/lib/auth.ts"
+      ],
+      "types": [
+        "data",
+        "select"
+      ],
+      "possibleMatches": [
+        "medical_record_number",
+        "medication_management"
+      ]
+    },
+    {
+      "field": "years_of_experience",
+      "count": 4,
+      "files": [
+        "/app/api/admin/doctors/route.ts",
+        "/lib/auth.ts",
+        "/lib/seed.ts"
+      ],
+      "types": [
+        "data",
+        "select"
+      ],
+      "possibleMatches": []
+    },
+    {
+      "field": "qualification_details",
+      "count": 1,
+      "files": [
+        "/app/api/admin/doctors/route.ts"
+      ],
+      "types": [
+        "data"
+      ],
+      "possibleMatches": [
+        "quality_of_life_scores"
+      ]
+    },
+    {
+      "field": "test_data_exists",
+      "count": 1,
+      "files": [
+        "/app/api/admin/seed/route.ts"
+      ],
+      "types": [
+        "data"
+      ],
+      "possibleMatches": []
+    },
+    {
+      "field": "test_users_count",
+      "count": 1,
+      "files": [
+        "/app/api/admin/seed/route.ts"
+      ],
+      "types": [
+        "data"
+      ],
+      "possibleMatches": []
+    },
+    {
+      "field": "test_patients_count",
+      "count": 1,
+      "files": [
+        "/app/api/admin/seed/route.ts"
+      ],
+      "types": [
+        "data"
+      ],
+      "possibleMatches": []
+    },
+    {
+      "field": "expected",
+      "count": 1,
+      "files": [
+        "/app/api/admin/seed/route.ts"
+      ],
+      "types": [
+        "data"
+      ],
+      "possibleMatches": [
+        "expires_at"
+      ]
+    },
+    {
+      "field": "duration_minutes",
+      "count": 1,
+      "files": [
+        "/app/api/appointments/route.ts"
+      ],
+      "types": [
+        "data"
+      ],
+      "possibleMatches": []
+    },
+    {
+      "field": "booked_by",
+      "count": 1,
+      "files": [
+        "/app/api/appointments/route.ts"
+      ],
+      "types": [
+        "data"
+      ],
+      "possibleMatches": []
+    },
+    {
+      "field": "appointment_time",
+      "count": 1,
+      "files": [
+        "/app/api/appointments/route.ts"
+      ],
+      "types": [
+        "data"
+      ],
+      "possibleMatches": [
+        "appointment_slots"
+      ]
+    },
+    {
+      "field": "appointment",
+      "count": 1,
+      "files": [
+        "/app/api/appointments/route.ts"
+      ],
+      "types": [
+        "data"
+      ],
+      "possibleMatches": [
+        "appointments",
+        "approved_by"
+      ]
+    },
+    {
+      "field": "accepted_at",
+      "count": 1,
+      "files": [
+        "/app/api/assignments/secondary-doctors/route.ts"
+      ],
+      "types": [
+        "data"
+      ],
+      "possibleMatches": []
+    },
+    {
+      "field": "assignment",
+      "count": 1,
+      "files": [
+        "/app/api/assignments/secondary-doctors/route.ts"
+      ],
+      "types": [
+        "data"
+      ],
+      "possibleMatches": [
+        "assigned_at",
+        "assigned_by"
+      ]
+    },
+    {
+      "field": "speciality_id",
+      "count": 3,
+      "files": [
+        "/app/api/care-plans/templates/route.ts",
+        "/lib/auth.ts",
+        "/src/utils/responseFormatter.ts"
+      ],
+      "types": [
+        "select",
+        "property_access"
+      ],
+      "possibleMatches": [
+        "specialty_focus",
+        "specialties"
+      ]
+    },
+    {
+      "field": "middle_name",
+      "count": 2,
+      "files": [
+        "/app/api/doctors/profile/route.ts",
+        "/app/api/patients/route.ts"
+      ],
+      "types": [
+        "select",
+        "data"
+      ],
+      "possibleMatches": []
+    },
+    {
+      "field": "gender",
+      "count": 6,
+      "files": [
+        "/app/api/doctors/profile/route.ts",
+        "/app/api/patients/route.ts",
+        "/app/dashboard/doctor/patients/[id]/page.tsx",
+        "/lib/api-services.ts"
+      ],
+      "types": [
+        "select",
+        "data",
+        "property_access"
+      ],
+      "possibleMatches": []
+    },
+    {
+      "field": "profile_picture_url",
+      "count": 6,
+      "files": [
+        "/app/api/doctors/profile/route.ts",
+        "/app/dashboard/doctor/page.tsx",
+        "/app/dashboard/doctor/profile/page.tsx",
+        "/app/dashboard/patient/profile/page.tsx",
+        "/lib/auth.ts",
+        "/components/dashboard/sidebar.tsx"
+      ],
+      "types": [
+        "select",
+        "property_access"
+      ],
+      "possibleMatches": [
+        "provider_linked_at"
+      ]
+    },
+    {
+      "field": "locale",
+      "count": 1,
+      "files": [
+        "/app/api/doctors/profile/route.ts"
+      ],
+      "types": [
+        "select"
+      ],
+      "possibleMatches": []
+    },
+    {
+      "field": "contact_info",
+      "count": 3,
+      "files": [
+        "/app/api/doctors/profile/route.ts",
+        "/lib/seed.ts"
+      ],
+      "types": [
+        "select",
+        "data"
+      ],
+      "possibleMatches": [
+        "consent_method",
+        "consent_otp",
+        "conditions"
+      ]
+    },
+    {
+      "field": "specialities",
+      "count": 3,
+      "files": [
+        "/app/api/doctors/profile/route.ts",
+        "/lib/seed.ts",
+        "/src/routes/search.ts"
+      ],
+      "types": [
+        "property_access",
+        "data"
+      ],
+      "possibleMatches": [
+        "specialties"
+      ]
+    },
+    {
+      "field": "connected",
+      "count": 1,
+      "files": [
+        "/app/api/health/route.ts"
+      ],
+      "types": [
+        "property_access"
+      ],
+      "possibleMatches": [
+        "consent_otp",
+        "conditions"
+      ]
+    },
+    {
+      "field": "environment",
+      "count": 2,
+      "files": [
+        "/app/api/route.ts",
+        "/src/routes/index.ts"
+      ],
+      "types": [
+        "data"
+      ],
+      "possibleMatches": []
+    },
+    {
+      "field": "subscription",
+      "count": 1,
+      "files": [
+        "/app/api/subscriptions/route.ts"
+      ],
+      "types": [
+        "data"
+      ],
+      "possibleMatches": []
+    },
+    {
+      "field": "onsetDate",
+      "count": 1,
+      "files": [
+        "/app/api/symptoms/route.ts"
+      ],
+      "types": [
+        "property_access"
+      ],
+      "possibleMatches": [
+        "onset_time"
+      ]
+    },
+    {
+      "field": "repeat_interval_id",
+      "count": 1,
+      "files": [
+        "/app/api/vitals/route.ts"
+      ],
+      "types": [
+        "data"
+      ],
+      "possibleMatches": []
+    },
+    {
+      "field": "password",
+      "count": 1,
+      "files": [
+        "/app/auth/login/page.tsx"
+      ],
+      "types": [
+        "property_access"
+      ],
+      "possibleMatches": []
+    },
+    {
+      "field": "payload",
+      "count": 60,
+      "files": [
+        "/app/dashboard/admin/conditions/page.tsx",
+        "/app/dashboard/admin/doctors/page.tsx",
+        "/app/dashboard/admin/medicines/page.tsx",
+        "/app/dashboard/admin/page.tsx",
+        "/app/dashboard/admin/treatments/page.tsx",
+        "/app/dashboard/doctor/clinics/page.tsx",
+        "/app/dashboard/doctor/patients/[id]/page.tsx",
+        "/app/dashboard/doctor/patients/page.tsx",
+        "/app/dashboard/doctor/profile/page.tsx",
+        "/app/dashboard/doctor/settings/page.tsx",
+        "/app/dashboard/patient/appointments/page.tsx",
+        "/app/dashboard/patient/medications/page.tsx",
+        "/app/dashboard/patient/prescriptions/page.tsx",
+        "/app/dashboard/patient/profile/page.tsx",
+        "/app/dashboard/patient/settings/page.tsx",
+        "/app/dashboard/patient/symptoms/page.tsx",
+        "/app/dashboard/patient/vitals/page.tsx",
+        "/lib/api.ts",
+        "/lib/enhancedAuth.tsx",
+        "/components/care-team/AddCareTeamModal.tsx",
+        "/components/forms/AddressInputWithGeocoding.tsx",
+        "/components/forms/SignatureUpload.tsx",
+        "/components/ui/OtpVerificationModal.tsx"
+      ],
+      "types": [
+        "property_access",
+        "data"
+      ],
+      "possibleMatches": [
+        "payments"
+      ]
+    },
+    {
+      "field": "speciality",
+      "count": 12,
+      "files": [
+        "/app/dashboard/admin/doctors/page.tsx",
+        "/app/dashboard/doctor/profile/page.tsx",
+        "/lib/api-services.ts",
+        "/lib/prisma.ts",
+        "/src/controllers/adminController.ts",
+        "/src/controllers/consentController.ts",
+        "/src/controllers/doctorController.ts"
+      ],
+      "types": [
+        "property_access",
+        "include"
+      ],
+      "possibleMatches": [
+        "specialties"
+      ]
+    },
+    {
+      "field": "last_visit",
+      "count": 4,
+      "files": [
+        "/app/dashboard/doctor/page.tsx",
+        "/app/dashboard/doctor/patients/page.tsx",
+        "/app/dashboard/hospital/patients/page.tsx"
+      ],
+      "types": [
+        "property_access"
+      ],
+      "possibleMatches": [
+        "last_used_at"
+      ]
+    },
+    {
+      "field": "next_appointment",
+      "count": 2,
+      "files": [
+        "/app/dashboard/doctor/patients/[id]/page.tsx",
+        "/app/dashboard/doctor/patients/page.tsx"
+      ],
+      "types": [
+        "property_access"
+      ],
+      "possibleMatches": [
+        "next_review_date",
+        "next_billing_date"
+      ]
+    },
+    {
+      "field": "last_taken",
+      "count": 1,
+      "files": [
+        "/app/dashboard/doctor/patients/[id]/page.tsx"
+      ],
+      "types": [
+        "property_access"
+      ],
+      "possibleMatches": [
+        "last_used_at"
+      ]
+    },
+    {
+      "field": "next_due",
+      "count": 1,
+      "files": [
+        "/app/dashboard/doctor/patients/[id]/page.tsx"
+      ],
+      "types": [
+        "property_access"
+      ],
+      "possibleMatches": []
+    },
+    {
+      "field": "highlight",
+      "count": 6,
+      "files": [
+        "/app/dashboard/doctor/patients/[id]/page.tsx"
+      ],
+      "types": [
+        "property_access"
+      ],
+      "possibleMatches": []
+    },
+    {
+      "field": "body_part",
+      "count": 2,
+      "files": [
+        "/app/dashboard/doctor/patients/[id]/page.tsx"
+      ],
+      "types": [
+        "property_access"
+      ],
+      "possibleMatches": []
+    },
+    {
+      "field": "carePlans",
+      "count": 2,
+      "files": [
+        "/app/dashboard/doctor/patients/[id]/page.tsx",
+        "/src/controllers/patientController.ts"
+      ],
+      "types": [
+        "property_access"
+      ],
+      "possibleMatches": [
+        "care_plans",
+        "care_plan",
+        "card_brand"
+      ]
+    },
+    {
+      "field": "data",
+      "count": 3,
+      "files": [
+        "/app/dashboard/doctor/patients/[id]/page.tsx",
+        "/app/dashboard/doctor/settings/page.tsx",
+        "/lib/api.ts"
+      ],
+      "types": [
+        "data",
+        "property_access"
+      ],
+      "possibleMatches": [
+        "date"
+      ]
+    }
+  ],
+  "recommendations": [
+    "❌ Found 243 field references that don't match Prisma schema",
+    "🔧 Priority fixes: phone_number → phone, snake_case → camelCase",
+    "📝 Review the top mismatches and apply field name corrections"
+  ],
+  "prismaModels": [
+    "Patient",
+    "Speciality",
+    "Clinic",
+    "CarePlan",
+    "Medicine",
+    "Medication",
+    "Appointment",
+    "DoctorAvailability",
+    "VitalType",
+    "VitalReading",
+    "Symptom",
+    "AdherenceRecord",
+    "ServicePlan",
+    "PatientSubscription",
+    "PatientDoctorAssignment",
+    "UserDevice",
+    "Notification",
+    "AuditLog",
+    "SequelizeMeta",
+    "appointment_slots",
+    "care_plan_templates",
+    "dashboard_metrics",
+    "medication_logs",
+    "patient_alerts",
+    "patient_consent_otp",
+    "patient_provider_assignments",
+    "patient_provider_consent_history",
+    "payment_methods",
+    "payments",
+    "provider_change_history",
+    "providers",
+    "schedule_events",
+    "scheduled_events",
+    "secondary_doctor_assignments",
+    "symptoms_database",
+    "treatment_database",
+    "treatment_plans",
+    "user_roles",
+    "vital_requirements",
+    "vital_templates",
+    "vitals"
+  ],
+  "commonErrors": [
+    {
+      "type": "snake_case_in_code",
+      "count": 151,
+      "examples": [
+        "first_name",
+        "last_name",
+        "account_status",
+        "last_login_at",
+        "email_verified"
+      ],
+      "fix": "Convert snake_case fields to camelCase as per Prisma convention"
+    },
+    {
+      "type": "phone_field_mismatch",
+      "count": 0,
+      "examples": [],
+      "fix": "Database uses \"phone\", not \"phone_number\" - update code references"
+    },
+    {
+      "type": "id_field_references",
+      "count": 5,
+      "examples": [
+        "speciality_id",
+        "repeat_interval_id",
+        "resource_id",
+        "assigned_doctor_id",
+        "treatment_id"
+      ],
+      "fix": "Verify foreign key field names match Prisma schema"
+    }
+  ]
+}
