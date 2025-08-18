@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { auth } from "@/lib/auth";
 import { prisma, checkDatabaseConnection } from '@/lib/prisma';
 import { handleApiError, formatApiSuccess } from '@/lib/api-services';
 

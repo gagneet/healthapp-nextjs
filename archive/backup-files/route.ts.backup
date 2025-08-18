@@ -1,0 +1,82 @@
+// app/api/consent/route.ts - Patient consent management API
+import { NextRequest, NextResponse } from 'next/server';
+import { prisma } from '@/lib/prisma';
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+
+export async function GET(request: NextRequest) {
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    const user = session.user;
+
+    let whereClause: any = {};
+
+    // Role-based access control
+    if (user!.role === 'PATIENT') {
+      const patient = await prisma.patient.findFirst({
+        where: { user_id: user!.id }
+      });
+      if (!patient) {
+        return NextResponse.json({
+          status: false,
+          statusCode: 403,
+          payload: { error: { status: 'forbidden', message: 'Patient profile not found' } }
+        }, { status: 403 });
+      }
+      whereClause.patient_id = patient.id;
+
+    const { searchParams } = new URL(request.url);
+    const patientId = searchParams.get('patient_id');
+    const consentType = searchParams.get('consent_type');
+
+    if (patientId && ['DOCTOR', 'HSP', 'ADMIN'].includes(user!.role)) {
+      whereClause.patient_id = patientId;
+
+    if (consentType) {
+      whereClause.consent_type = consentType;
+
+    // Stub implementation - return empty data for now
+    return NextResponse.json({
+      status: true,
+      statusCode: 200,
+      payload: {
+        data: { consents: [] },
+        message: 'Consent records retrieved successfully'
+      }
+    });
+  } catch (error) {
+    console.error('Error fetching consent records:', error);
+    return NextResponse.json({
+      status: false,
+      statusCode: 500,
+      payload: { error: { status: 'error', message: 'Internal server error' } }
+    }, { status: 500 });
+  }
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    const user = session.user;
+
+    // Stub implementation - field name issues need to be resolved with proper schema
+    return NextResponse.json({
+      status: false,
+      statusCode: 501,
+      payload: { error: { status: 'not_implemented', message: 'Consent creation not yet implemented' } }
+    }, { status: 501 });
+  } catch (error) {
+    console.error('Error creating consent record:', error);
+    return NextResponse.json({
+      status: false,
+      statusCode: 500,
+      payload: { error: { status: 'error', message: 'Internal server error' } }
+    }, { status: 500 });
+  }
+}

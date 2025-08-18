@@ -4,8 +4,7 @@ const nextConfig = {
   output: 'standalone',
   trailingSlash: false,
   
-  // Completely disable static generation
-  generateStaticParams: () => [],
+  // Completely disable static generation - configured per-route instead
   
   // Force all pages and API routes to be dynamic
   experimental: {
@@ -51,11 +50,6 @@ const nextConfig = {
   skipMiddlewareUrlNormalize: true,
   
   // Configure WebSocket hostname for Docker
-  experimental: {
-    forceSwcTransforms: true,
-    // Enable server-side caching for healthcare applications
-    serverComponentsExternalPackages: ['prisma', '@prisma/client'],
-  },
   // WebSocket configuration moved to webpack config for polling in Docker
   allowedDevOrigins: process.env.ALLOWED_DEV_ORIGINS ? 
     process.env.ALLOWED_DEV_ORIGINS.split(',') : 

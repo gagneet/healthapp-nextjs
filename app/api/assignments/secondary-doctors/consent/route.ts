@@ -1,7 +1,7 @@
 // app/api/assignments/secondary-doctors/consent/route.ts
 import { NextRequest, NextResponse } from 'next/server';
+import { auth } from "@/lib/auth";
 import { prisma } from '@/lib/prisma';
-import { auth } from '@/lib/auth';
 
 // Generate OTP for patient consent
 export async function POST(request: NextRequest) {

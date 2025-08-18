@@ -1,7 +1,7 @@
 // app/api/assignments/secondary-doctors/route.ts
 import { NextRequest, NextResponse } from 'next/server';
+import { auth } from "@/lib/auth";
 import { prisma } from '@/lib/prisma';
-import { auth } from '@/lib/auth';
 
 export async function GET(request: NextRequest) {
   try {
