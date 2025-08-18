@@ -438,12 +438,71 @@ deploy_stack() {
     
     log_success "Stack deployed: $STACK_NAME"
     
-    # Wait for services to start
-    log_info "Waiting for services to start..."
-    sleep 10
+    # Wait for PostgreSQL to be ready first
+    log_info "Waiting for PostgreSQL to be ready..."
+    wait_for_postgres
+    
+    # Then wait for app containers to be running
+    log_info "Waiting for app services to start..."
+    wait_for_app_containers
     
     # Show deployment status
     show_status
+}
+
+# ============================================================================
+# Wait Functions for Service Readiness
+# ============================================================================
+
+wait_for_postgres() {
+    local max_attempts=30
+    local attempt=1
+    
+    while [ $attempt -le $max_attempts ]; do
+        # Check if PostgreSQL container is running and healthy
+        local postgres_container=$(docker ps --filter "name=$STACK_NAME"_postgres --format "{{.ID}}" | head -1)
+        
+        if [ -n "$postgres_container" ]; then
+            # Test database connectivity using pg_isready
+            if docker exec "$postgres_container" pg_isready -U "$POSTGRES_USER" -d "$POSTGRES_DB" >/dev/null 2>&1; then
+                log_success "PostgreSQL is ready"
+                return 0
+            fi
+        fi
+        
+        log_info "PostgreSQL not ready, waiting... (attempt $attempt/$max_attempts)"
+        sleep 5
+        attempt=$((attempt + 1))
+    done
+    
+    log_error "PostgreSQL failed to become ready after $max_attempts attempts"
+    exit 1
+}
+
+wait_for_app_containers() {
+    local max_attempts=20
+    local attempt=1
+    
+    while [ $attempt -le $max_attempts ]; do
+        # Check if app containers are running
+        local running_containers=$(docker ps --filter "name=$STACK_NAME"_app --format "{{.ID}}" | wc -l)
+        local expected_replicas=${REPLICAS:-2}
+        
+        if [ "$running_containers" -ge "$expected_replicas" ]; then
+            # Wait a bit more for internal app startup
+            log_info "App containers are running, waiting for internal startup..."
+            sleep 10
+            log_success "App services are ready"
+            return 0
+        fi
+        
+        log_info "App containers starting... ($running_containers/$expected_replicas ready) (attempt $attempt/$max_attempts)"
+        sleep 3
+        attempt=$((attempt + 1))
+    done
+    
+    log_error "App containers failed to start after $max_attempts attempts"
+    exit 1
 }
 
 # ============================================================================
