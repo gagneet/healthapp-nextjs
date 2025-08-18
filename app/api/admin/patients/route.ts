@@ -1,7 +1,7 @@
 // app/api/admin/patients/route.ts - Admin patient management API
 import { NextRequest, NextResponse } from 'next/server';
+import { auth } from "@/lib/auth";
 import { prisma } from '@/lib/prisma';
-import { auth } from '@/lib/auth';
 import bcrypt from 'bcryptjs';
 import { randomUUID } from 'crypto';
 

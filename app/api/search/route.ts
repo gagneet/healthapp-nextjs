@@ -1,7 +1,7 @@
 // app/api/search/route.ts - Comprehensive healthcare search API
 import { NextRequest, NextResponse } from 'next/server';
+import { auth } from "@/lib/auth";
 import { prisma } from '@/lib/prisma';
-import { auth } from '@/lib/auth';
 import type { HealthcareRole } from '@/types/auth';
 
 interface SearchFilters {

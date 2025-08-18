@@ -5,8 +5,7 @@
  */
 
 import { NextRequest, NextResponse } from "next/server"
-import { getServerSession } from "next-auth"
-import { authOptions } from "@/lib/auth"
+import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma"
 import { 
   createSuccessResponse, 
@@ -26,7 +25,7 @@ import {
  * Business Logic: Patients can view their own vitals, healthcare providers can view patient vitals
  */
 export const GET = withErrorHandling(async (request: NextRequest) => {
-  const session = await getServerSession(authOptions)
+  const session = await auth()
   
   if (!session) {
     return createUnauthorizedResponse()
@@ -108,7 +107,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
 });
 
 export const POST = withErrorHandling(async (request: NextRequest) => {
-  const session = await getServerSession(authOptions)
+  const session = await auth()
   
   if (!session) {
     return createUnauthorizedResponse()

@@ -1,7 +1,7 @@
 // app/api/admin/users/route.ts - Admin user management API
 import { NextRequest, NextResponse } from 'next/server';
+import { auth } from "@/lib/auth";
 import { prisma } from '@/lib/prisma';
-import { auth } from '@/lib/auth';
 import bcrypt from 'bcryptjs';
 
 export async function GET(request: NextRequest) {

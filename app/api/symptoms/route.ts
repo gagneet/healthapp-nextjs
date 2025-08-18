@@ -5,8 +5,7 @@
  */
 
 import { NextRequest, NextResponse } from "next/server"
-import { getServerSession } from "next-auth"
-import { authOptions } from "@/lib/auth"
+import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma"
 import { 
   createSuccessResponse, 
@@ -26,7 +25,7 @@ import {
  * Business Logic: Patients can view their own symptoms, healthcare providers can view patient symptoms
  */
 export const GET = withErrorHandling(async (request: NextRequest) => {
-  const session = await getServerSession(authOptions)
+  const session = await auth()
   
   if (!session) {
     return createUnauthorizedResponse()
@@ -131,7 +130,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
       skip,
       take: limit,
       orderBy: {
-        [sortBy as string]: sortOrder as 'asc' | 'desc'
+        [sortBy === 'createdAt' ? 'created_at' : sortBy as string]: sortOrder as 'asc' | 'desc'
       },
       include: {
         patient: {
@@ -183,7 +182,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
  * Business Logic: Patients can record their own symptoms, healthcare providers can record for patients
  */
 export const POST = withErrorHandling(async (request: NextRequest) => {
-  const session = await getServerSession(authOptions)
+  const session = await auth()
   
   if (!session) {
     return createUnauthorizedResponse()

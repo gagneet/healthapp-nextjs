@@ -4,7 +4,7 @@
  */
 
 import { NextRequest, NextResponse } from "next/server"
-import { auth } from "@/lib/auth"
+import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma"
 import { 
   createSuccessResponse, 
@@ -138,7 +138,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
       skip,
       take: limit,
       orderBy: {
-        [sortBy as string]: sortOrder as 'asc' | 'desc'
+        [sortBy === 'createdAt' ? 'created_at' : sortBy as string]: sortOrder as 'asc' | 'desc'
       },
       select: {
         id: true,

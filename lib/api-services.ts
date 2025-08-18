@@ -326,7 +326,7 @@ export async function getPatients(doctorId: string, pagination: {
         orderBy: 
           pagination.sortBy === 'name' 
             ? { user: { first_name: pagination.sortOrder || 'asc' } }
-            : { [pagination.sortBy || 'created_at']: pagination.sortOrder || 'desc' },
+            : { [pagination.sortBy === 'createdAt' ? 'created_at' : pagination.sortBy || 'created_at']: pagination.sortOrder || 'desc' },
       }),
       prisma.patient.count({ where: whereClause }),
     ]);

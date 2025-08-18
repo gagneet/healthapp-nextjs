@@ -5,7 +5,7 @@
  */
 
 import { NextRequest, NextResponse } from "next/server"
-import { auth } from "@/lib/auth"
+import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma"
 import { z } from "zod"
 
