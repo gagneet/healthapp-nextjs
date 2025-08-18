@@ -5,7 +5,7 @@
  */
 
 import { NextRequest, NextResponse } from "next/server"
-import { auth } from "@/lib/auth";
+import { getServerSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma"
 import { 
   createSuccessResponse, 
@@ -23,7 +23,7 @@ import { z } from "zod"
  * Business Logic: Role-based filtering for healthcare data access
  */
 export const GET = withErrorHandling(async (request: NextRequest) => {
-  const session = await auth()
+  const session = await getServerSession()
   
   if (!session) {
     return createUnauthorizedResponse()

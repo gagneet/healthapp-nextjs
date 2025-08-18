@@ -85,16 +85,16 @@ services:
       POSTGRES_DB: ${POSTGRES_DB:-healthapp_test}
       POSTGRES_USER: ${POSTGRES_USER:-healthapp_user}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-secure_test_password}
-      DATABASE_URL: postgresql://${POSTGRES_USER:-healthapp_user}:${POSTGRES_PASSWORD:-secure_test_password}@postgres:5432/${POSTGRES_DB:-healthapp_test}?schema=public
+      DATABASE_URL: ${DATABASE_URL}
       
       # NextAuth Configuration
-      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET:-test-nextauth-secret-2024-secure-key}
-      NEXTAUTH_URL: ${NEXTAUTH_URL:-https://test.adhere.live}
+      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET}
+      NEXTAUTH_URL: ${NEXTAUTH_URL}
       
       # Application URLs
-      FRONTEND_URL: ${FRONTEND_URL:-https://test.adhere.live}
-      BACKEND_URL: ${BACKEND_URL:-https://test.adhere.live}
-      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-https://test.adhere.live/api}
+      FRONTEND_URL: ${FRONTEND_URL}
+      BACKEND_URL: ${BACKEND_URL}
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
       
       # Redis Configuration
       REDIS_HOST: redis

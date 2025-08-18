@@ -4,7 +4,7 @@
  */
 
 import { NextRequest, NextResponse } from "next/server"
-import { auth } from "@/lib/auth";
+import { getServerSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma"
 import { 
   createSuccessResponse, 
@@ -27,7 +27,7 @@ import { generatePatientId } from "@/lib/id-generation"
  * Business Logic: Only doctors, HSPs, and admins can access patient lists
  */
 export const GET = withErrorHandling(async (request: NextRequest) => {
-  const session = await auth()
+  const session = await getServerSession()
   
   if (!session) {
     return createUnauthorizedResponse()
@@ -130,10 +130,10 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
     }
 
     // Get total count for pagination
-    const total = await prisma.patient.count({ where: whereClause });
+    const total = await prisma.Patient.count({ where: whereClause });
 
     // Fetch patients with user details
-    const patients = await prisma.patient.findMany({
+    const patients = await prisma.Patient.findMany({
       where: whereClause,
       skip,
       take: limit,
@@ -275,7 +275,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
  * Business Logic: Only doctors and admins can create patient records
  */
 export const POST = withErrorHandling(async (request: NextRequest) => {
-  const session = await auth()
+  const session = await getServerSession()
   
   if (!session) {
     return createUnauthorizedResponse()
@@ -297,7 +297,7 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
 
   try {
     // Check if user with email already exists
-    const existingUser = await prisma.user.findUnique({
+    const existingUser = await prisma.User.findUnique({
       where: { email: patientData.email }
     })
 

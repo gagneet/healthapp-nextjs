@@ -8,7 +8,7 @@ export const dynamic = 'force-dynamic'
  */
 
 import { NextRequest, NextResponse } from "next/server"
-import { auth } from "@/lib/auth";
+import { getServerSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma"
 import { 
   createSuccessResponse, 
@@ -24,7 +24,7 @@ import {
  * Business Logic: Only system admins can access admin dashboard
  */
 export const GET = withErrorHandling(async (request: NextRequest) => {
-  const session = await auth()
+  const session = await getServerSession()
   
   if (!session) {
     return createUnauthorizedResponse()
@@ -51,13 +51,13 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
       monthlyRegistrations
     ] = await Promise.all([
       // Total users count
-      prisma.user.count(),
+      prisma.User.count(),
       
       // Total doctors
       prisma.doctors.count(),
       
       // Total patients
-      prisma.patient.count(),
+      prisma.Patient.count(),
       
       // Total HSPs
       prisma.hsps.count(),
@@ -66,7 +66,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
       prisma.providers.count(),
       
       // Active appointments this week
-      prisma.appointment.count({
+      prisma.Appointment.count({
         where: {
           start_time: {
             gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
@@ -90,7 +90,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
       }),
       
       // Recent registrations (last 7 days)
-      prisma.user.count({
+      prisma.User.count({
         where: {
           created_at: {
             gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
@@ -99,7 +99,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
       }),
       
       // Monthly registrations for trends
-      prisma.user.groupBy({
+      prisma.User.groupBy({
         by: ['created_at'],
         _count: {
           id: true
@@ -113,7 +113,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
     ]);
 
     // Get recent activity
-    const recentActivity = await prisma.user.findMany({
+    const recentActivity = await prisma.User.findMany({
       select: {
         id: true,
         first_name: true,
@@ -159,10 +159,10 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
       system_health: systemHealth,
       alerts: {
         critical_vitals: criticalVitals,
-        pending_verifications: await prisma.user.count({
+        pending_verifications: await prisma.User.count({
           where: { email_verified: false }
         }),
-        inactive_users: await prisma.user.count({
+        inactive_users: await prisma.User.count({
           where: { 
             account_status: 'INACTIVE',
             created_at: {

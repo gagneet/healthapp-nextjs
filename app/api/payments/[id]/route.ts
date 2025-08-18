@@ -1,6 +1,6 @@
 // app/api/payments/[id]/route.ts - Individual payment management API
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from "@/lib/auth";
+import { getServerSession } from "@/lib/auth";
 import { prisma } from '@/lib/prisma';
 
 // Get specific payment by ID
@@ -9,7 +9,7 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    const session = await auth();
+    const session = await getServerSession();
     if (!session?.user) {
       return NextResponse.json({
         status: false,
@@ -80,7 +80,7 @@ export async function GET(
 
     // Check access permissions
     if (session.user.role === 'PATIENT') {
-      const patient = await prisma.patient.findFirst({
+      const patient = await prisma.Patient.findFirst({
         where: { user_id: session.user.id }
       });
       if (!patient || payment.patient_id !== patient.id) {
@@ -94,7 +94,7 @@ export async function GET(
       const doctor = await prisma.doctors.findFirst({
         where: { user_id: session.user.id }
       });
-      const patient = await prisma.patient.findUnique({
+      const patient = await prisma.Patient.findUnique({
         where: { id: payment.patient_id }
       });
       if (!doctor || !patient || patient.primary_care_doctor_id !== doctor.id) {
@@ -131,7 +131,7 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   try {
-    const session = await auth();
+    const session = await getServerSession();
     if (!session?.user) {
       return NextResponse.json({
         status: false,
@@ -178,7 +178,7 @@ export async function PUT(
       const doctor = await prisma.doctors.findFirst({
         where: { user_id: session.user.id }
       });
-      const patient = await prisma.patient.findUnique({
+      const patient = await prisma.Patient.findUnique({
         where: { id: existingPayment.patient_id }
       });
       if (!doctor || !patient || patient.primary_care_doctor_id !== doctor.id) {
@@ -277,7 +277,7 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    const session = await auth();
+    const session = await getServerSession();
     if (!session?.user) {
       return NextResponse.json({
         status: false,
@@ -327,7 +327,7 @@ export async function DELETE(
       const doctor = await prisma.doctors.findFirst({
         where: { user_id: session.user.id }
       });
-      const patient = await prisma.patient.findUnique({
+      const patient = await prisma.Patient.findUnique({
         where: { id: existingPayment.patient_id }
       });
       if (!doctor || !patient || patient.primary_care_doctor_id !== doctor.id) {

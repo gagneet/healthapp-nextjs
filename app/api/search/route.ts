@@ -1,6 +1,6 @@
 // app/api/search/route.ts - Comprehensive healthcare search API
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from "@/lib/auth";
+import { getServerSession } from "@/lib/auth";
 import { prisma } from '@/lib/prisma';
 import type { HealthcareRole } from '@/types/auth';
 
@@ -24,7 +24,7 @@ interface SearchResult {
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await auth();
+    const session = await getServerSession();
     if (!session?.user) {
       return NextResponse.json(
         {
@@ -153,14 +153,14 @@ async function searchPatients(searchValue: string, filters: SearchFilters, userR
   if (userRole === 'DOCTOR') {
     // Doctors can only search their assigned patients
     const doctor = await prisma.doctors.findFirst({
-      where: { user_id: (await auth())?.user?.id }
+      where: { user_id: (await getServerSession())?.user?.id }
     });
     if (doctor) {
       whereClause.primary_care_doctor_id = doctor.id;
     }
   }
 
-  return await prisma.patient.findMany({
+  return await prisma.Patient.findMany({
     where: whereClause,
     take: filters.limit,
     select: {

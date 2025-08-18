@@ -275,59 +275,98 @@ parse_args() {
 setup_environment() {
     log_info "Setting up $ENVIRONMENT environment..."
 
-    # Load environment file if it exists
-    if [ -f "$ENV_FILE" ]; then
-        log_info "Loading environment from $ENV_FILE"
+    # Store the command-line environment parameter 
+    local DEPLOYMENT_ENV="$ENVIRONMENT"
+
+    # Load base environment file first
+    if [ -f ".env" ]; then
+        log_info "Loading base environment from .env"
+        set -a
+        source ".env"
+        set +a
+    fi
+
+    # Load environment-specific file if it exists (overrides base .env)
+    local env_specific_file=".env.$DEPLOYMENT_ENV"
+    if [ -f "$env_specific_file" ]; then
+        log_info "Loading environment-specific config from $env_specific_file"
+        set -a
+        source "$env_specific_file"
+        set +a
+    elif [ "$ENV_FILE" != ".env" ] && [ -f "$ENV_FILE" ]; then
+        log_info "Loading environment from custom file: $ENV_FILE"
         set -a
         source "$ENV_FILE"
         set +a
-    elif [ "$ENV_FILE" != ".env" ]; then
-        log_error "Environment file not found: $ENV_FILE"
+    fi
+
+    # Restore the deployment environment (command-line takes precedence)
+    export ENVIRONMENT="$DEPLOYMENT_ENV"
+
+    # Use domain from .env file or command line override
+    if [ -n "${DOMAIN:-}" ]; then
+        log_info "Using domain from configuration: $DOMAIN"
+    else
+        log_error "DOMAIN not specified in .env file or command line"
         exit 1
     fi
 
-    # Auto-detect domain if not specified and not localhost
-    if [ "$DOMAIN" = "localhost" ] && [ -n "${PUBLIC_DOMAIN:-}" ]; then
-        DOMAIN="$PUBLIC_DOMAIN"
-        log_info "Auto-detected domain: $DOMAIN"
-    fi
-
-    # Set environment-specific variables
-    export APP_NAME="healthapp"
-    export STACK_NAME="healthapp-$ENVIRONMENT"
+    # Set derived variables (computed from .env values)
+    export APP_NAME="${STACK_NAME_PREFIX:-healthapp}"
+    export STACK_NAME="${STACK_NAME_PREFIX:-healthapp}-$ENVIRONMENT"
     export DOCKER_STACK_FILE="docker/docker-stack.$ENVIRONMENT.yml"
     
-    # Port configuration
-    export HOST_PORT_FRONTEND="$PORT_FRONTEND"
-    export HOST_PORT_BACKEND="$PORT_BACKEND"
-    export HOST_PORT_DB="$PORT_DB"
-    export HOST_PORT_REDIS="$PORT_REDIS"
-    export HOST_PORT_PGADMIN="$PORT_PGADMIN"
+    # Port configuration (use .env values)
+    export HOST_PORT_FRONTEND="${PORT_FRONTEND:-3002}"
+    export HOST_PORT_BACKEND="${PORT_BACKEND:-3002}"  # Same for Next.js full-stack
+    export HOST_PORT_DB="${PORT_DB:-5432}"
+    export HOST_PORT_REDIS="${PORT_REDIS:-6379}"
+    export HOST_PORT_PGADMIN="${PORT_PGADMIN:-5050}"
 
-    # Application configuration
-    export NODE_ENV=$([ "$ENVIRONMENT" = "prod" ] && echo "production" || echo "development")
-    export FRONTEND_URL="http://$DOMAIN:$PORT_FRONTEND"
-    export BACKEND_URL="http://$DOMAIN:$PORT_BACKEND"
-    export NEXT_PUBLIC_API_URL="$BACKEND_URL/api"
+    # Application URLs (use .env DOMAIN)
+    export FRONTEND_URL="${FRONTEND_URL:-http://$DOMAIN:$HOST_PORT_FRONTEND}"
+    export BACKEND_URL="${BACKEND_URL:-$FRONTEND_URL}"  # Next.js full-stack uses same URL
+    export NEXT_PUBLIC_API_URL="${NEXT_PUBLIC_API_URL:-$FRONTEND_URL/api}"
 
-    # Database configuration
-    export POSTGRES_DB="healthapp_$ENVIRONMENT"
-    export DATABASE_URL="postgresql://${POSTGRES_USER:-healthapp_user}:${POSTGRES_PASSWORD:-secure_password}@postgres:5432/$POSTGRES_DB?schema=public"
-
-    # NextAuth configuration (replacing JWT)
-    export NEXTAUTH_URL="$FRONTEND_URL"
-    if [ -z "${NEXTAUTH_SECRET:-}" ]; then
-        export NEXTAUTH_SECRET="${ENVIRONMENT}-nextauth-secret-$(date +%Y)-secure-key"
-        log_warning "Using generated NEXTAUTH_SECRET. Set NEXTAUTH_SECRET env var for production!"
+    # Environment-specific database name
+    if [[ "$DATABASE_URL" == *"healthapp_dev"* ]] && [ "$ENVIRONMENT" != "dev" ]; then
+        # Update database name in DATABASE_URL for non-dev environments
+        export POSTGRES_DB="healthapp_$ENVIRONMENT"
+        export DATABASE_URL=$(echo "$DATABASE_URL" | sed "s/healthapp_dev/healthapp_$ENVIRONMENT/")
+        log_info "Updated DATABASE_URL for $ENVIRONMENT environment"
     fi
 
-    # Scaling configuration
-    export REPLICAS_FRONTEND="$REPLICAS"  # App service replicas (Next.js full-stack)
+    # Auth.js configuration (use .env values)
+    export NEXTAUTH_URL="${NEXTAUTH_URL:-$FRONTEND_URL}"
+    export AUTH_SECRET="${AUTH_SECRET:-$NEXTAUTH_SECRET}"
+    
+    # Validate required Auth.js variables
+    if [ -z "${NEXTAUTH_SECRET:-}" ]; then
+        log_error "NEXTAUTH_SECRET not found in .env file. Please add it."
+        exit 1
+    fi
+
+    # Service scaling (use .env values or defaults)
+    export REPLICAS_FRONTEND="${REPLICAS:-$(eval echo \$REPLICAS_$(echo $ENVIRONMENT | tr '[:lower:]' '[:upper:]'))}"
     export REPLICAS_POSTGRES="1"  # Always 1 for database
     export REPLICAS_REDIS="1"     # Always 1 for Redis
     export REPLICAS_PGADMIN="1"   # Always 1 for PgAdmin
 
+    # Ensure default replica count
+    if [ -z "${REPLICAS_FRONTEND:-}" ]; then
+        case $ENVIRONMENT in
+            dev) export REPLICAS_FRONTEND="1" ;;
+            test) export REPLICAS_FRONTEND="2" ;;
+            prod) export REPLICAS_FRONTEND="2" ;;
+        esac
+    fi
+
     log_success "Environment setup complete"
+    log_info "Using configuration:"
+    log_info "  - Domain: $DOMAIN"
+    log_info "  - Frontend URL: $FRONTEND_URL"
+    log_info "  - Database: $POSTGRES_DB"
+    log_info "  - Replicas: $REPLICAS_FRONTEND"
 }
 
 # ============================================================================
