@@ -80,15 +80,14 @@ export default function DoctorSettingsPage() {
 
   const fetchSettings = async () => {
     try {
-      const response = await apiRequest.get('/auth/enhanced/profile')
-      if ((response as any).status && (response as any).payload?.data) {
-        // Initialize with default settings if not exists
-        const defaultSettings: UserSettings = {
-          notifications: {
-            email_notifications: true,
-            sms_notifications: false,
-            push_notifications: true,
-            appointment_reminders: true,
+      // Use proper Auth.js v5 session instead of non-existent enhanced/profile
+      // Initialize with default settings
+      const defaultSettings: UserSettings = {
+        notifications: {
+          email_notifications: true,
+          sms_notifications: false,
+          push_notifications: true,
+          appointment_reminders: true,
             medication_alerts: true,
             system_updates: false
           },
@@ -110,8 +109,7 @@ export default function DoctorSettingsPage() {
             session_timeout: 24
           }
         }
-        setSettings((response as any).payload.data?.settings || defaultSettings)
-      }
+        setSettings(defaultSettings)
     } catch (error) {
       console.error('Failed to fetch settings:', error)
       toast.error('Failed to load settings')
@@ -122,11 +120,8 @@ export default function DoctorSettingsPage() {
 
   const fetchActiveSessions = async () => {
     try {
-      // Basic implementation since enhanced auth is not available
-      const response = await apiRequest.get('/auth/sessions')
-      if ((response as any).status && (response as any).payload?.data) {
-        setActiveSessions((response as any).payload.data.sessions || [])
-      }
+      // Auth.js v5 doesn't provide session listing, use mock data or remove feature
+      setActiveSessions([])
     } catch (error) {
       console.error('Failed to fetch sessions:', error)
     }

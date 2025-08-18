@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from "@/lib/auth";
 import { prisma } from '@/lib/prisma';
+import { MedicationAlertType, EmergencyPriority, AlertSeverity } from '@prisma/client';
 
 /**
  * GET /api/doctors/critical-alerts
@@ -53,7 +54,7 @@ export async function GET(request: NextRequest) {
           },
           acknowledged: false,
           resolved: false,
-          priority_level: { in: ['CRITICAL', 'HIGH'] }
+          priority_level: { in: [EmergencyPriority.EMERGENCY, EmergencyPriority.HIGH] }
         },
         include: {
           patient: {
@@ -82,7 +83,7 @@ export async function GET(request: NextRequest) {
             is_active: true
           },
           resolved: false,
-          alert_type: { in: ['DRUG_INTERACTION', 'ALLERGY_WARNING', 'DOSAGE_CONCERN'] }
+          alert_type: { in: [MedicationAlertType.DRUG_INTERACTION, MedicationAlertType.ALLERGY_CONFLICT, MedicationAlertType.DOSE_LIMIT_EXCEEDED] }
         },
         include: {
           patient: {
