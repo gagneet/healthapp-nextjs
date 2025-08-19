@@ -47,26 +47,26 @@ export async function GET(request: NextRequest) {
     // Get adherence data for doctor's patients
     const [adherenceRecords, patientsStats] = await Promise.all([
       // Adherence records for the time period
-      prisma.AdherenceRecord.findMany({
+      prisma.adherenceRecord.findMany({
         where: {
-          patient: {
-            primary_care_doctor_id: doctor.id,
-            is_active: true
+          patients: {
+            primary_care_doctor_id: doctor.id
           },
           recorded_at: {
             gte: startDate
           }
         },
         include: {
-          patient: {
+          patients: {
             select: {
               id: true,
               patient_id: true,
               overall_adherence_score: true,
-              user: {
+              users_patients_user_idTousers: {
                 select: {
                   first_name: true,
-                  last_name: true
+                  last_name: true,
+                  name: true
                 }
               }
             }
@@ -78,25 +78,19 @@ export async function GET(request: NextRequest) {
       }),
 
       // Overall patient statistics
-      prisma.Patient.findMany({
+      prisma.patient.findMany({
         where: {
-          primary_care_doctor_id: doctor.id,
-          is_active: true
+          primary_care_doctor_id: doctor.id
         },
         select: {
           id: true,
           patient_id: true,
           overall_adherence_score: true,
-          user: {
+          users_patients_user_idTousers: {
             select: {
               first_name: true,
-              last_name: true
-            }
-          },
-          _count: {
-            select: {
-              medication_logs: true,
-              adherence_records: true
+              last_name: true,
+              name: true
             }
           }
         }

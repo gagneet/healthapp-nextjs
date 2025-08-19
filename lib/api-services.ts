@@ -514,8 +514,8 @@ export async function getDoctorDashboard(doctorUserId: string) {
       include: {
         doctors_doctors_user_idTousers: {
           include: {
-            speciality: true,
-            organization: true
+            specialities: true,
+            organizations: true
           }
         }
       }

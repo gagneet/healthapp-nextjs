@@ -44,25 +44,24 @@ export async function GET(request: NextRequest) {
     }
 
     // Get critical alerts from multiple sources
-    const [emergencyAlerts, medicationAlerts, vitalAlerts] = await Promise.all([
+    const [emergencyAlerts, medicationAlerts, recentNotifications] = await Promise.all([
       // Emergency alerts
-      prisma.EmergencyAlert.findMany({
+      prisma.emergencyAlert.findMany({
         where: {
-          patient: {
-            primary_care_doctor_id: doctor.id,
-            is_active: true
+          patients: {
+            primary_care_doctor_id: doctor.id
           },
           acknowledged: false,
-          resolved: false,
-          priority_level: { in: [EmergencyPriority.EMERGENCY, EmergencyPriority.HIGH] }
+          resolved: false
         },
         include: {
-          patient: {
+          patients: {
             include: {
-              user: {
+              users_patients_user_idTousers: {
                 select: {
                   first_name: true,
                   last_name: true,
+                  name: true,
                   email: true
                 }
               }
@@ -72,26 +71,25 @@ export async function GET(request: NextRequest) {
         orderBy: {
           created_at: 'desc'
         },
-        take: Math.ceil(limit / 3)
+        take: Math.ceil(limit / 2)
       }),
 
       // Medication safety alerts
-      prisma.MedicationSafetyAlert.findMany({
+      prisma.medicationSafetyAlert.findMany({
         where: {
-          patient: {
-            primary_care_doctor_id: doctor.id,
-            is_active: true
+          patients: {
+            primary_care_doctor_id: doctor.id
           },
-          resolved: false,
-          alert_type: { in: [MedicationAlertType.DRUG_INTERACTION, MedicationAlertType.ALLERGY_CONFLICT, MedicationAlertType.DOSE_LIMIT_EXCEEDED] }
+          resolved: false
         },
         include: {
-          patient: {
+          patients: {
             include: {
-              user: {
+              users_patients_user_idTousers: {
                 select: {
                   first_name: true,
                   last_name: true,
+                  name: true,
                   email: true
                 }
               }
@@ -104,31 +102,24 @@ export async function GET(request: NextRequest) {
         take: Math.ceil(limit / 3)
       }),
 
-      // Critical vital readings
-      prisma.VitalReading.findMany({
+      // Critical notifications as alerts
+      prisma.notification.findMany({
         where: {
-          patient: {
-            primary_care_doctor_id: doctor.id,
-            is_active: true
-          },
-          alert_level: { in: ['critical', 'emergency'] }
+          doctor_id: doctor.id,
+          is_urgent: true,
+          is_read: false
         },
         include: {
-          patient: {
+          patients: {
             include: {
-              user: {
+              users_patients_user_idTousers: {
                 select: {
                   first_name: true,
                   last_name: true,
+                  name: true,
                   email: true
                 }
               }
-            }
-          },
-          vital_type: {
-            select: {
-              name: true,
-              unit: true
             }
           }
         },
@@ -141,39 +132,51 @@ export async function GET(request: NextRequest) {
 
     // Format and combine all alerts
     const allAlerts = [
-      ...emergencyAlerts.map(alert => ({
-        id: alert.id,
-        type: 'emergency',
-        severity: alert.priority_level,
-        title: alert.alert_title,
-        description: alert.alert_message,
-        patientName: `${alert.patient?.User?.first_name || ''} ${alert.patient?.User?.last_name || ''}`.trim(),
-        patientId: alert.patient?.patient_id,
-        timestamp: alert.created_at,
-        status: alert.acknowledged ? 'ACKNOWLEDGED' : 'ACTIVE'
-      })),
-      ...medicationAlerts.map(alert => ({
-        id: alert.id,
-        type: 'medication',
-        severity: alert.severity || 'HIGH',
-        title: alert.alert_title,
-        description: alert.alert_message,
-        patientName: `${alert.patient?.User?.first_name || ''} ${alert.patient?.User?.last_name || ''}`.trim(),
-        patientId: alert.patient?.patient_id,
-        timestamp: alert.created_at,
-        status: alert.resolved ? 'RESOLVED' : 'ACTIVE'
-      })),
-      ...vitalAlerts.map(alert => ({
-        id: alert.id,
-        type: 'vital',
-        severity: alert.alert_level?.toUpperCase() || 'HIGH',
-        title: `${alert.vital_type?.name || 'Vital'} Alert`,
-        description: `${alert.vital_type?.name || 'Vital'}: ${alert.value} ${alert.vital_type?.unit || ''}`,
-        patientName: `${alert.patient?.User?.first_name || ''} ${alert.patient?.User?.last_name || ''}`.trim(),
-        patientId: alert.patient?.patient_id,
-        timestamp: alert.created_at,
-        status: 'ACTIVE'
-      }))
+      ...emergencyAlerts.map(alert => {
+        const patientName = alert.patients?.users_patients_user_idTousers.name || 
+                           `${alert.patients?.users_patients_user_idTousers.first_name || ''} ${alert.patients?.users_patients_user_idTousers.last_name || ''}`.trim();
+        return {
+          id: alert.id,
+          type: 'emergency',
+          severity: alert.priority_level,
+          title: alert.alert_title,
+          description: alert.alert_message,
+          patientName,
+          patientId: alert.patients?.patient_id,
+          timestamp: alert.created_at,
+          status: alert.acknowledged ? 'ACKNOWLEDGED' : 'ACTIVE'
+        };
+      }),
+      ...medicationAlerts.map(alert => {
+        const patientName = alert.patients?.users_patients_user_idTousers.name || 
+                           `${alert.patients?.users_patients_user_idTousers.first_name || ''} ${alert.patients?.users_patients_user_idTousers.last_name || ''}`.trim();
+        return {
+          id: alert.id,
+          type: 'medication',
+          severity: alert.severity || 'HIGH',
+          title: alert.alert_title,
+          description: alert.alert_message,
+          patientName,
+          patientId: alert.patients?.patient_id,
+          timestamp: alert.created_at,
+          status: alert.resolved ? 'RESOLVED' : 'ACTIVE'
+        };
+      }),
+      ...recentNotifications.map(notification => {
+        const patientName = notification.patients?.users_patients_user_idTousers.name || 
+                           `${notification.patients?.users_patients_user_idTousers.first_name || ''} ${notification.patients?.users_patients_user_idTousers.last_name || ''}`.trim();
+        return {
+          id: notification.id,
+          type: 'notification',
+          severity: notification.is_urgent ? 'HIGH' : 'MEDIUM',
+          title: notification.title,
+          description: notification.message,
+          patientName,
+          patientId: notification.patients?.patient_id,
+          timestamp: notification.created_at,
+          status: notification.is_read ? 'READ' : 'ACTIVE'
+        };
+      })
     ];
 
     // Sort by timestamp and limit results

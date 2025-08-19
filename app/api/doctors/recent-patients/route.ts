@@ -43,34 +43,25 @@ export async function GET(request: NextRequest) {
     }
 
     // Get recent patients based on last visit or medication activity
-    const recentPatients = await prisma.Patient.findMany({
+    const recentPatients = await prisma.patient.findMany({
       where: {
-        primary_care_doctor_id: doctor.id,
-        is_active: true
+        primary_care_doctor_id: doctor.id
       },
       include: {
-        user: {
+        users_patients_user_idTousers: {
           select: {
             first_name: true,
             last_name: true,
+            name: true,
             email: true
           }
         },
-        vital_readings: {
-          select: {
-            created_at: true
-          },
-          orderBy: {
-            created_at: 'desc'
-          },
-          take: 1
-        },
         appointments: {
           select: {
-            start_date: true
+            start_time: true
           },
           orderBy: {
-            start_date: 'desc'
+            start_time: 'desc'
           },
           take: 1
         }
@@ -86,15 +77,22 @@ export async function GET(request: NextRequest) {
       take: limit
     });
 
-    const formattedPatients = recentPatients.map(patient => ({
-      id: patient.id,
-      patientId: patient.patient_id,
-      name: `${patient.user?.first_name || ''} ${patient.user?.last_name || ''}`.trim(),
-      email: patient.user?.email,
-      lastActivity: patient.last_visit_date || patient.vital_readings?.[0]?.created_at || patient.updated_at,
-      lastAppointment: patient.appointments?.[0]?.start_date,
-      riskLevel: patient.risk_level || 'low'
-    }));
+    const formattedPatients = recentPatients.map(patient => {
+      const userName = patient.users_patients_user_idTousers.name || 
+                      `${patient.users_patients_user_idTousers.first_name || ''} ${patient.users_patients_user_idTousers.last_name || ''}`.trim();
+      
+      return {
+        id: patient.id,
+        patientId: patient.patient_id,
+        name: userName,
+        email: patient.users_patients_user_idTousers?.email,
+        lastActivity: patient.last_visit_date || patient.updated_at,
+        lastAppointment: patient.appointments?.[0]?.start_time,
+        dateOfBirth: patient.date_of_birth,
+        gender: patient.gender,
+        riskLevel: patient.risk_level || 'low'
+      };
+    });
 
     return NextResponse.json({
       status: true,
