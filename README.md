@@ -189,7 +189,7 @@ export POSTGRES_PASSWORD=secure_prod_password
 export REDIS_PASSWORD=secure_redis_password
 
 # Deploy to production with full stack
-./scripts/deploy.sh prod deploy --domain demo.adhere.live --migrate --seed --auto-yes
+./scripts/deploy.sh prod deploy --domain healthapp.gagneet.com --migrate --seed --auto-yes
 ```
 
 #### **Option 5: Manual Setup**

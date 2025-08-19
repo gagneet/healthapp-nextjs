@@ -92,10 +92,10 @@ export REDIS_PASSWORD=secure_redis_password
 export PGADMIN_PASSWORD=secure_admin_password
 
 # Deploy to production using universal script
-./scripts/deploy.sh prod deploy --domain demo.adhere.live --migrate
+./scripts/deploy.sh prod deploy --domain healthapp.gagneet.com --migrate
 
 # Alternative: Use dedicated script
-./scripts/deploy-production.sh deploy --domain demo.adhere.live --migrate
+./scripts/deploy-production.sh deploy --domain healthapp.gagneet.com --migrate
 
 # Zero-downtime update
 ./scripts/deploy.sh prod update
@@ -152,7 +152,7 @@ PGADMIN_PASSWORD=your_pgadmin_password
 
 **Optional:**
 ```bash
-DOMAIN=demo.adhere.live  # Production domain
+DOMAIN=healthapp.gagneet.com  # Production domain
 HOST_IP=192.168.1.100    # Host IP for multi-server deployments
 ```
 

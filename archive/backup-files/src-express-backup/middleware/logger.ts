@@ -114,7 +114,7 @@ function generateSpanId() {
 // Enhanced Configuration with validation
 const CONFIG = {
   environment: process.env.APP_ENV || process.env.NODE_ENV || "production",
-  applicationName: process.env.APP_NAME || "AdhereLive",
+  applicationName: process.env.APP_NAME || "Healthcare Platform",
   logDir: process.env.LOG_DIR || "logs",
   maxLogSize: process.env.MAX_LOG_SIZE || "20m",
   maxLogFiles: process.env.MAX_LOG_FILES || "14d",

@@ -275,14 +275,14 @@ Next.js 14 Full-Stack Healthcare Platform
 
 ```bash
 # Test Environment (Recommended for first deployment)
-./scripts/deploy.sh test deploy --domain demo.adhere.live --migrate --seed --auto-yes
+./scripts/deploy.sh test deploy --domain healthapp.gagneet.com --migrate --seed --auto-yes
 
 # Development Environment  
 ./scripts/deploy.sh dev deploy --migrate --seed
 
 # Production Environment
 NEXTAUTH_SECRET=healthcare-secret POSTGRES_PASSWORD=secure_password \
-./scripts/deploy.sh prod deploy --domain demo.adhere.live --migrate --seed --auto-yes
+./scripts/deploy.sh prod deploy --domain healthapp.gagneet.com --migrate --seed --auto-yes
 ```
 
 ### 📈 **Performance Metrics** (Post-Fixes)

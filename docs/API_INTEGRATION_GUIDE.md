@@ -1,22 +1,22 @@
-# API Integration Guide: Connecting to Adherelive Backend
+# API Integration Guide: Connecting to Healthcare Backend
 
 ## Overview
 
-This document explains how to connect the healthapp-nextjs frontend to the adherelive-be backend. All mock data has been removed and replaced with proper API endpoints that can be easily connected to your existing adherelive ecosystem.
+This document explains how to connect the healthapp-nextjs frontend to the healthcare-be backend. All mock data has been removed and replaced with proper API endpoints that can be easily connected to your existing healthcare ecosystem.
 
 ## Environment Setup
 
 Add the following environment variables to your `.env.local` file:
 
 ```bash
-# Adherelive Backend Connection
-ADHERELIVE_BE_URL=http://localhost:3001  # Your adherelive-be URL
-JWT_SECRET=your-jwt-secret-key           # Same as adherelive-be
+# Healthcare Backend Connection
+HEALTHCARE_BE_URL=http://localhost:3001  # Your healthcare-be URL
+JWT_SECRET=your-jwt-secret-key           # Same as healthcare-be
 
 # Optional: Direct database connection if needed
 DB_HOST=localhost
 DB_PORT=5432
-DB_NAME=adherelive_db
+DB_NAME=healthcare_db
 DB_USER=your_db_user
 DB_PASSWORD=your_db_password
 ```
@@ -29,14 +29,14 @@ DB_PASSWORD=your_db_password
 
 - **Method**: GET
 - **Purpose**: Get paginated list of patients for doctors
-- **Maps to**: `${ADHERELIVE_BE_URL}/api/patients/pagination`
+- **Maps to**: `${HEALTHCARE_BE_URL}/api/patients/pagination`
 - **Query params**: `page`, `limit`, `search`
 
 #### `/api/patients/[id]`
 
 - **Method**: GET  
 - **Purpose**: Get detailed patient information
-- **Maps to**: `${ADHERELIVE_BE_URL}/api/patients/{id}`
+- **Maps to**: `${HEALTHCARE_BE_URL}/api/patients/{id}`
 
 ### 2. Patient Dashboard
 
@@ -44,7 +44,7 @@ DB_PASSWORD=your_db_password
 
 - **Method**: GET
 - **Purpose**: Get patient dashboard data (adherence, events, metrics)
-- **Maps to**: `${ADHERELIVE_BE_URL}/api/patients/{id}/dashboard`
+- **Maps to**: `${HEALTHCARE_BE_URL}/api/patients/{id}/dashboard`
 
 ### 3. Care Team Management with OTP
 
@@ -52,7 +52,7 @@ DB_PASSWORD=your_db_password
 
 - **Method**: POST
 - **Purpose**: Request consent to add doctor/HSP to care team
-- **Maps to**: `${ADHERELIVE_BE_URL}/api/patients/{id}/consents/request`
+- **Maps to**: `${HEALTHCARE_BE_URL}/api/patients/{id}/consents/request`
 - **Features**:
   - Sends OTP to patient phone
   - Email notification to doctor
@@ -62,7 +62,7 @@ DB_PASSWORD=your_db_password
 
 - **Method**: POST
 - **Purpose**: Verify OTP and grant care team access
-- **Maps to**: `${ADHERELIVE_BE_URL}/api/patients/consents/verify`
+- **Maps to**: `${HEALTHCARE_BE_URL}/api/patients/consents/verify`
 
 ### 4. Health Data Management
 
@@ -70,13 +70,13 @@ DB_PASSWORD=your_db_password
 
 - **Method**: POST, GET
 - **Purpose**: Create and retrieve patient symptoms
-- **Maps to**: `${ADHERELIVE_BE_URL}/api/symptoms/`
+- **Maps to**: `${HEALTHCARE_BE_URL}/api/symptoms/`
 
 #### `/api/medications`  
 
 - **Method**: POST, GET
 - **Purpose**: Manage patient medications
-- **Maps to**: `${ADHERELIVE_BE_URL}/api/medications/`
+- **Maps to**: `${HEALTHCARE_BE_URL}/api/medications/`
 
 ## Updated Components
 
@@ -124,11 +124,11 @@ DB_PASSWORD=your_db_password
 
 ### Step 1: Update API Route Handlers
 
-Each API route handler in `/app/api/` contains TODO comments showing exactly how to connect to adherelive-be:
+Each API route handler in `/app/api/` contains TODO comments showing exactly how to connect to healthcare-be:
 
 ```typescript
-// TODO: Replace with actual API call to adherelive-be
-// const response = await fetch(`${process.env.ADHERELIVE_BE_URL}/api/patients/${patientId}`, {
+// TODO: Replace with actual API call to healthcare-be
+// const response = await fetch(`${process.env.HEALTHCARE_BE_URL}/api/patients/${patientId}`, {
 //   headers: {
 //     'Authorization': request.headers.get('authorization')!,
 //     'Content-Type': 'application/json'
@@ -136,7 +136,7 @@ Each API route handler in `/app/api/` contains TODO comments showing exactly how
 // })
 // 
 // if (!response.ok) {
-//   throw new Error('Failed to fetch patient from adherelive-be')
+//   throw new Error('Failed to fetch patient from healthcare-be')
 // }
 // 
 // const data = await response.json()
@@ -147,10 +147,10 @@ Simply uncomment these sections and remove the placeholder responses.
 
 ### Step 2: Database Integration
 
-The API routes are structured to match the adherelive-be response format:
+The API routes are structured to match the healthcare-be response format:
 
 ```typescript
-// Response format matches adherelive-be
+// Response format matches healthcare-be
 {
   status: boolean,
   statusCode: number,
@@ -168,14 +168,14 @@ All endpoints verify JWT tokens:
 ```typescript
 function verifyToken(request: NextRequest): { userId: string } | null {
   // JWT verification logic already implemented
-  // Uses same secret as adherelive-be
+  // Uses same secret as healthcare-be
 }
 ```
 
 ### Step 4: Testing
 
-1. Start adherelive-be backend
-2. Update `ADHERELIVE_BE_URL` in environment variables
+1. Start healthcare-be backend
+2. Update `HEALTHCARE_BE_URL` in environment variables
 3. Uncomment the actual API calls in route handlers
 4. Test each endpoint individually
 
@@ -212,7 +212,7 @@ function verifyToken(request: NextRequest): { userId: string } | null {
 
 ## Next Steps
 
-1. **Connect to Adherelive-BE**: Uncomment the API calls in route handlers
+1. **Connect to Healthcare-BE**: Uncomment the API calls in route handlers
 2. **Test Integration**: Verify all endpoints work with real data
 3. **Add Missing Endpoints**: Create additional routes as needed
 4. **SMS/Email Service**: Integrate actual SMS/Email providers for OTP
@@ -248,7 +248,7 @@ components/
 
 ## Data Models
 
-All TypeScript interfaces match the adherelive-be database schema:
+All TypeScript interfaces match the healthcare-be database schema:
 
 - `Patient`: Maps to patients table
 - `Medication`: Maps to medications table  
@@ -256,4 +256,4 @@ All TypeScript interfaces match the adherelive-be database schema:
 - `Consent`: Maps to consents table
 - `OTPVerification`: Maps to otp_verifications table
 
-The integration is now complete and ready for connection to your adherelive backend system!
+The integration is now complete and ready for connection to your healthcare backend system!

@@ -1,6 +1,6 @@
-# AdhereLive Medical Health Application - System Analysis & Best Practices
+# Healthcare Management Platform Medical Health Application - System Analysis & Best Practices
 
-> I have a health application, which is using React v16 with ANTD and MUI components as the frontend UI/UX and Node/Express, with MySQL/MongoDB as the backend. The frontend code is in 'adherelive-fe', while the backend code is in 'adherelive-be'. The current MySQL schema they are is in the SQL file: 'adherelive-be/database_schema.sql'.
+> I have a health application, which is using React v16 with ANTD and MUI components as the frontend UI/UX and Node/Express, with MySQL/MongoDB as the backend. The frontend code is in 'healthcare-fe', while the backend code is in 'healthcare-be'. The current MySQL schema they are is in the SQL file: 'healthcare-be/database_schema.sql'.
 
 Could you go through this code and generate a full code account of how the system works as a markdown file - system_works_analysed.md? Mainly, I want to look for:
 
@@ -158,7 +158,7 @@ The document provides everything a new development team would need to understand
 
 ## Executive Summary
 
-AdhereLive is a comprehensive medical health adherence platform designed to monitor patient compliance across multiple dimensions: medications, appointments, diet, exercise, and vital signs monitoring. The system implements a hybrid architecture combining React v16 frontend with Node.js/Express backend, MySQL for structured data, MongoDB for flexible clinical data, and extensive third-party integrations.
+Healthcare Management Platform is a comprehensive medical health adherence platform designed to monitor patient compliance across multiple dimensions: medications, appointments, diet, exercise, and vital signs monitoring. The system implements a hybrid architecture combining React v16 frontend with Node.js/Express backend, MySQL for structured data, MongoDB for flexible clinical data, and extensive third-party integrations.
 
 ### Current Capabilities
 
@@ -348,7 +348,7 @@ ADMIN (System Administrator)
 
 1. Doctor initiates consent request for patient
 2. System generates 4-digit OTP
-3. OTP sent via SMS: "Hello from AdhereLive! Your OTP for consent request is {otp}"
+3. OTP sent via SMS: "Hello from Healthcare Platform! Your OTP for consent request is {otp}"
 4. Patient verifies OTP within 10-minute window
 5. Consent record created linking doctor-patient with legal timestamp
 
@@ -801,10 +801,10 @@ CREATE TABLE patient_achievements (
 1. **Repository Structure**
 
    ```text
-   adherelive-app/
-   ├── adherelive-be/          # Node.js Backend
-   ├── adherelive-fe/          # React Frontend  
-   ├── adherelive-mobile/      # React Native Mobile (if needed)
+   healthcare-app/
+   ├── healthcare-be/          # Node.js Backend
+   ├── healthcare-fe/          # React Frontend  
+   ├── healthcare-mobile/      # React Native Mobile (if needed)
    ├── docs/                   # Technical documentation
    ├── scripts/                # Deployment scripts
    └── docker-compose.yml      # Local development environment
@@ -839,11 +839,11 @@ CREATE TABLE patient_achievements (
 
    ```bash
    # MySQL Database
-   mysql -u root -p < adherelive-be/database_schema.sql
+   mysql -u root -p < healthcare-be/database_schema.sql
    
    # MongoDB Setup
    # Import CDSS collections from backup
-   mongorestore --host localhost:27017 --db adherelive_mongo
+   mongorestore --host localhost:27017 --db healthcare_mongo
    ```
 
 ### Phase 2: Core System Implementation (Weeks 5-12)
@@ -1040,7 +1040,7 @@ class IntegrationService {
 version: '3.8'
 services:
   backend:
-    build: ./adherelive-be
+    build: ./healthcare-be
     environment:
       - NODE_ENV=production
       - DB_HOST=${DB_HOST}
@@ -1051,7 +1051,7 @@ services:
       - redis
       
   frontend:
-    build: ./adherelive-fe
+    build: ./healthcare-fe
     ports:
       - "443:443"
       - "80:80"
@@ -1063,7 +1063,7 @@ services:
 
 ## Conclusion
 
-The AdhereLive system provides a solid foundation for medical adherence tracking but requires significant enhancements to meet best-practice standards for a comprehensive medical health application. The critical gaps identified—particularly in vital signs monitoring, medication safety, and clinical decision support—should be prioritized for implementation.
+The Healthcare Management Platform system provides a solid foundation for medical adherence tracking but requires significant enhancements to meet best-practice standards for a comprehensive medical health application. The critical gaps identified—particularly in vital signs monitoring, medication safety, and clinical decision support—should be prioritized for implementation.
 
 The provided implementation guidelines offer a structured approach for a new development team to both understand the existing system and implement the necessary enhancements for a world-class medical adherence platform.
 

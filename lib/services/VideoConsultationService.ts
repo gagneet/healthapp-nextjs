@@ -19,7 +19,7 @@ export interface JoinConsultationData {
 }
 
 export class VideoConsultationService {
-  private readonly WEBRTC_SERVER_URL = process.env.WEBRTC_SERVER_URL || 'https://meet.adhere.live';
+  private readonly WEBRTC_SERVER_URL = process.env.WEBRTC_SERVER_URL || 'https://meet.healthapp.gagneet.com';
   private readonly CONSULTATION_SECRET = process.env.CONSULTATION_SECRET || 'secure-consultation-key';
 
   /**

@@ -1,4 +1,4 @@
-# Dockerfile.production - Production Next.js deployment for demo.adhere.live
+# Dockerfile.production - Production Next.js deployment for healthapp.gagneet.com
 FROM node:22-alpine AS base
 
 # Install system dependencies required for Prisma and healthcare apps

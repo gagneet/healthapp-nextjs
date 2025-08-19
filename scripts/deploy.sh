@@ -103,7 +103,7 @@ OPTIONS:
 
 EXAMPLES:
   # Deploy test environment with custom domain and scaling
-  ./scripts/deploy.sh test deploy --domain demo.adhere.live --replicas 2 --migrate --seed
+  ./scripts/deploy.sh test deploy --domain healthapp.gagneet.com --replicas 2 --migrate --seed
 
   # Deploy production with cleanup
   ./scripts/deploy.sh prod deploy --cleanup --migrate --auto-yes

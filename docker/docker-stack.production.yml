@@ -1,4 +1,4 @@
-# docker-stack.production.yml - Production deployment for demo.adhere.live
+# docker-stack.production.yml - Production deployment for healthapp.gagneet.com
 version: '3.8'
 
 services:
@@ -51,7 +51,7 @@ services:
     environment:
       NODE_ENV: production
       PORT: 3002
-      DOMAIN: demo.adhere.live
+      DOMAIN: healthapp.gagneet.com
       POSTGRES_HOST: postgres
       POSTGRES_PORT: 5432
       POSTGRES_DB: healthapp_prod
@@ -60,10 +60,10 @@ services:
       DATABASE_URL: postgresql://healthapp_user:${POSTGRES_PASSWORD}@postgres:5432/healthapp_prod?schema=public
       JWT_SECRET: ${JWT_SECRET}
       NEXTAUTH_SECRET: ${NEXTAUTH_SECRET}
-      NEXTAUTH_URL: https://demo.adhere.live
-      NEXT_PUBLIC_API_URL: https://demo.adhere.live/api
-      FRONTEND_URL: https://demo.adhere.live
-      BACKEND_URL: https://demo.adhere.live
+      NEXTAUTH_URL: https://healthapp.gagneet.com
+      NEXT_PUBLIC_API_URL: https://healthapp.gagneet.com/api
+      FRONTEND_URL: https://healthapp.gagneet.com
+      BACKEND_URL: https://healthapp.gagneet.com
       REDIS_HOST: redis
       REDIS_PORT: 6379
       REDIS_PASSWORD: ${REDIS_PASSWORD}
@@ -97,7 +97,7 @@ services:
   pgadmin:
     image: dpage/pgadmin4:latest
     environment:
-      PGADMIN_DEFAULT_EMAIL: admin@demo.adhere.live
+      PGADMIN_DEFAULT_EMAIL: admin@healthapp.gagneet.com
       PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD}
       PGADMIN_CONFIG_SERVER_MODE: 'True'
     ports:

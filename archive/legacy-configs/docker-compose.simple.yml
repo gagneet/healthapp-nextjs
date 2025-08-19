@@ -29,10 +29,10 @@ services:
       NODE_ENV: production
       PORT: 3000
       DATABASE_URL: "postgresql://${POSTGRES_USER:-healthapp_user}:${POSTGRES_PASSWORD:-secure_prod_password}@postgres:5432/${POSTGRES_DB:-healthapp_prod}?schema=public"
-      NEXTAUTH_URL: https://${DOMAIN:-demo.adhere.live}
+      NEXTAUTH_URL: https://${DOMAIN:-healthapp.gagneet.com}
       NEXTAUTH_SECRET: ${NEXTAUTH_SECRET:-your-nextauth-secret-32-char-key}
       JWT_SECRET: ${JWT_SECRET:-your-256-bit-secret-key-change-this}
-      NEXT_PUBLIC_API_URL: https://${DOMAIN:-demo.adhere.live}/api
+      NEXT_PUBLIC_API_URL: https://${DOMAIN:-healthapp.gagneet.com}/api
       DEBUG: "false"
       LOG_LEVEL: info
     ports:

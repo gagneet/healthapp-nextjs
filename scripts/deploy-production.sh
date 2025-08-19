@@ -15,7 +15,7 @@ NC='\033[0m' # No Color
 # Default values
 APP_NAME="healthapp"
 STACK_NAME="$APP_NAME-prod"
-DOMAIN="demo.adhere.live"
+DOMAIN="healthapp.gagneet.com"
 BRANCH="master"
 SCALE_APP=2
 SCALE_DB=1
@@ -72,7 +72,7 @@ show_help() {
     echo "  --seed                  Run database seeders (idempotent)"
     echo ""
     echo "Network Configuration:"
-    echo "  --domain DOMAIN         Main application domain (default: demo.adhere.live)"
+    echo "  --domain DOMAIN         Main application domain (default: healthapp.gagneet.com)"
     echo "  --domain-db DOMAIN      Database domain/IP (default: same as --domain)"
     echo "  --domain-redis DOMAIN   Redis domain/IP (default: same as --domain)"
     echo "  --domain-pgadmin DOMAIN PgAdmin domain/IP (default: same as --domain)"

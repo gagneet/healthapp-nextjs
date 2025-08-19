@@ -243,7 +243,7 @@ export REDIS_PASSWORD=secure_redis_password
 export PGADMIN_PASSWORD=secure_admin_password
 
 # Deploy to production
-./scripts/deploy-production.sh deploy --domain demo.adhere.live --scale 4 --migrate
+./scripts/deploy-production.sh deploy --domain healthapp.gagneet.com --scale 4 --migrate
 ```
 
 ## ✅ Post-Deployment Verification
@@ -364,7 +364,7 @@ docker node ls
 # .env.production
 NODE_ENV=production
 PORT=3001
-FRONTEND_URL=https://demo.adhere.live
+FRONTEND_URL=https://healthapp.gagneet.com
 
 # Database - Use managed PostgreSQL service
 POSTGRES_HOST=your-prod-database.amazonaws.com

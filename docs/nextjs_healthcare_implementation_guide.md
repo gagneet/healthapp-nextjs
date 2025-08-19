@@ -958,7 +958,7 @@ export async function POST(request: Request) {
 ## Priority Implementation Recommendations
 
 ### Immediate Actions (Week 1-2)
-Based on your existing AdhereLive system analysis and modern compliance requirements:
+Based on your existing Healthcare Management Platform system analysis and modern compliance requirements:
 
 #### **1. Security Infrastructure Setup**
 ```bash
@@ -1351,7 +1351,7 @@ npm install prisma @prisma/client
 npx prisma init
 
 # Generate Prisma schema from your existing MySQL schema
-npx prisma db pull --url="mysql://user:password@localhost:3306/adherelive"
+npx prisma db pull --url="mysql://user:password@localhost:3306/healthcare"
 npx prisma generate
 ```
 
@@ -1372,7 +1372,7 @@ npx shadcn-ui@latest add button card dialog dropdown-menu form input label selec
 ### 4. Key Integration Points
 
 #### **Preserve Your Existing Integrations**
-Your AdhereLive system has 17 third-party integrations. Prioritize these in your NextJS migration:
+Your Healthcare Platform system has 17 third-party integrations. Prioritize these in your NextJS migration:
 
 1. **Twilio** (SMS/Voice for critical alerts)
 2. **Algolia** (Medicine search functionality)
@@ -1389,7 +1389,7 @@ export async function analyzeSymptomsModern(symptoms: string[], patientHistory: 
   const mongoClient = new MongoClient(process.env.MONGODB_URL!)
   await mongoClient.connect()
   
-  const cdssCollection = mongoClient.db('adherelive_mongo').collection('cdss')
+  const cdssCollection = mongoClient.db('healthcare_mongo').collection('cdss')
   
   // Your existing symptom matching logic, enhanced
   const symptomQuery = symptoms.map(symptom => ({ [symptom]: true }))
@@ -1453,5 +1453,5 @@ Based on the 2025 HIPAA requirements and your existing system gaps:
 - [ ] Pharmacy system integration
 - [ ] Insurance verification systems
 
-This comprehensive guide provides you with a complete roadmap to modernize your existing AdhereLive system into a cutting-edge NextJS healthcare platform that meets 2025 compliance standards while preserving your valuable existing functionality.
+This comprehensive guide provides you with a complete roadmap to modernize your existing Healthcare Management Platform system into a cutting-edge NextJS healthcare platform that meets 2025 compliance standards while preserving your valuable existing functionality.
 

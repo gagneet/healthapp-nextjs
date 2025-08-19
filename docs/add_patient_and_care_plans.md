@@ -607,7 +607,7 @@ The Patient Details page is now fully functional with real backend data and prov
 - Added JWT authentication to all API endpoints
 - Implemented proper error handling with user-friendly messages
 - Created OTP consent system for care team management as requested
-- Structured APIs to match adherelive-be response format
+- Structured APIs to match healthcare-be response format
 - Added TypeScript interfaces that match database schemas
 
 ### 📋 API Endpoints Created
@@ -622,13 +622,13 @@ The Patient Details page is now fully functional with real backend data and prov
 
 ### 🔌 Ready for Integration
 
-All API routes contain TODO comments showing exactly how to connect to your adherelive-be backend. The integration requires:
+All API routes contain TODO comments showing exactly how to connect to your healthcare-be backend. The integration requires:
 
-1. Setting ADHERELIVE_BE_URL environment variable
+1. Setting HEALTHCARE_BE_URL environment variable
 2. Uncommenting the API proxy calls in route handlers
-3. Testing with your actual adherelive database
+3. Testing with your actual healthcare database
 
-The API_INTEGRATION_GUIDE.md file contains complete instructions for connecting everything to your existing adherelive backend system.
+The API_INTEGRATION_GUIDE.md file contains complete instructions for connecting everything to your existing healthcare backend system.
 
 The application now shows real database data throughout all Doctor and Patient interfaces, with the Care Team OTP consent system fully implemented as requested.
 

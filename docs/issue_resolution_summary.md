@@ -291,7 +291,7 @@ I want to set proper expectations rather than over-promise on functionality.
 
 1. CRITICAL: Domain Configuration Issue
 
-- Console logs show https://demo.adhere.live but deployment is at 192.168.0.148:3002
+- Console logs show https://healthapp.gagneet.com but deployment is at 192.168.0.148:3002
 - This means the application is still using old domain configuration
 
 2. CRITICAL: Database Connection Failure
@@ -321,7 +321,7 @@ But let me first identify the root causes:
 
 Root Cause 1: Domain Configuration Mismatch
 
-The logs show demo.adhere.live but we deployed to 192.168.0.148. This suggests:
+The logs show healthapp.gagneet.com but we deployed to 192.168.0.148. This suggests:
 - Either the frontend was built with wrong environment variables
 - Or there's a configuration override somewhere
 
@@ -363,6 +363,6 @@ Current Status - ALL SYSTEMS OPERATIONAL ✅
 ✅ Database: Test users doctor@healthapp.com & doctor1@healthapp.com ready
 ✅ All Docker Services: 2/2 app replicas, 1/1 postgres, 1/1 redis, 1/1 pgadmin
 ✅ Domain Override: --domain parameter working correctly
-✅ Deployment Command: ./scripts/deploy.sh test deploy --domain demo.adhere.live --migrate --seed --auto-yes
+✅ Deployment Command: ./scripts/deploy.sh test deploy --domain healthapp.gagneet.com --migrate --seed --auto-yes
 
 The healthcare management platform is now fully deployed and ready for authentication testing with the seeded doctor accounts. Your insight about the inconsistency between individual commands and script execution was the key to resolving the entire deployment pipeline.

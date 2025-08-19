@@ -132,7 +132,7 @@ services:
   nginx:
     image: nginx:alpine
     environment:
-      DOMAIN: ${DOMAIN:-demo.adhere.live}
+      DOMAIN: ${DOMAIN:-healthapp.gagneet.com}
     volumes:
       - ../nginx/nextjs-nginx.conf:/etc/nginx/nginx.conf:ro
       - nginx_cache:/var/cache/nginx

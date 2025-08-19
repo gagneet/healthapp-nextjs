@@ -143,7 +143,7 @@ export REDIS_PASSWORD=secure_redis_password
 export PGADMIN_PASSWORD=secure_admin_password
 
 # Deploy to production with universal script
-./scripts/deploy.sh prod deploy --domain demo.adhere.live --scale 4 --migrate
+./scripts/deploy.sh prod deploy --domain healthapp.gagneet.com --scale 4 --migrate
 ```
 
 ## 🎯 Environment-Specific Deployment
@@ -229,13 +229,13 @@ export POSTGRES_PASSWORD=secure_prod_password
 
 # Production deployment with universal script
 ./scripts/deploy.sh prod deploy \
-  --domain demo.adhere.live \
+  --domain healthapp.gagneet.com \
   --scale 4 \
   --migrate
 
 # Alternative: Production deployment with dedicated script
 ./scripts/deploy-production.sh deploy \
-  --domain demo.adhere.live \
+  --domain healthapp.gagneet.com \
   --scale 4 \
   --scale-db 2 \
   --branch master \
@@ -341,7 +341,7 @@ All deployment scripts include automatic health verification:
 ./scripts/deploy-production.sh status
 
 # Example output:
-✅ Application: Healthy (https://demo.adhere.live:3002)
+✅ Application: Healthy (https://healthapp.gagneet.com:3002)
 ✅ PostgreSQL: Ready
 ✅ Redis: Ready
 ```
