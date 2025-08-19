@@ -7,7 +7,7 @@ services:
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-healthapp_test}
       POSTGRES_USER: ${POSTGRES_USER:-healthapp_user}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-secure_test_password}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-pg_password}
     volumes:
       - postgres_test_data:/var/lib/postgresql/data
     networks:
@@ -90,8 +90,8 @@ services:
       POSTGRES_PORT: 5432
       POSTGRES_DB: ${POSTGRES_DB:-healthapp_test}
       POSTGRES_USER: ${POSTGRES_USER:-healthapp_user}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-secure_test_password}
-      DATABASE_URL: ${DATABASE_URL}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-pg_password}
+      DATABASE_URL: "postgresql://healthapp_user:pg_password@postgres:5432/healthapp_test?schema=public"
       
       # NextAuth Configuration
       NEXTAUTH_SECRET: ${NEXTAUTH_SECRET}
@@ -107,6 +107,8 @@ services:
       REDIS_PORT: 6379
       REDIS_PASSWORD: ${REDIS_PASSWORD:-secure_test_redis}
       REDIS_URL: redis://:${REDIS_PASSWORD:-secure_test_redis}@redis:6379
+    ports:
+      - "3002:3002"
     networks:
       - healthapp-network
     depends_on:
@@ -128,35 +130,6 @@ services:
         reservations:
           memory: 512M
 
-  # Nginx Reverse Proxy (Exposes app on standard ports 80/443)
-  nginx:
-    image: nginx:alpine
-    environment:
-      DOMAIN: ${DOMAIN:-healthapp.gagneet.com}
-    volumes:
-      - ../nginx/nextjs-nginx.conf:/etc/nginx/nginx.conf:ro
-      - nginx_cache:/var/cache/nginx
-    ports:
-      - "80:80"
-      - "443:443"
-    networks:
-      - healthapp-network
-    depends_on:
-      - app
-    deploy:
-      replicas: 1
-      placement:
-        constraints:
-          - node.role == manager
-      restart_policy:
-        condition: on-failure
-        delay: 5s
-        max_attempts: 3
-      resources:
-        limits:
-          memory: 256M
-        reservations:
-          memory: 128M
 
 networks:
   healthapp-network:
@@ -167,4 +140,3 @@ volumes:
   postgres_test_data:
   redis_test_data:
   pgadmin_test_data:
-  nginx_cache:
