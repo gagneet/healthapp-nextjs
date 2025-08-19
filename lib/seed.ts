@@ -57,7 +57,7 @@ export async function seedComprehensiveHealthcareData() {
       ...userData,
       // Auth.js v5 required fields
       name: `${userData.first_name} ${userData.last_name}`.trim(),
-      email_verified_at: userData.email_verified ? userData.created_at : null,
+      emailVerified: userData.email_verified ? userData.created_at : null,
       image: null,
     });
 

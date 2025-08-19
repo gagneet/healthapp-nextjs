@@ -40,7 +40,10 @@
     "migrate": "npx prisma migrate deploy",
     "migrate:dev": "npx prisma migrate dev",
     "migrate:reset": "npx prisma migrate reset --force",
-    "seed": "node --loader ts-node/esm lib/seed.ts",
+    "seed": "node lib/seed.mjs",
+    "seed:all": "node --import tsx/esm lib/seed.ts",
+    "seed:compiled": "tsc lib/seed.ts --outDir dist & node dist/seed.js",
+    "seed:dev": "tsx watch lib/seed.ts",
     "seed:prod": "npx prisma db seed",
     "db:generate": "npx prisma generate",
     "db:pull": "npx prisma db pull",
@@ -48,10 +51,10 @@
     "db:studio": "npx prisma studio",
     "lint:backend": "eslint src/",
     "lint:fix": "eslint src/ --fix",
-    "db:test": "node --loader ts-node/esm scripts/test-database-setup.ts",
-    "db:compare": "node --loader ts-node/esm scripts/compare-with-target-schema.ts",
+    "db:test": "node --import tsx/esm scripts/test-database-setup.ts",
+    "db:compare": "node --import tsx/esm scripts/compare-with-target-schema.ts",
     "db:setup": "npm run db:generate && npm run migrate && npm run seed",
-    "test:node": "node --loader ts-node/esm scripts/test-node-compatibility.ts"
+    "test:node": "node --import tsx/esm scripts/test-node-compatibility.ts"
   },
   "devDependencies": {
     "@babel/preset-env": "^7.24.0",
@@ -78,6 +81,7 @@
     "supertest": "^6.3.4",
     "ts-jest": "^29.4.1",
     "ts-node": "^10.9.2",
+    "tsx": "^4.20.4",
     "typescript": "^5.4.0"
   },
   "dependencies": {
