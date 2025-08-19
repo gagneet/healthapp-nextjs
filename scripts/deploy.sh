@@ -142,6 +142,12 @@ log_deploy() {
     echo -e "${CYAN}[DEPLOY]${NC} $1"
 }
 
+log_debug() {
+    if [ "${DEBUG:-false}" = "true" ]; then
+        echo -e "${PURPLE}[DEBUG]${NC} $1"
+    fi
+}
+
 confirm() {
     if [ "$AUTO_YES" = true ]; then
         return 0
@@ -243,6 +249,10 @@ parse_args() {
                 ;;
             --auto-yes)
                 AUTO_YES=true
+                shift
+                ;;
+            --debug)
+                export DEBUG=true
                 shift
                 ;;
             --help)
@@ -401,6 +411,19 @@ cleanup_environment() {
             # Wait for cleanup
             log_info "Waiting for cleanup to complete..."
             sleep 15
+            
+            # Wait for services to be fully removed
+            local max_wait=60
+            local wait_time=0
+            while docker stack ps "$STACK_NAME" 2>/dev/null | grep -q "Running\|Ready"; do
+                if [ $wait_time -ge $max_wait ]; then
+                    log_warning "Cleanup taking longer than expected, continuing..."
+                    break
+                fi
+                sleep 5
+                wait_time=$((wait_time + 5))
+                log_info "Waiting for services to stop... ($wait_time/${max_wait}s)"
+            done
         fi
 
         # Clean up networks and volumes if needed
@@ -438,71 +461,200 @@ deploy_stack() {
     
     log_success "Stack deployed: $STACK_NAME"
     
-    # Wait for PostgreSQL to be ready first
-    log_info "Waiting for PostgreSQL to be ready..."
-    wait_for_postgres
+    # Wait for services in the correct order
+    log_info "Waiting for services to start in dependency order..."
     
-    # Then wait for app containers to be running
-    log_info "Waiting for app services to start..."
-    wait_for_app_containers
+    # 1. Wait for PostgreSQL first
+    wait_for_service_health "postgres" 60
+    
+    # 2. Wait for Redis  
+    wait_for_service_health "redis" 30
+    
+    # 3. Wait for app containers
+    wait_for_service_health "app" 120
+    
+    # 4. PgAdmin can start anytime after postgres
+    wait_for_service_health "pgadmin" 30
     
     # Show deployment status
     show_status
 }
 
 # ============================================================================
-# Wait Functions for Service Readiness
+# Enhanced Service Health Checking
 # ============================================================================
 
-wait_for_postgres() {
-    local max_attempts=30
-    local attempt=1
+wait_for_service_health() {
+    local service_name="$1"
+    local max_wait_seconds="$2"
+    local service_full_name="${STACK_NAME}_${service_name}"
     
-    while [ $attempt -le $max_attempts ]; do
-        # Check if PostgreSQL container is running and healthy
-        local postgres_container=$(docker ps --filter "name=$STACK_NAME"_postgres --format "{{.ID}}" | head -1)
+    log_info "Waiting for service $service_name to be healthy..."
+    
+    local start_time=$(date +%s)
+    local timeout_time=$((start_time + max_wait_seconds))
+    
+    while [ $(date +%s) -lt $timeout_time ]; do
+        # Check if service exists
+        if ! docker service ls --filter "name=$service_full_name" --format "{{.Name}}" | grep -q "^$service_full_name$"; then
+            log_debug "Service $service_full_name not found, waiting..."
+            sleep 5
+            continue
+        fi
         
-        if [ -n "$postgres_container" ]; then
-            # Test database connectivity using pg_isready
-            if docker exec "$postgres_container" pg_isready -U "$POSTGRES_USER" -d "$POSTGRES_DB" >/dev/null 2>&1; then
-                log_success "PostgreSQL is ready"
-                return 0
+        # Check service convergence (desired vs running replicas)
+        local service_status=$(docker service ls --filter "name=$service_full_name" --format "{{.Replicas}}")
+        log_debug "Service $service_name status: $service_status"
+        
+        if [[ "$service_status" =~ ^([0-9]+)/([0-9]+)$ ]]; then
+            local running="${BASH_REMATCH[1]}"
+            local desired="${BASH_REMATCH[2]}"
+            
+            if [ "$running" -eq "$desired" ] && [ "$running" -gt 0 ]; then
+                # Service has desired replicas, now check health
+                if check_service_health "$service_name" "$service_full_name"; then
+                    log_success "Service $service_name is healthy"
+                    return 0
+                fi
+            else
+                log_debug "Service $service_name: $running/$desired replicas running"
             fi
         fi
         
-        log_info "PostgreSQL not ready, waiting... (attempt $attempt/$max_attempts)"
         sleep 5
-        attempt=$((attempt + 1))
     done
     
-    log_error "PostgreSQL failed to become ready after $max_attempts attempts"
+    log_error "Service $service_name failed to become healthy within ${max_wait_seconds} seconds"
+    
+    # Show debugging information
+    log_error "Service status:"
+    docker service ps "$service_full_name" --no-trunc
+    
+    log_error "Service logs (last 20 lines):"
+    docker service logs --tail 20 "$service_full_name" 2>/dev/null || log_warning "Could not retrieve logs"
+    
     exit 1
 }
 
-wait_for_app_containers() {
-    local max_attempts=20
-    local attempt=1
+check_service_health() {
+    local service_name="$1"
+    local service_full_name="$2"
     
-    while [ $attempt -le $max_attempts ]; do
-        # Check if app containers are running
-        local running_containers=$(docker ps --filter "name=$STACK_NAME"_app --format "{{.ID}}" | wc -l)
-        local expected_replicas=${REPLICAS:-2}
-        
-        if [ "$running_containers" -ge "$expected_replicas" ]; then
-            # Wait a bit more for internal app startup
-            log_info "App containers are running, waiting for internal startup..."
-            sleep 10
-            log_success "App services are ready"
-            return 0
-        fi
-        
-        log_info "App containers starting... ($running_containers/$expected_replicas ready) (attempt $attempt/$max_attempts)"
-        sleep 3
-        attempt=$((attempt + 1))
-    done
+    # Get a running task/container for this service
+    local task_id=$(docker service ps "$service_full_name" --filter "desired-state=running" --format "{{.ID}}" | head -1)
     
-    log_error "App containers failed to start after $max_attempts attempts"
-    exit 1
+    if [ -z "$task_id" ]; then
+        log_debug "No running tasks found for $service_name"
+        return 1
+    fi
+    
+    # Get container ID from task
+    local container_id=$(docker inspect "$task_id" --format '{{.Status.ContainerStatus.ContainerID}}' 2>/dev/null)
+    
+    if [ -z "$container_id" ]; then
+        log_debug "No container found for task $task_id"
+        return 1
+    fi
+    
+    # Check health based on service type
+    case $service_name in
+        postgres)
+            check_postgres_health "$container_id"
+            ;;
+        redis)
+            check_redis_health "$container_id"
+            ;;
+        app)
+            check_app_health "$container_id"
+            ;;
+        pgadmin)
+            check_pgadmin_health "$container_id"
+            ;;
+        *)
+            log_warning "Unknown service type: $service_name"
+            return 1
+            ;;
+    esac
+}
+
+check_postgres_health() {
+    local container_id="$1"
+    
+    # Check if container is running
+    if ! docker ps --filter "id=$container_id" --format "{{.ID}}" | grep -q "$container_id"; then
+        log_debug "PostgreSQL container not running"
+        return 1
+    fi
+    
+    # Check PostgreSQL readiness
+    if docker exec "$container_id" pg_isready -U "${POSTGRES_USER:-healthapp_user}" -d "${POSTGRES_DB:-healthapp_test}" >/dev/null 2>&1; then
+        log_debug "PostgreSQL is ready"
+        return 0
+    else
+        log_debug "PostgreSQL not ready yet"
+        return 1
+    fi
+}
+
+check_redis_health() {
+    local container_id="$1"
+    
+    # Check if container is running
+    if ! docker ps --filter "id=$container_id" --format "{{.ID}}" | grep -q "$container_id"; then
+        log_debug "Redis container not running"
+        return 1
+    fi
+    
+    # Check Redis ping with password
+    local redis_password="${REDIS_PASSWORD:-secure_test_redis}"
+    if docker exec "$container_id" redis-cli --no-auth-warning -a "$redis_password" ping >/dev/null 2>&1; then
+        log_debug "Redis is ready"
+        return 0
+    else
+        log_debug "Redis not ready yet"
+        return 1
+    fi
+}
+
+check_app_health() {
+    local container_id="$1"
+    
+    # Check if container is running
+    if ! docker ps --filter "id=$container_id" --format "{{.ID}}" | grep -q "$container_id"; then
+        log_debug "App container not running"
+        return 1
+    fi
+    
+    # Check if app is responding (try health endpoint or basic curl)
+    if docker exec "$container_id" curl -f -s http://localhost:3002/api/health >/dev/null 2>&1; then
+        log_debug "App health endpoint responding"
+        return 0
+    elif docker exec "$container_id" curl -f -s http://localhost:3002 >/dev/null 2>&1; then
+        log_debug "App main endpoint responding"
+        return 0
+    else
+        log_debug "App not responding yet"
+        return 1
+    fi
+}
+
+check_pgadmin_health() {
+    local container_id="$1"
+    
+    # Check if container is running
+    if ! docker ps --filter "id=$container_id" --format "{{.ID}}" | grep -q "$container_id"; then
+        log_debug "PgAdmin container not running"
+        return 1
+    fi
+    
+    # PgAdmin takes time to start, just check if it's responding
+    if docker exec "$container_id" curl -f -s http://localhost:80/misc/ping >/dev/null 2>&1; then
+        log_debug "PgAdmin is ready"
+        return 0
+    else
+        log_debug "PgAdmin not ready yet"
+        return 1
+    fi
 }
 
 # ============================================================================
@@ -513,18 +665,30 @@ run_migrations() {
     if [ "$MIGRATE" = true ]; then
         log_info "Running database migrations..."
         
-        # Get running app container ID
-        local container_id=$(docker ps --filter "name=$STACK_NAME"_app --format "{{.ID}}" | head -1)
+        # Get running app container ID - use service tasks to find healthy container
+        local service_full_name="${STACK_NAME}_app"
+        local task_id=$(docker service ps "$service_full_name" --filter "desired-state=running" --format "{{.ID}}" | head -1)
         
-        if [ -z "$container_id" ]; then
-            log_error "No running app containers found"
+        if [ -z "$task_id" ]; then
+            log_error "No running app tasks found"
             exit 1
         fi
         
-        # Run migrations in the app container (Next.js full-stack)
-        docker exec "$container_id" npx prisma migrate deploy
+        local container_id=$(docker inspect "$task_id" --format '{{.Status.ContainerStatus.ContainerID}}' 2>/dev/null)
         
-        log_success "Migrations completed"
+        if [ -z "$container_id" ]; then
+            log_error "No app container found"
+            exit 1
+        fi
+        
+        # Run migrations in the app container
+        log_info "Running migrations in container: $container_id"
+        if docker exec "$container_id" npx prisma migrate deploy; then
+            log_success "Migrations completed"
+        else
+            log_error "Migration failed"
+            exit 1
+        fi
     fi
 }
 
@@ -532,18 +696,30 @@ run_seeds() {
     if [ "$SEED" = true ]; then
         log_info "Running database seeds..."
         
-        # Get running app container ID
-        local container_id=$(docker ps --filter "name=$STACK_NAME"_app --format "{{.ID}}" | head -1)
+        # Get running app container ID - use service tasks to find healthy container
+        local service_full_name="${STACK_NAME}_app"
+        local task_id=$(docker service ps "$service_full_name" --filter "desired-state=running" --format "{{.ID}}" | head -1)
         
-        if [ -z "$container_id" ]; then
-            log_error "No running app containers found"
+        if [ -z "$task_id" ]; then
+            log_error "No running app tasks found"
             exit 1
         fi
         
-        # Run seeds in the app container using npm script (avoids npx tsx module resolution issues)
-        docker exec "$container_id" npm run seed
+        local container_id=$(docker inspect "$task_id" --format '{{.Status.ContainerStatus.ContainerID}}' 2>/dev/null)
         
-        log_success "Seeds completed"
+        if [ -z "$container_id" ]; then
+            log_error "No app container found"
+            exit 1
+        fi
+        
+        # Run seeds in the app container
+        log_info "Running seeds in container: $container_id"
+        if docker exec "$container_id" npm run seed; then
+            log_success "Seeds completed"
+        else
+            log_error "Seeding failed"
+            exit 1
+        fi
     fi
 }
 
