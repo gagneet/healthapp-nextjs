@@ -48,7 +48,7 @@ export async function GET(request: NextRequest) {
         primary_care_doctor_id: doctor.id
       },
       include: {
-        users_patients_user_idTousers: {
+        user: {
           select: {
             first_name: true,
             last_name: true,
@@ -78,14 +78,14 @@ export async function GET(request: NextRequest) {
     });
 
     const formattedPatients = recentPatients.map(patient => {
-      const userName = patient.users_patients_user_idTousers.name || 
-                      `${patient.users_patients_user_idTousers.first_name || ''} ${patient.users_patients_user_idTousers.last_name || ''}`.trim();
+      const userName = patient.user.name || 
+                      `${patient.user.first_name || ''} ${patient.user.last_name || ''}`.trim();
       
       return {
         id: patient.id,
         patientId: patient.patient_id,
         name: userName,
-        email: patient.users_patients_user_idTousers?.email,
+        email: patient.user?.email,
         lastActivity: patient.last_visit_date || patient.updated_at,
         lastAppointment: patient.appointments?.[0]?.start_time,
         dateOfBirth: patient.date_of_birth,

@@ -49,7 +49,7 @@ export async function GET(request: NextRequest) {
       // Adherence records for the time period
       prisma.adherenceRecord.findMany({
         where: {
-          patients: {
+          patient: {
             primary_care_doctor_id: doctor.id
           },
           recorded_at: {
@@ -57,12 +57,12 @@ export async function GET(request: NextRequest) {
           }
         },
         include: {
-          patients: {
+          patient: {
             select: {
               id: true,
               patient_id: true,
               overall_adherence_score: true,
-              users_patients_user_idTousers: {
+              user: {
                 select: {
                   first_name: true,
                   last_name: true,
@@ -86,7 +86,7 @@ export async function GET(request: NextRequest) {
           id: true,
           patient_id: true,
           overall_adherence_score: true,
-          users_patients_user_idTousers: {
+          user: {
             select: {
               first_name: true,
               last_name: true,
@@ -131,11 +131,10 @@ export async function GET(request: NextRequest) {
         const dayEnd = new Date(date);
         dayEnd.setDate(dayEnd.getDate() + 1);
 
-        const dayRecords = await prisma.AdherenceRecord.findMany({
+        const dayRecords = await prisma.adherenceRecord.findMany({
           where: {
             patient: {
-              primary_care_doctor_id: doctor.id,
-              is_active: true
+              primary_care_doctor_id: doctor.id
             },
             recorded_at: {
               gte: dayStart,
@@ -166,10 +165,8 @@ export async function GET(request: NextRequest) {
       .slice(0, 5)
       .map(p => ({
         patientId: p.patient_id,
-        name: `${p.user?.first_name || ''} ${p.user?.last_name || ''}`.trim(),
-        adherenceScore: p.overall_adherence_score,
-        medicationCount: p._count.medication_logs,
-        recordCount: p._count.adherence_records
+        name: p.user?.name || `${p.user?.first_name || ''} ${p.user?.last_name || ''}`.trim(),
+        adherenceScore: p.overall_adherence_score
       }));
 
     // Patients needing attention (low adherence)
@@ -179,7 +176,7 @@ export async function GET(request: NextRequest) {
       .slice(0, 5)
       .map(p => ({
         patientId: p.patient_id,
-        name: `${p.user?.first_name || ''} ${p.user?.last_name || ''}`.trim(),
+        name: p.user?.name || `${p.user?.first_name || ''} ${p.user?.last_name || ''}`.trim(),
         adherenceScore: p.overall_adherence_score,
         riskLevel: p.overall_adherence_score < 60 ? 'high' : 'medium'
       }));

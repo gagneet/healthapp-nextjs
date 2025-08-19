@@ -48,16 +48,16 @@ export async function GET(request: NextRequest) {
       // Emergency alerts
       prisma.emergencyAlert.findMany({
         where: {
-          patients: {
+          patient: {
             primary_care_doctor_id: doctor.id
           },
           acknowledged: false,
           resolved: false
         },
         include: {
-          patients: {
+          patient: {
             include: {
-              users_patients_user_idTousers: {
+              user: {
                 select: {
                   first_name: true,
                   last_name: true,
@@ -77,15 +77,15 @@ export async function GET(request: NextRequest) {
       // Medication safety alerts
       prisma.medicationSafetyAlert.findMany({
         where: {
-          patients: {
+          patient: {
             primary_care_doctor_id: doctor.id
           },
           resolved: false
         },
         include: {
-          patients: {
+          patient: {
             include: {
-              users_patients_user_idTousers: {
+              user: {
                 select: {
                   first_name: true,
                   last_name: true,
@@ -112,7 +112,7 @@ export async function GET(request: NextRequest) {
         include: {
           patients: {
             include: {
-              users_patients_user_idTousers: {
+              user: {
                 select: {
                   first_name: true,
                   last_name: true,
@@ -133,8 +133,8 @@ export async function GET(request: NextRequest) {
     // Format and combine all alerts
     const allAlerts = [
       ...emergencyAlerts.map(alert => {
-        const patientName = alert.patients?.users_patients_user_idTousers.name || 
-                           `${alert.patients?.users_patients_user_idTousers.first_name || ''} ${alert.patients?.users_patients_user_idTousers.last_name || ''}`.trim();
+        const patientName = alert.patient?.user.name || 
+                           `${alert.patient?.user.first_name || ''} ${alert.patient?.user.last_name || ''}`.trim();
         return {
           id: alert.id,
           type: 'emergency',
@@ -142,14 +142,14 @@ export async function GET(request: NextRequest) {
           title: alert.alert_title,
           description: alert.alert_message,
           patientName,
-          patientId: alert.patients?.patient_id,
+          patientId: alert.patient?.patient_id,
           timestamp: alert.created_at,
           status: alert.acknowledged ? 'ACKNOWLEDGED' : 'ACTIVE'
         };
       }),
       ...medicationAlerts.map(alert => {
-        const patientName = alert.patients?.users_patients_user_idTousers.name || 
-                           `${alert.patients?.users_patients_user_idTousers.first_name || ''} ${alert.patients?.users_patients_user_idTousers.last_name || ''}`.trim();
+        const patientName = alert.patient?.user.name || 
+                           `${alert.patient?.user.first_name || ''} ${alert.patient?.user.last_name || ''}`.trim();
         return {
           id: alert.id,
           type: 'medication',
@@ -157,14 +157,14 @@ export async function GET(request: NextRequest) {
           title: alert.alert_title,
           description: alert.alert_message,
           patientName,
-          patientId: alert.patients?.patient_id,
+          patientId: alert.patient?.patient_id,
           timestamp: alert.created_at,
           status: alert.resolved ? 'RESOLVED' : 'ACTIVE'
         };
       }),
       ...recentNotifications.map(notification => {
-        const patientName = notification.patients?.users_patients_user_idTousers.name || 
-                           `${notification.patients?.users_patients_user_idTousers.first_name || ''} ${notification.patients?.users_patients_user_idTousers.last_name || ''}`.trim();
+        const patientName = notification.patients?.user.name || 
+                           `${notification.patients?.user.first_name || ''} ${notification.patients?.user.last_name || ''}`.trim();
         return {
           id: notification.id,
           type: 'notification',
