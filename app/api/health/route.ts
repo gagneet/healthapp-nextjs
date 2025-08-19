@@ -18,29 +18,39 @@ export async function GET(request: NextRequest) {
       totalDoctors: 0
     };
     
+    let schemaStatus = 'unknown';
+    
     // Only get statistics if database is connected
     if (dbHealth.connected) {
       try {
+        // Check if tables exist by trying to query them
         const [userCount, patientCount, doctorCount] = await Promise.all([
-          prisma.user.count(),
-          prisma.patient.count(), 
-          prisma.doctors.count()
+          prisma.user.count().catch(() => null),
+          prisma.patient.count().catch(() => null), 
+          prisma.doctors.count().catch(() => null)
         ]);
         
-        statistics = {
-          totalUsers: userCount,
-          totalPatients: patientCount,
-          totalDoctors: doctorCount
-        };
+        // If all queries succeeded, schema exists
+        if (userCount !== null && patientCount !== null && doctorCount !== null) {
+          statistics = {
+            totalUsers: userCount,
+            totalPatients: patientCount,
+            totalDoctors: doctorCount
+          };
+          schemaStatus = 'migrated';
+        } else {
+          schemaStatus = 'needs_migration';
+        }
       } catch (statError) {
-        console.warn('Statistics query failed:', statError);
-        // Continue with zero statistics rather than failing
+        console.warn('Statistics query failed (likely tables not migrated yet):', statError);
+        schemaStatus = 'needs_migration';
       }
     }
     
     const healthData = {
       status: dbHealth.connected ? 'healthy' : 'degraded',
       database: dbHealth.connected ? 'connected' : 'disconnected',
+      schema: schemaStatus,
       api: 'operational',
       timestamp: new Date().toISOString(),
       version: '2.0.0-prisma',
@@ -52,7 +62,7 @@ export async function GET(request: NextRequest) {
       ...(dbHealth.error && { databaseError: dbHealth.error })
     };
     
-    // Return 200 even if database is disconnected - service is partially healthy
+    // Return 200 if database is connected, even if schema needs migration
     const statusCode = dbHealth.connected ? 200 : 503;
     return NextResponse.json(
       formatApiSuccess(healthData, 'Health check completed'),

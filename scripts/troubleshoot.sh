@@ -101,7 +101,7 @@ check_postgres_detailed() {
             
             echo -e "\n${BLUE}Container $container_id PostgreSQL Processes:${NC}"
             docker exec "$container_id" ps aux | grep postgres || log_warning "Could not get processes"
-        fi
+        done
     fi
 }
 
@@ -131,7 +131,7 @@ check_redis_detailed() {
         for container_id in $redis_containers; do
             echo -e "\n${BLUE}Container $container_id Redis Status:${NC}"
             docker exec "$container_id" redis-cli --no-auth-warning -a "secure_test_redis" ping || log_warning "Redis ping failed"
-        fi
+        done
     fi
 }
 
@@ -164,7 +164,7 @@ check_app_detailed() {
             
             echo -e "\n${BLUE}Container $container_id Environment (DB related):${NC}"
             docker exec "$container_id" env | grep -E "(DATABASE|POSTGRES|NEXTAUTH)" || log_warning "Could not get environment"
-        fi
+        done
     fi
 }
 
