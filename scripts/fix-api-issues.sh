@@ -89,7 +89,35 @@ check_prisma() {
         print_success "Prisma client is generated"
     else
         print_warning "Prisma client not found, generating..."
-        npx prisma generate
+# Check if Prisma client is generated
+    if [ -d "node_modules/.prisma/client" ]; then
+        print_success "Prisma client is generated"
+    else
+        print_warning "Prisma client not found, generating..."
+        if ! npx prisma generate; then
+            print_error "Failed to generate Prisma client"
+            return 1
+        fi
+        print_success "Prisma client generated"
+    fi
+    
+    # Check if database is migrated
+    print_status "Checking database migrations..."
+    if npx prisma migrate status &> /dev/null; then
+        print_success "Database migrations are up to date"
+    else
+        print_warning "Database migrations might be pending"
+        print_status "Running migrations..."
+        if ! npx prisma migrate deploy; then
+            print_error "Failed to run database migrations"
+            return 1
+        fi
+        print_success "Migrations completed"
+    fi
+}
+
+# Check API routes
+check_api_routes() {
         print_success "Prisma client generated"
     fi
     
