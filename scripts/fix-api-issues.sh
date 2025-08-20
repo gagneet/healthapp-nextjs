@@ -143,7 +143,14 @@ check_api_routes() {
         
         # List all route files
         print_status "Found API routes:"
-        find app/api -name "route.ts" -o -name "route.js" | while read -r route; do
+# List all route files
+        print_status "Found API routes:"
+        while IFS= read -r -d '' route; do
+            echo "  - $route"
+        done < <(find app/api -name "route.ts" -o -name "route.js" -print0)
+    else
+        print_error "API directory not found"
+        return 1
             echo "  - $route"
         done
     else
