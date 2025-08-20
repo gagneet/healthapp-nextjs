@@ -89,10 +89,6 @@ check_prisma() {
         print_success "Prisma client is generated"
     else
         print_warning "Prisma client not found, generating..."
-# Check if Prisma client is generated
-    if [ -d "node_modules/.prisma/client" ]; then
-        print_success "Prisma client is generated"
-    else
         if ! npx prisma generate; then
             print_error "Failed to generate Prisma client"
             return 1
@@ -117,23 +113,6 @@ check_prisma() {
 
 # Check API routes
 check_api_routes() {
-        print_success "Prisma client generated"
-    fi
-    
-    # Check if database is migrated
-    print_status "Checking database migrations..."
-    if npx prisma migrate status &> /dev/null; then
-        print_success "Database migrations are up to date"
-    else
-        print_warning "Database migrations might be pending"
-        print_status "Running migrations..."
-        npx prisma migrate deploy
-        print_success "Migrations completed"
-    fi
-}
-
-# Check API routes
-check_api_routes() {
     print_status "Checking API routes structure..."
     
     # Check if app/api directory exists
@@ -142,16 +121,9 @@ check_api_routes() {
         
         # List all route files
         print_status "Found API routes:"
-# List all route files
-        print_status "Found API routes:"
         while IFS= read -r -d '' route; do
             echo "  - $route"
         done < <(find app/api -name "route.ts" -o -name "route.js" -print0)
-    else
-        print_error "API directory not found"
-        return 1
-            echo "  - $route"
-        done
     else
         print_error "API directory not found"
         return 1
@@ -174,13 +146,7 @@ test_api_endpoints() {
     )
     
     for endpoint in "${endpoints[@]}"; do
-)
-    
-    for endpoint in "${endpoints[@]}"; do
         response=$(curl -s -o /dev/null -w "%{http_code}" --connect-timeout 5 --max-time 10 "http://localhost:$APP_PORT$endpoint")
-        if [ "$response" = "200" ] || [ "$response" = "401" ] || [ "$response" = "403" ]; then
-            print_success "$endpoint - OK (HTTP $response)"
-        else
         if [ "$response" = "200" ] || [ "$response" = "401" ] || [ "$response" = "403" ]; then
             print_success "$endpoint - OK (HTTP $response)"
         else
@@ -332,13 +298,7 @@ generate_report() {
         echo "  NEXTAUTH_SECRET: ${NEXTAUTH_SECRET:+Set}"
         echo
         echo "Process Information:"
-echo "  NEXTAUTH_SECRET: ${NEXTAUTH_SECRET:+Set}"
-        echo
-        echo "Process Information:"
         pgrep -f "node|next"
-        echo
-        echo "Port Usage:"
-        netstat -tlnp 2>/dev/null | grep ":$APP_PORT" || ss -tlnp | grep ":$APP_PORT"
         echo
         echo "Port Usage:"
         netstat -tlnp 2>/dev/null | grep ":$APP_PORT" || ss -tlnp | grep ":$APP_PORT"

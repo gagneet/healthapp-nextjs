@@ -138,18 +138,12 @@ EOF
     fi
 else
     echo -e "${GREEN}SSL certificates found at $CERTBOT_PATH${NC}"
-    # Copy the full SSL configuration
-else
-    echo -e "${GREEN}SSL certificates found at $CERTBOT_PATH${NC}"
     if [ -f "$CONFIG_FILE" ]; then
         cp "$CONFIG_FILE" "$NGINX_SITES_AVAILABLE/$DOMAIN"
     else
         echo -e "${RED}Error: $CONFIG_FILE not found${NC}"
         exit 1
     fi
-fi
-
-# Remove default nginx site if it exists
 fi
 
 if [ -L "$NGINX_SITES_ENABLED/default" ]; then
