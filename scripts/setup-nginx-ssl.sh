@@ -110,7 +110,31 @@ generate_letsencrypt_cert() {
     ln -sf "/etc/letsencrypt/live/$DOMAIN/privkey.pem" "$SSL_DIR/$DOMAIN.key"
     
     # Start nginx again
-    systemctl start nginx
+print_status "Generating Let's Encrypt SSL certificate for $DOMAIN..."
+    
+    # Stop nginx temporarily to allow certbot to bind to port 80
+    systemctl stop nginx || { print_error "Failed to stop nginx"; return 1; }
+    
+    # Ensure nginx is restarted even if the script fails
+    trap 'systemctl start nginx' EXIT
+    
+    if ! certbot certonly --standalone -d "$DOMAIN" --non-interactive --agree-tos --register-unsafely-without-email; then
+        print_error "Failed to generate Let's Encrypt certificate"
+        return 1
+    fi
+    
+    # Create symbolic links to Let's Encrypt certificates
+    ln -sf "/etc/letsencrypt/live/$DOMAIN/fullchain.pem" "$SSL_DIR/$DOMAIN.crt"
+    ln -sf "/etc/letsencrypt/live/$DOMAIN/privkey.pem" "$SSL_DIR/$DOMAIN.key"
+    
+    # Start nginx again
+    systemctl start nginx || { print_error "Failed to start nginx"; return 1; }
+    
+    # Remove the trap as nginx has been successfully started
+    trap - EXIT
+    
+    print_success "Let's Encrypt certificate generated successfully"
+}
     
     print_success "Let's Encrypt certificate generated successfully"
 }
