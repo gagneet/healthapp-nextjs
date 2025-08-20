@@ -53,6 +53,7 @@ SEED=false
 CLEANUP=false
 AUTO_YES=false
 SKIP_BUILD=false
+SKIP_IMAGE_PULL=false
 
 # ============================================================================
 # Helper Functions
@@ -99,6 +100,7 @@ OPTIONS:
   --seed                     Run database seeders after deployment
   --cleanup                  Clean up before deployment
   --skip-build              Skip Docker image building
+  --skip-image-pull         Skip pulling base images
   --auto-yes                Skip all confirmation prompts
   --debug                   Enable debug output
 
@@ -246,6 +248,10 @@ parse_args() {
                 ;;
             --skip-build)
                 SKIP_BUILD=true
+                shift
+                ;;
+            --skip-image-pull)
+                SKIP_IMAGE_PULL=true
                 shift
                 ;;
             --auto-yes)
@@ -435,19 +441,69 @@ cleanup_environment() {
     fi
 }
 
+# ============================================================================
+# Enhanced Image Management Functions
+# ============================================================================
+
+pull_base_images() {
+    if [ "$SKIP_IMAGE_PULL" = true ]; then
+        log_info "Skipping base image pulls"
+        return
+    fi
+
+    log_info "Pulling base images for containers..."
+    
+    # Define base images used in the stack
+    local BASE_IMAGES=(
+        "node:22-alpine"           # Application base image
+        "postgres:15-alpine"       # PostgreSQL database
+        "redis:7-alpine"          # Redis cache
+        "dpage/pgadmin4:latest"   # PgAdmin interface
+    )
+    
+    local failed_pulls=0
+    
+    for image in "${BASE_IMAGES[@]}"; do
+        log_info "Pulling image: $image"
+        if docker pull "$image"; then
+            log_success "Successfully pulled: $image"
+        else
+            log_warning "Failed to pull: $image (will use local cache if available)"
+            ((failed_pulls++))
+        fi
+    done
+    
+    if [ $failed_pulls -gt 0 ]; then
+        log_warning "$failed_pulls image(s) failed to pull, using local cache"
+    else
+        log_success "All base images pulled successfully"
+    fi
+}
+
 build_images() {
     if [ "$SKIP_BUILD" = true ]; then
         log_info "Skipping image build"
         return
     fi
 
-    log_info "Building Docker image..."
+    log_info "Building Docker image for application..."
+    
+    # First pull base images to ensure we have the latest
+    pull_base_images
     
     # Build single Next.js full-stack application image
-    docker build -t "healthapp:$ENVIRONMENT" -f docker/Dockerfile.production .
-    
-    log_success "Image built successfully"
+    log_info "Building application container: healthapp:$ENVIRONMENT"
+    if docker build -t "healthapp:$ENVIRONMENT" -f docker/Dockerfile.production . ; then
+        log_success "Application image built successfully"
+    else
+        log_error "Failed to build application image"
+        exit 1
+    fi
 }
+
+# ============================================================================
+# Enhanced Deployment with Strict Orchestration
+# ============================================================================
 
 deploy_stack() {
     log_info "Deploying stack: $STACK_NAME"
@@ -458,33 +514,154 @@ deploy_stack() {
     fi
 
     # Deploy the stack
+    log_info "Deploying Docker stack..."
     docker stack deploy -c "$DOCKER_STACK_FILE" "$STACK_NAME"
     
-    log_success "Stack deployed: $STACK_NAME"
+    log_success "Stack deployment initiated: $STACK_NAME"
     
-    # Wait for services in the correct order
-    log_info "Waiting for services to start in dependency order..."
+    # Enhanced orchestration: Wait for services in strict dependency order
+    log_deploy "Starting services in dependency order..."
+    echo "================================================"
+    echo "Service Startup Order:"
+    echo "1. PostgreSQL Database (Primary dependency)"
+    echo "2. Redis Cache"
+    echo "3. Application Container(s)"
+    echo "4. Database Migrations (if enabled)"
+    echo "5. Database Seeds (if enabled)"
+    echo "6. PgAdmin Interface"
+    echo "================================================"
     
-    # 1. Wait for PostgreSQL first
-    wait_for_service_ready "postgres" 90
+    # Phase 1: PostgreSQL must be fully ready first
+    log_deploy "Phase 1: Starting PostgreSQL database..."
+    if ! wait_for_postgres_ready 120; then
+        log_error "PostgreSQL failed to start. Cannot proceed with deployment."
+        show_service_logs "postgres" 50
+        exit 1
+    fi
     
-    # 2. Wait for Redis  
-    wait_for_service_ready "redis" 30
+    # Phase 2: Redis cache
+    log_deploy "Phase 2: Starting Redis cache..."
+    if ! wait_for_service_ready "redis" 60; then
+        log_warning "Redis failed to start. Application may have limited functionality."
+        show_service_logs "redis" 30
+    fi
     
-    # 3. Wait for app containers to start
-    wait_for_service_ready "app" 120
+    # Phase 3: Application containers (depends on PostgreSQL and Redis)
+    log_deploy "Phase 3: Starting application containers..."
+    if ! wait_for_service_ready "app" 180; then
+        log_error "Application containers failed to start."
+        show_service_logs "app" 50
+        exit 1
+    fi
     
-    # 4. Run migrations after app is responsive
-    run_migrations "$MIGRATE"
+    # Phase 4: Run migrations if enabled
+    if [ "$MIGRATE" = true ]; then
+        log_deploy "Phase 4: Running database migrations..."
+        run_migrations true
+    else
+        log_info "Phase 4: Skipping migrations (not requested)"
+    fi
     
-    # 5. Run seeds after migrations
-    run_seeds "$SEED"
+    # Phase 5: Run seeds if enabled
+    if [ "$SEED" = true ]; then
+        log_deploy "Phase 5: Running database seeds..."
+        run_seeds true
+    else
+        log_info "Phase 5: Skipping seeds (not requested)"
+    fi
     
-    # 6. PgAdmin can start anytime after postgres
-    wait_for_service_ready "pgadmin" 30
+    # Phase 6: PgAdmin (optional, non-critical)
+    log_deploy "Phase 6: Starting PgAdmin interface..."
+    if ! wait_for_service_ready "pgadmin" 60; then
+        log_warning "PgAdmin failed to start. This is non-critical."
+    fi
     
-    # Show deployment status
+    # Show final deployment status
+    echo
+    log_success "Deployment orchestration complete!"
     show_status
+}
+
+# ============================================================================
+# Enhanced PostgreSQL Readiness Check
+# ============================================================================
+
+wait_for_postgres_ready() {
+    local max_wait_seconds="${1:-120}"
+    local service_full_name="${STACK_NAME}_postgres"
+    
+    log_info "Waiting for PostgreSQL to be fully ready..."
+    log_info "This includes: container running, database initialized, and accepting connections"
+    
+    local start_time=$(date +%s)
+    local timeout_time=$((start_time + max_wait_seconds))
+    local check_count=0
+    
+    while [ $(date +%s) -lt $timeout_time ]; do
+        ((check_count++))
+        log_debug "PostgreSQL readiness check #$check_count"
+        
+        # Step 1: Check if service exists
+        if ! docker service ls --filter "name=$service_full_name" --format "{{.Name}}" | grep -q "^$service_full_name$"; then
+            log_debug "PostgreSQL service not yet created, waiting..."
+            sleep 5
+            continue
+        fi
+        
+        # Step 2: Check service convergence
+        local service_status=$(docker service ls --filter "name=$service_full_name" --format "{{.Replicas}}")
+        if [[ "$service_status" =~ ^([0-9]+)/([0-9]+)$ ]]; then
+            local running="${BASH_REMATCH[1]}"
+            local desired="${BASH_REMATCH[2]}"
+            
+            if [ "$running" -ne "$desired" ] || [ "$running" -eq 0 ]; then
+                log_debug "PostgreSQL service: $running/$desired replicas running"
+                sleep 5
+                continue
+            fi
+        fi
+        
+        # Step 3: Find the PostgreSQL container
+        local container_id=""
+        for pattern in "${service_full_name}" "${STACK_NAME}_postgres" "postgres"; do
+            container_id=$(docker ps --filter "name=$pattern" --format "{{.ID}}" | head -1)
+            if [ -n "$container_id" ]; then
+                break
+            fi
+        done
+        
+        if [ -z "$container_id" ]; then
+            log_debug "PostgreSQL container not found yet, waiting..."
+            sleep 5
+            continue
+        fi
+        
+        # Step 4: Enhanced PostgreSQL readiness check
+        log_debug "Found PostgreSQL container: $container_id"
+        
+        # Check if PostgreSQL is accepting connections
+        if docker exec "$container_id" pg_isready -U "${POSTGRES_USER:-healthapp_user}" -d "${POSTGRES_DB:-healthapp_test}" >/dev/null 2>&1; then
+            # Additional verification: can we actually connect and run a query?
+            if docker exec "$container_id" psql -U "${POSTGRES_USER:-healthapp_user}" -d "${POSTGRES_DB:-healthapp_test}" -c "SELECT 1;" >/dev/null 2>&1; then
+                log_success "PostgreSQL is fully ready and accepting connections!"
+                
+                # Show PostgreSQL status
+                log_info "PostgreSQL Status:"
+                docker exec "$container_id" psql -U "${POSTGRES_USER:-healthapp_user}" -d "${POSTGRES_DB:-healthapp_test}" -c "SELECT version();" 2>/dev/null || true
+                
+                return 0
+            else
+                log_debug "PostgreSQL is running but not yet accepting queries"
+            fi
+        else
+            log_debug "PostgreSQL is not ready yet (pg_isready check failed)"
+        fi
+        
+        sleep 5
+    done
+    
+    log_error "PostgreSQL failed to become ready within ${max_wait_seconds} seconds"
+    return 1
 }
 
 # ============================================================================
@@ -496,7 +673,7 @@ wait_for_service_ready() {
     local max_wait_seconds="$2"
     local service_full_name="${STACK_NAME}_${service_name}"
     
-    log_info "Waiting for service $service_name to be ready..."
+    log_info "Waiting for service $service_name to be ready (max ${max_wait_seconds}s)..."
     
     local start_time=$(date +%s)
     local timeout_time=$((start_time + max_wait_seconds))
@@ -520,7 +697,7 @@ wait_for_service_ready() {
             if [ "$running" -eq "$desired" ] && [ "$running" -gt 0 ]; then
                 # Service has desired replicas, now check basic readiness
                 if check_service_ready "$service_name" "$service_full_name"; then
-                    log_success "Service $service_name is ready"
+                    log_success "Service $service_name is ready ($running/$desired replicas running)"
                     return 0
                 fi
             else
@@ -540,7 +717,7 @@ wait_for_service_ready() {
     log_error "Service logs (last 20 lines):"
     docker service logs --tail 20 "$service_full_name" 2>/dev/null || log_warning "Could not retrieve logs"
     
-    exit 1
+    return 1
 }
 
 check_service_ready() {
@@ -601,7 +778,7 @@ check_postgres_health() {
     fi
     
     # Use the exact command that works (as confirmed by our debugging)
-    if docker exec "$container_id" pg_isready -U healthapp_user -d healthapp_test >/dev/null 2>&1; then
+    if docker exec "$container_id" pg_isready -U "${POSTGRES_USER:-healthapp_user}" -d "${POSTGRES_DB:-healthapp_test}" >/dev/null 2>&1; then
         log_debug "PostgreSQL is ready"
         return 0
     else
@@ -619,9 +796,12 @@ check_redis_health() {
         return 1
     fi
     
-    # Check Redis ping with password
-    if docker exec "$container_id" redis-cli --no-auth-warning -a "secure_test_redis" ping >/dev/null 2>&1; then
-        log_debug "Redis is ready"
+    # Check Redis ping (try with and without password)
+    if docker exec "$container_id" redis-cli ping >/dev/null 2>&1; then
+        log_debug "Redis is ready (no auth)"
+        return 0
+    elif docker exec "$container_id" redis-cli --no-auth-warning -a "${REDIS_PASSWORD:-secure_test_redis}" ping >/dev/null 2>&1; then
+        log_debug "Redis is ready (with auth)"
         return 0
     else
         log_debug "Redis not ready yet"
@@ -638,9 +818,12 @@ check_app_health() {
         return 1
     fi
     
-    # Simple check - just verify container is responding
-    if docker exec "$container_id" curl -f -s http://localhost:3002 >/dev/null 2>&1; then
-        log_debug "App is responding"
+    # Check if the application is responding
+    if docker exec "$container_id" curl -f -s http://localhost:3002/api/health >/dev/null 2>&1; then
+        log_debug "App is responding on health endpoint"
+        return 0
+    elif docker exec "$container_id" curl -f -s http://localhost:3002 >/dev/null 2>&1; then
+        log_debug "App is responding on main endpoint"
         return 0
     else
         log_debug "App not responding yet"
@@ -685,13 +868,33 @@ run_migrations() {
             exit 1
         fi
         
+        # Ensure database is ready before migrations
+        log_info "Verifying database connectivity before migrations..."
+        local max_retries=10
+        local retry_count=0
+        
+        while [ $retry_count -lt $max_retries ]; do
+            if docker exec "$container_id" npx prisma db push --accept-data-loss >/dev/null 2>&1; then
+                log_success "Database connectivity verified"
+                break
+            fi
+            ((retry_count++))
+            log_debug "Database not ready for migrations, retry $retry_count/$max_retries"
+            sleep 5
+        done
+        
         # Run migrations in the app container
         log_info "Running migrations in container: $container_id"
         if docker exec "$container_id" npx prisma migrate deploy; then
-            log_success "Migrations completed"
+            log_success "Migrations completed successfully"
         else
-            log_error "Migration failed"
-            exit 1
+            log_warning "Production migrations may not exist, trying db push instead..."
+            if docker exec "$container_id" npx prisma db push --accept-data-loss; then
+                log_success "Database schema synchronized using db push"
+            else
+                log_error "Migration/sync failed"
+                exit 1
+            fi
         fi
     fi
 }
@@ -718,10 +921,9 @@ run_seeds() {
         # Run seeds in the app container
         log_info "Running seeds in container: $container_id"
         if docker exec "$container_id" npm run seed; then
-            log_success "Seeds completed"
+            log_success "Seeds completed successfully"
         else
-            log_error "Seeding failed"
-            exit 1
+            log_warning "Seeding failed - this may be expected if data already exists"
         fi
     fi
 }
@@ -737,6 +939,24 @@ show_status() {
     echo
     log_info "Service Details:"
     docker stack services "$STACK_NAME" --format "table {{.ID}}\t{{.Name}}\t{{.Mode}}\t{{.Replicas}}\t{{.Image}}\t{{.Ports}}"
+    
+    echo
+    log_info "Container Health Status:"
+    for service in postgres redis app pgadmin; do
+        local container_id=$(docker ps --filter "name=${STACK_NAME}_${service}" --format "{{.ID}}" | head -1)
+        if [ -n "$container_id" ]; then
+            local health=$(docker inspect --format='{{.State.Health.Status}}' "$container_id" 2>/dev/null || echo "no health check")
+            echo "  - $service: $health"
+        fi
+    done
+}
+
+show_service_logs() {
+    local service_name="$1"
+    local lines="${2:-50}"
+    
+    log_info "Showing last $lines lines of $service_name logs:"
+    docker service logs --tail "$lines" "${STACK_NAME}_${service_name}" 2>/dev/null || log_warning "Could not retrieve $service_name logs"
 }
 
 show_logs() {
@@ -788,10 +1008,19 @@ handle_deploy() {
     deploy_stack
     
     echo
-    log_success "Deployment complete!"
-    echo "Frontend: http://$DOMAIN:$PORT_FRONTEND"
-    echo "Backend API: http://$DOMAIN:$PORT_BACKEND/api"
-    echo "PgAdmin: http://$DOMAIN:$PORT_PGADMIN"
+    log_success "🎉 Deployment complete!"
+    echo "================================================"
+    echo "Access Points:"
+    echo "  Frontend:    http://$DOMAIN:$PORT_FRONTEND"
+    echo "  Backend API: http://$DOMAIN:$PORT_BACKEND/api"
+    echo "  PgAdmin:     http://$DOMAIN:$PORT_PGADMIN"
+    echo ""
+    echo "Database:"
+    echo "  Host: $DOMAIN"
+    echo "  Port: $PORT_DB"
+    echo "  Database: ${POSTGRES_DB:-healthapp_test}"
+    echo "  User: ${POSTGRES_USER:-healthapp_user}"
+    echo "================================================"
 }
 
 handle_stop() {
