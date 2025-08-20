@@ -103,7 +103,24 @@ generate_letsencrypt_cert() {
     # Stop nginx temporarily to allow certbot to bind to port 80
     systemctl stop nginx
     
-    certbot certonly --standalone -d "$DOMAIN" --non-interactive --agree-tos --register-unsafely-without-email
+# Stop nginx temporarily to allow certbot to bind to port 80
+    systemctl stop nginx
+    
+    if certbot certonly --standalone -d "$DOMAIN" --non-interactive --agree-tos --register-unsafely-without-email; then
+        # Create symbolic links to Let's Encrypt certificates
+        ln -sf "/etc/letsencrypt/live/$DOMAIN/fullchain.pem" "$SSL_DIR/$DOMAIN.crt"
+        ln -sf "/etc/letsencrypt/live/$DOMAIN/privkey.pem" "$SSL_DIR/$DOMAIN.key"
+        print_success "Let's Encrypt certificate generated successfully"
+    else
+        print_error "Failed to generate Let's Encrypt certificate"
+        exit 1
+    fi
+    
+    # Start nginx again
+    systemctl start nginx
+}
+
+# Create nginx configuration
     
     # Create symbolic links to Let's Encrypt certificates
     ln -sf "/etc/letsencrypt/live/$DOMAIN/fullchain.pem" "$SSL_DIR/$DOMAIN.crt"
