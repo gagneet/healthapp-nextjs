@@ -258,10 +258,10 @@ export async function seedComprehensiveHealthcareData() {
 
     // Create organization first (idempotent)
     const organization = await prisma.organization.upsert({
-      where: { id: 'org-healthcare-main' },
+      where: { id: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11' },
       update: {},
       create: {
-        id: 'org-healthcare-main',
+        id: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
         name: 'HealthApp Medical Center',
         type: 'hospital',
         license_number: 'HC-2024-001',
