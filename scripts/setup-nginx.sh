@@ -51,7 +51,14 @@ if [ ! -d "$CERTBOT_PATH" ]; then
     read -r response
     if [[ "$response" =~ ^[Yy]$ ]]; then
         echo -e "${GREEN}Obtaining SSL certificates...${NC}"
-        certbot certonly --nginx -d $DOMAIN --non-interactive --agree-tos --register-unsafely-without-email
+        echo -e "${YELLOW}Please enter your email address for certificate registration (required for recovery and notifications):${NC}"
+        read -r EMAIL
+        if [ -z "$EMAIL" ]; then
+            echo -e "${RED}Email address is required to obtain SSL certificates.${NC}"
+            exit 1
+        fi
+        echo -e "${GREEN}Obtaining SSL certificates...${NC}"
+        certbot certonly --nginx -d $DOMAIN --non-interactive --agree-tos --email "$EMAIL"
     else
         echo -e "${YELLOW}Using temporary configuration without SSL...${NC}"
         # Create a temporary HTTP-only configuration
