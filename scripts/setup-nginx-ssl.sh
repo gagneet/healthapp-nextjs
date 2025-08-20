@@ -211,7 +211,6 @@ server {
         default upgrade;
         '' close;
     }
-
     # Main application proxy
     location / {
         proxy_pass http://localhost:3002;
