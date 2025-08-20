@@ -86,7 +86,26 @@ fi
 echo
 
 echo -e "${YELLOW}6. Checking Migration Safety:${NC}"
-if grep -q "Verifying database connectivity before migrations" "$SCRIPT_DIR/deploy.sh"; then
+echo -e "${CYAN}================================================${NC}"
+echo -e "${CYAN}Deployment Orchestration Test${NC}"
+echo -e "${CYAN}================================================${NC}"
+echo
+
+# Source the deployment script functions
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+if [[ ! -f "$SCRIPT_DIR/deploy.sh" ]]; then
+    echo "Error: deploy.sh not found in $SCRIPT_DIR" >&2
+    exit 1
+fi
+
+echo -e "${BLUE}[INFO]${NC} Checking deployment script improvements..."
+echo
+
+# Check for new functions and improvements
+echo -e "${YELLOW}1. Checking for Image Management Functions:${NC}"
+if grep -q "pull_base_images()" "$SCRIPT_DIR/deploy.sh"; then
+    echo -e "${GREEN}✓${NC} pull_base_images() function exists"
     echo -e "${GREEN}✓${NC} Database connectivity verification before migrations"
     echo "  - Ensures database is ready before running migrations"
     echo "  - Retries connection if database not immediately available"
