@@ -90,7 +90,19 @@ if [ -f ".env" ]; then
 else
     echo -e "${RED}❌ .env file not found${NC}"
     echo -e "${YELLOW}Creating .env from production template...${NC}"
-    cp env_files/.env.production .env
+else
+    echo -e "${RED}❌ .env file not found${NC}"
+    echo -e "${YELLOW}Creating .env from production template...${NC}"
+    if [ -f "env_files/.env.production" ]; then
+        cp env_files/.env.production .env
+        echo -e "${GREEN}✅ Created .env file${NC}"
+    else
+        echo -e "${RED}❌ env_files/.env.production not found${NC}"
+        echo -e "${YELLOW}Please create .env file manually with required environment variables${NC}"
+    fi
+fi
+
+# Step 3: Setup nginx configuration (requires sudo)
     echo -e "${GREEN}✅ Created .env file${NC}"
 fi
 
