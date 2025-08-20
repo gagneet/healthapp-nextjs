@@ -382,30 +382,68 @@ export async function seedComprehensiveHealthcareData() {
 
     console.log(`✅ Created specialities`);
 
-    // Create doctor profiles (idempotent)
+    // Create doctor profiles with correct user IDs (idempotent)
     const doctorProfiles = await prisma.doctors.createMany({
       skipDuplicates: true,
       data: [
+        // doctor@healthapp.com
         {
-          id: '99999999-9999-9999-9999-999999999991',
-          user_id: '99999999-9999-9999-9999-999999999999',
+          id: '00000000-0000-0000-0000-000000000011',
+          user_id: '00000000-0000-0000-0000-000000000001', // doctor@healthapp.com
           doctor_id: 'DR001',
           speciality_id: cardiologySpec.id,
           medical_license_number: 'MD123456',
           years_of_experience: 15,
           board_certifications: ['Board Certified Internal Medicine', 'Diabetes Care Specialist'],
           consultation_fee: 200.00,
+          is_verified: true,
+          verification_date: new Date(),
+          practice_name: 'Smith Cardiology Clinic',
           created_at: new Date(),
         },
+        // doctor1@healthapp.com
         {
-          id: '44444444-4444-4444-4444-444444444441',
-          user_id: '44444444-4444-4444-4444-444444444444',
+          id: '00000000-0000-0000-0000-000000000022',
+          user_id: '00000000-0000-0000-0000-000000000002', // doctor1@healthapp.com
           doctor_id: 'DR002',
           speciality_id: endocrinologySpec.id,
           medical_license_number: 'MD789012',
+          years_of_experience: 12,
+          board_certifications: ['Board Certified Family Medicine', 'Diabetes Care Specialist'],
+          consultation_fee: 180.00,
+          is_verified: true,
+          verification_date: new Date(),
+          practice_name: 'Doe Family Medicine',
+          created_at: new Date(),
+        },
+        // doctor2@healthapp.com
+        {
+          id: '00000000-0000-0000-0000-000000000033',
+          user_id: '99999999-9999-9999-9999-999999999999', // doctor2@healthapp.com
+          doctor_id: 'DR003',
+          speciality_id: cardiologySpec.id,
+          medical_license_number: 'MD345678',
+          years_of_experience: 8,
+          board_certifications: ['Board Certified Internal Medicine'],
+          consultation_fee: 220.00,
+          is_verified: true,
+          verification_date: new Date(),
+          practice_name: 'Rodriguez Internal Medicine',
+          created_at: new Date(),
+        },
+        // doctor3@healthapp.com
+        {
+          id: '00000000-0000-0000-0000-000000000044',
+          user_id: '44444444-4444-4444-4444-444444444444', // doctor3@healthapp.com
+          doctor_id: 'DR004',
+          speciality_id: endocrinologySpec.id,
+          medical_license_number: 'MD901234',
           years_of_experience: 20,
           board_certifications: ['Board Certified Cardiology', 'Interventional Cardiology'],
           consultation_fee: 250.00,
+          is_verified: true,
+          verification_date: new Date(),
+          practice_name: 'Smith Cardiac Surgery',
           created_at: new Date(),
         }
       ]
@@ -465,7 +503,7 @@ export async function seedComprehensiveHealthcareData() {
           user_id: '77777777-7777-7777-7777-777777777777',
           patient_id: 'PAT-2024-001',
           organization_id: organization.id,
-          primary_care_doctor_id: '99999999-9999-9999-9999-999999999991',
+          primary_care_doctor_id: '00000000-0000-0000-0000-000000000011', // doctor@healthapp.com
           height_cm: 165.0,
           weight_kg: 68.5,
           blood_type: 'A+',
@@ -496,7 +534,7 @@ export async function seedComprehensiveHealthcareData() {
           user_id: '88888888-8888-8888-8888-888888888888',
           patient_id: 'PAT-2024-002',
           organization_id: organization.id,
-          primary_care_doctor_id: '99999999-9999-9999-9999-999999999991',
+          primary_care_doctor_id: '00000000-0000-0000-0000-000000000011', // doctor@healthapp.com
           height_cm: 178.0,
           weight_kg: 82.3,
           blood_type: 'O-',
@@ -522,7 +560,7 @@ export async function seedComprehensiveHealthcareData() {
           user_id: '11111111-1111-1111-1111-111111111111',
           patient_id: 'PAT-2024-003',
           organization_id: organization.id,
-          primary_care_doctor_id: '44444444-4444-4444-4444-444444444441',
+          primary_care_doctor_id: '00000000-0000-0000-0000-000000000022', // doctor1@healthapp.com
           height_cm: 162.0,
           weight_kg: 55.2,
           blood_type: 'B+',
@@ -549,7 +587,7 @@ export async function seedComprehensiveHealthcareData() {
           user_id: '22222222-2222-2222-2222-222222222222',
           patient_id: 'PAT-2024-004',
           organization_id: organization.id,
-          primary_care_doctor_id: '44444444-4444-4444-4444-444444444441',
+          primary_care_doctor_id: '00000000-0000-0000-0000-000000000022', // doctor1@healthapp.com
           height_cm: 175.0,
           weight_kg: 88.7,
           blood_type: 'AB+',
@@ -576,7 +614,7 @@ export async function seedComprehensiveHealthcareData() {
           user_id: '33333333-3333-3333-3333-333333333333',
           patient_id: 'PAT-2024-005',
           organization_id: organization.id,
-          primary_care_doctor_id: '99999999-9999-9999-9999-999999999991',
+          primary_care_doctor_id: '00000000-0000-0000-0000-000000000011', // doctor@healthapp.com
           height_cm: 158.0,
           weight_kg: 52.1,
           blood_type: 'O+',

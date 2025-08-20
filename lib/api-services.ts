@@ -530,7 +530,7 @@ export async function getDoctorDashboard(doctorUserId: string) {
     // Handle missing doctor profile with detailed logging and mock data
     if (!doctorProfile?.id) {
       console.warn('=== MISSING DOCTOR PROFILE ===');
-      console.warn('Doctor User ID:', doctorId);
+      console.warn('Doctor User ID:', doctorUserId);
       console.warn('Doctor Email:', doctor.email);
       console.warn('Doctor Role:', doctor.role);
       console.warn('Profile Object:', JSON.stringify(doctorProfile, null, 2));
@@ -544,8 +544,8 @@ export async function getDoctorDashboard(doctorUserId: string) {
       
       // Use mock data to gracefully handle the missing profile
       doctorProfile = {
-        id: 'mock-doctor-profile-' + doctorId,
-        doctor_id: 'mock-doctor-' + doctorId,
+        id: 'mock-doctor-profile-' + doctorUserId,
+        doctor_id: 'mock-doctor-' + doctorUserId,
         medical_license_number: 'MOCK-LICENSE-' + Date.now(),
         speciality_id: null,
         years_of_experience: 0,
@@ -671,7 +671,7 @@ export async function getDoctorDashboard(doctorUserId: string) {
         upcomingAppointments: [],
         timestamp: new Date().toISOString(),
         debugInfo: {
-          doctorId: doctorId,
+          doctorId: doctorUserId,
           profileStatus: 'Missing - using mock data',
           reason: 'Doctor user exists but no corresponding doctor profile found'
         }
@@ -716,7 +716,7 @@ export async function getDoctorDashboard(doctorUserId: string) {
     console.error('=== DOCTOR DASHBOARD ERROR ===');
     console.error('Error Type:', error instanceof Error ? error.constructor.name : typeof error);
     console.error('Error Message:', error instanceof Error ? error.message : String(error));
-    console.error('Doctor ID:', doctorId);
+    console.error('Doctor ID:', doctorUserId);
     console.error('Doctor Profile:', doctorProfile ? `ID: ${doctorProfile.id}, Doctor ID: ${doctorProfile.doctor_id}` : 'NOT FOUND');
     console.error('User Details:', doctor ? `Role: ${doctor.role}, Email: ${doctor.email}` : 'USER NOT FOUND');
     console.error('Full Error Stack:', error instanceof Error ? error.stack : 'No stack trace available');
