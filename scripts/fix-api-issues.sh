@@ -93,7 +93,6 @@ check_prisma() {
     if [ -d "node_modules/.prisma/client" ]; then
         print_success "Prisma client is generated"
     else
-        print_warning "Prisma client not found, generating..."
         if ! npx prisma generate; then
             print_error "Failed to generate Prisma client"
             return 1
