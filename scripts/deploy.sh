@@ -874,7 +874,8 @@ run_migrations() {
         local retry_count=0
         
         while [ $retry_count -lt $max_retries ]; do
-            if docker exec "$container_id" npx prisma db push --accept-data-loss >/dev/null 2>&1; then
+            # Use psql to check connectivity; assumes DATABASE_URL is set in the container
+            if docker exec "$container_id" bash -c 'psql "${DATABASE_URL}" -c "SELECT 1"' >/dev/null 2>&1; then
                 log_success "Database connectivity verified"
                 break
             fi
