@@ -141,7 +141,6 @@ else
     # Copy the full SSL configuration
 else
     echo -e "${GREEN}SSL certificates found at $CERTBOT_PATH${NC}"
-    # Copy the full SSL configuration
     if [ -f "$CONFIG_FILE" ]; then
         cp "$CONFIG_FILE" "$NGINX_SITES_AVAILABLE/$DOMAIN"
     else
