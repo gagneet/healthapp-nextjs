@@ -113,7 +113,6 @@ else
     echo -e "${YELLOW}Creating .env from production template...${NC}"
 else
     echo -e "${RED}❌ .env file not found${NC}"
-    echo -e "${YELLOW}Creating .env from production template...${NC}"
     if [ -f "env_files/.env.production" ]; then
         cp env_files/.env.production .env
         echo -e "${GREEN}✅ Created .env file${NC}"
