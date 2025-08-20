@@ -40,7 +40,29 @@ if [ -f ".env" ]; then
     
     # Extract database connection details
     DB_HOST=$(echo $DATABASE_URL | sed -n 's/.*@\([^:]*\):.*/\1/p')
-    DB_PORT=$(echo $DATABASE_URL | sed -n 's/.*:\([0-9]*\)\/.*/\1/p')
+echo -e "
+${BLUE}[2/5] Checking database connectivity...${NC}"
+if [ -f ".env" ]; then
+    source .env
+    
+    # Extract database connection details
+    DB_HOST=$(echo "$DATABASE_URL" | sed -n 's/.*@\([^:]*\):.*/\1/p')
+    DB_PORT=$(echo "$DATABASE_URL" | sed -n 's/.*:\([0-9]*\)\/.*/\1/p')
+    DB_NAME=$(echo "$DATABASE_URL" | sed -n 's/.*\/\([^?]*\).*/\1/p')
+    
+    echo -e "${YELLOW}Database Configuration:${NC}"
+    echo -e "  Host: ${DB_HOST}"
+    echo -e "  Port: ${DB_PORT}"
+    echo -e "  Database: ${DB_NAME}"
+    
+    # Test database connection
+    if command_exists nc; then
+        if nc -z "${DB_HOST}" "${DB_PORT}" 2>/dev/null; then
+            echo -e "${GREEN}✅ Database port is reachable${NC}"
+        else
+            echo -e "${RED}❌ Cannot reach database on ${DB_HOST}:${DB_PORT}${NC}"
+            echo -e "${YELLOW}Possible issues:${NC}"
+            echo -e "  1. PostgreSQL container is not running"
     DB_NAME=$(echo $DATABASE_URL | sed -n 's/.*\/\([^?]*\).*/\1/p')
     
     echo -e "${YELLOW}Database Configuration:${NC}"
