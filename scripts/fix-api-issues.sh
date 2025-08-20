@@ -140,7 +140,13 @@ test_api_endpoints() {
     )
     
     for endpoint in "${endpoints[@]}"; do
-        response=$(curl -s -o /dev/null -w "%{http_code}" "http://localhost:$APP_PORT$endpoint")
+)
+    
+    for endpoint in "${endpoints[@]}"; do
+        response=$(curl -s -o /dev/null -w "%{http_code}" --connect-timeout 5 --max-time 10 "http://localhost:$APP_PORT$endpoint")
+        if [ "$response" = "200" ] || [ "$response" = "401" ] || [ "$response" = "403" ]; then
+            print_success "$endpoint - OK (HTTP $response)"
+        else
         if [ "$response" = "200" ] || [ "$response" = "401" ] || [ "$response" = "403" ]; then
             print_success "$endpoint - OK (HTTP $response)"
         else
