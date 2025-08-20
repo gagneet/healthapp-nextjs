@@ -105,7 +105,6 @@ generate_letsencrypt_cert() {
     
 # Stop nginx temporarily to allow certbot to bind to port 80
     systemctl stop nginx
-    
     if certbot certonly --standalone -d "$DOMAIN" --non-interactive --agree-tos --register-unsafely-without-email; then
         # Create symbolic links to Let's Encrypt certificates
         ln -sf "/etc/letsencrypt/live/$DOMAIN/fullchain.pem" "$SSL_DIR/$DOMAIN.crt"
