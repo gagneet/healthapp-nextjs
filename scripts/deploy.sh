@@ -778,7 +778,7 @@ check_postgres_health() {
     fi
     
     # Use the exact command that works (as confirmed by our debugging)
-    if docker exec "$container_id" pg_isready -U "${POSTGRES_USER:-healthapp_user}" -d "${POSTGRES_DB:-healthapp_test}" >/dev/null 2>&1; then
+    if docker exec "$container_id" pg_isready -U "${POSTGRES_USER:-$DEFAULT_POSTGRES_USER}" -d "${POSTGRES_DB:-$DEFAULT_POSTGRES_DB}" >/dev/null 2>&1; then
         log_debug "PostgreSQL is ready"
         return 0
     else
