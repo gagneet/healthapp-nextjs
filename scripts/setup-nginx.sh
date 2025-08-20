@@ -152,7 +152,6 @@ fi
 # Remove default nginx site if it exists
 fi
 
-# Remove default nginx site if it exists
 if [ -L "$NGINX_SITES_ENABLED/default" ]; then
     echo -e "${YELLOW}Removing default nginx site...${NC}"
     rm "$NGINX_SITES_ENABLED/default"
