@@ -598,7 +598,6 @@ wait_for_postgres_ready() {
     local check_count=0
     
 local timeout_time=$((start_time + max_wait_seconds))
-    local check_count=0
     
     while [ "$(date +%s)" -lt "$timeout_time" ]; do
         ((check_count++))
