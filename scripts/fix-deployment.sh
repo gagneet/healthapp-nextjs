@@ -40,7 +40,6 @@ if [ -f ".env" ]; then
     
     # Extract database connection details
     DB_HOST=$(echo $DATABASE_URL | sed -n 's/.*@\([^:]*\):.*/\1/p')
-echo -e "
 ${BLUE}[2/5] Checking database connectivity...${NC}"
 if [ -f ".env" ]; then
     source .env
