@@ -172,10 +172,10 @@ export async function seedComprehensiveHealthcareData() {
           created_at: new Date('2024-01-05'),
           updated_at: new Date()
         }),
-        // 2 Doctors
+        // 2 Additional Doctors
         createUserData({
           id: '99999999-9999-9999-9999-999999999999',
-          email: 'doctor1@healthapp.com',
+          email: 'doctor2@healthapp.com',
           password_hash: hashedPassword,
           role: 'DOCTOR',
           first_name: 'Dr. Emily',
@@ -190,7 +190,7 @@ export async function seedComprehensiveHealthcareData() {
         }),
         createUserData({
           id: '44444444-4444-4444-4444-444444444444',
-          email: 'doctor2@healthapp.com',
+          email: 'doctor3@healthapp.com',
           password_hash: hashedPassword,
           role: 'DOCTOR',
           first_name: 'Dr. Robert',
@@ -258,10 +258,10 @@ export async function seedComprehensiveHealthcareData() {
 
     // Create organization first (idempotent)
     const organization = await prisma.organization.upsert({
-      where: { id: 'org-healthcare-main' },
+      where: { id: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11' },
       update: {},
       create: {
-        id: 'org-healthcare-main',
+        id: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
         name: 'HealthApp Medical Center',
         type: 'hospital',
         license_number: 'HC-2024-001',
@@ -386,10 +386,10 @@ export async function seedComprehensiveHealthcareData() {
     const doctorProfiles = await prisma.doctors.createMany({
       skipDuplicates: true,
       data: [
-        // doctor@healthapp.com
+        // doctor@healthapp.com (Dr. John Smith)
         {
           id: '00000000-0000-0000-0000-000000000011',
-          user_id: '00000000-0000-0000-0000-000000000001', // doctor@healthapp.com
+          user_id: '00000000-0000-0000-0000-000000000001', // Dr. John Smith
           doctor_id: 'DR001',
           speciality_id: cardiologySpec.id,
           medical_license_number: 'MD123456',
@@ -401,10 +401,10 @@ export async function seedComprehensiveHealthcareData() {
           practice_name: 'Smith Cardiology Clinic',
           created_at: new Date(),
         },
-        // doctor1@healthapp.com
+        // doctor1@healthapp.com (Dr. Jane Doe)
         {
           id: '00000000-0000-0000-0000-000000000022',
-          user_id: '00000000-0000-0000-0000-000000000002', // doctor1@healthapp.com
+          user_id: '00000000-0000-0000-0000-000000000002', // Dr. Jane Doe
           doctor_id: 'DR002',
           speciality_id: endocrinologySpec.id,
           medical_license_number: 'MD789012',
@@ -416,10 +416,10 @@ export async function seedComprehensiveHealthcareData() {
           practice_name: 'Doe Family Medicine',
           created_at: new Date(),
         },
-        // doctor2@healthapp.com
+        // doctor2@healthapp.com (Dr. Emily Rodriguez)
         {
           id: '00000000-0000-0000-0000-000000000033',
-          user_id: '99999999-9999-9999-9999-999999999999', // doctor2@healthapp.com
+          user_id: '99999999-9999-9999-9999-999999999999', // Dr. Emily Rodriguez
           doctor_id: 'DR003',
           speciality_id: cardiologySpec.id,
           medical_license_number: 'MD345678',
@@ -431,10 +431,10 @@ export async function seedComprehensiveHealthcareData() {
           practice_name: 'Rodriguez Internal Medicine',
           created_at: new Date(),
         },
-        // doctor3@healthapp.com
+        // doctor3@healthapp.com (Dr. Robert Smith)
         {
           id: '00000000-0000-0000-0000-000000000044',
-          user_id: '44444444-4444-4444-4444-444444444444', // doctor3@healthapp.com
+          user_id: '44444444-4444-4444-4444-444444444444', // Dr. Robert Smith
           doctor_id: 'DR004',
           speciality_id: endocrinologySpec.id,
           medical_license_number: 'MD901234',
