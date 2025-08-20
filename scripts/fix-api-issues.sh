@@ -71,7 +71,7 @@ check_redis() {
     print_status "Checking Redis connectivity..."
     
     # Check if we can connect to Redis
-    if redis-cli -h "$REDIS_HOST" -a "${REDIS_PASSWORD}" ping &> /dev/null; then
+    if REDISCLI_AUTH="${REDIS_PASSWORD}" redis-cli -h "$REDIS_HOST" ping &> /dev/null; then
         print_success "Redis connection successful"
         return 0
     else
