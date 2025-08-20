@@ -105,6 +105,13 @@ echo
 echo -e "${YELLOW}1. Checking for Image Management Functions:${NC}"
 if grep -q "pull_base_images()" "$SCRIPT_DIR/deploy.sh"; then
     echo -e "${GREEN}✓${NC} pull_base_images() function exists"
+else
+    echo "✗ Image management function not found"
+fi
+echo
+
+echo -e "${YELLOW}2. Checking for Migration Safety Functions:${NC}"
+if grep -q "verify_db_connectivity()" "$SCRIPT_DIR/deploy.sh"; then
     echo -e "${GREEN}✓${NC} Database connectivity verification before migrations"
     echo "  - Ensures database is ready before running migrations"
     echo "  - Retries connection if database not immediately available"
