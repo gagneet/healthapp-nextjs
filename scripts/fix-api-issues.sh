@@ -333,7 +333,13 @@ generate_report() {
         echo "  NEXTAUTH_SECRET: ${NEXTAUTH_SECRET:+Set}"
         echo
         echo "Process Information:"
-        ps aux | grep -E "node|next" | grep -v grep
+echo "  NEXTAUTH_SECRET: ${NEXTAUTH_SECRET:+Set}"
+        echo
+        echo "Process Information:"
+        pgrep -f "node|next"
+        echo
+        echo "Port Usage:"
+        netstat -tlnp 2>/dev/null | grep ":$APP_PORT" || ss -tlnp | grep ":$APP_PORT"
         echo
         echo "Port Usage:"
         netstat -tlnp 2>/dev/null | grep ":$APP_PORT" || ss -tlnp | grep ":$APP_PORT"
