@@ -40,7 +40,20 @@ check_database() {
     print_status "Checking database connectivity..."
     
     # Check if we can connect to PostgreSQL
-    if PGPASSWORD="${POSTGRES_PASSWORD}" psql -h "$DB_HOST" -U "${POSTGRES_USER:-healthapp_user}" -d "${POSTGRES_DB:-healthapp_prod}" -c "SELECT 1" &> /dev/null; then
+    # Ensure .pgpass file exists with correct credentials and permissions
+    PGPASS_FILE="${HOME}/.pgpass"
+    PG_HOST="${DB_HOST}"
+    PG_PORT="5432"
+    PG_DB="${POSTGRES_DB:-healthapp_prod}"
+    PG_USER="${POSTGRES_USER:-healthapp_user}"
+    PG_PASSWORD="${POSTGRES_PASSWORD}"
+    if [ ! -f "$PGPASS_FILE" ]; then
+        echo "${PG_HOST}:${PG_PORT}:${PG_DB}:${PG_USER}:${PG_PASSWORD}" > "$PGPASS_FILE"
+        chmod 600 "$PGPASS_FILE"
+    fi
+    
+    # Check if we can connect to PostgreSQL
+    if psql -h "$PG_HOST" -U "$PG_USER" -d "$PG_DB" -c "SELECT 1" &> /dev/null; then
         print_success "Database connection successful"
         return 0
     else
