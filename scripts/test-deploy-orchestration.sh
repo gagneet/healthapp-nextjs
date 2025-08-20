@@ -93,7 +93,6 @@ echo
 
 # Source the deployment script functions
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-
 if [[ ! -f "$SCRIPT_DIR/deploy.sh" ]]; then
     echo "Error: deploy.sh not found in $SCRIPT_DIR" >&2
     exit 1
