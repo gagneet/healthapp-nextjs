@@ -1240,6 +1240,10 @@ export async function DANGEROUSLY_CLEAR_ALL_DATA_TABLES() {
       await tx.patient.deleteMany({});
       await tx.hsps.deleteMany({});
       await tx.doctors.deleteMany({});
+      // Delete in reverse dependency order
+      // await tx.patient.deleteMany({});
+      // await tx.doctors.deleteMany({});
+      // await tx.hsps.deleteMany({});
       await tx.providers.deleteMany({});
       await tx.user.deleteMany({});
       await tx.organization.deleteMany({});

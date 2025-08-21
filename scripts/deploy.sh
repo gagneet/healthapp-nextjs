@@ -363,6 +363,7 @@ setup_environment() {
     # Replace localhost with postgres for container networking
     if [[ "$DATABASE_URL" == *"@localhost"* ]]; then
         export DATABASE_URL=${DATABASE_URL//@localhost/@postgres}
+        # export DATABASE_URL=$(echo "$DATABASE_URL" | sed "s/@localhost/@postgres/")
         log_info "Updated DATABASE_URL for container networking to use 'postgres' host"
     fi
 
