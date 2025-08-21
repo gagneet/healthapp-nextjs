@@ -9,6 +9,7 @@ process.env.DATABASE_URL = process.env.DATABASE_URL || 'postgresql://healthapp_u
 process.env.NEXTAUTH_SECRET = 'test-secret-key'
 process.env.JWT_SECRET = 'test-jwt-secret'
 process.env.NEXTAUTH_URL = 'http://localhost:3000'
+process.env.DAILY_API_KEY = 'test-api-key'
 
 // Mock Next.js modules that might not be available in test environment
 jest.mock('next/headers', () => ({
