@@ -605,7 +605,7 @@ export async function getDoctorDashboard(doctorUserId: string) {
         primary_care_doctor_id: doctorProfile?.id || 'none'
       },
       include: {
-        User: {
+        user: {
           select: {
             first_name: true,
             last_name: true,
@@ -627,9 +627,9 @@ export async function getDoctorDashboard(doctorUserId: string) {
         start_time: { not: null } // Only scheduled appointments with actual times
       },
       include: {
-        Patient: {
+        patient: {
           include: {
-            User: {
+            user: {
               select: {
                 first_name: true,
                 last_name: true
@@ -696,15 +696,15 @@ export async function getDoctorDashboard(doctorUserId: string) {
       recentActivity: {
         recentPatients: recentPatients.map(patient => ({
           id: patient.id,
-          name: `${patient.User?.first_name} ${patient.User?.last_name}`.trim(),
-          email: patient.User?.email,
+          name: `${patient.user?.first_name} ${patient.user?.last_name}`.trim(),
+          email: patient.user?.email,
           lastVisit: patient.updated_at
         })),
         vitals: [], // Can be populated with recent vital readings if needed
       },
       upcomingAppointments: upcomingAppointments.map(apt => ({
         id: apt.id,
-        patientName: `${apt.Patient?.User?.first_name} ${apt.Patient?.User?.last_name}`.trim(),
+        patientName: `${apt.patient?.user?.first_name} ${apt.patient?.user?.last_name}`.trim(),
         date: apt.start_date,
         time: apt.start_time,
         description: apt.description
