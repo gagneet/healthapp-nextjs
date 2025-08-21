@@ -1270,6 +1270,10 @@ export async function seedComprehensiveHealthcareData() {
 
     console.log(`✅ Created treatments database`);
 
+    // Seed Patient Adherence Architecture (inline)
+    console.log(`\n🏥 Creating Patient Adherence Architecture...`);
+    await seedPatientAdherenceArchitecture();
+
     console.log(`🎉 Successfully seeded comprehensive healthcare test data!`);
     console.log(`📊 Summary:`);
     console.log(`   - Users: 10 (5 patients, 2 doctors, 1 HSP, 1 admin, 1 provider)`);
@@ -1338,9 +1342,149 @@ export async function DANGEROUSLY_CLEAR_ALL_DATA_TABLES() {
   }
 }
 
+// Patient Adherence Architecture seeding using predictable UUIDs
+async function seedPatientAdherenceArchitecture() {
+  console.log('📋 Creating Patient Adherence Care Plans...');
+
+  // Get existing entities with their known UUIDs
+  const doctor1Id = '00000000-0000-0000-0000-000000000011'; // doctor@healthapp.com
+  const doctor2Id = '00000000-0000-0000-0000-000000000022'; // doctor1@healthapp.com
+  
+  const patientIds = [
+    '77777777-7777-7777-7777-777777777777', // patient1@healthapp.com
+    '88888888-8888-8888-8888-888888888888', // patient2@healthapp.com
+    '11111111-1111-1111-1111-111111111111'  // patient3@healthapp.com
+  ];
+
+  // Create Care Plans with predictable UUIDs
+  const carePlanIds = [
+    'careplan-0000-0000-0000-000000000001',
+    'careplan-0000-0000-0000-000000000002', 
+    'careplan-0000-0000-0000-000000000003'
+  ];
+
+  for (let i = 0; i < 3; i++) {
+    const doctorId = i < 2 ? doctor1Id : doctor2Id; // First 2 patients to doctor1, last to doctor2
+    const conditions = [
+      ['Type 2 Diabetes', 'Hypertension'],
+      ['Hypertension', 'High Cholesterol'], 
+      ['Anxiety', 'Migraines']
+    ][i];
+
+    await prisma.carePlan.upsert({
+      where: { id: carePlanIds[i] },
+      update: {},
+      create: {
+        id: carePlanIds[i],
+        patient_id: patientIds[i],
+        created_by_doctor_id: doctorId,
+        title: `Comprehensive Care Plan - Patient ${i + 1}`,
+        description: `Patient adherence monitoring for ${conditions.join(' and ')}`,
+        plan_type: 'chronic_care',
+        chronic_conditions: conditions,
+        start_date: new Date(),
+        end_date: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
+        status: 'ACTIVE',
+        priority: 'HIGH',
+        created_at: new Date(),
+        updated_at: new Date()
+      }
+    });
+  }
+
+  console.log('💊 Creating Medication Reminders...');
+
+  // Get medicines with known IDs
+  const metforminId = '550e8400-e29b-41d4-a716-446655440001';
+  const lisinoprilId = '550e8400-e29b-41d4-a716-446655440002';
+  const aspirinId = '550e8400-e29b-41d4-a716-446655440003';
+
+  // Create Medication Reminders with predictable UUIDs
+  const medicationIds = [
+    'medication-0000-0000-0000-000000000001', // Metformin for patient 1
+    'medication-0000-0000-0000-000000000002', // Lisinopril for patient 1
+    'medication-0000-0000-0000-000000000003', // Lisinopril for patient 2
+    'medication-0000-0000-0000-000000000004'  // Aspirin for patient 2
+  ];
+
+  const medications = [
+    { id: medicationIds[0], patientId: patientIds[0], carePlanId: carePlanIds[0], medicineId: metforminId, doctorId: doctor1Id, name: 'Metformin', dosage: '1000mg', frequency: 'twice_daily' },
+    { id: medicationIds[1], patientId: patientIds[0], carePlanId: carePlanIds[0], medicineId: lisinoprilId, doctorId: doctor1Id, name: 'Lisinopril', dosage: '10mg', frequency: 'once_daily' },
+    { id: medicationIds[2], patientId: patientIds[1], carePlanId: carePlanIds[1], medicineId: lisinoprilId, doctorId: doctor1Id, name: 'Lisinopril', dosage: '10mg', frequency: 'once_daily' },
+    { id: medicationIds[3], patientId: patientIds[1], carePlanId: carePlanIds[1], medicineId: aspirinId, doctorId: doctor1Id, name: 'Aspirin', dosage: '81mg', frequency: 'once_daily' }
+  ];
+
+  for (const med of medications) {
+    await prisma.medication.upsert({
+      where: { id: med.id },
+      update: {},
+      create: {
+        id: med.id,
+        participant_id: med.patientId,
+        organizer_type: 'doctor',
+        organizer_id: med.doctorId,
+        medicine_id: med.medicineId,
+        care_plan_id: med.carePlanId,
+        description: `${med.name} ${med.dosage} ${med.frequency.replace('_', ' ')} for patient adherence monitoring`,
+        start_date: new Date(),
+        end_date: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
+        details: {
+          dosage: med.dosage,
+          frequency: med.frequency,
+          is_critical: med.name === 'Metformin' || med.name === 'Lisinopril'
+        },
+        created_at: new Date(),
+        updated_at: new Date()
+      }
+    });
+  }
+
+  console.log('📊 Creating Medication Adherence Logs...');
+
+  // Create adherence logs with predictable UUIDs
+  let logCounter = 1;
+  for (const med of medications) {
+    // Create logs for the past 7 days
+    for (let day = 7; day >= 0; day--) {
+      const logDate = new Date(Date.now() - day * 24 * 60 * 60 * 1000);
+      const dailyDoses = med.frequency === 'twice_daily' ? 2 : 1;
+      
+      for (let dose = 0; dose < dailyDoses; dose++) {
+        const scheduledTime = new Date(logDate);
+        scheduledTime.setHours(dose === 0 ? 8 : 20, 0, 0, 0);
+        
+        const adherenceRate = Math.random();
+        const wasAdherent = adherenceRate > 0.2; // 80% adherence rate
+        
+        const logId = `medlog-000-000-000-${String(logCounter).padStart(12, '0')}`;
+        
+        await prisma.medication_logs.upsert({
+          where: { id: logId },
+          update: {},
+          create: {
+            id: logId,
+            medication_id: med.id,
+            patient_id: med.patientId,
+            scheduled_at: scheduledTime,
+            taken_at: wasAdherent ? scheduledTime : null,
+            adherence_status: wasAdherent ? 'taken' : 'missed',
+            reminder_sent: true,
+            created_at: scheduledTime,
+            updated_at: scheduledTime
+          }
+        });
+        
+        logCounter++;
+      }
+    }
+  }
+
+  console.log('✅ Patient Adherence Architecture seeded successfully');
+}
+
 // Run seeding if this script is called directly
-// CommonJS-compatible main module detection
-if (require.main === module) {
+// ES Module-compatible main module detection
+if (import.meta.url === `file://${process.argv[1]}`) {
   seedComprehensiveHealthcareData()
     .then((result) => {
       console.log('Seeding completed:', result);

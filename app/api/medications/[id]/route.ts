@@ -62,10 +62,10 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       }, { status: 404 });
     }
 
-    // Get medications/care plans for this patient
-    const medications = await prisma.carePlan.findMany({
+    // Get medication reminders for this patient through their care plans
+    const medications = await prisma.medication.findMany({
       where: {
-        patient_id: patient.id
+        participant_id: patient.id
       },
       include: {
         medicine: {
@@ -75,6 +75,26 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
             type: true,
             description: true
           }
+        },
+        care_plan: {
+          select: {
+            id: true,
+            title: true,
+            status: true,
+            description: true
+          }
+        },
+        medication_logs: {
+          select: {
+            id: true,
+            scheduled_at: true,
+            taken_at: true,
+            adherence_status: true
+          },
+          orderBy: {
+            scheduled_at: 'desc'
+          },
+          take: 5 // Last 5 logs for adherence calculation
         }
       },
       orderBy: {
@@ -82,29 +102,45 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       }
     });
 
-    // Transform to expected format
-    const formattedMedications = medications.map(med => ({
-      id: med.id,
-      name: med.medicine?.name || 'Unknown Medication',
-      dosage: med.dosage || 'Dosage not specified',
-      frequency: med.frequency || 'Frequency not specified',
-      start_date: med.start_date,
-      end_date: med.end_date,
-      is_critical: med.is_critical || false,
-      last_taken: null, // Would need separate tracking table
-      next_due: null, // Would need separate tracking table
-      adherence_rate: Math.floor(Math.random() * 40) + 60, // Mock data
-      status: med.status || 'active',
-      instructions: med.instructions,
-      created_at: med.created_at
-    }));
+    // Transform to expected format with real adherence data
+    const formattedMedications = medications.map(med => {
+      // Calculate adherence rate from medication logs
+      const logs = med.medication_logs || [];
+      const takenCount = logs.filter(log => log.adherence_status === 'taken' && log.taken_at).length;
+      const adherenceRate = logs.length > 0 ? Math.round((takenCount / logs.length) * 100) : 0;
+      
+      // Find last taken and next due
+      const lastTakenLog = logs.find(log => log.taken_at);
+      const nextScheduledLog = logs.find(log => !log.taken_at && log.scheduled_at > new Date());
+      
+      return {
+        id: med.id,
+        name: med.medicine?.name || 'Unknown Medication',
+        dosage: (med.details as any)?.dosage || 'Dosage not specified',
+        frequency: (med.details as any)?.frequency || 'Frequency not specified',
+        start_date: med.start_date,
+        end_date: med.end_date,
+        is_critical: (med.details as any)?.is_critical || false,
+        last_taken: lastTakenLog?.taken_at || null,
+        next_due: nextScheduledLog?.scheduled_at || null,
+        adherence_rate: adherenceRate,
+        status: med.care_plan?.status || 'active',
+        instructions: med.description,
+        care_plan: {
+          id: med.care_plan?.id,
+          title: med.care_plan?.title,
+          description: med.care_plan?.description
+        },
+        created_at: med.created_at
+      };
+    });
 
     return NextResponse.json({
       status: true,
       statusCode: 200,
       payload: {
         data: {
-          care_plans: formattedMedications
+          medications: formattedMedications
         },
         message: 'Patient medications retrieved successfully'
       }

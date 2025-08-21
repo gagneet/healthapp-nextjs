@@ -62,24 +62,25 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       }, { status: 404 });
     }
 
-    // Get vitals for this patient
-    const vitals = await prisma.vital.findMany({
+    // Get vital readings for this patient
+    const vitals = await prisma.vitalReading.findMany({
       where: {
         patient_id: patient.id
       },
       include: {
-        vitalTemplate: {
+        vital_type: {
           select: {
             id: true,
             name: true,
             unit: true,
             normal_range_min: true,
-            normal_range_max: true
+            normal_range_max: true,
+            description: true
           }
         }
       },
       orderBy: {
-        recorded_at: 'desc'
+        reading_time: 'desc'
       },
       take: 50 // Last 50 readings
     });
@@ -87,17 +88,20 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
     // Transform to expected format
     const formattedVitals = vitals.map(vital => ({
       id: vital.id,
-      type: vital.vitalTemplate?.name || 'Unknown Vital',
-      value: vital.value,
-      unit: vital.vitalTemplate?.unit || '',
-      reading_time: vital.recorded_at,
-      is_flagged: vital.is_critical || false,
+      type: vital.vital_type?.name || 'Unknown Vital',
+      value: vital.value?.toString() || '0',
+      unit: vital.vital_type?.unit || '',
+      reading_time: vital.reading_time,
+      is_flagged: vital.is_flagged || false,
       normal_range: {
-        min: vital.vitalTemplate?.normal_range_min || 0,
-        max: vital.vitalTemplate?.normal_range_max || 100
+        min: vital.vital_type?.normal_range_min?.toString() || '0',
+        max: vital.vital_type?.normal_range_max?.toString() || '100'
       },
       notes: vital.notes,
-      recorded_by: vital.recorded_by_doctor_id ? 'Doctor' : 'Patient'
+      device_info: vital.device_info,
+      is_validated: vital.is_validated || false,
+      validated_by: vital.validated_by,
+      recorded_by: 'Patient' // Patient adherence - patients record their own vitals
     }));
 
     return NextResponse.json({
