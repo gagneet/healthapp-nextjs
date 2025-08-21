@@ -3,10 +3,10 @@ import { getServerSession } from "@/lib/auth";
 import { prisma } from '@/lib/prisma';
 
 /**
- * GET /api/appointments/{patientId}
+ * GET /api/appointments/{id}
  * Get appointments for a specific patient
  */
-export async function GET(request: NextRequest, { params }: { params: { patientId: string } }) {
+export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
   try {
     const session = await getServerSession();
     if (!session?.user) {
@@ -26,7 +26,7 @@ export async function GET(request: NextRequest, { params }: { params: { patientI
       }, { status: 403 });
     }
 
-    const { patientId } = params;
+    const { id: patientId } = params;
 
     // Get doctor ID if user is a doctor
     let doctorId = null;
@@ -46,10 +46,10 @@ export async function GET(request: NextRequest, { params }: { params: { patientI
       doctorId = doctor.id;
     }
 
-    // Verify access to patient
+    // Verify access to patient - patientId is the Patient primary key
     const patient = await prisma.patient.findFirst({
       where: { 
-        user_id: patientId,
+        id: patientId,
         ...(doctorId ? { primary_care_doctor_id: doctorId } : {})
       }
     });
@@ -65,7 +65,7 @@ export async function GET(request: NextRequest, { params }: { params: { patientI
     // Get appointments for this patient
     const appointments = await prisma.appointment.findMany({
       where: {
-        patient_id: patient.user_id, // appointments table uses user_id for patient reference
+        patient_id: patient.id, // appointments table uses patient primary key
         ...(doctorId ? { doctor_id: doctorId } : {})
       },
       orderBy: {

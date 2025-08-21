@@ -347,13 +347,15 @@ export class VideoConsultationService {
   }
 
   /**
-   * Private helper to make requests to the Daily.co API
+   * Private helper to validate API key
    */
-  private async _dailyApiRequest(endpoint: string, method: 'GET' | 'POST' | 'DELETE', body?: object) {
   private _isApiKeyValid(): boolean {
     return !!this.DAILY_API_KEY && this.DAILY_API_KEY !== 'YOUR_DAILY_API_KEY';
   }
 
+  /**
+   * Private helper to make requests to the Daily.co API
+   */
   private async _dailyApiRequest(endpoint: string, method: 'GET' | 'POST' | 'DELETE', body?: object) {
     if (!this._isApiKeyValid()) {
       console.error('Daily.co API key is not configured.');
