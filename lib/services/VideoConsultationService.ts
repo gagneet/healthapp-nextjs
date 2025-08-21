@@ -217,7 +217,7 @@ export class VideoConsultationService {
       const updatedConsultation = await prisma.videoConsultation.update({
         where: { id: consultation.id },
         data: {
-          status: 'COMPLETED' as any,
+          status: 'COMPLETED',
           actual_end: new Date(),
           consultation_notes: summary, // Assuming summary is part of notes
           updated_at: new Date(),
