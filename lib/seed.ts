@@ -1,6 +1,6 @@
 // lib/seed.ts - Prisma-based seeding for comprehensive healthcare test data
 import { PrismaClient } from '@prisma/client';
-import bcrypt from 'bcryptjs';
+import * as bcrypt from 'bcryptjs';
 import { generateDoctorId, generateHspId, generatePatientId } from './id-generation.js';
 
 const prisma = new PrismaClient();
@@ -830,28 +830,28 @@ export async function seedComprehensiveHealthcareData() {
       skipDuplicates: true,
       data: [
         {
-          id: 'vital-blood-pressure',
+          id: '550e8400-e29b-41d4-a716-446655440020',
           name: 'Blood Pressure',
           unit: 'mmHg',
           created_at: new Date(),
           updated_at: new Date()
         },
         {
-          id: 'vital-heart-rate',
+          id: '550e8400-e29b-41d4-a716-446655440021',
           name: 'Heart Rate',
           unit: 'bpm',
           created_at: new Date(),
           updated_at: new Date()
         },
         {
-          id: 'vital-weight',
+          id: '550e8400-e29b-41d4-a716-446655440022',
           name: 'Weight',
           unit: 'kg',
           created_at: new Date(),
           updated_at: new Date()
         },
         {
-          id: 'vital-blood-glucose',
+          id: '550e8400-e29b-41d4-a716-446655440023',
           name: 'Blood Glucose',
           unit: 'mg/dL',
           created_at: new Date(),
@@ -1260,8 +1260,8 @@ export async function DANGEROUSLY_CLEAR_ALL_DATA_TABLES() {
 }
 
 // Run seeding if this script is called directly
-// Note: In ES modules, use import.meta.url for main module detection
-if (import.meta.url === `file://${process.argv[1]}`) {
+// CommonJS-compatible main module detection
+if (require.main === module) {
   seedComprehensiveHealthcareData()
     .then((result) => {
       console.log('Seeding completed:', result);

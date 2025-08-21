@@ -40,9 +40,9 @@
     "migrate": "npx prisma migrate deploy",
     "migrate:dev": "npx prisma migrate dev",
     "migrate:reset": "npx prisma migrate reset --force",
-    "seed": "node lib/seed.mjs",
-    "seed:all": "node lib/seed.mjs",
-    "seed:compiled": "tsc lib/seed.ts --outDir dist & node dist/seed.js",
+    "seed": "node lib/seed.cjs",
+    "seed:all": "node lib/seed.cjs",
+    "seed:compile": "tsc lib/seed.ts --outDir lib/ --target es2020 --module commonjs --esModuleInterop --allowSyntheticDefaultImports --skipLibCheck && mv lib/seed.js lib/seed.cjs",
     "seed:dev": "tsx watch lib/seed.ts",
     "seed:prod": "npx prisma db seed",
     "db:generate": "npx prisma generate",
@@ -143,7 +143,7 @@
     "zod": "^3.25.76"
   },
   "prisma": {
-    "seed": "node lib/seed.mjs"
+    "seed": "node lib/seed.cjs"
   },
   "engines": {
     "node": ">=22.18.0"
