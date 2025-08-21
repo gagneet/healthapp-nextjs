@@ -27,7 +27,7 @@ const seedData = {
       { user_id: '99999999-9999-9999-9999-999999999999', doctor_id: 'DR003', specialityName: 'Cardiology', medical_license_number: 'MD345678' },
   ],
   patients: [
-      { user_id: '77777777-7777-7777-7777-777777777777', patient_id: 'PAT-2024-001', primary_care_doctor_id: '00000000-0000-0000-0000-000000000011' },
+      { user_id: '77777777-7777-7777-7777-777777777777', patient_id: 'PAT-2024-001', primary_care_doctor_id: '00000000-0000-0000-0000-000000000001' },
   ]
 };
 
