@@ -241,16 +241,12 @@ export default function PatientDetailsPage() {
   // API call functions
   const fetchPatientData = useCallback(async () => {
     try {
-      const token = localStorage.getItem('authToken')
-      if (!token) {
-        throw new Error('No authentication token found')
-      }
-
+      // Use NextAuth session-based authentication with credentials: 'include'
       const response = await fetch(`/api/patients/${patientId}`, {
         headers: {
-          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
-        }
+        },
+        credentials: 'include' // This will include session cookies
       })
 
       if (!response.ok) {
@@ -291,12 +287,11 @@ export default function PatientDetailsPage() {
   const fetchMedications = useCallback(async () => {
     try {
       setLoadingStates(prev => ({ ...prev, care_plans: true }))
-      const token = localStorage.getItem('authToken')
       const response = await fetch(`/api/medications/${patientId}`, {
         headers: {
-          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
-        }
+        },
+        credentials: 'include'
       })
 
       if (response.ok) {
@@ -317,12 +312,11 @@ export default function PatientDetailsPage() {
   const fetchVitals = useCallback(async () => {
     try {
       setLoadingStates(prev => ({ ...prev, vitals: true }))
-      const token = localStorage.getItem('authToken')
       const response = await fetch(`/api/vitals/${patientId}`, {
         headers: {
-          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
-        }
+        },
+        credentials: 'include'
       })
 
       if (response.ok) {
@@ -341,12 +335,11 @@ export default function PatientDetailsPage() {
   const fetchAppointments = useCallback(async () => {
     try {
       setLoadingStates(prev => ({ ...prev, appointments: true }))
-      const token = localStorage.getItem('authToken')
       const response = await fetch(`/api/appointments/${patientId}`, {
         headers: {
-          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
-        }
+        },
+        credentials: 'include'
       })
 
       if (response.ok) {
@@ -365,12 +358,11 @@ export default function PatientDetailsPage() {
   const fetchCarePlans = useCallback(async () => {
     try {
       setLoadingStates(prev => ({ ...prev, carePlans: true }))
-      const token = localStorage.getItem('authToken')
       const response = await fetch(`/api/patients/${patientId}/careplan-details`, {
         headers: {
-          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
-        }
+        },
+        credentials: 'include'
       })
 
       if (response.ok) {
