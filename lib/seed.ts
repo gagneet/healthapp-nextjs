@@ -1,7 +1,7 @@
 // lib/seed.ts - Prisma-based seeding for comprehensive healthcare test data
 import { PrismaClient } from '@prisma/client';
 import * as bcrypt from 'bcryptjs';
-import { generateDoctorId, generateHspId, generatePatientId } from './id-generation.js';
+import { generateDoctorId, generateHspId, generatePatientId } from './id-generation';
 
 const prisma = new PrismaClient();
 
