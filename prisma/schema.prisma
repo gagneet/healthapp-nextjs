@@ -2708,4 +2708,3 @@ model DevicePlugin {
   
   @@map("device_plugins")
 }
-

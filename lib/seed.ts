@@ -1228,33 +1228,83 @@ export async function seedComprehensiveHealthcareData() {
   }
 }
 
-// WARNING: This function is destructive and will wipe all data from the specified tables.
-// It is intended for development and testing purposes only.
-export async function DANGEROUSLY_CLEAR_ALL_DATA_TABLES() {
-  console.log('🗑️ DANGEROUSLY clearing all data from tables...');
+export async function clearTestData() {
+  console.log('🗑️ Clearing test data...');
   
   try {
     // Wrap all delete operations in a transaction to ensure atomicity
-    // Delete in an order that respects foreign key constraints
     await prisma.$transaction(async (tx) => {
-      await tx.patient.deleteMany({});
-      await tx.hsps.deleteMany({});
-      await tx.doctors.deleteMany({});
       // Delete in reverse dependency order
-      // await tx.patient.deleteMany({});
-      // await tx.doctors.deleteMany({});
-      // await tx.hsps.deleteMany({});
-      await tx.providers.deleteMany({});
-      await tx.user.deleteMany({});
-      await tx.organization.deleteMany({});
-      await tx.speciality.deleteMany({});
-      await tx.medicine.deleteMany({});
-      await tx.vital_templates.deleteMany({});
+      await tx.patient.deleteMany({
+        where: {
+          patient_id: {
+            startsWith: 'PAT-2024-'
+          }
+        }
+      });
+
+      await tx.doctors.deleteMany({
+        where: {
+          id: {
+            in: ['DOC-2024-001', 'DOC-2024-002'] // Use consistent IDs
+          }
+        }
+      });
+
+      await tx.hsps.deleteMany({
+        where: {
+          id: 'HSP-2024-001' // Use consistent ID
+        }
+      });
+
+      await tx.providers.deleteMany({
+        where: {
+          id: 'PROV-2024-001' // Use consistent ID
+        }
+      });
+
+      await tx.user.deleteMany({
+        where: {
+          email: {
+            endsWith: '@healthapp.com'
+          }
+        }
+      });
+
+      await tx.organization.deleteMany({
+        where: {
+          id: 'ORG-2024-001' // Use consistent ID
+        }
+      });
+
+      await tx.speciality.deleteMany({
+        where: {
+          id: {
+            in: ['SPEC-2024-001', 'SPEC-2024-002'] // Use consistent IDs
+          }
+        }
+      });
+
+      await tx.medicine.deleteMany({
+        where: {
+          id: {
+            in: ['MED-2024-001', 'MED-2024-002'] // Use consistent IDs
+          }
+        }
+      });
+
+      await tx.vital_templates.deleteMany({
+        where: {
+          id: {
+            in: ['VITAL-2024-001', 'VITAL-2024-002', 'VITAL-2024-003', 'VITAL-2024-004'] // Use consistent IDs
+          }
+        }
+      });
     });
 
-    console.log('✅ All data cleared successfully in transaction');
+    console.log('✅ Test data cleared successfully in transaction');
   } catch (error) {
-    console.error('❌ Error clearing all data:', error);
+    console.error('❌ Error clearing test data:', error);
     throw error;
   }
 }

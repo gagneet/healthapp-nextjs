@@ -10,7 +10,7 @@
  * Avoids collisions and provides predictable, sortable IDs
  */
 
-import { prisma } from "./prisma.js"
+import { prisma } from "@/lib/prisma"
 
 export interface BusinessIdConfig {
   prefix: string;

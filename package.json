@@ -40,8 +40,8 @@
     "migrate": "npx prisma migrate deploy",
     "migrate:dev": "npx prisma migrate dev",
     "migrate:reset": "npx prisma migrate reset --force",
-    "seed": "node lib/seed.mjs",
-    "seed:all": "node lib/seed.mjs",
+    "seed": "node --import tsx/esm lib/seed.ts",
+    "seed:all": "node --import tsx/esm lib/seed.ts",
     "seed:compiled": "tsc lib/seed.ts --outDir dist & node dist/seed.js",
     "seed:dev": "tsx watch lib/seed.ts",
     "seed:prod": "npx prisma db seed",
@@ -143,10 +143,9 @@
     "zod": "^3.25.76"
   },
   "prisma": {
-    "seed": "node lib/seed.mjs"
+    "seed": "node --import tsx/esm lib/seed.ts"
   },
   "engines": {
     "node": ">=22.18.0"
   }
 }
-
