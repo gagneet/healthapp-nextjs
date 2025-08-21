@@ -494,7 +494,6 @@ export async function seedComprehensiveHealthcareData() {
 
     console.log(`✅ Created provider`);
 
-    // Create patient profiles with detailed medical data (idempotent)
     const patientProfiles = await prisma.patient.createMany({
       skipDuplicates: true,
       data: [
@@ -1229,16 +1228,22 @@ export async function seedComprehensiveHealthcareData() {
   }
 }
 
-export async function clearTestData() {
-  console.log('🗑️ Clearing test data...');
+// WARNING: This function is destructive and will wipe all data from the specified tables.
+// It is intended for development and testing purposes only.
+export async function DANGEROUSLY_CLEAR_ALL_DATA_TABLES() {
+  console.log('🗑️ DANGEROUSLY clearing all data from tables...');
   
   try {
     // Wrap all delete operations in a transaction to ensure atomicity
+    // Delete in an order that respects foreign key constraints
     await prisma.$transaction(async (tx) => {
-      // Delete in reverse dependency order
       await tx.patient.deleteMany({});
-      await tx.doctors.deleteMany({});
       await tx.hsps.deleteMany({});
+      await tx.doctors.deleteMany({});
+      // Delete in reverse dependency order
+      // await tx.patient.deleteMany({});
+      // await tx.doctors.deleteMany({});
+      // await tx.hsps.deleteMany({});
       await tx.providers.deleteMany({});
       await tx.user.deleteMany({});
       await tx.organization.deleteMany({});
@@ -1247,9 +1252,9 @@ export async function clearTestData() {
       await tx.vital_templates.deleteMany({});
     });
 
-    console.log('✅ Test data cleared successfully in transaction');
+    console.log('✅ All data cleared successfully in transaction');
   } catch (error) {
-    console.error('❌ Error clearing test data:', error);
+    console.error('❌ Error clearing all data:', error);
     throw error;
   }
 }
