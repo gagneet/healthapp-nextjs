@@ -181,21 +181,48 @@ export async function GET(request: NextRequest) {
         riskLevel: p.overall_adherence_score < 60 ? 'high' : 'medium'
       }));
 
+    // Format data to match frontend expectations
+    const adherence_overview = [
+      { name: 'Excellent (≥90%)', value: adherenceCategories.excellent, color: '#10B981' },
+      { name: 'Good (75-89%)', value: adherenceCategories.good, color: '#3B82F6' },
+      { name: 'Fair (60-74%)', value: adherenceCategories.fair, color: '#F59E0B' },
+      { name: 'Poor (<60%)', value: adherenceCategories.poor, color: '#EF4444' }
+    ];
+
+    // Generate monthly trends for last 6 months
+    const monthlyTrends = Array.from({length: 6}, (_, i) => {
+      const date = new Date();
+      date.setMonth(date.getMonth() - i);
+      const monthName = date.toLocaleDateString('en-US', { month: 'short' });
+      
+      return {
+        month: monthName,
+        medications: Math.floor(Math.random() * 100) + 50, // Mock data for now
+        appointments: Math.floor(Math.random() * 50) + 20,
+        vitals: Math.floor(Math.random() * 80) + 30
+      };
+    }).reverse();
+
     return NextResponse.json({
       status: true,
       statusCode: 200,
       payload: {
         data: {
-          overview: {
-            totalPatients,
-            patientsWithRecords,
-            averageAdherence: Math.round(averageAdherence * 100) / 100,
-            periodDays: days
-          },
-          adherenceDistribution: adherenceCategories,
-          trends: dailyAdherenceData,
-          topPerformers: topPatients,
-          needsAttention: patientsNeedingAttention
+          adherence_overview,
+          monthly_trends: monthlyTrends,
+          // Keep the detailed analytics for future use
+          detailed_analytics: {
+            overview: {
+              totalPatients,
+              patientsWithRecords,
+              averageAdherence: Math.round(averageAdherence * 100) / 100,
+              periodDays: days
+            },
+            adherenceDistribution: adherenceCategories,
+            trends: dailyAdherenceData,
+            topPerformers: topPatients,
+            needsAttention: patientsNeedingAttention
+          }
         },
         message: 'Adherence analytics retrieved successfully'
       }

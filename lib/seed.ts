@@ -1,7 +1,7 @@
 // lib/seed.ts - Prisma-based seeding for comprehensive healthcare test data
 import { PrismaClient } from '@prisma/client';
 import * as bcrypt from 'bcryptjs';
-import { generateDoctorId, generateHspId, generatePatientId } from './id-generation.js';
+import { generateDoctorId, generateHspId, generatePatientId } from './id-generation';
 
 const prisma = new PrismaClient();
 
@@ -636,6 +636,83 @@ export async function seedComprehensiveHealthcareData() {
 
     console.log(`✅ Created patient profiles`);
 
+    // Create some appointments for today and future dates
+    const appointments = await prisma.appointment.createMany({
+      skipDuplicates: true,
+      data: [
+        // Today's appointments for doctor@healthapp.com
+        {
+          id: 'apt-001',
+          doctor_id: '00000000-0000-0000-0000-000000000011', // doctor@healthapp.com
+          patient_id: '77777777-7777-7777-7777-777777777777', // First patient
+          start_date: new Date(),
+          start_time: new Date(new Date().setHours(9, 0, 0, 0)),
+          end_time: new Date(new Date().setHours(9, 30, 0, 0)),
+          description: 'Routine checkup and medication review',
+          appointment_type: 'CONSULTATION'
+        },
+        {
+          id: 'apt-002', 
+          doctor_id: '00000000-0000-0000-0000-000000000011', // doctor@healthapp.com
+          patient_id: '88888888-8888-8888-8888-888888888888', // Second patient
+          start_date: new Date(),
+          start_time: new Date(new Date().setHours(14, 0, 0, 0)),
+          end_time: new Date(new Date().setHours(14, 30, 0, 0)),
+          description: 'Follow-up for hypertension management',
+          appointment_type: 'FOLLOW_UP'
+        },
+        // Future appointments
+        {
+          id: 'apt-003',
+          doctor_id: '00000000-0000-0000-0000-000000000011', // doctor@healthapp.com
+          patient_id: '33333333-3333-3333-3333-333333333333', // Third patient
+          start_date: new Date(Date.now() + 24 * 60 * 60 * 1000), // Tomorrow
+          start_time: new Date(Date.now() + 24 * 60 * 60 * 1000 + 10 * 60 * 60 * 1000), // 10 AM tomorrow
+          end_time: new Date(Date.now() + 24 * 60 * 60 * 1000 + 10.5 * 60 * 60 * 1000), // 10:30 AM tomorrow
+          description: 'Diabetes management consultation',
+          appointment_type: 'CONSULTATION'
+        }
+      ]
+    });
+
+    console.log('✅ Created sample appointments');
+
+    // Create some adherence records
+    const adherenceRecords = await prisma.adherenceRecord.createMany({
+      skipDuplicates: true,
+      data: [
+        {
+          id: 'adh-001',
+          patient_id: '77777777-7777-7777-7777-777777777777',
+          medication_log_id: null, // Can be null for general records
+          recorded_at: new Date(Date.now() - 24 * 60 * 60 * 1000), // Yesterday
+          is_completed: true,
+          is_missed: false,
+          adherence_percentage: 95.0
+        },
+        {
+          id: 'adh-002',
+          patient_id: '88888888-8888-8888-8888-888888888888',
+          medication_log_id: null,
+          recorded_at: new Date(Date.now() - 24 * 60 * 60 * 1000), // Yesterday
+          is_completed: true,
+          is_missed: false,
+          adherence_percentage: 78.0
+        },
+        {
+          id: 'adh-003',
+          patient_id: '33333333-3333-3333-3333-333333333333',
+          medication_log_id: null,
+          recorded_at: new Date(Date.now() - 24 * 60 * 60 * 1000), // Yesterday
+          is_completed: false,
+          is_missed: true,
+          adherence_percentage: 45.0
+        }
+      ]
+    });
+
+    console.log('✅ Created adherence records');
+
     // Create comprehensive medicines database (idempotent)
     const medicines = await prisma.medicine.createMany({
       skipDuplicates: true,
@@ -1202,6 +1279,8 @@ export async function seedComprehensiveHealthcareData() {
     console.log(`   - Vital Templates: 4`);
     console.log(`   - Symptoms/Conditions: 5 (major medical conditions)`);
     console.log(`   - Treatments: 5 (medication, therapy, lifestyle treatments)`);
+    console.log(`   - Appointments: 3 (today's appointments + future appointments)`);
+    console.log(`   - Adherence Records: 3 (realistic adherence data for dashboard)`);
     console.log(`   - Basic doctor credentials: doctor@healthapp.com / TempPassword123!`);
     console.log(`   - Basic doctor credentials: doctor1@healthapp.com / TempPassword123!`);
     console.log(`   - Other test credentials: email/${defaultPassword} for all other users`);

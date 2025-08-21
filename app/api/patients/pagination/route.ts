@@ -46,7 +46,27 @@ export async function GET(request: NextRequest) {
       sortOrder: (searchParams.get('sortOrder') || 'desc') as 'asc' | 'desc'
     };
 
-    const patientsData = await getPatients(user.id || user.userId, pagination);
+    // For doctors, we need to get the doctor profile ID, not the user ID
+    let doctorId = user.id || user.userId;
+    if (user.role === 'DOCTOR') {
+      // Import prisma locally to get doctor profile ID
+      const { prisma } = await import('@/lib/prisma');
+      const doctor = await prisma.doctors.findFirst({
+        where: { user_id: user.id || user.userId }
+      });
+      
+      if (!doctor) {
+        return NextResponse.json({
+          status: false,
+          statusCode: 404,
+          payload: { error: { status: 'not_found', message: 'Doctor profile not found' } }
+        }, { status: 404 });
+      }
+      
+      doctorId = doctor.id;
+    }
+
+    const patientsData = await getPatients(doctorId, pagination);
     
     return NextResponse.json(formatApiSuccess(patientsData, 'Patients retrieved successfully'));
   } catch (error) {

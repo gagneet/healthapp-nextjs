@@ -107,7 +107,7 @@ export async function GET(request: NextRequest) {
         where: {
           doctor_id: doctor.id,
           is_urgent: true,
-          is_read: false
+          read_at: null
         },
         include: {
           patients: {
@@ -174,7 +174,7 @@ export async function GET(request: NextRequest) {
           patientName,
           patientId: notification.patients?.patient_id,
           timestamp: notification.created_at,
-          status: notification.is_read ? 'READ' : 'ACTIVE'
+          status: notification.read_at ? 'READ' : 'ACTIVE'
         };
       })
     ];
