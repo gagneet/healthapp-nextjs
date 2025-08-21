@@ -169,7 +169,7 @@ export class VideoConsultationService {
       if (consultation.status === 'SCHEDULED') {
         await prisma.videoConsultation.update({
           where: { id: consultation.id },
-          data: { status: 'IN_PROGRESS' as any, actual_start: new Date(), updated_at: new Date() }
+          data: { status: 'IN_PROGRESS', actual_start: new Date(), updated_at: new Date() }
         });
       }
 
