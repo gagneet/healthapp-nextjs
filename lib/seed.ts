@@ -499,7 +499,6 @@ export async function seedComprehensiveHealthcareData() {
       skipDuplicates: true,
       data: [
         {
-          id: 'pat-sarah-johnson',
           user_id: '77777777-7777-7777-7777-777777777777',
           patient_id: 'PAT-2024-001',
           organization_id: organization.id,
@@ -530,7 +529,6 @@ export async function seedComprehensiveHealthcareData() {
           updated_at: new Date()
         },
         {
-          id: 'pat-michael-chen',
           user_id: '88888888-8888-8888-8888-888888888888',
           patient_id: 'PAT-2024-002',
           organization_id: organization.id,
@@ -556,7 +554,6 @@ export async function seedComprehensiveHealthcareData() {
           updated_at: new Date()
         },
         {
-          id: 'pat-emma-williams',
           user_id: '11111111-1111-1111-1111-111111111111',
           patient_id: 'PAT-2024-003',
           organization_id: organization.id,
@@ -583,7 +580,6 @@ export async function seedComprehensiveHealthcareData() {
           updated_at: new Date()
         },
         {
-          id: 'pat-james-brown',
           user_id: '22222222-2222-2222-2222-222222222222',
           patient_id: 'PAT-2024-004',
           organization_id: organization.id,
@@ -610,7 +606,6 @@ export async function seedComprehensiveHealthcareData() {
           updated_at: new Date()
         },
         {
-          id: 'pat-olivia-davis',
           user_id: '33333333-3333-3333-3333-333333333333',
           patient_id: 'PAT-2024-005',
           organization_id: organization.id,
@@ -839,10 +834,6 @@ export async function seedComprehensiveHealthcareData() {
           id: 'vital-blood-pressure',
           name: 'Blood Pressure',
           unit: 'mmHg',
-          category: 'cardiovascular',
-          normal_range_min: 120,
-          normal_range_max: 80,
-          description: 'Systolic and diastolic blood pressure measurement',
           created_at: new Date(),
           updated_at: new Date()
         },
@@ -850,10 +841,6 @@ export async function seedComprehensiveHealthcareData() {
           id: 'vital-heart-rate',
           name: 'Heart Rate',
           unit: 'bpm',
-          category: 'cardiovascular',
-          normal_range_min: 60,
-          normal_range_max: 100,
-          description: 'Heart rate measurement',
           created_at: new Date(),
           updated_at: new Date()
         },
@@ -861,10 +848,6 @@ export async function seedComprehensiveHealthcareData() {
           id: 'vital-weight',
           name: 'Weight',
           unit: 'kg',
-          category: 'physical',
-          normal_range_min: 50,
-          normal_range_max: 120,
-          description: 'Body weight measurement',
           created_at: new Date(),
           updated_at: new Date()
         },
@@ -872,10 +855,6 @@ export async function seedComprehensiveHealthcareData() {
           id: 'vital-blood-glucose',
           name: 'Blood Glucose',
           unit: 'mg/dL',
-          category: 'metabolic',
-          normal_range_min: 80,
-          normal_range_max: 130,
-          description: 'Blood glucose level measurement',
           created_at: new Date(),
           updated_at: new Date()
         }
@@ -909,7 +888,6 @@ export async function seedComprehensiveHealthcareData() {
           },
           common_age_groups: ['adults', 'elderly'],
           gender_specific: 'both',
-          risk_factors: ['Obesity', 'Family history', 'Sedentary lifestyle', 'High blood pressure'],
           is_active: true,
           created_at: new Date(),
           updated_at: new Date()
@@ -934,7 +912,6 @@ export async function seedComprehensiveHealthcareData() {
           },
           common_age_groups: ['adults', 'elderly'],
           gender_specific: 'both',
-          risk_factors: ['High sodium diet', 'Stress', 'Obesity', 'Family history', 'Age'],
           is_active: true,
           created_at: new Date(),
           updated_at: new Date()
@@ -958,7 +935,6 @@ export async function seedComprehensiveHealthcareData() {
           },
           common_age_groups: ['children', 'adults'],
           gender_specific: 'both',
-          risk_factors: ['Allergies', 'Family history', 'Environmental triggers', 'Smoking'],
           is_active: true,
           created_at: new Date(),
           updated_at: new Date()
@@ -984,7 +960,6 @@ export async function seedComprehensiveHealthcareData() {
           },
           common_age_groups: ['adolescents', 'adults', 'elderly'],
           gender_specific: 'both',
-          risk_factors: ['Family history', 'Trauma', 'Chronic illness', 'Stress', 'Substance abuse'],
           is_active: true,
           created_at: new Date(),
           updated_at: new Date()
@@ -1010,7 +985,6 @@ export async function seedComprehensiveHealthcareData() {
           },
           common_age_groups: ['adolescents', 'adults'],
           gender_specific: 'both',
-          risk_factors: ['Family history', 'Trauma', 'Stress', 'Medical conditions', 'Substance use'],
           is_active: true,
           created_at: new Date(),
           updated_at: new Date()
@@ -1058,7 +1032,6 @@ export async function seedComprehensiveHealthcareData() {
             'Kidney function',
             'Vitamin B12 levels'
           ],
-          effectiveness_rating: 85,
           is_active: true,
           created_at: new Date(),
           updated_at: new Date()
@@ -1098,7 +1071,6 @@ export async function seedComprehensiveHealthcareData() {
             'Kidney function',
             'Potassium levels'
           ],
-          effectiveness_rating: 90,
           is_active: true,
           created_at: new Date(),
           updated_at: new Date()
@@ -1137,7 +1109,6 @@ export async function seedComprehensiveHealthcareData() {
             'Symptom frequency',
             'Heart rate'
           ],
-          effectiveness_rating: 88,
           is_active: true,
           created_at: new Date(),
           updated_at: new Date()
@@ -1175,7 +1146,6 @@ export async function seedComprehensiveHealthcareData() {
             'Functional improvement',
             'Suicide risk assessment'
           ],
-          effectiveness_rating: 75,
           is_active: true,
           created_at: new Date(),
           updated_at: new Date()
@@ -1215,7 +1185,6 @@ export async function seedComprehensiveHealthcareData() {
             'Blood glucose levels',
             'Exercise tolerance'
           ],
-          effectiveness_rating: 80,
           is_active: true,
           created_at: new Date(),
           updated_at: new Date()
@@ -1267,71 +1236,15 @@ export async function clearTestData() {
     // Wrap all delete operations in a transaction to ensure atomicity
     await prisma.$transaction(async (tx) => {
       // Delete in reverse dependency order
-      await tx.patient.deleteMany({
-        where: {
-          patient_id: {
-            startsWith: 'PAT-2024-'
-          }
-        }
-      });
-
-      await tx.doctors.deleteMany({
-        where: {
-          id: {
-            in: ['DOC-2024-001', 'DOC-2024-002'] // Use consistent IDs
-          }
-        }
-      });
-
-      await tx.hsps.deleteMany({
-        where: {
-          id: 'HSP-2024-001' // Use consistent ID
-        }
-      });
-
-      await tx.providers.deleteMany({
-        where: {
-          id: 'PROV-2024-001' // Use consistent ID
-        }
-      });
-
-      await tx.user.deleteMany({
-        where: {
-          email: {
-            endsWith: '@healthapp.com'
-          }
-        }
-      });
-
-      await tx.organization.deleteMany({
-        where: {
-          id: 'ORG-2024-001' // Use consistent ID
-        }
-      });
-
-      await tx.speciality.deleteMany({
-        where: {
-          id: {
-            in: ['SPEC-2024-001', 'SPEC-2024-002'] // Use consistent IDs
-          }
-        }
-      });
-
-      await tx.medicine.deleteMany({
-        where: {
-          id: {
-            in: ['MED-2024-001', 'MED-2024-002'] // Use consistent IDs
-          }
-        }
-      });
-
-      await tx.vital_templates.deleteMany({
-        where: {
-          id: {
-            in: ['VITAL-2024-001', 'VITAL-2024-002', 'VITAL-2024-003', 'VITAL-2024-004'] // Use consistent IDs
-          }
-        }
-      });
+      await tx.patient.deleteMany({});
+      await tx.doctors.deleteMany({});
+      await tx.hsps.deleteMany({});
+      await tx.providers.deleteMany({});
+      await tx.user.deleteMany({});
+      await tx.organization.deleteMany({});
+      await tx.speciality.deleteMany({});
+      await tx.medicine.deleteMany({});
+      await tx.vital_templates.deleteMany({});
     });
 
     console.log('✅ Test data cleared successfully in transaction');
