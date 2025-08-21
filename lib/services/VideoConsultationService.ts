@@ -219,7 +219,8 @@ export class VideoConsultationService {
         data: {
           status: 'COMPLETED',
           actual_end: new Date(),
-          consultation_notes: summary, // Assuming summary is part of notes
+          // The 'summary' parameter is stored in 'consultation_notes' as per the database schema.
+          consultation_notes: summary,
           updated_at: new Date(),
         }
       });
