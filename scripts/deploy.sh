@@ -360,6 +360,12 @@ setup_environment() {
         log_info "Updated DATABASE_URL for $ENVIRONMENT environment"
     fi
 
+    # Replace localhost with postgres for container networking
+    if [[ "$DATABASE_URL" == *"@localhost"* ]]; then
+        export DATABASE_URL=$(echo "$DATABASE_URL" | sed "s/@localhost/@postgres/")
+        log_info "Updated DATABASE_URL for container networking to use 'postgres' host"
+    fi
+
     # Auth.js configuration (use .env values)
     export NEXTAUTH_URL="${NEXTAUTH_URL:-$FRONTEND_URL}"
     export AUTH_SECRET="${AUTH_SECRET:-$NEXTAUTH_SECRET}"
