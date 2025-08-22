@@ -104,7 +104,7 @@ model User {
   patient_doctor_assignments                                   PatientDoctorAssignment[]
   patient_provider_assignments                                 patient_provider_assignments[]
   patient                                                      Patient?
-  providers                                                    providers[]
+  providers                                                    Providers[]
   scheduled_events                                             scheduled_events[]
   user_devices                                                 UserDevice[]
   user_roles                                                   user_roles[]
@@ -266,7 +266,7 @@ model Patient {
   appointments                                             Appointment[]
   audit_logs                                               AuditLog[]
   care_plans                                               CarePlan[]
-  medication_logs                                          medication_logs[]
+  medication_logs                                          MedicationLogs[]
   notifications                                            Notification[]
   patient_alerts                                           patient_alerts[]
   patient_consent_otp                                      patient_consent_otp[]
@@ -517,7 +517,7 @@ model Medication {
   updated_at      DateTime                         @updatedAt @db.Timestamptz(6)
   deleted_at      DateTime?                        @db.Timestamptz(6)
   care_plan_id    String?                          @db.Uuid
-  medication_logs medication_logs[]
+  medication_logs MedicationLogs[]
   care_plan       CarePlan?                        @relation("prescribed_medications", fields: [care_plan_id], references: [id])
   medicine        Medicine                         @relation(fields: [medicine_id], references: [id], onDelete: NoAction)
   notifications   Notification[]
@@ -1168,7 +1168,7 @@ model Hsp {
   @@map("Hsp")
 }
 
-model medication_logs {
+model MedicationLogs {
   id               String                                 @id @db.Uuid
   medication_id    String                                 @db.Uuid
   patient_id       String                                 @db.Uuid
@@ -1186,6 +1186,7 @@ model medication_logs {
   @@index([adherence_status, scheduled_at], map: "medication_logs_adherence_status_scheduled_at")
   @@index([medication_id, scheduled_at], map: "medication_logs_medication_id_scheduled_at")
   @@index([patient_id, scheduled_at], map: "medication_logs_patient_id_scheduled_at")
+  @@map("medication_logs")
 }
 
 model patient_alerts {
@@ -1403,7 +1404,7 @@ model provider_change_history {
   @@index([status], map: "provider_change_history_status")
 }
 
-model providers {
+model Providers {
   id           String    @id @db.Uuid
   user_id      String    @db.Uuid
   name         String    @db.VarChar(100)
@@ -1418,6 +1419,7 @@ model providers {
   users        User      @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
   @@index([user_id], map: "providers_user_id")
+  @@map("providers")
 }
 
 model schedule_events {
@@ -1647,7 +1649,7 @@ model vital_requirements {
   @@index([vital_type_id], map: "vital_requirements_vital_type_id")
 }
 
-model vital_templates {
+model VitalTemplates {
   id         String    @id @db.Uuid
   name       String    @db.VarChar(255)
   unit       String?   @db.VarChar(255)
@@ -1656,6 +1658,8 @@ model vital_templates {
   updated_at DateTime  @db.Timestamptz(6)
   deleted_at DateTime? @db.Timestamptz(6)
   vitals     Vitals[]
+
+  @@map("vital_templates")
 }
 
 model Vitals {
@@ -1670,7 +1674,7 @@ model Vitals {
   updated_at        DateTime        @db.Timestamptz(6)
   deleted_at        DateTime?       @db.Timestamptz(6)
   care_plans        CarePlan        @relation(fields: [care_plan_id], references: [id], onDelete: NoAction)
-  vital_templates   vital_templates @relation(fields: [vital_template_id], references: [id], onDelete: NoAction)
+  vital_templates   VitalTemplates @relation(fields: [vital_template_id], references: [id], onDelete: NoAction)
 
   @@index([care_plan_id], map: "vitals_care_plan_id")
   @@index([vital_template_id], map: "vitals_vital_template_id")

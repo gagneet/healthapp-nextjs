@@ -38,6 +38,12 @@ export async function seedComprehensiveHealthcareData() {
         }
       });
     } catch (error: any) {
+      console.log('🔍 Debug - Error details:', {
+        code: error.code,
+        message: error.message,
+        name: error.name
+      });
+      
       if (error.code === 'P2021') {
         console.log('⚠️ Database tables do not exist. Please run migrations first.');
         console.log('Run: npx prisma migrate deploy');
@@ -919,7 +925,7 @@ export async function seedComprehensiveHealthcareData() {
     console.log(`✅ Created medicines`);
 
     // Create vital templates (idempotent)
-    const vitalTemplates = await prisma.vital_templates.createMany({
+    const vitalTemplates = await prisma.vitalTemplates.createMany({
       skipDuplicates: true,
       data: [
         {
@@ -1348,7 +1354,7 @@ export async function DANGEROUSLY_CLEAR_ALL_DATA_TABLES() {
       await tx.organization.deleteMany({});
       await tx.speciality.deleteMany({});
       await tx.medicine.deleteMany({});
-      await tx.vital_templates.deleteMany({});
+      await tx.vitalTemplates.deleteMany({});
     });
 
     console.log('✅ All data cleared successfully in transaction');
@@ -1474,7 +1480,7 @@ async function seedPatientAdherenceArchitecture() {
         
         const logId = `medlog-000-000-000-${String(logCounter).padStart(12, '0')}`;
         
-        await prisma.medication_logs.upsert({
+        await prisma.medicationLogs.upsert({
           where: { id: logId },
           update: {},
           create: {
@@ -1498,8 +1504,8 @@ async function seedPatientAdherenceArchitecture() {
   console.log('✅ Patient Adherence Architecture seeded successfully');
 }
 
-// Main execution when run directly (ES module detection)
-if (import.meta.url === `file://${process.argv[1]}`) {
+// Main execution when run directly (CommonJS detection for compiled output)
+if (typeof require !== 'undefined' && require.main === module) {
   console.log('🚀 Starting healthcare data seeding...');
   seedComprehensiveHealthcareData()
     .then((result) => {
