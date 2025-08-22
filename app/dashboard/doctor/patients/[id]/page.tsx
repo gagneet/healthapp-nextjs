@@ -65,6 +65,7 @@ interface PatientAPIResponse {
 
 // Mock data removed - using real API data from medications state
 
+// ⚠️ UNUSED - Mock data kept for reference only - All UI uses real API data from state
 const mockVitalReadings: VitalReading[] = [
   {
     id: '1',
@@ -86,6 +87,7 @@ const mockVitalReadings: VitalReading[] = [
   },
 ]
 
+// ⚠️ UNUSED - Mock data kept for reference only - All UI uses real API data from state  
 const mockAppointments: Appointment[] = [
   {
     id: '1',

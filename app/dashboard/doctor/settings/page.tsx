@@ -78,8 +78,28 @@ export default function DoctorSettingsPage() {
 
   const fetchSettings = async () => {
     try {
-      // Use proper Auth.js v5 session instead of non-existent enhanced/profile
-      // Initialize with default settings
+      // Fetch real user settings from database
+      const response = await fetch('/api/user/settings', {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include'
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.payload?.data?.settings) {
+          setSettings(data.payload.data.settings);
+        } else {
+          throw new Error('Invalid settings response format');
+        }
+      } else {
+        throw new Error('Failed to fetch settings from server');
+      }
+    } catch (error) {
+      console.error('Failed to fetch settings:', error);
+      
+      // Fallback to default settings if API fails
       const defaultSettings: UserSettings = {
         notifications: {
           email_notifications: true,
@@ -106,22 +126,35 @@ export default function DoctorSettingsPage() {
           login_notifications: true,
           session_timeout: 24
         }
-      }
-      setSettings(defaultSettings)
-    } catch (error) {
-      console.error('Failed to fetch settings:', error)
-      toast.error('Failed to load settings')
+      };
+      setSettings(defaultSettings);
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
   }
 
   const fetchActiveSessions = async () => {
     try {
-      // Auth.js v5 doesn't provide session listing, use mock data or remove feature
-      setActiveSessions([])
+      // Fetch real user sessions from database
+      const response = await fetch('/api/user/sessions', {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include'
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.payload?.data?.sessions) {
+          setActiveSessions(data.payload.data.sessions);
+        }
+      } else {
+        console.log('Session listing not available or no active sessions');
+        setActiveSessions([]);
+      }
     } catch (error) {
-      console.error('Failed to fetch sessions:', error)
+      console.error('Failed to fetch sessions:', error);
+      setActiveSessions([]);
     }
   }
 
@@ -143,12 +176,25 @@ export default function DoctorSettingsPage() {
     }
 
     try {
-      // TODO: Implement proper settings update API call
-      setSettings(updatedSettings)
-      console.log('Settings updated:', updatedSettings)
-      // toast.success('Settings updated successfully')
+      // Call real API to update settings
+      const response = await fetch('/api/user/settings', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({ settings: updatedSettings })
+      });
+
+      if (response.ok) {
+        setSettings(updatedSettings);
+        console.log('Settings updated successfully:', updatedSettings);
+        // toast.success('Settings updated successfully')
+      } else {
+        throw new Error('Failed to update settings on server');
+      }
     } catch (error) {
-      console.error('Failed to update settings:', error)
+      console.error('Failed to update settings:', error);
       // toast.error('Failed to update settings')
     }
   }
@@ -165,37 +211,80 @@ export default function DoctorSettingsPage() {
     }
 
     try {
-      // TODO: Implement proper password change API call
-      console.log('Password change requested')
-      setPasswordData({
-        currentPassword: '',
-        newPassword: '',
-        confirmPassword: ''
-      })
-      alert('Password changed successfully (mock)')
+      // Call real API to change password
+      const response = await fetch('/api/user/settings/password', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          currentPassword: passwordData.currentPassword,
+          newPassword: passwordData.newPassword
+        })
+      });
+
+      if (response.ok) {
+        setPasswordData({
+          currentPassword: '',
+          newPassword: '',
+          confirmPassword: ''
+        });
+        alert('Password changed successfully');
+      } else {
+        const errorData = await response.json();
+        alert(errorData.payload?.error?.message || 'Failed to change password');
+      }
     } catch (error) {
-      console.error('Password change error:', error)
-      alert('Network error occurred')
+      console.error('Password change error:', error);
+      alert('Network error occurred');
     }
   }
 
   const revokeSession = async (sessionId: string) => {
     try {
-      // TODO: Implement proper session revocation API call
-      setActiveSessions(prev => prev.filter(s => s.sessionId !== sessionId))
-      console.log('Session revoked:', sessionId)
+      // Call real API to revoke specific session
+      const response = await fetch(`/api/user/sessions/${sessionId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include'
+      });
+
+      if (response.ok) {
+        setActiveSessions(prev => prev.filter(s => s.sessionId !== sessionId));
+        console.log('Session revoked successfully:', sessionId);
+      } else {
+        throw new Error('Failed to revoke session');
+      }
     } catch (error) {
-      console.error('Failed to revoke session:', error)
+      console.error('Failed to revoke session:', error);
     }
   }
 
   const logoutAllDevices = async () => {
     if (confirm('Are you sure you want to logout from all devices? You will need to login again.')) {
       try {
-        // TODO: Implement proper logout all devices API call
-        console.log('Logout all devices requested')
+        // Call real API to logout from all devices
+        const response = await fetch('/api/user/sessions', {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include'
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          alert(`Successfully logged out from ${data.payload?.data?.revokedSessions || 0} devices`);
+          setActiveSessions([]);
+        } else {
+          throw new Error('Failed to logout from all devices');
+        }
       } catch (error) {
-        console.error('Logout all devices error:', error)
+        console.error('Logout all devices error:', error);
+        alert('Failed to logout from all devices');
       }
     }
   }
