@@ -694,26 +694,35 @@ export async function seedComprehensiveHealthcareData() {
         {
           id: 'adh-001',
           patient_id: '77777777-7777-7777-7777-777777777777',
+          adherence_type: 'MEDICATION',
+          due_at: new Date(Date.now() - 24 * 60 * 60 * 1000), // Yesterday
           recorded_at: new Date(Date.now() - 24 * 60 * 60 * 1000), // Yesterday
           is_completed: true,
           is_missed: false,
-          overall_score: 95.0
+          created_at: new Date(),
+          updated_at: new Date()
         },
         {
           id: 'adh-002',
           patient_id: '88888888-8888-8888-8888-888888888888',
+          adherence_type: 'VITAL_CHECK',
+          due_at: new Date(Date.now() - 24 * 60 * 60 * 1000), // Yesterday
           recorded_at: new Date(Date.now() - 24 * 60 * 60 * 1000), // Yesterday
           is_completed: true,
           is_missed: false,
-          overall_score: 78.0
+          created_at: new Date(),
+          updated_at: new Date()
         },
         {
           id: 'adh-003',
           patient_id: '33333333-3333-3333-3333-333333333333',
+          adherence_type: 'APPOINTMENT',
+          due_at: new Date(Date.now() - 24 * 60 * 60 * 1000), // Yesterday
           recorded_at: new Date(Date.now() - 24 * 60 * 60 * 1000), // Yesterday
           is_completed: false,
           is_missed: true,
-          overall_score: 45.0
+          created_at: new Date(),
+          updated_at: new Date()
         }
       ]
     });
@@ -1487,6 +1496,23 @@ async function seedPatientAdherenceArchitecture() {
   }
 
   console.log('✅ Patient Adherence Architecture seeded successfully');
+}
+
+// Main execution when run directly
+if (require.main === module) {
+  console.log('🚀 Starting healthcare data seeding...');
+  seedComprehensiveHealthcareData()
+    .then((result) => {
+      console.log('🎉 Seeding completed successfully:', result);
+      process.exit(0);
+    })
+    .catch((error) => {
+      console.error('❌ Seeding failed:', error);
+      process.exit(1);
+    })
+    .finally(async () => {
+      await prisma.$disconnect();
+    });
 }
 
 // Export for CommonJS compatibility  
