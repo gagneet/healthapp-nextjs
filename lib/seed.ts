@@ -1498,8 +1498,8 @@ async function seedPatientAdherenceArchitecture() {
   console.log('✅ Patient Adherence Architecture seeded successfully');
 }
 
-// Main execution when run directly
-if (require.main === module) {
+// Main execution when run directly (ES module detection)
+if (import.meta.url === `file://${process.argv[1]}`) {
   console.log('🚀 Starting healthcare data seeding...');
   seedComprehensiveHealthcareData()
     .then((result) => {

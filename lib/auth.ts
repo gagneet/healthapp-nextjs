@@ -17,6 +17,21 @@ import { z } from "zod"
 type HealthcareRole = "DOCTOR" | "HSP" | "PATIENT" | "SYSTEM_ADMIN" | "HOSPITAL_ADMIN" | "CAREGIVER"
 type AccountStatus = "ACTIVE" | "INACTIVE" | "SUSPENDED" | "PENDING_VERIFICATION" | "DEACTIVATED"
 
+// Extended user interface for healthcare platform
+interface ExtendedUser {
+  id: string
+  role: HealthcareRole
+  businessId?: string
+  profileId?: string
+  accountStatus: AccountStatus
+  organizationId?: string
+  profileData?: any
+  canPrescribeMedication?: boolean
+  canAccessPatientData?: boolean
+  canManageProviders?: boolean
+  [key: string]: any // For additional dynamic properties
+}
+
 // Credentials validation schema with enhanced security and 2FA
 const loginSchema = z.object({
   email: z.string().email("Invalid email format"),
@@ -275,7 +290,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       // Initial sign in
       if (user) {
         // Cast user to our extended type to access custom fields
-        const extendedUser = user as any
+        const extendedUser = user as ExtendedUser
         token.role = extendedUser.role
         token.id = user.id
         token.businessId = extendedUser.businessId

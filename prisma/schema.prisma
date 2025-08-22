@@ -469,7 +469,7 @@ model CarePlan {
   scheduled_events            scheduled_events[]
   symptoms                    Symptom[]
   vital_requirements          vital_requirements[]
-  vitals                      vitals[]
+  vitals                      Vitals[]
 
   @@index([chronic_conditions], map: "care_plans_chronic_conditions", type: Gin)
   @@index([created_by_doctor_id], map: "care_plans_created_by_doctor_id")
@@ -1655,10 +1655,10 @@ model vital_templates {
   created_at DateTime  @db.Timestamptz(6)
   updated_at DateTime  @db.Timestamptz(6)
   deleted_at DateTime? @db.Timestamptz(6)
-  vitals     vitals[]
+  vitals     Vitals[]
 }
 
-model vitals {
+model Vitals {
   id                String          @id @db.Uuid
   vital_template_id String          @db.Uuid
   care_plan_id      String          @db.Uuid
@@ -1674,6 +1674,7 @@ model vitals {
 
   @@index([care_plan_id], map: "vitals_care_plan_id")
   @@index([vital_template_id], map: "vitals_vital_template_id")
+  @@map("vitals")
 }
 
 enum enum_adherence_records_adherence_type {
