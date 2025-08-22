@@ -58,17 +58,17 @@ m. Add/Edit Vitals,
 n. Add/Edit Template Page Create,
 o. Add/Edit Template Page Edit,
 p. Diet Responses,
-q. Medication TImelines,
+q. Medication Timelines,
 r. Missed Diet, Workout, Appointment, Vital, Medications reminders for charts
 s. Notifications (get details from GetStream?)
 t. Symptoms,
-u. Vitals TImeline
+u. Vitals Timeline
 v. Update Provider
-w. Single Day Exercise
+w. Single-Day Exercise
 x. Vitals Timeline
 y. Workout Responses
 
-Any other information pertelent to what we have asked for in this conversation.
+Any other information pertinent to what we have asked for in this conversation.
 
 ● I'll analyze your health application codebase to understand how the system works and generate a comprehensive markdown file covering all your requirements. Let me start by creating a todo list to track this complex analysis task.
 

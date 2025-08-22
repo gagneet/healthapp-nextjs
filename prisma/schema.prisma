@@ -2447,6 +2447,7 @@ model LabOrder {
   results_data          Json?               @default("{}")
   results_pdf_url       String?             @db.Text
   critical_values       Boolean             @default(false)
+  external_lab_order_id String?             @db.VarChar(255)
   
   created_at            DateTime            @default(now()) @db.Timestamptz(6)
   updated_at            DateTime            @updatedAt @db.Timestamptz(6)
