@@ -1,7 +1,7 @@
 {
   "name": "healthapp-template",
-  "version": "4.0.0",
-  "description": "HealthApp Healthcare Management Platform using Next.js, Node.js, Prisma, and PostgreSQL",
+  "version": "0.7.8",
+  "description": "HealthApp Healthcare Management Platform using Next.js, Node.js, Prisma, and Postgres",
   "type": "module",
   "main": "src/server.ts",
   "repository": {
@@ -57,7 +57,7 @@
     "test:node": "node --import tsx/esm scripts/test-node-compatibility.ts"
   },
   "devDependencies": {
-    "@babel/preset-env": "^7.24.0",
+    "@babel/preset-env": "^7.28.3",
     "@tailwindcss/forms": "^0.5.0",
     "@tailwindcss/typography": "^0.5.0",
     "@types/bcryptjs": "^3.0.0",
@@ -74,7 +74,7 @@
     "@types/supertest": "^2.0.16",
     "@types/uuid": "^10.0.0",
     "eslint": "^8.57.0",
-    "eslint-config-next": "^14.2.0",
+    "eslint-config-next": "^14.2.32",
     "jest": "^29.7.0",
     "jest-environment-node": "^29.7.0",
     "nodemon": "^3.1.0",
@@ -87,7 +87,7 @@
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.10.0",
-    "@aws-sdk/client-s3": "^3.525.0",
+    "@aws-sdk/client-s3": "^3.873.0",
     "@daily-co/daily-react": "^0.23.2",
     "@daypilot/daypilot-lite-react": "^4.3.0",
     "@headlessui/react": "^2.2.7",
@@ -119,7 +119,7 @@
     "moment": "^2.30.1",
     "morgan": "^1.10.0",
     "multer": "^2.0.2",
-    "next": "^14.2.0",
+    "next": "^14.2.32",
     "next-auth": "^5.0.0-beta.29",
     "node-cron": "^3.0.3",
     "nodemailer": "^6.10.1",
