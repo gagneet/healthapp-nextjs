@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from "@/lib/auth";
+import { auth } from "@/lib/auth";
 
 // In-memory store for lab integration configurations.
 // In a real application, this should be stored in a secure, encrypted database.
@@ -19,7 +19,7 @@ const labIntegrations = [
 ];
 
 export async function GET(request: NextRequest) {
-  const session = await getServerSession();
+  const session = await auth();
   if (session?.user.role !== 'SYSTEM_ADMIN') {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
@@ -28,7 +28,7 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const session = await getServerSession();
+  const session = await auth();
   if (session?.user.role !== 'SYSTEM_ADMIN') {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }

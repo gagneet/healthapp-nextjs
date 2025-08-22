@@ -5,7 +5,7 @@
  */
 
 import { NextRequest, NextResponse } from "next/server"
-import { getServerSession } from "@/lib/auth";
+import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma"
 import { z } from "zod"
 
@@ -22,7 +22,7 @@ const hipaaConsentSchema = z.object({
 export async function POST(request: NextRequest) {
   try {
     // Check authentication
-    const session = await getServerSession()
+    const session = await auth()
     if (!session?.user?.id) {
       return NextResponse.json(
         { error: "Authentication required" },
@@ -174,7 +174,7 @@ export async function POST(request: NextRequest) {
 export async function GET(request: NextRequest) {
   try {
     // Check authentication
-    const session = await getServerSession()
+    const session = await auth()
     if (!session?.user?.id) {
       return NextResponse.json(
         { error: "Authentication required" },

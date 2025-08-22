@@ -4,7 +4,7 @@
  */
 
 import { NextRequest, NextResponse } from "next/server"
-import { getServerSession } from "@/lib/auth";
+import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma"
 import { 
   createSuccessResponse, 
@@ -27,7 +27,7 @@ import { generatePatientId } from "@/lib/id-generation"
  * Business Logic: Only doctors, HSPs, and admins can access patient lists
  */
 export const GET = withErrorHandling(async (request: NextRequest) => {
-  const session = await getServerSession()
+  const session = await auth()
   
   if (!session) {
     return createUnauthorizedResponse()
@@ -275,7 +275,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
  * Business Logic: Only doctors and admins can create patient records
  */
 export const POST = withErrorHandling(async (request: NextRequest) => {
-  const session = await getServerSession()
+  const session = await auth()
   
   if (!session) {
     return createUnauthorizedResponse()

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from "@/lib/auth";
+import { auth } from "@/lib/auth";
 
 import { checkRateLimit } from "@/lib/auth-helpers";
 import { handleApiError, formatApiSuccess } from '@/lib/api-services';
@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Authenticate user - only healthcare providers can access RxNorm
-    const session = await getServerSession();
+    const session = await auth();
     if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -74,7 +74,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     // Admin only - importing drug data requires elevated privileges
-    const session = await getServerSession();
+    const session = await auth();
     if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }

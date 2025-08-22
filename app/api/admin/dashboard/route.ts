@@ -8,7 +8,7 @@ export const dynamic = 'force-dynamic'
  */
 
 import { NextRequest, NextResponse } from "next/server"
-import { getServerSession } from "@/lib/auth";
+import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma"
 import { 
   createSuccessResponse, 
@@ -24,7 +24,7 @@ import {
  * Business Logic: Only system admins can access admin dashboard
  */
 export const GET = withErrorHandling(async (request: NextRequest) => {
-  const session = await getServerSession()
+  const session = await auth()
   
   if (!session) {
     return createUnauthorizedResponse()

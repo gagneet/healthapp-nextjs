@@ -173,8 +173,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             // Verify TOTP code
             const isValidTOTP = authenticator.verify({
               token: totpCode,
-              secret: user.two_factor_secret!,
-              window: 1 // Allow 1 time step tolerance (30 seconds before/after)
+              secret: user.two_factor_secret!
+              // window: 1 // Allow 1 time step tolerance (30 seconds before/after) - Auth.js v5 compatible
             })
             
             if (!isValidTOTP) {
@@ -274,18 +274,20 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     async jwt({ token, user, account }) {
       // Initial sign in
       if (user) {
-        token.role = user.role
+        // Cast user to our extended type to access custom fields
+        const extendedUser = user as any
+        token.role = extendedUser.role
         token.id = user.id
-        token.businessId = user.businessId
-        token.profileId = user.profileId
-        token.accountStatus = user.accountStatus
-        token.organizationId = user.organizationId
+        token.businessId = extendedUser.businessId
+        token.profileId = extendedUser.profileId
+        token.accountStatus = extendedUser.accountStatus
+        token.organizationId = extendedUser.organizationId
         // Serialize profileData to avoid DataCloneError (remove complex objects)
-        token.profileData = user.profileData ? JSON.parse(JSON.stringify(user.profileData)) : null
-        token.canPrescribeMedication = user.canPrescribeMedication
-        token.canAccessPatientData = user.canAccessPatientData
-        token.canManageProviders = user.canManageProviders
-        token.canViewAllPatients = user.canViewAllPatients
+        token.profileData = extendedUser.profileData ? JSON.parse(JSON.stringify(extendedUser.profileData)) : null
+        token.canPrescribeMedication = extendedUser.canPrescribeMedication
+        token.canAccessPatientData = extendedUser.canAccessPatientData
+        token.canManageProviders = extendedUser.canManageProviders
+        token.canViewAllPatients = extendedUser.canViewAllPatients
       }
       return token
     },
@@ -293,18 +295,20 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     async session({ session, token }) {
       // Send properties to the client
       if (token && session.user) {
-        session.user.id = token.id as string
-        session.user.role = token.role as HealthcareRole
-        session.user.businessId = token.businessId as string | null
-        session.user.profileId = token.profileId as string | null
-        session.user.accountStatus = token.accountStatus as AccountStatus
-        session.user.organizationId = token.organizationId as string | null
+        // Cast session.user to our extended type
+        const extendedUser = session.user as any
+        extendedUser.id = token.id as string
+        extendedUser.role = token.role as HealthcareRole
+        extendedUser.businessId = token.businessId as string | null
+        extendedUser.profileId = token.profileId as string | null
+        extendedUser.accountStatus = token.accountStatus as AccountStatus
+        extendedUser.organizationId = token.organizationId as string | null
         // Only send serializable data to avoid DataCloneError
-        session.user.profileData = token.profileData ? JSON.parse(JSON.stringify(token.profileData)) : null
-        session.user.canPrescribeMedication = token.canPrescribeMedication as boolean
-        session.user.canAccessPatientData = token.canAccessPatientData as boolean
-        session.user.canManageProviders = token.canManageProviders as boolean
-        session.user.canViewAllPatients = token.canViewAllPatients as boolean
+        extendedUser.profileData = token.profileData ? JSON.parse(JSON.stringify(token.profileData)) : null
+        extendedUser.canPrescribeMedication = token.canPrescribeMedication as boolean
+        extendedUser.canAccessPatientData = token.canAccessPatientData as boolean
+        extendedUser.canManageProviders = token.canManageProviders as boolean
+        extendedUser.canViewAllPatients = token.canViewAllPatients as boolean
       }
       return session
     },
@@ -455,7 +459,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         // Create healthcare audit log entry for sign out
         const userId = session?.user?.id || (token as any)?.id
         if (userId) {
-          await prisma.auditLog.create({
+          await prisma.AuditLog.create({
             data: {
               user_id: userId,
               action: "SIGN_OUT",
@@ -484,5 +488,4 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   secret: process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET,
 })
 
-// Export auth function for middleware and server components  
-export { auth as getServerSession }
+// Export auth function for middleware and server components - Auth.js v5 unified method

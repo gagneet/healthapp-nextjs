@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from "@/lib/auth";
+import { auth } from "@/lib/auth";
 import { checkRateLimit } from '@/lib/auth-helpers';
 import { authenticateUser, handleApiError, formatApiSuccess } from '@/lib/api-services';
 

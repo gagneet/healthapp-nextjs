@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from "@/lib/auth";
+import { auth } from "@/lib/auth";
 import { checkRateLimit } from "@/lib/auth-helpers";
 import { getPatients, handleApiError, formatApiSuccess } from '@/lib/api-services';
 
@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Authenticate user and check permissions
-    const session = await getServerSession();
+    const session = await auth();
     if (!session?.user) {
       return NextResponse.json({
         status: false,

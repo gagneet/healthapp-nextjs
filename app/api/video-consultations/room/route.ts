@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from "@/lib/auth";
+import { auth } from "@/lib/auth";
 import VideoConsultationService from '@/lib/services/VideoConsultationService';
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession();
+    const session = await auth();
     if (!session?.user || session.user.role !== 'DOCTOR') {
       return NextResponse.json(
         { error: 'Unauthorized: Only doctors can create consultation rooms.' },

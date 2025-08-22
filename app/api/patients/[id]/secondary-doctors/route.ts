@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from "@/lib/auth";
+import { auth } from "@/lib/auth";
 import SecondaryDoctorService, { AssignmentType } from '@/lib/secondary-doctor-service';
 
 /**
@@ -8,7 +8,7 @@ import SecondaryDoctorService, { AssignmentType } from '@/lib/secondary-doctor-s
  */
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
   try {
-    const session = await getServerSession();
+    const session = await auth();
     if (!session?.user) {
       return NextResponse.json({
         status: false,
@@ -65,7 +65,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
  */
 export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
   try {
-    const session = await getServerSession();
+    const session = await auth();
     if (!session?.user) {
       return NextResponse.json({
         status: false,
