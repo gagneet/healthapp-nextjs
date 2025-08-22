@@ -955,19 +955,29 @@ run_migrations() {
         
         # Ensure database is ready before migrations
         log_info "Verifying database connectivity before migrations..."
-        local max_retries=10
+        log_info "Note: PostgreSQL containers typically take 60-90 seconds to fully start up"
+        local max_retries=20
         local retry_count=0
+        local database_ready=false
         
         while [ $retry_count -lt $max_retries ]; do
             # Use psql to check connectivity; assumes DATABASE_URL is set in the container
             if docker exec "$container_id" bash -c 'psql "${DATABASE_URL}" -c "SELECT 1"' >/dev/null 2>&1; then
-                log_success "Database connectivity verified"
+                log_success "Database connectivity verified after $((retry_count * 5)) seconds"
+                database_ready=true
                 break
             fi
             ((retry_count++))
-            log_debug "Database not ready for migrations, retry $retry_count/$max_retries"
+            log_debug "Database not ready for migrations, retry $retry_count/$max_retries (waiting up to $((max_retries * 5)) seconds total)"
             sleep 5
         done
+        
+        # Check if database connectivity was established
+        if [ "$database_ready" = false ]; then
+            log_error "Database connectivity check failed after $((max_retries * 5)) seconds"
+            log_error "PostgreSQL container may not be fully ready or DATABASE_URL may be incorrect"
+            exit 1
+        fi
         
         # Run migrations in the app container
         log_info "Running migrations in container: $container_id"
@@ -1002,6 +1012,31 @@ run_seeds() {
         if [ -z "$container_id" ]; then
             log_error "No running app containers found for seeding"
             exit 1
+        fi
+        
+        # Ensure database is ready before seeding
+        log_info "Verifying database connectivity before seeding..."
+        local max_retries=10
+        local retry_count=0
+        local database_ready=false
+        
+        while [ $retry_count -lt $max_retries ]; do
+            # Use psql to check connectivity; assumes DATABASE_URL is set in the container
+            if docker exec "$container_id" bash -c 'psql "${DATABASE_URL}" -c "SELECT 1"' >/dev/null 2>&1; then
+                log_success "Database connectivity verified for seeding"
+                database_ready=true
+                break
+            fi
+            ((retry_count++))
+            log_debug "Database not ready for seeding, retry $retry_count/$max_retries"
+            sleep 3
+        done
+        
+        # Check if database connectivity was established
+        if [ "$database_ready" = false ]; then
+            log_error "Database connectivity check failed for seeding after $((max_retries * 3)) seconds"
+            log_error "Skipping seeding as database is not accessible"
+            return 1
         fi
         
         # Run seeds in the app container
