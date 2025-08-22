@@ -768,6 +768,55 @@ app.use('/api', apiLimiter);
 
 These coding rules ensure maintainable, secure, and compliant healthcare application development while leveraging modern TypeScript and Next.js best practices.
 
+## 10. Prisma Naming Convention Standards ⚠️ CRITICAL
+
+### 10.1 Official Prisma Naming Convention Rules
+- **MANDATORY**: Follow these exact Prisma naming conventions for consistency across the entire codebase
+- **SCHEMA MODELS**: Use PascalCase (model User, model Patient, model Doctor)
+- **DATABASE TABLES**: Use PascalCase via @@map directive (@@map("Users"), @@map("Patients"), @@map("Doctors"))
+- **CLIENT PROPERTIES**: Always use camelCase (prisma.user, prisma.patient, prisma.doctor)
+- **STANDARD**: This approach keeps database pretty, schema standard, and code consistent
+
+### 10.2 Correct Implementation Pattern
+```typescript
+// ✅ GOOD: Schema definition (prisma/schema.prisma)
+model User {
+  id       String @id @default(uuid())
+  email    String @unique
+  name     String?
+  // ... other fields
+  @@map("Users")  // PascalCase database table
+}
+
+model Patient {
+  id      String @id @default(uuid())  
+  user_id String @unique
+  // ... other fields
+  @@map("Patients")  // PascalCase database table
+}
+
+// ✅ GOOD: Client usage in application code
+const users = await prisma.user.findMany()        // camelCase client property
+const patient = await prisma.patient.findFirst()  // camelCase client property
+const doctors = await prisma.doctor.findMany()    // camelCase client property
+
+// ❌ BAD: Using PascalCase client properties
+const users = await prisma.User.findMany()        // Wrong - don't use PascalCase
+const patient = await prisma.Patient.findFirst()  // Wrong - inconsistent
+```
+
+### 10.3 Database Architecture Benefits
+- **Database Tables**: Clean PascalCase names (Users, Patients, Doctors, Appointments)
+- **Schema Models**: Standard PascalCase (model User, model Patient) 
+- **Application Code**: Consistent camelCase client usage (prisma.user, prisma.patient)
+- **Type Safety**: Full TypeScript support maintained throughout
+
+### 10.4 Migration and Consistency Rules
+- **REQUIREMENT**: All existing code must use camelCase client properties consistently
+- **STANDARD**: Never mix PascalCase and camelCase client usage in the same codebase
+- **VALIDATION**: Run TypeScript compilation to verify naming consistency
+- **ENFORCEMENT**: Schema changes require corresponding @@map directives for PascalCase tables
+
 ## 8. Critical System-Wide Impact Rules
 
 ### 8.1 NO ISOLATION TESTING - System-Wide Impact Analysis ⚠️ CRITICAL

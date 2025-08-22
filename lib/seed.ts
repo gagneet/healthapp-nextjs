@@ -383,7 +383,7 @@ export async function seedComprehensiveHealthcareData() {
     console.log(`✅ Created specialities`);
 
     // Create doctor profiles with correct user IDs (idempotent)
-    const doctorProfiles = await prisma.doctors.createMany({
+    const doctorProfiles = await prisma.doctor.createMany({
       skipDuplicates: true,
       data: [
         // doctor@healthapp.com (Dr. John Smith)
@@ -452,7 +452,7 @@ export async function seedComprehensiveHealthcareData() {
     console.log(`✅ Created doctor profiles`);
 
     // Create HSP profile (idempotent)
-    const hspProfile = await prisma.hsps.upsert({
+    const hspProfile = await prisma.hsp.upsert({
       where: { id: '55555555-5555-5555-5555-555555555551' },
       update: {},
       create: {
@@ -649,7 +649,7 @@ export async function seedComprehensiveHealthcareData() {
           start_time: new Date(new Date().setHours(9, 0, 0, 0)),
           end_time: new Date(new Date().setHours(9, 30, 0, 0)),
           description: 'Routine checkup and medication review',
-          appointment_type: 'CONSULTATION'
+          created_at: new Date(),
         },
         {
           id: 'apt-002', 
@@ -659,7 +659,7 @@ export async function seedComprehensiveHealthcareData() {
           start_time: new Date(new Date().setHours(14, 0, 0, 0)),
           end_time: new Date(new Date().setHours(14, 30, 0, 0)),
           description: 'Follow-up for hypertension management',
-          appointment_type: 'FOLLOW_UP'
+          created_at: new Date(),
         },
         // Future appointments
         {
@@ -670,7 +670,7 @@ export async function seedComprehensiveHealthcareData() {
           start_time: new Date(Date.now() + 24 * 60 * 60 * 1000 + 10 * 60 * 60 * 1000), // 10 AM tomorrow
           end_time: new Date(Date.now() + 24 * 60 * 60 * 1000 + 10.5 * 60 * 60 * 1000), // 10:30 AM tomorrow
           description: 'Diabetes management consultation',
-          appointment_type: 'CONSULTATION'
+          created_at: new Date(),
         }
       ]
     });
@@ -684,29 +684,26 @@ export async function seedComprehensiveHealthcareData() {
         {
           id: 'adh-001',
           patient_id: '77777777-7777-7777-7777-777777777777',
-          medication_log_id: null, // Can be null for general records
           recorded_at: new Date(Date.now() - 24 * 60 * 60 * 1000), // Yesterday
           is_completed: true,
           is_missed: false,
-          adherence_percentage: 95.0
+          overall_score: 95.0
         },
         {
           id: 'adh-002',
           patient_id: '88888888-8888-8888-8888-888888888888',
-          medication_log_id: null,
           recorded_at: new Date(Date.now() - 24 * 60 * 60 * 1000), // Yesterday
           is_completed: true,
           is_missed: false,
-          adherence_percentage: 78.0
+          overall_score: 78.0
         },
         {
           id: 'adh-003',
           patient_id: '33333333-3333-3333-3333-333333333333',
-          medication_log_id: null,
           recorded_at: new Date(Date.now() - 24 * 60 * 60 * 1000), // Yesterday
           is_completed: false,
           is_missed: true,
-          adherence_percentage: 45.0
+          overall_score: 45.0
         }
       ]
     });
@@ -1321,8 +1318,8 @@ export async function DANGEROUSLY_CLEAR_ALL_DATA_TABLES() {
     // Delete in an order that respects foreign key constraints
     await prisma.$transaction(async (tx) => {
       await tx.patient.deleteMany({});
-      await tx.hsps.deleteMany({});
-      await tx.doctors.deleteMany({});
+      await tx.hsp.deleteMany({});
+      await tx.doctor.deleteMany({});
       // Delete in reverse dependency order
       // await tx.patient.deleteMany({});
       // await tx.doctors.deleteMany({});
@@ -1482,19 +1479,7 @@ async function seedPatientAdherenceArchitecture() {
   console.log('✅ Patient Adherence Architecture seeded successfully');
 }
 
-// Run seeding if this script is called directly
-// ES Module-compatible main module detection
-if (import.meta.url === `file://${process.argv[1]}`) {
-  seedComprehensiveHealthcareData()
-    .then((result) => {
-      console.log('Seeding completed:', result);
-      process.exit(0);
-    })
-    .catch((error) => {
-      console.error('Seeding failed:', error);
-      process.exit(1);
-    })
-    .finally(async () => {
-      await prisma.$disconnect();
-    });
+// Export for CommonJS compatibility  
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = { seedComprehensiveHealthcareData, DANGEROUSLY_CLEAR_ALL_DATA_TABLES };
 }

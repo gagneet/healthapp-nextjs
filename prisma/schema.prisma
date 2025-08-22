@@ -167,7 +167,7 @@ model Account {
 
   @@unique([provider, providerAccountId])
   @@index([userId, provider])
-  @@map("accounts")
+  @@map("Accounts")
 }
 
 model Session {
@@ -188,7 +188,7 @@ model Session {
   @@index([userId], map: "sessions_user_id")
   @@index([expires], map: "sessions_expires")
   @@index([ip_address], map: "sessions_ip_address")
-  @@map("sessions")
+  @@map("Sessions")
 }
 
 model VerificationToken {
@@ -197,7 +197,7 @@ model VerificationToken {
   expires    DateTime
 
   @@unique([identifier, token])
-  @@map("verificationtokens")
+  @@map("VerificationTokens")
 }
 
 // Account Linking for hybrid auth (username/password + OAuth)
@@ -219,7 +219,7 @@ model AccountLink {
   @@unique([provider, provider_account_id], map: "account_links_provider_account")
   @@index([user_id], map: "account_links_user_id")
   @@index([provider], map: "account_links_provider")
-  @@map("account_links")
+  @@map("AccountLinks")
 }
 
 model Patient {
@@ -360,7 +360,7 @@ model HealthcareProvider {
   @@index([specialties], map: "healthcare_providers_specialties", type: Gin)
   @@index([verification_date], map: "healthcare_providers_verification_date")
   @@index([organization_id, is_verified], map: "idx_providers_org_verified")
-  @@map("healthcare_providers")
+  @@map("HealthcareProviders")
 }
 
 model Speciality {
@@ -373,7 +373,7 @@ model Speciality {
   deleted_at   DateTime? @db.Timestamptz(6)
   Doctor      Doctor[]
 
-  @@map("specialities")
+  @@map("Specialities")
 }
 
 model Clinic {
@@ -413,7 +413,7 @@ model Clinic {
   @@index([organization_id], map: "clinics_organization_id")
   @@index([latitude, longitude], map: "idx_clinics_coordinates")
   @@index([location_verified], map: "idx_clinics_location_verified")
-  @@map("clinics")
+  @@map("Clinics")
 }
 
 model CarePlan {
@@ -499,7 +499,7 @@ model Medicine {
   deleted_at        DateTime?    @db.Timestamptz(6)
   medications       Medication[]
 
-  @@map("medicines")
+  @@map("Medicines")
 }
 
 model Medication {
@@ -590,7 +590,7 @@ model DoctorAvailability {
 
   @@index([doctor_id, day_of_week], map: "doctor_availability_doctor_id_day_of_week")
   @@index([doctor_id, is_available], map: "doctor_availability_doctor_id_is_available")
-  @@map("doctor_availability")
+  @@map("DoctorAvailability")
 }
 
 model VitalType {
@@ -608,7 +608,7 @@ model VitalType {
   vital_requirements vital_requirements[]
 
   @@index([unit], map: "vital_types_unit")
-  @@map("vital_types")
+  @@map("VitalTypes")
 }
 
 model VitalReading {
@@ -653,7 +653,7 @@ model VitalReading {
   @@index([patient_id, vital_type_id, reading_time], map: "vital_readings_patient_id_vital_type_id_reading_time")
   @@index([reading_time], map: "vital_readings_reading_time")
   @@index([vital_type_id], map: "vital_readings_vital_type_id")
-  @@map("vital_readings")
+  @@map("VitalReadings")
 }
 
 model Symptom {
@@ -684,7 +684,7 @@ model Symptom {
   @@index([recorded_at], map: "symptoms_recorded_at")
   @@index([severity], map: "symptoms_severity")
   @@index([symptom_name], map: "symptoms_symptom_name")
-  @@map("symptoms")
+  @@map("Symptoms")
 }
 
 model AdherenceRecord {
@@ -716,7 +716,7 @@ model AdherenceRecord {
   @@index([scheduled_event_id], map: "adherence_records_scheduled_event_id")
   @@index([scheduled_event_id, is_completed, recorded_at], map: "idx_adherence_event_status_completed")
   @@index([patient_id, due_at, is_completed], map: "idx_adherence_patient_due_status")
-  @@map("adherence_records")
+  @@map("AdherenceRecords")
 }
 
 model ServicePlan {
@@ -746,7 +746,7 @@ model ServicePlan {
   @@index([price], map: "service_plans_price")
   @@index([provider_id], map: "service_plans_provider_id")
   @@index([service_type], map: "service_plans_service_type")
-  @@map("service_plans")
+  @@map("ServicePlans")
 }
 
 model PatientSubscription {

@@ -6,6 +6,38 @@
 
 set -e
 
+# ============================================================================
+# Environment File Check
+# ============================================================================
+
+# Function to check for .env file
+check_env_file() {
+    if [ ! -f ".env" ]; then
+        echo -e "${RED}❌ ERROR: .env file not found in application root!${NC}"
+        echo -e "${YELLOW}📋 Required .env file is missing from the application root directory.${NC}"
+        echo ""
+        echo -e "${CYAN}Please copy the correct .env file to the application root before deployment:${NC}"
+        echo -e "   ${GREEN}cp path/to/your/.env.dev .env${NC}     # For development environment"
+        echo -e "   ${GREEN}cp path/to/your/.env.test .env${NC}    # For test environment"
+        echo -e "   ${GREEN}cp path/to/your/.env.prod .env${NC}    # For production environment"
+        echo ""
+        echo -e "${YELLOW}The .env file should contain required environment variables like:${NC}"
+        echo -e "   DATABASE_URL=postgresql://..."
+        echo -e "   NEXTAUTH_SECRET=..."
+        echo -e "   NEXTAUTH_URL=..."
+        echo -e "   And other environment-specific configurations"
+        echo ""
+        echo -e "${RED}Deployment cannot continue without the .env file.${NC}"
+        exit 1
+    else
+        echo -e "${GREEN}✅ .env file found in application root${NC}"
+    fi
+}
+
+# Run environment file check immediately
+echo -e "${BLUE}🔍 Checking for .env file...${NC}"
+check_env_file
+
 # Colors for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
