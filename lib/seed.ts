@@ -15,26 +15,36 @@ export async function seedComprehensiveHealthcareData() {
   console.log('📊 Seeding comprehensive healthcare test data...');
 
   try {
-    // Check if data already exists
-    const existingUsers = await prisma.user.findMany({
-      where: {
-        email: {
-          in: [
-            'doctor@healthapp.com',
-            'doctor1@healthapp.com',
-            'patient1@healthapp.com',
-            'patient2@healthapp.com', 
-            'patient3@healthapp.com',
-            'patient4@healthapp.com',
-            'patient5@healthapp.com',
-            'doctor2@healthapp.com',
-            'hsp@healthapp.com',
-            'admin@healthapp.com',
-            'provider@healthapp.com'
-          ]
+    // Check if data already exists - First ensure database tables exist
+    let existingUsers;
+    try {
+      existingUsers = await prisma.user.findMany({
+        where: {
+          email: {
+            in: [
+              'doctor@healthapp.com',
+              'doctor1@healthapp.com',
+              'patient1@healthapp.com',
+              'patient2@healthapp.com', 
+              'patient3@healthapp.com',
+              'patient4@healthapp.com',
+              'patient5@healthapp.com',
+              'doctor2@healthapp.com',
+              'hsp@healthapp.com',
+              'admin@healthapp.com',
+              'provider@healthapp.com'
+            ]
+          }
         }
+      });
+    } catch (error: any) {
+      if (error.code === 'P2021') {
+        console.log('⚠️ Database tables do not exist. Please run migrations first.');
+        console.log('Run: npx prisma migrate deploy');
+        throw new Error('Database not migrated. Run migrations before seeding.');
       }
-    });
+      throw error;
+    }
 
     if (existingUsers.length > 0) {
       console.log(`ℹ️ Test data already exists (${existingUsers.length} users found), skipping seeding`);

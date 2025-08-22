@@ -29,8 +29,7 @@
       "@/hooks/*": ["./hooks/*"],
       "@/plugins/*": ["./lib/plugins/*"],
       "@/plugins/core/*": ["./lib/plugins/core/*"],
-      "@/plugins/devices/*": ["./lib/plugins/devices/*"],
-      "@/prisma/*": ["./lib/prisma-client/*"]
+      "@/plugins/devices/*": ["./lib/plugins/devices/*"]
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],

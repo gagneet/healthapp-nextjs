@@ -114,7 +114,7 @@ COMMANDS:
   migrate      Run database migrations only
   seed         Run database seeders only
   backup       Backup database
-  cleanup      Clean up environment (removes everything)
+  cleanup      Clean up environment (removes compiled files, Docker stacks, networks, volumes)
   scale        Scale specific service up/down
 
 OPTIONS:
@@ -130,7 +130,7 @@ OPTIONS:
   --replicas N               Number of replicas for all services
   --migrate                  Run database migrations after deployment
   --seed                     Run database seeders after deployment
-  --cleanup                  Clean up before deployment
+  --cleanup                  Clean up before deployment (compiled files + Docker resources)
   --skip-build              Skip Docker image building
   --skip-image-pull         Skip pulling base images
   --auto-yes                Skip all confirmation prompts
@@ -476,7 +476,49 @@ cleanup_environment() {
         docker network prune -f >/dev/null 2>&1 || true
         docker volume prune -f >/dev/null 2>&1 || true
 
-        log_success "Cleanup complete"
+        log_success "Docker cleanup complete"
+    fi
+}
+
+cleanup_compiled_files() {
+    if [ "$CLEANUP" = true ]; then
+        log_info "Cleaning up compiled TypeScript files..."
+        
+        # Check if npm is available and package.json exists
+        if [ -f "package.json" ] && command -v npm >/dev/null 2>&1; then
+            log_info "Running npm clean script..."
+            if npm run clean 2>/dev/null; then
+                log_success "Compiled files cleaned via npm script"
+            else
+                log_info "npm clean script failed, using manual cleanup..."
+                manual_cleanup_compiled_files
+            fi
+        else
+            log_info "npm not available, using manual cleanup..."
+            manual_cleanup_compiled_files
+        fi
+    fi
+}
+
+manual_cleanup_compiled_files() {
+    log_info "Manually removing compiled TypeScript files..."
+    
+    # Remove compiled JS files from lib/ (except seed files)
+    find lib -name '*.js' -not -name 'seed.js' -not -name 'seed.cjs' -delete 2>/dev/null || true
+    
+    # Remove compiled JS files from app/
+    find app -name '*.js' -delete 2>/dev/null || true
+    
+    # Remove compiled JS files from scripts/
+    find scripts -name '*.js' -delete 2>/dev/null || true
+    
+    # Count remaining JS files to verify cleanup
+    local remaining_js=$(find lib app scripts -name '*.js' -not -name 'seed.js' -not -name 'seed.cjs' 2>/dev/null | wc -l)
+    
+    if [ "$remaining_js" -eq 0 ]; then
+        log_success "All compiled TypeScript files removed"
+    else
+        log_warning "Some compiled files may remain ($remaining_js files)"
     fi
 }
 
@@ -1052,6 +1094,7 @@ handle_deploy() {
     confirm "Deploy with above configuration?"
     
     check_swarm
+    cleanup_compiled_files
     cleanup_environment
     build_images
     deploy_stack
