@@ -94,10 +94,28 @@ export async function GET(
       const doctor = await prisma.doctor.findFirst({
         where: { user_id: session.user.id }
       });
+      
+      if (!doctor) {
+        return NextResponse.json({
+          status: false,
+          statusCode: 404,
+          payload: { error: { status: 'not_found', message: 'Doctor profile not found' } }
+        }, { status: 404 });
+      }
+      
       const patient = await prisma.patient.findUnique({
         where: { id: payment.patient_id }
       });
-      if (!doctor || !patient || patient.primary_care_doctor_id !== doctor.id) {
+      
+      if (!patient) {
+        return NextResponse.json({
+          status: false,
+          statusCode: 404,
+          payload: { error: { status: 'not_found', message: 'Patient not found' } }
+        }, { status: 404 });
+      }
+      
+      if (patient.primary_care_doctor_id !== doctor.id) {
         return NextResponse.json({
           status: false,
           statusCode: 403,

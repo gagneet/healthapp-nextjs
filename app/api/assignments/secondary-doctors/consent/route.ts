@@ -18,11 +18,11 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { assignment_id, patient_phone, consent_method = 'SMS' } = body;
 
-    if (!assignment_id) {
+    if (!assignment_id || typeof assignment_id !== 'string' || assignment_id.trim().length === 0) {
       return NextResponse.json({
         status: false,
         statusCode: 400,
-        payload: { error: { status: 'validation_error', message: 'Assignment ID is required' } }
+        payload: { error: { status: 'validation_error', message: 'Valid assignment ID is required' } }
       }, { status: 400 });
     }
 
@@ -121,11 +121,13 @@ export async function PUT(request: NextRequest) {
     const body = await request.json();
     const { otp_id, otp_code, assignment_id } = body;
 
-    if (!otp_id || !otp_code || !assignment_id) {
+    if (!otp_id || typeof otp_id !== 'string' || otp_id.trim().length === 0 ||
+        !otp_code || typeof otp_code !== 'string' || otp_code.trim().length === 0 ||
+        !assignment_id || typeof assignment_id !== 'string' || assignment_id.trim().length === 0) {
       return NextResponse.json({
         status: false,
         statusCode: 400,
-        payload: { error: { status: 'validation_error', message: 'OTP ID, OTP code, and assignment ID are required' } }
+        payload: { error: { status: 'validation_error', message: 'Valid OTP ID, OTP code, and assignment ID are required' } }
       }, { status: 400 });
     }
 

@@ -9,7 +9,7 @@ import { prisma } from '@/lib/prisma';
 export async function GET(request: NextRequest) {
   try {
     const session = await auth();
-    if (!session?.user) {
+    if (!session?.user || !session.user.id || typeof session.user.id !== 'string') {
       return NextResponse.json({
         status: false,
         statusCode: 401,
@@ -116,7 +116,7 @@ export async function GET(request: NextRequest) {
 export async function PUT(request: NextRequest) {
   try {
     const session = await auth();
-    if (!session?.user) {
+    if (!session?.user || !session.user.id || typeof session.user.id !== 'string') {
       return NextResponse.json({
         status: false,
         statusCode: 401,
@@ -207,7 +207,7 @@ export async function PUT(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const session = await auth();
-    if (!session?.user) {
+    if (!session?.user || !session.user.id || typeof session.user.id !== 'string') {
       return NextResponse.json({
         status: false,
         statusCode: 401,

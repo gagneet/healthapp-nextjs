@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
       }
     })
     
-    if (!user) {
+    if (!user || !user.id || typeof user.id !== 'string') {
       return NextResponse.json(
         { 
           error: "Invalid or expired verification token",

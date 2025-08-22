@@ -173,8 +173,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             // Verify TOTP code
             const isValidTOTP = authenticator.verify({
               token: totpCode,
-              secret: user.two_factor_secret!
-              // window: 1 // Allow 1 time step tolerance (30 seconds before/after) - Auth.js v5 compatible
+              secret: user.two_factor_secret!,
+              window: 1 // Allow 1 time step tolerance (30 seconds before/after)
             })
             
             if (!isValidTOTP) {

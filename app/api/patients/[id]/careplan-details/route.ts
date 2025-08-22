@@ -3,80 +3,157 @@ import { auth } from "@/lib/auth";
 import { prisma } from '@/lib/prisma';
 
 /**
+ * Authenticate and authorize user for care plan access
+ */
+async function authenticateAndAuthorize(session: any) {
+  if (!session?.user) {
+    return {
+      error: {
+        status: false,
+        statusCode: 401,
+        payload: { error: { status: 'unauthorized', message: 'Authentication required' } }
+      }
+    };
+  }
+
+  if (!['DOCTOR', 'HSP'].includes(session.user.role)) {
+    return {
+      error: {
+        status: false,
+        statusCode: 403,
+        payload: { error: { status: 'forbidden', message: 'Only doctors and HSPs can access patient care plans' } }
+      }
+    };
+  }
+
+  return { success: true };
+}
+
+/**
+ * Get doctor or HSP profile based on user role
+ */
+async function getProviderProfile(session: any) {
+  if (session.user.role === 'DOCTOR') {
+    const doctor = await prisma.doctor.findFirst({
+      where: { user_id: session.user.id }
+    });
+    
+    if (!doctor) {
+      return {
+        error: {
+          status: false,
+          statusCode: 404,
+          payload: { error: { status: 'not_found', message: 'Doctor profile not found' } }
+        }
+      };
+    }
+    
+    return { success: true, doctorId: doctor.id, hspId: null };
+  } else if (session.user.role === 'HSP') {
+    const hsp = await prisma.hsp.findFirst({
+      where: { user_id: session.user.id }
+    });
+    
+    if (!hsp) {
+      return {
+        error: {
+          status: false,
+          statusCode: 404,
+          payload: { error: { status: 'not_found', message: 'HSP profile not found' } }
+        }
+      };
+    }
+    
+    return { success: true, doctorId: null, hspId: hsp.id };
+  }
+  
+  return {
+    error: {
+      status: false,
+      statusCode: 403,
+      payload: { error: { status: 'forbidden', message: 'Invalid user role' } }
+    }
+  };
+}
+
+/**
+ * Verify access to patient based on provider type
+ */
+async function verifyPatientAccess(patientId: string, doctorId: string | null, hspId: string | null) {
+  const whereClause: any = { id: patientId };
+  
+  if (doctorId) {
+    whereClause.OR = [
+      { primary_care_doctor_id: doctorId },
+      {
+        patient_doctor_assignments: {
+          some: { 
+            doctor_id: doctorId, 
+            is_active: true 
+          }
+        }
+      }
+    ];
+  } else if (hspId) {
+    whereClause.OR = [
+      { hsp_id: hspId },
+      {
+        patient_provider_assignments: {
+          some: {
+            hsp_id: hspId,
+            is_active: true
+          }
+        }
+      }
+    ];
+  }
+
+  const patient = await prisma.patient.findFirst({ where: whereClause });
+  
+  if (!patient) {
+    return {
+      error: {
+        status: false,
+        statusCode: 403,
+        payload: { error: { status: 'forbidden', message: 'Access denied to patient' } }
+      }
+    };
+  }
+  
+  return { success: true, patient };
+}
+
+/**
  * GET /api/patients/{id}/careplan-details
  * Get detailed care plans for a specific patient
  */
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
   try {
     const session = await auth();
-    if (!session?.user) {
-      return NextResponse.json({
-        status: false,
-        statusCode: 401,
-        payload: { error: { status: 'unauthorized', message: 'Authentication required' } }
-      }, { status: 401 });
-    }
-
-    // Only doctors and HSPs can access patient care plans
-    if (!['DOCTOR', 'HSP'].includes(session.user.role)) {
-      return NextResponse.json({
-        status: false,
-        statusCode: 403,
-        payload: { error: { status: 'forbidden', message: 'Only doctors and HSPs can access patient care plans' } }
-      }, { status: 403 });
-    }
-
     const { id: patientId } = params;
 
-    // Get doctor ID or HSP ID based on user role
-    let doctorId = null;
-    let hspId = null;
-    
-    if (session.user.role === 'DOCTOR') {
-      const doctor = await prisma.doctor.findFirst({
-        where: { user_id: session.user.id }
-      });
-      
-      if (!doctor) {
-        return NextResponse.json({
-          status: false,
-          statusCode: 404,
-          payload: { error: { status: 'not_found', message: 'Doctor profile not found' } }
-        }, { status: 404 });
-      }
-      
-      doctorId = doctor.id;
-    } else if (session.user.role === 'HSP') {
-      const hsp = await prisma.hsp.findFirst({
-        where: { user_id: session.user.id }
-      });
-      
-      if (!hsp) {
-        return NextResponse.json({
-          status: false,
-          statusCode: 404,
-          payload: { error: { status: 'not_found', message: 'HSP profile not found' } }
-        }, { status: 404 });
-      }
-      
-      hspId = hsp.id;
+    // Authenticate and authorize user
+    const authResult = await authenticateAndAuthorize(session);
+    if (authResult.error) {
+      return NextResponse.json(authResult.error, { status: authResult.error.statusCode });
     }
 
-    // Verify access to patient - Patient can be linked to Doctor or HSP
-    const patient = await prisma.patient.findFirst({
-      where: { 
-        id: patientId,
-        // Patient can be linked to either Doctor or HSP (business rule)
-        ...(doctorId ? { 
-          OR: [
-            { primary_care_doctor_id: doctorId },
-            // Also check if patient is assigned through patient_doctor_assignments table
-            { 
-              patient_doctor_assignments: {
-                some: { 
-                  doctor_id: doctorId, 
-                  is_active: true 
-                }
+    // Get provider profile (doctor or HSP)
+    const providerResult = await getProviderProfile(session);
+    if (providerResult.error) {
+      return NextResponse.json(providerResult.error, { status: providerResult.error.statusCode });
+    }
+
+    const { doctorId, hspId } = providerResult;
+
+    // Verify access to patient
+    const patientAccessResult = await verifyPatientAccess(patientId, doctorId, hspId);
+    if (patientAccessResult.error) {
+      return NextResponse.json(patientAccessResult.error, { status: patientAccessResult.error.statusCode });
+    }
+
+    // Now fetch the comprehensive care plan data
+    const carePlanData = await fetchCarePlanData(patientId);
               }
             }
           ]

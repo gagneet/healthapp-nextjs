@@ -182,65 +182,70 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Check if slot is available
-    if (slot_id) {
-      const slot = await prisma.appointment_slots.findUnique({
-        where: { id: slot_id }
-      });
-      
-      if (!slot || slot.is_booked) {
-        return NextResponse.json({
-          status: false,
-          statusCode: 409,
-          payload: { error: { status: 'conflict', message: 'Time slot is not available' } }
-        }, { status: 409 });
+    // Use transaction to prevent race condition in slot booking
+    const appointment = await prisma.$transaction(async (tx) => {
+      // Check if slot is available within transaction
+      if (slot_id) {
+        const slot = await tx.appointment_slots.findUnique({
+          where: { id: slot_id }
+        });
+        
+        if (!slot || slot.is_booked) {
+          throw new Error('Time slot is not available');
+        }
+        
+        // Mark slot as booked immediately to prevent race condition
+        await tx.appointment_slots.update({
+          where: { id: slot_id },
+          data: { is_booked: true }
+        });
       }
-    }
 
-    const appointment = await prisma.appointment.create({
-      data: {
-        patient_id,
-        doctor_id,
-        start_time: new Date(start_time),
-        end_time: new Date(end_time),
-        appointment_type,
-        status: 'SCHEDULED',
-        notes: notes || '',
-        slot_id
-      },
-      include: {
-        patient: {
-          select: {
-            user: {
-              select: {
-                first_name: true,
-                last_name: true,
-                email: true
+      // Create appointment within the same transaction
+      const newAppointment = await tx.appointment.create({
+        data: {
+          patient_id,
+          doctor_id,
+          start_time: new Date(start_time),
+          end_time: new Date(end_time),
+          appointment_type,
+          status: 'SCHEDULED',
+          notes: notes || '',
+          slot_id
+        },
+        include: {
+          patient: {
+            select: {
+              user: {
+                select: {
+                  first_name: true,
+                  last_name: true,
+                  email: true
+                }
               }
             }
-          }
-        },
-        doctor: {
-          select: {
-            users_doctors_user_idTousers: {
-              select: {
-                first_name: true,
-                last_name: true,
-                email: true
+          },
+          doctor: {
+            select: {
+              users_doctors_user_idTousers: {
+                select: {
+                  first_name: true,
+                  last_name: true,
+                  email: true
+                }
               }
             }
           }
         }
-      }
-    });
-
-    // Mark slot as booked if slot_id was provided
-    if (slot_id) {
-      await prisma.appointment_slots.update({
-        where: { id: slot_id },
-        data: { is_booked: true }
       });
-    }
+      
+      return newAppointment;
+    }).catch((error) => {
+      if (error.message === 'Time slot is not available') {
+        throw { status: 409, message: 'Time slot is not available' };
+      }
+      throw error;
+    });
 
     return NextResponse.json({
       status: true,
@@ -250,8 +255,18 @@ export async function POST(request: NextRequest) {
         message: 'Appointment booked successfully'
       }
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error creating appointment:', error);
+    
+    // Handle transaction-specific errors
+    if (error.status === 409) {
+      return NextResponse.json({
+        status: false,
+        statusCode: 409,
+        payload: { error: { status: 'conflict', message: error.message } }
+      }, { status: 409 });
+    }
+    
     return NextResponse.json({
       status: false,
       statusCode: 500,
@@ -271,11 +286,11 @@ export async function PUT(request: NextRequest) {
     const body = await request.json();
     const { id, status, notes, start_time, end_time } = body;
 
-    if (!id) {
+    if (!id || typeof id !== 'string' || id.trim().length === 0) {
       return NextResponse.json({
         status: false,
         statusCode: 400,
-        payload: { error: { status: 'error', message: 'Appointment ID is required' } }
+        payload: { error: { status: 'error', message: 'Valid appointment ID is required' } }
       }, { status: 400 });
     }
 
