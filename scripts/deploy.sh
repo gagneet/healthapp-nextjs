@@ -932,10 +932,15 @@ run_seeds() {
         
         # Run seeds in the app container
         log_info "Running seeds in container: $container_id"
-        if docker exec "$container_id" npm run seed; then
+        if docker exec "$container_id" npx prisma db seed; then
             log_success "Seeds completed successfully"
         else
-            log_warning "Seeding failed - this may be expected if data already exists"
+            log_warning "Prisma seeding failed, trying manual seed execution..."
+            if docker exec "$container_id" node lib/seed.cjs; then
+                log_success "Manual seeds completed successfully"
+            else
+                log_warning "Seeding failed - this may be expected if data already exists"
+            fi
         fi
     fi
 }
