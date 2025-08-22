@@ -25,9 +25,9 @@ model Organization {
   care_plan_templates                                                                                   care_plan_templates[]
   care_plans                                                                                            CarePlan[]
   clinics                                                                                               Clinic[]
-  doctors                                                                                               doctors[]
+  Doctors                                                                                               Doctors[]
   healthcare_providers                                                                                  HealthcareProvider[]
-  hsps                                                                                                  hsps[]
+  Hsps                                                                                                  Hsps[]
   notifications                                                                                         Notification[]
   patient_provider_consent_history_patient_provider_consent_history_new_provider_idToorganizations      patient_provider_consent_history[] @relation("patient_provider_consent_history_new_provider_idToorganizations")
   patient_provider_consent_history_patient_provider_consent_history_previous_provider_idToorganizations patient_provider_consent_history[] @relation("patient_provider_consent_history_previous_provider_idToorganizations")
@@ -42,7 +42,7 @@ model Organization {
   @@index([is_active], map: "organizations_is_active")
   @@index([name], map: "organizations_name")
   @@index([type], map: "organizations_type")
-  @@map("organizations")
+  @@map("Organizations")
 }
 
 model User {
@@ -93,12 +93,12 @@ model User {
   audit_logs                                                   AuditLog[]
   care_plan_templates                                          care_plan_templates[]
   doctor_availability                                          DoctorAvailability[]
-  doctors_doctors_user_idTousers                               doctors?                       @relation("doctors_user_idTousers")
-  doctors_doctors_verified_byTousers                           doctors[]                      @relation("doctors_verified_byTousers")
+  doctors_Doctors_user_idTousers                               Doctors?                       @relation("Doctors_user_idTousers")
+  doctors_Doctors_verified_byTousers                           Doctors[]                      @relation("Doctors_verified_byTousers")
   healthcare_provider                                          HealthcareProvider?
   healthcare_providers_healthcare_providers_verified_byTousers HealthcareProvider[]           @relation("healthcare_providers_verified_byTousers")
-  hsps_hsps_user_idTousers                                     hsps?                          @relation("hsps_user_idTousers")
-  hsps_hsps_verified_byTousers                                 hsps[]                         @relation("hsps_verified_byTousers")
+  hsps_Hsps_user_idTousers                                     Hsps?                          @relation("Hsps_user_idTousers")
+  hsps_Hsps_verified_byTousers                                 Hsps[]                         @relation("Hsps_verified_byTousers")
   notifications                                                Notification[]
   patient_consent_otp                                          patient_consent_otp[]
   patient_doctor_assignments                                   PatientDoctorAssignment[]
@@ -138,7 +138,7 @@ model User {
   @@index([phone], map: "users_phone")
   @@index([role], map: "users_role")
 
-  @@map("users")
+  @@map("Users")
 }
 
 
@@ -276,8 +276,8 @@ model Patient {
   patient_subscriptions                                    PatientSubscription[]
   organizations_patients_linked_provider_idToorganizations Organization?                          @relation("patients_linked_provider_idToorganizations", fields: [linked_provider_id], references: [id])
   organization                                             Organization?                          @relation(fields: [organization_id], references: [id])
-  doctors                                                  doctors?                               @relation(fields: [primary_care_doctor_id], references: [id])
-  hsps                                                     hsps?                                  @relation(fields: [primary_care_hsp_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  Doctors                                                  Doctors?                               @relation(fields: [primary_care_doctor_id], references: [id])
+  Hsps                                                     Hsps?                                  @relation(fields: [primary_care_hsp_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   user                                                     User                                   @relation(fields: [user_id], references: [id], onDelete: Cascade)
   payment_methods                                          payment_methods[]
   payments                                                 payments[]
@@ -315,7 +315,7 @@ model Patient {
   @@index([provider_consent_given], map: "patients_provider_consent_given")
   @@index([provider_linked_at], map: "patients_provider_linked_at")
   @@index([risk_level], map: "patients_risk_level")
-  @@map("patients")
+  @@map("Patients")
 }
 
 model HealthcareProvider {
@@ -371,7 +371,7 @@ model Speciality {
   created_at   DateTime  @db.Timestamptz(6)
   updated_at   DateTime  @updatedAt @db.Timestamptz(6)
   deleted_at   DateTime? @db.Timestamptz(6)
-  doctors      doctors[]
+  Doctors      Doctors[]
 
   @@map("specialities")
 }
@@ -404,7 +404,7 @@ model Clinic {
   created_at          DateTime      @db.Timestamptz(6)
   updated_at          DateTime      @updatedAt @db.Timestamptz(6)
   deleted_at          DateTime?     @db.Timestamptz(6)
-  doctor              doctors       @relation(fields: [doctor_id], references: [id], onDelete: Cascade)
+  doctor              Doctors       @relation(fields: [doctor_id], references: [id], onDelete: Cascade)
   organization        Organization? @relation(fields: [organization_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
   @@index([doctor_id], map: "clinics_doctor_id")
@@ -460,8 +460,8 @@ model CarePlan {
   created_at                  DateTime?            @db.Timestamptz(6)
   updated_at                  DateTime?            @updatedAt @db.Timestamptz(6)
   deleted_at                  DateTime?            @db.Timestamptz(6)
-  doctors                     doctors?             @relation(fields: [created_by_doctor_id], references: [id])
-  hsps                        hsps?                @relation(fields: [created_by_hsp_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  Doctors                     Doctors?             @relation(fields: [created_by_doctor_id], references: [id])
+  Hsps                        Hsps?                @relation(fields: [created_by_hsp_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   organizations               Organization?        @relation(fields: [organization_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   patient                     Patient              @relation(fields: [patient_id], references: [id], onDelete: Cascade)
   prescribed_medications      Medication[] @relation("prescribed_medications")
@@ -482,7 +482,7 @@ model CarePlan {
   @@index([start_date], map: "care_plans_start_date")
   @@index([status], map: "care_plans_status")
   @@index([patient_id, status, start_date], map: "idx_careplans_patient_status_start_fixed")
-  @@map("care_plans")
+  @@map("CarePlans")
 }
 
 model Medicine {
@@ -526,7 +526,7 @@ model Medication {
   @@index([medicine_id], map: "medications_medicine_id")
   @@index([organizer_type, organizer_id], map: "medications_organizer_type_organizer_id")
   @@index([participant_id], map: "medications_participant_id")
-  @@map("medications")
+  @@map("Medications")
 }
 
 model Appointment {
@@ -552,7 +552,7 @@ model Appointment {
   doctor_id            String?                                 @db.Uuid
   patient_id           String?                                 @db.Uuid
   slot_id              String?                                 @db.Uuid
-  doctor               doctors?                                @relation(fields: [doctor_id], references: [id])
+  doctor               Doctors?                                @relation(fields: [doctor_id], references: [id])
   patient              Patient?                                @relation(fields: [patient_id], references: [id])
   users                User?                                   @relation(fields: [provider_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   appointment_slots    appointment_slots?                      @relation(fields: [slot_id], references: [id])
@@ -569,7 +569,7 @@ model Appointment {
   @@index([organizer_type, organizer_id, start_time], map: "idx_appointments_organizer_time")
   @@index([patient_id, start_time], map: "idx_appointments_patient_time")
   @@index([provider_id, start_time], map: "idx_appointments_provider_time")
-  @@map("appointments")
+  @@map("Appointments")
 }
 
 model DoctorAvailability {
@@ -813,8 +813,8 @@ model PatientDoctorAssignment {
   updated_at                                                        DateTime? @updatedAt @db.Timestamptz(6)
   deleted_at                                                        DateTime? @db.Timestamptz(6)
   users                                                             User?     @relation(fields: [assigned_by_admin_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  doctors_patient_doctor_assignments_assigned_by_doctor_idTodoctors doctors?  @relation("patient_doctor_assignments_assigned_by_doctor_idTodoctors", fields: [assigned_by_doctor_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  doctor                                                            doctors   @relation(fields: [doctor_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  doctors_patient_doctor_assignments_assigned_by_doctor_idTodoctors Doctors?  @relation("patient_doctor_assignments_assigned_by_doctor_idTodoctors", fields: [assigned_by_doctor_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  doctor                                                            Doctors   @relation(fields: [doctor_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
   patient                                                           Patient   @relation(fields: [patient_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
   @@index([doctor_id, is_active, created_at], map: "idx_assignments_doctor_active_created")
@@ -886,8 +886,8 @@ model Notification {
   updated_at                DateTime?        @updatedAt @db.Timestamptz(6)
   deleted_at                DateTime?        @db.Timestamptz(6)
   recipient_id              String?          @db.Uuid
-  doctors                   doctors?         @relation(fields: [doctor_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  hsps                      hsps?            @relation(fields: [hsp_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  Doctors                   Doctors?         @relation(fields: [doctor_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  Hsps                      Hsps?            @relation(fields: [hsp_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   organizations             Organization?    @relation(fields: [organization_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   patients                  Patient?         @relation(fields: [patient_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
   users                     User?            @relation(fields: [recipient_id], references: [id])
@@ -954,7 +954,7 @@ model AuditLog {
   @@index([user_id], map: "audit_logs_user_id")
   @@index([user_id, timestamp], map: "audit_logs_user_id_timestamp")
   @@index([user_id, created_at, action], map: "idx_audit_user_created_action")
-  @@map("audit_logs")
+  @@map("AuditLogs")
 }
 
 model SequelizeMeta {
@@ -1034,7 +1034,7 @@ model dashboard_metrics {
 }
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
-model doctors {
+model Doctors {
   id                                                                                     String                             @id @db.Uuid
   user_id                                                                                String                             @unique(map: "doctors_user_id") @db.Uuid
   doctor_id                                                                              String                             @unique(map: "doctors_doctor_id") @db.VarChar(50)
@@ -1085,17 +1085,17 @@ model doctors {
   clinics                                                                                Clinic[]
   organizations                                                                          Organization?                      @relation(fields: [organization_id], references: [id])
   specialities                                                                           Speciality?                        @relation(fields: [speciality_id], references: [id])
-  users_doctors_user_idTousers                                                           User                               @relation("doctors_user_idTousers", fields: [user_id], references: [id], onDelete: Cascade)
-  users_doctors_verified_byTousers                                                       User?                              @relation("doctors_verified_byTousers", fields: [verified_by], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  hsps                                                                                   hsps[]
+  users_Doctors_user_idTousers                                                           User                               @relation("Doctors_user_idTousers", fields: [user_id], references: [id], onDelete: Cascade)
+  users_Doctors_verified_byTousers                                                       User?                              @relation("Doctors_verified_byTousers", fields: [verified_by], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  Hsps                                                                                   Hsps[]
   notifications                                                                          Notification[]
-  patient_consent_otp_patient_consent_otp_primary_doctor_idTodoctors                     patient_consent_otp[]              @relation("patient_consent_otp_primary_doctor_idTodoctors")
+  patient_consent_otp_patient_consent_otp_primary_doctor_idToDoctors                     patient_consent_otp[]              @relation("patient_consent_otp_primary_doctor_idToDoctors")
   patient_consent_otp_patient_consent_otp_secondary_doctor_idTodoctors                   patient_consent_otp[]              @relation("patient_consent_otp_secondary_doctor_idTodoctors")
   patient_doctor_assignments_patient_doctor_assignments_assigned_by_doctor_idTodoctors   PatientDoctorAssignment[]          @relation("patient_doctor_assignments_assigned_by_doctor_idTodoctors")
   doctor_assignments                                                                     PatientDoctorAssignment[]
   patient_provider_consent_history                                                       patient_provider_consent_history[]
   patients                                                                               Patient[]
-  secondary_doctor_assignments_secondary_doctor_assignments_primary_doctor_idTodoctors   secondary_doctor_assignments[]     @relation("secondary_doctor_assignments_primary_doctor_idTodoctors")
+  secondary_doctor_assignments_secondary_doctor_assignments_primary_doctor_idToDoctors   secondary_doctor_assignments[]     @relation("secondary_doctor_assignments_primary_doctor_idToDoctors")
   secondary_doctor_assignments_secondary_doctor_assignments_secondary_doctor_idTodoctors secondary_doctor_assignments[]     @relation("secondary_doctor_assignments_secondary_doctor_idTodoctors")
   treatment_plans                                                                        treatment_plans[]
   
@@ -1109,10 +1109,11 @@ model doctors {
   @@index([is_verified, gender], map: "doctors_is_verified_gender")
   @@index([organization_id], map: "doctors_organization_id")
   @@index([specialties], map: "doctors_specialties", type: Gin)
+  @@map("Doctors")
 }
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
-model hsps {
+model Hsps {
   id                               String                             @id @db.Uuid
   user_id                          String                             @unique(map: "hsps_user_id") @db.Uuid
   hsp_id                           String                             @unique(map: "hsps_hsp_id") @db.VarChar(50)
@@ -1149,9 +1150,9 @@ model hsps {
   deleted_at                       DateTime?                          @db.Timestamptz(6)
   care_plans                       CarePlan[]
   organizations                    Organization?                      @relation(fields: [organization_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  doctors                          doctors?                           @relation(fields: [supervising_doctor_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  users_hsps_user_idTousers        User                               @relation("hsps_user_idTousers", fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
-  users_hsps_verified_byTousers    User?                              @relation("hsps_verified_byTousers", fields: [verified_by], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  Doctors                          Doctors?                           @relation(fields: [supervising_doctor_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  users_Hsps_user_idTousers        User                               @relation("Hsps_user_idTousers", fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users_Hsps_verified_byTousers    User?                              @relation("Hsps_verified_byTousers", fields: [verified_by], references: [id], onDelete: NoAction, onUpdate: NoAction)
   notifications                    Notification[]
   patient_consent_otp              patient_consent_otp[]
   patient_provider_consent_history patient_provider_consent_history[]
@@ -1164,6 +1165,7 @@ model hsps {
   @@index([organization_id], map: "hsps_organization_id")
   @@index([specializations], map: "hsps_specializations", type: Gin)
   @@index([supervising_doctor_id], map: "hsps_supervising_doctor_id")
+  @@map("Hsps")
 }
 
 model medication_logs {
@@ -1243,11 +1245,11 @@ model patient_consent_otp {
   updated_at                                               DateTime?                            @db.Timestamptz(6)
   deleted_at                                               DateTime?                            @db.Timestamptz(6)
   patients                                                 Patient                              @relation(fields: [patient_id], references: [id], onDelete: Cascade)
-  doctors_patient_consent_otp_primary_doctor_idTodoctors   doctors                              @relation("patient_consent_otp_primary_doctor_idTodoctors", fields: [primary_doctor_id], references: [id], onDelete: Cascade)
+  Doctors_patient_consent_otp_primary_doctor_idToDoctors   Doctors                              @relation("patient_consent_otp_primary_doctor_idToDoctors", fields: [primary_doctor_id], references: [id], onDelete: Cascade)
   users                                                    User                                 @relation(fields: [requested_by_user_id], references: [id], onDelete: Cascade)
   secondary_doctor_assignments                             secondary_doctor_assignments         @relation(fields: [secondary_assignment_id], references: [id], onDelete: Cascade)
-  doctors_patient_consent_otp_secondary_doctor_idTodoctors doctors?                             @relation("patient_consent_otp_secondary_doctor_idTodoctors", fields: [secondary_doctor_id], references: [id], onDelete: Cascade)
-  hsps                                                     hsps?                                @relation(fields: [secondary_hsp_id], references: [id], onDelete: Cascade)
+  doctors_patient_consent_otp_secondary_doctor_idTodoctors Doctors?                             @relation("patient_consent_otp_secondary_doctor_idTodoctors", fields: [secondary_doctor_id], references: [id], onDelete: Cascade)
+  Hsps                                                     Hsps?                                @relation(fields: [secondary_hsp_id], references: [id], onDelete: Cascade)
 
   @@index([expires_at], map: "patient_consent_otp_expires_at")
   @@index([generated_at], map: "patient_consent_otp_generated_at")
@@ -1301,8 +1303,8 @@ model patient_provider_consent_history {
   metadata                                                                           Json?                                                 @default("{}")
   created_at                                                                         DateTime?                                             @db.Timestamptz(6)
   updated_at                                                                         DateTime?                                             @db.Timestamptz(6)
-  doctors                                                                            doctors?                                              @relation(fields: [doctor_id], references: [id], onUpdate: NoAction)
-  hsps                                                                               hsps?                                                 @relation(fields: [hsp_id], references: [id], onUpdate: NoAction)
+  Doctors                                                                            Doctors?                                              @relation(fields: [doctor_id], references: [id], onUpdate: NoAction)
+  Hsps                                                                               Hsps?                                                 @relation(fields: [hsp_id], references: [id], onUpdate: NoAction)
   organizations_patient_provider_consent_history_new_provider_idToorganizations      Organization                                          @relation("patient_provider_consent_history_new_provider_idToorganizations", fields: [new_provider_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
   patients                                                                           Patient                                               @relation(fields: [patient_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
   organizations_patient_provider_consent_history_previous_provider_idToorganizations Organization?                                         @relation("patient_provider_consent_history_previous_provider_idToorganizations", fields: [previous_provider_id], references: [id], onUpdate: NoAction)
@@ -1492,11 +1494,11 @@ model secondary_doctor_assignments {
   deleted_at                                                                             DateTime?                                         @db.Timestamptz(6)
   patient_consent_otp                                                                    patient_consent_otp[]
   patients                                                                               Patient                                           @relation(fields: [patient_id], references: [id], onDelete: Cascade)
-  doctors_secondary_doctor_assignments_primary_doctor_idTodoctors                        doctors                                           @relation("secondary_doctor_assignments_primary_doctor_idTodoctors", fields: [primary_doctor_id], references: [id], onDelete: Cascade)
+  Doctors_secondary_doctor_assignments_primary_doctor_idToDoctors                        Doctors                                           @relation("secondary_doctor_assignments_primary_doctor_idToDoctors", fields: [primary_doctor_id], references: [id], onDelete: Cascade)
   organizations_secondary_doctor_assignments_primary_doctor_provider_idToorganizations   Organization?                                     @relation("secondary_doctor_assignments_primary_doctor_provider_idToorganizations", fields: [primary_doctor_provider_id], references: [id])
-  doctors_secondary_doctor_assignments_secondary_doctor_idTodoctors                      doctors?                                          @relation("secondary_doctor_assignments_secondary_doctor_idTodoctors", fields: [secondary_doctor_id], references: [id], onDelete: Cascade)
+  doctors_secondary_doctor_assignments_secondary_doctor_idTodoctors                      Doctors?                                          @relation("secondary_doctor_assignments_secondary_doctor_idTodoctors", fields: [secondary_doctor_id], references: [id], onDelete: Cascade)
   organizations_secondary_doctor_assignments_secondary_doctor_provider_idToorganizations Organization?                                     @relation("secondary_doctor_assignments_secondary_doctor_provider_idToorganizations", fields: [secondary_doctor_provider_id], references: [id])
-  hsps                                                                                   hsps?                                             @relation(fields: [secondary_hsp_id], references: [id], onDelete: Cascade)
+  Hsps                                                                                   Hsps?                                             @relation(fields: [secondary_hsp_id], references: [id], onDelete: Cascade)
 
   @@index([access_granted], map: "secondary_doctor_assignments_access_granted")
   @@index([consent_expires_at], map: "secondary_doctor_assignments_consent_expires_at")
@@ -1595,7 +1597,7 @@ model treatment_plans {
   updated_at             DateTime?      @db.Timestamptz(6)
   deleted_at             DateTime?      @db.Timestamptz(6)
   notifications          Notification[]
-  doctors                doctors        @relation(fields: [doctor_id], references: [id], onDelete: NoAction)
+  Doctors                Doctors        @relation(fields: [doctor_id], references: [id], onDelete: NoAction)
   organizations          Organization?  @relation(fields: [organization_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   patients               Patient        @relation(fields: [patient_id], references: [id], onDelete: Cascade)
 
@@ -2362,7 +2364,7 @@ model VideoConsultation {
   updated_at            DateTime            @updatedAt @db.Timestamptz(6)
   
   // Relations
-  doctor                doctors             @relation(fields: [doctor_id], references: [id], onDelete: Cascade)
+  doctor                Doctors             @relation(fields: [doctor_id], references: [id], onDelete: Cascade)
   patient               Patient             @relation(fields: [patient_id], references: [id], onDelete: Cascade)
   appointment           Appointment?        @relation(fields: [appointment_id], references: [id])
   creator               User                @relation("ConsultationCreatedBy", fields: [created_by], references: [id])
@@ -2454,7 +2456,7 @@ model LabOrder {
   
   // Relations
   patient               Patient             @relation(fields: [patient_id], references: [id], onDelete: Cascade)
-  doctor                doctors             @relation(fields: [doctor_id], references: [id])
+  doctor                Doctors             @relation(fields: [doctor_id], references: [id])
   consultation          VideoConsultation? @relation(fields: [consultation_id], references: [id])
   results               LabResult[]
   

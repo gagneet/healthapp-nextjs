@@ -128,7 +128,7 @@ export interface RegisterData {
   email: string
   password: string
   confirmPassword: string
-  role: UserRole
+  role: HealthcareRole
   first_name: string
   last_name: string
   phone?: string
