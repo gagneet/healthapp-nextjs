@@ -74,7 +74,7 @@ export async function GET(request: NextRequest) {
     // Search based on type and user permissions
     if (filters.type === 'all' || filters.type === 'patients') {
       if (['DOCTOR', 'HSP', 'SYSTEM_ADMIN', 'HOSPITAL_ADMIN'].includes(filters.role)) {
-        results.patients = await searchPatients(searchValue, filters, session.user.role);
+        results.patients = await searchPatients(searchValue, filters, session.user);
       }
     }
 
@@ -138,7 +138,7 @@ export async function GET(request: NextRequest) {
 }
 
 // Search functions for different entity types
-async function searchPatients(searchValue: string, filters: SearchFilters, userRole: HealthcareRole) {
+async function searchPatients(searchValue: string, filters: SearchFilters, user: any) {
   let whereClause: any = {
     OR: [
       { user: { first_name: { contains: searchValue, mode: 'insensitive' } } },
@@ -150,10 +150,10 @@ async function searchPatients(searchValue: string, filters: SearchFilters, userR
   };
 
   // Role-based filtering for patient search
-  if (userRole === 'DOCTOR') {
+  if (user.role === 'DOCTOR') {
     // Doctors can only search their assigned patients
     const doctor = await prisma.doctor.findFirst({
-      where: { user_id: (await auth())?.user?.id }
+      where: { user_id: user.id }
     });
     if (doctor) {
       whereClause.primary_care_doctor_id = doctor.id;
@@ -195,8 +195,8 @@ async function searchDoctors(searchValue: string, filters: SearchFilters) {
   return await prisma.doctor.findMany({
     where: {
       OR: [
-        { users_doctors_user_idTousers: { first_name: { contains: searchValue, mode: 'insensitive' } } },
-        { users_doctors_user_idTousers: { last_name: { contains: searchValue, mode: 'insensitive' } } },
+        { users_Doctor_user_idTousers: { first_name: { contains: searchValue, mode: 'insensitive' } } },
+        { users_Doctor_user_idTousers: { last_name: { contains: searchValue, mode: 'insensitive' } } },
         { medical_license_number: { contains: searchValue, mode: 'insensitive' } },
         { doctor_id: { contains: searchValue, mode: 'insensitive' } }
       ]

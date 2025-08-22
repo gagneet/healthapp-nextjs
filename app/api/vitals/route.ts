@@ -43,7 +43,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
     const offset = (page - 1) * limit;
 
     // Get patient vitals with template information
-    const vitals = await prisma.vital.findMany({
+    const vitals = await prisma.vitals.findMany({
       where: patientId ? { 
         care_plans: {
           patient_id: patientId
