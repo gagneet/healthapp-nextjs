@@ -770,12 +770,13 @@ These coding rules ensure maintainable, secure, and compliant healthcare applica
 
 ## 10. Prisma Naming Convention Standards ⚠️ CRITICAL
 
-### 10.1 Official Prisma Naming Convention Rules
+### 10.1 Official Prisma Naming Convention Rules - FINAL STANDARD
 - **MANDATORY**: Follow these exact Prisma naming conventions for consistency across the entire codebase
 - **SCHEMA MODELS**: Use PascalCase (model User, model Patient, model Doctor)
 - **DATABASE TABLES**: Use PascalCase via @@map directive (@@map("Users"), @@map("Patients"), @@map("Doctors"))
 - **CLIENT PROPERTIES**: Always use camelCase (prisma.user, prisma.patient, prisma.doctor)
-- **STANDARD**: This approach keeps database pretty, schema standard, and code consistent
+- **ABSOLUTE RULE**: Do not fight Prisma conventions → accept camelCase client properties
+- **STANDARD**: This approach keeps database pretty (PascalCase tables), schema standard (PascalCase models), and code consistent (camelCase client)
 
 ### 10.2 Correct Implementation Pattern
 ```typescript
@@ -811,11 +812,13 @@ const patient = await prisma.Patient.findFirst()  // Wrong - inconsistent
 - **Application Code**: Consistent camelCase client usage (prisma.user, prisma.patient)
 - **Type Safety**: Full TypeScript support maintained throughout
 
-### 10.4 Migration and Consistency Rules
-- **REQUIREMENT**: All existing code must use camelCase client properties consistently
-- **STANDARD**: Never mix PascalCase and camelCase client usage in the same codebase
-- **VALIDATION**: Run TypeScript compilation to verify naming consistency
+### 10.4 Migration and Schema Consistency Rules - CRITICAL
+- **REQUIREMENT**: ALL @@map directives MUST use PascalCase table names consistently
+- **STANDARD**: Every model MUST have @@map("PascalCaseTableName") directive  
+- **VALIDATION**: Migrations must create PascalCase tables to match schema expectations
 - **ENFORCEMENT**: Schema changes require corresponding @@map directives for PascalCase tables
+- **ABSOLUTE RULE**: If migrations create lowercase tables, schema must be updated or migrations must be fixed to create PascalCase tables
+- **TESTING**: Always test that prisma.camelCaseModel correctly maps to PascalCaseTable after schema changes
 
 ## 8. Critical System-Wide Impact Rules
 
