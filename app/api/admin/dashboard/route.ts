@@ -51,22 +51,22 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
       monthlyRegistrations
     ] = await Promise.all([
       // Total users count
-      prisma.User.count(),
+      prisma.user.count(),
       
       // Total doctors
-      prisma.doctors.count(),
+      prisma.doctor.count(),
       
       // Total patients
-      prisma.Patient.count(),
+      prisma.patient.count(),
       
       // Total HSPs
-      prisma.hsps.count(),
+      prisma.hsp.count(),
       
       // Total providers
       prisma.providers.count(),
       
       // Active appointments this week
-      prisma.Appointment.count({
+      prisma.appointment.count({
         where: {
           start_time: {
             gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
@@ -90,7 +90,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
       }),
       
       // Recent registrations (last 7 days)
-      prisma.User.count({
+      prisma.user.count({
         where: {
           created_at: {
             gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
@@ -99,7 +99,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
       }),
       
       // Monthly registrations for trends
-      prisma.User.groupBy({
+      prisma.user.groupBy({
         by: ['created_at'],
         _count: {
           id: true
@@ -113,7 +113,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
     ]);
 
     // Get recent activity
-    const recentActivity = await prisma.User.findMany({
+    const recentActivity = await prisma.user.findMany({
       select: {
         id: true,
         first_name: true,
@@ -159,10 +159,10 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
       system_health: systemHealth,
       alerts: {
         critical_vitals: criticalVitals,
-        pending_verifications: await prisma.User.count({
+        pending_verifications: await prisma.user.count({
           where: { email_verified: false }
         }),
-        inactive_users: await prisma.User.count({
+        inactive_users: await prisma.user.count({
           where: { 
             account_status: 'INACTIVE',
             created_at: {

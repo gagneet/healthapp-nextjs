@@ -97,7 +97,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Search for patient with any of these phone number formats
-    const patient = await prisma.Patient.findFirst({
+    const patient = await prisma.patient.findFirst({
       where: {
         user: {
           phone: {

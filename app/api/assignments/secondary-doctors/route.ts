@@ -28,7 +28,7 @@ export async function GET(request: NextRequest) {
     // Role-based filtering
     if (session.user.role === 'PATIENT') {
       // Patients can only see their own secondary doctor assignments
-      const patient = await prisma.Patient.findFirst({
+      const patient = await prisma.patient.findFirst({
         where: { user_id: session.user.id }
       });
       if (!patient) {
@@ -40,7 +40,7 @@ export async function GET(request: NextRequest) {
       }
       whereClause.patient_id = patient.id;
     } else if (session.user.role === 'DOCTOR') {
-      const doctor = await prisma.doctors.findFirst({
+      const doctor = await prisma.doctor.findFirst({
         where: { user_id: session.user.id }
       });
       if (!doctor) {
@@ -57,7 +57,7 @@ export async function GET(request: NextRequest) {
       ];
     }
 
-    const assignments = await prisma.secondary_doctor_assignments.findMany({
+    const assignments = await prisma.secondaryDoctorAssignment.findMany({
       where: whereClause,
       include: {
         patients: {
@@ -195,7 +195,7 @@ export async function POST(request: NextRequest) {
 
     // Check if user has permission to create this assignment
     if (session.user.role === 'DOCTOR') {
-      const doctor = await prisma.doctors.findFirst({
+      const doctor = await prisma.doctor.findFirst({
         where: { user_id: session.user.id }
       });
       if (!doctor || doctor.id !== primary_doctor_id) {
@@ -215,7 +215,7 @@ export async function POST(request: NextRequest) {
     const consentExpiresAt = new Date();
     consentExpiresAt.setMonth(consentExpiresAt.getMonth() + consent_duration_months);
 
-    const assignment = await prisma.secondary_doctor_assignments.create({
+    const assignment = await prisma.secondaryDoctorAssignment.create({
       data: {
         id: assignmentId,
         patient_id,

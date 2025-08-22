@@ -32,7 +32,7 @@ export async function GET(request: NextRequest) {
     startDate.setDate(startDate.getDate() - days);
 
     // Get doctor ID
-    const doctor = await prisma.doctors.findFirst({
+    const doctor = await prisma.doctor.findFirst({
       where: { user_id: session.user.id }
     });
 

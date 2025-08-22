@@ -65,7 +65,7 @@ export async function GET(request: NextRequest) {
 
     // Check if test data exists
     const { prisma } = await import('@/lib/prisma');
-    const testUsers = await prisma.User.count({
+    const testUsers = await prisma.user.count({
       where: {
         email: {
           endsWith: '@healthapp.com'
@@ -73,7 +73,7 @@ export async function GET(request: NextRequest) {
       }
     });
 
-    const testPatients = await prisma.Patient.count({
+    const testPatients = await prisma.patient.count({
       where: {
         patient_id: {
           startsWith: 'PAT-2024-'

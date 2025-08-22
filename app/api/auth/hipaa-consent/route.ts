@@ -69,7 +69,7 @@ export async function POST(request: NextRequest) {
     
     try {
       // Record all consents with timestamps
-      const updatedUser = await prisma.User.update({
+      const updatedUser = await prisma.user.update({
         where: { id: session.user.id },
         data: {
           hipaa_consent_date: new Date(),
@@ -183,7 +183,7 @@ export async function GET(request: NextRequest) {
     }
     
     // Get user's current consent status
-    const user = await prisma.User.findUnique({
+    const user = await prisma.user.findUnique({
       where: { id: session.user.id },
       select: {
         id: true,

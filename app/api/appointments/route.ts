@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
     // Role-based filtering
     if (user!.role === 'PATIENT') {
       // Patients can only see their own appointments
-      const patient = await prisma.Patient.findFirst({
+      const patient = await prisma.patient.findFirst({
         where: { user_id: user!.id }
       });
       if (!patient) {
@@ -40,7 +40,7 @@ export async function GET(request: NextRequest) {
       whereClause.patient_id = patient.id;
     } else if (user!.role === 'DOCTOR') {
       // Doctors can only see their own appointments
-      const doctor = await prisma.doctors.findFirst({
+      const doctor = await prisma.doctor.findFirst({
         where: { user_id: user!.id }
       });
       if (!doctor) {
@@ -74,7 +74,7 @@ export async function GET(request: NextRequest) {
     }
 
     const [appointments, totalCount] = await Promise.all([
-      prisma.Appointment.findMany({
+      prisma.appointment.findMany({
         where: whereClause,
         include: {
           patient: {
@@ -120,7 +120,7 @@ export async function GET(request: NextRequest) {
         take: limit,
         orderBy: { start_time: 'desc' }
       }),
-      prisma.Appointment.count({ where: whereClause })
+      prisma.appointment.count({ where: whereClause })
     ]);
 
     return NextResponse.json({
@@ -170,7 +170,7 @@ export async function POST(request: NextRequest) {
 
     // Validate user permissions
     if (user!.role === 'PATIENT') {
-      const patient = await prisma.Patient.findFirst({
+      const patient = await prisma.patient.findFirst({
         where: { user_id: user!.id }
       });
       if (!patient || patient.id !== patient_id) {
@@ -197,7 +197,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const appointment = await prisma.Appointment.create({
+    const appointment = await prisma.appointment.create({
       data: {
         patient_id,
         doctor_id,
@@ -280,7 +280,7 @@ export async function PUT(request: NextRequest) {
     }
 
     // Check if user can update this appointment
-    const appointment = await prisma.Appointment.findUnique({
+    const appointment = await prisma.appointment.findUnique({
       where: { id },
       include: {
         patient: true,
@@ -298,7 +298,7 @@ export async function PUT(request: NextRequest) {
 
     // Permission checks
     if (user!.role === 'PATIENT') {
-      const patient = await prisma.Patient.findFirst({
+      const patient = await prisma.patient.findFirst({
         where: { user_id: user!.id }
       });
       if (!patient || appointment.patient_id !== patient.id) {
@@ -309,7 +309,7 @@ export async function PUT(request: NextRequest) {
         }, { status: 403 });
       }
     } else if (user!.role === 'DOCTOR') {
-      const doctor = await prisma.doctors.findFirst({
+      const doctor = await prisma.doctor.findFirst({
         where: { user_id: user!.id }
       });
       if (!doctor || appointment.doctor_id !== doctor.id) {
@@ -321,7 +321,7 @@ export async function PUT(request: NextRequest) {
       }
     }
 
-    const updatedAppointment = await prisma.Appointment.update({
+    const updatedAppointment = await prisma.appointment.update({
       where: { id },
       data: {
         ...(status && { status }),

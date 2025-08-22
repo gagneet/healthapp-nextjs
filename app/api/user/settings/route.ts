@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Get user with current settings
-    const user = await prisma.User.findUnique({
+    const user = await prisma.user.findUnique({
       where: { id: session.user.id },
       select: {
         id: true,
@@ -136,7 +136,7 @@ export async function PUT(request: NextRequest) {
     }
 
     // Get current user preferences
-    const currentUser = await prisma.User.findUnique({
+    const currentUser = await prisma.user.findUnique({
       where: { id: session.user.id },
       select: { preferences: true, timezone: true, locale: true }
     });
@@ -167,7 +167,7 @@ export async function PUT(request: NextRequest) {
       : currentPreferences.security?.two_factor_enabled;
 
     // Update user record
-    const updatedUser = await prisma.User.update({
+    const updatedUser = await prisma.user.update({
       where: { id: session.user.id },
       data: {
         preferences: updatedPreferences,
@@ -236,7 +236,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Get current user with password hash
-    const user = await prisma.User.findUnique({
+    const user = await prisma.user.findUnique({
       where: { id: session.user.id },
       select: { id: true, password_hash: true }
     });
@@ -266,7 +266,7 @@ export async function POST(request: NextRequest) {
     const newPasswordHash = await bcrypt.hash(body.newPassword, saltRounds);
 
     // Update password
-    await prisma.User.update({
+    await prisma.user.update({
       where: { id: session.user.id },
       data: {
         password_hash: newPasswordHash,

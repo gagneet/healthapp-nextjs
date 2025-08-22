@@ -111,7 +111,7 @@ export async function POST(request: NextRequest) {
     const { email, password, firstName, lastName, role, phone, dateOfBirth, medicalLicenseNumber, specialtyId, organizationId } = validation.data
     
     // Check if user already exists
-    const existingUser = await prisma.User.findUnique({
+    const existingUser = await prisma.user.findUnique({
       where: { email }
     })
     
@@ -124,7 +124,7 @@ export async function POST(request: NextRequest) {
 
     // For DOCTOR registrations, validate medical license if provided
     if (role === "DOCTOR" && medicalLicenseNumber) {
-      const existingDoctor = await prisma.doctors.findFirst({
+      const existingDoctor = await prisma.doctor.findFirst({
         where: { medical_license_number: medicalLicenseNumber }
       })
       
@@ -202,7 +202,7 @@ export async function POST(request: NextRequest) {
         let profileData = null
 
         if (role === "DOCTOR") {
-          profileData = await tx.doctors.create({
+          profileData = await tx.doctor.create({
             data: {
               user_id: newUser.id,
               doctor_id: `DOC-${Date.now()}`, // Generate unique doctor ID
@@ -217,7 +217,7 @@ export async function POST(request: NextRequest) {
             }
           })
         } else if (role === "PATIENT") {
-          profileData = await tx.patients.create({
+          profileData = await tx.patient.create({
             data: {
               user_id: newUser.id,
               patient_id: `PAT-${Date.now()}`, // Generate unique patient ID  
@@ -231,7 +231,7 @@ export async function POST(request: NextRequest) {
             }
           })
         } else if (role === "HSP") {
-          profileData = await tx.hsps.create({
+          profileData = await tx.hsp.create({
             data: {
               user_id: newUser.id,
               hsp_id: `HSP-${Date.now()}`, // Generate unique HSP ID

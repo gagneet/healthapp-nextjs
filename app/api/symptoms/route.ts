@@ -211,7 +211,7 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
       }
 
       // Verify healthcare provider has access to the patient
-      const patientAccess = await prisma.Patient.findFirst({
+      const patientAccess = await prisma.patient.findFirst({
         where: {
           id: symptomData.patientId,
           OR: [

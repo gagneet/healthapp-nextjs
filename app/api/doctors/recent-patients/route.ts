@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '5');
 
     // Get doctor ID
-    const doctor = await prisma.doctors.findFirst({
+    const doctor = await prisma.doctor.findFirst({
       where: { user_id: session.user.id }
     });
 

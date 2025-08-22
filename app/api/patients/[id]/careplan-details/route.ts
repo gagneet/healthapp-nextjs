@@ -33,7 +33,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
     let hspId = null;
     
     if (session.user.role === 'DOCTOR') {
-      const doctor = await prisma.doctors.findFirst({
+      const doctor = await prisma.doctor.findFirst({
         where: { user_id: session.user.id }
       });
       
@@ -47,7 +47,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       
       doctorId = doctor.id;
     } else if (session.user.role === 'HSP') {
-      const hsp = await prisma.hsps.findFirst({
+      const hsp = await prisma.hsp.findFirst({
         where: { user_id: session.user.id }
       });
       

@@ -87,7 +87,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
               two_factor_enabled: true,
               two_factor_secret: true,
               // Healthcare-specific profiles
-              doctors_doctors_user_idTousers: {
+              doctors_Doctor_user_idTousers: {
                 select: {
                   id: true,
                   doctor_id: true,

@@ -45,31 +45,31 @@ export async function GET(request: NextRequest) {
       totalVitals,
       totalSecondaryAssignments
     ] = await Promise.all([
-      prisma.User.count(),
-      prisma.doctors.count(),
-      prisma.Patient.count(),
-      prisma.hsps.count(),
-      prisma.appointments.count(),
-      prisma.care_plans.count(),
-      prisma.medications.count(),
+      prisma.user.count(),
+      prisma.doctor.count(),
+      prisma.patient.count(),
+      prisma.hsp.count(),
+      prisma.appointment.count(),
+      prisma.carePlan.count(),
+      prisma.medication.count(),
       prisma.vitals.count(),
       prisma.secondary_doctor_assignments.count()
     ]);
 
     // User statistics by role and status
-    const usersByRole = await prisma.User.groupBy({
+    const usersByRole = await prisma.user.groupBy({
       by: ['role'],
       _count: { id: true },
       orderBy: { _count: { id: 'desc' } }
     });
 
-    const usersByStatus = await prisma.User.groupBy({
+    const usersByStatus = await prisma.user.groupBy({
       by: ['account_status'],
       _count: { id: true }
     });
 
     // Recent activity (last 30 days)
-    const recentUsers = await prisma.User.count({
+    const recentUsers = await prisma.user.count({
       where: {
         created_at: {
           gte: periodDate
@@ -77,7 +77,7 @@ export async function GET(request: NextRequest) {
       }
     });
 
-    const recentAppointments = await prisma.appointments.count({
+    const recentAppointments = await prisma.appointment.count({
       where: {
         created_at: {
           gte: periodDate
@@ -85,7 +85,7 @@ export async function GET(request: NextRequest) {
       }
     });
 
-    const recentCarePlans = await prisma.care_plans.count({
+    const recentCarePlans = await prisma.carePlan.count({
       where: {
         created_at: {
           gte: periodDate
@@ -94,22 +94,22 @@ export async function GET(request: NextRequest) {
     });
 
     // System health metrics
-    const activeUsers = await prisma.User.count({
+    const activeUsers = await prisma.user.count({
       where: { account_status: 'ACTIVE' }
     });
 
-    const verifiedUsers = await prisma.User.count({
+    const verifiedUsers = await prisma.user.count({
       where: { email_verified: true }
     });
 
     // Appointment statistics
-    const appointmentsByStatus = await prisma.appointments.groupBy({
+    const appointmentsByStatus = await prisma.appointment.groupBy({
       by: ['status'],
       _count: { id: true }
     });
 
     // Care plan statistics
-    const carePlansByStatus = await prisma.care_plans.groupBy({
+    const carePlansByStatus = await prisma.carePlan.groupBy({
       by: ['status'],
       _count: { id: true }
     });
@@ -130,12 +130,12 @@ export async function GET(request: NextRequest) {
           name: true,
           _count: {
             select: {
-              doctors_doctors_speciality_idTospecialiy: true
+              Doctor: true
             }
           }
         },
         orderBy: {
-          doctors_doctors_speciality_idTospecialiy: {
+          Doctor: {
             _count: 'desc'
           }
         },
@@ -143,11 +143,11 @@ export async function GET(request: NextRequest) {
       });
 
       // Most active doctors (by appointment count)
-      const activeDoctors = await prisma.doctors.findMany({
+      const activeDoctors = await prisma.doctor.findMany({
         select: {
           id: true,
           doctor_id: true,
-          users_doctors_user_idTousers: {
+          users_Doctor_user_idTousers: {
             select: {
               name: true,
               first_name: true,
@@ -173,7 +173,7 @@ export async function GET(request: NextRequest) {
       });
 
       // Recent system activity
-      const recentActivity = await prisma.User.findMany({
+      const recentActivity = await prisma.user.findMany({
         where: {
           created_at: {
             gte: periodDate
@@ -196,13 +196,13 @@ export async function GET(request: NextRequest) {
         topSpecialties: topSpecialties.map(spec => ({
           id: spec.id,
           name: spec.name,
-          doctorCount: spec._count.doctors_doctors_speciality_idTospecialiy
+          doctorCount: spec._count.Doctor
         })),
         activeDoctors: activeDoctors.map(doc => ({
           id: doc.id,
           doctor_id: doc.doctor_id,
-          name: doc.users_doctors_user_idTousers?.name || 
-                `${doc.users_doctors_user_idTousers?.first_name} ${doc.users_doctors_user_idTousers?.last_name}`.trim(),
+          name: doc.users_Doctor_user_idTousers?.name || 
+                `${doc.users_Doctor_user_idTousers?.first_name} ${doc.users_Doctor_user_idTousers?.last_name}`.trim(),
           specialty: doc.specialities?.name,
           appointmentCount: doc._count.appointments,
           assignmentCount: doc._count.doctor_assignments

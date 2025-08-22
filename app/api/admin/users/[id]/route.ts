@@ -29,7 +29,7 @@ export async function GET(
       }, { status: 403 });
     }
 
-    const user = await prisma.User.findUnique({
+    const user = await prisma.user.findUnique({
       where: { id: userId },
       select: {
         id: true,
@@ -211,7 +211,7 @@ export async function PUT(
     }
 
     // Find existing user
-    const existingUser = await prisma.User.findUnique({
+    const existingUser = await prisma.user.findUnique({
       where: { id: userId }
     });
 
@@ -263,7 +263,7 @@ export async function PUT(
       updateData.password_hash = await bcrypt.hash(password, 12);
     }
 
-    const updatedUser = await prisma.User.update({
+    const updatedUser = await prisma.user.update({
       where: { id: userId },
       data: updateData,
       select: {
@@ -327,7 +327,7 @@ export async function DELETE(
     const userId = params.id;
 
     // Check if user exists
-    const existingUser = await prisma.User.findUnique({
+    const existingUser = await prisma.user.findUnique({
       where: { id: userId }
     });
 
@@ -349,7 +349,7 @@ export async function DELETE(
     }
 
     // Soft delete - deactivate user
-    await prisma.User.update({
+    await prisma.user.update({
       where: { id: userId },
       data: {
         account_status: 'INACTIVE',

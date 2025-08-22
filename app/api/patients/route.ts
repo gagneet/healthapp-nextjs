@@ -130,10 +130,10 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
     }
 
     // Get total count for pagination
-    const total = await prisma.Patient.count({ where: whereClause });
+    const total = await prisma.patient.count({ where: whereClause });
 
     // Fetch patients with user details
-    const patients = await prisma.Patient.findMany({
+    const patients = await prisma.patient.findMany({
       where: whereClause,
       skip,
       take: limit,
@@ -297,7 +297,7 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
 
   try {
     // Check if user with email already exists
-    const existingUser = await prisma.User.findUnique({
+    const existingUser = await prisma.user.findUnique({
       where: { email: patientData.email }
     })
 

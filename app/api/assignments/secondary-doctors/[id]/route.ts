@@ -20,7 +20,7 @@ export async function GET(
 
     const assignmentId = params.id;
 
-    const assignment = await prisma.secondary_doctor_assignments.findUnique({
+    const assignment = await prisma.secondaryDoctorAssignment.findUnique({
       where: { id: assignmentId },
       include: {
         patients: {
@@ -105,7 +105,7 @@ export async function GET(
 
     // Check access permissions
     if (session.user.role === 'PATIENT') {
-      const patient = await prisma.Patient.findFirst({
+      const patient = await prisma.patient.findFirst({
         where: { user_id: session.user.id }
       });
       if (!patient || assignment.patient_id !== patient.id) {
@@ -116,7 +116,7 @@ export async function GET(
         }, { status: 403 });
       }
     } else if (session.user.role === 'DOCTOR') {
-      const doctor = await prisma.doctors.findFirst({
+      const doctor = await prisma.doctor.findFirst({
         where: { user_id: session.user.id }
       });
       if (!doctor || (assignment.primary_doctor_id !== doctor.id && assignment.secondary_doctor_id !== doctor.id)) {
@@ -186,7 +186,7 @@ export async function PUT(
     } = body;
 
     // Find existing assignment
-    const existingAssignment = await prisma.secondary_doctor_assignments.findUnique({
+    const existingAssignment = await prisma.secondaryDoctorAssignment.findUnique({
       where: { id: assignmentId }
     });
 
@@ -200,7 +200,7 @@ export async function PUT(
 
     // Check permissions for doctors
     if (session.user.role === 'DOCTOR') {
-      const doctor = await prisma.doctors.findFirst({
+      const doctor = await prisma.doctor.findFirst({
         where: { user_id: session.user.id }
       });
       if (!doctor || existingAssignment.primary_doctor_id !== doctor.id) {
@@ -234,7 +234,7 @@ export async function PUT(
       updateData.consent_expires_at = newExpiresAt;
     }
 
-    const updatedAssignment = await prisma.secondary_doctor_assignments.update({
+    const updatedAssignment = await prisma.secondaryDoctorAssignment.update({
       where: { id: assignmentId },
       data: updateData,
       include: {
@@ -333,7 +333,7 @@ export async function DELETE(
     const assignmentId = params.id;
 
     // Find existing assignment
-    const existingAssignment = await prisma.secondary_doctor_assignments.findUnique({
+    const existingAssignment = await prisma.secondaryDoctorAssignment.findUnique({
       where: { id: assignmentId }
     });
 
@@ -347,7 +347,7 @@ export async function DELETE(
 
     // Check permissions for doctors
     if (session.user.role === 'DOCTOR') {
-      const doctor = await prisma.doctors.findFirst({
+      const doctor = await prisma.doctor.findFirst({
         where: { user_id: session.user.id }
       });
       if (!doctor || existingAssignment.primary_doctor_id !== doctor.id) {
@@ -360,7 +360,7 @@ export async function DELETE(
     }
 
     // Soft delete - deactivate assignment
-    await prisma.secondary_doctor_assignments.update({
+    await prisma.secondaryDoctorAssignment.update({
       where: { id: assignmentId },
       data: {
         is_active: false,

@@ -56,7 +56,7 @@ export async function GET(request: NextRequest) {
 
     // Role-based filtering
     if (session.user.role === 'DOCTOR') {
-      const doctor = await prisma.doctors.findFirst({
+      const doctor = await prisma.doctor.findFirst({
         where: { user_id: session.user.id }
       });
       if (doctor) {
@@ -67,7 +67,7 @@ export async function GET(request: NextRequest) {
     }
 
     const [patients, totalCount] = await Promise.all([
-      prisma.Patient.findMany({
+      prisma.patient.findMany({
         where: whereClause,
         include: {
           user: {
@@ -126,7 +126,7 @@ export async function GET(request: NextRequest) {
         take: limit,
         orderBy: { created_at: 'desc' }
       }),
-      prisma.Patient.count({ where: whereClause })
+      prisma.patient.count({ where: whereClause })
     ]);
 
     return NextResponse.json({
@@ -205,7 +205,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if user already exists
-    const existingUser = await prisma.User.findUnique({
+    const existingUser = await prisma.user.findUnique({
       where: { email }
     });
 

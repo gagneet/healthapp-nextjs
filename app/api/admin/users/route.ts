@@ -53,7 +53,7 @@ export async function GET(request: NextRequest) {
     }
 
     const [users, totalCount] = await Promise.all([
-      prisma.User.findMany({
+      prisma.user.findMany({
         where: whereClause,
         select: {
           id: true,
@@ -106,16 +106,16 @@ export async function GET(request: NextRequest) {
         take: limit,
         orderBy: { created_at: 'desc' }
       }),
-      prisma.User.count({ where: whereClause })
+      prisma.user.count({ where: whereClause })
     ]);
 
     // Add user stats
-    const userStats = await prisma.User.groupBy({
+    const userStats = await prisma.user.groupBy({
       by: ['role'],
       _count: { id: true }
     });
 
-    const statusStats = await prisma.User.groupBy({
+    const statusStats = await prisma.user.groupBy({
       by: ['account_status'],
       _count: { id: true }
     });
@@ -209,7 +209,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if user already exists
-    const existingUser = await prisma.User.findUnique({
+    const existingUser = await prisma.user.findUnique({
       where: { email }
     });
 
@@ -226,7 +226,7 @@ export async function POST(request: NextRequest) {
 
     // Create user with Auth.js v5 compatibility
     const fullName = `${first_name} ${last_name}`.trim();
-    const newUser = await prisma.User.create({
+    const newUser = await prisma.user.create({
       data: {
         email,
         password_hash: hashedPassword,

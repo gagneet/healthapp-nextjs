@@ -43,7 +43,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
     const offset = (page - 1) * limit;
 
     // Get patient vitals with template information
-    const vitals = await prisma.vitals.findMany({
+    const vitals = await prisma.vital.findMany({
       where: patientId ? { 
         care_plans: {
           patient_id: patientId
@@ -80,7 +80,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
       orderBy: { created_at: 'desc' }
     });
 
-    const totalCount = await prisma.vitals.count({
+    const totalCount = await prisma.vital.count({
       where: patientId ? { 
         care_plans: {
           patient_id: patientId
@@ -131,7 +131,7 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
     } = body;
 
     // Create the vital monitoring
-    const vital = await prisma.vitals.create({
+    const vital = await prisma.vital.create({
       data: {
         id: require('crypto').randomUUID(),
         vital_template_id,

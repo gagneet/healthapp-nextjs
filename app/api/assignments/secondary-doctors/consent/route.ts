@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Find the assignment
-    const assignment = await prisma.secondary_doctor_assignments.findUnique({
+    const assignment = await prisma.secondaryDoctorAssignment.findUnique({
       where: { id: assignment_id },
       include: {
         patients: {
@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
 
     // Verify user has permission to request consent for this assignment
     if (session.user.role === 'DOCTOR') {
-      const doctor = await prisma.doctors.findFirst({
+      const doctor = await prisma.doctor.findFirst({
         where: { user_id: session.user.id }
       });
       if (!doctor || doctor.id !== assignment.primary_doctor_id) {
@@ -196,7 +196,7 @@ export async function PUT(request: NextRequest) {
           verified_at: new Date()
         }
       }),
-      prisma.secondary_doctor_assignments.update({
+      prisma.secondaryDoctorAssignment.update({
         where: { id: assignment_id },
         data: {
           consent_status: 'granted',

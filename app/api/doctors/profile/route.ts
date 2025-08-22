@@ -40,7 +40,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
     const targetDoctorId = session.user.profileId!
 
     // Fetch basic doctor information
-    const doctor = await prisma.doctors.findUnique({
+    const doctor = await prisma.doctor.findUnique({
       where: { id: targetDoctorId },
       include: {
         users_doctors_user_idTousers: {

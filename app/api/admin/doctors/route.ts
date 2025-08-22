@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
     
     if (search) {
       whereClause = {
-        users_doctors_user_idTousers: {
+        users_Doctor_user_idTousers: {
           OR: [
             // ✅ Auth.js v5 fields
             { name: { contains: search, mode: 'insensitive' } },
@@ -50,10 +50,10 @@ export async function GET(request: NextRequest) {
     }
 
     const [doctors, totalCount] = await Promise.all([
-      prisma.doctors.findMany({
+      prisma.doctor.findMany({
         where: whereClause,
         include: {
-          users_doctors_user_idTousers: {
+          users_Doctor_user_idTousers: {
             select: {
               id: true,
               email: true,
@@ -97,7 +97,7 @@ export async function GET(request: NextRequest) {
         take: limit,
         orderBy: { created_at: 'desc' }
       }),
-      prisma.doctors.count({ where: whereClause })
+      prisma.doctor.count({ where: whereClause })
     ]);
 
     return NextResponse.json({
@@ -166,7 +166,7 @@ export async function POST(request: NextRequest) {
     } = body;
 
     // Check if user already exists
-    const existingUser = await prisma.User.findUnique({
+    const existingUser = await prisma.user.findUnique({
       where: { email }
     });
 
@@ -191,7 +191,7 @@ export async function POST(request: NextRequest) {
           password_hash: hashedPassword,
           // Auth.js v5 fields
           name: fullName,
-          email_verified_at: new Date(),
+          emailVerified: new Date(),
           image: null,
           // Legacy fields for backward compatibility
           first_name,
@@ -209,7 +209,7 @@ export async function POST(request: NextRequest) {
       });
 
       // Create doctor profile
-      const doctor = await tx.doctors.create({
+      const doctor = await tx.doctor.create({
         data: {
           id: randomUUID(),
           doctor_id: `DOC-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 10000)).padStart(4, '0')}`,
@@ -227,7 +227,7 @@ export async function POST(request: NextRequest) {
           updated_at: new Date()
         },
         include: {
-          users_doctors_user_idTousers: {
+          users_Doctor_user_idTousers: {
             select: {
               id: true,
               email: true,

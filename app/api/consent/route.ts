@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
 
     // Role-based access control
     if (user!.role === 'PATIENT') {
-      const patient = await prisma.Patient.findFirst({
+      const patient = await prisma.patient.findFirst({
         where: { user_id: user!.id }
       });
       if (!patient) {
@@ -100,7 +100,7 @@ export async function POST(request: NextRequest) {
 
     // Permission check
     if (user!.role === 'PATIENT') {
-      const patient = await prisma.Patient.findFirst({
+      const patient = await prisma.patient.findFirst({
         where: { user_id: user!.id }
       });
       if (!patient || patient.id !== patient_id) {
