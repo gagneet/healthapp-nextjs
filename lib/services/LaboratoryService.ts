@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma';
 import * as crypto from 'crypto';
+import { GenericLabClient, LabIntegrationConfig } from '@/lib/lab-integrations/GenericLabClient';
 
 export interface CreateLabOrderData {
   doctorId: string;
@@ -469,37 +470,49 @@ export class LaboratoryService {
   }
 
   /**
-   * Submit order to external lab system (mock implementation)
+   * Submit order to external lab system
    */
   private async submitOrderToLab(order: any) {
     try {
-      // Mock API call to external lab system
-      const requestData = {
+      // In a real application, you would fetch the lab integration configuration
+      // from a secure store based on the doctor's or organization's preference.
+      const mockLabConfig: LabIntegrationConfig = {
+        id: 'quest',
+        name: 'Quest Diagnostics',
+        apiKey: process.env.QUEST_API_KEY || 'fake-key',
+        apiUrl: 'https://api.questdiagnostics.com/v1',
+      };
+
+      const labClient = new GenericLabClient(mockLabConfig);
+
+      const payload = {
         orderNumber: order.order_number,
         patient: {
           id: order.patient.user.id,
           name: `${order.patient.user.first_name} ${order.patient.user.last_name}`,
           dateOfBirth: order.patient.user.date_of_birth,
-          gender: order.patient.user.gender
+          gender: order.patient.user.gender,
         },
         physician: {
           id: order.doctor.user.id,
           name: `${order.doctor.user.first_name} ${order.doctor.user.last_name}`,
-          npi: order.doctor.medical_license_number
+          npi: order.doctor.medical_license_number,
         },
         tests: order.ordered_tests,
         priority: order.priority,
-        specialInstructions: order.special_instructions
+        specialInstructions: order.special_instructions,
       };
 
-      // In production, make actual API call
-      console.log('Submitting order to lab system:', requestData);
-      
-      return {
-        success: true,
-        externalOrderId: `EXT-${order.order_number}`,
-        estimatedCompletion: new Date(Date.now() + (order.estimated_tat_hours * 60 * 60 * 1000))
-      };
+      const result = await labClient.submitOrder(payload);
+
+      if (result.success && result.externalOrderId) {
+        await prisma.labOrder.update({
+          where: { id: order.id },
+          data: { external_lab_order_id: result.externalOrderId },
+        });
+      }
+
+      return result;
 
     } catch (error) {
       console.error('Error submitting to lab system:', error);
@@ -610,6 +623,42 @@ export class LaboratoryService {
     };
 
     return categoryMap[testCode] || 'General';
+  }
+
+  /**
+   * Get lab trend analysis for a patient and test code
+   */
+  async getLabTrendAnalysis(patientId: string, testCode: string) {
+    try {
+      const results = await prisma.labResult.findMany({
+        where: {
+          lab_order: {
+            patient_id: patientId,
+          },
+          test_code: testCode,
+        },
+        orderBy: {
+          result_date: 'asc',
+        },
+        select: {
+          result_date: true,
+          numeric_value: true,
+          result_unit: true,
+          reference_range: true,
+        },
+      });
+
+      return {
+        success: true,
+        data: results,
+      };
+    } catch (error) {
+      console.error('Error fetching lab trend analysis:', error);
+      return {
+        success: false,
+        error: 'Failed to fetch lab trend analysis',
+      };
+    }
   }
 
   /**
