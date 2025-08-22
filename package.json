@@ -1,6 +1,6 @@
 {
   "name": "healthapp-template",
-  "version": "0.7.8",
+  "version": "0.8.0",
   "description": "HealthApp Healthcare Management Platform using Next.js, Node.js, Prisma, and Postgres",
   "type": "module",
   "main": "src/server.ts",
