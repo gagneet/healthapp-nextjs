@@ -17,12 +17,12 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       }, { status: 401 });
     }
 
-    // Only doctors and HSPs can access patient medications
-    if (!['DOCTOR', 'HSP'].includes(session.user.role)) {
+    // Only doctors can access patient medications (HSPs cannot manage medication reminders per business rules)
+    if (session.user.role !== 'DOCTOR') {
       return NextResponse.json({
         status: false,
         statusCode: 403,
-        payload: { error: { status: 'forbidden', message: 'Only doctors and HSPs can access patient medications' } }
+        payload: { error: { status: 'forbidden', message: 'Only doctors can access patient medication reminders' } }
       }, { status: 403 });
     }
 
@@ -62,39 +62,38 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       }, { status: 404 });
     }
 
-    // Get medication reminders for this patient through their care plans
-    const medications = await prisma.medication.findMany({
+    // Get medication reminders for this patient through their care plans (proper business logic)
+    // Medications are linked through CarePlans as prescribed_medications (Medication Reminders)
+    const carePlansWithMedications = await prisma.carePlan.findMany({
       where: {
-        participant_id: patient.id
+        patient_id: patient.id,
+        // Only show care plans where the doctor has access (if user is doctor)
+        ...(doctorId ? { created_by_doctor_id: doctorId } : {})
       },
       include: {
-        medicine: {
-          select: {
-            id: true,
-            name: true,
-            type: true,
-            description: true
+        prescribed_medications: {
+          include: {
+            medicine: {
+              select: {
+                id: true,
+                name: true,
+                type: true,
+                description: true
+              }
+            },
+            medication_logs: {
+              select: {
+                id: true,
+                scheduled_at: true,
+                taken_at: true,
+                adherence_status: true
+              },
+              orderBy: {
+                scheduled_at: 'desc'
+              },
+              take: 5 // Last 5 logs for adherence calculation
+            }
           }
-        },
-        care_plan: {
-          select: {
-            id: true,
-            title: true,
-            status: true,
-            description: true
-          }
-        },
-        medication_logs: {
-          select: {
-            id: true,
-            scheduled_at: true,
-            taken_at: true,
-            adherence_status: true
-          },
-          orderBy: {
-            scheduled_at: 'desc'
-          },
-          take: 5 // Last 5 logs for adherence calculation
         }
       },
       orderBy: {
@@ -102,7 +101,20 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       }
     });
 
-    // Transform to expected format with real adherence data
+    // Extract all medications from all care plans
+    const medications = carePlansWithMedications.flatMap(carePlan => 
+      carePlan.prescribed_medications.map(med => ({
+        ...med,
+        care_plan: {
+          id: carePlan.id,
+          title: carePlan.title,
+          status: carePlan.status,
+          description: carePlan.description
+        }
+      }))
+    );
+
+    // Transform to expected format following healthcare business logic
     const formattedMedications = medications.map(med => {
       // Calculate adherence rate from medication logs
       const logs = med.medication_logs || [];
@@ -113,25 +125,32 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       const lastTakenLog = logs.find(log => log.taken_at);
       const nextScheduledLog = logs.find(log => !log.taken_at && log.scheduled_at > new Date());
       
+      // Get medication details (dosage, frequency, etc. should be in Medication table)
+      const details = med.details as any || {};
+      
       return {
         id: med.id,
         name: med.medicine?.name || 'Unknown Medication',
-        dosage: (med.details as any)?.dosage || 'Dosage not specified',
-        frequency: (med.details as any)?.frequency || 'Frequency not specified',
+        dosage: details.dosage || 'Dosage not specified',
+        frequency: details.frequency || 'Frequency not specified',
         start_date: med.start_date,
         end_date: med.end_date,
-        is_critical: (med.details as any)?.is_critical || false,
+        is_critical: details.is_critical || false,
         last_taken: lastTakenLog?.taken_at || null,
         next_due: nextScheduledLog?.scheduled_at || null,
         adherence_rate: adherenceRate,
         status: med.care_plan?.status || 'active',
-        instructions: med.description,
+        instructions: med.description || med.medicine?.description,
         care_plan: {
           id: med.care_plan?.id,
           title: med.care_plan?.title,
           description: med.care_plan?.description
         },
-        created_at: med.created_at
+        // Additional medication reminder properties
+        medicine_type: med.medicine?.type,
+        participant_id: med.participant_id, // Patient ID
+        created_at: med.created_at,
+        updated_at: med.updated_at
       };
     });
 

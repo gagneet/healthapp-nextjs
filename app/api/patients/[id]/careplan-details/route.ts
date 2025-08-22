@@ -28,8 +28,10 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
 
     const { id: patientId } = params;
 
-    // Get doctor ID if user is a doctor
+    // Get doctor ID or HSP ID based on user role
     let doctorId = null;
+    let hspId = null;
+    
     if (session.user.role === 'DOCTOR') {
       const doctor = await prisma.doctors.findFirst({
         where: { user_id: session.user.id }
@@ -44,13 +46,50 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       }
       
       doctorId = doctor.id;
+    } else if (session.user.role === 'HSP') {
+      const hsp = await prisma.hsps.findFirst({
+        where: { user_id: session.user.id }
+      });
+      
+      if (!hsp) {
+        return NextResponse.json({
+          status: false,
+          statusCode: 404,
+          payload: { error: { status: 'not_found', message: 'HSP profile not found' } }
+        }, { status: 404 });
+      }
+      
+      hspId = hsp.id;
     }
 
-    // Verify access to patient - patientId is the Patient primary key
+    // Verify access to patient - Patient can be linked to Doctor or HSP
     const patient = await prisma.patient.findFirst({
       where: { 
         id: patientId,
-        ...(doctorId ? { primary_care_doctor_id: doctorId } : {})
+        // Patient can be linked to either Doctor or HSP (business rule)
+        ...(doctorId ? { 
+          OR: [
+            { primary_care_doctor_id: doctorId },
+            // Also check if patient is assigned through patient_doctor_assignments table
+            { 
+              patient_doctor_assignments: {
+                some: { 
+                  doctor_id: doctorId, 
+                  is_active: true 
+                }
+              }
+            }
+          ]
+        } : {}),
+        ...(hspId ? { 
+          // HSPs can also be assigned to patients 
+          hsp_assignments: {
+            some: { 
+              hsp_id: hspId, 
+              is_active: true 
+            }
+          }
+        } : {})
       }
     });
 
@@ -62,51 +101,54 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       }, { status: 404 });
     }
 
-    // Get detailed care plans for this patient with all adherence components
+    // Get detailed care plans for this patient following proper healthcare business logic
     const carePlans = await prisma.carePlan.findMany({
       where: {
         patient_id: patient.id
       },
       include: {
-        prescribed_medications: {
-          include: {
-            medicine: {
-              select: {
-                id: true,
-                name: true,
-                type: true,
-                description: true
+        // Medication Reminders (only for Doctors - HSPs cannot access per business rules)
+        ...(session.user.role === 'DOCTOR' ? {
+          prescribed_medications: {
+            include: {
+              medicine: {
+                select: {
+                  id: true,
+                  name: true,
+                  type: true,
+                  description: true
+                }
+              },
+              medication_logs: {
+                select: {
+                  id: true,
+                  scheduled_at: true,
+                  taken_at: true,
+                  adherence_status: true
+                },
+                orderBy: {
+                  scheduled_at: 'desc'
+                },
+                take: 5 // Recent adherence data
               }
-            },
-            medication_logs: {
-              select: {
-                id: true,
-                scheduled_at: true,
-                taken_at: true,
-                adherence_status: true
-              },
-              orderBy: {
-                scheduled_at: 'desc'
-              },
-              take: 3 // Recent adherence data
             }
           }
-        },
-        vitals: {
-          include: {
-            vital_type: {
-              select: {
-                id: true,
-                name: true,
-                unit: true
-              }
-            }
+        } : {}),
+        // Vital Requirements (not actual readings - those are separate)
+        vital_requirements: {
+          select: {
+            id: true,
+            description: true,
+            start_date: true,
+            end_date: true,
+            details: true
           },
           orderBy: {
-            reading_time: 'desc'
+            created_at: 'desc'
           },
-          take: 10 // Recent vitals
+          take: 10 // Recent vitals requirements
         },
+        // Appointments/Scheduled Events  
         scheduled_events: {
           select: {
             id: true,
@@ -121,6 +163,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
           },
           take: 5 // Recent appointments/events
         },
+        // Care Plan Creator (Doctor or HSP)
         doctors: {
           select: {
             id: true,
@@ -132,6 +175,18 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
             }
           }
         },
+        hsps: {
+          select: {
+            id: true,
+            users_hsps_user_idTousers: {
+              select: {
+                first_name: true,
+                last_name: true
+              }
+            }
+          }
+        },
+        // Patient-Reported Symptoms
         symptoms: {
           select: {
             id: true,
@@ -150,64 +205,94 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       }
     });
 
-    // Transform to expected format with Patient Adherence components
+    // Also get patient's actual vital readings for Patient Adherence monitoring
+    const vitalReadings = await prisma.vitalReading.findMany({
+      where: {
+        patient_id: patient.id
+      },
+      include: {
+        vital_type: {
+          select: {
+            id: true,
+            name: true,
+            unit: true,
+            normal_range_min: true,
+            normal_range_max: true
+          }
+        }
+      },
+      orderBy: {
+        reading_time: 'desc'
+      },
+      take: 20 // Recent vital readings for adherence analysis
+    });
+
+    // Transform to expected format following healthcare business logic
     const formattedCarePlans = carePlans.map(carePlan => {
-      // Calculate adherence metrics from medication logs
-      const medicationLogs = carePlan.prescribed_medications?.flatMap(med => med.medication_logs || []) || [];
+      // Calculate adherence metrics from medication logs (only for Doctors)
+      const medicationLogs = (session.user.role === 'DOCTOR' && carePlan.prescribed_medications) ? 
+        carePlan.prescribed_medications.flatMap(med => med.medication_logs || []) : [];
       const takenCount = medicationLogs.filter(log => log.adherence_status === 'taken' && log.taken_at).length;
       const overallAdherence = medicationLogs.length > 0 ? Math.round((takenCount / medicationLogs.length) * 100) : 0;
       
       return {
         id: carePlan.id,
         name: carePlan.title || 'Care Plan',
-        description: carePlan.description || 'Comprehensive care plan for patient adherence monitoring',
+        description: carePlan.description || 'Comprehensive care plan for patient monitoring',
         start_date: carePlan.start_date,
         end_date: carePlan.end_date,
         status: carePlan.status || 'ACTIVE',
         priority: carePlan.priority || 'MEDIUM',
         plan_type: carePlan.plan_type,
         
-        // Patient Adherence Metrics
+        // Patient Adherence Metrics (HSPs see limited metrics without medication data)
         adherence_overview: {
-          overall_adherence_rate: overallAdherence,
-          medications_count: carePlan.prescribed_medications?.length || 0,
-          vitals_count: carePlan.vitals?.length || 0,
+          overall_adherence_rate: session.user.role === 'DOCTOR' ? overallAdherence : null,
+          medications_count: session.user.role === 'DOCTOR' ? (carePlan.prescribed_medications?.length || 0) : null,
+          vitals_count: carePlan.vital_requirements?.length || 0,
           appointments_count: carePlan.scheduled_events?.length || 0,
           symptoms_count: carePlan.symptoms?.length || 0
         },
         
-        // Care Plan Components
-        chronic_conditions: carePlan.chronic_conditions,
-        risk_factors: carePlan.risk_factors,
-        long_term_goals: carePlan.long_term_goals,
-        short_term_milestones: carePlan.short_term_milestones,
+        // Care Plan Components - Following proper healthcare structure
+        chronic_conditions: carePlan.chronic_conditions || [],
+        risk_factors: carePlan.risk_factors || [],
+        long_term_goals: carePlan.long_term_goals || [],
+        short_term_milestones: carePlan.short_term_milestones || [],
         
-        // Medication Reminders with Adherence Data
-        medications: carePlan.prescribed_medications?.map(med => {
-          const medLogs = med.medication_logs || [];
-          const medTakenCount = medLogs.filter(log => log.adherence_status === 'taken' && log.taken_at).length;
-          const medAdherence = medLogs.length > 0 ? Math.round((medTakenCount / medLogs.length) * 100) : 0;
-          
-          return {
-            id: med.id,
-            name: med.medicine?.name,
-            type: med.medicine?.type,
-            description: med.description,
-            start_date: med.start_date,
-            end_date: med.end_date,
-            adherence_rate: medAdherence,
-            recent_logs: medLogs.slice(0, 3) // Last 3 adherence records
-          };
-        }) || [],
+        // Medication Reminders (only available to Doctors per business rules)
+        ...(session.user.role === 'DOCTOR' ? {
+          medications: carePlan.prescribed_medications?.map(med => {
+            const medLogs = med.medication_logs || [];
+            const medTakenCount = medLogs.filter(log => log.adherence_status === 'taken' && log.taken_at).length;
+            const medAdherence = medLogs.length > 0 ? Math.round((medTakenCount / medLogs.length) * 100) : 0;
+            
+            // Get dosage, frequency from medication details (should be in Medication table, not CarePlan)
+            const details = med.details as any || {};
+            
+            return {
+              id: med.id,
+              name: med.medicine?.name || 'Unknown Medication',
+              type: med.medicine?.type,
+              description: med.description || med.medicine?.description,
+              dosage: details.dosage || 'Dosage not specified',
+              frequency: details.frequency || 'Frequency not specified',
+              is_critical: details.is_critical || false,
+              start_date: med.start_date,
+              end_date: med.end_date,
+              adherence_rate: medAdherence,
+              recent_logs: medLogs.slice(0, 5) // Last 5 adherence records
+            };
+          }) || []
+        } : {}),
         
-        // Vital Signs Monitoring
-        vitals: carePlan.vitals?.map(vital => ({
+        // Vital Requirements (not actual readings - those come from vitalReadings)
+        vital_requirements: carePlan.vital_requirements?.map(vital => ({
           id: vital.id,
-          type: vital.vital_type?.name || 'Unknown Vital',
-          value: vital.value?.toString() || '0',
-          unit: vital.vital_type?.unit || '',
-          reading_time: vital.reading_time,
-          is_flagged: vital.is_flagged
+          description: vital.description,
+          start_date: vital.start_date,
+          end_date: vital.end_date,
+          details: vital.details
         })) || [],
         
         // Appointments & Scheduled Events
@@ -228,10 +313,15 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
           reported_at: symptom.reported_at
         })) || [],
         
-        // Care Team
-        doctor: carePlan.doctors ? {
+        // Care Team - Can be created by Doctor or HSP
+        care_provider: carePlan.doctors ? {
           id: carePlan.doctors.id,
-          name: `${carePlan.doctors.users_doctors_user_idTousers?.first_name || ''} ${carePlan.doctors.users_doctors_user_idTousers?.last_name || ''}`.trim()
+          name: `${carePlan.doctors.users_doctors_user_idTousers?.first_name || ''} ${carePlan.doctors.users_doctors_user_idTousers?.last_name || ''}`.trim(),
+          type: 'DOCTOR'
+        } : carePlan.hsps ? {
+          id: carePlan.hsps.id,
+          name: `${carePlan.hsps.users_hsps_user_idTousers?.first_name || ''} ${carePlan.hsps.users_hsps_user_idTousers?.last_name || ''}`.trim(),
+          type: 'HSP'
         } : null,
         
         created_at: carePlan.created_at,
@@ -239,12 +329,37 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       };
     });
 
+    // Format vital readings for Patient Adherence monitoring
+    const formattedVitalReadings = vitalReadings.map(reading => ({
+      id: reading.id,
+      type: reading.vital_type?.name || 'Unknown Vital',
+      value: reading.value?.toString() || '0',
+      unit: reading.vital_type?.unit || '',
+      reading_time: reading.reading_time,
+      is_flagged: reading.is_flagged || false,
+      is_validated: reading.is_validated || false,
+      notes: reading.notes,
+      normal_range: {
+        min: reading.vital_type?.normal_range_min?.toString() || '0',
+        max: reading.vital_type?.normal_range_max?.toString() || '100'
+      },
+      systolic_value: reading.systolic_value?.toString(),
+      diastolic_value: reading.diastolic_value?.toString(),
+      alert_level: reading.alert_level
+    }));
+
     return NextResponse.json({
       status: true,
       statusCode: 200,
       payload: {
         data: {
-          careplans: formattedCarePlans
+          carePlans: formattedCarePlans,
+          vitalReadings: formattedVitalReadings, // Actual patient vital readings
+          patient: {
+            id: patient.id,
+            patient_id: patient.patient_id,
+            adherence_score: patient.overall_adherence_score
+          }
         },
         message: 'Patient care plan details retrieved successfully'
       }

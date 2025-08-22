@@ -297,8 +297,8 @@ export default function PatientDetailsPage() {
       if (response.ok) {
         const data = await response.json()
         // Transform the API response to match expected format
-        if (data.payload?.data?.care_plans) {
-          setMedications(Object.values(data.payload.data.care_plans))
+        if (data.payload?.data?.medications) {
+          setMedications(data.payload.data.medications)
         }
       }
     } catch (err) {
@@ -322,7 +322,7 @@ export default function PatientDetailsPage() {
       if (response.ok) {
         const data = await response.json()
         if (data.payload?.data?.vitals) {
-          setVitals(Object.values(data.payload.data.vitals))
+          setVitals(data.payload.data.vitals)
         }
       }
     } catch (err) {
@@ -345,7 +345,7 @@ export default function PatientDetailsPage() {
       if (response.ok) {
         const data = await response.json()
         if (data.payload?.data?.appointments) {
-          setAppointments(Object.values(data.payload.data.appointments))
+          setAppointments(data.payload.data.appointments)
         }
       }
     } catch (err) {
@@ -367,8 +367,8 @@ export default function PatientDetailsPage() {
 
       if (response.ok) {
         const data = await response.json()
-        if (data.payload?.data?.careplans) {
-          setCarePlans(Object.values(data.payload.data.careplans))
+        if (data.payload?.data?.carePlans) {
+          setCarePlans(data.payload.data.carePlans)
         }
       }
     } catch (err) {
@@ -832,7 +832,7 @@ export default function PatientDetailsPage() {
                             <h3 className="text-lg font-medium text-gray-900">
                               {medication.name || 'Unknown Medication'}
                             </h3>
-                            {medication.is_critical && (
+                            {medication.is_critical === true && (
                               <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
                                 Critical
                               </span>
@@ -1368,9 +1368,9 @@ export default function PatientDetailsPage() {
                             {carePlan.start_date ? formatDate(carePlan.start_date) : 'Start date not set'} - {carePlan.end_date ? formatDate(carePlan.end_date) : 'Ongoing'}
                           </p>
                           <div className="flex items-center space-x-4 mt-2 text-sm text-gray-500">
-                            <span>{carePlan.medications_count || 0} medications</span>
-                            <span>{carePlan.vitals_count || 0} vitals</span>
-                            <span>{carePlan.appointments_count || 0} appointments</span>
+                            <span>{carePlan.adherence_overview?.medications_count || 0} medications</span>
+                            <span>{carePlan.adherence_overview?.vitals_count || 0} vitals</span>
+                            <span>{carePlan.adherence_overview?.appointments_count || 0} appointments</span>
                           </div>
                         </div>
                         <div>
