@@ -5,7 +5,7 @@
  */
 
 import { NextRequest, NextResponse } from "next/server"
-import { getServerSession } from "@/lib/auth";
+import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma"
 import { 
   createSuccessResponse, 
@@ -25,7 +25,7 @@ import {
  * Business Logic: Patients can view their own vitals, healthcare providers can view patient vitals
  */
 export const GET = withErrorHandling(async (request: NextRequest) => {
-  const session = await getServerSession()
+  const session = await auth()
   
   if (!session) {
     return createUnauthorizedResponse()
@@ -80,7 +80,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
       orderBy: { created_at: 'desc' }
     });
 
-    const totalCount = await prisma.vitals.count({
+    const totalCount = await prisma.vital.count({
       where: patientId ? { 
         care_plans: {
           patient_id: patientId
@@ -107,7 +107,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
 });
 
 export const POST = withErrorHandling(async (request: NextRequest) => {
-  const session = await getServerSession()
+  const session = await auth()
   
   if (!session) {
     return createUnauthorizedResponse()
@@ -131,7 +131,7 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
     } = body;
 
     // Create the vital monitoring
-    const vital = await prisma.vitals.create({
+    const vital = await prisma.vital.create({
       data: {
         id: require('crypto').randomUUID(),
         vital_template_id,

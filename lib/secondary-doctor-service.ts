@@ -97,7 +97,7 @@ export class SecondaryDoctorService {
   static async assignSecondaryDoctor(request: AssignmentRequest): Promise<AssignmentResult> {
     try {
       // Validate patient exists
-      const patient = await prisma.Patient.findUnique({
+      const patient = await prisma.patient.findUnique({
         where: { id: request.patientId }
       });
 
@@ -416,7 +416,7 @@ export class SecondaryDoctorService {
     }
 
     // For SPECIALIST and SUBSTITUTE, check if they're from the same organization
-    const patient = await prisma.Patient.findUnique({
+    const patient = await prisma.patient.findUnique({
       where: { id: patientId },
       include: {
         doctors: {

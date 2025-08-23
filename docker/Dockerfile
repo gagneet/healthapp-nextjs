@@ -33,7 +33,8 @@ WORKDIR /app
 # Install production utilities only
 RUN apk add --no-cache \
     curl \
-    bash
+    bash \
+    vim
 
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1

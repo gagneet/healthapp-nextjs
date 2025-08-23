@@ -6,6 +6,38 @@
 
 set -e
 
+# ============================================================================
+# Environment File Check
+# ============================================================================
+
+# Function to check for .env file
+check_env_file() {
+    if [ ! -f ".env" ]; then
+        echo -e "${RED}❌ ERROR: .env file not found in application root!${NC}"
+        echo -e "${YELLOW}📋 Required .env file is missing from the application root directory.${NC}"
+        echo ""
+        echo -e "${CYAN}Please copy the correct .env file to the application root before deployment:${NC}"
+        echo -e "   ${GREEN}cp path/to/your/.env.dev .env${NC}     # For development environment"
+        echo -e "   ${GREEN}cp path/to/your/.env.test .env${NC}    # For test environment"
+        echo -e "   ${GREEN}cp path/to/your/.env.prod .env${NC}    # For production environment"
+        echo ""
+        echo -e "${YELLOW}The .env file should contain required environment variables like:${NC}"
+        echo -e "   DATABASE_URL=postgresql://..."
+        echo -e "   NEXTAUTH_SECRET=..."
+        echo -e "   NEXTAUTH_URL=..."
+        echo -e "   And other environment-specific configurations"
+        echo ""
+        echo -e "${RED}Deployment cannot continue without the .env file.${NC}"
+        exit 1
+    else
+        echo -e "${GREEN}✅ .env file found in application root${NC}"
+    fi
+}
+
+# Run environment file check immediately
+echo -e "${BLUE}🔍 Checking for .env file...${NC}"
+check_env_file
+
 # Colors for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -82,7 +114,7 @@ COMMANDS:
   migrate      Run database migrations only
   seed         Run database seeders only
   backup       Backup database
-  cleanup      Clean up environment (removes everything)
+  cleanup      Clean up environment (removes compiled files, Docker stacks, networks, volumes)
   scale        Scale specific service up/down
 
 OPTIONS:
@@ -98,7 +130,7 @@ OPTIONS:
   --replicas N               Number of replicas for all services
   --migrate                  Run database migrations after deployment
   --seed                     Run database seeders after deployment
-  --cleanup                  Clean up before deployment
+  --cleanup                  Clean up before deployment (compiled files + Docker resources)
   --skip-build              Skip Docker image building
   --skip-image-pull         Skip pulling base images
   --auto-yes                Skip all confirmation prompts
@@ -444,7 +476,58 @@ cleanup_environment() {
         docker network prune -f >/dev/null 2>&1 || true
         docker volume prune -f >/dev/null 2>&1 || true
 
-        log_success "Cleanup complete"
+        log_success "Docker cleanup complete"
+    fi
+}
+
+cleanup_compiled_files() {
+    if [ "$CLEANUP" = true ]; then
+        log_info "Cleaning up compiled TypeScript files..."
+        
+        # Check if npm is available and package.json exists
+        if [ -f "package.json" ] && command -v npm >/dev/null 2>&1; then
+            log_info "Running npm clean script..."
+            if npm run clean 2>/dev/null; then
+                log_success "Compiled files cleaned via npm script"
+            else
+                log_info "npm clean script failed, using manual cleanup..."
+                manual_cleanup_compiled_files
+            fi
+        else
+            log_info "npm not available, using manual cleanup..."
+            manual_cleanup_compiled_files
+        fi
+    fi
+}
+
+manual_cleanup_compiled_files() {
+    log_info "Manually removing compiled TypeScript files..."
+    
+    # Whitelist of legitimate JS files to preserve
+    PRESERVE_JS_FILES=("seed.js" "seed.cjs" "migrate.js" "config.js")
+    
+    # Build find exclusion arguments
+    FIND_EXCLUDE_ARGS=""
+    for fname in "${PRESERVE_JS_FILES[@]}"; do
+        FIND_EXCLUDE_ARGS+=" -not -name '$fname'"
+    done
+    
+    # Remove compiled JS files from lib/ (except whitelisted files)
+    eval "find lib -name '*.js' $FIND_EXCLUDE_ARGS -delete 2>/dev/null || true"
+    
+    # Remove compiled JS files from app/ (except whitelisted files)
+    eval "find app -name '*.js' $FIND_EXCLUDE_ARGS -delete 2>/dev/null || true"
+    
+    # Remove compiled JS files from scripts/ (except whitelisted files)
+    eval "find scripts -name '*.js' $FIND_EXCLUDE_ARGS -delete 2>/dev/null || true"
+    
+    # Count remaining JS files to verify cleanup
+    local remaining_js=$(eval "find lib app scripts -name '*.js' $FIND_EXCLUDE_ARGS 2>/dev/null" | wc -l)
+    
+    if [ "$remaining_js" -eq 0 ]; then
+        log_success "All compiled TypeScript files removed"
+    else
+        log_warning "Some compiled files may remain ($remaining_js files)"
     fi
 }
 
@@ -881,19 +964,29 @@ run_migrations() {
         
         # Ensure database is ready before migrations
         log_info "Verifying database connectivity before migrations..."
-        local max_retries=10
+        log_info "Note: PostgreSQL containers typically take 60-90 seconds to fully start up"
+        local max_retries=20
         local retry_count=0
+        local database_ready=false
         
         while [ $retry_count -lt $max_retries ]; do
             # Use psql to check connectivity; assumes DATABASE_URL is set in the container
             if docker exec "$container_id" bash -c 'psql "${DATABASE_URL}" -c "SELECT 1"' >/dev/null 2>&1; then
-                log_success "Database connectivity verified"
+                log_success "Database connectivity verified after $((retry_count * 5)) seconds"
+                database_ready=true
                 break
             fi
             ((retry_count++))
-            log_debug "Database not ready for migrations, retry $retry_count/$max_retries"
+            log_debug "Database not ready for migrations, retry $retry_count/$max_retries (waiting up to $((max_retries * 5)) seconds total)"
             sleep 5
         done
+        
+        # Check if database connectivity was established
+        if [ "$database_ready" = false ]; then
+            log_error "Database connectivity check failed after $((max_retries * 5)) seconds"
+            log_error "PostgreSQL container may not be fully ready or DATABASE_URL may be incorrect"
+            exit 1
+        fi
         
         # Run migrations in the app container
         log_info "Running migrations in container: $container_id"
@@ -928,6 +1021,31 @@ run_seeds() {
         if [ -z "$container_id" ]; then
             log_error "No running app containers found for seeding"
             exit 1
+        fi
+        
+        # Ensure database is ready before seeding
+        log_info "Verifying database connectivity before seeding..."
+        local max_retries=10
+        local retry_count=0
+        local database_ready=false
+        
+        while [ $retry_count -lt $max_retries ]; do
+            # Use psql to check connectivity; assumes DATABASE_URL is set in the container
+            if docker exec "$container_id" bash -c 'psql "${DATABASE_URL}" -c "SELECT 1"' >/dev/null 2>&1; then
+                log_success "Database connectivity verified for seeding"
+                database_ready=true
+                break
+            fi
+            ((retry_count++))
+            log_debug "Database not ready for seeding, retry $retry_count/$max_retries"
+            sleep 3
+        done
+        
+        # Check if database connectivity was established
+        if [ "$database_ready" = false ]; then
+            log_error "Database connectivity check failed for seeding after $((max_retries * 3)) seconds"
+            log_error "Skipping seeding as database is not accessible"
+            return 1
         fi
         
         # Run seeds in the app container
@@ -1020,6 +1138,7 @@ handle_deploy() {
     confirm "Deploy with above configuration?"
     
     check_swarm
+    cleanup_compiled_files
     cleanup_environment
     build_images
     deploy_stack

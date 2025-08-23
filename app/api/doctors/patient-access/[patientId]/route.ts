@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from "@/lib/auth";
+import { auth } from "@/lib/auth";
 import { prisma } from '@/lib/prisma';
 import SecondaryDoctorService from '@/lib/secondary-doctor-service';
 
@@ -9,7 +9,7 @@ import SecondaryDoctorService from '@/lib/secondary-doctor-service';
  */
 export async function GET(request: NextRequest, { params }: { params: { patientId: string } }) {
   try {
-    const session = await getServerSession();
+    const session = await auth();
     if (!session?.user) {
       return NextResponse.json({
         status: false,
@@ -30,7 +30,7 @@ export async function GET(request: NextRequest, { params }: { params: { patientI
     const { patientId } = params;
 
     // Get doctor profile
-    const doctor = await prisma.doctors.findFirst({
+    const doctor = await prisma.doctor.findFirst({
       where: { user_id: session.user.id }
     });
 

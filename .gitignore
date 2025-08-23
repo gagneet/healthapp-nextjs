@@ -47,6 +47,14 @@ web_modules/
 # TypeScript cache
 *.tsbuildinfo
 
+# Compiled TypeScript files (should not be committed)
+lib/*.js
+lib/**/*.js
+app/**/*.js
+!lib/seed.js
+!lib/seed.cjs
+scripts/*.js
+
 # Optional npm cache directory
 .npm
 

@@ -4,7 +4,7 @@
  */
 
 import { NextRequest, NextResponse } from "next/server"
-import { getServerSession } from "@/lib/auth";
+import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma"
 import { z } from "zod"
 
@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
     const { token, email } = validation.data
     
     // Find user with matching email and verification token
-    const user = await prisma.User.findFirst({
+    const user = await prisma.user.findFirst({
       where: {
         email,
         email_verification_token: token,
@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
       }
     })
     
-    if (!user) {
+    if (!user || !user.id || typeof user.id !== 'string') {
       return NextResponse.json(
         { 
           error: "Invalid or expired verification token",
@@ -56,7 +56,7 @@ export async function POST(request: NextRequest) {
     
     try {
       // Update user as verified using Auth.js v5 compatible fields
-      const updatedUser = await prisma.User.update({
+      const updatedUser = await prisma.user.update({
         where: { id: user.id },
         data: {
           // ✅ Auth.js v5 field - set as DateTime when verified

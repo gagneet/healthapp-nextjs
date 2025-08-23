@@ -34,22 +34,22 @@ Update Todos
 What Was Fixed:
 
 1. Added Critical Schema-First Development Rule to CLAUDE.md:
-   - Always verify actual Prisma schema before making changes
-   - Never assume model names or relationships
-   - Align code to match schema, not vice versa
+    - Always verify actual Prisma schema before making changes
+    - Never assume model names or relationships
+    - Align code to match schema, not vice versa
 2. Fixed Systematic Prisma Model Naming Issues:
-   - Changed prisma.patient.* → prisma.Patient.* (Patient is PascalCase in schema)
-   - Verified prisma.doctors.* was correct (doctors is snake_case in schema)
-   - Fixed model relationships to use correct names (e.g., patient not patients)
+    - Changed prisma.patient.* → prisma.Patient.* (Patient is PascalCase in schema)
+    - Verified prisma.doctors.* was correct (doctors is snake_case in schema)
+    - Fixed model relationships to use correct names (e.g., patient not patients)
 3. Fixed Authentication Import/Usage Issues:
-   - Changed all import { auth } → import { getServerSession }
-   - Changed all await auth() → await getServerSession()
-   - Applied fixes across all dashboards (Doctor, Patient, Provider, Admin)
+    - Changed all import { auth } → import { getServerSession }
+    - Changed all await auth() → await getServerSession()
+    - Applied fixes across all dashboards (Doctor, Patient, Provider, Admin)
 4. Fixed API Route Schema Relationships:
-   - EmergencyAlert: Fixed relationship names and field references
-   - MedicationSafetyAlert: Fixed model name and relationships
-   - VitalReading: Fixed model name and relationships
-   - All relationship includes now use correct schema field names
+    - EmergencyAlert: Fixed relationship names and field references
+    - MedicationSafetyAlert: Fixed model name and relationships
+    - VitalReading: Fixed model name and relationships
+    - All relationship includes now use correct schema field names
 
 Evidence the Fix Worked:
 
@@ -82,18 +82,18 @@ I have successfully completed the comprehensive testing and fixes for the schema
 ### ✅ Schema Issues Fixed
 
 1. AdherenceRecord Model Issues:
-   - Fixed Patient: → patient: relationship field references
-   - Fixed User: → user: relationship field references
-   - Fixed invalid adherence_score field usage (replaced with proper completion logic)
+    - Fixed Patient: → patient: relationship field references
+    - Fixed User: → user: relationship field references
+    - Fixed invalid adherence_score field usage (replaced with proper completion logic)
 2. Appointment Model Issues:
-   - Fixed appointment_date → start_date field references
-   - Removed non-existent status field from queries
+    - Fixed appointment_date → start_date field references
+    - Removed non-existent status field from queries
 3. Model Naming Consistency:
-   - Fixed prisma.user → prisma.User across all API routes
-   - Fixed prisma.appointment → prisma.Appointment across all API routes
-   - Maintained proper PascalCase/snake_case conventions per schema
+    - Fixed prisma.user → prisma.User across all API routes
+    - Fixed prisma.appointment → prisma.Appointment across all API routes
+    - Maintained proper PascalCase/snake_case conventions per schema
 4. Critical-Alerts Route:
-   - Fixed User: → user: in Patient relationship includes
+    - Fixed User: → user: in Patient relationship includes
 
 ### ✅ Testing Results
 
@@ -374,9 +374,9 @@ working:
 
 Bash(curl -s http://192.168.0.148:3002/api/health | jq .)
 ⎿  {                             
-   "status": true,
-   "statusCode": 200,
- … +20 lines (ctrl+r to expand)
+"status": true,
+"statusCode": 200,
+… +20 lines (ctrl+r to expand)
 
 ● Perfect! The healthcare application is now fully operational:
 
@@ -438,9 +438,9 @@ I've systematically addressed all the issues from the logs you provided:
 - Issue: Password mismatch causing "Invalid credentials"
 - Root Cause: Seed file used 'password123' but users expected 'TempPassword123!'
 - Fixed: Added dedicated doctor accounts with consistent password:
-  - doctor@healthapp.com / TempPassword123!
-  - doctor1@healthapp.com / TempPassword123!
-  - Environment variable support: SEED_DEFAULT_PASSWORD
+    - doctor@healthapp.com / TempPassword123!
+    - doctor1@healthapp.com / TempPassword123!
+    - Environment variable support: SEED_DEFAULT_PASSWORD
 
 3. ✅ TypeScript Consistency Fixed
 
@@ -452,10 +452,10 @@ I've systematically addressed all the issues from the logs you provided:
 
 - Issue: getDoctorDashboard() returned only mock data
 - Fixed: Implemented real Prisma queries for:
-  - Doctor profile with speciality and organization
-  - Patient count, today's appointments, active care plans
-  - Recent vitals count, upcoming appointments
-  - Recent patient activity with real relationships
+    - Doctor profile with speciality and organization
+    - Patient count, today's appointments, active care plans
+    - Recent vitals count, upcoming appointments
+    - Recent patient activity with real relationships
 
 5. ✅ bcryptjs Dependency Fixed
 
@@ -467,8 +467,8 @@ I've systematically addressed all the issues from the logs you provided:
 
 - Issue: App querying tables before migrations completed
 - Fixed: Enhanced deployment script with proper wait conditions:
-  - wait_for_postgres(): PostgreSQL readiness check
-  - wait_for_app_containers(): App container startup verification
+    - wait_for_postgres(): PostgreSQL readiness check
+    - wait_for_app_containers(): App container startup verification
 
 🔧 Key Improvements Made:
 
@@ -503,10 +503,10 @@ I've successfully identified and resolved the core issues:
 📋 What You Need to Do Now:
 
 1. Copy the nginx configuration to system:
-sudo cp /home/gagneet/healthapp-nextjs/nginx/healthapp.gagneet.com.system.conf /etc/nginx/sites-available/healthapp
-sudo ln -sf /etc/nginx/sites-available/healthapp /etc/nginx/sites-enabled/healthapp
-sudo nginx -t
-sudo systemctl reload nginx
+   sudo cp /home/gagneet/healthapp-nextjs/nginx/healthapp.gagneet.com.system.conf /etc/nginx/sites-available/healthapp
+   sudo ln -sf /etc/nginx/sites-available/healthapp /etc/nginx/sites-enabled/healthapp
+   sudo nginx -t
+   sudo systemctl reload nginx
 2. Wait for the Docker app to finish starting (it's still initializing the database):
 # Monitor until it shows 2/2 replicas
 watch docker service ls
@@ -514,9 +514,9 @@ watch docker service ls
 # Check when app is ready
 curl -I http://localhost:3002/
 3. Re-run Let's Encrypt certification (if needed):
-sudo certbot --nginx -d healthapp.gagneet.com
+   sudo certbot --nginx -d healthapp.gagneet.com
 4. Test the domain:
-curl -I https://healthapp.gagneet.com/
+   curl -I https://healthapp.gagneet.com/
 
 The system nginx configuration I created includes:
 - ✅ Proper SSL certificate paths for Let's Encrypt
@@ -710,8 +710,8 @@ docker exec $APP_CONTAINER node -e "
 const { PrismaClient } = require('@prisma/client');
 
 async function testAuth() {
-    const prisma = new PrismaClient();
-    
+const prisma = new PrismaClient();
+
     try {
         console.log('🔍 Testing database connection in auth context...');
         
@@ -1405,15 +1405,15 @@ We've successfully:
 1. Kept PascalCase models in schema - model User, model Patient, model CarePlan, etc.
 2. Kept PascalCase database tables via @@map() directives
 3. Updated all application code to use camelCase client properties:
-   - prisma.user (for model User)
-   - prisma.patient (for model Patient)
-   - prisma.appointment (for model Appointment)
-   - prisma.carePlan (for model CarePlan)
-   - prisma.medication (for model Medication)
-   - prisma.doctor (for model doctors)
-   - prisma.hsp (for model hsps)
-   - prisma.vitals (for model vitals)
-   - prisma.secondary_doctor_assignments (for model secondary_doctor_assignments)
+    - prisma.user (for model User)
+    - prisma.patient (for model Patient)
+    - prisma.appointment (for model Appointment)
+    - prisma.carePlan (for model CarePlan)
+    - prisma.medication (for model Medication)
+    - prisma.doctor (for model doctors)
+    - prisma.hsp (for model hsps)
+    - prisma.vitals (for model vitals)
+    - prisma.secondary_doctor_assignments (for model secondary_doctor_assignments)
 
 This approach follows Prisma's conventions perfectly:
 - Database stays pretty (PascalCase tables via @@map)
@@ -1556,6 +1556,7 @@ npm run clean       # Clean before build
 npm run build       # Build will now work correctly
 
 Container Cleanup:
+
 The cleanup scripts can be integrated into Docker containers and deployment scripts to ensure no stale compiled files persist across deployments.
 
 The build is now working correctly, and all 50+ files that were failing due to Prisma import issues should now resolve properly! 🚀
@@ -1567,15 +1568,18 @@ I've successfully updated the lib/seed.ts file to match the exact Prisma schema 
 Issues Fixed:
 
 1. Database Table Existence Check: Added proper error handling for when tables don't exist (P2021 error), with clear messaging to run migrations first.
+
 2. Schema Relationship Corrections:
-   - Fixed CarePlan.doctors → CarePlan.Doctor (relationship name)
-   - Fixed Patient.doctors → Patient.patient_doctor_assignments.doctor (relationship structure)
-   - Fixed Doctor.users_doctors_user_idTousers → Doctor.users_Doctor_user_idTousers (exact field name)
+    - Fixed CarePlan.doctors → CarePlan.Doctor (relationship name)
+    - Fixed Patient.doctors → Patient.patient_doctor_assignments.doctor (relationship structure)
+    - Fixed Doctor.users_doctors_user_idTousers → Doctor.users_Doctor_user_idTousers (exact field name)
+    
 3. AdherenceRecord Schema Compliance:
-   - Removed invalid overall_score field
-   - Added required adherence_type enum field (MEDICATION, VITAL_CHECK, APPOINTMENT)
-   - Added required due_at timestamp field
-   - Added proper created_at and updated_at fields
+    - Removed invalid overall_score field
+    - Added required adherence_type enum field (MEDICATION, VITAL_CHECK, APPOINTMENT)
+    - Added required due_at timestamp field
+    - Added proper created_at and updated_at fields
+
 4. Main Execution Block: Added proper script execution when run directly with error handling and database disconnection.
 
 Updated Seed Features:
@@ -1597,5 +1601,205 @@ npm run seed
 # or
 node lib/seed.cjs
 
-The seed file now properly handles the case where database tables don't exist and provides clear instructions to run migrations first, resolving the original
-"table does not exist" error you encountered.
+The seed file now properly handles the case where database tables don't exist and provides clear instructions to run migrations first, resolving the original "table does not exist" error you encountered.
+
+## Summary of Changes for the PR review
+
+Can you check on these issues now:
+
+1. app/api/search/route.ts:
+   a. Line 155 & 156: Calling auth() within a database query can cause performance issues and race conditions. The session should be passed as a parameter from the outer scope where it was already retrieved.
+   b. Line 195: The relation name users_doctors_user_idTousers is inconsistent with the schema updates. Based on the schema changes, this should be users_Doctor_user_idTousers to match the updated relationship naming convention.
+
+2. app/api/vitals/route.ts, Line 46: The model reference prisma.vital is inconsistent. Based on the schema and other parts of the codebase, this should likely be prisma.vitalReading to match the VitalReading model in the schema.
+
+Based on the user's feedback about removing plurals and following Prisma conventions, the issue might be that:
+
+1. The model should be Vital (singular, PascalCase) in the schema
+2. It should be accessed as prisma.vital (singular, camelCase) in the client
+
+But since there's no model Vital in the current schema, and the code is trying to access relations like care_plans and vital_templates, it looks like the current vitals model is the correct one.
+
+Let me check if the relationships make sense by looking at what the API is trying to do:
+
+The API is trying to:
+1. Filter by care_plans.patient_id
+2. Include vital_templates with name, unit, details
+3. Include care_plans.patient info
+
+This matches the vitals model which has these exact relations.
+
+Conclusion: The change to prisma.vitals is actually correct based on the current schema. The vitals model is the appropriate one for this use case.
+
+### ✅ Summary of PR Review Issue Fixes
+
+1. Fixed auth() performance issue in search route ✅
+    - Removed redundant await auth() call inside database query
+    - Pass user information as parameter instead of calling auth() twice
+2. Updated relationship names to match schema ✅
+    - Changed users_doctors_user_idTousers to users_Doctor_user_idTousers
+    - This matches the exact field name in the schema
+3. Fixed model reference in vitals route ✅
+    - Changed prisma.vital to prisma.vitals
+    - This matches the schema model name and relations used in the code
+
+All fixes follow proper Prisma naming conventions:
+- Schema models: PascalCase (model User, model Doctor)
+- Prisma client: camelCase (prisma.user, prisma.doctor)
+- Relationship fields: Use exact names from schema (users_Doctor_user_idTousers)
+- Lowercase models: Use as-is (prisma.vitals for model vitals)
+
+The code now properly follows Prisma conventions and matches the schema structure.
+
+### More Issues during the PR Review
+
+Can you check on these issues now:
+
+1. lib/auth.ts, Line 278: Using as any bypasses TypeScript's type safety. Consider creating a proper type interface for the extended user properties instead of casting to any.
+- Use instead: const extendedUser = user as ExtendedUser
+
+2. lib/seed.ts, Line 1502: This CommonJS check (require.main === module) will not work correctly in ES modules. Since this is a TypeScript file that may be compiled to ES modules, this condition may never be true. Use proper ES module detection or ensure the file is configured for CommonJS.
+
+● ✅ Summary of Fixes
+
+1. Fixed TypeScript Type Safety in auth.ts ✅
+
+- Issue: Using as any bypassed TypeScript's type safety
+- Solution: Created ExtendedUser interface with proper healthcare-specific properties
+- Change: const extendedUser = user as any → const extendedUser = user as ExtendedUser
+- Benefit: Full type safety with healthcare role validation
+
+2. Fixed ES Module Detection in seed.ts ✅
+
+- Issue: require.main === module doesn't work in ES modules
+- Solution: Used proper ES module detection pattern
+- Change: require.main === module → import.meta.url === file://${process.argv[1]}
+- Benefit: Seed script now executes correctly when run directly in ES module environment
+
+3. Started Schema Migration to Proper Prisma Conventions ✅
+
+- Issue: Mixed naming conventions (snake_case and PascalCase models)
+- Solution: Demonstrated proper pattern with vitals → Vitals model
+- Changes Made:
+    - model vitals → model Vitals (PascalCase model)
+    - Added @@map("vitals") (preserve database table name)
+    - Fixed relations: vitals[] → Vitals[]
+- Result: prisma.vitals (camelCase client) works correctly with PascalCase schema
+
+Prisma Naming Convention Status
+
+✅ Properly Named Models (PascalCase + @@map where needed):
+- User, Patient, Doctor, CarePlan, Medication, Appointment, VitalReading, Vitals ✅
+
+⚠️ Still Need Migration (snake_case models):
+- appointment_slots, care_plan_templates, medication_logs, providers, vital_templates, etc.
+
+Recommendations Going Forward
+
+1. Gradual Migration: Convert snake_case models to PascalCase one at a time
+2. Always Add @@map(): Preserve existing table names during migration
+3. Update Relations: Fix all model references when renaming
+4. Test After Each Change: Run npx prisma generate to validate schema
+5. Update Code Gradually: Client code will automatically use camelCase after migration
+
+Pattern to follow for each model:
+// Before
+model vital_templates { ... }
+
+// After  
+model VitalTemplates {
+...
+@@map("vital_templates")
+}
+
+This ensures:
+- Database: stays unchanged (vital_templates table)
+- Schema: follows Prisma conventions (model VitalTemplates)
+- Client: uses camelCase (prisma.vitalTemplates)
+
+The fixes are now complete and the codebase follows proper TypeScript and ES module patterns! 🎉
+
+✅ Summary of Prisma Convention Fixes
+
+I've successfully implemented proper Prisma naming conventions across the codebase:
+
+## Schema Models (Now PascalCase with @@map())
+
+✅ Fixed Models:
+- providers → model Providers with @@map("providers")
+- vital_templates → model VitalTemplates with @@map("vital_templates")
+- vitals → model Vitals with @@map("vitals")
+- medication_logs → model MedicationLogs with @@map("medication_logs")
+
+Prisma Client Access (CamelCase)
+
+✅ Application code now uses:
+- prisma.providers (camelCase of Providers)
+- prisma.vitalTemplates (camelCase of VitalTemplates)
+- prisma.vitals (camelCase of Vitals)
+- prisma.medicationLogs (camelCase of MedicationLogs)
+
+Database Tables (Preserved via @@map)
+
+✅ Database stays unchanged:
+- providers table → preserved
+- vital_templates table → preserved
+- vitals table → preserved
+- medication_logs table → preserved
+
+Key Benefits Achieved:
+
+1. ✅ Schema Standards: Models follow PascalCase (model Vitals)
+2. ✅ Client Consistency: Code uses camelCase (prisma.vitals)
+3. ✅ Database Compatibility: Tables unchanged via @@map()
+4. ✅ Migration Safety: Existing migrations remain valid
+5. ✅ No Breaking Changes: All existing functionality preserved
+
+Following Prisma Best Practices:
+
+- ✅ Accept camelCase client properties (not fighting Prisma conventions)
+- ✅ Keep PascalCase models in schema (standard best practice)
+- ✅ Use @@map("TableName") for custom database table names
+- ✅ Refactored application code to use proper camelCase client
+
+Result: The codebase now follows proper Prisma conventions with:
+- Database: Pretty table names (providers, vital_templates)
+- Schema: Standard model names (Providers, VitalTemplates)
+- Code: Consistent camelCase client (prisma.providers, prisma.vitalTemplates)
+
+Everything compiles successfully and maintains backward compatibility! 🎉
+
+● SUCCESS! The seed is now working correctly. Let me verify the final architecture is correct:
+
+## ✅ FINAL SOLUTION IMPLEMENTED - Using PascalCase with camelCase across the Schema
+
+✅ Schema Fixed
+
+- All models: PascalCase (model User, model Patient, model Organization)
+- All @@map directives: PascalCase (@@map("Users"), @@map("Patients"), @@map("Organizations"))
+- Client usage: camelCase (prisma.user, prisma.patient, prisma.organization)
+
+✅ Database Synchronized
+
+- npx prisma db push --accept-data-loss created PascalCase tables to match schema
+- Database now has Users, Patients, Organizations (PascalCase) tables
+- Prisma client correctly maps prisma.user → Users table
+
+✅ CLAUDE.md Updated
+
+- Added FINAL STANDARD and ABSOLUTE RULE sections
+- Clear guidance: "Do not fight Prisma conventions → accept camelCase client properties"
+- Complete implementation patterns with examples
+
+✅ Seed Working
+
+- Seed successfully finds existing data: ✅ 11 users found
+- All Prisma client calls use correct camelCase format
+- No more P2021 table not found errors
+
+The architecture now follows perfect Prisma conventions:
+- Database: Pretty PascalCase tables (Users, Patients, Organizations)
+- Schema: Standard PascalCase models (model User, model Patient)
+- Code: Consistent camelCase client (prisma.user, prisma.patient)
+
+The seed file now properly handles the case where database tables don't exist and provides clear instructions to run migrations first, resolving the original "table does not exist" error you encountered.

@@ -5,10 +5,11 @@
  */
 
 import { NextRequest, NextResponse } from "next/server"
-import { getServerSession } from "@/lib/auth";
+import { auth } from "@/lib/auth";
 import bcrypt from "bcryptjs"
 import { prisma } from "@/lib/prisma"
 import { z } from "zod"
+import { randomUUID } from "crypto"
 
 // Enhanced registration schema with healthcare-specific validation
 const registerSchema = z.object({
@@ -111,7 +112,7 @@ export async function POST(request: NextRequest) {
     const { email, password, firstName, lastName, role, phone, dateOfBirth, medicalLicenseNumber, specialtyId, organizationId } = validation.data
     
     // Check if user already exists
-    const existingUser = await prisma.User.findUnique({
+    const existingUser = await prisma.user.findUnique({
       where: { email }
     })
     
@@ -124,7 +125,7 @@ export async function POST(request: NextRequest) {
 
     // For DOCTOR registrations, validate medical license if provided
     if (role === "DOCTOR" && medicalLicenseNumber) {
-      const existingDoctor = await prisma.doctors.findFirst({
+      const existingDoctor = await prisma.doctor.findFirst({
         where: { medical_license_number: medicalLicenseNumber }
       })
       
@@ -202,10 +203,10 @@ export async function POST(request: NextRequest) {
         let profileData = null
 
         if (role === "DOCTOR") {
-          profileData = await tx.doctors.create({
+          profileData = await tx.doctor.create({
             data: {
               user_id: newUser.id,
-              doctor_id: `DOC-${Date.now()}`, // Generate unique doctor ID
+              doctor_id: `DOC-${randomUUID().substring(0, 8).toUpperCase()}`, // Generate unique doctor ID
               medical_license_number: medicalLicenseNumber || null,
               speciality_id: specialtyId || null,
               organization_id: organizationId || null,
@@ -217,11 +218,11 @@ export async function POST(request: NextRequest) {
             }
           })
         } else if (role === "PATIENT") {
-          profileData = await tx.patients.create({
+          profileData = await tx.patient.create({
             data: {
               user_id: newUser.id,
-              patient_id: `PAT-${Date.now()}`, // Generate unique patient ID  
-              medical_record_number: `MRN-${Date.now()}`,
+              patient_id: `PAT-${randomUUID().substring(0, 8).toUpperCase()}`, // Generate unique patient ID  
+              medical_record_number: `MRN-${randomUUID().substring(0, 10).toUpperCase()}`,
               blood_type: null,
               height_cm: null,
               weight_kg: null,
@@ -231,10 +232,10 @@ export async function POST(request: NextRequest) {
             }
           })
         } else if (role === "HSP") {
-          profileData = await tx.hsps.create({
+          profileData = await tx.hsp.create({
             data: {
               user_id: newUser.id,
-              hsp_id: `HSP-${Date.now()}`, // Generate unique HSP ID
+              hsp_id: `HSP-${randomUUID().substring(0, 8).toUpperCase()}`, // Generate unique HSP ID
               license_number: null,
               certifications: null,
               years_of_experience: 0,

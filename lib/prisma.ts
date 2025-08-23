@@ -130,17 +130,21 @@ export const healthcareDb = {
       where: { id: patientId },
       include: {
         user: true,
-        doctors: {
+        patient_doctor_assignments: {
           include: {
-            users_doctors_user_idTousers: true,
-            specialities: true,
+            doctor: {
+              include: {
+                users_Doctor_user_idTousers: true,
+                specialities: true,
+              },
+            },
           },
         },
         care_plans: {
           include: {
-            doctors: {
+            Doctor: {
               include: {
-                users_doctors_user_idTousers: true,
+                users_Doctor_user_idTousers: true,
               },
             },
           },

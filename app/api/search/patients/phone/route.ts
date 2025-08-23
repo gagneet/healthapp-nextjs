@@ -1,6 +1,6 @@
 // app/api/search/patients/phone/route.ts - Patient phone search API
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from "@/lib/auth";
+import { auth } from "@/lib/auth";
 import { prisma } from '@/lib/prisma';
 
 // Phone number format helper function
@@ -39,7 +39,7 @@ function getPhoneSearchFormats(phoneNumber: string): string[] {
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession();
+    const session = await auth();
     if (!session?.user) {
       return NextResponse.json(
         {
@@ -97,7 +97,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Search for patient with any of these phone number formats
-    const patient = await prisma.Patient.findFirst({
+    const patient = await prisma.patient.findFirst({
       where: {
         user: {
           phone: {

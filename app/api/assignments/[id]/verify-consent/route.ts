@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from "@/lib/auth";
+import { auth } from "@/lib/auth";
 import SecondaryDoctorService from '@/lib/secondary-doctor-service';
 
 /**
@@ -8,7 +8,7 @@ import SecondaryDoctorService from '@/lib/secondary-doctor-service';
  */
 export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
   try {
-    const session = await getServerSession();
+    const session = await auth();
     if (!session?.user) {
       return NextResponse.json({
         status: false,

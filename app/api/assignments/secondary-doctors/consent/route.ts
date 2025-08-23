@@ -1,12 +1,12 @@
 // app/api/assignments/secondary-doctors/consent/route.ts
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from "@/lib/auth";
+import { auth } from "@/lib/auth";
 import { prisma } from '@/lib/prisma';
 
 // Generate OTP for patient consent
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession();
+    const session = await auth();
     if (!session?.user) {
       return NextResponse.json({
         status: false,
@@ -18,16 +18,16 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { assignment_id, patient_phone, consent_method = 'SMS' } = body;
 
-    if (!assignment_id) {
+    if (!assignment_id || typeof assignment_id !== 'string' || assignment_id.trim().length === 0) {
       return NextResponse.json({
         status: false,
         statusCode: 400,
-        payload: { error: { status: 'validation_error', message: 'Assignment ID is required' } }
+        payload: { error: { status: 'validation_error', message: 'Valid assignment ID is required' } }
       }, { status: 400 });
     }
 
     // Find the assignment
-    const assignment = await prisma.secondary_doctor_assignments.findUnique({
+    const assignment = await prisma.secondaryDoctorAssignment.findUnique({
       where: { id: assignment_id },
       include: {
         patients: {
@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
 
     // Verify user has permission to request consent for this assignment
     if (session.user.role === 'DOCTOR') {
-      const doctor = await prisma.doctors.findFirst({
+      const doctor = await prisma.doctor.findFirst({
         where: { user_id: session.user.id }
       });
       if (!doctor || doctor.id !== assignment.primary_doctor_id) {
@@ -109,7 +109,7 @@ export async function POST(request: NextRequest) {
 // Verify OTP and grant consent
 export async function PUT(request: NextRequest) {
   try {
-    const session = await getServerSession();
+    const session = await auth();
     if (!session?.user) {
       return NextResponse.json({
         status: false,
@@ -121,11 +121,13 @@ export async function PUT(request: NextRequest) {
     const body = await request.json();
     const { otp_id, otp_code, assignment_id } = body;
 
-    if (!otp_id || !otp_code || !assignment_id) {
+    if (!otp_id || typeof otp_id !== 'string' || otp_id.trim().length === 0 ||
+        !otp_code || typeof otp_code !== 'string' || otp_code.trim().length === 0 ||
+        !assignment_id || typeof assignment_id !== 'string' || assignment_id.trim().length === 0) {
       return NextResponse.json({
         status: false,
         statusCode: 400,
-        payload: { error: { status: 'validation_error', message: 'OTP ID, OTP code, and assignment ID are required' } }
+        payload: { error: { status: 'validation_error', message: 'Valid OTP ID, OTP code, and assignment ID are required' } }
       }, { status: 400 });
     }
 
@@ -196,7 +198,7 @@ export async function PUT(request: NextRequest) {
           verified_at: new Date()
         }
       }),
-      prisma.secondary_doctor_assignments.update({
+      prisma.secondaryDoctorAssignment.update({
         where: { id: assignment_id },
         data: {
           consent_status: 'granted',

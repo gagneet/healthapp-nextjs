@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from "@/lib/auth";
+import { auth } from "@/lib/auth";
 import { prisma } from '@/lib/prisma';
 
 /**
@@ -8,7 +8,7 @@ import { prisma } from '@/lib/prisma';
  */
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
   try {
-    const session = await getServerSession();
+    const session = await auth();
     if (!session?.user) {
       return NextResponse.json({
         status: false,
@@ -104,7 +104,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
  */
 export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
   try {
-    const session = await getServerSession();
+    const session = await auth();
     if (!session?.user) {
       return NextResponse.json({
         status: false,
@@ -186,7 +186,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
  */
 export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
   try {
-    const session = await getServerSession();
+    const session = await auth();
     if (!session?.user) {
       return NextResponse.json({
         status: false,

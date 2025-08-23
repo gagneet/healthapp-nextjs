@@ -30,6 +30,8 @@
     "start": "next start -p 3002",
     "lint": "next lint",
     "type-check": "tsc --noEmit",
+    "clean": "find lib -name '*.js' -not -name 'seed.js' -not -name 'seed.cjs' -delete && find app -name '*.js' -delete && find scripts -name '*.js' -delete",
+    "clean:all": "find . -name '*.js' -not -path './node_modules/*' -not -name 'seed.js' -not -name 'seed.cjs' -not -path './.next/*' -delete",
     "backend:build": "tsc -p tsconfig.backend.json",
     "backend:dev": "nodemon --exec \"node --loader ts-node/esm\" src/server.ts",
     "backend:start": "node --loader ts-node/esm src/server.ts",

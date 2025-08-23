@@ -1,6 +1,6 @@
 // app/api/search/route.ts - Comprehensive healthcare search API
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from "@/lib/auth";
+import { auth } from "@/lib/auth";
 import { prisma } from '@/lib/prisma';
 import type { HealthcareRole } from '@/types/auth';
 
@@ -24,7 +24,7 @@ interface SearchResult {
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession();
+    const session = await auth();
     if (!session?.user) {
       return NextResponse.json(
         {
@@ -74,7 +74,7 @@ export async function GET(request: NextRequest) {
     // Search based on type and user permissions
     if (filters.type === 'all' || filters.type === 'patients') {
       if (['DOCTOR', 'HSP', 'SYSTEM_ADMIN', 'HOSPITAL_ADMIN'].includes(filters.role)) {
-        results.patients = await searchPatients(searchValue, filters, session.user.role);
+        results.patients = await searchPatients(searchValue, filters, session.user);
       }
     }
 
@@ -138,7 +138,7 @@ export async function GET(request: NextRequest) {
 }
 
 // Search functions for different entity types
-async function searchPatients(searchValue: string, filters: SearchFilters, userRole: HealthcareRole) {
+async function searchPatients(searchValue: string, filters: SearchFilters, user: any) {
   let whereClause: any = {
     OR: [
       { user: { first_name: { contains: searchValue, mode: 'insensitive' } } },
@@ -150,17 +150,17 @@ async function searchPatients(searchValue: string, filters: SearchFilters, userR
   };
 
   // Role-based filtering for patient search
-  if (userRole === 'DOCTOR') {
+  if (user.role === 'DOCTOR') {
     // Doctors can only search their assigned patients
-    const doctor = await prisma.doctors.findFirst({
-      where: { user_id: (await getServerSession())?.user?.id }
+    const doctor = await prisma.doctor.findFirst({
+      where: { user_id: user.id }
     });
     if (doctor) {
       whereClause.primary_care_doctor_id = doctor.id;
     }
   }
 
-  return await prisma.Patient.findMany({
+  return await prisma.patient.findMany({
     where: whereClause,
     take: filters.limit,
     select: {
@@ -192,11 +192,11 @@ async function searchPatients(searchValue: string, filters: SearchFilters, userR
 }
 
 async function searchDoctors(searchValue: string, filters: SearchFilters) {
-  return await prisma.doctors.findMany({
+  return await prisma.doctor.findMany({
     where: {
       OR: [
-        { users_doctors_user_idTousers: { first_name: { contains: searchValue, mode: 'insensitive' } } },
-        { users_doctors_user_idTousers: { last_name: { contains: searchValue, mode: 'insensitive' } } },
+        { users_Doctor_user_idTousers: { first_name: { contains: searchValue, mode: 'insensitive' } } },
+        { users_Doctor_user_idTousers: { last_name: { contains: searchValue, mode: 'insensitive' } } },
         { medical_license_number: { contains: searchValue, mode: 'insensitive' } },
         { doctor_id: { contains: searchValue, mode: 'insensitive' } }
       ]

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from "@/lib/auth";
+import { auth } from "@/lib/auth";
 import { prisma } from '@/lib/prisma';
 import { MedicationAlertType, EmergencyPriority, AlertSeverity } from '@prisma/client';
 
@@ -9,7 +9,7 @@ import { MedicationAlertType, EmergencyPriority, AlertSeverity } from '@prisma/c
  */
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession();
+    const session = await auth();
     if (!session?.user) {
       return NextResponse.json({
         status: false,
@@ -31,7 +31,7 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '5');
 
     // Get doctor ID
-    const doctor = await prisma.doctors.findFirst({
+    const doctor = await prisma.doctor.findFirst({
       where: { user_id: session.user.id }
     });
 

@@ -22,33 +22,33 @@ model Organization {
   updated_at                                                                                            DateTime?                          @updatedAt @db.Timestamptz(6)
   deleted_at                                                                                            DateTime?                          @db.Timestamptz(6)
   audit_logs                                                                                            AuditLog[]
-  care_plan_templates                                                                                   care_plan_templates[]
+  care_plan_templates                                                                                   CarePlanTemplates[]
   care_plans                                                                                            CarePlan[]
   clinics                                                                                               Clinic[]
-  doctors                                                                                               doctors[]
+  Doctor                                                                                               Doctor[]
   healthcare_providers                                                                                  HealthcareProvider[]
-  hsps                                                                                                  hsps[]
+  Hsp                                                                                                  HSP[]
   notifications                                                                                         Notification[]
-  patient_provider_consent_history_patient_provider_consent_history_new_provider_idToorganizations      patient_provider_consent_history[] @relation("patient_provider_consent_history_new_provider_idToorganizations")
-  patient_provider_consent_history_patient_provider_consent_history_previous_provider_idToorganizations patient_provider_consent_history[] @relation("patient_provider_consent_history_previous_provider_idToorganizations")
+  patient_provider_consent_history_patient_provider_consent_history_new_provider_idToorganizations      PatientProviderConsentHistory[] @relation("patient_provider_consent_history_new_provider_idToorganizations")
+  patient_provider_consent_history_patient_provider_consent_history_previous_provider_idToorganizations PatientProviderConsentHistory[] @relation("patient_provider_consent_history_previous_provider_idToorganizations")
   patients_patients_linked_provider_idToorganizations                                                   Patient[]                          @relation("patients_linked_provider_idToorganizations")
   patients                                                                                              Patient[]
-  provider_change_history_provider_change_history_new_provider_idToorganizations                        provider_change_history[]          @relation("provider_change_history_new_provider_idToorganizations")
-  provider_change_history_provider_change_history_previous_provider_idToorganizations                   provider_change_history[]          @relation("provider_change_history_previous_provider_idToorganizations")
-  secondary_doctor_assignments_secondary_doctor_assignments_primary_doctor_provider_idToorganizations   secondary_doctor_assignments[]     @relation("secondary_doctor_assignments_primary_doctor_provider_idToorganizations")
-  secondary_doctor_assignments_secondary_doctor_assignments_secondary_doctor_provider_idToorganizations secondary_doctor_assignments[]     @relation("secondary_doctor_assignments_secondary_doctor_provider_idToorganizations")
-  treatment_plans                                                                                       treatment_plans[]
+  provider_change_history_provider_change_history_new_provider_idToorganizations                        ProviderChangeHistory[]          @relation("provider_change_history_new_provider_idToorganizations")
+  provider_change_history_provider_change_history_previous_provider_idToorganizations                   ProviderChangeHistory[]          @relation("provider_change_history_previous_provider_idToorganizations")
+  secondary_doctor_assignments_secondary_doctor_assignments_primary_doctor_provider_idToorganizations   SecondaryDoctorAssignments[]     @relation("secondary_doctor_assignments_primary_doctor_provider_idToorganizations")
+  secondary_doctor_assignments_secondary_doctor_assignments_secondary_doctor_provider_idToorganizations SecondaryDoctorAssignments[]     @relation("secondary_doctor_assignments_secondary_doctor_provider_idToorganizations")
+  treatment_plans                                                                                       TreatmentPlans[]
 
   @@index([is_active], map: "organizations_is_active")
   @@index([name], map: "organizations_name")
   @@index([type], map: "organizations_type")
-  @@map("organizations")
+  @@map("Organizations")
 }
 
 model User {
   id                                                           String                         @id @default(uuid()) @db.Uuid
   email                                                        String                         @unique @db.VarChar(255)
-  password_hash                                                String?                        @db.VarChar(255)
+  passwordHash                                                 String?                        @map("password_hash") @db.VarChar(255)
   
   // Auth.js v5 required fields
   name                                                         String?                        @db.VarChar(255)
@@ -56,58 +56,58 @@ model User {
   emailVerified                                                DateTime?                      @map("email_verified_at") @db.Timestamptz(6)
   
   // Healthcare-specific fields
-  role                                                         enum_users_role
-  account_status                                               enum_users_account_status?     @default(PENDING_VERIFICATION)
-  first_name                                                   String?                        @db.VarChar(100)
-  last_name                                                    String?                        @db.VarChar(100)
-  middle_name                                                  String?                        @db.VarChar(100)
+  role                                                         UserRole
+  accountStatus                                                UserAccountStatus?     @map("account_status") @default(PENDING_VERIFICATION)
+  firstName                                                    String?                        @map("first_name") @db.VarChar(100)
+  lastName                                                     String?                        @map("last_name") @db.VarChar(100)
+  middleName                                                   String?                        @map("middle_name") @db.VarChar(100)
   phone                                                        String?                        @db.VarChar(20)
-  date_of_birth                                                DateTime?                      @db.Date
-  gender                                                       enum_users_gender?
+  dateOfBirth                                                  DateTime?                      @map("date_of_birth") @db.Date
+  gender                                                       UserGender?
   
   // Legacy email verification (keeping for backward compatibility)
-  email_verified                                               Boolean?                       @default(false)
-  email_verification_token                                     String?                        @db.VarChar(255)
-  password_reset_token                                         String?                        @db.VarChar(255)
-  password_reset_expires                                       DateTime?                      @db.Timestamptz(6)
-  two_factor_enabled                                           Boolean?                       @default(false)
-  two_factor_secret                                            String?                        @db.VarChar(255)
-  failed_login_attempts                                        Int?                           @default(0)
-  locked_until                                                 DateTime?                      @db.Timestamptz(6)
-  last_login_at                                                DateTime?                      @db.Timestamptz(6)
+  emailVerifiedLegacy                                          Boolean?                       @map("email_verified") @default(false)
+  emailVerificationToken                                       String?                        @map("email_verification_token") @db.VarChar(255)
+  passwordResetToken                                           String?                        @map("password_reset_token") @db.VarChar(255)
+  passwordResetExpires                                         DateTime?                      @map("password_reset_expires") @db.Timestamptz(6)
+  twoFactorEnabled                                             Boolean?                       @map("two_factor_enabled") @default(false)
+  twoFactorSecret                                              String?                        @map("two_factor_secret") @db.VarChar(255)
+  failedLoginAttempts                                          Int?                           @map("failed_login_attempts") @default(0)
+  lockedUntil                                                  DateTime?                      @map("locked_until") @db.Timestamptz(6)
+  lastLoginAt                                                  DateTime?                      @map("last_login_at") @db.Timestamptz(6)
   
   // Legacy profile picture (keeping for backward compatibility, but `image` is primary for Auth.js)
-  profile_picture_url                                          String?                        @db.VarChar(500)
+  profilePictureUrl                                            String?                        @map("profile_picture_url") @db.VarChar(500)
   timezone                                                     String?                        @default("UTC") @db.VarChar(50)
   locale                                                       String?                        @default("en") @db.VarChar(10)
   preferences                                                  Json?                          @default("{\"privacy\": {\"profile_visible\": true, \"share_data_for_research\": false}, \"accessibility\": {\"large_text\": false, \"high_contrast\": false}, \"notifications\": {\"sms\": false, \"push\": true, \"email\": true}}")
-  terms_accepted_at                                            DateTime?                      @db.Timestamptz(6)
-  privacy_policy_accepted_at                                   DateTime?                      @db.Timestamptz(6)
-  hipaa_consent_date                                           DateTime?                      @db.Timestamptz(6)
-  created_at                                                   DateTime?                      @db.Timestamptz(6)
-  updated_at                                                   DateTime?                      @updatedAt @db.Timestamptz(6)
-  deleted_at                                                   DateTime?                      @db.Timestamptz(6)
-  full_name                                                    String?                        @db.VarChar(255)
-  appointment_slots                                            appointment_slots[]
+  termsAcceptedAt                                              DateTime?                      @map("terms_accepted_at") @db.Timestamptz(6)
+  privacyPolicyAcceptedAt                                      DateTime?                      @map("privacy_policy_accepted_at") @db.Timestamptz(6)
+  hipaaConsentDate                                             DateTime?                      @map("hipaa_consent_date") @db.Timestamptz(6)
+  createdAt                                                    DateTime?                      @map("created_at") @db.Timestamptz(6)
+  updatedAt                                                    DateTime?                      @map("updated_at") @updatedAt @db.Timestamptz(6)
+  deletedAt                                                    DateTime?                      @map("deleted_at") @db.Timestamptz(6)
+  fullName                                                     String?                        @map("full_name") @db.VarChar(255)
+  appointment_slots                                            AppointmentSlots[]
   appointments                                                 Appointment[]
   audit_logs                                                   AuditLog[]
-  care_plan_templates                                          care_plan_templates[]
+  care_plan_templates                                          CarePlanTemplates[]
   doctor_availability                                          DoctorAvailability[]
-  doctors_doctors_user_idTousers                               doctors?                       @relation("doctors_user_idTousers")
-  doctors_doctors_verified_byTousers                           doctors[]                      @relation("doctors_verified_byTousers")
+  doctors_Doctor_user_idTousers                               Doctor?                       @relation("Doctor_user_idTousers")
+  doctors_Doctor_verified_byTousers                           Doctor[]                      @relation("Doctor_verified_byTousers")
   healthcare_provider                                          HealthcareProvider?
   healthcare_providers_healthcare_providers_verified_byTousers HealthcareProvider[]           @relation("healthcare_providers_verified_byTousers")
-  hsps_hsps_user_idTousers                                     hsps?                          @relation("hsps_user_idTousers")
-  hsps_hsps_verified_byTousers                                 hsps[]                         @relation("hsps_verified_byTousers")
+  hsps_Hsp_user_idTousers                                     HSP?                          @relation("Hsp_user_idTousers")
+  hsps_Hsp_verified_byTousers                                 HSP[]                         @relation("Hsp_verified_byTousers")
   notifications                                                Notification[]
-  patient_consent_otp                                          patient_consent_otp[]
+  patient_consent_otp                                          PatientConsentOtp[]
   patient_doctor_assignments                                   PatientDoctorAssignment[]
-  patient_provider_assignments                                 patient_provider_assignments[]
+  patient_provider_assignments                                 PatientProviderAssignments[]
   patient                                                      Patient?
-  providers                                                    providers[]
-  scheduled_events                                             scheduled_events[]
+  providers                                                    Providers[]
+  scheduled_events                                             ScheduledEvents[]
   user_devices                                                 UserDevice[]
-  user_roles                                                   user_roles[]
+  user_roles                                                   UserRoles[]
   
   // Authentication relationships
   accounts                                                     Account[]
@@ -129,16 +129,16 @@ model User {
   created_consultations                                        VideoConsultation[] @relation("ConsultationCreatedBy")
   consultation_notes_created                                   ConsultationNote[] @relation("ConsultationNoteCreatedBy")
 
-  @@index([email, account_status], map: "idx_users_email_status")
-  @@index([role, account_status], map: "idx_users_role_status")
-  @@index([account_status], map: "users_account_status")
-  @@index([email_verified], map: "users_email_verified")
-  @@index([full_name], map: "users_full_name")
-  @@index([last_login_at], map: "users_last_login_at")
+  @@index([email, accountStatus], map: "idx_users_email_status")
+  @@index([role, accountStatus], map: "idx_users_role_status")
+  @@index([accountStatus], map: "users_account_status")
+  @@index([emailVerifiedLegacy], map: "users_email_verified")
+  @@index([fullName], map: "users_full_name")
+  @@index([lastLoginAt], map: "users_last_login_at")
   @@index([phone], map: "users_phone")
   @@index([role], map: "users_role")
 
-  @@map("users")
+  @@map("Users")
 }
 
 
@@ -167,7 +167,7 @@ model Account {
 
   @@unique([provider, providerAccountId])
   @@index([userId, provider])
-  @@map("accounts")
+  @@map("Accounts")
 }
 
 model Session {
@@ -188,7 +188,7 @@ model Session {
   @@index([userId], map: "sessions_user_id")
   @@index([expires], map: "sessions_expires")
   @@index([ip_address], map: "sessions_ip_address")
-  @@map("sessions")
+  @@map("Sessions")
 }
 
 model VerificationToken {
@@ -197,7 +197,7 @@ model VerificationToken {
   expires    DateTime
 
   @@unique([identifier, token])
-  @@map("verificationtokens")
+  @@map("VerificationTokens")
 }
 
 // Account Linking for hybrid auth (username/password + OAuth)
@@ -219,7 +219,7 @@ model AccountLink {
   @@unique([provider, provider_account_id], map: "account_links_provider_account")
   @@index([user_id], map: "account_links_user_id")
   @@index([provider], map: "account_links_provider")
-  @@map("account_links")
+  @@map("AccountLinks")
 }
 
 model Patient {
@@ -261,30 +261,30 @@ model Patient {
   provider_linked_at                                       DateTime?                              @db.Timestamptz(6)
   provider_consent_given                                   Boolean?                               @default(false)
   provider_consent_given_at                                DateTime?                              @db.Timestamptz(6)
-  provider_consent_method                                  enum_patients_provider_consent_method?
+  provider_consent_method                                  PatientProviderConsentMethodLegacy?
   adherence_records                                        AdherenceRecord[]
   appointments                                             Appointment[]
   audit_logs                                               AuditLog[]
   care_plans                                               CarePlan[]
-  medication_logs                                          medication_logs[]
+  medication_logs                                          MedicationLogs[]
   notifications                                            Notification[]
-  patient_alerts                                           patient_alerts[]
-  patient_consent_otp                                      patient_consent_otp[]
+  patient_alerts                                           PatientAlerts[]
+  patient_consent_otp                                      PatientConsentOtp[]
   patient_doctor_assignments                               PatientDoctorAssignment[]
-  patient_provider_assignments                             patient_provider_assignments[]
-  patient_provider_consent_history                         patient_provider_consent_history[]
+  patient_provider_assignments                             PatientProviderAssignments[]
+  patient_provider_consent_history                         PatientProviderConsentHistory[]
   patient_subscriptions                                    PatientSubscription[]
   organizations_patients_linked_provider_idToorganizations Organization?                          @relation("patients_linked_provider_idToorganizations", fields: [linked_provider_id], references: [id])
   organization                                             Organization?                          @relation(fields: [organization_id], references: [id])
-  doctors                                                  doctors?                               @relation(fields: [primary_care_doctor_id], references: [id])
-  hsps                                                     hsps?                                  @relation(fields: [primary_care_hsp_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  Doctor                                                  Doctor?                               @relation(fields: [primary_care_doctor_id], references: [id])
+  Hsp                                                     HSP?                                  @relation(fields: [primary_care_hsp_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   user                                                     User                                   @relation(fields: [user_id], references: [id], onDelete: Cascade)
-  payment_methods                                          payment_methods[]
-  payments                                                 payments[]
-  scheduled_events                                         scheduled_events[]
-  secondary_doctor_assignments                             secondary_doctor_assignments[]
+  payment_methods                                          PaymentMethods[]
+  payments                                                 Payments[]
+  scheduled_events                                         ScheduledEvents[]
+  secondary_doctor_assignments                             SecondaryDoctorAssignments[]
   symptoms                                                 Symptom[]
-  treatment_plans                                          treatment_plans[]
+  treatment_plans                                          TreatmentPlans[]
   vital_readings                                           VitalReading[]
   
   // Medical Safety Relationships
@@ -315,7 +315,7 @@ model Patient {
   @@index([provider_consent_given], map: "patients_provider_consent_given")
   @@index([provider_linked_at], map: "patients_provider_linked_at")
   @@index([risk_level], map: "patients_risk_level")
-  @@map("patients")
+  @@map("Patients")
 }
 
 model HealthcareProvider {
@@ -345,13 +345,13 @@ model HealthcareProvider {
   created_at                                    DateTime?                      @db.Timestamptz(6)
   updated_at                                    DateTime?                      @updatedAt @db.Timestamptz(6)
   deleted_at                                    DateTime?                      @db.Timestamptz(6)
-  care_plan_templates                           care_plan_templates[]
+  care_plan_templates                           CarePlanTemplates[]
   organization                                  Organization?                  @relation(fields: [organization_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   user                                          User                           @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
   users_healthcare_providers_verified_byTousers User?                          @relation("healthcare_providers_verified_byTousers", fields: [verified_by], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  patient_provider_assignments                  patient_provider_assignments[]
+  patient_provider_assignments                  PatientProviderAssignments[]
   patient_subscriptions                         PatientSubscription[]
-  payments                                      payments[]
+  payments                                      Payments[]
   service_plans                                 ServicePlan[]
   vital_readings                                VitalReading[]
 
@@ -360,7 +360,7 @@ model HealthcareProvider {
   @@index([specialties], map: "healthcare_providers_specialties", type: Gin)
   @@index([verification_date], map: "healthcare_providers_verification_date")
   @@index([organization_id, is_verified], map: "idx_providers_org_verified")
-  @@map("healthcare_providers")
+  @@map("HealthcareProviders")
 }
 
 model Speciality {
@@ -371,9 +371,9 @@ model Speciality {
   created_at   DateTime  @db.Timestamptz(6)
   updated_at   DateTime  @updatedAt @db.Timestamptz(6)
   deleted_at   DateTime? @db.Timestamptz(6)
-  doctors      doctors[]
+  Doctor      Doctor[]
 
-  @@map("specialities")
+  @@map("Specialities")
 }
 
 model Clinic {
@@ -404,7 +404,7 @@ model Clinic {
   created_at          DateTime      @db.Timestamptz(6)
   updated_at          DateTime      @updatedAt @db.Timestamptz(6)
   deleted_at          DateTime?     @db.Timestamptz(6)
-  doctor              doctors       @relation(fields: [doctor_id], references: [id], onDelete: Cascade)
+  doctor              Doctor       @relation(fields: [doctor_id], references: [id], onDelete: Cascade)
   organization        Organization? @relation(fields: [organization_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
   @@index([doctor_id], map: "clinics_doctor_id")
@@ -413,7 +413,7 @@ model Clinic {
   @@index([organization_id], map: "clinics_organization_id")
   @@index([latitude, longitude], map: "idx_clinics_coordinates")
   @@index([location_verified], map: "idx_clinics_location_verified")
-  @@map("clinics")
+  @@map("Clinics")
 }
 
 model CarePlan {
@@ -460,16 +460,16 @@ model CarePlan {
   created_at                  DateTime?            @db.Timestamptz(6)
   updated_at                  DateTime?            @updatedAt @db.Timestamptz(6)
   deleted_at                  DateTime?            @db.Timestamptz(6)
-  doctors                     doctors?             @relation(fields: [created_by_doctor_id], references: [id])
-  hsps                        hsps?                @relation(fields: [created_by_hsp_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  Doctor                     Doctor?             @relation(fields: [created_by_doctor_id], references: [id])
+  Hsp                        HSP?                @relation(fields: [created_by_hsp_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   organizations               Organization?        @relation(fields: [organization_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   patient                     Patient              @relation(fields: [patient_id], references: [id], onDelete: Cascade)
   prescribed_medications      Medication[] @relation("prescribed_medications")
   notifications               Notification[]
-  scheduled_events            scheduled_events[]
+  scheduled_events            ScheduledEvents[]
   symptoms                    Symptom[]
-  vital_requirements          vital_requirements[]
-  vitals                      vitals[]
+  vital_requirements          VitalRequirements[]
+  vitals                      Vitals[]
 
   @@index([chronic_conditions], map: "care_plans_chronic_conditions", type: Gin)
   @@index([created_by_doctor_id], map: "care_plans_created_by_doctor_id")
@@ -482,7 +482,7 @@ model CarePlan {
   @@index([start_date], map: "care_plans_start_date")
   @@index([status], map: "care_plans_status")
   @@index([patient_id, status, start_date], map: "idx_careplans_patient_status_start_fixed")
-  @@map("care_plans")
+  @@map("CarePlans")
 }
 
 model Medicine {
@@ -499,13 +499,13 @@ model Medicine {
   deleted_at        DateTime?    @db.Timestamptz(6)
   medications       Medication[]
 
-  @@map("medicines")
+  @@map("Medicines")
 }
 
 model Medication {
   id              String                           @id @default(uuid()) @db.Uuid
   participant_id  String                           @db.Uuid
-  organizer_type  enum_medications_organizer_type?
+  organizer_type  MedicationOrganizerType?
   organizer_id    String                           @db.Uuid
   medicine_id     String                           @db.Uuid
   description     String?                          @db.VarChar(1000)
@@ -517,7 +517,7 @@ model Medication {
   updated_at      DateTime                         @updatedAt @db.Timestamptz(6)
   deleted_at      DateTime?                        @db.Timestamptz(6)
   care_plan_id    String?                          @db.Uuid
-  medication_logs medication_logs[]
+  medication_logs MedicationLogs[]
   care_plan       CarePlan?                        @relation("prescribed_medications", fields: [care_plan_id], references: [id])
   medicine        Medicine                         @relation(fields: [medicine_id], references: [id], onDelete: NoAction)
   notifications   Notification[]
@@ -526,16 +526,16 @@ model Medication {
   @@index([medicine_id], map: "medications_medicine_id")
   @@index([organizer_type, organizer_id], map: "medications_organizer_type_organizer_id")
   @@index([participant_id], map: "medications_participant_id")
-  @@map("medications")
+  @@map("Medications")
 }
 
 model Appointment {
   id                   String                                  @id @default(uuid()) @db.Uuid
-  participant_one_type enum_appointments_participant_one_type?
+  participant_one_type AppointmentParticipantOneType?
   participant_one_id   String?                                 @db.Uuid
-  participant_two_type enum_appointments_participant_two_type?
+  participant_two_type AppointmentParticipantTwoType?
   participant_two_id   String?                                 @db.Uuid
-  organizer_type       enum_appointments_organizer_type?
+  organizer_type       AppointmentOrganizerType?
   organizer_id         String?                                 @db.Uuid
   provider_id          String?                                 @db.Uuid
   provider_name        String?                                 @db.VarChar(100)
@@ -552,10 +552,10 @@ model Appointment {
   doctor_id            String?                                 @db.Uuid
   patient_id           String?                                 @db.Uuid
   slot_id              String?                                 @db.Uuid
-  doctor               doctors?                                @relation(fields: [doctor_id], references: [id])
+  doctor               Doctor?                                @relation(fields: [doctor_id], references: [id])
   patient              Patient?                                @relation(fields: [patient_id], references: [id])
   users                User?                                   @relation(fields: [provider_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  appointment_slots    appointment_slots?                      @relation(fields: [slot_id], references: [id])
+  appointment_slots    AppointmentSlots?                       @relation(fields: [slot_id], references: [id])
   notifications        Notification[]
   
   // Phase 4: Telemedicine Relationships
@@ -569,7 +569,7 @@ model Appointment {
   @@index([organizer_type, organizer_id, start_time], map: "idx_appointments_organizer_time")
   @@index([patient_id, start_time], map: "idx_appointments_patient_time")
   @@index([provider_id, start_time], map: "idx_appointments_provider_time")
-  @@map("appointments")
+  @@map("Appointments")
 }
 
 model DoctorAvailability {
@@ -590,7 +590,7 @@ model DoctorAvailability {
 
   @@index([doctor_id, day_of_week], map: "doctor_availability_doctor_id_day_of_week")
   @@index([doctor_id, is_available], map: "doctor_availability_doctor_id_is_available")
-  @@map("doctor_availability")
+  @@map("DoctorAvailability")
 }
 
 model VitalType {
@@ -605,10 +605,10 @@ model VitalType {
   updated_at         DateTime?            @updatedAt @db.Timestamptz(6)
   deleted_at         DateTime?            @db.Timestamptz(6)
   vital_readings     VitalReading[]
-  vital_requirements vital_requirements[]
+  vital_requirements VitalRequirements[]
 
   @@index([unit], map: "vital_types_unit")
-  @@map("vital_types")
+  @@map("VitalTypes")
 }
 
 model VitalReading {
@@ -633,7 +633,7 @@ model VitalReading {
   pulse_rate           Int?
   respiratory_rate     Int?
   oxygen_saturation    Decimal?                         @db.Decimal(5, 2)
-  alert_level          enum_vital_readings_alert_level? @default(normal)
+  alert_level          VitalReadingAlertLevel? @default(normal)
   alert_reasons        Json?                            @default("[]")
   adherence_records    AdherenceRecord?                 @relation(fields: [adherence_record_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   patient              Patient                          @relation(fields: [patient_id], references: [id], onDelete: NoAction)
@@ -653,7 +653,7 @@ model VitalReading {
   @@index([patient_id, vital_type_id, reading_time], map: "vital_readings_patient_id_vital_type_id_reading_time")
   @@index([reading_time], map: "vital_readings_reading_time")
   @@index([vital_type_id], map: "vital_readings_vital_type_id")
-  @@map("vital_readings")
+  @@map("VitalReadings")
 }
 
 model Symptom {
@@ -684,14 +684,14 @@ model Symptom {
   @@index([recorded_at], map: "symptoms_recorded_at")
   @@index([severity], map: "symptoms_severity")
   @@index([symptom_name], map: "symptoms_symptom_name")
-  @@map("symptoms")
+  @@map("Symptoms")
 }
 
 model AdherenceRecord {
   id                 String                                @id @default(uuid()) @db.Uuid
   patient_id         String                                @db.Uuid
   scheduled_event_id String?                               @db.Uuid
-  adherence_type     enum_adherence_records_adherence_type
+  adherence_type     AdherenceType
   due_at             DateTime                              @db.Timestamptz(6)
   recorded_at        DateTime?                             @db.Timestamptz(6)
   is_completed       Boolean?                              @default(false)
@@ -704,7 +704,7 @@ model AdherenceRecord {
   updated_at         DateTime?                             @updatedAt @db.Timestamptz(6)
   deleted_at         DateTime?                             @db.Timestamptz(6)
   patient            Patient                               @relation(fields: [patient_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  scheduled_events   scheduled_events?                     @relation(fields: [scheduled_event_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  scheduled_events   ScheduledEvents?                      @relation(fields: [scheduled_event_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   vital_readings     VitalReading[]
 
   @@index([adherence_type], map: "adherence_records_adherence_type")
@@ -716,7 +716,7 @@ model AdherenceRecord {
   @@index([scheduled_event_id], map: "adherence_records_scheduled_event_id")
   @@index([scheduled_event_id, is_completed, recorded_at], map: "idx_adherence_event_status_completed")
   @@index([patient_id, due_at, is_completed], map: "idx_adherence_patient_due_status")
-  @@map("adherence_records")
+  @@map("AdherenceRecords")
 }
 
 model ServicePlan {
@@ -727,7 +727,7 @@ model ServicePlan {
   service_type          String?                          @db.VarChar(100)
   price                 Decimal                          @db.Decimal(10, 2)
   currency              String?                          @default("USD") @db.VarChar(3)
-  billing_cycle         enum_service_plans_billing_cycle @default(monthly)
+  billing_cycle         ServicePlanBillingCycle @default(monthly)
   features              Json?                            @default("[]") @db.Json
   patient_limit         Int?
   trial_period_days     Int?                             @default(0)
@@ -746,7 +746,7 @@ model ServicePlan {
   @@index([price], map: "service_plans_price")
   @@index([provider_id], map: "service_plans_provider_id")
   @@index([service_type], map: "service_plans_service_type")
-  @@map("service_plans")
+  @@map("ServicePlans")
 }
 
 model PatientSubscription {
@@ -754,7 +754,7 @@ model PatientSubscription {
   patient_id             String                             @db.Uuid
   provider_id            String                             @db.Uuid
   service_plan_id        String                             @db.Uuid
-  status                 enum_patient_subscriptions_status? @default(ACTIVE)
+  status                 PatientSubscriptionStatus? @default(ACTIVE)
   current_period_start   DateTime                           @db.Date
   current_period_end     DateTime                           @db.Date
   next_billing_date      DateTime?                          @db.Date
@@ -774,7 +774,7 @@ model PatientSubscription {
   patient                Patient                            @relation(fields: [patient_id], references: [id], onDelete: Cascade)
   healthcare_providers   HealthcareProvider                 @relation(fields: [provider_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   service_plans          ServicePlan                        @relation(fields: [service_plan_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  payments               payments[]
+  payments               Payments[]
 
   @@index([next_billing_date], map: "patient_subscriptions_next_billing_date")
   @@index([patient_id], map: "patient_subscriptions_patient_id")
@@ -784,21 +784,21 @@ model PatientSubscription {
   @@index([status], map: "patient_subscriptions_status")
   @@index([stripe_customer_id], map: "patient_subscriptions_stripe_customer_id")
   @@index([stripe_subscription_id], map: "patient_subscriptions_stripe_subscription_id")
-  @@map("patient_subscriptions")
+  @@map("PatientSubscriptions")
 }
 
 model PatientDoctorAssignment {
   id                                                                String                                            @id @default(uuid()) @db.Uuid
   patient_id                                                        String                                            @db.Uuid
   doctor_id                                                         String                                            @db.Uuid
-  assignment_type                                                   enum_patient_doctor_assignment_type              @default(SPECIALIST)
+  assignment_type                                                   PatientDoctorAssignmentType              @default(SPECIALIST)
   permissions                                                       Json?                                             @default("{\"can_view_patient\": true, \"can_create_care_plans\": false, \"can_modify_care_plans\": false, \"can_prescribe\": false, \"can_order_tests\": false, \"can_access_full_history\": false}")
   specialty_focus                                                   String[]                                          @default([])
   care_plan_ids                                                     String[]                                          @default([]) @db.Uuid
   assigned_by_doctor_id                                             String?                                           @db.Uuid
   assigned_by_admin_id                                              String?                                           @db.Uuid
   patient_consent_required                                          Boolean?                                          @default(false)
-  patient_consent_status                                            enum_patient_doctor_assignment_consent_status?   @default(NOT_REQUIRED)
+  patient_consent_status                                            PatientDoctorAssignmentConsentStatus?   @default(NOT_REQUIRED)
   consent_method                                                    String?   @db.VarChar(20)
   consent_otp                                                       String?   @db.VarChar(10)
   consent_otp_expires_at                                            DateTime? @db.Timestamptz(6)
@@ -813,8 +813,8 @@ model PatientDoctorAssignment {
   updated_at                                                        DateTime? @updatedAt @db.Timestamptz(6)
   deleted_at                                                        DateTime? @db.Timestamptz(6)
   users                                                             User?     @relation(fields: [assigned_by_admin_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  doctors_patient_doctor_assignments_assigned_by_doctor_idTodoctors doctors?  @relation("patient_doctor_assignments_assigned_by_doctor_idTodoctors", fields: [assigned_by_doctor_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  doctor                                                            doctors   @relation(fields: [doctor_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  doctors_patient_doctor_assignments_assigned_by_doctor_idTodoctors Doctor?  @relation("patient_doctor_assignments_assigned_by_doctor_idTodoctors", fields: [assigned_by_doctor_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  doctor                                                            Doctor   @relation(fields: [doctor_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
   patient                                                           Patient   @relation(fields: [patient_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
   @@index([doctor_id, is_active, created_at], map: "idx_assignments_doctor_active_created")
@@ -824,7 +824,7 @@ model PatientDoctorAssignment {
   @@index([is_active], map: "patient_doctor_assignments_is_active")
   @@index([patient_consent_status], map: "patient_doctor_assignments_patient_consent_status")
   @@index([patient_id], map: "patient_doctor_assignments_patient_id")
-  @@map("patient_doctor_assignments")
+  @@map("PatientDoctorAssignments")
 }
 
 model UserDevice {
@@ -847,7 +847,7 @@ model UserDevice {
   @@index([last_used_at], map: "user_devices_last_used_at")
   @@index([push_token], map: "user_devices_push_token")
   @@index([user_id], map: "user_devices_user_id")
-  @@map("user_devices")
+  @@map("UserDevices")
 }
 
 model Notification {
@@ -886,15 +886,15 @@ model Notification {
   updated_at                DateTime?        @updatedAt @db.Timestamptz(6)
   deleted_at                DateTime?        @db.Timestamptz(6)
   recipient_id              String?          @db.Uuid
-  doctors                   doctors?         @relation(fields: [doctor_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  hsps                      hsps?            @relation(fields: [hsp_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  Doctor                   Doctor?         @relation(fields: [doctor_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  Hsp                      HSP?            @relation(fields: [hsp_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   organizations             Organization?    @relation(fields: [organization_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   patients                  Patient?         @relation(fields: [patient_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
   users                     User?            @relation(fields: [recipient_id], references: [id])
   appointments              Appointment?     @relation(fields: [related_appointment_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   care_plans                CarePlan?        @relation(fields: [related_care_plan_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   medications               Medication?      @relation(fields: [related_medication_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  treatment_plans           treatment_plans? @relation(fields: [related_treatment_plan_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  treatment_plans           TreatmentPlans?  @relation(fields: [related_treatment_plan_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
   @@index([type, priority, created_at], map: "idx_notifications_type_priority_created")
   @@index([doctor_id], map: "notifications_doctor_id")
@@ -910,7 +910,7 @@ model Notification {
   @@index([status], map: "notifications_status")
   @@index([status, scheduled_for, expires_at], map: "notifications_status_scheduled_for_expires_at")
   @@index([type], map: "notifications_type")
-  @@map("notifications")
+  @@map("Notifications")
 }
 
 model AuditLog {
@@ -954,14 +954,16 @@ model AuditLog {
   @@index([user_id], map: "audit_logs_user_id")
   @@index([user_id, timestamp], map: "audit_logs_user_id_timestamp")
   @@index([user_id, created_at, action], map: "idx_audit_user_created_action")
-  @@map("audit_logs")
+  @@map("AuditLogs")
 }
 
 model SequelizeMeta {
   name String @id @db.VarChar(255)
+  
+  @@map("SequelizeMeta")
 }
 
-model appointment_slots {
+model AppointmentSlots {
   id                  String                            @id @db.Uuid
   doctor_id           String                            @db.Uuid
   date                DateTime                          @db.Date
@@ -970,7 +972,7 @@ model appointment_slots {
   max_appointments    Int?                              @default(1)
   booked_appointments Int?                              @default(0)
   is_available        Boolean?                          @default(true)
-  slot_type           enum_appointment_slots_slot_type? @default(regular)
+  slot_type           AppointmentSlotType? @default(regular)
   notes               String?
   created_at          DateTime                          @db.Timestamptz(6)
   updated_at          DateTime                          @db.Timestamptz(6)
@@ -981,9 +983,10 @@ model appointment_slots {
   @@index([date, is_available], map: "appointment_slots_date_is_available")
   @@index([doctor_id, date, start_time], map: "appointment_slots_doctor_id_date_start_time")
   @@index([doctor_id, is_available], map: "appointment_slots_doctor_id_is_available")
+  @@map("AppointmentSlots")
 }
 
-model care_plan_templates {
+model CarePlanTemplates {
   id                        String                @id @db.Uuid
   name                      String                @db.VarChar(255)
   description               String?
@@ -1005,8 +1008,8 @@ model care_plan_templates {
   users                     User?                 @relation(fields: [approved_by], references: [id], onDelete: NoAction, onUpdate: NoAction)
   healthcare_providers      HealthcareProvider    @relation(fields: [created_by], references: [id], onDelete: NoAction, onUpdate: NoAction)
   organizations             Organization?         @relation(fields: [organization_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  care_plan_templates       care_plan_templates?  @relation("care_plan_templatesTocare_plan_templates", fields: [parent_template_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  other_care_plan_templates care_plan_templates[] @relation("care_plan_templatesTocare_plan_templates")
+  care_plan_templates       CarePlanTemplates?    @relation("care_plan_templatesTocare_plan_templates", fields: [parent_template_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  other_care_plan_templates CarePlanTemplates[]   @relation("care_plan_templatesTocare_plan_templates")
 
   @@index([conditions], map: "idx_templates_conditions", type: Gin)
   @@index([created_by], map: "idx_templates_created_by")
@@ -1016,11 +1019,12 @@ model care_plan_templates {
   @@index([organization_id], map: "idx_templates_organization_id")
   @@index([specialties], map: "idx_templates_specialties", type: Gin)
   @@index([tags], map: "idx_templates_tags", type: Gin)
+  @@map("CarePlanTemplates")
 }
 
-model dashboard_metrics {
+model DashboardMetrics {
   id            String                             @id @db.Uuid
-  entity_type   enum_dashboard_metrics_entity_type
+  entity_type   DashboardMetricsEntityType
   entity_id     String                             @db.Uuid
   metric_type   String                             @db.VarChar(100)
   metric_data   Json                               @default("{}")
@@ -1031,10 +1035,11 @@ model dashboard_metrics {
 
   @@unique([entity_type, entity_id, metric_type], map: "dashboard_metrics_entity_type_entity_id_metric_type")
   @@index([calculated_at, valid_until], map: "dashboard_metrics_calculated_at_valid_until")
+  @@map("DashboardMetrics")
 }
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
-model doctors {
+model Doctor {
   id                                                                                     String                             @id @db.Uuid
   user_id                                                                                String                             @unique(map: "doctors_user_id") @db.Uuid
   doctor_id                                                                              String                             @unique(map: "doctors_doctor_id") @db.VarChar(50)
@@ -1085,19 +1090,19 @@ model doctors {
   clinics                                                                                Clinic[]
   organizations                                                                          Organization?                      @relation(fields: [organization_id], references: [id])
   specialities                                                                           Speciality?                        @relation(fields: [speciality_id], references: [id])
-  users_doctors_user_idTousers                                                           User                               @relation("doctors_user_idTousers", fields: [user_id], references: [id], onDelete: Cascade)
-  users_doctors_verified_byTousers                                                       User?                              @relation("doctors_verified_byTousers", fields: [verified_by], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  hsps                                                                                   hsps[]
+  users_Doctor_user_idTousers                                                           User                               @relation("Doctor_user_idTousers", fields: [user_id], references: [id], onDelete: Cascade)
+  users_Doctor_verified_byTousers                                                       User?                              @relation("Doctor_verified_byTousers", fields: [verified_by], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  Hsp                                                                                   HSP[]
   notifications                                                                          Notification[]
-  patient_consent_otp_patient_consent_otp_primary_doctor_idTodoctors                     patient_consent_otp[]              @relation("patient_consent_otp_primary_doctor_idTodoctors")
-  patient_consent_otp_patient_consent_otp_secondary_doctor_idTodoctors                   patient_consent_otp[]              @relation("patient_consent_otp_secondary_doctor_idTodoctors")
+  patient_consent_otp_patient_consent_otp_primary_doctor_idToDoctor                     PatientConsentOtp[]              @relation("patient_consent_otp_primary_doctor_idToDoctor")
+  patient_consent_otp_patient_consent_otp_secondary_doctor_idTodoctors                   PatientConsentOtp[]              @relation("patient_consent_otp_secondary_doctor_idTodoctors")
   patient_doctor_assignments_patient_doctor_assignments_assigned_by_doctor_idTodoctors   PatientDoctorAssignment[]          @relation("patient_doctor_assignments_assigned_by_doctor_idTodoctors")
   doctor_assignments                                                                     PatientDoctorAssignment[]
-  patient_provider_consent_history                                                       patient_provider_consent_history[]
+  patient_provider_consent_history                                                       PatientProviderConsentHistory[]
   patients                                                                               Patient[]
-  secondary_doctor_assignments_secondary_doctor_assignments_primary_doctor_idTodoctors   secondary_doctor_assignments[]     @relation("secondary_doctor_assignments_primary_doctor_idTodoctors")
-  secondary_doctor_assignments_secondary_doctor_assignments_secondary_doctor_idTodoctors secondary_doctor_assignments[]     @relation("secondary_doctor_assignments_secondary_doctor_idTodoctors")
-  treatment_plans                                                                        treatment_plans[]
+  secondary_doctor_assignments_secondary_doctor_assignments_primary_doctor_idToDoctor   SecondaryDoctorAssignments[]     @relation("secondary_doctor_assignments_primary_doctor_idToDoctor")
+  secondary_doctor_assignments_secondary_doctor_assignments_secondary_doctor_idTodoctors SecondaryDoctorAssignments[]     @relation("secondary_doctor_assignments_secondary_doctor_idTodoctors")
+  treatment_plans                                                                        TreatmentPlans[]
   
   // Phase 4: Telemedicine Relationships
   video_consultations                                                                    VideoConsultation[]
@@ -1109,10 +1114,11 @@ model doctors {
   @@index([is_verified, gender], map: "doctors_is_verified_gender")
   @@index([organization_id], map: "doctors_organization_id")
   @@index([specialties], map: "doctors_specialties", type: Gin)
+  @@map("Doctors")
 }
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
-model hsps {
+model HSP {
   id                               String                             @id @db.Uuid
   user_id                          String                             @unique(map: "hsps_user_id") @db.Uuid
   hsp_id                           String                             @unique(map: "hsps_hsp_id") @db.VarChar(50)
@@ -1149,14 +1155,14 @@ model hsps {
   deleted_at                       DateTime?                          @db.Timestamptz(6)
   care_plans                       CarePlan[]
   organizations                    Organization?                      @relation(fields: [organization_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  doctors                          doctors?                           @relation(fields: [supervising_doctor_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  users_hsps_user_idTousers        User                               @relation("hsps_user_idTousers", fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
-  users_hsps_verified_byTousers    User?                              @relation("hsps_verified_byTousers", fields: [verified_by], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  Doctor                          Doctor?                           @relation(fields: [supervising_doctor_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  users_Hsp_user_idTousers        User                               @relation("Hsp_user_idTousers", fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users_Hsp_verified_byTousers    User?                              @relation("Hsp_verified_byTousers", fields: [verified_by], references: [id], onDelete: NoAction, onUpdate: NoAction)
   notifications                    Notification[]
-  patient_consent_otp              patient_consent_otp[]
-  patient_provider_consent_history patient_provider_consent_history[]
+  patient_consent_otp              PatientConsentOtp[]
+  patient_provider_consent_history PatientProviderConsentHistory[]
   patients                         Patient[]
-  secondary_doctor_assignments     secondary_doctor_assignments[]
+  secondary_doctor_assignments     SecondaryDoctorAssignments[]
 
   @@index([departments], map: "hsps_departments", type: Gin)
   @@index([hsp_type], map: "hsps_hsp_type")
@@ -1164,9 +1170,10 @@ model hsps {
   @@index([organization_id], map: "hsps_organization_id")
   @@index([specializations], map: "hsps_specializations", type: Gin)
   @@index([supervising_doctor_id], map: "hsps_supervising_doctor_id")
+  @@map("HSPs")
 }
 
-model medication_logs {
+model MedicationLogs {
   id               String                                 @id @db.Uuid
   medication_id    String                                 @db.Uuid
   patient_id       String                                 @db.Uuid
@@ -1174,7 +1181,7 @@ model medication_logs {
   taken_at         DateTime?                              @db.Timestamptz(6)
   dosage_taken     String?                                @db.VarChar(100)
   notes            String?
-  adherence_status enum_medication_logs_adherence_status? @default(missed)
+  adherence_status MedicationLogAdherenceStatus? @default(missed)
   reminder_sent    Boolean?                               @default(false)
   created_at       DateTime?                              @db.Timestamptz(6)
   updated_at       DateTime?                              @db.Timestamptz(6)
@@ -1184,13 +1191,14 @@ model medication_logs {
   @@index([adherence_status, scheduled_at], map: "medication_logs_adherence_status_scheduled_at")
   @@index([medication_id, scheduled_at], map: "medication_logs_medication_id_scheduled_at")
   @@index([patient_id, scheduled_at], map: "medication_logs_patient_id_scheduled_at")
+  @@map("MedicationLogs")
 }
 
-model patient_alerts {
+model PatientAlerts {
   id              String                         @id @db.Uuid
   patient_id      String                         @db.Uuid
-  alert_type      enum_patient_alerts_alert_type
-  severity        enum_patient_alerts_severity?  @default(medium)
+  alert_type      PatientAlertType
+  severity        PatientAlertSeverity?  @default(medium)
   title           String                         @db.VarChar(200)
   message         String
   action_required Boolean?                       @default(false)
@@ -1207,10 +1215,11 @@ model patient_alerts {
   @@index([acknowledged, resolved], map: "patient_alerts_acknowledged_resolved")
   @@index([created_at], map: "patient_alerts_created_at")
   @@index([patient_id, alert_type, severity], map: "patient_alerts_patient_id_alert_type_severity")
+  @@map("PatientAlerts")
 }
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
-model patient_consent_otp {
+model PatientConsentOtp {
   id                                                       String                               @id @db.Uuid
   secondary_assignment_id                                  String                               @db.Uuid
   patient_id                                               String                               @db.Uuid
@@ -1218,7 +1227,7 @@ model patient_consent_otp {
   secondary_doctor_id                                      String?                              @db.Uuid
   secondary_hsp_id                                         String?                              @db.Uuid
   otp_code                                                 String                               @db.VarChar(10)
-  otp_method                                               enum_patient_consent_otp_otp_method? @default(both)
+  otp_method                                               PatientConsentOtpMethod? @default(both)
   patient_phone                                            String?                              @db.VarChar(20)
   patient_email                                            String?                              @db.VarChar(255)
   generated_at                                             DateTime?                            @db.Timestamptz(6)
@@ -1243,11 +1252,11 @@ model patient_consent_otp {
   updated_at                                               DateTime?                            @db.Timestamptz(6)
   deleted_at                                               DateTime?                            @db.Timestamptz(6)
   patients                                                 Patient                              @relation(fields: [patient_id], references: [id], onDelete: Cascade)
-  doctors_patient_consent_otp_primary_doctor_idTodoctors   doctors                              @relation("patient_consent_otp_primary_doctor_idTodoctors", fields: [primary_doctor_id], references: [id], onDelete: Cascade)
+  Doctor_patient_consent_otp_primary_doctor_idToDoctor   Doctor                              @relation("patient_consent_otp_primary_doctor_idToDoctor", fields: [primary_doctor_id], references: [id], onDelete: Cascade)
   users                                                    User                                 @relation(fields: [requested_by_user_id], references: [id], onDelete: Cascade)
-  secondary_doctor_assignments                             secondary_doctor_assignments         @relation(fields: [secondary_assignment_id], references: [id], onDelete: Cascade)
-  doctors_patient_consent_otp_secondary_doctor_idTodoctors doctors?                             @relation("patient_consent_otp_secondary_doctor_idTodoctors", fields: [secondary_doctor_id], references: [id], onDelete: Cascade)
-  hsps                                                     hsps?                                @relation(fields: [secondary_hsp_id], references: [id], onDelete: Cascade)
+  secondary_doctor_assignments                             SecondaryDoctorAssignments            @relation(fields: [secondary_assignment_id], references: [id], onDelete: Cascade)
+  doctors_patient_consent_otp_secondary_doctor_idTodoctors Doctor?                             @relation("patient_consent_otp_secondary_doctor_idTodoctors", fields: [secondary_doctor_id], references: [id], onDelete: Cascade)
+  Hsp                                                     HSP?                                @relation(fields: [secondary_hsp_id], references: [id], onDelete: Cascade)
 
   @@index([expires_at], map: "patient_consent_otp_expires_at")
   @@index([generated_at], map: "patient_consent_otp_generated_at")
@@ -1258,9 +1267,10 @@ model patient_consent_otp {
   @@index([patient_id], map: "patient_consent_otp_patient_id")
   @@index([requested_by_user_id], map: "patient_consent_otp_requested_by_user_id")
   @@index([secondary_assignment_id], map: "patient_consent_otp_secondary_assignment_id")
+  @@map("PatientConsentOtp")
 }
 
-model patient_provider_assignments {
+model PatientProviderAssignments {
   id                   String             @id @db.Uuid
   patient_id           String             @db.Uuid
   provider_id          String             @db.Uuid
@@ -1274,10 +1284,11 @@ model patient_provider_assignments {
   healthcare_providers HealthcareProvider @relation(fields: [provider_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
   @@unique([patient_id, provider_id, role, ended_at], map: "patient_provider_role_unique")
+  @@map("PatientProviderAssignments")
 }
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
-model patient_provider_consent_history {
+model PatientProviderConsentHistory {
   id                                                                                 String                                                @id @db.Uuid
   patient_id                                                                         String                                                @db.Uuid
   previous_provider_id                                                               String?                                               @db.Uuid
@@ -1289,7 +1300,7 @@ model patient_provider_consent_history {
   consent_requested_at                                                               DateTime?                                             @db.Timestamptz(6)
   consent_given                                                                      Boolean?                                              @default(false)
   consent_given_at                                                                   DateTime?                                             @db.Timestamptz(6)
-  consent_method                                                                     enum_patient_provider_consent_history_consent_method?
+  consent_method                                                                     PatientProviderConsentMethod?
   consent_token                                                                      String?                                               @db.VarChar(100)
   consent_token_expires_at                                                           DateTime?                                             @db.Timestamptz(6)
   consent_verified                                                                   Boolean?                                              @default(false)
@@ -1297,12 +1308,12 @@ model patient_provider_consent_history {
   consent_denied_at                                                                  DateTime?                                             @db.Timestamptz(6)
   reason                                                                             String?
   initiated_by                                                                       String?                                               @db.Uuid
-  status                                                                             enum_patient_provider_consent_history_status?         @default(pending)
+  status                                                                             PatientProviderConsentStatus?         @default(pending)
   metadata                                                                           Json?                                                 @default("{}")
   created_at                                                                         DateTime?                                             @db.Timestamptz(6)
   updated_at                                                                         DateTime?                                             @db.Timestamptz(6)
-  doctors                                                                            doctors?                                              @relation(fields: [doctor_id], references: [id], onUpdate: NoAction)
-  hsps                                                                               hsps?                                                 @relation(fields: [hsp_id], references: [id], onUpdate: NoAction)
+  Doctor                                                                            Doctor?                                              @relation(fields: [doctor_id], references: [id], onUpdate: NoAction)
+  Hsp                                                                               HSP?                                                 @relation(fields: [hsp_id], references: [id], onUpdate: NoAction)
   organizations_patient_provider_consent_history_new_provider_idToorganizations      Organization                                          @relation("patient_provider_consent_history_new_provider_idToorganizations", fields: [new_provider_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
   patients                                                                           Patient                                               @relation(fields: [patient_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
   organizations_patient_provider_consent_history_previous_provider_idToorganizations Organization?                                         @relation("patient_provider_consent_history_previous_provider_idToorganizations", fields: [previous_provider_id], references: [id], onUpdate: NoAction)
@@ -1312,13 +1323,14 @@ model patient_provider_consent_history {
   @@index([hsp_id], map: "patient_provider_consent_history_hsp_id")
   @@index([new_provider_id], map: "patient_provider_consent_history_new_provider_id")
   @@index([patient_id, status], map: "patient_provider_consent_history_patient_id_status")
+  @@map("PatientProviderConsentHistory")
 }
 
-model payment_methods {
+model PaymentMethods {
   id                       String                    @id @db.Uuid
   patient_id               String                    @db.Uuid
   stripe_payment_method_id String                    @unique @db.VarChar(255)
-  type                     enum_payment_methods_type
+  type                     PaymentMethodType
   card_brand               String?                   @db.VarChar(50)
   card_last4               String?                   @db.VarChar(4)
   card_exp_month           Int?
@@ -1339,17 +1351,18 @@ model payment_methods {
   @@index([patient_id], map: "payment_methods_patient_id")
   @@index([stripe_payment_method_id], map: "payment_methods_stripe_payment_method_id")
   @@index([type], map: "payment_methods_type")
+  @@map("PaymentMethods")
 }
 
-model payments {
+model Payments {
   id                       String                       @id @db.Uuid
   subscription_id          String                       @db.Uuid
   patient_id               String                       @db.Uuid
   provider_id              String                       @db.Uuid
   amount                   Decimal                      @db.Decimal(10, 2)
   currency                 String?                      @default("USD") @db.VarChar(3)
-  status                   enum_payments_status?        @default(pending)
-  payment_method           enum_payments_payment_method
+  status                   PaymentStatus?        @default(pending)
+  payment_method           PaymentMethod
   stripe_payment_intent_id String?                      @unique @db.VarChar(255)
   stripe_charge_id         String?                      @db.VarChar(255)
   failure_code             String?                      @db.VarChar(100)
@@ -1375,12 +1388,13 @@ model payments {
   @@index([status], map: "payments_status")
   @@index([stripe_payment_intent_id], map: "payments_stripe_payment_intent_id")
   @@index([subscription_id], map: "payments_subscription_id")
+  @@map("Payments")
 }
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
-model provider_change_history {
+model ProviderChangeHistory {
   id                                                                        String                                         @id @db.Uuid
-  practitioner_type                                                         enum_provider_change_history_practitioner_type
+  practitioner_type                                                         ProviderChangeHistoryPractitionerType
   practitioner_id                                                           String                                         @db.Uuid
   previous_provider_id                                                      String?                                        @db.Uuid
   new_provider_id                                                           String                                         @db.Uuid
@@ -1389,7 +1403,7 @@ model provider_change_history {
   consent_required_count                                                    Int?                                           @default(0)
   consent_obtained_count                                                    Int?                                           @default(0)
   reason                                                                    String?
-  status                                                                    enum_provider_change_history_status?           @default(active)
+  status                                                                    ProviderChangeHistoryStatus?           @default(active)
   created_at                                                                DateTime?                                      @db.Timestamptz(6)
   updated_at                                                                DateTime?                                      @db.Timestamptz(6)
   organizations_provider_change_history_new_provider_idToorganizations      Organization                                   @relation("provider_change_history_new_provider_idToorganizations", fields: [new_provider_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
@@ -1399,9 +1413,10 @@ model provider_change_history {
   @@index([new_provider_id], map: "provider_change_history_new_provider_id")
   @@index([practitioner_type, practitioner_id], map: "provider_change_history_practitioner_type_practitioner_id")
   @@index([status], map: "provider_change_history_status")
+  @@map("ProviderChangeHistory")
 }
 
-model providers {
+model Providers {
   id           String    @id @db.Uuid
   user_id      String    @db.Uuid
   name         String    @db.VarChar(100)
@@ -1416,15 +1431,16 @@ model providers {
   users        User      @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
   @@index([user_id], map: "providers_user_id")
+  @@map("Providers")
 }
 
-model schedule_events {
+model ScheduleEvents {
   id         String                           @id @db.Uuid
   critical   Boolean?
-  event_type enum_schedule_events_event_type?
+  event_type ScheduleEventType?
   event_id   String?                          @db.Uuid
   details    Json?                            @db.Json
-  status     enum_schedule_events_status      @default(pending)
+  status     ScheduleEventStatus      @default(pending)
   date       DateTime?                        @db.Date
   start_time DateTime?                        @db.Timestamptz(6)
   end_time   DateTime?                        @db.Timestamptz(6)
@@ -1435,20 +1451,21 @@ model schedule_events {
   @@index([event_id, event_type], map: "schedule_events_event_id_event_type")
   @@index([event_type, status, date, start_time], map: "schedule_events_event_type_status_date_start_time")
   @@index([status, date], map: "schedule_events_status_date")
+  @@map("ScheduleEvents")
 }
 
-model scheduled_events {
+model ScheduledEvents {
   id                String                           @id @db.Uuid
   patient_id        String                           @db.Uuid
   care_plan_id      String?                          @db.Uuid
-  event_type        enum_scheduled_events_event_type
+  event_type        ScheduledEventType
   event_id          String?                          @db.Uuid
   title             String                           @db.VarChar(255)
   description       String?
   scheduled_for     DateTime                         @db.Timestamptz(6)
   timezone          String?                          @default("UTC") @db.VarChar(50)
-  status            enum_scheduled_events_status?    @default(SCHEDULED)
-  priority          enum_scheduled_events_priority?  @default(MEDIUM)
+  status            ScheduledEventStatus?    @default(SCHEDULED)
+  priority          ScheduledEventPriority?  @default(MEDIUM)
   event_data        Json?                            @default("{}")
   completed_at      DateTime?                        @db.Timestamptz(6)
   completed_by      String?                          @db.Uuid
@@ -1463,10 +1480,11 @@ model scheduled_events {
   @@index([care_plan_id, scheduled_for, event_type], map: "idx_events_careplan_time_type")
   @@index([patient_id, scheduled_for, status], map: "idx_events_patient_time_status")
   @@index([care_plan_id], map: "scheduled_events_care_plan_id")
+  @@map("ScheduledEvents")
 }
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
-model secondary_doctor_assignments {
+model SecondaryDoctorAssignments {
   id                                                                                     String                                            @id @db.Uuid
   patient_id                                                                             String                                            @db.Uuid
   primary_doctor_id                                                                      String                                            @db.Uuid
@@ -1478,7 +1496,7 @@ model secondary_doctor_assignments {
   primary_doctor_provider_id                                                             String?                                           @db.Uuid
   secondary_doctor_provider_id                                                           String?                                           @db.Uuid
   consent_required                                                                       Boolean?                                          @default(true)
-  consent_status                                                                         enum_secondary_doctor_assignments_consent_status? @default(pending)
+  consent_status                                                                         SecondaryDoctorAssignmentConsentStatus? @default(pending)
   access_granted                                                                         Boolean?                                          @default(false)
   first_access_attempt_at                                                                DateTime?                                         @db.Timestamptz(6)
   access_granted_at                                                                      DateTime?                                         @db.Timestamptz(6)
@@ -1490,13 +1508,13 @@ model secondary_doctor_assignments {
   created_at                                                                             DateTime?                                         @db.Timestamptz(6)
   updated_at                                                                             DateTime?                                         @db.Timestamptz(6)
   deleted_at                                                                             DateTime?                                         @db.Timestamptz(6)
-  patient_consent_otp                                                                    patient_consent_otp[]
+  patient_consent_otp                                                                    PatientConsentOtp[]
   patients                                                                               Patient                                           @relation(fields: [patient_id], references: [id], onDelete: Cascade)
-  doctors_secondary_doctor_assignments_primary_doctor_idTodoctors                        doctors                                           @relation("secondary_doctor_assignments_primary_doctor_idTodoctors", fields: [primary_doctor_id], references: [id], onDelete: Cascade)
+  Doctor_secondary_doctor_assignments_primary_doctor_idToDoctor                        Doctor                                           @relation("secondary_doctor_assignments_primary_doctor_idToDoctor", fields: [primary_doctor_id], references: [id], onDelete: Cascade)
   organizations_secondary_doctor_assignments_primary_doctor_provider_idToorganizations   Organization?                                     @relation("secondary_doctor_assignments_primary_doctor_provider_idToorganizations", fields: [primary_doctor_provider_id], references: [id])
-  doctors_secondary_doctor_assignments_secondary_doctor_idTodoctors                      doctors?                                          @relation("secondary_doctor_assignments_secondary_doctor_idTodoctors", fields: [secondary_doctor_id], references: [id], onDelete: Cascade)
+  doctors_secondary_doctor_assignments_secondary_doctor_idTodoctors                      Doctor?                                          @relation("secondary_doctor_assignments_secondary_doctor_idTodoctors", fields: [secondary_doctor_id], references: [id], onDelete: Cascade)
   organizations_secondary_doctor_assignments_secondary_doctor_provider_idToorganizations Organization?                                     @relation("secondary_doctor_assignments_secondary_doctor_provider_idToorganizations", fields: [secondary_doctor_provider_id], references: [id])
-  hsps                                                                                   hsps?                                             @relation(fields: [secondary_hsp_id], references: [id], onDelete: Cascade)
+  Hsp                                                                                   HSP?                                             @relation(fields: [secondary_hsp_id], references: [id], onDelete: Cascade)
 
   @@index([access_granted], map: "secondary_doctor_assignments_access_granted")
   @@index([consent_expires_at], map: "secondary_doctor_assignments_consent_expires_at")
@@ -1506,10 +1524,11 @@ model secondary_doctor_assignments {
   @@index([primary_doctor_id], map: "secondary_doctor_assignments_primary_doctor_id")
   @@index([secondary_doctor_id], map: "secondary_doctor_assignments_secondary_doctor_id")
   @@index([secondary_hsp_id], map: "secondary_doctor_assignments_secondary_hsp_id")
+  @@map("SecondaryDoctorAssignments")
 }
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
-model symptoms_database {
+model SymptomsDatabase {
   id                  String    @id @db.Uuid
   diagnosis_name      String    @unique(map: "symptoms_database_diagnosis_name") @db.VarChar(255)
   symptoms            Json?     @default("{}")
@@ -1526,10 +1545,11 @@ model symptoms_database {
   @@index([category], map: "symptoms_database_category")
   @@index([is_active], map: "symptoms_database_is_active")
   @@index([symptoms], map: "symptoms_database_symptoms", type: Gin)
+  @@map("SymptomsDatabase")
 }
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
-model treatment_database {
+model TreatmentDatabase {
   id                    String    @id @db.Uuid
   treatment_name        String    @unique(map: "treatment_database_treatment_name") @db.VarChar(255)
   treatment_type        String    @db.VarChar(50)
@@ -1557,10 +1577,11 @@ model treatment_database {
   @@index([is_active], map: "treatment_database_is_active")
   @@index([severity_level], map: "treatment_database_severity_level")
   @@index([treatment_type], map: "treatment_database_treatment_type")
+  @@map("TreatmentDatabase")
 }
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
-model treatment_plans {
+model TreatmentPlans {
   id                     String         @id @db.Uuid
   patient_id             String         @db.Uuid
   doctor_id              String         @db.Uuid
@@ -1595,7 +1616,7 @@ model treatment_plans {
   updated_at             DateTime?      @db.Timestamptz(6)
   deleted_at             DateTime?      @db.Timestamptz(6)
   notifications          Notification[]
-  doctors                doctors        @relation(fields: [doctor_id], references: [id], onDelete: NoAction)
+  Doctor                Doctor        @relation(fields: [doctor_id], references: [id], onDelete: NoAction)
   organizations          Organization?  @relation(fields: [organization_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   patients               Patient        @relation(fields: [patient_id], references: [id], onDelete: Cascade)
 
@@ -1610,12 +1631,13 @@ model treatment_plans {
   @@index([start_date], map: "treatment_plans_start_date")
   @@index([status], map: "treatment_plans_status")
   @@index([symptoms], map: "treatment_plans_symptoms", type: Gin)
+  @@map("TreatmentPlans")
 }
 
-model user_roles {
+model UserRoles {
   id            String                       @id @db.Uuid
   user_identity String                       @db.Uuid
-  linked_with   enum_user_roles_linked_with?
+  linked_with   UserRoleLinkedWith?
   linked_id     String?                      @db.Uuid
   created_at    DateTime                     @db.Timestamptz(6)
   updated_at    DateTime                     @db.Timestamptz(6)
@@ -1623,9 +1645,10 @@ model user_roles {
   users         User                         @relation(fields: [user_identity], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
   @@index([user_identity, linked_with], map: "idx_userroles_identity_linked")
+  @@map("UserRoles")
 }
 
-model vital_requirements {
+model VitalRequirements {
   id               String    @id @db.Uuid
   care_plan_id     String    @db.Uuid
   vital_type_id    String    @db.Uuid
@@ -1643,9 +1666,10 @@ model vital_requirements {
   @@index([frequency], map: "vital_requirements_frequency")
   @@index([is_critical], map: "vital_requirements_is_critical")
   @@index([vital_type_id], map: "vital_requirements_vital_type_id")
+  @@map("VitalRequirements")
 }
 
-model vital_templates {
+model VitalTemplates {
   id         String    @id @db.Uuid
   name       String    @db.VarChar(255)
   unit       String?   @db.VarChar(255)
@@ -1653,10 +1677,12 @@ model vital_templates {
   created_at DateTime  @db.Timestamptz(6)
   updated_at DateTime  @db.Timestamptz(6)
   deleted_at DateTime? @db.Timestamptz(6)
-  vitals     vitals[]
+  vitals     Vitals[]
+
+  @@map("VitalTemplates")
 }
 
-model vitals {
+model Vitals {
   id                String          @id @db.Uuid
   vital_template_id String          @db.Uuid
   care_plan_id      String          @db.Uuid
@@ -1668,13 +1694,14 @@ model vitals {
   updated_at        DateTime        @db.Timestamptz(6)
   deleted_at        DateTime?       @db.Timestamptz(6)
   care_plans        CarePlan        @relation(fields: [care_plan_id], references: [id], onDelete: NoAction)
-  vital_templates   vital_templates @relation(fields: [vital_template_id], references: [id], onDelete: NoAction)
+  vital_templates   VitalTemplates @relation(fields: [vital_template_id], references: [id], onDelete: NoAction)
 
   @@index([care_plan_id], map: "vitals_care_plan_id")
   @@index([vital_template_id], map: "vitals_vital_template_id")
+  @@map("Vitals")
 }
 
-enum enum_adherence_records_adherence_type {
+enum AdherenceType {
   MEDICATION
   APPOINTMENT
   VITAL_CHECK
@@ -1684,14 +1711,14 @@ enum enum_adherence_records_adherence_type {
   REMINDER
 }
 
-enum enum_appointment_slots_slot_type {
+enum AppointmentSlotType {
   regular
   emergency
   consultation
   follow_up
 }
 
-enum enum_appointments_organizer_type {
+enum AppointmentOrganizerType {
   doctor
   patient
   care_taker
@@ -1700,33 +1727,33 @@ enum enum_appointments_organizer_type {
   admin
 }
 
-enum enum_appointments_participant_one_type {
+enum AppointmentParticipantOneType {
   doctor
   patient
   hsp
 }
 
-enum enum_appointments_participant_two_type {
+enum AppointmentParticipantTwoType {
   doctor
   patient
   hsp
 }
 
-enum enum_dashboard_metrics_entity_type {
+enum DashboardMetricsEntityType {
   patient
   doctor
   organization
   system
 }
 
-enum enum_medication_logs_adherence_status {
+enum MedicationLogAdherenceStatus {
   taken
   missed
   late
   partial
 }
 
-enum enum_medications_organizer_type {
+enum MedicationOrganizerType {
   doctor
   patient
   care_taker
@@ -1735,7 +1762,7 @@ enum enum_medications_organizer_type {
   admin
 }
 
-enum enum_patient_alerts_alert_type {
+enum PatientAlertType {
   medication
   vital
   appointment
@@ -1743,20 +1770,20 @@ enum enum_patient_alerts_alert_type {
   system
 }
 
-enum enum_patient_alerts_severity {
+enum PatientAlertSeverity {
   critical
   high
   medium
   low
 }
 
-enum enum_patient_consent_otp_otp_method {
+enum PatientConsentOtpMethod {
   sms
   email
   both
 }
 
-enum enum_patient_provider_consent_history_consent_method {
+enum PatientProviderConsentMethod {
   sms
   email
   in_person
@@ -1764,7 +1791,7 @@ enum enum_patient_provider_consent_history_consent_method {
   automatic
 }
 
-enum enum_patient_provider_consent_history_status {
+enum PatientProviderConsentStatus {
   pending
   consent_requested
   approved
@@ -1773,7 +1800,7 @@ enum enum_patient_provider_consent_history_status {
   completed
 }
 
-enum enum_patient_subscriptions_status {
+enum PatientSubscriptionStatus {
   ACTIVE
   INACTIVE
   PAST_DUE
@@ -1782,7 +1809,7 @@ enum enum_patient_subscriptions_status {
   TRIALING
 }
 
-enum enum_patients_provider_consent_method {
+enum PatientProviderConsentMethodLegacy {
   sms
   email
   in_person
@@ -1790,13 +1817,13 @@ enum enum_patients_provider_consent_method {
   automatic
 }
 
-enum enum_payment_methods_type {
+enum PaymentMethodType {
   card
   bank_account
   paypal
 }
 
-enum enum_payments_payment_method {
+enum PaymentMethod {
   card
   bank_account
   paypal
@@ -1804,7 +1831,7 @@ enum enum_payments_payment_method {
   google_pay
 }
 
-enum enum_payments_status {
+enum PaymentStatus {
   pending
   processing
   succeeded
@@ -1813,18 +1840,18 @@ enum enum_payments_status {
   refunded
 }
 
-enum enum_provider_change_history_practitioner_type {
+enum ProviderChangeHistoryPractitionerType {
   doctor
   hsp
 }
 
-enum enum_provider_change_history_status {
+enum ProviderChangeHistoryStatus {
   active
   processing
   completed
 }
 
-enum enum_schedule_events_event_type {
+enum ScheduleEventType {
   appointment
   reminder
   medication_reminder @map("medication-reminder")
@@ -1834,7 +1861,7 @@ enum enum_schedule_events_event_type {
   workout
 }
 
-enum enum_schedule_events_status {
+enum ScheduleEventStatus {
   scheduled
   pending
   completed
@@ -1844,7 +1871,7 @@ enum enum_schedule_events_status {
   prior
 }
 
-enum enum_scheduled_events_event_type {
+enum ScheduledEventType {
   MEDICATION
   APPOINTMENT
   VITAL_CHECK
@@ -1854,14 +1881,14 @@ enum enum_scheduled_events_event_type {
   REMINDER
 }
 
-enum enum_scheduled_events_priority {
+enum ScheduledEventPriority {
   LOW
   MEDIUM
   HIGH
   CRITICAL
 }
 
-enum enum_scheduled_events_status {
+enum ScheduledEventStatus {
   SCHEDULED
   PENDING
   IN_PROGRESS
@@ -1871,14 +1898,14 @@ enum enum_scheduled_events_status {
   EXPIRED
 }
 
-enum enum_patient_doctor_assignment_type {
+enum PatientDoctorAssignmentType {
   PRIMARY
   SPECIALIST
   SUBSTITUTE
   TRANSFERRED
 }
 
-enum enum_patient_doctor_assignment_consent_status {
+enum PatientDoctorAssignmentConsentStatus {
   NOT_REQUIRED
   PENDING
   REQUESTED
@@ -1887,7 +1914,7 @@ enum enum_patient_doctor_assignment_consent_status {
   EXPIRED
 }
 
-enum enum_secondary_doctor_assignments_consent_status {
+enum SecondaryDoctorAssignmentConsentStatus {
   pending
   requested
   granted
@@ -1895,14 +1922,14 @@ enum enum_secondary_doctor_assignments_consent_status {
   expired
 }
 
-enum enum_service_plans_billing_cycle {
+enum ServicePlanBillingCycle {
   monthly
   yearly
   one_time @map("one-time")
   weekly
 }
 
-enum enum_user_roles_linked_with {
+enum UserRoleLinkedWith {
   doctor
   patient
   care_taker
@@ -1911,7 +1938,7 @@ enum enum_user_roles_linked_with {
   admin
 }
 
-enum enum_users_account_status {
+enum UserAccountStatus {
   PENDING_VERIFICATION
   ACTIVE
   INACTIVE
@@ -1919,14 +1946,14 @@ enum enum_users_account_status {
   DEACTIVATED
 }
 
-enum enum_users_gender {
+enum UserGender {
   MALE
   FEMALE
   OTHER
   PREFER_NOT_TO_SAY
 }
 
-enum enum_users_role {
+enum UserRole {
   SYSTEM_ADMIN
   HOSPITAL_ADMIN
   DOCTOR
@@ -1935,7 +1962,7 @@ enum enum_users_role {
   CAREGIVER
 }
 
-enum enum_vital_readings_alert_level {
+enum VitalReadingAlertLevel {
   normal
   warning
   critical
@@ -1968,7 +1995,7 @@ model DrugInteraction {
   @@unique([rxcui_one, rxcui_two])
   @@index([severity_level])
   @@index([drug_name_one, drug_name_two])
-  @@map("drug_interactions")
+  @@map("DrugInteractions")
 }
 
 model PatientAllergy {
@@ -1993,7 +2020,7 @@ model PatientAllergy {
 
   @@index([patient_id, is_active])
   @@index([allergen_type, allergen_name])
-  @@map("patient_allergies")
+  @@map("PatientAllergies")
 }
 
 model MedicationSafetyAlert {
@@ -2031,7 +2058,7 @@ model MedicationSafetyAlert {
   @@index([patient_id, severity, resolved])
   @@index([alert_type, created_at])
   @@index([resolved, created_at])
-  @@map("medication_safety_alerts")
+  @@map("MedicationSafetyAlerts")
 }
 
 // ============================================================================
@@ -2077,7 +2104,7 @@ model EmergencyAlert {
   @@index([patient_id, priority_level, acknowledged, resolved])
   @@index([alert_type, created_at])
   @@index([resolved, created_at])
-  @@map("emergency_alerts")
+  @@map("EmergencyAlerts")
 }
 
 model VitalAlertRule {
@@ -2113,7 +2140,7 @@ model VitalAlertRule {
 
   @@index([vital_type, is_active])
   @@index([alert_level])
-  @@map("vital_alert_rules")
+  @@map("VitalAlertRules")
 }
 
 model EmergencyContact {
@@ -2141,7 +2168,7 @@ model EmergencyContact {
 
   @@index([patient_id, priority_order])
   @@index([patient_id, is_active])
-  @@map("emergency_contacts")
+  @@map("EmergencyContacts")
 }
 
 // ============================================================================
@@ -2362,7 +2389,7 @@ model VideoConsultation {
   updated_at            DateTime            @updatedAt @db.Timestamptz(6)
   
   // Relations
-  doctor                doctors             @relation(fields: [doctor_id], references: [id], onDelete: Cascade)
+  doctor                Doctor             @relation(fields: [doctor_id], references: [id], onDelete: Cascade)
   patient               Patient             @relation(fields: [patient_id], references: [id], onDelete: Cascade)
   appointment           Appointment?        @relation(fields: [appointment_id], references: [id])
   creator               User                @relation("ConsultationCreatedBy", fields: [created_by], references: [id])
@@ -2374,7 +2401,7 @@ model VideoConsultation {
   @@index([patient_id, status])
   @@index([status, scheduled_start])
   @@index([consultation_type, priority])
-  @@map("video_consultations")
+  @@map("VideoConsultations")
 }
 
 model ConsultationPrescription {
@@ -2399,7 +2426,7 @@ model ConsultationPrescription {
   consultation          VideoConsultation   @relation(fields: [consultation_id], references: [id], onDelete: Cascade)
   
   @@index([consultation_id])
-  @@map("consultation_prescriptions")
+  @@map("ConsultationPrescriptions")
 }
 
 model ConsultationNote {
@@ -2415,7 +2442,7 @@ model ConsultationNote {
   creator               User                @relation("ConsultationNoteCreatedBy", fields: [created_by], references: [id])
   
   @@index([consultation_id, note_type])
-  @@map("consultation_notes")
+  @@map("ConsultationNotes")
 }
 
 model LabOrder {
@@ -2454,14 +2481,14 @@ model LabOrder {
   
   // Relations
   patient               Patient             @relation(fields: [patient_id], references: [id], onDelete: Cascade)
-  doctor                doctors             @relation(fields: [doctor_id], references: [id])
+  doctor                Doctor             @relation(fields: [doctor_id], references: [id])
   consultation          VideoConsultation? @relation(fields: [consultation_id], references: [id])
   results               LabResult[]
   
   @@index([patient_id, status])
   @@index([doctor_id, order_date])
   @@index([status, expected_result_date])
-  @@map("lab_orders")
+  @@map("LabOrders")
 }
 
 model LabResult {
@@ -2499,7 +2526,7 @@ model LabResult {
   @@index([lab_order_id])
   @@index([test_name, result_date])
   @@index([critical_flag, result_date])
-  @@map("lab_results")
+  @@map("LabResults")
 }
 
 model PatientGameProfile {
@@ -2541,7 +2568,7 @@ model PatientGameProfile {
   
   @@index([total_points, current_level])
   @@index([patient_id, last_activity])
-  @@map("patient_game_profiles")
+  @@map("PatientGameProfiles")
 }
 
 model GameBadgeAward {
@@ -2563,7 +2590,7 @@ model GameBadgeAward {
   
   @@index([patient_id, awarded_date])
   @@index([badge_type])
-  @@map("game_badge_awards")
+  @@map("GameBadgeAwards")
 }
 
 model GameChallengeProgress {
@@ -2595,7 +2622,7 @@ model GameChallengeProgress {
   
   @@index([patient_id, is_completed])
   @@index([challenge_type, end_date])
-  @@map("game_challenge_progress")
+  @@map("GameChallengeProgress")
 }
 
 // Phase 3: IoT Device Integration Models
@@ -2643,7 +2670,7 @@ model ConnectedDevice {
   @@unique([patient_id, device_identifier])
   @@index([plugin_id, device_type])
   @@index([patient_id, connection_status])
-  @@map("connected_devices")
+  @@map("ConnectedDevices")
 }
 
 model DeviceReading {
@@ -2696,7 +2723,7 @@ model DeviceReading {
   @@index([device_id, measurement_timestamp])
   @@index([plugin_id, reading_type])
   @@index([triggered_alerts, measurement_timestamp])
-  @@map("device_readings")
+  @@map("DeviceReadings")
 }
 
 model DevicePlugin {
@@ -2723,6 +2750,6 @@ model DevicePlugin {
   last_updated            DateTime          @updatedAt @db.Timestamptz(6)
   usage_count             Int               @default(0)
   
-  @@map("device_plugins")
+  @@map("DevicePlugins")
 }
 
