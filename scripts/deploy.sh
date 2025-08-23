@@ -5,7 +5,7 @@
 # Purpose: Unified deployment for dev, test, and production environments using Docker Swarm
 #
 # IMPORTANT: Ensure your docker-stack.*.yml files use consistent PostgreSQL versions
-# The script defaults to PostgreSQL 15. Set POSTGRES_VERSION in your .env file to override.
+# The script defaults to PostgreSQL 17. Set POSTGRES_VERSION in your .env file to override.
 #
 # Key Features:
 # - Early database startup: PostgreSQL and Redis start during app build
@@ -635,7 +635,7 @@ pull_base_images() {
     local BASE_IMAGES=(
         "node:22-alpine"                        # Application base image
         "postgres:${POSTGRES_VERSION}-alpine"   # PostgreSQL database
-        "redis:7-alpine"                        # Redis cache
+        "redis:7.2-alpine"                        # Redis cache
         "dpage/pgadmin4:latest"                # PgAdmin interface
     )
 

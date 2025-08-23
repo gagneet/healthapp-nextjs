@@ -64,7 +64,7 @@ docker-compose --version
 
 ### Technology Stack
 - **Full-Stack**: Next.js 14 with TypeScript (unified frontend/backend)
-- **Database**: PostgreSQL 15 with Prisma ORM
+- **Database**: PostgreSQL 17 with Prisma ORM
 - **Authentication**: NextAuth.js with PrismaAdapter and database sessions  
 - **Cache**: Redis for enhanced session management and caching
 - **Orchestration**: Docker Compose (local) / Docker Swarm (dev/test/prod)

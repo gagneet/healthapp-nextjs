@@ -1090,4 +1090,4 @@ This framework provides a comprehensive foundation for building a robust Patient
 
 - *Next.js Healthcare Management Platform - Production-ready full-stack application with NextAuth.js, Prisma, and PostgreSQL*
 
-**Last updated: August 2025** | Next.js 14 | PostgreSQL 15+ | NextAuth.js | TypeScript
+**Last updated: August 2025** | Next.js 14 | PostgreSQL 17+ | NextAuth.js | TypeScript

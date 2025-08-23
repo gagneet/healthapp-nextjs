@@ -3,7 +3,7 @@ version: '3.8'
 services:
   # PostgreSQL Database (Production)
   postgres:
-    image: postgres:15-alpine
+    image: postgres:17-alpine
     container_name: healthapp-postgres-prod
     environment:
       POSTGRES_DB: healthapp_prod
@@ -32,7 +32,7 @@ services:
 
   # Redis Cache (Production)
   redis:
-    image: redis:7-alpine
+    image: redis:7.2-alpine
     container_name: healthapp-redis-prod
     environment:
       REDIS_PASSWORD: ${REDIS_PASSWORD:-CHANGE_THIS_REDIS_PRODUCTION_PASSWORD}
@@ -124,7 +124,7 @@ services:
 
   # Backup Service (Production)
   backup:
-    image: postgres:15-alpine
+    image: postgres:17-alpine
     container_name: healthapp-backup-prod
     environment:
       POSTGRES_DB: healthapp_prod

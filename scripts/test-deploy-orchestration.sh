@@ -28,8 +28,8 @@ echo -e "${YELLOW}1. Checking for Image Management Functions:${NC}"
 if grep -q "pull_base_images()" "$SCRIPT_DIR/deploy.sh"; then
     echo -e "${GREEN}✓${NC} pull_base_images() function exists"
     echo "  - Pulls node:22-alpine for application"
-    echo "  - Pulls postgres:15-alpine for database"
-    echo "  - Pulls redis:7-alpine for cache"
+    echo "  - Pulls postgres:17-alpine for database"
+    echo "  - Pulls redis:7.2-alpine for cache"
     echo "  - Pulls dpage/pgadmin4:latest for admin interface"
 else
     echo "✗ pull_base_images() function not found"

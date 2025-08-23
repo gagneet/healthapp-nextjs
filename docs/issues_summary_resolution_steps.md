@@ -1253,7 +1253,7 @@ Recommendation: Use local PostgreSQL for VM deployment - it provides the best pe
     - Updated authentication from custom JWT → NextAuth.js with healthcare roles
   2. Technology Stack Updates:
     - Frontend + Backend: Single Next.js 14 application with API routes
-    - Database: PostgreSQL 15+ with Prisma for type-safe operations
+    - Database: PostgreSQL 17+ with Prisma for type-safe operations
     - Authentication: NextAuth.js with role-based healthcare workflows
     - TypeScript: End-to-end type safety throughout
   3. Deployment Options:

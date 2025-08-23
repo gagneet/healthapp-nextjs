@@ -138,7 +138,7 @@ else
         -e POSTGRES_USER=healthapp_user \
         -e POSTGRES_PASSWORD=pg_password \
         -p 5432:5432 \
-        postgres:15-alpine
+        postgres:17-alpine
     
     echo -e "${YELLOW}⏳ Waiting for PostgreSQL to be ready...${NC}"
     sleep 10

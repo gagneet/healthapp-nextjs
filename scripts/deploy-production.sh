@@ -337,7 +337,7 @@ services:
           - node.role == manager
 
   postgres:
-    image: postgres:15-alpine
+    image: postgres:17-alpine
     environment:
       POSTGRES_DB: ${APP_NAME}_prod
       POSTGRES_USER: ${APP_NAME}_user
@@ -365,7 +365,7 @@ services:
           memory: 1G
 
   redis:
-    image: redis:7-alpine
+    image: redis:7.2-alpine
     command: redis-server --requirepass \${REDIS_PASSWORD} --appendonly yes
     volumes:
       - redis_prod_data:/data

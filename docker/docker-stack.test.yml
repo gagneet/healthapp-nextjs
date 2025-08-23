@@ -48,7 +48,7 @@ services:
                -c logging_collector=off
 
   redis:
-    image: redis:7-alpine
+    image: redis:7.2-alpine
     volumes:
       - redis_test_data:/data
     ports:
