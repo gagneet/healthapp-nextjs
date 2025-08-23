@@ -12,8 +12,8 @@ async function renameTablesQuick() {
       'ALTER TABLE "users" RENAME TO "Users"',
       'ALTER TABLE "organizations" RENAME TO "Organizations"', 
       'ALTER TABLE "patients" RENAME TO "Patients"',
-      'ALTER TABLE "doctors" RENAME TO "Doctor"',
-      'ALTER TABLE "hsps" RENAME TO "Hsp"',
+      'ALTER TABLE "doctors" RENAME TO "Doctors"',
+      'ALTER TABLE "hsps" RENAME TO "HSPs"',
       'ALTER TABLE "specialities" RENAME TO "Specialities"',
       
       // Key medical tables
