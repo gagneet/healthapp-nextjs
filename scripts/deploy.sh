@@ -503,17 +503,26 @@ cleanup_compiled_files() {
 manual_cleanup_compiled_files() {
     log_info "Manually removing compiled TypeScript files..."
     
-    # Remove compiled JS files from lib/ (except seed files)
-    find lib -name '*.js' -not -name 'seed.js' -not -name 'seed.cjs' -delete 2>/dev/null || true
+    # Whitelist of legitimate JS files to preserve
+    PRESERVE_JS_FILES=("seed.js" "seed.cjs" "migrate.js" "config.js")
     
-    # Remove compiled JS files from app/
-    find app -name '*.js' -delete 2>/dev/null || true
+    # Build find exclusion arguments
+    FIND_EXCLUDE_ARGS=""
+    for fname in "${PRESERVE_JS_FILES[@]}"; do
+        FIND_EXCLUDE_ARGS+=" -not -name '$fname'"
+    done
     
-    # Remove compiled JS files from scripts/
-    find scripts -name '*.js' -delete 2>/dev/null || true
+    # Remove compiled JS files from lib/ (except whitelisted files)
+    eval "find lib -name '*.js' $FIND_EXCLUDE_ARGS -delete 2>/dev/null || true"
+    
+    # Remove compiled JS files from app/ (except whitelisted files)
+    eval "find app -name '*.js' $FIND_EXCLUDE_ARGS -delete 2>/dev/null || true"
+    
+    # Remove compiled JS files from scripts/ (except whitelisted files)
+    eval "find scripts -name '*.js' $FIND_EXCLUDE_ARGS -delete 2>/dev/null || true"
     
     # Count remaining JS files to verify cleanup
-    local remaining_js=$(find lib app scripts -name '*.js' -not -name 'seed.js' -not -name 'seed.cjs' 2>/dev/null | wc -l)
+    local remaining_js=$(eval "find lib app scripts -name '*.js' $FIND_EXCLUDE_ARGS 2>/dev/null" | wc -l)
     
     if [ "$remaining_js" -eq 0 ]; then
         log_success "All compiled TypeScript files removed"
