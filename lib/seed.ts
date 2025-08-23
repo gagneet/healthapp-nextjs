@@ -1,14 +1,25 @@
-// lib/seed.ts - Robust Prisma-based seeding for comprehensive healthcare test data
-import { PrismaClient } from '@prisma/client';
+// lib/seed.ts - Comprehensive Healthcare Test Data Seeding with Updated Schema
+import { PrismaClient, AdherenceType, UserRole, UserAccountStatus, UserGender, MedicationOrganizerType } from '@prisma/client';
 import * as bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
+
+// Helper functions for realistic dates
+const getRandomPastDate = (minDaysAgo = 7, maxDaysAgo = 90): Date => {
+    const now = new Date();
+    const minDate = new Date(now.getTime() - maxDaysAgo * 24 * 60 * 60 * 1000);
+    const maxDate = new Date(now.getTime() - minDaysAgo * 24 * 60 * 60 * 1000);
+    return new Date(minDate.getTime() + Math.random() * (maxDate.getTime() - minDate.getTime()));
+};
+
+const getRecentDate = (): Date => getRandomPastDate(1, 7);
+const getTodayDate = (): Date => new Date();
+const getFutureDate = (daysAhead = 1): Date => new Date(Date.now() + daysAhead * 24 * 60 * 60 * 1000);
 
 // Add retry logic and table verification
 async function waitForTables(maxRetries = 10, delay = 1000): Promise<boolean> {
     for (let i = 0; i < maxRetries; i++) {
         try {
-            // Try to access the User table with a simple count
             await prisma.user.count();
             console.log('✅ Database tables are ready');
             return true;
@@ -24,104 +35,31 @@ async function waitForTables(maxRetries = 10, delay = 1000): Promise<boolean> {
     throw new Error('Database tables not ready after maximum retries');
 }
 
-// Verify table exists before proceeding
-async function verifyTableExists(tableName: string): Promise<boolean> {
-    try {
-        const result = await prisma.$queryRaw`
-      SELECT table_name 
-      FROM information_schema.tables 
-      WHERE table_schema = 'public' 
-      AND table_name = ${tableName}
-    ` as any[];
-        return Array.isArray(result) && result.length > 0;
-    } catch (error) {
-        console.error(`Error checking table ${tableName}:`, error);
-        return false;
-    }
-}
-
 // Generate secure password hash
 async function generateSecurePasswordHash(password: string): Promise<string> {
-    const saltRounds = 12; // Higher security for production
+    const saltRounds = 12;
     return await bcrypt.hash(password, saltRounds);
 }
 
 export async function seedComprehensiveHealthcareData() {
-    console.log('📊 Seeding comprehensive healthcare test data...');
+    console.log('📊 Seeding comprehensive healthcare test data with updated schema...');
 
     try {
-        // Wait for tables to be ready
         await waitForTables();
 
-        // Verify critical tables exist with all possible variations
-        const requiredTables = ['Users', 'users', 'User']; // Check all possible variations
-        let userTableExists = false;
-        let actualTableName = '';
-
-        for (const tableName of requiredTables) {
-            if (await verifyTableExists(tableName)) {
-                userTableExists = true;
-                actualTableName = tableName;
-                break;
-            }
-        }
-
-        if (!userTableExists) {
-            // List all available tables for debugging
-            const allTables = await prisma.$queryRaw`
-        SELECT table_name 
-        FROM information_schema.tables 
-        WHERE table_schema = 'public' 
-        ORDER BY table_name
-      ` as any[];
-
-            console.log('🔍 Available tables in database:', allTables.map((t: any) => t.table_name));
-            throw new Error('User table not found in database. Please check your migrations.');
-        }
-
-        console.log(`✅ Found user table: ${actualTableName}`);
-
-        // Force Prisma Client regeneration by reconnecting
-        console.log('🔄 Ensuring Prisma Client is up to date...');
-        await prisma.$disconnect();
-        await prisma.$connect();
-
-        // Check if data already exists - First ensure database tables exist
-        let existingUsers;
-        try {
-            existingUsers = await prisma.user.findMany({
-                where: {
-                    email: {
-                        in: [
-                            'doctor@healthapp.com',
-                            'doctor1@healthapp.com',
-                            'patient1@healthapp.com',
-                            'patient2@healthapp.com',
-                            'patient3@healthapp.com',
-                            'patient4@healthapp.com',
-                            'patient5@healthapp.com',
-                            'doctor2@healthapp.com',
-                            'hsp@healthapp.com',
-                            'admin@healthapp.com',
-                            'provider@healthapp.com'
-                        ]
-                    }
+        // Check if data already exists
+        const existingUsers = await prisma.user.findMany({
+            where: {
+                email: {
+                    in: [
+                        'doctor@healthapp.com',
+                        'doctor1@healthapp.com',
+                        'patient1@healthapp.com',
+                        'admin@healthapp.com'
+                    ]
                 }
-            });
-        } catch (error: any) {
-            console.log('🔍 Debug - Error details:', {
-                code: error.code,
-                message: error.message,
-                name: error.name
-            });
-
-            if (error.code === 'P2021') {
-                console.log('⚠️ Database tables do not exist. Please run migrations first.');
-                console.log('Run: npx prisma migrate deploy');
-                throw new Error('Database not migrated. Run migrations before seeding.');
             }
-            throw error;
-        }
+        });
 
         if (existingUsers.length > 0) {
             console.log(`ℹ️ Test data already exists (${existingUsers.length} users found), skipping seeding`);
@@ -132,218 +70,222 @@ export async function seedComprehensiveHealthcareData() {
             };
         }
 
-        // Use environment variable or default test password for consistency
+        // Password setup
         const defaultPassword = process.env.SEED_DEFAULT_PASSWORD || 'TempPassword123!';
         const hashedPassword = await bcrypt.hash(defaultPassword, 12);
-
-        // Also create basic doctor accounts that deployment expects
         const basicDoctorPassword = await bcrypt.hash('TempPassword123!', 12);
 
-        // Helper function to create user with Auth.js v5 fields
+        // Helper function to create user with Auth.js v5 fields and updated schema
         const createUserData = (userData: any) => ({
             ...userData,
             // Auth.js v5 required fields
-            name: `${userData.first_name} ${userData.last_name}`.trim(),
-            emailVerified: userData.email_verified ? userData.created_at : null,
+            name: `${userData.firstName} ${userData.lastName}`.trim(),
+            emailVerified: userData.emailVerifiedLegacy ? userData.createdAt : null,
             image: null,
         });
 
-        // Create test users with all roles (idempotent)
+        // Create 12 users with specified roles
+        console.log('👥 Creating 12 users with specified roles...');
+        
         const testUsers = await prisma.user.createMany({
             skipDuplicates: true,
             data: [
-                // Basic doctor accounts needed for deployment
+                // 4 Doctors
                 createUserData({
                     id: '00000000-0000-0000-0000-000000000001',
                     email: 'doctor@healthapp.com',
-                    password_hash: basicDoctorPassword,
-                    role: 'DOCTOR',
-                    first_name: 'Dr. John',
-                    last_name: 'Smith',
+                    passwordHash: basicDoctorPassword,
+                    role: 'DOCTOR' as UserRole,
+                    firstName: 'Dr. John',
+                    lastName: 'Smith',
                     phone: '+1-555-0001',
-                    date_of_birth: new Date('1975-01-15'),
-                    gender: 'MALE',
-                    account_status: 'ACTIVE',
-                    email_verified: true,
-                    created_at: new Date('2024-01-01'),
-                    updated_at: new Date()
+                    dateOfBirth: new Date('1975-01-15'),
+                    gender: 'MALE' as UserGender,
+                    accountStatus: 'ACTIVE' as UserAccountStatus,
+                    emailVerifiedLegacy: true,
+                    createdAt: getRandomPastDate(30, 90),
+                    updatedAt: getRecentDate()
                 }),
                 createUserData({
                     id: '00000000-0000-0000-0000-000000000002',
                     email: 'doctor1@healthapp.com',
-                    password_hash: basicDoctorPassword,
-                    role: 'DOCTOR',
-                    first_name: 'Dr. Jane',
-                    last_name: 'Doe',
+                    passwordHash: basicDoctorPassword,
+                    role: 'DOCTOR' as UserRole,
+                    firstName: 'Dr. Jane',
+                    lastName: 'Doe',
                     phone: '+1-555-0002',
-                    date_of_birth: new Date('1978-05-20'),
-                    gender: 'FEMALE',
-                    account_status: 'ACTIVE',
-                    email_verified: true,
-                    created_at: new Date('2024-01-01'),
-                    updated_at: new Date()
+                    dateOfBirth: new Date('1978-05-20'),
+                    gender: 'FEMALE' as UserGender,
+                    accountStatus: 'ACTIVE' as UserAccountStatus,
+                    emailVerifiedLegacy: true,
+                    createdAt: getRandomPastDate(28, 88),
+                    updatedAt: getRecentDate()
                 }),
+                createUserData({
+                    id: '00000000-0000-0000-0000-000000000003',
+                    email: 'doctor2@healthapp.com',
+                    passwordHash: hashedPassword,
+                    role: 'DOCTOR' as UserRole,
+                    firstName: 'Dr. Emily',
+                    lastName: 'Rodriguez',
+                    phone: '+1-555-0003',
+                    dateOfBirth: new Date('1980-11-08'),
+                    gender: 'FEMALE' as UserGender,
+                    accountStatus: 'ACTIVE' as UserAccountStatus,
+                    emailVerifiedLegacy: true,
+                    createdAt: getRandomPastDate(25, 85),
+                    updatedAt: getRecentDate()
+                }),
+                createUserData({
+                    id: '00000000-0000-0000-0000-000000000004',
+                    email: 'doctor3@healthapp.com',
+                    passwordHash: hashedPassword,
+                    role: 'DOCTOR' as UserRole,
+                    firstName: 'Dr. Robert',
+                    lastName: 'Wilson',
+                    phone: '+1-555-0004',
+                    dateOfBirth: new Date('1970-07-15'),
+                    gender: 'MALE' as UserGender,
+                    accountStatus: 'ACTIVE' as UserAccountStatus,
+                    emailVerifiedLegacy: true,
+                    createdAt: getRandomPastDate(22, 82),
+                    updatedAt: getRecentDate()
+                }),
+                
                 // 5 Patients
                 createUserData({
                     id: '77777777-7777-7777-7777-777777777777',
                     email: 'patient1@healthapp.com',
-                    password_hash: hashedPassword,
-                    role: 'PATIENT',
-                    first_name: 'Sarah',
-                    last_name: 'Johnson',
+                    passwordHash: hashedPassword,
+                    role: 'PATIENT' as UserRole,
+                    firstName: 'Sarah',
+                    lastName: 'Johnson',
                     phone: '+1-555-0101',
-                    date_of_birth: new Date('1985-06-15'),
-                    gender: 'FEMALE',
-                    account_status: 'ACTIVE',
-                    email_verified: true,
-                    created_at: new Date('2024-01-01'),
-                    updated_at: new Date()
+                    dateOfBirth: new Date('1985-06-15'),
+                    gender: 'FEMALE' as UserGender,
+                    accountStatus: 'ACTIVE' as UserAccountStatus,
+                    emailVerifiedLegacy: true,
+                    createdAt: getRandomPastDate(20, 80),
+                    updatedAt: getRecentDate()
                 }),
                 createUserData({
                     id: '88888888-8888-8888-8888-888888888888',
                     email: 'patient2@healthapp.com',
-                    password_hash: hashedPassword,
-                    role: 'PATIENT',
-                    first_name: 'Michael',
-                    last_name: 'Chen',
+                    passwordHash: hashedPassword,
+                    role: 'PATIENT' as UserRole,
+                    firstName: 'Michael',
+                    lastName: 'Chen',
                     phone: '+1-555-0102',
-                    date_of_birth: new Date('1978-03-22'),
-                    gender: 'MALE',
-                    account_status: 'ACTIVE',
-                    email_verified: true,
-                    created_at: new Date('2024-01-02'),
-                    updated_at: new Date()
+                    dateOfBirth: new Date('1978-03-22'),
+                    gender: 'MALE' as UserGender,
+                    accountStatus: 'ACTIVE' as UserAccountStatus,
+                    emailVerifiedLegacy: true,
+                    createdAt: getRandomPastDate(18, 78),
+                    updatedAt: getRecentDate()
                 }),
                 createUserData({
                     id: '11111111-1111-1111-1111-111111111111',
                     email: 'patient3@healthapp.com',
-                    password_hash: hashedPassword,
-                    role: 'PATIENT',
-                    first_name: 'Emma',
-                    last_name: 'Williams',
+                    passwordHash: hashedPassword,
+                    role: 'PATIENT' as UserRole,
+                    firstName: 'Emma',
+                    lastName: 'Williams',
                     phone: '+1-555-0103',
-                    date_of_birth: new Date('1990-09-10'),
-                    gender: 'FEMALE',
-                    account_status: 'ACTIVE',
-                    email_verified: true,
-                    created_at: new Date('2024-01-03'),
-                    updated_at: new Date()
+                    dateOfBirth: new Date('1990-09-10'),
+                    gender: 'FEMALE' as UserGender,
+                    accountStatus: 'ACTIVE' as UserAccountStatus,
+                    emailVerifiedLegacy: true,
+                    createdAt: getRandomPastDate(16, 76),
+                    updatedAt: getRecentDate()
                 }),
                 createUserData({
                     id: '22222222-2222-2222-2222-222222222222',
                     email: 'patient4@healthapp.com',
-                    password_hash: hashedPassword,
-                    role: 'PATIENT',
-                    first_name: 'James',
-                    last_name: 'Brown',
+                    passwordHash: hashedPassword,
+                    role: 'PATIENT' as UserRole,
+                    firstName: 'James',
+                    lastName: 'Brown',
                     phone: '+1-555-0104',
-                    date_of_birth: new Date('1965-12-05'),
-                    gender: 'MALE',
-                    account_status: 'ACTIVE',
-                    email_verified: true,
-                    created_at: new Date('2024-01-04'),
-                    updated_at: new Date()
+                    dateOfBirth: new Date('1965-12-05'),
+                    gender: 'MALE' as UserGender,
+                    accountStatus: 'ACTIVE' as UserAccountStatus,
+                    emailVerifiedLegacy: true,
+                    createdAt: getRandomPastDate(14, 74),
+                    updatedAt: getRecentDate()
                 }),
                 createUserData({
                     id: '33333333-3333-3333-3333-333333333333',
                     email: 'patient5@healthapp.com',
-                    password_hash: hashedPassword,
-                    role: 'PATIENT',
-                    first_name: 'Olivia',
-                    last_name: 'Davis',
+                    passwordHash: hashedPassword,
+                    role: 'PATIENT' as UserRole,
+                    firstName: 'Olivia',
+                    lastName: 'Davis',
                     phone: '+1-555-0105',
-                    date_of_birth: new Date('1995-04-20'),
-                    gender: 'FEMALE',
-                    account_status: 'ACTIVE',
-                    email_verified: true,
-                    created_at: new Date('2024-01-05'),
-                    updated_at: new Date()
+                    dateOfBirth: new Date('1995-04-20'),
+                    gender: 'FEMALE' as UserGender,
+                    accountStatus: 'ACTIVE' as UserAccountStatus,
+                    emailVerifiedLegacy: true,
+                    createdAt: getRandomPastDate(12, 72),
+                    updatedAt: getRecentDate()
                 }),
-                // 2 Additional Doctors
-                createUserData({
-                    id: '99999999-9999-9999-9999-999999999999',
-                    email: 'doctor2@healthapp.com',
-                    password_hash: hashedPassword,
-                    role: 'DOCTOR',
-                    first_name: 'Dr. Emily',
-                    last_name: 'Rodriguez',
-                    phone: '+1-555-0201',
-                    date_of_birth: new Date('1975-11-08'),
-                    gender: 'FEMALE',
-                    account_status: 'ACTIVE',
-                    email_verified: true,
-                    created_at: new Date('2024-01-01'),
-                    updated_at: new Date()
-                }),
-                createUserData({
-                    id: '44444444-4444-4444-4444-444444444444',
-                    email: 'doctor3@healthapp.com',
-                    password_hash: hashedPassword,
-                    role: 'DOCTOR',
-                    first_name: 'Dr. Robert',
-                    last_name: 'Smith',
-                    phone: '+1-555-0202',
-                    date_of_birth: new Date('1970-07-15'),
-                    gender: 'MALE',
-                    account_status: 'ACTIVE',
-                    email_verified: true,
-                    created_at: new Date('2024-01-01'),
-                    updated_at: new Date()
-                }),
-                // HSP
+
+                // 1 HSP
                 createUserData({
                     id: '55555555-5555-5555-5555-555555555555',
                     email: 'hsp@healthapp.com',
-                    password_hash: hashedPassword,
-                    role: 'HSP',
-                    first_name: 'Maria',
-                    last_name: 'Garcia',
+                    passwordHash: hashedPassword,
+                    role: 'HSP' as UserRole,
+                    firstName: 'Maria',
+                    lastName: 'Garcia',
                     phone: '+1-555-0301',
-                    date_of_birth: new Date('1980-03-25'),
-                    gender: 'FEMALE',
-                    account_status: 'ACTIVE',
-                    email_verified: true,
-                    created_at: new Date('2024-01-01'),
-                    updated_at: new Date()
+                    dateOfBirth: new Date('1980-03-25'),
+                    gender: 'FEMALE' as UserGender,
+                    accountStatus: 'ACTIVE' as UserAccountStatus,
+                    emailVerifiedLegacy: true,
+                    createdAt: getRandomPastDate(35, 85),
+                    updatedAt: getRecentDate()
                 }),
-                // Admin
+
+                // 1 Admin
                 createUserData({
                     id: '66666666-6666-6666-6666-666666666666',
                     email: 'admin@healthapp.com',
-                    password_hash: hashedPassword,
-                    role: 'SYSTEM_ADMIN',
-                    first_name: 'Admin',
-                    last_name: 'User',
+                    passwordHash: hashedPassword,
+                    role: 'SYSTEM_ADMIN' as UserRole,
+                    firstName: 'Admin',
+                    lastName: 'User',
                     phone: '+1-555-0401',
-                    date_of_birth: new Date('1985-01-01'),
-                    gender: 'OTHER',
-                    account_status: 'ACTIVE',
-                    email_verified: true,
-                    created_at: new Date('2024-01-01'),
-                    updated_at: new Date()
+                    dateOfBirth: new Date('1985-01-01'),
+                    gender: 'OTHER' as UserGender,
+                    accountStatus: 'ACTIVE' as UserAccountStatus,
+                    emailVerifiedLegacy: true,
+                    createdAt: getRandomPastDate(40, 90),
+                    updatedAt: getRecentDate()
                 }),
-                // Provider Admin
+
+                // 1 Provider
                 createUserData({
                     id: '10101010-1010-1010-1010-101010101010',
                     email: 'provider@healthapp.com',
-                    password_hash: hashedPassword,
-                    role: 'HOSPITAL_ADMIN',
-                    first_name: 'Provider',
-                    last_name: 'Administrator',
+                    passwordHash: hashedPassword,
+                    role: 'HOSPITAL_ADMIN' as UserRole,
+                    firstName: 'Provider',
+                    lastName: 'Administrator',
                     phone: '+1-555-0501',
-                    date_of_birth: new Date('1982-05-15'),
-                    gender: 'MALE',
-                    account_status: 'ACTIVE',
-                    email_verified: true,
-                    created_at: new Date('2024-01-01'),
-                    updated_at: new Date()
+                    dateOfBirth: new Date('1982-05-15'),
+                    gender: 'MALE' as UserGender,
+                    accountStatus: 'ACTIVE' as UserAccountStatus,
+                    emailVerifiedLegacy: true,
+                    createdAt: getRandomPastDate(45, 90),
+                    updatedAt: getRecentDate()
                 })
             ]
         });
 
-        console.log(`✅ Created ${testUsers.count} test users`);
+        console.log(`✅ Created ${testUsers.count} users`);
 
-        // Create organization first (idempotent)
+        // Create 1 Organization
+        console.log('🏥 Creating organization...');
         const organization = await prisma.organization.upsert({
             where: { id: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11' },
             update: {},
@@ -365,181 +307,119 @@ export async function seedComprehensiveHealthcareData() {
                     country: 'USA'
                 },
                 is_active: true,
-                created_at: new Date(),
-                updated_at: new Date()
+                created_at: getRandomPastDate(60, 90),
+                updated_at: getRecentDate()
             }
         });
 
         console.log(`✅ Created organization: ${organization.name}`);
 
-        // Create comprehensive medical specialties (idempotent)
-        const cardiologySpec = await prisma.speciality.upsert({
-            where: { name: 'Cardiology' },
-            update: {},
-            create: {
-                name: 'Cardiology',
-                description: 'Heart and cardiovascular system specialist',
-                created_at: new Date(),
-                updated_at: new Date()
-            }
-        });
+        // Create 11 Medical Specialties
+        console.log('🩺 Creating 11 medical specialties...');
+        const specialties = [
+            { name: 'Cardiology', description: 'Heart and cardiovascular system specialist' },
+            { name: 'Endocrinology', description: 'Hormonal disorders and diabetes specialist' },
+            { name: 'General Medicine', description: 'General medical practice' },
+            { name: 'Pediatrics', description: 'Children\'s health specialist' },
+            { name: 'Orthopedics', description: 'Bone, joint, and muscle specialist' },
+            { name: 'Dermatology', description: 'Skin conditions specialist' },
+            { name: 'Neurology', description: 'Brain and nervous system specialist' },
+            { name: 'Psychiatry', description: 'Mental health specialist' },
+            { name: 'Gynecology', description: 'Women\'s reproductive health specialist' },
+            { name: 'Ophthalmology', description: 'Eye and vision specialist' },
+            { name: 'Emergency Medicine', description: 'Emergency and acute care specialist' }
+        ];
 
-        const endocrinologySpec = await prisma.speciality.upsert({
-            where: { name: 'Endocrinology' },
-            update: {},
-            create: {
-                name: 'Endocrinology',
-                description: 'Hormonal disorders and diabetes specialist',
-                created_at: new Date(),
-                updated_at: new Date()
-            }
-        });
-
-        const generalMedSpec = await prisma.speciality.upsert({
-            where: { name: 'General Medicine' },
-            update: {},
-            create: {
-                name: 'General Medicine',
-                description: 'General medical practice',
-                created_at: new Date(),
-                updated_at: new Date()
-            }
-        });
-
-        // Create remaining specialties without hard-coded IDs (idempotent)
-        const pediatricsSpec = await prisma.speciality.upsert({
-            where: { name: 'Pediatrics' },
-            update: {},
-            create: {
-                name: 'Pediatrics',
-                description: 'Children\'s health specialist',
-                created_at: new Date(),
-                updated_at: new Date()
-            }
-        });
-
-        // Continue creating other specialties (idempotent)
-        await prisma.speciality.createMany({
-            skipDuplicates: true,
-            data: [
-                {
-                    name: 'Orthopedics',
-                    description: 'Bone, joint, and muscle specialist',
-                    created_at: new Date(),
-                    updated_at: new Date()
-                },
-                {
-                    name: 'Dermatology',
-                    description: 'Skin conditions specialist',
-                    created_at: new Date(),
-                    updated_at: new Date()
-                },
-                {
-                    name: 'Neurology',
-                    description: 'Brain and nervous system specialist',
-                    created_at: new Date(),
-                    updated_at: new Date()
-                },
-                {
-                    name: 'Psychiatry',
-                    description: 'Mental health specialist',
-                    created_at: new Date(),
-                    updated_at: new Date()
-                },
-                {
-                    name: 'Gynecology',
-                    description: 'Women\'s reproductive health specialist',
-                    created_at: new Date(),
-                    updated_at: new Date()
-                },
-                {
-                    name: 'Ophthalmology',
-                    description: 'Eye and vision specialist',
-                    created_at: new Date(),
-                    updated_at: new Date()
-                },
-                {
-                    name: 'Emergency Medicine',
-                    description: 'Emergency and acute care specialist',
-                    created_at: new Date(),
-                    updated_at: new Date()
+        for (const spec of specialties) {
+            await prisma.speciality.upsert({
+                where: { name: spec.name },
+                update: {},
+                create: {
+                    name: spec.name,
+                    description: spec.description,
+                    created_at: getRandomPastDate(50, 90),
+                    updated_at: getRecentDate()
                 }
-            ]
-        });
+            });
+        }
 
-        console.log(`✅ Created specialities`);
+        console.log(`✅ Created ${specialties.length} medical specialties`);
 
-        // Create doctor profiles with correct user IDs (idempotent)
-        const doctorProfiles = await prisma.doctor.createMany({
+        // Get the created specialties for doctor profiles
+        const cardiologySpec = await prisma.speciality.findFirst({ where: { name: 'Cardiology' } });
+        const endocrinologySpec = await prisma.speciality.findFirst({ where: { name: 'Endocrinology' } });
+        const generalMedSpec = await prisma.speciality.findFirst({ where: { name: 'General Medicine' } });
+        const psychiatrySpec = await prisma.speciality.findFirst({ where: { name: 'Psychiatry' } });
+
+        // Create doctor profiles
+        console.log('👨‍⚕️ Creating doctor profiles...');
+        await prisma.doctor.createMany({
             skipDuplicates: true,
             data: [
-                // doctor@healthapp.com (Dr. John Smith)
                 {
                     id: '00000000-0000-0000-0000-000000000011',
-                    user_id: '00000000-0000-0000-0000-000000000001', // Dr. John Smith
+                    user_id: '00000000-0000-0000-0000-000000000001',
                     doctor_id: 'DR001',
-                    speciality_id: cardiologySpec.id,
+                    speciality_id: cardiologySpec?.id,
                     medical_license_number: 'MD123456',
                     years_of_experience: 15,
-                    board_certifications: ['Board Certified Internal Medicine', 'Diabetes Care Specialist'],
+                    board_certifications: ['Board Certified Internal Medicine', 'Cardiology'],
                     consultation_fee: 200.00,
                     is_verified: true,
-                    verification_date: new Date(),
+                    verification_date: getRandomPastDate(20, 60),
                     practice_name: 'Smith Cardiology Clinic',
-                    created_at: new Date(),
+                    created_at: getRandomPastDate(30, 80),
                 },
-                // doctor1@healthapp.com (Dr. Jane Doe)
                 {
                     id: '00000000-0000-0000-0000-000000000022',
-                    user_id: '00000000-0000-0000-0000-000000000002', // Dr. Jane Doe
+                    user_id: '00000000-0000-0000-0000-000000000002',
                     doctor_id: 'DR002',
-                    speciality_id: endocrinologySpec.id,
+                    speciality_id: endocrinologySpec?.id,
                     medical_license_number: 'MD789012',
                     years_of_experience: 12,
-                    board_certifications: ['Board Certified Family Medicine', 'Diabetes Care Specialist'],
+                    board_certifications: ['Board Certified Family Medicine', 'Endocrinology'],
                     consultation_fee: 180.00,
                     is_verified: true,
-                    verification_date: new Date(),
-                    practice_name: 'Doe Family Medicine',
-                    created_at: new Date(),
+                    verification_date: getRandomPastDate(15, 55),
+                    practice_name: 'Doe Endocrinology Center',
+                    created_at: getRandomPastDate(28, 78),
                 },
-                // doctor2@healthapp.com (Dr. Emily Rodriguez)
                 {
                     id: '00000000-0000-0000-0000-000000000033',
-                    user_id: '99999999-9999-9999-9999-999999999999', // Dr. Emily Rodriguez
+                    user_id: '00000000-0000-0000-0000-000000000003',
                     doctor_id: 'DR003',
-                    speciality_id: cardiologySpec.id,
+                    speciality_id: generalMedSpec?.id,
                     medical_license_number: 'MD345678',
                     years_of_experience: 8,
-                    board_certifications: ['Board Certified Internal Medicine'],
-                    consultation_fee: 220.00,
+                    board_certifications: ['Board Certified Family Medicine'],
+                    consultation_fee: 160.00,
                     is_verified: true,
-                    verification_date: new Date(),
-                    practice_name: 'Rodriguez Internal Medicine',
-                    created_at: new Date(),
+                    verification_date: getRandomPastDate(12, 50),
+                    practice_name: 'Rodriguez Family Medicine',
+                    created_at: getRandomPastDate(25, 75),
                 },
-                // doctor3@healthapp.com (Dr. Robert Smith)
                 {
                     id: '00000000-0000-0000-0000-000000000044',
-                    user_id: '44444444-4444-4444-4444-444444444444', // Dr. Robert Smith
+                    user_id: '00000000-0000-0000-0000-000000000004',
                     doctor_id: 'DR004',
-                    speciality_id: endocrinologySpec.id,
+                    speciality_id: psychiatrySpec?.id,
                     medical_license_number: 'MD901234',
                     years_of_experience: 20,
-                    board_certifications: ['Board Certified Cardiology', 'Interventional Cardiology'],
-                    consultation_fee: 250.00,
+                    board_certifications: ['Board Certified Psychiatry', 'Child Psychiatry'],
+                    consultation_fee: 220.00,
                     is_verified: true,
-                    verification_date: new Date(),
-                    practice_name: 'Smith Cardiac Surgery',
-                    created_at: new Date(),
+                    verification_date: getRandomPastDate(25, 65),
+                    practice_name: 'Wilson Mental Health Center',
+                    created_at: getRandomPastDate(22, 72),
                 }
             ]
         });
 
         console.log(`✅ Created doctor profiles`);
 
-        // Create HSP profile (idempotent)
-        const hspProfile = await prisma.hsp.upsert({
+        // Create HSP profile using correct model name
+        console.log('🩺 Creating HSP profile...');
+        await prisma.hSP.upsert({
             where: { id: '55555555-5555-5555-5555-555555555551' },
             update: {},
             create: {
@@ -548,16 +428,17 @@ export async function seedComprehensiveHealthcareData() {
                 hsp_id: 'HSP001',
                 hsp_type: 'wellness_coach',
                 license_number: 'HSP12345',
-                certifications: ['Certified Wellness Coach'],
-                specializations: ['wellness_coaching'],
+                certifications: ['Certified Wellness Coach', 'Nutrition Specialist'],
+                specializations: ['wellness_coaching', 'nutrition'],
                 years_of_experience: 8,
-                created_at: new Date()
+                created_at: getRandomPastDate(35, 75)
             }
         });
 
         console.log(`✅ Created HSP profile`);
 
-        // Create provider (idempotent) - with error handling for table name issues
+        // Create Provider
+        console.log('🏢 Creating provider...');
         let provider;
         try {
             provider = await prisma.providers.upsert({
@@ -576,29 +457,26 @@ export async function seedComprehensiveHealthcareData() {
                         provider_type: 'health_system',
                         license_number: 'PROV-2024-001'
                     },
-                    created_at: new Date(),
-                    updated_at: new Date()
+                    created_at: getRandomPastDate(45, 85),
+                    updated_at: getRecentDate()
                 }
             });
             console.log(`✅ Created provider`);
         } catch (error: any) {
-            if (error.code === 'P2021') {
-                console.log(`⚠️ Skipping provider creation - table name issue (${error.meta?.table || 'unknown table'})`);
-                console.log('   This is likely due to table naming mismatch. Provider functionality may be limited.');
-                provider = null;
-            } else {
-                throw error;
-            }
+            console.log(`⚠️ Skipping provider creation - table name issue`);
+            provider = null;
         }
 
-        const patientProfiles = await prisma.patient.createMany({
+        // Create patient profiles
+        console.log('👥 Creating patient profiles...');
+        await prisma.patient.createMany({
             skipDuplicates: true,
             data: [
                 {
                     user_id: '77777777-7777-7777-7777-777777777777',
                     patient_id: 'PAT-2024-001',
                     organization_id: organization.id,
-                    primary_care_doctor_id: '00000000-0000-0000-0000-000000000011', // doctor@healthapp.com
+                    primary_care_doctor_id: '00000000-0000-0000-0000-000000000011',
                     height_cm: 165.0,
                     weight_kg: 68.5,
                     blood_type: 'A+',
@@ -614,21 +492,15 @@ export async function seedComprehensiveHealthcareData() {
                     emergency_contacts: [
                         { name: 'John Johnson', relationship: 'spouse', phone: '+1-555-0103', primary: true }
                     ],
-                    communication_preferences: {
-                        preferred_contact_method: 'email',
-                        appointment_reminders: true,
-                        medication_reminders: true,
-                        health_tips: true
-                    },
                     overall_adherence_score: 85.5,
-                    created_at: new Date('2024-01-01'),
-                    updated_at: new Date()
+                    created_at: getRandomPastDate(20, 70),
+                    updated_at: getRecentDate()
                 },
                 {
                     user_id: '88888888-8888-8888-8888-888888888888',
                     patient_id: 'PAT-2024-002',
                     organization_id: organization.id,
-                    primary_care_doctor_id: '00000000-0000-0000-0000-000000000011', // doctor@healthapp.com
+                    primary_care_doctor_id: '00000000-0000-0000-0000-000000000011',
                     height_cm: 178.0,
                     weight_kg: 82.3,
                     blood_type: 'O-',
@@ -640,20 +512,15 @@ export async function seedComprehensiveHealthcareData() {
                     emergency_contacts: [
                         { name: 'Lisa Chen', relationship: 'wife', phone: '+1-555-0104', primary: true }
                     ],
-                    communication_preferences: {
-                        preferred_contact_method: 'sms',
-                        appointment_reminders: true,
-                        medication_reminders: true
-                    },
                     overall_adherence_score: 92.0,
-                    created_at: new Date('2024-01-02'),
-                    updated_at: new Date()
+                    created_at: getRandomPastDate(18, 68),
+                    updated_at: getRecentDate()
                 },
                 {
                     user_id: '11111111-1111-1111-1111-111111111111',
                     patient_id: 'PAT-2024-003',
                     organization_id: organization.id,
-                    primary_care_doctor_id: '00000000-0000-0000-0000-000000000022', // doctor1@healthapp.com
+                    primary_care_doctor_id: '00000000-0000-0000-0000-000000000022',
                     height_cm: 162.0,
                     weight_kg: 55.2,
                     blood_type: 'B+',
@@ -667,19 +534,15 @@ export async function seedComprehensiveHealthcareData() {
                     emergency_contacts: [
                         { name: 'David Williams', relationship: 'father', phone: '+1-555-0106', primary: true }
                     ],
-                    communication_preferences: {
-                        preferred_contact_method: 'email',
-                        appointment_reminders: true
-                    },
                     overall_adherence_score: 78.5,
-                    created_at: new Date('2024-01-03'),
-                    updated_at: new Date()
+                    created_at: getRandomPastDate(16, 66),
+                    updated_at: getRecentDate()
                 },
                 {
                     user_id: '22222222-2222-2222-2222-222222222222',
                     patient_id: 'PAT-2024-004',
                     organization_id: organization.id,
-                    primary_care_doctor_id: '00000000-0000-0000-0000-000000000022', // doctor1@healthapp.com
+                    primary_care_doctor_id: '00000000-0000-0000-0000-000000000022',
                     height_cm: 175.0,
                     weight_kg: 88.7,
                     blood_type: 'AB+',
@@ -692,20 +555,15 @@ export async function seedComprehensiveHealthcareData() {
                     emergency_contacts: [
                         { name: 'Mary Brown', relationship: 'wife', phone: '+1-555-0107', primary: true }
                     ],
-                    communication_preferences: {
-                        preferred_contact_method: 'phone',
-                        appointment_reminders: true,
-                        medication_reminders: true
-                    },
                     overall_adherence_score: 88.2,
-                    created_at: new Date('2024-01-04'),
-                    updated_at: new Date()
+                    created_at: getRandomPastDate(14, 64),
+                    updated_at: getRecentDate()
                 },
                 {
                     user_id: '33333333-3333-3333-3333-333333333333',
                     patient_id: 'PAT-2024-005',
                     organization_id: organization.id,
-                    primary_care_doctor_id: '00000000-0000-0000-0000-000000000011', // doctor@healthapp.com
+                    primary_care_doctor_id: '00000000-0000-0000-0000-000000000033',
                     height_cm: 158.0,
                     weight_kg: 52.1,
                     blood_type: 'O+',
@@ -719,21 +577,404 @@ export async function seedComprehensiveHealthcareData() {
                     emergency_contacts: [
                         { name: 'Thomas Davis', relationship: 'brother', phone: '+1-555-0108', primary: true }
                     ],
-                    communication_preferences: {
-                        preferred_contact_method: 'email',
-                        appointment_reminders: true,
-                        health_tips: true
-                    },
                     overall_adherence_score: 95.1,
-                    created_at: new Date('2024-01-05'),
-                    updated_at: new Date()
+                    created_at: getRandomPastDate(12, 62),
+                    updated_at: getRecentDate()
                 }
             ]
         });
 
         console.log(`✅ Created patient profiles`);
 
-        // Get actual Patient IDs that were created for appointments
+        // Create 10 comprehensive medicines
+        console.log('💊 Creating 10 comprehensive medicines...');
+        const medicines = [
+            {
+                id: '550e8400-e29b-41d4-a716-446655440001',
+                name: 'Metformin',
+                type: 'tablet',
+                description: 'First-line medication for type 2 diabetes management',
+                details: {
+                    generic_name: 'Metformin Hydrochloride',
+                    brand_names: ['Glucophage', 'Fortamet', 'Glumetza'],
+                    drug_class: 'Biguanide',
+                    common_dosages: ['500mg', '850mg', '1000mg'],
+                    side_effects: ['Nausea', 'Diarrhea', 'Stomach upset'],
+                    contraindications: ['Severe kidney disease', 'Liver disease']
+                }
+            },
+            {
+                id: '550e8400-e29b-41d4-a716-446655440002',
+                name: 'Lisinopril',
+                type: 'tablet',
+                description: 'ACE inhibitor for high blood pressure and heart failure',
+                details: {
+                    generic_name: 'Lisinopril',
+                    brand_names: ['Prinivil', 'Zestril'],
+                    drug_class: 'ACE Inhibitor',
+                    common_dosages: ['2.5mg', '5mg', '10mg', '20mg'],
+                    side_effects: ['Dry cough', 'Dizziness', 'Headache'],
+                    contraindications: ['Pregnancy', 'History of angioedema']
+                }
+            },
+            {
+                id: '550e8400-e29b-41d4-a716-446655440003',
+                name: 'Aspirin',
+                type: 'tablet',
+                description: 'Pain relief and cardiovascular protection',
+                details: {
+                    generic_name: 'Acetylsalicylic Acid',
+                    brand_names: ['Bayer', 'Bufferin', 'Ecotrin'],
+                    drug_class: 'NSAID/Antiplatelet',
+                    common_dosages: ['81mg', '325mg', '500mg'],
+                    side_effects: ['Stomach irritation', 'Bleeding'],
+                    contraindications: ['Active bleeding', 'Severe asthma']
+                }
+            },
+            {
+                id: '550e8400-e29b-41d4-a716-446655440004',
+                name: 'Amlodipine',
+                type: 'tablet',
+                description: 'Calcium channel blocker for high blood pressure',
+                details: {
+                    generic_name: 'Amlodipine Besylate',
+                    brand_names: ['Norvasc', 'Katerzia'],
+                    drug_class: 'Calcium Channel Blocker',
+                    common_dosages: ['2.5mg', '5mg', '10mg'],
+                    side_effects: ['Ankle swelling', 'Dizziness'],
+                    contraindications: ['Severe aortic stenosis']
+                }
+            },
+            {
+                id: '550e8400-e29b-41d4-a716-446655440005',
+                name: 'Simvastatin',
+                type: 'tablet',
+                description: 'Statin medication for high cholesterol',
+                details: {
+                    generic_name: 'Simvastatin',
+                    brand_names: ['Zocor', 'FloLipid'],
+                    drug_class: 'HMG-CoA Reductase Inhibitor',
+                    common_dosages: ['5mg', '10mg', '20mg', '40mg'],
+                    side_effects: ['Muscle pain', 'Liver enzyme elevation'],
+                    contraindications: ['Active liver disease', 'Pregnancy']
+                }
+            },
+            {
+                id: '550e8400-e29b-41d4-a716-446655440006',
+                name: 'Omeprazole',
+                type: 'capsule',
+                description: 'Proton pump inhibitor for acid reflux',
+                details: {
+                    generic_name: 'Omeprazole',
+                    brand_names: ['Prilosec', 'Zegerid'],
+                    drug_class: 'Proton Pump Inhibitor',
+                    common_dosages: ['10mg', '20mg', '40mg'],
+                    side_effects: ['Headache', 'Nausea', 'Diarrhea'],
+                    contraindications: ['Hypersensitivity to benzimidazoles']
+                }
+            },
+            {
+                id: '550e8400-e29b-41d4-a716-446655440007',
+                name: 'Albuterol',
+                type: 'inhaler',
+                description: 'Bronchodilator for asthma and COPD',
+                details: {
+                    generic_name: 'Albuterol Sulfate',
+                    brand_names: ['ProAir', 'Ventolin', 'Proventil'],
+                    drug_class: 'Short-Acting Beta2 Agonist',
+                    common_dosages: ['90mcg/puff', '108mcg/puff'],
+                    side_effects: ['Tremor', 'Nervousness'],
+                    contraindications: ['Hypersensitivity to albuterol']
+                }
+            },
+            {
+                id: '550e8400-e29b-41d4-a716-446655440008',
+                name: 'Levothyroxine',
+                type: 'tablet',
+                description: 'Thyroid hormone replacement therapy',
+                details: {
+                    generic_name: 'Levothyroxine Sodium',
+                    brand_names: ['Synthroid', 'Levoxyl', 'Tirosint'],
+                    drug_class: 'Thyroid Hormone',
+                    common_dosages: ['25mcg', '50mcg', '75mcg', '100mcg'],
+                    side_effects: ['Heart palpitations', 'Weight loss'],
+                    contraindications: ['Untreated adrenal insufficiency']
+                }
+            },
+            {
+                id: '550e8400-e29b-41d4-a716-446655440009',
+                name: 'Sertraline',
+                type: 'tablet',
+                description: 'SSRI antidepressant for depression and anxiety',
+                details: {
+                    generic_name: 'Sertraline Hydrochloride',
+                    brand_names: ['Zoloft', 'Lustral'],
+                    drug_class: 'SSRI',
+                    common_dosages: ['25mg', '50mg', '100mg'],
+                    side_effects: ['Nausea', 'Sexual dysfunction'],
+                    contraindications: ['MAO inhibitor use']
+                }
+            },
+            {
+                id: '550e8400-e29b-41d4-a716-446655440010',
+                name: 'Ibuprofen',
+                type: 'tablet',
+                description: 'Anti-inflammatory pain and fever reducer',
+                details: {
+                    generic_name: 'Ibuprofen',
+                    brand_names: ['Advil', 'Motrin', 'Nuprin'],
+                    drug_class: 'NSAID',
+                    common_dosages: ['200mg', '400mg', '600mg'],
+                    side_effects: ['Stomach upset', 'Kidney problems'],
+                    contraindications: ['Heart disease', 'Active ulcers']
+                }
+            }
+        ];
+
+        for (const med of medicines) {
+            await prisma.medicine.upsert({
+                where: { id: med.id },
+                update: {},
+                create: {
+                    id: med.id,
+                    name: med.name,
+                    type: med.type,
+                    description: med.description,
+                    details: med.details,
+                    public_medicine: true,
+                    created_at: getRandomPastDate(30, 60),
+                    updated_at: getRecentDate()
+                }
+            });
+        }
+
+        console.log(`✅ Created ${medicines.length} medicines`);
+
+        // Create 4 vital templates
+        console.log('📊 Creating 4 vital templates...');
+        const vitalTemplates = [
+            { id: '550e8400-e29b-41d4-a716-446655440020', name: 'Blood Pressure', unit: 'mmHg' },
+            { id: '550e8400-e29b-41d4-a716-446655440021', name: 'Heart Rate', unit: 'bpm' },
+            { id: '550e8400-e29b-41d4-a716-446655440022', name: 'Weight', unit: 'kg' },
+            { id: '550e8400-e29b-41d4-a716-446655440023', name: 'Blood Glucose', unit: 'mg/dL' }
+        ];
+
+        for (const template of vitalTemplates) {
+            await prisma.vitalTemplates.upsert({
+                where: { id: template.id },
+                update: {},
+                create: {
+                    id: template.id,
+                    name: template.name,
+                    unit: template.unit,
+                    created_at: getRandomPastDate(40, 70),
+                    updated_at: getRecentDate()
+                }
+            });
+        }
+
+        console.log(`✅ Created ${vitalTemplates.length} vital templates`);
+
+        // Create 5 symptoms/conditions
+        console.log('🩺 Creating 5 symptoms/conditions...');
+        try {
+            const symptomsData = [
+                {
+                    id: '550e8400-e29b-41d4-a716-446655440030',
+                    diagnosis_name: 'Type 2 Diabetes',
+                    symptoms: ['Excessive thirst', 'Frequent urination', 'Unexplained weight loss', 'Increased hunger', 'Fatigue'],
+                    category: 'Endocrine',
+                    severity_indicators: {
+                        mild: ['Mild thirst', 'Occasional fatigue'],
+                        moderate: ['Increased hunger', 'Blurred vision'],
+                        severe: ['Unexplained weight loss', 'Frequent urination']
+                    },
+                    common_age_groups: ['adults', 'elderly'],
+                    gender_specific: 'both',
+                    is_active: true
+                },
+                {
+                    id: '550e8400-e29b-41d4-a716-446655440031',
+                    diagnosis_name: 'Hypertension',
+                    symptoms: ['Headaches', 'Dizziness', 'Chest pain', 'Nosebleeds', 'Shortness of breath'],
+                    category: 'Cardiovascular',
+                    severity_indicators: {
+                        mild: ['Occasional headaches'],
+                        moderate: ['Regular headaches', 'Chest discomfort'],
+                        severe: ['Severe headaches', 'Chest pain', 'Shortness of breath']
+                    },
+                    common_age_groups: ['adults', 'elderly'],
+                    gender_specific: 'both',
+                    is_active: true
+                },
+                {
+                    id: '550e8400-e29b-41d4-a716-446655440032',
+                    diagnosis_name: 'Asthma',
+                    symptoms: ['Wheezing', 'Coughing', 'Chest tightness', 'Shortness of breath'],
+                    category: 'Respiratory',
+                    severity_indicators: {
+                        mild: ['Occasional wheezing'],
+                        moderate: ['Regular shortness of breath'],
+                        severe: ['Difficulty speaking', 'Severe breathing problems']
+                    },
+                    common_age_groups: ['children', 'adults'],
+                    gender_specific: 'both',
+                    is_active: true
+                },
+                {
+                    id: '550e8400-e29b-41d4-a716-446655440033',
+                    diagnosis_name: 'Depression',
+                    symptoms: ['Persistent sadness', 'Loss of interest', 'Fatigue', 'Sleep disturbances', 'Appetite changes'],
+                    category: 'Mental Health',
+                    severity_indicators: {
+                        mild: ['Occasional sadness'],
+                        moderate: ['Regular mood changes'],
+                        severe: ['Persistent hopelessness', 'Thoughts of self-harm']
+                    },
+                    common_age_groups: ['adolescents', 'adults', 'elderly'],
+                    gender_specific: 'both',
+                    is_active: true
+                },
+                {
+                    id: '550e8400-e29b-41d4-a716-446655440034',
+                    diagnosis_name: 'Anxiety Disorder',
+                    symptoms: ['Excessive worry', 'Restlessness', 'Fatigue', 'Difficulty concentrating', 'Irritability', 'Muscle tension'],
+                    category: 'Mental Health',
+                    severity_indicators: {
+                        mild: ['Occasional worry'],
+                        moderate: ['Regular anxiety'],
+                        severe: ['Panic attacks', 'Unable to perform daily activities']
+                    },
+                    common_age_groups: ['adolescents', 'adults'],
+                    gender_specific: 'both',
+                    is_active: true
+                }
+            ];
+
+            for (const symptom of symptomsData) {
+                await prisma.symptomsDatabase.upsert({
+                    where: { id: symptom.id },
+                    update: {},
+                    create: {
+                        ...symptom,
+                        created_at: getRandomPastDate(35, 65),
+                        updated_at: getRecentDate()
+                    }
+                });
+            }
+
+            console.log(`✅ Created ${symptomsData.length} symptoms/conditions`);
+        } catch (error: any) {
+            console.log(`⚠️ Skipping symptoms database creation - table issue: ${error.message}`);
+        }
+
+        // Create 5 treatments
+        console.log('💉 Creating 5 treatments...');
+        try {
+            const treatmentsData = [
+                {
+                    id: '550e8400-e29b-41d4-a716-446655440040',
+                    treatment_name: 'Metformin Therapy',
+                    treatment_type: 'medication',
+                    description: 'First-line medication for Type 2 diabetes management',
+                    applicable_conditions: ['Type 2 Diabetes', 'Pre-diabetes'],
+                    duration: 'Long-term',
+                    frequency: 'Twice daily with meals',
+                    dosage_info: {
+                        initial_dose: '500mg twice daily',
+                        maximum_dose: '2000mg daily',
+                        titration: 'Increase by 500mg weekly as tolerated'
+                    },
+                    category: 'Antidiabetic',
+                    severity_level: 'moderate',
+                    is_active: true
+                },
+                {
+                    id: '550e8400-e29b-41d4-a716-446655440041',
+                    treatment_name: 'ACE Inhibitor Therapy',
+                    treatment_type: 'medication',
+                    description: 'First-line treatment for hypertension',
+                    applicable_conditions: ['Hypertension', 'Heart Failure'],
+                    duration: 'Long-term',
+                    frequency: 'Once daily',
+                    dosage_info: {
+                        initial_dose: '5mg daily',
+                        maximum_dose: '40mg daily',
+                        titration: 'Increase every 1-2 weeks'
+                    },
+                    category: 'Cardiovascular',
+                    severity_level: 'moderate',
+                    is_active: true
+                },
+                {
+                    id: '550e8400-e29b-41d4-a716-446655440042',
+                    treatment_name: 'Inhaled Bronchodilator Therapy',
+                    treatment_type: 'medication',
+                    description: 'Short-acting beta2 agonist for asthma',
+                    applicable_conditions: ['Asthma', 'COPD'],
+                    duration: 'As needed',
+                    frequency: '2 puffs every 4-6 hours as needed',
+                    dosage_info: {
+                        initial_dose: '90mcg (2 puffs) as needed',
+                        maximum_dose: '12 puffs per day'
+                    },
+                    category: 'Respiratory',
+                    severity_level: 'mild_to_moderate',
+                    is_active: true
+                },
+                {
+                    id: '550e8400-e29b-41d4-a716-446655440043',
+                    treatment_name: 'Cognitive Behavioral Therapy',
+                    treatment_type: 'therapy',
+                    description: 'Evidence-based psychotherapy for depression and anxiety',
+                    applicable_conditions: ['Depression', 'Anxiety Disorder', 'PTSD'],
+                    duration: '12-20 sessions over 3-6 months',
+                    frequency: 'Weekly sessions initially',
+                    dosage_info: {
+                        initial_dose: '45-50 minute sessions weekly',
+                        titration: 'Adjust frequency based on progress'
+                    },
+                    category: 'Mental Health',
+                    severity_level: 'mild_to_severe',
+                    is_active: true
+                },
+                {
+                    id: '550e8400-e29b-41d4-a716-446655440044',
+                    treatment_name: 'Lifestyle Modification Program',
+                    treatment_type: 'lifestyle',
+                    description: 'Comprehensive diet and exercise program',
+                    applicable_conditions: ['Type 2 Diabetes', 'Hypertension', 'Obesity'],
+                    duration: 'Ongoing lifestyle changes',
+                    frequency: 'Daily adherence',
+                    dosage_info: {
+                        initial_dose: '30 minutes moderate exercise, 5 days/week',
+                        maximum_dose: '60+ minutes daily as tolerated'
+                    },
+                    category: 'Lifestyle',
+                    severity_level: 'all_levels',
+                    is_active: true
+                }
+            ];
+
+            for (const treatment of treatmentsData) {
+                await prisma.treatmentDatabase.upsert({
+                    where: { id: treatment.id },
+                    update: {},
+                    create: {
+                        ...treatment,
+                        created_at: getRandomPastDate(30, 60),
+                        updated_at: getRecentDate()
+                    }
+                });
+            }
+
+            console.log(`✅ Created ${treatmentsData.length} treatments`);
+        } catch (error: any) {
+            console.log(`⚠️ Skipping treatments database creation - table issue: ${error.message}`);
+        }
+
+        // Create 3 appointments (today + future)
+        console.log('📅 Creating 3 appointments...');
         const createdPatients = await prisma.patient.findMany({
             select: { id: true },
             take: 3,
@@ -741,680 +982,111 @@ export async function seedComprehensiveHealthcareData() {
         });
 
         if (createdPatients.length >= 3) {
-            // Create some appointments for today and future dates using actual Patient IDs
-            const appointments = await prisma.appointment.createMany({
-                skipDuplicates: true,
-                data: [
-                    // Today's appointments for doctor@healthapp.com
-                    {
-                        id: '00000000-0000-0000-0000-000000000301', // apt-001 -> valid UUID
-                        doctor_id: '00000000-0000-0000-0000-000000000011', // doctor@healthapp.com
-                        patient_id: createdPatients[0].id, // First patient (actual Patient table ID)
-                        start_date: new Date(),
-                        start_time: new Date(new Date().setHours(9, 0, 0, 0)),
-                        end_time: new Date(new Date().setHours(9, 30, 0, 0)),
-                        description: 'Routine checkup and medication review',
-                        created_at: new Date(),
-                    },
-                    {
-                        id: '00000000-0000-0000-0000-000000000302', // apt-002 -> valid UUID
-                        doctor_id: '00000000-0000-0000-0000-000000000011', // doctor@healthapp.com
-                        patient_id: createdPatients[1].id, // Second patient (actual Patient table ID)
-                        start_date: new Date(),
-                        start_time: new Date(new Date().setHours(14, 0, 0, 0)),
-                        end_time: new Date(new Date().setHours(14, 30, 0, 0)),
-                        description: 'Follow-up for hypertension management',
-                        created_at: new Date(),
-                    },
-                    // Future appointments
-                    {
-                        id: '00000000-0000-0000-0000-000000000303', // apt-003 -> valid UUID
-                        doctor_id: '00000000-0000-0000-0000-000000000011', // doctor@healthapp.com
-                        patient_id: createdPatients[2].id, // Third patient (actual Patient table ID)
-                        start_date: new Date(Date.now() + 24 * 60 * 60 * 1000), // Tomorrow
-                        start_time: new Date(Date.now() + 24 * 60 * 60 * 1000 + 10 * 60 * 60 * 1000), // 10 AM tomorrow
-                        end_time: new Date(Date.now() + 24 * 60 * 60 * 1000 + 10.5 * 60 * 60 * 1000), // 10:30 AM tomorrow
-                        description: 'Diabetes management consultation',
-                        created_at: new Date(),
-                    }
-                ]
-            });
-            console.log('✅ Created sample appointments');
-        } else {
-            console.log('⚠️ Insufficient patients found, skipping appointment creation');
+            const appointmentsData = [
+                {
+                    id: '00000000-0000-0000-0000-000000000301',
+                    doctor_id: '00000000-0000-0000-0000-000000000011',
+                    patient_id: createdPatients[0].id,
+                    start_date: getTodayDate(),
+                    start_time: new Date(new Date().setHours(9, 0, 0, 0)),
+                    end_time: new Date(new Date().setHours(9, 30, 0, 0)),
+                    description: 'Routine checkup and medication review',
+                    created_at: getRecentDate(),
+                },
+                {
+                    id: '00000000-0000-0000-0000-000000000302',
+                    doctor_id: '00000000-0000-0000-0000-000000000011',
+                    patient_id: createdPatients[1].id,
+                    start_date: getTodayDate(),
+                    start_time: new Date(new Date().setHours(14, 0, 0, 0)),
+                    end_time: new Date(new Date().setHours(14, 30, 0, 0)),
+                    description: 'Follow-up for hypertension management',
+                    created_at: getRecentDate(),
+                },
+                {
+                    id: '00000000-0000-0000-0000-000000000303',
+                    doctor_id: '00000000-0000-0000-0000-000000000022',
+                    patient_id: createdPatients[2].id,
+                    start_date: getFutureDate(1),
+                    start_time: new Date(getFutureDate(1).setHours(10, 0, 0, 0)),
+                    end_time: new Date(getFutureDate(1).setHours(10, 30, 0, 0)),
+                    description: 'Diabetes management consultation',
+                    created_at: getRecentDate(),
+                }
+            ];
+
+            for (const apt of appointmentsData) {
+                await prisma.appointment.upsert({
+                    where: { id: apt.id },
+                    update: {},
+                    create: apt
+                });
+            }
+
+            console.log('✅ Created 3 appointments');
         }
 
-        // Create some adherence records using dynamic patient IDs
+        // Create 3 adherence records
+        console.log('📋 Creating 3 adherence records...');
         if (createdPatients.length >= 2) {
-            const adherenceRecords = await prisma.adherenceRecord.createMany({
-                skipDuplicates: true,
-                data: [
-                    {
-                        id: '00000000-0000-0000-0000-000000000401', // adh-001 -> valid UUID
-                        patient_id: createdPatients[0].id, // First patient (dynamic Patient table ID)
-                        adherence_type: 'MEDICATION',
-                        due_at: new Date(Date.now() - 24 * 60 * 60 * 1000), // Yesterday
-                        recorded_at: new Date(Date.now() - 24 * 60 * 60 * 1000), // Yesterday
-                        is_completed: true,
-                        is_missed: false,
-                        created_at: new Date(),
-                        updated_at: new Date()
-                    },
-                    {
-                        id: '00000000-0000-0000-0000-000000000402', // adh-002 -> valid UUID
-                        patient_id: createdPatients[1].id, // Second patient (dynamic Patient table ID)
-                        adherence_type: 'VITAL_CHECK',
-                        due_at: new Date(Date.now() - 24 * 60 * 60 * 1000), // Yesterday
-                        recorded_at: new Date(Date.now() - 24 * 60 * 60 * 1000), // Yesterday
-                        is_completed: true,
-                        is_missed: false,
-                        created_at: new Date(),
-                        updated_at: new Date()
-                    },
-                    {
-                        id: '00000000-0000-0000-0000-000000000403', // adh-003 -> valid UUID
-                        patient_id: createdPatients.length >= 3 ? createdPatients[2].id : createdPatients[0].id, // Third patient or fallback
-                        adherence_type: 'APPOINTMENT',
-                        due_at: new Date(Date.now() - 24 * 60 * 60 * 1000), // Yesterday
-                        recorded_at: new Date(Date.now() - 24 * 60 * 60 * 1000), // Yesterday
-                        is_completed: false,
-                        is_missed: true,
-                        created_at: new Date(),
-                        updated_at: new Date()
-                    }
-                ]
-            });
-            console.log('✅ Created adherence records');
-        } else {
-            console.log('⚠️ Insufficient patients found, skipping adherence records creation');
-        }
-
-        // Create comprehensive medicines database (idempotent)
-        const medicines = await prisma.medicine.createMany({
-            skipDuplicates: true,
-            data: [
+            const adherenceData = [
                 {
-                    id: '550e8400-e29b-41d4-a716-446655440001',
-                    name: 'Metformin',
-                    type: 'tablet',
-                    description: 'First-line medication for type 2 diabetes management',
-                    details: {
-                        generic_name: 'Metformin Hydrochloride',
-                        brand_names: ['Glucophage', 'Fortamet', 'Glumetza'],
-                        drug_class: 'Biguanide',
-                        common_dosages: ['500mg', '850mg', '1000mg', '1500mg'],
-                        side_effects: ['Nausea', 'Diarrhea', 'Stomach upset', 'Metallic taste', 'Vitamin B12 deficiency'],
-                        contraindications: ['Severe kidney disease', 'Liver disease', 'Heart failure', 'Metabolic acidosis'],
-                        interactions: ['Alcohol', 'Contrast dyes', 'Certain diuretics']
-                    },
-                    public_medicine: true,
-                    created_at: new Date(),
-                    updated_at: new Date()
+                    id: '00000000-0000-0000-0000-000000000401',
+                    patient_id: createdPatients[0].id,
+                    adherence_type: 'MEDICATION' as AdherenceType,
+                    due_at: getRandomPastDate(1, 7),
+                    recorded_at: getRandomPastDate(1, 7),
+                    is_completed: true,
+                    is_missed: false,
+                    created_at: getRandomPastDate(1, 7),
+                    updated_at: getRecentDate()
                 },
                 {
-                    id: '550e8400-e29b-41d4-a716-446655440002',
-                    name: 'Lisinopril',
-                    type: 'tablet',
-                    description: 'ACE inhibitor for high blood pressure and heart failure',
-                    details: {
-                        generic_name: 'Lisinopril',
-                        brand_names: ['Prinivil', 'Zestril'],
-                        drug_class: 'ACE Inhibitor',
-                        common_dosages: ['2.5mg', '5mg', '10mg', '20mg', '40mg'],
-                        side_effects: ['Dry cough', 'Dizziness', 'Headache', 'Hyperkalemia', 'Angioedema'],
-                        contraindications: ['Pregnancy', 'History of angioedema', 'Bilateral renal artery stenosis'],
-                        interactions: ['Potassium supplements', 'NSAIDs', 'Lithium']
-                    },
-                    public_medicine: true,
-                    created_at: new Date(),
-                    updated_at: new Date()
+                    id: '00000000-0000-0000-0000-000000000402',
+                    patient_id: createdPatients[1].id,
+                    adherence_type: 'VITAL_CHECK' as AdherenceType,
+                    due_at: getRandomPastDate(2, 8),
+                    recorded_at: getRandomPastDate(2, 8),
+                    is_completed: true,
+                    is_missed: false,
+                    created_at: getRandomPastDate(2, 8),
+                    updated_at: getRecentDate()
                 },
                 {
-                    id: '550e8400-e29b-41d4-a716-446655440003',
-                    name: 'Aspirin',
-                    type: 'tablet',
-                    description: 'Pain relief and cardiovascular protection',
-                    details: {
-                        generic_name: 'Acetylsalicylic Acid',
-                        brand_names: ['Bayer', 'Bufferin', 'Ecotrin'],
-                        drug_class: 'NSAID/Antiplatelet',
-                        common_dosages: ['81mg', '325mg', '500mg'],
-                        side_effects: ['Stomach irritation', 'Bleeding', 'Tinnitus', 'Allergic reactions'],
-                        contraindications: ['Active bleeding', 'Severe asthma', 'Children with viral infections'],
-                        interactions: ['Warfarin', 'Methotrexate', 'ACE inhibitors']
-                    },
-                    public_medicine: true,
-                    created_at: new Date(),
-                    updated_at: new Date()
-                },
-                {
-                    id: '550e8400-e29b-41d4-a716-446655440004',
-                    name: 'Ibuprofen',
-                    type: 'tablet',
-                    description: 'Anti-inflammatory pain and fever reducer',
-                    details: {
-                        generic_name: 'Ibuprofen',
-                        brand_names: ['Advil', 'Motrin', 'Nuprin'],
-                        drug_class: 'NSAID',
-                        common_dosages: ['200mg', '400mg', '600mg', '800mg'],
-                        side_effects: ['Stomach upset', 'Kidney problems', 'Heart issues', 'High blood pressure'],
-                        contraindications: ['Heart disease', 'Kidney disease', 'Active ulcers', 'Asthma'],
-                        interactions: ['Blood thinners', 'ACE inhibitors', 'Lithium', 'Methotrexate']
-                    },
-                    public_medicine: true,
-                    created_at: new Date(),
-                    updated_at: new Date()
-                },
-                {
-                    id: '550e8400-e29b-41d4-a716-446655440005',
-                    name: 'Amlodipine',
-                    type: 'tablet',
-                    description: 'Calcium channel blocker for high blood pressure',
-                    details: {
-                        generic_name: 'Amlodipine Besylate',
-                        brand_names: ['Norvasc', 'Katerzia'],
-                        drug_class: 'Calcium Channel Blocker',
-                        common_dosages: ['2.5mg', '5mg', '10mg'],
-                        side_effects: ['Ankle swelling', 'Dizziness', 'Flushing', 'Fatigue'],
-                        contraindications: ['Severe aortic stenosis', 'Unstable angina', 'Severe hypotension'],
-                        interactions: ['Simvastatin', 'Cyclosporine', 'Strong CYP3A4 inhibitors']
-                    },
-                    public_medicine: true,
-                    created_at: new Date(),
-                    updated_at: new Date()
-                },
-                {
-                    id: '550e8400-e29b-41d4-a716-446655440006',
-                    name: 'Simvastatin',
-                    type: 'tablet',
-                    description: 'Statin medication for high cholesterol',
-                    details: {
-                        generic_name: 'Simvastatin',
-                        brand_names: ['Zocor', 'FloLipid'],
-                        drug_class: 'HMG-CoA Reductase Inhibitor (Statin)',
-                        common_dosages: ['5mg', '10mg', '20mg', '40mg', '80mg'],
-                        side_effects: ['Muscle pain', 'Liver enzyme elevation', 'Headache', 'Nausea'],
-                        contraindications: ['Active liver disease', 'Pregnancy', 'Nursing', 'Concurrent cyclosporine'],
-                        interactions: ['Grapefruit juice', 'Amiodarone', 'Verapamil', 'Diltiazem']
-                    },
-                    public_medicine: true,
-                    created_at: new Date(),
-                    updated_at: new Date()
-                },
-                {
-                    id: '550e8400-e29b-41d4-a716-446655440007',
-                    name: 'Omeprazole',
-                    type: 'capsule',
-                    description: 'Proton pump inhibitor for acid reflux and ulcers',
-                    details: {
-                        generic_name: 'Omeprazole',
-                        brand_names: ['Prilosec', 'Zegerid'],
-                        drug_class: 'Proton Pump Inhibitor',
-                        common_dosages: ['10mg', '20mg', '40mg'],
-                        side_effects: ['Headache', 'Nausea', 'Diarrhea', 'Vitamin B12 deficiency'],
-                        contraindications: ['Hypersensitivity to benzimidazoles', 'Concurrent rilpivirine'],
-                        interactions: ['Clopidogrel', 'Warfarin', 'Digoxin', 'Atazanavir']
-                    },
-                    public_medicine: true,
-                    created_at: new Date(),
-                    updated_at: new Date()
-                },
-                {
-                    id: '550e8400-e29b-41d4-a716-446655440008',
-                    name: 'Albuterol',
-                    type: 'inhaler',
-                    description: 'Bronchodilator for asthma and COPD',
-                    details: {
-                        generic_name: 'Albuterol Sulfate',
-                        brand_names: ['ProAir', 'Ventolin', 'Proventil'],
-                        drug_class: 'Short-Acting Beta2 Agonist',
-                        common_dosages: ['90mcg/puff', '108mcg/puff'],
-                        side_effects: ['Tremor', 'Nervousness', 'Headache', 'Rapid heartbeat'],
-                        contraindications: ['Hypersensitivity to albuterol', 'Tachyarrhythmias'],
-                        interactions: ['Beta-blockers', 'Digoxin', 'MAO inhibitors', 'Tricyclic antidepressants']
-                    },
-                    public_medicine: true,
-                    created_at: new Date(),
-                    updated_at: new Date()
-                },
-                {
-                    id: '550e8400-e29b-41d4-a716-446655440009',
-                    name: 'Levothyroxine',
-                    type: 'tablet',
-                    description: 'Thyroid hormone replacement therapy',
-                    details: {
-                        generic_name: 'Levothyroxine Sodium',
-                        brand_names: ['Synthroid', 'Levoxyl', 'Tirosint'],
-                        drug_class: 'Thyroid Hormone',
-                        common_dosages: ['25mcg', '50mcg', '75mcg', '100mcg', '125mcg', '150mcg'],
-                        side_effects: ['Heart palpitations', 'Weight loss', 'Nervousness', 'Insomnia'],
-                        contraindications: ['Untreated adrenal insufficiency', 'Recent myocardial infarction'],
-                        interactions: ['Iron supplements', 'Calcium', 'Coffee', 'Soybean flour']
-                    },
-                    public_medicine: true,
-                    created_at: new Date(),
-                    updated_at: new Date()
-                },
-                {
-                    id: '550e8400-e29b-41d4-a716-446655440010',
-                    name: 'Sertraline',
-                    type: 'tablet',
-                    description: 'SSRI antidepressant for depression and anxiety',
-                    details: {
-                        generic_name: 'Sertraline Hydrochloride',
-                        brand_names: ['Zoloft', 'Lustral'],
-                        drug_class: 'Selective Serotonin Reuptake Inhibitor (SSRI)',
-                        common_dosages: ['25mg', '50mg', '100mg'],
-                        side_effects: ['Nausea', 'Diarrhea', 'Sexual dysfunction', 'Weight changes'],
-                        contraindications: ['MAO inhibitor use', 'Pimozide use', 'Linezolid use'],
-                        interactions: ['MAO inhibitors', 'Blood thinners', 'NSAIDs', 'Triptans']
-                    },
-                    public_medicine: true,
-                    created_at: new Date(),
-                    updated_at: new Date()
+                    id: '00000000-0000-0000-0000-000000000403',
+                    patient_id: createdPatients.length >= 3 ? createdPatients[2].id : createdPatients[0].id,
+                    adherence_type: 'APPOINTMENT' as AdherenceType,
+                    due_at: getRandomPastDate(3, 9),
+                    recorded_at: null,
+                    is_completed: false,
+                    is_missed: true,
+                    created_at: getRandomPastDate(3, 9),
+                    updated_at: getRecentDate()
                 }
-            ]
-        });
+            ];
 
-        console.log(`✅ Created medicines`);
-
-        // Create vital templates (idempotent)
-        const vitalTemplates = await prisma.vitalTemplates.createMany({
-            skipDuplicates: true,
-            data: [
-                {
-                    id: '550e8400-e29b-41d4-a716-446655440020',
-                    name: 'Blood Pressure',
-                    unit: 'mmHg',
-                    created_at: new Date(),
-                    updated_at: new Date()
-                },
-                {
-                    id: '550e8400-e29b-41d4-a716-446655440021',
-                    name: 'Heart Rate',
-                    unit: 'bpm',
-                    created_at: new Date(),
-                    updated_at: new Date()
-                },
-                {
-                    id: '550e8400-e29b-41d4-a716-446655440022',
-                    name: 'Weight',
-                    unit: 'kg',
-                    created_at: new Date(),
-                    updated_at: new Date()
-                },
-                {
-                    id: '550e8400-e29b-41d4-a716-446655440023',
-                    name: 'Blood Glucose',
-                    unit: 'mg/dL',
-                    created_at: new Date(),
-                    updated_at: new Date()
-                }
-            ]
-        });
-
-        console.log(`✅ Created vital templates`);
-
-        // Create symptoms/conditions database (idempotent) - with error handling
-        try {
-            const symptomsDatabase = await prisma.symptomsDatabase.createMany({
-                skipDuplicates: true,
-                data: [
-                    {
-                        id: '550e8400-e29b-41d4-a716-446655440011',
-                        diagnosis_name: 'Type 2 Diabetes',
-                        symptoms: [
-                            'Excessive thirst',
-                            'Frequent urination',
-                            'Unexplained weight loss',
-                            'Increased hunger',
-                            'Fatigue',
-                            'Blurred vision',
-                            'Slow-healing sores',
-                            'Frequent infections'
-                        ],
-                        category: 'Endocrine',
-                        severity_indicators: {
-                            mild: ['Mild thirst', 'Occasional fatigue'],
-                            moderate: ['Increased hunger', 'Blurred vision'],
-                            severe: ['Unexplained weight loss', 'Frequent urination', 'Slow-healing wounds']
-                        },
-                        common_age_groups: ['adults', 'elderly'],
-                        gender_specific: 'both',
-                        is_active: true,
-                        created_at: new Date(),
-                        updated_at: new Date()
-                    },
-                    {
-                        id: '550e8400-e29b-41d4-a716-446655440012',
-                        diagnosis_name: 'Hypertension',
-                        symptoms: [
-                            'Headaches',
-                            'Dizziness',
-                            'Chest pain',
-                            'Nosebleeds',
-                            'Shortness of breath',
-                            'Blurred vision',
-                            'Fatigue'
-                        ],
-                        category: 'Cardiovascular',
-                        severity_indicators: {
-                            mild: ['Occasional headaches', 'Mild dizziness'],
-                            moderate: ['Regular headaches', 'Chest discomfort'],
-                            severe: ['Severe headaches', 'Chest pain', 'Shortness of breath']
-                        },
-                        common_age_groups: ['adults', 'elderly'],
-                        gender_specific: 'both',
-                        is_active: true,
-                        created_at: new Date(),
-                        updated_at: new Date()
-                    },
-                    {
-                        id: '550e8400-e29b-41d4-a716-446655440013',
-                        diagnosis_name: 'Asthma',
-                        symptoms: [
-                            'Wheezing',
-                            'Coughing',
-                            'Chest tightness',
-                            'Shortness of breath',
-                            'Difficulty breathing',
-                            'Rapid breathing'
-                        ],
-                        category: 'Respiratory',
-                        severity_indicators: {
-                            mild: ['Occasional wheezing', 'Exercise-induced cough'],
-                            moderate: ['Regular shortness of breath', 'Chest tightness'],
-                            severe: ['Difficulty speaking', 'Severe breathing problems', 'Blue lips/fingernails']
-                        },
-                        common_age_groups: ['children', 'adults'],
-                        gender_specific: 'both',
-                        is_active: true,
-                        created_at: new Date(),
-                        updated_at: new Date()
-                    },
-                    {
-                        id: '550e8400-e29b-41d4-a716-446655440014',
-                        diagnosis_name: 'Depression',
-                        symptoms: [
-                            'Persistent sadness',
-                            'Loss of interest',
-                            'Fatigue',
-                            'Sleep disturbances',
-                            'Appetite changes',
-                            'Difficulty concentrating',
-                            'Feelings of worthlessness',
-                            'Thoughts of death'
-                        ],
-                        category: 'Mental Health',
-                        severity_indicators: {
-                            mild: ['Occasional sadness', 'Mild sleep issues'],
-                            moderate: ['Regular mood changes', 'Decreased activity'],
-                            severe: ['Persistent hopelessness', 'Thoughts of self-harm', 'Unable to function']
-                        },
-                        common_age_groups: ['adolescents', 'adults', 'elderly'],
-                        gender_specific: 'both',
-                        is_active: true,
-                        created_at: new Date(),
-                        updated_at: new Date()
-                    },
-                    {
-                        id: '550e8400-e29b-41d4-a716-446655440015',
-                        diagnosis_name: 'Anxiety Disorder',
-                        symptoms: [
-                            'Excessive worry',
-                            'Restlessness',
-                            'Fatigue',
-                            'Difficulty concentrating',
-                            'Irritability',
-                            'Muscle tension',
-                            'Sleep disturbances',
-                            'Panic attacks'
-                        ],
-                        category: 'Mental Health',
-                        severity_indicators: {
-                            mild: ['Occasional worry', 'Mild restlessness'],
-                            moderate: ['Regular anxiety', 'Difficulty concentrating'],
-                            severe: ['Panic attacks', 'Unable to perform daily activities', 'Constant fear']
-                        },
-                        common_age_groups: ['adolescents', 'adults'],
-                        gender_specific: 'both',
-                        is_active: true,
-                        created_at: new Date(),
-                        updated_at: new Date()
-                    }
-                ]
-            });
-            console.log(`✅ Created symptoms/conditions database`);
-        } catch (error: any) {
-            if (error.code === 'P2021') {
-                console.log(`⚠️ Skipping symptoms database creation - table name issue`);
-            } else {
-                throw error;
+            for (const record of adherenceData) {
+                await prisma.adherenceRecord.upsert({
+                    where: { id: record.id },
+                    update: {},
+                    create: record
+                });
             }
+
+            console.log('✅ Created 3 adherence records');
         }
 
-        // Create treatments database (idempotent) - with error handling
-        try {
-            const treatmentsDatabase = await prisma.treatmentDatabase.createMany({
-                skipDuplicates: true,
-                data: [
-                    {
-                        id: '550e8400-e29b-41d4-a716-446655440021',
-                        treatment_name: 'Metformin Therapy',
-                        treatment_type: 'medication',
-                        description: 'First-line medication for Type 2 diabetes management',
-                        applicable_conditions: ['Type 2 Diabetes', 'Pre-diabetes', 'PCOS'],
-                        duration: 'Long-term',
-                        frequency: 'Twice daily with meals',
-                        dosage_info: {
-                            initial_dose: '500mg twice daily',
-                            maximum_dose: '2000mg daily',
-                            titration: 'Increase by 500mg weekly as tolerated'
-                        },
-                        category: 'Antidiabetic',
-                        severity_level: 'moderate',
-                        age_restrictions: {
-                            minimum_age: 10,
-                            elderly_considerations: 'Monitor renal function'
-                        },
-                        contraindications: [
-                            'Severe renal impairment',
-                            'Metabolic acidosis',
-                            'Heart failure requiring medication'
-                        ],
-                        side_effects: [
-                            'Gastrointestinal upset',
-                            'Metallic taste',
-                            'Vitamin B12 deficiency (long-term)'
-                        ],
-                        monitoring_required: [
-                            'Blood glucose levels',
-                            'Kidney function',
-                            'Vitamin B12 levels'
-                        ],
-                        is_active: true,
-                        created_at: new Date(),
-                        updated_at: new Date()
-                    },
-                    {
-                        id: '550e8400-e29b-41d4-a716-446655440022',
-                        treatment_name: 'ACE Inhibitor Therapy',
-                        treatment_type: 'medication',
-                        description: 'First-line treatment for hypertension and heart failure',
-                        applicable_conditions: ['Hypertension', 'Heart Failure', 'Diabetic Nephropathy'],
-                        duration: 'Long-term',
-                        frequency: 'Once or twice daily',
-                        dosage_info: {
-                            initial_dose: '2.5-5mg daily',
-                            maximum_dose: '40mg daily',
-                            titration: 'Increase every 1-2 weeks as needed'
-                        },
-                        category: 'Cardiovascular',
-                        severity_level: 'moderate',
-                        age_restrictions: {
-                            minimum_age: 18,
-                            elderly_considerations: 'Start with lower doses'
-                        },
-                        contraindications: [
-                            'Pregnancy',
-                            'History of angioedema',
-                            'Bilateral renal artery stenosis'
-                        ],
-                        side_effects: [
-                            'Dry cough',
-                            'Hyperkalemia',
-                            'Dizziness',
-                            'Angioedema (rare)'
-                        ],
-                        monitoring_required: [
-                            'Blood pressure',
-                            'Kidney function',
-                            'Potassium levels'
-                        ],
-                        is_active: true,
-                        created_at: new Date(),
-                        updated_at: new Date()
-                    },
-                    {
-                        id: '550e8400-e29b-41d4-a716-446655440023',
-                        treatment_name: 'Inhaled Bronchodilator Therapy',
-                        treatment_type: 'medication',
-                        description: 'Short-acting beta2 agonist for asthma and COPD',
-                        applicable_conditions: ['Asthma', 'COPD', 'Exercise-induced bronchospasm'],
-                        duration: 'As needed or regular use',
-                        frequency: '2 puffs every 4-6 hours as needed',
-                        dosage_info: {
-                            initial_dose: '90mcg (2 puffs) as needed',
-                            maximum_dose: '12 puffs per day',
-                            titration: 'Use as needed for symptoms'
-                        },
-                        category: 'Respiratory',
-                        severity_level: 'mild_to_moderate',
-                        age_restrictions: {
-                            minimum_age: 4,
-                            elderly_considerations: 'Monitor for cardiovascular effects'
-                        },
-                        contraindications: [
-                            'Hypersensitivity to albuterol',
-                            'Tachyarrhythmias'
-                        ],
-                        side_effects: [
-                            'Tremor',
-                            'Nervousness',
-                            'Headache',
-                            'Rapid heartbeat'
-                        ],
-                        monitoring_required: [
-                            'Peak flow readings',
-                            'Symptom frequency',
-                            'Heart rate'
-                        ],
-                        is_active: true,
-                        created_at: new Date(),
-                        updated_at: new Date()
-                    },
-                    {
-                        id: '550e8400-e29b-41d4-a716-446655440024',
-                        treatment_name: 'Cognitive Behavioral Therapy',
-                        treatment_type: 'therapy',
-                        description: 'Evidence-based psychotherapy for depression and anxiety',
-                        applicable_conditions: ['Depression', 'Anxiety Disorder', 'PTSD', 'Panic Disorder'],
-                        duration: '12-20 sessions over 3-6 months',
-                        frequency: 'Weekly sessions initially',
-                        dosage_info: {
-                            initial_dose: '45-50 minute sessions weekly',
-                            maximum_dose: 'Twice weekly in severe cases',
-                            titration: 'Adjust frequency based on progress'
-                        },
-                        category: 'Mental Health',
-                        severity_level: 'mild_to_severe',
-                        age_restrictions: {
-                            minimum_age: 8,
-                            elderly_considerations: 'May require modifications for cognitive changes'
-                        },
-                        contraindications: [
-                            'Active psychosis',
-                            'Severe cognitive impairment',
-                            'Active substance intoxication'
-                        ],
-                        side_effects: [
-                            'Temporary increase in distress',
-                            'Emotional fatigue during sessions'
-                        ],
-                        monitoring_required: [
-                            'Mood rating scales',
-                            'Functional improvement',
-                            'Suicide risk assessment'
-                        ],
-                        is_active: true,
-                        created_at: new Date(),
-                        updated_at: new Date()
-                    },
-                    {
-                        id: '550e8400-e29b-41d4-a716-446655440025',
-                        treatment_name: 'Lifestyle Modification Program',
-                        treatment_type: 'lifestyle',
-                        description: 'Comprehensive diet and exercise program for chronic disease management',
-                        applicable_conditions: ['Type 2 Diabetes', 'Hypertension', 'Obesity', 'High Cholesterol'],
-                        duration: 'Ongoing lifestyle changes',
-                        frequency: 'Daily adherence to recommendations',
-                        dosage_info: {
-                            initial_dose: '30 minutes moderate exercise, 5 days/week',
-                            maximum_dose: '60+ minutes daily exercise as tolerated',
-                            titration: 'Gradually increase intensity and duration'
-                        },
-                        category: 'Lifestyle',
-                        severity_level: 'all_levels',
-                        age_restrictions: {
-                            minimum_age: 'All ages with modifications',
-                            elderly_considerations: 'Lower intensity exercise, fall prevention'
-                        },
-                        contraindications: [
-                            'Severe cardiovascular disease without clearance',
-                            'Acute illness',
-                            'Uncontrolled diabetes'
-                        ],
-                        side_effects: [
-                            'Initial fatigue',
-                            'Muscle soreness',
-                            'Temporary hunger adjustments'
-                        ],
-                        monitoring_required: [
-                            'Weight tracking',
-                            'Blood pressure monitoring',
-                            'Blood glucose levels',
-                            'Exercise tolerance'
-                        ],
-                        is_active: true,
-                        created_at: new Date(),
-                        updated_at: new Date()
-                    }
-                ]
-            });
-            console.log(`✅ Created treatments database`);
-        } catch (error: any) {
-            if (error.code === 'P2021') {
-                console.log(`⚠️ Skipping treatments database creation - table name issue`);
-            } else {
-                throw error;
-            }
-        }
-
-        // Seed Patient Adherence Architecture (inline)
-        console.log(`\n🏥 Creating Patient Adherence Architecture...`);
-        await seedPatientAdherenceArchitecture();
-
-        console.log(`🎉 Successfully seeded comprehensive healthcare test data!`);
+        console.log(`\n🎉 Successfully seeded comprehensive healthcare test data!`);
         console.log(`📊 Summary:`);
         console.log(`   - Users: 12 (5 patients, 4 doctors, 1 HSP, 1 admin, 1 provider)`);
-        console.log(`   - Organization: 1`);
-        console.log(`   - Medical Specialties: 11 (complete specialties database)`);
-        console.log(`   - Medicines: 10 (comprehensive medication database)`);
-        console.log(`   - Vital Templates: 4`);
-        console.log(`   - Symptoms/Conditions: 5 (major medical conditions) ${symptomsDatabase ? '✅' : '⚠️'}`);
-        console.log(`   - Treatments: 5 (medication, therapy, lifestyle treatments) ${treatmentsDatabase ? '✅' : '⚠️'}`);
-        console.log(`   - Appointments: 3 (today's appointments + future appointments)`);
-        console.log(`   - Adherence Records: 3 (realistic adherence data for dashboard)`);
+        console.log(`   - Organization: 1 ✅`);
+        console.log(`   - Medical Specialties: 11 ✅`);
+        console.log(`   - Medicines: 10 ✅`);
+        console.log(`   - Vital Templates: 4 ✅`);
+        console.log(`   - Symptoms/Conditions: 5 ✅`);
+        console.log(`   - Treatments: 5 ✅`);
+        console.log(`   - Appointments: 3 ✅`);
+        console.log(`   - Adherence Records: 3 ✅`);
         console.log(`   - Provider: ${provider ? '✅' : '⚠️'}`);
         console.log(`   - Basic doctor credentials: doctor@healthapp.com / TempPassword123!`);
         console.log(`   - Basic doctor credentials: doctor1@healthapp.com / TempPassword123!`);
@@ -1431,8 +1103,10 @@ export async function seedComprehensiveHealthcareData() {
                 specialties: 11,
                 medicines: 10,
                 vitalTemplates: 4,
-                symptomsConditions: symptomsDatabase ? 5 : 0,
-                treatments: treatmentsDatabase ? 5 : 0,
+                symptomsConditions: 5,
+                treatments: 5,
+                appointments: 3,
+                adherenceRecords: 3,
                 provider: provider ? 1 : 0
             }
         };
@@ -1445,202 +1119,7 @@ export async function seedComprehensiveHealthcareData() {
     }
 }
 
-// WARNING: This function is destructive and will wipe all data from the specified tables.
-// It is intended for development and testing purposes only.
-export async function DANGEROUSLY_CLEAR_ALL_DATA_TABLES() {
-    console.log('🗑️ DANGEROUSLY clearing all data from tables...');
-
-    try {
-        // Wrap all delete operations in a transaction to ensure atomicity
-        // Delete in an order that respects foreign key constraints
-        await prisma.$transaction(async (tx) => {
-            // Delete child tables first to respect foreign key constraints
-            await tx.medicationLogs.deleteMany({});
-            await tx.medication.deleteMany({});
-            await tx.carePlan.deleteMany({});
-            await tx.adherenceRecord.deleteMany({});
-            await tx.appointment.deleteMany({});
-            await tx.patient.deleteMany({});
-            await tx.hsp.deleteMany({});
-            await tx.doctor.deleteMany({});
-            // Delete in reverse dependency order
-            // await tx.patient.deleteMany({});
-            // await tx.doctors.deleteMany({});
-            // await tx.hsps.deleteMany({});
-
-            // Try to delete providers with error handling
-            try {
-                await tx.providers.deleteMany({});
-            } catch (error: any) {
-                if (error.code === 'P2021') {
-                    console.log('⚠️ Skipping providers deletion - table name issue');
-                } else {
-                    throw error;
-                }
-            }
-
-            await tx.user.deleteMany({});
-            await tx.organization.deleteMany({});
-            await tx.speciality.deleteMany({});
-            await tx.medicine.deleteMany({});
-            await tx.vitalTemplates.deleteMany({});
-        });
-
-        console.log('✅ All data cleared successfully in transaction');
-    } catch (error) {
-        console.error('❌ Error clearing all data:', error);
-        throw error;
-    }
-}
-
-// Patient Adherence Architecture seeding using predictable UUIDs
-async function seedPatientAdherenceArchitecture() {
-    console.log('📋 Creating Patient Adherence Care Plans...');
-
-    // Get existing entities with their known UUIDs
-    const doctor1Id = '00000000-0000-0000-0000-000000000011'; // doctor@healthapp.com
-    const doctor2Id = '00000000-0000-0000-0000-000000000022'; // doctor1@healthapp.com
-
-    // Get actual Patient table IDs dynamically instead of hardcoded User IDs
-    const createdPatients = await prisma.patient.findMany({
-        select: { id: true },
-        take: 3,
-        orderBy: { created_at: 'asc' }
-    });
-
-    if (createdPatients.length < 3) {
-        throw new Error(`Expected 3 patients, found ${createdPatients.length}`);
-    }
-
-    const patientIds = createdPatients.map(p => p.id);
-
-    // Create Care Plans with predictable UUIDs
-    const carePlanIds = [
-        '00000000-0000-0000-0000-000000000501', // careplan-0000-0000-0000-000000000001 -> valid UUID
-        '00000000-0000-0000-0000-000000000502', // careplan-0000-0000-0000-000000000002 -> valid UUID
-        '00000000-0000-0000-0000-000000000503'  // careplan-0000-0000-0000-000000000003 -> valid UUID
-    ];
-
-    for (let i = 0; i < 3; i++) {
-        const doctorId = i < 2 ? doctor1Id : doctor2Id; // First 2 patients to doctor1, last to doctor2
-        const conditions = [
-            ['Type 2 Diabetes', 'Hypertension'],
-            ['Hypertension', 'High Cholesterol'],
-            ['Anxiety', 'Migraines']
-        ][i];
-
-        await prisma.carePlan.upsert({
-            where: { id: carePlanIds[i] },
-            update: {},
-            create: {
-                id: carePlanIds[i],
-                patient_id: patientIds[i],
-                created_by_doctor_id: doctorId,
-                title: `Comprehensive Care Plan - Patient ${i + 1}`,
-                description: `Patient adherence monitoring for ${conditions.join(' and ')}`,
-                plan_type: 'chronic_care',
-                chronic_conditions: conditions,
-                start_date: new Date(),
-                end_date: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
-                status: 'ACTIVE',
-                priority: 'HIGH',
-                created_at: new Date(),
-                updated_at: new Date()
-            }
-        });
-    }
-
-    console.log('💊 Creating Medication Reminders...');
-
-    // Get medicines with known IDs
-    const metforminId = '550e8400-e29b-41d4-a716-446655440001';
-    const lisinoprilId = '550e8400-e29b-41d4-a716-446655440002';
-    const aspirinId = '550e8400-e29b-41d4-a716-446655440003';
-
-    // Create Medication Reminders with predictable UUIDs
-    const medicationIds = [
-        '00000000-0000-0000-0000-000000000601', // medication-0000-0000-0000-000000000001 -> valid UUID (Metformin for patient 1)
-        '00000000-0000-0000-0000-000000000602', // medication-0000-0000-0000-000000000002 -> valid UUID (Lisinopril for patient 1)
-        '00000000-0000-0000-0000-000000000603', // medication-0000-0000-0000-000000000003 -> valid UUID (Lisinopril for patient 2)
-        '00000000-0000-0000-0000-000000000604'  // medication-0000-0000-0000-000000000004 -> valid UUID (Aspirin for patient 2)
-    ];
-
-    const medications = [
-        { id: medicationIds[0], patientId: patientIds[0], carePlanId: carePlanIds[0], medicineId: metforminId, doctorId: doctor1Id, name: 'Metformin', dosage: '1000mg', frequency: 'twice_daily' },
-        { id: medicationIds[1], patientId: patientIds[0], carePlanId: carePlanIds[0], medicineId: lisinoprilId, doctorId: doctor1Id, name: 'Lisinopril', dosage: '10mg', frequency: 'once_daily' },
-        { id: medicationIds[2], patientId: patientIds[1], carePlanId: carePlanIds[1], medicineId: lisinoprilId, doctorId: doctor1Id, name: 'Lisinopril', dosage: '10mg', frequency: 'once_daily' },
-        { id: medicationIds[3], patientId: patientIds[1], carePlanId: carePlanIds[1], medicineId: aspirinId, doctorId: doctor1Id, name: 'Aspirin', dosage: '81mg', frequency: 'once_daily' }
-    ];
-
-    for (const med of medications) {
-        await prisma.medication.upsert({
-            where: { id: med.id },
-            update: {},
-            create: {
-                id: med.id,
-                participant_id: med.patientId,
-                organizer_type: 'doctor',
-                organizer_id: med.doctorId,
-                medicine_id: med.medicineId,
-                care_plan_id: med.carePlanId,
-                description: `${med.name} ${med.dosage} ${med.frequency.replace('_', ' ')} for patient adherence monitoring`,
-                start_date: new Date(),
-                end_date: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
-                details: {
-                    dosage: med.dosage,
-                    frequency: med.frequency,
-                    is_critical: med.name === 'Metformin' || med.name === 'Lisinopril'
-                },
-                created_at: new Date(),
-                updated_at: new Date()
-            }
-        });
-    }
-
-    console.log('📊 Creating Medication Adherence Logs...');
-
-    // Create adherence logs with predictable UUIDs
-    let logCounter = 1;
-    for (const med of medications) {
-        // Create logs for the past 7 days
-        for (let day = 7; day >= 0; day--) {
-            const logDate = new Date(Date.now() - day * 24 * 60 * 60 * 1000);
-            const dailyDoses = med.frequency === 'twice_daily' ? 2 : 1;
-
-            for (let dose = 0; dose < dailyDoses; dose++) {
-                const scheduledTime = new Date(logDate);
-                scheduledTime.setHours(dose === 0 ? 8 : 20, 0, 0, 0);
-
-                const adherenceRate = Math.random();
-                const wasAdherent = adherenceRate > 0.2; // 80% adherence rate
-
-                const logId = `00000000-0000-0000-0000-${String(700000 + logCounter).padStart(12, '0')}`; // medlog-000-000-000-${counter} -> valid UUID
-
-                await prisma.medicationLogs.upsert({
-                    where: { id: logId },
-                    update: {},
-                    create: {
-                        id: logId,
-                        medication_id: med.id,
-                        patient_id: med.patientId,
-                        scheduled_at: scheduledTime,
-                        taken_at: wasAdherent ? scheduledTime : null,
-                        adherence_status: wasAdherent ? 'taken' : 'missed',
-                        reminder_sent: true,
-                        created_at: scheduledTime,
-                        updated_at: scheduledTime
-                    }
-                });
-
-                logCounter++;
-            }
-        }
-    }
-
-    console.log('✅ Patient Adherence Architecture seeded successfully');
-}
-
-// Main execution when run directly (ES modules detection)
+// Main execution when run directly
 if (import.meta.url === `file://${process.argv[1]}`) {
     console.log('🚀 Starting healthcare data seeding...');
     seedComprehensiveHealthcareData()
@@ -1651,8 +1130,5 @@ if (import.meta.url === `file://${process.argv[1]}`) {
         .catch((error) => {
             console.error('❌ Seeding failed:', error);
             process.exit(1);
-        })
-        .finally(async () => {
-            await prisma.$disconnect();
         });
 }
