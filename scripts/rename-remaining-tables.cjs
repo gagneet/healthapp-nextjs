@@ -72,8 +72,13 @@ async function fixRemainingTables() {
     
     for (const [oldName, newName] of Object.entries(tableMappings)) {
       if (currentTableNames.includes(oldName)) {
+        if (!isSafeTableName(oldName) || !isSafeTableName(newName)) {
+          console.log(`  ❌ Unsafe table name detected: ${oldName} or ${newName}`);
+          continue;
+        }
         try {
           const renameCommand = `ALTER TABLE "${oldName}" RENAME TO "${newName}"`;
+          // Table names are validated above, so this is safe
           await prisma.$executeRawUnsafe(renameCommand);
           console.log(`  ✅ ${oldName} → ${newName}`);
           renamedCount++;
