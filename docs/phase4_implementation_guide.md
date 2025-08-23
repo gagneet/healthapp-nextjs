@@ -273,8 +273,8 @@ GET /api/lab-analytics/trends?patientId=...&testCode=HBA1C
 
 ```json
 [
-  { "result_date": "2024-01-10T00:00:00.000Z", "numeric_value": 7.2 },
-  { "result_date": "2024-04-12T00:00:00.000Z", "numeric_value": 6.8 }
+  { "result_date": "2025-01-10T00:00:00.000Z", "numeric_value": 7.2 },
+  { "result_date": "2025-04-12T00:00:00.000Z", "numeric_value": 6.8 }
 ]
 ```
 

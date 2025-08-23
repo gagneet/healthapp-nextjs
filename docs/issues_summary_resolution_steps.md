@@ -2108,7 +2108,7 @@ Ready for Production Deployment:
 
 The production deployment on healthapp.gagneet.com can now proceed with:
 POSTGRES_PASSWORD=secure_healthcare_password \
-NEXTAUTH_SECRET=healthcare-nextauth-secret-2024-secure \
+NEXTAUTH_SECRET=healthcare-nextauth-secret-2025-secure \
 REDIS_PASSWORD=secure_redis_password \
 PGADMIN_PASSWORD=secure_admin_password \
 ./scripts/deploy-production.sh deploy --domain healthapp.gagneet.com --migrate --seed --auto-yes
@@ -3351,7 +3351,7 @@ Environment Variables for Test
 
 Set these before deployment:
 export POSTGRES_PASSWORD=secure_test_password
-export NEXTAUTH_SECRET=test-nextauth-secret-2024-secure
+export NEXTAUTH_SECRET=test-nextauth-secret-2025-secure
 export REDIS_PASSWORD=secure_test_redis
 export PGADMIN_PASSWORD=secure_admin_password
 
@@ -3359,7 +3359,7 @@ export PGADMIN_PASSWORD=secure_admin_password
 
 # Set environment variables
 export POSTGRES_PASSWORD=secure_test_password
-export NEXTAUTH_SECRET=test-nextauth-secret-2024-secure
+export NEXTAUTH_SECRET=test-nextauth-secret-2025-secure
 export REDIS_PASSWORD=secure_test_redis
 export PGADMIN_PASSWORD=secure_admin_password
 
@@ -4642,7 +4642,7 @@ The healthapp.gagneet.com:3002 deployment should now be fully functional for tes
 - ✅ Created /api/doctors/adherence-analytics
 
 4. Database Issues:
-- ✅ Verified patient exists with ID PAT-2024-001
+- ✅ Verified patient exists with ID PAT-2025-001
 - ✅ Assigned patient to both doctors properly
 - ✅ Database connections and credentials working correctly
 

@@ -72,7 +72,7 @@ const mockVitalReadings: VitalReading[] = [
     type: 'Blood Pressure',
     value: 140,
     unit: 'mmHg',
-    reading_time: '2024-01-22T08:30:00Z',
+    reading_time: '2025-01-22T08:30:00Z',
     is_flagged: true,
     normal_range: { min: 90, max: 120 },
   },
@@ -81,7 +81,7 @@ const mockVitalReadings: VitalReading[] = [
     type: 'Blood Glucose',
     value: 125,
     unit: 'mg/dL',
-    reading_time: '2024-01-22T09:00:00Z',
+    reading_time: '2025-01-22T09:00:00Z',
     is_flagged: false,
     normal_range: { min: 70, max: 140 },
   },
@@ -93,8 +93,8 @@ const mockAppointments: Appointment[] = [
     id: '1',
     title: 'Follow-up Consultation',
     type: 'follow-up',
-    start_time: '2024-02-01T10:00:00Z',
-    end_time: '2024-02-01T10:30:00Z',
+    start_time: '2025-02-01T10:00:00Z',
+    end_time: '2025-02-01T10:30:00Z',
     status: 'scheduled',
     is_virtual: false,
   },
@@ -102,8 +102,8 @@ const mockAppointments: Appointment[] = [
     id: '2',
     title: 'Blood Work Review',
     type: 'consultation',
-    start_time: '2024-01-25T14:00:00Z',
-    end_time: '2024-01-25T14:30:00Z',
+    start_time: '2025-01-25T14:00:00Z',
+    end_time: '2025-01-25T14:30:00Z',
     status: 'confirmed',
     is_virtual: true,
     notes: 'Review recent lab results',
@@ -116,8 +116,8 @@ const symptoms = [
     name: 'Headache',
     severity: 6,
     description: 'Persistent headache, especially in the morning',
-    onset_time: '2024-01-20T06:00:00Z',
-    recorded_at: '2024-01-20T08:00:00Z',
+    onset_time: '2025-01-20T06:00:00Z',
+    recorded_at: '2025-01-20T08:00:00Z',
     x: 50, // Head position (2D)
     y: 8,
     z: 0, // Front of head (3D)
@@ -129,8 +129,8 @@ const symptoms = [
     name: 'Chest Pain',
     severity: 8,
     description: 'Sharp chest pain, worse with deep breathing',
-    onset_time: '2024-01-19T14:30:00Z',
-    recorded_at: '2024-01-19T15:00:00Z',
+    onset_time: '2025-01-19T14:30:00Z',
+    recorded_at: '2025-01-19T15:00:00Z',
     x: 50, // Chest position (2D)
     y: 25,
     z: 0.2, // Front of chest (3D)
@@ -142,8 +142,8 @@ const symptoms = [
     name: 'Back Pain',
     severity: 5,
     description: 'Lower back pain, aching sensation',
-    onset_time: '2024-01-18T10:00:00Z',
-    recorded_at: '2024-01-18T10:15:00Z',
+    onset_time: '2025-01-18T10:00:00Z',
+    recorded_at: '2025-01-18T10:15:00Z',
     x: 50, // Back position (2D)
     y: 40,
     z: -0.3, // Back of torso (3D)
@@ -155,8 +155,8 @@ const symptoms = [
     name: 'Knee Pain',
     severity: 4,
     description: 'Right knee pain when walking',
-    onset_time: '2024-01-17T16:20:00Z',
-    recorded_at: '2024-01-17T18:00:00Z',
+    onset_time: '2025-01-17T16:20:00Z',
+    recorded_at: '2025-01-17T18:00:00Z',
     x: 60, // Right knee position (2D)
     y: 80,
     z: 0.1, // Right side (3D)
@@ -168,8 +168,8 @@ const symptoms = [
     name: 'Shoulder Pain',
     severity: 3,
     description: 'Left shoulder stiffness and mild pain',
-    onset_time: '2024-01-16T09:15:00Z',
-    recorded_at: '2024-01-16T11:30:00Z',
+    onset_time: '2025-01-16T09:15:00Z',
+    recorded_at: '2025-01-16T11:30:00Z',
     x: 35, // Left shoulder position (2D)
     y: 22,
     z: 0.1, // Left side (3D)
@@ -181,8 +181,8 @@ const symptoms = [
     name: 'Abdominal Pain',
     severity: 7,
     description: 'Sharp abdominal pain in upper right quadrant',
-    onset_time: '2024-01-15T12:45:00Z',
-    recorded_at: '2024-01-15T13:00:00Z',
+    onset_time: '2025-01-15T12:45:00Z',
+    recorded_at: '2025-01-15T13:00:00Z',
     x: 55, // Abdomen position (2D)
     y: 45,
     z: 0.2, // Front of abdomen (3D)
@@ -690,14 +690,14 @@ export default function PatientDetailsPage() {
             <div className="flex items-center justify-between p-3 bg-red-50 border border-red-200 rounded-lg">
               <div>
                 <p className="font-medium text-red-900">Blood Pressure Medication</p>
-                <p className="text-sm text-red-700">Missed on Jan 20, 2024 at 8:00 AM</p>
+                <p className="text-sm text-red-700">Missed on Jan 20, 2025 at 8:00 AM</p>
               </div>
               <span className="text-xs text-red-600 bg-red-100 px-2 py-1 rounded">Critical</span>
             </div>
             <div className="flex items-center justify-between p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
               <div>
                 <p className="font-medium text-yellow-900">Blood Glucose Reading</p>
-                <p className="text-sm text-yellow-700">Missed on Jan 19, 2024 at 9:00 AM</p>
+                <p className="text-sm text-yellow-700">Missed on Jan 19, 2025 at 9:00 AM</p>
               </div>
               <span className="text-xs text-yellow-600 bg-yellow-100 px-2 py-1 rounded">Important</span>
             </div>
@@ -1493,9 +1493,9 @@ export default function PatientDetailsPage() {
                     <h3 className="text-lg font-medium">Exercise Log</h3>
                     <div className="space-y-3">
                       {[
-                        { activity: 'Walking', duration: '30 min', date: '2024-01-22' },
-                        { activity: 'Swimming', duration: '25 min', date: '2024-01-21' },
-                        { activity: 'Cycling', duration: '35 min', date: '2024-01-20' }
+                        { activity: 'Walking', duration: '30 min', date: '2025-01-22' },
+                        { activity: 'Swimming', duration: '25 min', date: '2025-01-21' },
+                        { activity: 'Cycling', duration: '35 min', date: '2025-01-20' }
                       ].map((exercise, index) => (
                         <div key={index} className="border border-gray-200 rounded-lg p-3">
                           <div className="flex justify-between items-center">
@@ -1532,12 +1532,12 @@ export default function PatientDetailsPage() {
               <CardContent>
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                   {[
-                    { name: 'Blood Test Results', type: 'Lab Report', date: '2024-01-20', size: '2.3 MB', format: 'PDF' },
-                    { name: 'Chest X-Ray', type: 'Imaging', date: '2024-01-18', size: '5.1 MB', format: 'DICOM' },
-                    { name: 'ECG Report', type: 'Diagnostic', date: '2024-01-15', size: '1.8 MB', format: 'PDF' },
-                    { name: 'MRI Scan', type: 'Imaging', date: '2024-01-10', size: '15.2 MB', format: 'DICOM' },
-                    { name: 'Prescription', type: 'Medication', date: '2024-01-22', size: '0.5 MB', format: 'PDF' },
-                    { name: 'Consultation Notes', type: 'Clinical', date: '2024-01-22', size: '0.8 MB', format: 'PDF' }
+                    { name: 'Blood Test Results', type: 'Lab Report', date: '2025-01-20', size: '2.3 MB', format: 'PDF' },
+                    { name: 'Chest X-Ray', type: 'Imaging', date: '2025-01-18', size: '5.1 MB', format: 'DICOM' },
+                    { name: 'ECG Report', type: 'Diagnostic', date: '2025-01-15', size: '1.8 MB', format: 'PDF' },
+                    { name: 'MRI Scan', type: 'Imaging', date: '2025-01-10', size: '15.2 MB', format: 'DICOM' },
+                    { name: 'Prescription', type: 'Medication', date: '2025-01-22', size: '0.5 MB', format: 'PDF' },
+                    { name: 'Consultation Notes', type: 'Clinical', date: '2025-01-22', size: '0.8 MB', format: 'PDF' }
                   ].map((report, index) => (
                     <div key={index} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
                       <div className="flex items-start justify-between">
@@ -1665,14 +1665,14 @@ export default function PatientDetailsPage() {
                         description: 'Continuous vital signs monitoring',
                         status: 'Active',
                         cost: '$99/month',
-                        nextBilling: '2024-02-15'
+                        nextBilling: '2025-02-15'
                       },
                       { 
                         name: 'Medication Reminders', 
                         description: 'Automated medication alerts and tracking',
                         status: 'Active',
                         cost: '$29/month',
-                        nextBilling: '2024-02-10'
+                        nextBilling: '2025-02-10'
                       },
                       { 
                         name: 'Telemedicine Consultations', 
@@ -1686,14 +1686,14 @@ export default function PatientDetailsPage() {
                         description: 'Personalized nutrition guidance',
                         status: 'Trial',
                         cost: '$79/month',
-                        nextBilling: '2024-01-30'
+                        nextBilling: '2025-01-30'
                       },
                       { 
                         name: 'Emergency Response', 
                         description: '24/7 emergency medical response',
                         status: 'Active',
                         cost: '$199/month',
-                        nextBilling: '2024-02-20'
+                        nextBilling: '2025-02-20'
                       },
                       { 
                         name: 'Family Health Dashboard', 

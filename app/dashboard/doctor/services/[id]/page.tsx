@@ -61,8 +61,8 @@ export default function ServiceDetailsPage() {
         requiresSubscription: false,
         isActive: true,
         tags: ['general-medicine', 'consultation', 'preventive-care'],
-        created_at: '2024-01-10T09:15:00Z',
-        updated_at: '2024-02-05T11:30:00Z',
+        created_at: '2025-01-10T09:15:00Z',
+        updated_at: '2025-02-05T11:30:00Z',
         usage_count: 45,
         revenue_generated: 6750.00,
         active_subscriptions: 0

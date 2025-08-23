@@ -64,8 +64,8 @@ const mockServices: Service[] = [
     currency: 'USD',
     duration_days: 90,
     is_active: true,
-    created_at: '2024-01-10T09:00:00Z',
-    updated_at: '2024-01-20T14:30:00Z',
+    created_at: '2025-01-10T09:00:00Z',
+    updated_at: '2025-01-20T14:30:00Z',
     features: [
       '24/7 Glucose monitoring alerts',
       'Weekly virtual consultations',
@@ -85,8 +85,8 @@ const mockServices: Service[] = [
     currency: 'USD',
     duration_days: 60,
     is_active: true,
-    created_at: '2024-01-08T11:15:00Z',
-    updated_at: '2024-01-22T10:45:00Z',
+    created_at: '2025-01-08T11:15:00Z',
+    updated_at: '2025-01-22T10:45:00Z',
     features: [
       'Daily BP monitoring reminders',
       'Bi-weekly check-ins',
@@ -105,8 +105,8 @@ const mockServices: Service[] = [
     price: 150.00,
     currency: 'USD',
     is_active: true,
-    created_at: '2024-01-05T16:30:00Z',
-    updated_at: '2024-01-18T09:20:00Z',
+    created_at: '2025-01-05T16:30:00Z',
+    updated_at: '2025-01-18T09:20:00Z',
     features: [
       '45-minute consultation',
       'Digital prescription',
@@ -125,8 +125,8 @@ const mockServices: Service[] = [
     currency: 'USD',
     duration_days: 90,
     is_active: true,
-    created_at: '2024-01-12T14:20:00Z',
-    updated_at: '2024-01-25T11:10:00Z',
+    created_at: '2025-01-12T14:20:00Z',
+    updated_at: '2025-01-25T11:10:00Z',
     features: [
       'Comprehensive health assessment',
       'Personalized wellness plan',
@@ -147,7 +147,7 @@ const mockServices: Service[] = [
     duration_days: 30,
     is_active: false,
     created_at: '2023-12-20T10:45:00Z',
-    updated_at: '2024-01-15T13:25:00Z',
+    updated_at: '2025-01-15T13:25:00Z',
     features: [
       'Daily recovery check-ins',
       'Pain management support',
@@ -166,11 +166,11 @@ const mockSubscriptions: Subscription[] = [
     patient_id: 'p1',
     patient_name: 'John Doe',
     status: 'ACTIVE',
-    start_date: '2024-01-15T00:00:00Z',
-    end_date: '2024-04-15T00:00:00Z',
-    next_billing_date: '2024-02-15T00:00:00Z',
+    start_date: '2025-01-15T00:00:00Z',
+    end_date: '2025-04-15T00:00:00Z',
+    next_billing_date: '2025-02-15T00:00:00Z',
     total_paid: 599.97,
-    created_at: '2024-01-15T09:30:00Z'
+    created_at: '2025-01-15T09:30:00Z'
   },
   {
     id: '2',
@@ -179,11 +179,11 @@ const mockSubscriptions: Subscription[] = [
     patient_id: 'p2',
     patient_name: 'Jane Smith',
     status: 'ACTIVE',
-    start_date: '2024-01-20T00:00:00Z',
-    end_date: '2024-03-20T00:00:00Z',
-    next_billing_date: '2024-02-20T00:00:00Z',
+    start_date: '2025-01-20T00:00:00Z',
+    end_date: '2025-03-20T00:00:00Z',
+    next_billing_date: '2025-02-20T00:00:00Z',
     total_paid: 399.98,
-    created_at: '2024-01-20T14:15:00Z'
+    created_at: '2025-01-20T14:15:00Z'
   },
   {
     id: '3',
@@ -192,9 +192,9 @@ const mockSubscriptions: Subscription[] = [
     patient_id: 'p3',
     patient_name: 'Michael Johnson',
     status: 'PENDING',
-    start_date: '2024-01-25T00:00:00Z',
+    start_date: '2025-01-25T00:00:00Z',
     total_paid: 0,
-    created_at: '2024-01-25T11:45:00Z'
+    created_at: '2025-01-25T11:45:00Z'
   }
 ]
 

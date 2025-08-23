@@ -321,10 +321,10 @@ describe('Phase 4: Telemedicine & Laboratory Integration', () => {
 
     test('should provide lab trend analysis', () => {
       const trendAnalysisData = [
-        { result_date: '2024-01-10T00:00:00.000Z', numeric_value: 7.2 },
-        { result_date: '2024-04-12T00:00:00.000Z', numeric_value: 6.8 },
-        { result_date: '2024-07-15T00:00:00.000Z', numeric_value: 6.9 },
-        { result_date: '2024-10-20T00:00:00.000Z', numeric_value: 7.1 },
+        { result_date: '2025-01-10T00:00:00.000Z', numeric_value: 7.2 },
+        { result_date: '2025-04-12T00:00:00.000Z', numeric_value: 6.8 },
+        { result_date: '2025-07-15T00:00:00.000Z', numeric_value: 6.9 },
+        { result_date: '2025-10-20T00:00:00.000Z', numeric_value: 7.1 },
       ];
 
       expect(Array.isArray(trendAnalysisData)).toBe(true);

@@ -82,8 +82,8 @@ Date: {{date}}`,
         category: 'Endocrinology',
         tags: ['diabetes', 'chronic-care', 'management'],
         isActive: true,
-        created_at: '2024-01-15T10:30:00Z',
-        updated_at: '2024-01-20T14:22:00Z',
+        created_at: '2025-01-15T10:30:00Z',
+        updated_at: '2025-01-20T14:22:00Z',
         usage_count: 15
       }
       

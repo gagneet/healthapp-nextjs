@@ -287,13 +287,13 @@ export default {
               name: 'Metformin',
               dosage: '500mg',
               frequency: 'twice daily',
-              prescribed_date: '2024-01-15'
+              prescribed_date: '2025-01-15'
             },
             {
               name: 'Lisinopril',
               dosage: '10mg',
               frequency: 'once daily',
-              prescribed_date: '2024-02-01'
+              prescribed_date: '2025-02-01'
             }
           ]),
           height_cm: 165.0,

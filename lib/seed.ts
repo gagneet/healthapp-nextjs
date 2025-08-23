@@ -293,7 +293,7 @@ export async function seedComprehensiveHealthcareData() {
                 id: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
                 name: 'HealthApp Medical Center',
                 type: 'hospital',
-                license_number: 'HC-2024-001',
+                license_number: 'HC-2025-001',
                 contact_info: {
                     phone: '+1-555-0100',
                     email: 'info@healthapp.com',
@@ -455,7 +455,7 @@ export async function seedComprehensiveHealthcareData() {
                         phone: '+1-555-0500',
                         email: 'provider@healthapp.com',
                         provider_type: 'health_system',
-                        license_number: 'PROV-2024-001'
+                        license_number: 'PROV-2025-001'
                     },
                     created_at: getRandomPastDate(45, 85),
                     updated_at: getRecentDate()
@@ -474,7 +474,7 @@ export async function seedComprehensiveHealthcareData() {
             data: [
                 {
                     user_id: '77777777-7777-7777-7777-777777777777',
-                    patient_id: 'PAT-2024-001',
+                    patient_id: 'PAT-2025-001',
                     organization_id: organization.id,
                     primary_care_doctor_id: '00000000-0000-0000-0000-000000000011',
                     height_cm: 165.0,
@@ -498,7 +498,7 @@ export async function seedComprehensiveHealthcareData() {
                 },
                 {
                     user_id: '88888888-8888-8888-8888-888888888888',
-                    patient_id: 'PAT-2024-002',
+                    patient_id: 'PAT-2025-002',
                     organization_id: organization.id,
                     primary_care_doctor_id: '00000000-0000-0000-0000-000000000011',
                     height_cm: 178.0,
@@ -518,7 +518,7 @@ export async function seedComprehensiveHealthcareData() {
                 },
                 {
                     user_id: '11111111-1111-1111-1111-111111111111',
-                    patient_id: 'PAT-2024-003',
+                    patient_id: 'PAT-2025-003',
                     organization_id: organization.id,
                     primary_care_doctor_id: '00000000-0000-0000-0000-000000000022',
                     height_cm: 162.0,
@@ -540,7 +540,7 @@ export async function seedComprehensiveHealthcareData() {
                 },
                 {
                     user_id: '22222222-2222-2222-2222-222222222222',
-                    patient_id: 'PAT-2024-004',
+                    patient_id: 'PAT-2025-004',
                     organization_id: organization.id,
                     primary_care_doctor_id: '00000000-0000-0000-0000-000000000022',
                     height_cm: 175.0,
@@ -561,7 +561,7 @@ export async function seedComprehensiveHealthcareData() {
                 },
                 {
                     user_id: '33333333-3333-3333-3333-333333333333',
-                    patient_id: 'PAT-2024-005',
+                    patient_id: 'PAT-2025-005',
                     organization_id: organization.id,
                     primary_care_doctor_id: '00000000-0000-0000-0000-000000000033',
                     height_cm: 158.0,

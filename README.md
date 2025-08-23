@@ -135,7 +135,7 @@ healthapp-nextjs/
 ### Prerequisites
 
 - **Node.js** 22+ LTS (required for latest Auth.js v5 and ES modules)
-- **PostgreSQL** 15+ (or Docker for containerized setup)
+- **PostgreSQL** 17+ (or Docker for containerized setup)
 - **Docker** & **Docker Swarm** (recommended for production deployment)
 - **TypeScript** knowledge (the entire system is TypeScript-first)
 
@@ -184,7 +184,7 @@ For production deployment with high availability:
 
 ```bash
 # Set required Auth.js v5 environment variables
-export NEXTAUTH_SECRET=healthcare-nextauth-secret-2024-secure
+export NEXTAUTH_SECRET=healthcare-nextauth-secret-2025-secure
 export POSTGRES_PASSWORD=secure_prod_password
 export REDIS_PASSWORD=secure_redis_password
 

@@ -2387,7 +2387,7 @@ class RealTimeMonitoringService {
 
 #### HIPAA Security Rule Updates 2025
 
-- Notice of Proposed Rulemaking (NPRM) December 27, 2024
+- Notice of Proposed Rulemaking (NPRM) December 27, 2025
 - Elimination of "Required" vs "Addressable" distinctions
 - Mandatory annual compliance audits
 - Enhanced cybersecurity requirements

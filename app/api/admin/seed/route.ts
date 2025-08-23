@@ -76,7 +76,7 @@ export async function GET(request: NextRequest) {
     const testPatients = await prisma.patient.count({
       where: {
         patient_id: {
-          startsWith: 'PAT-2024-'
+          startsWith: 'PAT-2025-'
         }
       }
     });

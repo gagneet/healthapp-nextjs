@@ -271,7 +271,7 @@ setup_environment() {
 
     # NextAuth configuration
     export NEXTAUTH_URL="$FRONTEND_URL"
-    export NEXTAUTH_SECRET="${NEXTAUTH_SECRET:-local-nextauth-secret-2024-dev}"
+    export NEXTAUTH_SECRET="${NEXTAUTH_SECRET:-local-nextauth-secret-2025-dev}"
 
     # Redis configuration  
     export REDIS_URL="redis://localhost:$PORT_REDIS"

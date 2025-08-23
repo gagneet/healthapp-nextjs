@@ -397,8 +397,8 @@ setup_environment() {
         exit 1
     fi
 
-    # Set PostgreSQL version (default to 15 if not specified)
-    export POSTGRES_VERSION="${POSTGRES_VERSION:-15}"
+    # Set PostgreSQL version (default to 17 if not specified)
+    export POSTGRES_VERSION="${POSTGRES_VERSION:-17}"
     log_debug "Using PostgreSQL version: $POSTGRES_VERSION"
 
     # Set derived variables (computed from .env values)
@@ -629,7 +629,7 @@ pull_base_images() {
     log_info "Pulling base images for containers..."
 
     # Determine PostgreSQL version from environment or use default
-    local POSTGRES_VERSION="${POSTGRES_VERSION:-15}"
+    local POSTGRES_VERSION="${POSTGRES_VERSION:-17}"
 
     # Define base images used in the stack
     local BASE_IMAGES=(
