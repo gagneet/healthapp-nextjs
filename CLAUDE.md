@@ -927,6 +927,129 @@ const records = await prisma.AdherenceRecord.findMany({
 - **STANDARD**: Use grep to find all instances of incorrect model usage across the entire codebase
 - **ENFORCEMENT**: Fix all related API routes, not just the one causing immediate errors
 
+## 9. ✅ Validated Prisma + Next.js Best Practices ⚠️ CRITICAL
+
+### **9.1 Naming Conventions**
+
+#### Schema Level (prisma.schema)
+- **Models**: Use PascalCase singular form (e.g., `User`, `Post`, `Comment`)
+- **Fields**: Use camelCase for field names (e.g., `firstName`, `createdAt`)
+- **Enums**: Use PascalCase for enum names and UPPER_CASE for values
+
+#### Database Level
+- **Tables**: Common practice is plural snake_case (e.g., `users`, `posts`)
+- **Columns**: Snake_case is the general database convention (e.g., `created_at`, `user_id`)
+
+#### Client Level
+- **The Prisma Client ALWAYS generates camelCase property names** - this is not configurable
+- You access models via `prisma.user`, `prisma.post` (lowercase first letter)
+
+### **9.2 Mapping Strategy**
+
+Use `@@map` and `@map` to bridge the naming convention gap:
+
+```prisma
+model User {
+  id        Int      @id @default(autoincrement())
+  firstName String   @map("first_name")
+  createdAt DateTime @default(now()) @map("created_at")
+  posts     Post[]
+
+  @@map("users")
+}
+```
+
+This approach gives you:
+- ✅ Clean PascalCase models in schema
+- ✅ Standard snake_case in database
+- ✅ Natural camelCase in TypeScript/JavaScript code
+
+### **9.3 Next.js Specific Best Practices**
+
+#### Singleton Pattern (Critical)
+To prevent multiple Prisma Client instances during Next.js hot-reloading:
+
+```typescript
+// lib/prisma.ts
+import { PrismaClient } from '@prisma/client'
+
+const prismaClientSingleton = () => {
+  return new PrismaClient()
+}
+
+declare const globalThis: {
+  prismaGlobal: ReturnType<typeof prismaClientSingleton>;
+} & typeof global;
+
+const prisma = globalThis.prismaGlobal ?? prismaClientSingleton()
+
+export default prisma
+
+if (process.env.NODE_ENV !== 'production') globalThis.prismaGlobal = prisma
+```
+
+#### Data Caching Considerations
+Next.js Data Cache can cause stale data issues. Use `export const dynamic = 'force-dynamic'` in route segments when you need fresh data
+
+### **9.4 Additional Validated Rules**
+
+#### Performance
+- Strategic index placement is crucial for query performance
+- Use `@unique` and `@@unique` for constraints
+- Consider `@@index` for frequently queried field combinations
+
+#### Type Safety
+- The generated Prisma Client provides full TypeScript support
+- Model types are automatically generated (e.g., `User`, `Post` types)
+- Relation fields are not included in base types by default but can be accessed via helper types
+
+#### Migrations
+- Always run `npx prisma generate` after schema changes
+- Use `npx prisma migrate dev` for development
+- Use `npx prisma migrate deploy` for production
+
+### **9.5 Field Name Resolution Rules ⚠️ ABSOLUTE**
+
+1. ✅ **Do not fight Prisma conventions** - Accept camelCase client properties
+2. ✅ **Keep PascalCase models** in your schema  
+3. ✅ **Use `@@map("TableName")`** if you want snake_case DB tables
+4. ✅ **Refactor code to use** `prisma.user`, `prisma.patient`, etc.
+5. ✅ **ALWAYS use camelCase field names** in Prisma Client operations (createdAt, updatedAt, firstName, etc.)
+6. ✅ **Database columns use snake_case** via @map directives (created_at, updated_at, first_name, etc.)
+
+### **9.6 CRITICAL Schema-Client Field Mapping**
+
+```typescript
+// ✅ CORRECT: Always use camelCase in client operations
+const user = await prisma.user.create({
+  data: {
+    firstName: "John",        // camelCase in client
+    lastName: "Doe",         // camelCase in client  
+    createdAt: new Date(),   // camelCase in client
+    updatedAt: new Date()    // camelCase in client
+  }
+});
+
+// ❌ WRONG: Never use snake_case in client operations
+const user = await prisma.user.create({
+  data: {
+    first_name: "John",      // Wrong! Prisma Client uses camelCase
+    last_name: "Doe",       // Wrong! Will cause validation errors
+    created_at: new Date(),  // Wrong! Use camelCase always
+    updated_at: new Date()   // Wrong! Field name mismatch
+  }
+});
+```
+
+### **9.7 Summary - Prisma Separation of Concerns**
+
+The key insight is that Prisma intentionally separates concerns:
+- **Database layer**: Can follow SQL conventions (snake_case, plural)
+- **Schema layer**: Follows Prisma conventions (PascalCase models, camelCase fields)
+- **Application layer**: Always uses JavaScript conventions (camelCase)
+
+This separation provides the best developer experience while maintaining database best practices.
+
 # important-instruction-reminders
 Do what has been asked; nothing more, nothing less.
 NEVER create files unless they're absolutely necessary for achieving your goal.

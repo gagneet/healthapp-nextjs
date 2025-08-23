@@ -1515,43 +1515,43 @@ export async function seedComprehensiveHealthcareData() {
 
         // Create 3 appointments (today + future)
         console.log('📅 Creating 3 appointments...');
-        const createdPatients = await prisma.patient.findMany({
+        const patientsForAppointments = await prisma.patient.findMany({
             select: { id: true },
             take: 3,
             orderBy: { created_at: 'asc' }
         });
 
-        if (createdPatients.length >= 3) {
+        if (patientsForAppointments.length >= 3) {
             const appointmentsData = [
                 {
                     id: '00000000-0000-0000-0000-000000000301',
                     doctor_id: '00000000-0000-0000-0000-000000000011',
-                    patient_id: createdPatients[0].id,
+                    patient_id: patientsForAppointments[0].id,
                     start_date: getTodayDate(),
                     start_time: new Date(new Date().setHours(9, 0, 0, 0)),
                     end_time: new Date(new Date().setHours(9, 30, 0, 0)),
                     description: 'Routine checkup and medication review',
-                    created_at: getRecentDate(),
+                    createdAt: getRecentDate(),
                 },
                 {
                     id: '00000000-0000-0000-0000-000000000302',
                     doctor_id: '00000000-0000-0000-0000-000000000011',
-                    patient_id: createdPatients[1].id,
+                    patient_id: patientsForAppointments[1].id,
                     start_date: getTodayDate(),
                     start_time: new Date(new Date().setHours(14, 0, 0, 0)),
                     end_time: new Date(new Date().setHours(14, 30, 0, 0)),
                     description: 'Follow-up for hypertension management',
-                    created_at: getRecentDate(),
+                    createdAt: getRecentDate(),
                 },
                 {
                     id: '00000000-0000-0000-0000-000000000303',
                     doctor_id: '00000000-0000-0000-0000-000000000022',
-                    patient_id: createdPatients[2].id,
+                    patient_id: patientsForAppointments[2].id,
                     start_date: getFutureDate(1),
                     start_time: new Date(getFutureDate(1).setHours(10, 0, 0, 0)),
                     end_time: new Date(getFutureDate(1).setHours(10, 30, 0, 0)),
                     description: 'Diabetes management consultation',
-                    created_at: getRecentDate(),
+                    createdAt: getRecentDate(),
                 }
             ];
 
@@ -1704,7 +1704,7 @@ export async function seedComprehensiveHealthcareData() {
 }
 
 // Main execution when run directly
-if (require.main === module) {
+if (import.meta.url === new URL(process.argv[1], 'file://').href) {
     console.log('🚀 Starting healthcare data seeding...');
     seedComprehensiveHealthcareData()
         .then((result) => {
