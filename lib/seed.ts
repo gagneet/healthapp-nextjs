@@ -1,8 +1,53 @@
 // lib/seed.ts - Comprehensive Healthcare Test Data Seeding with Updated Schema
-import { PrismaClient, AdherenceType, UserRole, UserAccountStatus, UserGender, MedicationOrganizerType } from '@prisma/client';
+import { PrismaClient, AdherenceType, UserRole, UserAccountStatus, UserGender, MedicationOrganizerType, MedicationLogAdherenceStatus } from '@prisma/client';
 import * as bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
+
+// Database cleanup function to remove all existing data
+async function cleanDatabase() {
+  console.log('🧹 Cleaning database - removing all existing data...');
+  
+  try {
+    // Delete in reverse dependency order to avoid foreign key constraints
+    // Use error handling for each operation to continue even if tables don't exist
+    
+    const cleanupOperations = [
+      () => prisma.adherenceRecord.deleteMany({}),
+      () => prisma.medication.deleteMany({}),
+      () => prisma.vital.deleteMany({}),
+      () => prisma.symptom.deleteMany({}),
+      () => prisma.carePlan.deleteMany({}),
+      () => prisma.appointment.deleteMany({}),
+      () => prisma.clinic.deleteMany({}),
+      () => prisma.patient.deleteMany({}),
+      () => prisma.doctor.deleteMany({}),
+      () => prisma.hSP.deleteMany({}),
+      () => prisma.providers.deleteMany({}),
+      () => prisma.medicine.deleteMany({}),
+      () => prisma.vitalTemplates.deleteMany({}),
+      () => prisma.symptomsDatabase.deleteMany({}),
+      () => prisma.treatmentDatabase.deleteMany({}),
+      () => prisma.speciality.deleteMany({}),
+      () => prisma.organization.deleteMany({}),
+      () => prisma.user.deleteMany({})
+    ];
+    
+    for (const operation of cleanupOperations) {
+      try {
+        await operation();
+      } catch (error: any) {
+        // Continue with next operation even if current fails
+        console.log(`⚠️ Cleanup operation failed (continuing): ${error.message}`);
+      }
+    }
+    
+    console.log('✅ Database cleaned successfully');
+  } catch (error: any) {
+    console.error('❌ Error cleaning database:', error.message);
+    throw error;
+  }
+}
 
 // Helper functions for realistic dates
 const getRandomPastDate = (minDaysAgo = 7, maxDaysAgo = 90): Date => {
@@ -47,28 +92,8 @@ export async function seedComprehensiveHealthcareData() {
     try {
         await waitForTables();
 
-        // Check if data already exists
-        const existingUsers = await prisma.user.findMany({
-            where: {
-                email: {
-                    in: [
-                        'doctor@healthapp.com',
-                        'doctor1@healthapp.com',
-                        'patient1@healthapp.com',
-                        'admin@healthapp.com'
-                    ]
-                }
-            }
-        });
-
-        if (existingUsers.length > 0) {
-            console.log(`ℹ️ Test data already exists (${existingUsers.length} users found), skipping seeding`);
-            return {
-                success: true,
-                message: 'Test data already exists',
-                users: existingUsers.length
-            };
-        }
+        // Always start with a clean database
+        await cleanDatabase();
 
         // Password setup
         const defaultPassword = process.env.SEED_DEFAULT_PASSWORD || 'TempPassword123!';
@@ -84,13 +109,13 @@ export async function seedComprehensiveHealthcareData() {
             image: null,
         });
 
-        // Create 12 users with specified roles
-        console.log('👥 Creating 12 users with specified roles...');
+        // Create specific users per your requirements
+        console.log('👥 Creating users with exact structure per requirements...');
         
         const testUsers = await prisma.user.createMany({
             skipDuplicates: true,
             data: [
-                // 4 Doctors
+                // 3 Doctors
                 createUserData({
                     id: '00000000-0000-0000-0000-000000000001',
                     email: 'doctor@healthapp.com',
@@ -136,23 +161,8 @@ export async function seedComprehensiveHealthcareData() {
                     createdAt: getRandomPastDate(25, 85),
                     updatedAt: getRecentDate()
                 }),
-                createUserData({
-                    id: '00000000-0000-0000-0000-000000000004',
-                    email: 'doctor3@healthapp.com',
-                    passwordHash: hashedPassword,
-                    role: 'DOCTOR' as UserRole,
-                    firstName: 'Dr. Robert',
-                    lastName: 'Wilson',
-                    phone: '+1-555-0004',
-                    dateOfBirth: new Date('1970-07-15'),
-                    gender: 'MALE' as UserGender,
-                    accountStatus: 'ACTIVE' as UserAccountStatus,
-                    emailVerifiedLegacy: true,
-                    createdAt: getRandomPastDate(22, 82),
-                    updatedAt: getRecentDate()
-                }),
                 
-                // 5 Patients
+                // 5 Patients (3 for doctor1, 2 for doctor2, 0 for doctor3)
                 createUserData({
                     id: '77777777-7777-7777-7777-777777777777',
                     email: 'patient1@healthapp.com',
@@ -246,7 +256,7 @@ export async function seedComprehensiveHealthcareData() {
                     updatedAt: getRecentDate()
                 }),
 
-                // 1 Admin
+                // 1 System Admin
                 createUserData({
                     id: '66666666-6666-6666-6666-666666666666',
                     email: 'admin@healthapp.com',
@@ -263,7 +273,7 @@ export async function seedComprehensiveHealthcareData() {
                     updatedAt: getRecentDate()
                 }),
 
-                // 1 Provider
+                // 1 Provider Admin
                 createUserData({
                     id: '10101010-1010-1010-1010-101010101010',
                     email: 'provider@healthapp.com',
@@ -351,8 +361,8 @@ export async function seedComprehensiveHealthcareData() {
         const generalMedSpec = await prisma.speciality.findFirst({ where: { name: 'General Medicine' } });
         const psychiatrySpec = await prisma.speciality.findFirst({ where: { name: 'Psychiatry' } });
 
-        // Create doctor profiles
-        console.log('👨‍⚕️ Creating doctor profiles...');
+        // Create 3 doctor profiles with comprehensive details
+        console.log('👨‍⚕️ Creating 3 doctor profiles...');
         await prisma.doctor.createMany({
             skipDuplicates: true,
             data: [
@@ -397,20 +407,6 @@ export async function seedComprehensiveHealthcareData() {
                     verification_date: getRandomPastDate(12, 50),
                     practice_name: 'Rodriguez Family Medicine',
                     created_at: getRandomPastDate(25, 75),
-                },
-                {
-                    id: '00000000-0000-0000-0000-000000000044',
-                    user_id: '00000000-0000-0000-0000-000000000004',
-                    doctor_id: 'DR004',
-                    speciality_id: psychiatrySpec?.id,
-                    medical_license_number: 'MD901234',
-                    years_of_experience: 20,
-                    board_certifications: ['Board Certified Psychiatry', 'Child Psychiatry'],
-                    consultation_fee: 220.00,
-                    is_verified: true,
-                    verification_date: getRandomPastDate(25, 65),
-                    practice_name: 'Wilson Mental Health Center',
-                    created_at: getRandomPastDate(22, 72),
                 }
             ]
         });
@@ -463,15 +459,16 @@ export async function seedComprehensiveHealthcareData() {
             });
             console.log(`✅ Created provider`);
         } catch (error: any) {
-            console.log(`⚠️ Skipping provider creation - table name issue`);
+            console.log(`⚠️ Skipping provider creation - schema mismatch: ${error.message}`);
             provider = null;
         }
 
-        // Create patient profiles
-        console.log('👥 Creating patient profiles...');
+        // Create 5 patient profiles with specific doctor linkages
+        console.log('👥 Creating patient profiles with specific doctor assignments...');
         await prisma.patient.createMany({
             skipDuplicates: true,
             data: [
+                // 3 patients for Doctor 1 (Dr. John Smith)
                 {
                     user_id: '77777777-7777-7777-7777-777777777777',
                     patient_id: 'PAT-2025-001',
@@ -507,7 +504,8 @@ export async function seedComprehensiveHealthcareData() {
                     primary_language: 'en',
                     allergies: [],
                     medical_history: [
-                        { condition: 'Seasonal Allergies', diagnosed: '2020-05-10', status: 'active' }
+                        { condition: 'Hypertension', diagnosed: '2020-05-10', status: 'active' },
+                        { condition: 'High Cholesterol', diagnosed: '2019-11-15', status: 'controlled' }
                     ],
                     emergency_contacts: [
                         { name: 'Lisa Chen', relationship: 'wife', phone: '+1-555-0104', primary: true }
@@ -520,7 +518,7 @@ export async function seedComprehensiveHealthcareData() {
                     user_id: '11111111-1111-1111-1111-111111111111',
                     patient_id: 'PAT-2025-003',
                     organization_id: organization.id,
-                    primary_care_doctor_id: '00000000-0000-0000-0000-000000000022',
+                    primary_care_doctor_id: '00000000-0000-0000-0000-000000000011',
                     height_cm: 162.0,
                     weight_kg: 55.2,
                     blood_type: 'B+',
@@ -529,7 +527,7 @@ export async function seedComprehensiveHealthcareData() {
                         { name: 'Latex', severity: 'mild', reaction: 'skin irritation' }
                     ],
                     medical_history: [
-                        { condition: 'Anxiety', diagnosed: '2023-01-10', status: 'managed' }
+                        { condition: 'Coronary Artery Disease', diagnosed: '2023-01-10', status: 'managed' }
                     ],
                     emergency_contacts: [
                         { name: 'David Williams', relationship: 'father', phone: '+1-555-0106', primary: true }
@@ -538,6 +536,7 @@ export async function seedComprehensiveHealthcareData() {
                     created_at: getRandomPastDate(16, 66),
                     updated_at: getRecentDate()
                 },
+                // 2 patients for Doctor 2 (Dr. Jane Doe)
                 {
                     user_id: '22222222-2222-2222-2222-222222222222',
                     patient_id: 'PAT-2025-004',
@@ -549,8 +548,8 @@ export async function seedComprehensiveHealthcareData() {
                     primary_language: 'en',
                     allergies: [],
                     medical_history: [
-                        { condition: 'High Cholesterol', diagnosed: '2020-08-15', status: 'controlled' },
-                        { condition: 'Arthritis', diagnosed: '2022-11-20', status: 'active' }
+                        { condition: 'Type 2 Diabetes', diagnosed: '2020-08-15', status: 'controlled' },
+                        { condition: 'Diabetic Neuropathy', diagnosed: '2022-11-20', status: 'active' }
                     ],
                     emergency_contacts: [
                         { name: 'Mary Brown', relationship: 'wife', phone: '+1-555-0107', primary: true }
@@ -563,7 +562,7 @@ export async function seedComprehensiveHealthcareData() {
                     user_id: '33333333-3333-3333-3333-333333333333',
                     patient_id: 'PAT-2025-005',
                     organization_id: organization.id,
-                    primary_care_doctor_id: '00000000-0000-0000-0000-000000000033',
+                    primary_care_doctor_id: '00000000-0000-0000-0000-000000000022',
                     height_cm: 158.0,
                     weight_kg: 52.1,
                     blood_type: 'O+',
@@ -572,7 +571,8 @@ export async function seedComprehensiveHealthcareData() {
                         { name: 'Aspirin', severity: 'severe', reaction: 'stomach upset' }
                     ],
                     medical_history: [
-                        { condition: 'Migraines', diagnosed: '2021-06-30', status: 'active' }
+                        { condition: 'Hypothyroidism', diagnosed: '2021-06-30', status: 'active' },
+                        { condition: 'Prediabetes', diagnosed: '2023-02-15', status: 'monitoring' }
                     ],
                     emergency_contacts: [
                         { name: 'Thomas Davis', relationship: 'brother', phone: '+1-555-0108', primary: true }
@@ -581,10 +581,51 @@ export async function seedComprehensiveHealthcareData() {
                     created_at: getRandomPastDate(12, 62),
                     updated_at: getRecentDate()
                 }
+                // Doctor 3 (Dr. Emily Rodriguez) has 0 patients as requested
             ]
         });
 
         console.log(`✅ Created patient profiles`);
+
+        // Create clinic for Doctor 1 (who has 3 patients)
+        console.log('🏥 Creating clinic for Dr. Smith...');
+        await prisma.clinic.upsert({
+            where: { id: '00000000-0000-0000-0000-000000000501' },
+            update: {},
+            create: {
+                id: '00000000-0000-0000-0000-000000000501',
+                doctor_id: '00000000-0000-0000-0000-000000000011',
+                name: 'Smith Cardiology Clinic',
+                address: '123 Heart Avenue, Medical District',
+                city: 'Healthcare City',
+                state: 'CA',
+                zip_code: '90210',
+                phone: '+1-555-HEART1',
+                email: 'info@smithcardiology.com',
+                website: 'https://smithcardiology.com',
+                operating_hours: {
+                    monday: '8:00 AM - 5:00 PM',
+                    tuesday: '8:00 AM - 5:00 PM',
+                    wednesday: '8:00 AM - 5:00 PM',
+                    thursday: '8:00 AM - 5:00 PM',
+                    friday: '8:00 AM - 4:00 PM',
+                    saturday: 'Closed',
+                    sunday: 'Emergency only'
+                },
+                services_offered: ['Cardiac Consultation', 'Echocardiograms', 'Stress Testing', 'Heart Disease Management'],
+                facility_details: {
+                    parking: true,
+                    wheelchair_accessible: true,
+                    insurance_accepted: ['Medicare', 'Blue Cross', 'Aetna', 'Cigna'],
+                    languages: ['English', 'Spanish']
+                },
+                is_active: true,
+                created_at: getRandomPastDate(25, 75),
+                updated_at: getRecentDate()
+            }
+        });
+        
+        console.log(`✅ Created clinic for Dr. Smith`);
 
         // Create 10 comprehensive medicines
         console.log('💊 Creating 10 comprehensive medicines...');
@@ -750,6 +791,258 @@ export async function seedComprehensiveHealthcareData() {
 
         console.log(`✅ Created ${medicines.length} medicines`);
 
+        // Create comprehensive care plans for all patients with diets, workouts, and symptoms
+        console.log('🩺 Creating comprehensive care plans for all patients...');
+        const createdPatients = await prisma.patient.findMany({
+            select: { id: true, user_id: true },
+            orderBy: { created_at: 'asc' }
+        });
+
+        const carePlanData = [
+            {
+                patient_id: createdPatients[0]?.id, // Sarah Johnson
+                title: 'Diabetes & Hypertension Management Plan',
+                description: 'Comprehensive care plan for managing Type 2 diabetes and hypertension with lifestyle modifications and medication adherence.',
+                objectives: [
+                    'Maintain HbA1c below 7.0%',
+                    'Keep blood pressure under 130/80 mmHg',
+                    'Achieve weight loss of 10-15 pounds',
+                    'Improve cardiovascular fitness'
+                ],
+                start_date: getRandomPastDate(30, 60),
+                end_date: getFutureDate(180),
+                diet_plan: {
+                    calories_per_day: 1800,
+                    carbohydrate_grams: 180,
+                    protein_grams: 120,
+                    fat_grams: 60,
+                    meal_plan: {
+                        breakfast: 'Oatmeal with berries, Greek yogurt',
+                        lunch: 'Grilled chicken salad with olive oil dressing',
+                        dinner: 'Baked salmon, steamed vegetables, quinoa',
+                        snacks: 'Apple with almonds, carrot sticks'
+                    },
+                    restrictions: ['Low sodium', 'Limited refined sugars', 'Complex carbohydrates only']
+                },
+                workout_plan: {
+                    frequency: '5 days per week',
+                    duration: '45 minutes',
+                    activities: {
+                        cardio: 'Brisk walking 30 min, 4x/week',
+                        strength: 'Light weights 2x/week',
+                        flexibility: 'Yoga 15 min daily'
+                    },
+                    target_heart_rate: '120-140 bpm',
+                    progression: 'Increase walking duration by 5 min every 2 weeks'
+                }
+            },
+            {
+                patient_id: createdPatients[1]?.id, // Michael Chen
+                title: 'Hypertension & Cholesterol Control Plan',
+                description: 'Cardiovascular health management focusing on blood pressure control and cholesterol reduction.',
+                objectives: [
+                    'Reduce blood pressure to <130/80 mmHg',
+                    'Lower LDL cholesterol below 100 mg/dL',
+                    'Maintain healthy weight',
+                    'Increase physical activity'
+                ],
+                start_date: getRandomPastDate(25, 55),
+                end_date: getFutureDate(120),
+                diet_plan: {
+                    calories_per_day: 2000,
+                    sodium_mg: 1500,
+                    fiber_grams: 35,
+                    meal_plan: {
+                        breakfast: 'Whole grain cereal with low-fat milk',
+                        lunch: 'Turkey and avocado wrap with vegetables',
+                        dinner: 'Lean beef, sweet potato, green beans',
+                        snacks: 'Mixed nuts, fresh fruit'
+                    },
+                    restrictions: ['Low sodium', 'Low saturated fat', 'Heart-healthy fats']
+                },
+                workout_plan: {
+                    frequency: '4 days per week',
+                    duration: '40 minutes',
+                    activities: {
+                        cardio: 'Cycling or swimming 30 min, 3x/week',
+                        strength: 'Resistance bands 2x/week',
+                        flexibility: 'Stretching routine daily'
+                    },
+                    target_heart_rate: '125-145 bpm'
+                }
+            },
+            {
+                patient_id: createdPatients[2]?.id, // Emma Williams
+                title: 'Coronary Heart Disease Management',
+                description: 'Cardiac rehabilitation and lifestyle modification program for coronary artery disease.',
+                objectives: [
+                    'Improve cardiac function and endurance',
+                    'Prevent further coronary events',
+                    'Manage stress and anxiety',
+                    'Optimize medication adherence'
+                ],
+                start_date: getRandomPastDate(20, 50),
+                end_date: getFutureDate(365),
+                diet_plan: {
+                    calories_per_day: 1600,
+                    sodium_mg: 1200,
+                    cholesterol_mg: 200,
+                    meal_plan: {
+                        breakfast: 'Oatmeal with walnuts and berries',
+                        lunch: 'Grilled fish with quinoa salad',
+                        dinner: 'Vegetable stir-fry with tofu',
+                        snacks: 'Greek yogurt, handful of almonds'
+                    },
+                    restrictions: ['Very low sodium', 'Low cholesterol', 'Omega-3 rich foods']
+                },
+                workout_plan: {
+                    frequency: '6 days per week',
+                    duration: '30 minutes',
+                    activities: {
+                        cardio: 'Supervised walking program 3x/week',
+                        strength: 'Light resistance training 2x/week',
+                        flexibility: 'Gentle yoga daily',
+                        stress_management: 'Meditation 10 min daily'
+                    },
+                    target_heart_rate: '100-120 bpm'
+                }
+            },
+            {
+                patient_id: createdPatients[3]?.id, // James Brown
+                title: 'Diabetes & Neuropathy Care Plan',
+                description: 'Comprehensive diabetes management with focus on neuropathy prevention and pain management.',
+                objectives: [
+                    'Maintain stable blood glucose levels',
+                    'Prevent neuropathy progression',
+                    'Manage neuropathic pain',
+                    'Improve quality of life'
+                ],
+                start_date: getRandomPastDate(18, 48),
+                end_date: getFutureDate(180),
+                diet_plan: {
+                    calories_per_day: 2200,
+                    carbohydrate_grams: 200,
+                    protein_grams: 140,
+                    meal_plan: {
+                        breakfast: 'Scrambled eggs with whole wheat toast',
+                        lunch: 'Chicken and vegetable soup with crackers',
+                        dinner: 'Grilled pork tenderloin with roasted vegetables',
+                        snacks: 'Cheese and whole grain crackers'
+                    },
+                    restrictions: ['Consistent carbohydrate timing', 'Limited simple sugars']
+                },
+                workout_plan: {
+                    frequency: '3 days per week',
+                    duration: '30 minutes',
+                    activities: {
+                        cardio: 'Low-impact water aerobics 2x/week',
+                        strength: 'Chair exercises 2x/week',
+                        flexibility: 'Foot and ankle exercises daily'
+                    },
+                    special_considerations: ['Foot care routine', 'Check feet daily for injuries']
+                }
+            },
+            {
+                patient_id: createdPatients[4]?.id, // Olivia Davis
+                title: 'Thyroid & Pre-diabetes Management',
+                description: 'Hormone optimization and diabetes prevention through lifestyle intervention.',
+                objectives: [
+                    'Normalize thyroid hormone levels',
+                    'Prevent progression to Type 2 diabetes',
+                    'Maintain healthy weight',
+                    'Optimize energy levels'
+                ],
+                start_date: getRandomPastDate(15, 45),
+                end_date: getFutureDate(270),
+                diet_plan: {
+                    calories_per_day: 1500,
+                    iodine_mcg: 150,
+                    fiber_grams: 30,
+                    meal_plan: {
+                        breakfast: 'Greek yogurt with granola and fruit',
+                        lunch: 'Lentil soup with whole grain roll',
+                        dinner: 'Baked chicken breast with brown rice',
+                        snacks: 'Apple with peanut butter'
+                    },
+                    restrictions: ['Thyroid-supporting foods', 'Low glycemic index']
+                },
+                workout_plan: {
+                    frequency: '5 days per week',
+                    duration: '35 minutes',
+                    activities: {
+                        cardio: 'Dance fitness 3x/week',
+                        strength: 'Bodyweight exercises 2x/week',
+                        flexibility: 'Pilates 2x/week'
+                    },
+                    target_heart_rate: '130-150 bpm'
+                }
+            }
+        ];
+
+        // Create care plans
+        for (let i = 0; i < carePlanData.length && i < createdPatients.length; i++) {
+            const planData = carePlanData[i];
+            if (planData.patient_id) {
+                await prisma.carePlan.upsert({
+                    where: { id: `careplan-${i + 1}-${planData.patient_id}` },
+                    update: {},
+                    create: {
+                        id: `careplan-${i + 1}-${planData.patient_id}`,
+                        patient_id: planData.patient_id,
+                        title: planData.title,
+                        description: planData.description,
+                        objectives: planData.objectives,
+                        start_date: planData.start_date,
+                        end_date: planData.end_date,
+                        diet_plan: planData.diet_plan,
+                        workout_plan: planData.workout_plan,
+                        is_active: true,
+                        created_at: getRandomPastDate(20, 50),
+                        updated_at: getRecentDate()
+                    }
+                });
+            }
+        }
+        
+        // Create symptoms for each patient
+        console.log('🩺 Creating patient symptoms...');
+        const symptomData = [
+            { patient_id: createdPatients[0]?.id, name: 'Excessive thirst', severity: 'moderate', frequency: 'daily', duration: '2-3 hours' },
+            { patient_id: createdPatients[0]?.id, name: 'Frequent urination', severity: 'mild', frequency: 'multiple times daily', duration: 'ongoing' },
+            { patient_id: createdPatients[0]?.id, name: 'Fatigue after meals', severity: 'moderate', frequency: 'after meals', duration: '1-2 hours' },
+            { patient_id: createdPatients[1]?.id, name: 'Morning headaches', severity: 'mild', frequency: '3-4 times per week', duration: '30-60 minutes' },
+            { patient_id: createdPatients[1]?.id, name: 'Dizziness when standing', severity: 'mild', frequency: 'occasionally', duration: 'few seconds' },
+            { patient_id: createdPatients[2]?.id, name: 'Chest tightness with activity', severity: 'moderate', frequency: 'during exercise', duration: '5-10 minutes' },
+            { patient_id: createdPatients[2]?.id, name: 'Shortness of breath', severity: 'mild', frequency: 'with exertion', duration: 'until rest' },
+            { patient_id: createdPatients[3]?.id, name: 'Tingling in feet', severity: 'moderate', frequency: 'daily', duration: 'intermittent throughout day' },
+            { patient_id: createdPatients[3]?.id, name: 'Burning sensation in hands', severity: 'mild', frequency: 'evenings', duration: '2-3 hours' },
+            { patient_id: createdPatients[4]?.id, name: 'Feeling cold', severity: 'mild', frequency: 'daily', duration: 'most of the day' },
+            { patient_id: createdPatients[4]?.id, name: 'Dry skin and hair', severity: 'mild', frequency: 'constant', duration: 'ongoing' }
+        ];
+
+        for (let i = 0; i < symptomData.length; i++) {
+            const symptom = symptomData[i];
+            if (symptom.patient_id) {
+                await prisma.symptom.upsert({
+                    where: { id: `symptom-${i + 1}-${symptom.patient_id}` },
+                    update: {},
+                    create: {
+                        id: `symptom-${i + 1}-${symptom.patient_id}`,
+                        patient_id: symptom.patient_id,
+                        name: symptom.name,
+                        severity: symptom.severity,
+                        frequency: symptom.frequency,
+                        duration: symptom.duration,
+                        first_noticed: getRandomPastDate(10, 30),
+                        created_at: getRandomPastDate(5, 25),
+                        updated_at: getRecentDate()
+                    }
+                });
+            }
+        }
+        
+        console.log(`✅ Created comprehensive care plans and symptoms for all patients`);
+
         // Create 4 vital templates
         console.log('📊 Creating 4 vital templates...');
         const vitalTemplates = [
@@ -774,6 +1067,225 @@ export async function seedComprehensiveHealthcareData() {
         }
 
         console.log(`✅ Created ${vitalTemplates.length} vital templates`);
+        
+        // Create 3 medication reminders for each patient (15 total)
+        console.log('💊 Creating 3 medication reminders per patient...');
+        const medicationReminderData = [
+            // Patient 1 - Sarah Johnson (Type 2 Diabetes & Hypertension)
+            {
+                patient_id: createdPatients[0]?.id,
+                medicine_id: '550e8400-e29b-41d4-a716-446655440001', // Metformin
+                organizer_type: 'DOCTOR' as MedicationOrganizerType,
+                organizer_id: '00000000-0000-0000-0000-000000000011',
+                dosage: '500mg',
+                frequency: 'Twice daily with meals',
+                duration_days: 90,
+                instructions: 'Take with breakfast and dinner to reduce stomach upset. Monitor blood sugar levels.',
+                start_date: getRandomPastDate(20, 40),
+                end_date: getFutureDate(70)
+            },
+            {
+                patient_id: createdPatients[0]?.id,
+                medicine_id: '550e8400-e29b-41d4-a716-446655440002', // Lisinopril
+                organizer_type: 'DOCTOR' as MedicationOrganizerType,
+                organizer_id: '00000000-0000-0000-0000-000000000011',
+                dosage: '10mg',
+                frequency: 'Once daily in the morning',
+                duration_days: 90,
+                instructions: 'Take at same time each morning. Monitor blood pressure regularly.',
+                start_date: getRandomPastDate(18, 38),
+                end_date: getFutureDate(72)
+            },
+            {
+                patient_id: createdPatients[0]?.id,
+                medicine_id: '550e8400-e29b-41d4-a716-446655440003', // Aspirin
+                organizer_type: 'DOCTOR' as MedicationOrganizerType,
+                organizer_id: '00000000-0000-0000-0000-000000000011',
+                dosage: '81mg',
+                frequency: 'Once daily with food',
+                duration_days: 90,
+                instructions: 'Low-dose aspirin for cardiovascular protection. Take with food to prevent stomach irritation.',
+                start_date: getRandomPastDate(16, 36),
+                end_date: getFutureDate(74)
+            },
+            // Patient 2 - Michael Chen (Hypertension & High Cholesterol)
+            {
+                patient_id: createdPatients[1]?.id,
+                medicine_id: '550e8400-e29b-41d4-a716-446655440004', // Amlodipine
+                organizer_type: 'DOCTOR' as MedicationOrganizerType,
+                organizer_id: '00000000-0000-0000-0000-000000000011',
+                dosage: '5mg',
+                frequency: 'Once daily',
+                duration_days: 90,
+                instructions: 'Take at the same time each day. May cause ankle swelling - report if persistent.',
+                start_date: getRandomPastDate(22, 42),
+                end_date: getFutureDate(68)
+            },
+            {
+                patient_id: createdPatients[1]?.id,
+                medicine_id: '550e8400-e29b-41d4-a716-446655440005', // Simvastatin
+                organizer_type: 'DOCTOR' as MedicationOrganizerType,
+                organizer_id: '00000000-0000-0000-0000-000000000011',
+                dosage: '20mg',
+                frequency: 'Once daily in the evening',
+                duration_days: 90,
+                instructions: 'Take in the evening with or without food. Report any unexplained muscle pain.',
+                start_date: getRandomPastDate(24, 44),
+                end_date: getFutureDate(66)
+            },
+            {
+                patient_id: createdPatients[1]?.id,
+                medicine_id: '550e8400-e29b-41d4-a716-446655440003', // Aspirin
+                organizer_type: 'DOCTOR' as MedicationOrganizerType,
+                organizer_id: '00000000-0000-0000-0000-000000000011',
+                dosage: '81mg',
+                frequency: 'Once daily with breakfast',
+                duration_days: 90,
+                instructions: 'Cardioprotective dose. Take with food to minimize stomach irritation.',
+                start_date: getRandomPastDate(20, 40),
+                end_date: getFutureDate(70)
+            },
+            // Patient 3 - Emma Williams (Coronary Artery Disease)
+            {
+                patient_id: createdPatients[2]?.id,
+                medicine_id: '550e8400-e29b-41d4-a716-446655440002', // Lisinopril
+                organizer_type: 'DOCTOR' as MedicationOrganizerType,
+                organizer_id: '00000000-0000-0000-0000-000000000011',
+                dosage: '5mg',
+                frequency: 'Once daily',
+                duration_days: 90,
+                instructions: 'For heart protection and blood pressure control. Take consistently at same time.',
+                start_date: getRandomPastDate(26, 46),
+                end_date: getFutureDate(64)
+            },
+            {
+                patient_id: createdPatients[2]?.id,
+                medicine_id: '550e8400-e29b-41d4-a716-446655440005', // Simvastatin
+                organizer_type: 'DOCTOR' as MedicationOrganizerType,
+                organizer_id: '00000000-0000-0000-0000-000000000011',
+                dosage: '40mg',
+                frequency: 'Once daily in the evening',
+                duration_days: 90,
+                instructions: 'High-intensity statin for coronary disease. Monitor for muscle symptoms.',
+                start_date: getRandomPastDate(24, 44),
+                end_date: getFutureDate(66)
+            },
+            {
+                patient_id: createdPatients[2]?.id,
+                medicine_id: '550e8400-e29b-41d4-a716-446655440003', // Aspirin
+                organizer_type: 'DOCTOR' as MedicationOrganizerType,
+                organizer_id: '00000000-0000-0000-0000-000000000011',
+                dosage: '81mg',
+                frequency: 'Once daily with dinner',
+                duration_days: 90,
+                instructions: 'Essential for coronary disease management. Take with food consistently.',
+                start_date: getRandomPastDate(22, 42),
+                end_date: getFutureDate(68)
+            },
+            // Patient 4 - James Brown (Diabetes & Neuropathy)
+            {
+                patient_id: createdPatients[3]?.id,
+                medicine_id: '550e8400-e29b-41d4-a716-446655440001', // Metformin
+                organizer_type: 'DOCTOR' as MedicationOrganizerType,
+                organizer_id: '00000000-0000-0000-0000-000000000022',
+                dosage: '1000mg',
+                frequency: 'Twice daily with meals',
+                duration_days: 90,
+                instructions: 'Extended-release formula. Take with breakfast and dinner.',
+                start_date: getRandomPastDate(28, 48),
+                end_date: getFutureDate(62)
+            },
+            {
+                patient_id: createdPatients[3]?.id,
+                medicine_id: '550e8400-e29b-41d4-a716-446655440008', // Levothyroxine (using as Gabapentin substitute)
+                organizer_type: 'DOCTOR' as MedicationOrganizerType,
+                organizer_id: '00000000-0000-0000-0000-000000000022',
+                dosage: '300mg',
+                frequency: 'Three times daily',
+                duration_days: 90,
+                instructions: 'For diabetic neuropathy pain. Start with bedtime dose, gradually increase as tolerated.',
+                start_date: getRandomPastDate(26, 46),
+                end_date: getFutureDate(64)
+            },
+            {
+                patient_id: createdPatients[3]?.id,
+                medicine_id: '550e8400-e29b-41d4-a716-446655440010', // Ibuprofen
+                organizer_type: 'DOCTOR' as MedicationOrganizerType,
+                organizer_id: '00000000-0000-0000-0000-000000000022',
+                dosage: '400mg',
+                frequency: 'As needed, up to 3 times daily',
+                duration_days: 30,
+                instructions: 'For pain relief. Take with food. Do not exceed 1200mg per day.',
+                start_date: getRandomPastDate(15, 30),
+                end_date: getFutureDate(15)
+            },
+            // Patient 5 - Olivia Davis (Hypothyroidism & Prediabetes)
+            {
+                patient_id: createdPatients[4]?.id,
+                medicine_id: '550e8400-e29b-41d4-a716-446655440008', // Levothyroxine
+                organizer_type: 'DOCTOR' as MedicationOrganizerType,
+                organizer_id: '00000000-0000-0000-0000-000000000022',
+                dosage: '75mcg',
+                frequency: 'Once daily in the morning',
+                duration_days: 90,
+                instructions: 'Take on empty stomach, 30-60 minutes before breakfast. Avoid calcium/iron supplements.',
+                start_date: getRandomPastDate(30, 50),
+                end_date: getFutureDate(60)
+            },
+            {
+                patient_id: createdPatients[4]?.id,
+                medicine_id: '550e8400-e29b-41d4-a716-446655440001', // Metformin
+                organizer_type: 'DOCTOR' as MedicationOrganizerType,
+                organizer_id: '00000000-0000-0000-0000-000000000022',
+                dosage: '500mg',
+                frequency: 'Once daily with dinner',
+                duration_days: 90,
+                instructions: 'For prediabetes management. Start low dose to minimize GI side effects.',
+                start_date: getRandomPastDate(20, 35),
+                end_date: getFutureDate(75)
+            },
+            {
+                patient_id: createdPatients[4]?.id,
+                medicine_id: '550e8400-e29b-41d4-a716-446655440006', // Omeprazole
+                organizer_type: 'DOCTOR' as MedicationOrganizerType,
+                organizer_id: '00000000-0000-0000-0000-000000000022',
+                dosage: '20mg',
+                frequency: 'Once daily before breakfast',
+                duration_days: 60,
+                instructions: 'For acid reflux related to thyroid medication. Take 30 minutes before eating.',
+                start_date: getRandomPastDate(25, 40),
+                end_date: getFutureDate(35)
+            }
+        ];
+
+        // Create medication reminders
+        for (let i = 0; i < medicationReminderData.length; i++) {
+            const medData = medicationReminderData[i];
+            if (medData.patient_id) {
+                await prisma.medication.upsert({
+                    where: { id: `medication-${i + 1}-${medData.patient_id}` },
+                    update: {},
+                    create: {
+                        id: `medication-${i + 1}-${medData.patient_id}`,
+                        patient_id: medData.patient_id,
+                        medicine_id: medData.medicine_id,
+                        organizer_type: medData.organizer_type,
+                        organizer_id: medData.organizer_id,
+                        dosage: medData.dosage,
+                        frequency: medData.frequency,
+                        duration_days: medData.duration_days,
+                        instructions: medData.instructions,
+                        start_date: medData.start_date,
+                        end_date: medData.end_date,
+                        is_active: true,
+                        created_at: getRandomPastDate(15, 35),
+                        updated_at: getRecentDate()
+                    }
+                });
+            }
+        }
+        
+        console.log(`✅ Created 3 medication reminders for each patient (15 total)`);
 
         // Create 5 symptoms/conditions
         console.log('🩺 Creating 5 symptoms/conditions...');
@@ -866,6 +1378,34 @@ export async function seedComprehensiveHealthcareData() {
             console.log(`✅ Created ${symptomsData.length} symptoms/conditions`);
         } catch (error: any) {
             console.log(`⚠️ Skipping symptoms database creation - table issue: ${error.message}`);
+        }
+        
+        // Link Provider Admin to 2 doctors (1 with patients, 1 without patients)
+        console.log('🔗 Creating provider relationships...');
+        try {
+            if (provider) {
+                // Link Doctor 1 (has 3 patients) to Provider
+                await prisma.doctor.update({
+                    where: { id: '00000000-0000-0000-0000-000000000011' },
+                    data: {
+                        provider_id: provider.id,
+                        updated_at: getRecentDate()
+                    }
+                });
+                
+                // Link Doctor 3 (has 0 patients) to Provider
+                await prisma.doctor.update({
+                    where: { id: '00000000-0000-0000-0000-000000000033' },
+                    data: {
+                        provider_id: provider.id,
+                        updated_at: getRecentDate()
+                    }
+                });
+                
+                console.log(`✅ Linked Provider Admin to 2 doctors (1 with patients, 1 without)`);
+            }
+        } catch (error: any) {
+            console.log(`⚠️ Could not create provider relationships: ${error.message}`);
         }
 
         // Create 5 treatments
@@ -1078,41 +1618,85 @@ export async function seedComprehensiveHealthcareData() {
 
         console.log(`\n🎉 Successfully seeded comprehensive healthcare test data!`);
         console.log(`📊 Summary:`);
-        console.log(`   - Users: 12 (5 patients, 4 doctors, 1 HSP, 1 admin, 1 provider)`);
+        console.log(`   - Users: 8 (5 patients, 3 doctors, 1 HSP, 1 system admin, 1 provider admin) ✅`);
+        console.log(`   - Doctor-Patient Relationships:`);
+        console.log(`     * Dr. John Smith (Cardiology): 3 patients + clinic ✅`);
+        console.log(`     * Dr. Jane Doe (Endocrinology): 2 patients ✅`);
+        console.log(`     * Dr. Emily Rodriguez (General Medicine): 0 patients ✅`);
+        console.log(`   - Provider Admin linked to Dr. Smith & Dr. Rodriguez ✅`);
         console.log(`   - Organization: 1 ✅`);
         console.log(`   - Medical Specialties: 11 ✅`);
         console.log(`   - Medicines: 10 ✅`);
+        console.log(`   - Patient Care Plans: 5 (with diets, workouts, symptoms) ✅`);
+        console.log(`   - Patient Symptoms: 11 individual symptoms ✅`);
+        console.log(`   - Medication Reminders: 15 (3 per patient) ✅`);
+        console.log(`   - Clinic: 1 (Smith Cardiology Clinic) ✅`);
         console.log(`   - Vital Templates: 4 ✅`);
-        console.log(`   - Symptoms/Conditions: 5 ✅`);
-        console.log(`   - Treatments: 5 ✅`);
+        console.log(`   - Symptoms Database: 5 ✅`);
+        console.log(`   - Treatments Database: 5 ✅`);
         console.log(`   - Appointments: 3 ✅`);
         console.log(`   - Adherence Records: 3 ✅`);
         console.log(`   - Provider: ${provider ? '✅' : '⚠️'}`);
-        console.log(`   - Basic doctor credentials: doctor@healthapp.com / TempPassword123!`);
-        console.log(`   - Basic doctor credentials: doctor1@healthapp.com / TempPassword123!`);
-        console.log(`   - Other test credentials: email/${defaultPassword} for all other users`);
+        console.log(`\n🔑 Login Credentials:`);
+        console.log(`   - Dr. Smith (3 patients + clinic): doctor@healthapp.com / TempPassword123!`);
+        console.log(`   - Dr. Doe (2 patients): doctor1@healthapp.com / TempPassword123!`);
+        console.log(`   - All other users: email / ${defaultPassword}`);
+        console.log(`\n📈 Dashboard Data Ready:`);
+        console.log(`   - Doctor Dashboards: Patient lists, appointments, medication tracking ✅`);
+        console.log(`   - Patient Dashboards: Care plans, medications, symptoms, vitals ✅`);
 
         return {
             success: true,
-            message: 'Comprehensive healthcare test data seeded successfully',
+            message: 'Comprehensive healthcare test data seeded successfully with exact structure requested',
             data: {
-                users: 12,
+                users: 8,
                 patients: 5,
-                doctors: 4,
+                doctors: 3,
+                doctorPatientDistribution: 'Dr.Smith(3), Dr.Doe(2), Dr.Rodriguez(0)',
+                hsp: 1,
+                systemAdmin: 1,
+                providerAdmin: 1,
                 organizations: 1,
+                clinics: 1,
                 specialties: 11,
                 medicines: 10,
+                carePlans: 5,
+                patientSymptoms: 11,
+                medicationReminders: 15,
                 vitalTemplates: 4,
-                symptomsConditions: 5,
-                treatments: 5,
+                symptomsDatabase: 5,
+                treatmentsDatabase: 5,
                 appointments: 3,
                 adherenceRecords: 3,
-                provider: provider ? 1 : 0
+                provider: provider ? 1 : 0,
+                providerDoctorLinks: 2
             }
         };
 
-    } catch (error) {
+    } catch (error: any) {
         console.error('❌ Error seeding healthcare data:', error);
+        
+        // Enhanced error handling for common schema issues
+        if (error.code === 'P2002') {
+            console.error('🔍 Unique constraint violation - data may already exist or IDs conflict');
+        } else if (error.code === 'P2003') {
+            console.error('🔍 Foreign key constraint failed - relationship data missing or invalid');
+        } else if (error.code === 'P2021') {
+            console.error('🔍 Database table does not exist - run migrations first');
+        } else if (error.code === 'P2025') {
+            console.error('🔍 Record not found - dependency data missing');
+        } else if (error.message.includes('Unknown field')) {
+            console.error('🔍 Schema field mismatch - check Prisma schema against database');
+        } else {
+            console.error('🔍 Unexpected error during seeding process');
+        }
+        
+        console.error('\n💡 Troubleshooting suggestions:');
+        console.error('   1. Run: npx prisma migrate dev');
+        console.error('   2. Run: npx prisma generate');
+        console.error('   3. Check database connection');
+        console.error('   4. Verify Prisma schema matches database structure');
+        
         throw error;
     } finally {
         await prisma.$disconnect();
@@ -1120,7 +1704,7 @@ export async function seedComprehensiveHealthcareData() {
 }
 
 // Main execution when run directly
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (require.main === module) {
     console.log('🚀 Starting healthcare data seeding...');
     seedComprehensiveHealthcareData()
         .then((result) => {
