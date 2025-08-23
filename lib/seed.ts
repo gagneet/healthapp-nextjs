@@ -130,6 +130,10 @@ export async function seedComprehensiveHealthcareData() {
                     emailVerifiedLegacy: true,
                     createdAt: getRandomPastDate(30, 90),
                     updatedAt: getRecentDate()
+                    // Auth.js v5 required fields
+                    name: 'Dr. John Smith',
+                    emailVerified: getRandomPastDate(30, 90),
+                    image: null,
                 }),
                 createUserData({
                     id: '00000000-0000-0000-0000-000000000002',
@@ -144,7 +148,10 @@ export async function seedComprehensiveHealthcareData() {
                     accountStatus: 'ACTIVE' as UserAccountStatus,
                     emailVerifiedLegacy: true,
                     createdAt: getRandomPastDate(28, 88),
-                    updatedAt: getRecentDate()
+                    updatedAt: getRecentDate(),
+                    name: 'Dr. Jane Doe',
+                    emailVerified: getRandomPastDate(28, 88),
+                    image: null,
                 }),
                 createUserData({
                     id: '00000000-0000-0000-0000-000000000003',
@@ -159,7 +166,10 @@ export async function seedComprehensiveHealthcareData() {
                     accountStatus: 'ACTIVE' as UserAccountStatus,
                     emailVerifiedLegacy: true,
                     createdAt: getRandomPastDate(25, 85),
-                    updatedAt: getRecentDate()
+                    updatedAt: getRecentDate(),
+                    name: 'Dr. Emily Rodriguez',
+                    emailVerified: getRandomPastDate(25, 85),
+                    image: null,
                 }),
                 
                 // 5 Patients (3 for doctor1, 2 for doctor2, 0 for doctor3)
@@ -176,7 +186,10 @@ export async function seedComprehensiveHealthcareData() {
                     accountStatus: 'ACTIVE' as UserAccountStatus,
                     emailVerifiedLegacy: true,
                     createdAt: getRandomPastDate(20, 80),
-                    updatedAt: getRecentDate()
+                    updatedAt: getRecentDate(),
+                    name: 'Sarah Johnson',
+                    emailVerified: getRandomPastDate(20, 80),
+                    image: null,
                 }),
                 createUserData({
                     id: '88888888-8888-8888-8888-888888888888',
@@ -191,7 +204,10 @@ export async function seedComprehensiveHealthcareData() {
                     accountStatus: 'ACTIVE' as UserAccountStatus,
                     emailVerifiedLegacy: true,
                     createdAt: getRandomPastDate(18, 78),
-                    updatedAt: getRecentDate()
+                    updatedAt: getRecentDate(),
+                    name: 'Michael Chen',
+                    emailVerified: getRandomPastDate(18, 78),
+                    image: null,
                 }),
                 createUserData({
                     id: '11111111-1111-1111-1111-111111111111',
@@ -206,7 +222,10 @@ export async function seedComprehensiveHealthcareData() {
                     accountStatus: 'ACTIVE' as UserAccountStatus,
                     emailVerifiedLegacy: true,
                     createdAt: getRandomPastDate(16, 76),
-                    updatedAt: getRecentDate()
+                    updatedAt: getRecentDate(),
+                    name: 'Emma Williams',
+                    emailVerified: getRandomPastDate(16, 76),
+                    image: null,
                 }),
                 createUserData({
                     id: '22222222-2222-2222-2222-222222222222',
@@ -221,7 +240,10 @@ export async function seedComprehensiveHealthcareData() {
                     accountStatus: 'ACTIVE' as UserAccountStatus,
                     emailVerifiedLegacy: true,
                     createdAt: getRandomPastDate(14, 74),
-                    updatedAt: getRecentDate()
+                    updatedAt: getRecentDate(),
+                    name: 'James Brown',
+                    emailVerified: getRandomPastDate(14, 74),
+                    image: null,
                 }),
                 createUserData({
                     id: '33333333-3333-3333-3333-333333333333',
@@ -236,7 +258,10 @@ export async function seedComprehensiveHealthcareData() {
                     accountStatus: 'ACTIVE' as UserAccountStatus,
                     emailVerifiedLegacy: true,
                     createdAt: getRandomPastDate(12, 72),
-                    updatedAt: getRecentDate()
+                    updatedAt: getRecentDate(),
+                    name: 'Olivia Davis',
+                    emailVerified: getRandomPastDate(12, 72),
+                    image: null,
                 }),
 
                 // 1 HSP
@@ -253,7 +278,10 @@ export async function seedComprehensiveHealthcareData() {
                     accountStatus: 'ACTIVE' as UserAccountStatus,
                     emailVerifiedLegacy: true,
                     createdAt: getRandomPastDate(35, 85),
-                    updatedAt: getRecentDate()
+                    updatedAt: getRecentDate(),
+                    name: 'Maria Garcia',
+                    emailVerified: getRandomPastDate(35, 85),
+                    image: null,
                 }),
 
                 // 1 System Admin
@@ -270,7 +298,10 @@ export async function seedComprehensiveHealthcareData() {
                     accountStatus: 'ACTIVE' as UserAccountStatus,
                     emailVerifiedLegacy: true,
                     createdAt: getRandomPastDate(40, 90),
-                    updatedAt: getRecentDate()
+                    updatedAt: getRecentDate(),
+                    name: 'Admin User',
+                    emailVerified: getRandomPastDate(40, 90),
+                    image: null,
                 }),
 
                 // 1 Provider Admin
@@ -287,14 +318,17 @@ export async function seedComprehensiveHealthcareData() {
                     accountStatus: 'ACTIVE' as UserAccountStatus,
                     emailVerifiedLegacy: true,
                     createdAt: getRandomPastDate(45, 90),
-                    updatedAt: getRecentDate()
+                    updatedAt: getRecentDate(),
+                    name: 'Provider Administrator',
+                    emailVerified: getRandomPastDate(45, 90),
+                    image: null,
                 })
             ]
         });
 
         console.log(`✅ Created ${testUsers.count} users`);
 
-        // Create 1 Organization
+        // Create One Organization - Organization model uses snake_case
         console.log('🏥 Creating organization...');
         const organization = await prisma.organization.upsert({
             where: { id: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11' },
@@ -324,7 +358,7 @@ export async function seedComprehensiveHealthcareData() {
 
         console.log(`✅ Created organization: ${organization.name}`);
 
-        // Create 11 Medical Specialties
+        // Create Eleven Medical Specialties - Speciality model uses snake_case
         console.log('🩺 Creating 11 medical specialties...');
         const specialties = [
             { name: 'Cardiology', description: 'Heart and cardiovascular system specialist' },
@@ -361,7 +395,7 @@ export async function seedComprehensiveHealthcareData() {
         const generalMedSpec = await prisma.speciality.findFirst({ where: { name: 'General Medicine' } });
         const psychiatrySpec = await prisma.speciality.findFirst({ where: { name: 'Psychiatry' } });
 
-        // Create 3 doctor profiles with comprehensive details
+        // Create Three Doctor profiles with comprehensive details - Doctor model uses snake_case
         console.log('👨‍⚕️ Creating 3 doctor profiles...');
         await prisma.doctor.createMany({
             skipDuplicates: true,
@@ -413,7 +447,7 @@ export async function seedComprehensiveHealthcareData() {
 
         console.log(`✅ Created doctor profiles`);
 
-        // Create HSP profile using correct model name
+        // Create HSP profile using correct model name - HSP model uses snake_case
         console.log('🩺 Creating HSP profile...');
         await prisma.hSP.upsert({
             where: { id: '55555555-5555-5555-5555-555555555551' },
@@ -433,7 +467,7 @@ export async function seedComprehensiveHealthcareData() {
 
         console.log(`✅ Created HSP profile`);
 
-        // Create Provider
+        // Create Provider - Providers model uses snake_case
         console.log('🏢 Creating provider...');
         let provider;
         try {
@@ -463,7 +497,7 @@ export async function seedComprehensiveHealthcareData() {
             provider = null;
         }
 
-        // Create 5 patient profiles with specific doctor linkages
+        // Create five patient profiles with specific doctor linkages - Patient model uses snake_case
         console.log('👥 Creating patient profiles with specific doctor assignments...');
         await prisma.patient.createMany({
             skipDuplicates: true,
@@ -1649,7 +1683,8 @@ export async function seedComprehensiveHealthcareData() {
             success: true,
             message: 'Comprehensive healthcare test data seeded successfully with exact structure requested',
             data: {
-                users: 8,
+                // users: 8,
+                users: testUsers.count,
                 patients: 5,
                 doctors: 3,
                 doctorPatientDistribution: 'Dr.Smith(3), Dr.Doe(2), Dr.Rodriguez(0)',
