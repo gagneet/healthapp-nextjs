@@ -622,14 +622,14 @@ ID             NAME                        IMAGE                   NODE         
 leca7ntb4uym   healthapp-test_app.1        healthapp:test          ubuntu-svr   Running         Running 5 seconds ago    
 krmyuqidmm3b   healthapp-test_app.2        healthapp:test          ubuntu-svr   Running         Running 5 seconds ago    
 l2li9vaf30er   healthapp-test_pgadmin.1    dpage/pgadmin4:latest   ubuntu-svr   Running         Running 17 seconds ago   
-myq8h1xa9f5c   healthapp-test_postgres.1   postgres:15-alpine      ubuntu-svr   Running         Running 6 seconds ago    
+myq8h1xa9f5c   healthapp-test_postgres.1   postgres:17-alpine      ubuntu-svr   Running         Running 6 seconds ago    
 uq1yhexmqzt7   healthapp-test_redis.1      redis:7-alpine          ubuntu-svr   Running         Running 14 seconds ago   
 
 [INFO] Service Details:
 ID             NAME                      MODE         REPLICAS   IMAGE                   PORTS
 w9tj40x5cg65   healthapp-test_app        replicated   2/2        healthapp:test          *:3002->3002/tcp
 obxsmz0dnx2u   healthapp-test_pgadmin    replicated   1/1        dpage/pgadmin4:latest   *:5050->80/tcp
-0700kbehi5ur   healthapp-test_postgres   replicated   1/1        postgres:15-alpine      *:5432->5432/tcp
+0700kbehi5ur   healthapp-test_postgres   replicated   1/1        postgres:17-alpine      *:5432->5432/tcp
 ldsvpdko6t94   healthapp-test_redis      replicated   1/1        redis:7-alpine          *:6379->6379/tcp
 [INFO] Running database migrations...
 warn The configuration property `package.json#prisma` is deprecated and will be removed in Prisma 7. Please migrate to a Prisma config file (e.g., `prisma.config.ts`).

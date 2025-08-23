@@ -94,7 +94,7 @@ The backend reads these environment variables in database-postgres.js. The datab
 #### PostgreSQL container starts first
 
 ```bash
-docker run postgres:15
+docker run postgres:17
 -e POSTGRES_DB=healthapp_dev          # Creates database "healthapp_dev"
 -e POSTGRES_USER=healthapp_user       # Creates user "healthapp_user" 
 -e POSTGRES_PASSWORD=healthapp_pass   # Sets password to "healthapp_pass"

@@ -4215,7 +4215,7 @@ docker run -d --name healthapp-postgres -p 5433:5432 \
   -e POSTGRES_DB=healthapp_dev \
   -e POSTGRES_USER=healthapp_user \
   -e POSTGRES_PASSWORD=pg_password \
-  postgres:15-alpine
+  postgres:17-alpine
 
 docker run -d --name healthapp-redis -p 6379:6379 redis:7-alpine
 
