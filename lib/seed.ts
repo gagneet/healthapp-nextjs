@@ -129,7 +129,7 @@ export async function seedComprehensiveHealthcareData() {
                     accountStatus: 'ACTIVE' as UserAccountStatus,
                     emailVerifiedLegacy: true,
                     createdAt: getRandomPastDate(30, 90),
-                    updatedAt: getRecentDate()
+                    updatedAt: getRecentDate(),
                     // Auth.js v5 required fields
                     name: 'Dr. John Smith',
                     emailVerified: getRandomPastDate(30, 90),
@@ -629,11 +629,15 @@ export async function seedComprehensiveHealthcareData() {
             create: {
                 id: '00000000-0000-0000-0000-000000000501',
                 doctor_id: '00000000-0000-0000-0000-000000000011',
+                organization_id: organization.id,
                 name: 'Smith Cardiology Clinic',
-                address: '123 Heart Avenue, Medical District',
-                city: 'Healthcare City',
-                state: 'CA',
-                zip_code: '90210',
+                address: {
+                    street: '123 Heart Avenue, Medical District',
+                    city: 'Healthcare City',
+                    state: 'CA',
+                    zipCode: '90210',
+                    country: 'USA'
+                },
                 phone: '+1-555-HEART1',
                 email: 'info@smithcardiology.com',
                 website: 'https://smithcardiology.com',
@@ -647,12 +651,12 @@ export async function seedComprehensiveHealthcareData() {
                     sunday: 'Emergency only'
                 },
                 services_offered: ['Cardiac Consultation', 'Echocardiograms', 'Stress Testing', 'Heart Disease Management'],
-                facility_details: {
+                facilities: {
                     parking: true,
                     wheelchair_accessible: true,
-                    insurance_accepted: ['Medicare', 'Blue Cross', 'Aetna', 'Cigna'],
                     languages: ['English', 'Spanish']
                 },
+                insurance_accepted: ['Medicare', 'Blue Cross', 'Aetna', 'Cigna'],
                 is_active: true,
                 created_at: getRandomPastDate(25, 75),
                 updated_at: getRecentDate()
@@ -835,181 +839,265 @@ export async function seedComprehensiveHealthcareData() {
         const carePlanData = [
             {
                 patient_id: createdPatients[0]?.id, // Sarah Johnson
+                created_by_doctor_id: '00000000-0000-0000-0000-000000000011',
+                organization_id: organization.id,
                 title: 'Diabetes & Hypertension Management Plan',
                 description: 'Comprehensive care plan for managing Type 2 diabetes and hypertension with lifestyle modifications and medication adherence.',
-                objectives: [
+                chronic_conditions: ['Type 2 Diabetes', 'Hypertension'],
+                condition_severity: {
+                    'Type 2 Diabetes': 'moderate',
+                    'Hypertension': 'mild'
+                },
+                long_term_goals: [
                     'Maintain HbA1c below 7.0%',
                     'Keep blood pressure under 130/80 mmHg',
                     'Achieve weight loss of 10-15 pounds',
                     'Improve cardiovascular fitness'
                 ],
+                lifestyle_modifications: [
+                    {
+                        type: 'diet',
+                        details: {
+                            calories_per_day: 1800,
+                            carbohydrate_grams: 180,
+                            protein_grams: 120,
+                            fat_grams: 60,
+                            meal_plan: {
+                                breakfast: 'Oatmeal with berries, Greek yogurt',
+                                lunch: 'Grilled chicken salad with olive oil dressing',
+                                dinner: 'Baked salmon, steamed vegetables, quinoa',
+                                snacks: 'Apple with almonds, carrot sticks'
+                            },
+                            restrictions: ['Low sodium', 'Limited refined sugars', 'Complex carbohydrates only']
+                        }
+                    },
+                    {
+                        type: 'exercise',
+                        details: {
+                            frequency: '5 days per week',
+                            duration: '45 minutes',
+                            activities: {
+                                cardio: 'Brisk walking 30 min, 4x/week',
+                                strength: 'Light weights 2x/week',
+                                flexibility: 'Yoga 15 min daily'
+                            },
+                            target_heart_rate: '120-140 bpm',
+                            progression: 'Increase walking duration by 5 min every 2 weeks'
+                        }
+                    }
+                ],
                 start_date: getRandomPastDate(30, 60),
                 end_date: getFutureDate(180),
-                diet_plan: {
-                    calories_per_day: 1800,
-                    carbohydrate_grams: 180,
-                    protein_grams: 120,
-                    fat_grams: 60,
-                    meal_plan: {
-                        breakfast: 'Oatmeal with berries, Greek yogurt',
-                        lunch: 'Grilled chicken salad with olive oil dressing',
-                        dinner: 'Baked salmon, steamed vegetables, quinoa',
-                        snacks: 'Apple with almonds, carrot sticks'
-                    },
-                    restrictions: ['Low sodium', 'Limited refined sugars', 'Complex carbohydrates only']
-                },
-                workout_plan: {
-                    frequency: '5 days per week',
-                    duration: '45 minutes',
-                    activities: {
-                        cardio: 'Brisk walking 30 min, 4x/week',
-                        strength: 'Light weights 2x/week',
-                        flexibility: 'Yoga 15 min daily'
-                    },
-                    target_heart_rate: '120-140 bpm',
-                    progression: 'Increase walking duration by 5 min every 2 weeks'
-                }
+                status: 'ACTIVE',
+                priority: 'HIGH'
             },
             {
                 patient_id: createdPatients[1]?.id, // Michael Chen
+                created_by_doctor_id: '00000000-0000-0000-0000-000000000011',
+                organization_id: organization.id,
                 title: 'Hypertension & Cholesterol Control Plan',
                 description: 'Cardiovascular health management focusing on blood pressure control and cholesterol reduction.',
-                objectives: [
+                chronic_conditions: ['Hypertension', 'High Cholesterol'],
+                condition_severity: {
+                    'Hypertension': 'moderate',
+                    'High Cholesterol': 'mild'
+                },
+                long_term_goals: [
                     'Reduce blood pressure to <130/80 mmHg',
                     'Lower LDL cholesterol below 100 mg/dL',
                     'Maintain healthy weight',
                     'Increase physical activity'
                 ],
+                lifestyle_modifications: [
+                    {
+                        type: 'diet',
+                        details: {
+                            calories_per_day: 2000,
+                            sodium_mg: 1500,
+                            fiber_grams: 35,
+                            meal_plan: {
+                                breakfast: 'Whole grain cereal with low-fat milk',
+                                lunch: 'Turkey and avocado wrap with vegetables',
+                                dinner: 'Lean beef, sweet potato, green beans',
+                                snacks: 'Mixed nuts, fresh fruit'
+                            },
+                            restrictions: ['Low sodium', 'Low saturated fat', 'Heart-healthy fats']
+                        }
+                    },
+                    {
+                        type: 'exercise',
+                        details: {
+                            frequency: '4 days per week',
+                            duration: '40 minutes',
+                            activities: {
+                                cardio: 'Cycling or swimming 30 min, 3x/week',
+                                strength: 'Resistance bands 2x/week',
+                                flexibility: 'Stretching routine daily'
+                            },
+                            target_heart_rate: '125-145 bpm'
+                        }
+                    }
+                ],
                 start_date: getRandomPastDate(25, 55),
                 end_date: getFutureDate(120),
-                diet_plan: {
-                    calories_per_day: 2000,
-                    sodium_mg: 1500,
-                    fiber_grams: 35,
-                    meal_plan: {
-                        breakfast: 'Whole grain cereal with low-fat milk',
-                        lunch: 'Turkey and avocado wrap with vegetables',
-                        dinner: 'Lean beef, sweet potato, green beans',
-                        snacks: 'Mixed nuts, fresh fruit'
-                    },
-                    restrictions: ['Low sodium', 'Low saturated fat', 'Heart-healthy fats']
-                },
-                workout_plan: {
-                    frequency: '4 days per week',
-                    duration: '40 minutes',
-                    activities: {
-                        cardio: 'Cycling or swimming 30 min, 3x/week',
-                        strength: 'Resistance bands 2x/week',
-                        flexibility: 'Stretching routine daily'
-                    },
-                    target_heart_rate: '125-145 bpm'
-                }
+                status: 'ACTIVE',
+                priority: 'MEDIUM'
             },
             {
                 patient_id: createdPatients[2]?.id, // Emma Williams
+                created_by_doctor_id: '00000000-0000-0000-0000-000000000011',
+                organization_id: organization.id,
                 title: 'Coronary Heart Disease Management',
                 description: 'Cardiac rehabilitation and lifestyle modification program for coronary artery disease.',
-                objectives: [
+                chronic_conditions: ['Coronary Artery Disease'],
+                condition_severity: {
+                    'Coronary Artery Disease': 'severe'
+                },
+                long_term_goals: [
                     'Improve cardiac function and endurance',
                     'Prevent further coronary events',
                     'Manage stress and anxiety',
                     'Optimize medication adherence'
                 ],
+                lifestyle_modifications: [
+                    {
+                        type: 'diet',
+                        details: {
+                            calories_per_day: 1600,
+                            sodium_mg: 1200,
+                            cholesterol_mg: 200,
+                            meal_plan: {
+                                breakfast: 'Oatmeal with walnuts and berries',
+                                lunch: 'Grilled fish with quinoa salad',
+                                dinner: 'Vegetable stir-fry with tofu',
+                                snacks: 'Greek yogurt, handful of almonds'
+                            },
+                            restrictions: ['Very low sodium', 'Low cholesterol', 'Omega-3 rich foods']
+                        }
+                    },
+                    {
+                        type: 'exercise',
+                        details: {
+                            frequency: '6 days per week',
+                            duration: '30 minutes',
+                            activities: {
+                                cardio: 'Supervised walking program 3x/week',
+                                strength: 'Light resistance training 2x/week',
+                                flexibility: 'Gentle yoga daily',
+                                stress_management: 'Meditation 10 min daily'
+                            },
+                            target_heart_rate: '100-120 bpm'
+                        }
+                    }
+                ],
                 start_date: getRandomPastDate(20, 50),
                 end_date: getFutureDate(365),
-                diet_plan: {
-                    calories_per_day: 1600,
-                    sodium_mg: 1200,
-                    cholesterol_mg: 200,
-                    meal_plan: {
-                        breakfast: 'Oatmeal with walnuts and berries',
-                        lunch: 'Grilled fish with quinoa salad',
-                        dinner: 'Vegetable stir-fry with tofu',
-                        snacks: 'Greek yogurt, handful of almonds'
-                    },
-                    restrictions: ['Very low sodium', 'Low cholesterol', 'Omega-3 rich foods']
-                },
-                workout_plan: {
-                    frequency: '6 days per week',
-                    duration: '30 minutes',
-                    activities: {
-                        cardio: 'Supervised walking program 3x/week',
-                        strength: 'Light resistance training 2x/week',
-                        flexibility: 'Gentle yoga daily',
-                        stress_management: 'Meditation 10 min daily'
-                    },
-                    target_heart_rate: '100-120 bpm'
-                }
+                status: 'ACTIVE',
+                priority: 'HIGH'
             },
             {
                 patient_id: createdPatients[3]?.id, // James Brown
+                created_by_doctor_id: '00000000-0000-0000-0000-000000000022',
+                organization_id: organization.id,
                 title: 'Diabetes & Neuropathy Care Plan',
                 description: 'Comprehensive diabetes management with focus on neuropathy prevention and pain management.',
-                objectives: [
+                chronic_conditions: ['Type 2 Diabetes', 'Diabetic Neuropathy'],
+                condition_severity: {
+                    'Type 2 Diabetes': 'moderate',
+                    'Diabetic Neuropathy': 'mild'
+                },
+                long_term_goals: [
                     'Maintain stable blood glucose levels',
                     'Prevent neuropathy progression',
                     'Manage neuropathic pain',
                     'Improve quality of life'
                 ],
+                lifestyle_modifications: [
+                    {
+                        type: 'diet',
+                        details: {
+                            calories_per_day: 2200,
+                            carbohydrate_grams: 200,
+                            protein_grams: 140,
+                            meal_plan: {
+                                breakfast: 'Scrambled eggs with whole wheat toast',
+                                lunch: 'Chicken and vegetable soup with crackers',
+                                dinner: 'Grilled pork tenderloin with roasted vegetables',
+                                snacks: 'Cheese and whole grain crackers'
+                            },
+                            restrictions: ['Consistent carbohydrate timing', 'Limited simple sugars']
+                        }
+                    },
+                    {
+                        type: 'exercise',
+                        details: {
+                            frequency: '3 days per week',
+                            duration: '30 minutes',
+                            activities: {
+                                cardio: 'Low-impact water aerobics 2x/week',
+                                strength: 'Chair exercises 2x/week',
+                                flexibility: 'Foot and ankle exercises daily'
+                            },
+                            special_considerations: ['Foot care routine', 'Check feet daily for injuries']
+                        }
+                    }
+                ],
                 start_date: getRandomPastDate(18, 48),
                 end_date: getFutureDate(180),
-                diet_plan: {
-                    calories_per_day: 2200,
-                    carbohydrate_grams: 200,
-                    protein_grams: 140,
-                    meal_plan: {
-                        breakfast: 'Scrambled eggs with whole wheat toast',
-                        lunch: 'Chicken and vegetable soup with crackers',
-                        dinner: 'Grilled pork tenderloin with roasted vegetables',
-                        snacks: 'Cheese and whole grain crackers'
-                    },
-                    restrictions: ['Consistent carbohydrate timing', 'Limited simple sugars']
-                },
-                workout_plan: {
-                    frequency: '3 days per week',
-                    duration: '30 minutes',
-                    activities: {
-                        cardio: 'Low-impact water aerobics 2x/week',
-                        strength: 'Chair exercises 2x/week',
-                        flexibility: 'Foot and ankle exercises daily'
-                    },
-                    special_considerations: ['Foot care routine', 'Check feet daily for injuries']
-                }
+                status: 'ACTIVE',
+                priority: 'MEDIUM'
             },
             {
                 patient_id: createdPatients[4]?.id, // Olivia Davis
+                created_by_doctor_id: '00000000-0000-0000-0000-000000000022',
+                organization_id: organization.id,
                 title: 'Thyroid & Pre-diabetes Management',
                 description: 'Hormone optimization and diabetes prevention through lifestyle intervention.',
-                objectives: [
+                chronic_conditions: ['Hypothyroidism', 'Prediabetes'],
+                condition_severity: {
+                    'Hypothyroidism': 'mild',
+                    'Prediabetes': 'mild'
+                },
+                long_term_goals: [
                     'Normalize thyroid hormone levels',
                     'Prevent progression to Type 2 diabetes',
                     'Maintain healthy weight',
                     'Optimize energy levels'
                 ],
+                lifestyle_modifications: [
+                    {
+                        type: 'diet',
+                        details: {
+                            calories_per_day: 1500,
+                            iodine_mcg: 150,
+                            fiber_grams: 30,
+                            meal_plan: {
+                                breakfast: 'Greek yogurt with granola and fruit',
+                                lunch: 'Lentil soup with whole grain roll',
+                                dinner: 'Baked chicken breast with brown rice',
+                                snacks: 'Apple with peanut butter'
+                            },
+                            restrictions: ['Thyroid-supporting foods', 'Low glycemic index']
+                        }
+                    },
+                    {
+                        type: 'exercise',
+                        details: {
+                            frequency: '5 days per week',
+                            duration: '35 minutes',
+                            activities: {
+                                cardio: 'Dance fitness 3x/week',
+                                strength: 'Bodyweight exercises 2x/week',
+                                flexibility: 'Pilates 2x/week'
+                            },
+                            target_heart_rate: '130-150 bpm'
+                        }
+                    }
+                ],
                 start_date: getRandomPastDate(15, 45),
                 end_date: getFutureDate(270),
-                diet_plan: {
-                    calories_per_day: 1500,
-                    iodine_mcg: 150,
-                    fiber_grams: 30,
-                    meal_plan: {
-                        breakfast: 'Greek yogurt with granola and fruit',
-                        lunch: 'Lentil soup with whole grain roll',
-                        dinner: 'Baked chicken breast with brown rice',
-                        snacks: 'Apple with peanut butter'
-                    },
-                    restrictions: ['Thyroid-supporting foods', 'Low glycemic index']
-                },
-                workout_plan: {
-                    frequency: '5 days per week',
-                    duration: '35 minutes',
-                    activities: {
-                        cardio: 'Dance fitness 3x/week',
-                        strength: 'Bodyweight exercises 2x/week',
-                        flexibility: 'Pilates 2x/week'
-                    },
-                    target_heart_rate: '130-150 bpm'
-                }
+                status: 'ACTIVE',
+                priority: 'MEDIUM'
             }
         ];
 
@@ -1023,14 +1111,18 @@ export async function seedComprehensiveHealthcareData() {
                     create: {
                         id: `careplan-${i + 1}-${planData.patient_id}`,
                         patient_id: planData.patient_id,
+                        created_by_doctor_id: planData.created_by_doctor_id,
+                        organization_id: planData.organization_id,
                         title: planData.title,
                         description: planData.description,
-                        objectives: planData.objectives,
+                        chronic_conditions: planData.chronic_conditions,
+                        condition_severity: planData.condition_severity,
+                        long_term_goals: planData.long_term_goals,
+                        lifestyle_modifications: planData.lifestyle_modifications,
                         start_date: planData.start_date,
                         end_date: planData.end_date,
-                        diet_plan: planData.diet_plan,
-                        workout_plan: planData.workout_plan,
-                        is_active: true,
+                        status: planData.status,
+                        priority: planData.priority,
                         created_at: getRandomPastDate(20, 50),
                         updated_at: getRecentDate()
                     }
