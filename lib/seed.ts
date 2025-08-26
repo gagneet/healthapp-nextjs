@@ -26,18 +26,18 @@ async function cleanDatabase() {
     const cleanupOperations = [
       () => prisma.adherenceRecord.deleteMany({}),
       () => prisma.medication.deleteMany({}),
-      () => prisma.vital.deleteMany({}),
+      () => prisma.vitals.deleteMany({}),
       () => prisma.symptom.deleteMany({}),
       () => prisma.carePlan.deleteMany({}),
       () => prisma.appointment.deleteMany({}),
       () => prisma.clinic.deleteMany({}),
       () => prisma.patient.deleteMany({}),
       () => prisma.doctor.deleteMany({}),
-      () => prisma.hSP.deleteMany({}),
-      () => prisma.providers.deleteMany({}),
+      () => prisma.hsp.deleteMany({}),
+      () => prisma.provider.deleteMany({}),
       () => prisma.medicine.deleteMany({}),
-      () => prisma.vitalTemplates.deleteMany({}),
-      () => prisma.symptomsDatabase.deleteMany({}),
+      () => prisma.vitalTemplate.deleteMany({}),
+      () => prisma.symptomDatabase.deleteMany({}),
       () => prisma.treatmentDatabase.deleteMany({}),
       () => prisma.speciality.deleteMany({}),
       () => prisma.organization.deleteMany({}),
@@ -460,7 +460,7 @@ export async function seedComprehensiveHealthcareData() {
 
         // Create HSP profile using correct model name - HSP model uses snake_case
         console.log('🩺 Creating HSP profile...');
-        await prisma.hSP.upsert({
+        await prisma.hsp.upsert({
             where: { id: '55555555-5555-5555-5555-555555555551' },
             update: {},
             create: {
@@ -482,7 +482,7 @@ export async function seedComprehensiveHealthcareData() {
         console.log('🏢 Creating provider...');
         let provider;
         try {
-            provider = await prisma.providers.upsert({
+            provider = await prisma.provider.upsert({
                 where: { id: '10101010-1010-1010-1010-101010101011' },
                 update: {},
                 create: {
@@ -1117,10 +1117,9 @@ export async function seedComprehensiveHealthcareData() {
             const planData = carePlanData[i];
             if (planData.patient_id) {
                 await prisma.carePlan.upsert({
-                    where: { id: `careplan-${i + 1}-${planData.patient_id}` },
+                    where: { title: planData.title },
                     update: {},
                     create: {
-                        id: `careplan-${i + 1}-${planData.patient_id}`,
                         patient_id: planData.patient_id,
                         created_by_doctor_id: planData.created_by_doctor_id,
                         organization_id: planData.organization_id,
@@ -1161,16 +1160,14 @@ export async function seedComprehensiveHealthcareData() {
             const symptom = symptomData[i];
             if (symptom.patient_id) {
                 await prisma.symptom.upsert({
-                    where: { id: `symptom-${i + 1}-${symptom.patient_id}` },
+                    where: { patient_id: symptom.patient_id, symptom_name: symptom.name },
                     update: {},
                     create: {
-                        id: `symptom-${i + 1}-${symptom.patient_id}`,
                         patient_id: symptom.patient_id,
-                        name: symptom.name,
-                        severity: symptom.severity,
-                        frequency: symptom.frequency,
-                        duration: symptom.duration,
-                        first_noticed: getRandomPastDate(10, 30),
+                        symptom_name: symptom.name,
+                        severity: parseInt(symptom.severity) || 1,
+                        description: `${symptom.frequency}, duration: ${symptom.duration}`,
+                        onset_time: getRandomPastDate(10, 30),
                         created_at: getRandomPastDate(5, 25),
                         updated_at: getRecentDate()
                     }
@@ -1190,7 +1187,7 @@ export async function seedComprehensiveHealthcareData() {
         ];
 
         for (const template of vitalTemplates) {
-            await prisma.vitalTemplates.upsert({
+            await prisma.vitalTemplate.upsert({
                 where: { id: template.id },
                 update: {},
                 create: {
@@ -1400,11 +1397,10 @@ export async function seedComprehensiveHealthcareData() {
             const medData = medicationReminderData[i];
             if (medData.patient_id) {
                 await prisma.medication.upsert({
-                    where: { id: `medication-${i + 1}-${medData.patient_id}` },
+                    where: { participant_id: medData.patient_id, medicine_id: medData.medicine_id },
                     update: {},
                     create: {
-                        id: `medication-${i + 1}-${medData.patient_id}`,
-                        patient_id: medData.patient_id,
+                        participant_id: medData.patient_id,
                         medicine_id: medData.medicine_id,
                         organizer_type: medData.organizer_type,
                         organizer_id: medData.organizer_id,
@@ -1501,7 +1497,7 @@ export async function seedComprehensiveHealthcareData() {
             ];
 
             for (const symptom of symptomsData) {
-                await prisma.symptomsDatabase.upsert({
+                await prisma.symptomDatabase.upsert({
                     where: { id: symptom.id },
                     update: {},
                     create: {
