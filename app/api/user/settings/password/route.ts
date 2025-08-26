@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
     // Get current user with password hash
     const user = await prisma.user.findUnique({
       where: { id: session.user.id },
-      select: { id: true, password_hash: true }
+      select: { id: true, passwordHash: true }
     });
 
     if (!user || !user.password_hash) {
@@ -71,7 +71,7 @@ export async function POST(request: NextRequest) {
     await prisma.user.update({
       where: { id: session.user.id },
       data: {
-        password_hash: newPasswordHash,
+        passwordHash: newPasswordHash,
         updated_at: new Date()
       }
     });

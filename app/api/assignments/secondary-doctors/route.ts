@@ -66,8 +66,8 @@ export async function GET(request: NextRequest) {
             patient_id: true,
             user: {
               select: {
-                first_name: true,
-                last_name: true,
+                firstName: true,
+                lastName: true,
                 email: true,
                 phone: true
               }
@@ -79,8 +79,8 @@ export async function GET(request: NextRequest) {
             id: true,
             users_doctors_user_idTousers: {
               select: {
-                first_name: true,
-                last_name: true,
+                firstName: true,
+                lastName: true,
                 email: true
               }
             },
@@ -96,8 +96,8 @@ export async function GET(request: NextRequest) {
             id: true,
             users_doctors_user_idTousers: {
               select: {
-                first_name: true,
-                last_name: true,
+                firstName: true,
+                lastName: true,
                 email: true
               }
             },
@@ -113,8 +113,8 @@ export async function GET(request: NextRequest) {
             id: true,
             users: {
               select: {
-                first_name: true,
-                last_name: true,
+                firstName: true,
+                lastName: true,
                 email: true
               }
             }
@@ -243,8 +243,8 @@ export async function POST(request: NextRequest) {
             patient_id: true,
             user: {
               select: {
-                first_name: true,
-                last_name: true,
+                firstName: true,
+                lastName: true,
                 email: true
               }
             }
@@ -255,8 +255,8 @@ export async function POST(request: NextRequest) {
             id: true,
             users_doctors_user_idTousers: {
               select: {
-                first_name: true,
-                last_name: true
+                firstName: true,
+                lastName: true
               }
             }
           }
@@ -266,8 +266,8 @@ export async function POST(request: NextRequest) {
             id: true,
             users_doctors_user_idTousers: {
               select: {
-                first_name: true,
-                last_name: true
+                firstName: true,
+                lastName: true
               }
             }
           }
@@ -277,8 +277,8 @@ export async function POST(request: NextRequest) {
             id: true,
             users: {
               select: {
-                first_name: true,
-                last_name: true
+                firstName: true,
+                lastName: true
               }
             }
           }

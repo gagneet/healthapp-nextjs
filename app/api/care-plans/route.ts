@@ -141,8 +141,8 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
             user: {
               select: {
                 id: true,
-                first_name: true,
-                last_name: true,
+                firstName: true,
+                lastName: true,
                 email: true
               }
             }
@@ -153,8 +153,8 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
             users_doctors_user_idTousers: {
               select: {
                 id: true,
-                first_name: true,
-                last_name: true,
+                firstName: true,
+                lastName: true,
                 email: true
               }
             },

@@ -82,25 +82,25 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             select: {
               id: true,
               email: true,
-              password_hash: true,
+              passwordHash: true,
               // Auth.js v5 compatible fields
               name: true,
               image: true,
               emailVerified: true,
               // Healthcare fields
               role: true,
-              first_name: true,
-              last_name: true,
-              full_name: true,
-              profile_picture_url: true,
-              account_status: true,
-              email_verified: true, // Legacy field
-              failed_login_attempts: true,
-              locked_until: true,
-              last_login_at: true,
+              firstName: true,
+              lastName: true,
+              fullName: true,
+              profilePictureUrl: true,
+              accountStatus: true,
+              emailVerifiedLegacy: true, // Legacy field
+              failedLoginAttempts: true,
+              lockedUntil: true,
+              lastLoginAt: true,
               // 2FA fields (CRITICAL - was missing!)
-              two_factor_enabled: true,
-              two_factor_secret: true,
+              twoFactorEnabled: true,
+              twoFactorSecret: true,
               // Healthcare-specific profiles
               doctors_Doctor_user_idTousers: {
                 select: {
@@ -138,27 +138,27 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           }
 
           // Check if user has password hash (credentials user)
-          if (!user.password_hash) {
+          if (!user.passwordHash) {
             throw new Error("Please sign in using your social account")
           }
 
           // Check account status - healthcare compliance requirement
-          if (user.account_status !== 'ACTIVE') {
+          if (user.accountStatus !== 'ACTIVE') {
             throw new Error("Account is not active. Please contact support.")
           }
 
           // Check if account is temporarily locked
-          if (user.locked_until && user.locked_until > new Date()) {
-            const unlockTime = user.locked_until.toLocaleString()
+          if (user.lockedUntil && user.lockedUntil > new Date()) {
+            const unlockTime = user.lockedUntil.toLocaleString()
             throw new Error(`Account is locked until ${unlockTime}`)
           }
 
           // Verify password
-          const isPasswordValid = await bcrypt.compare(password, user.password_hash)
+          const isPasswordValid = await bcrypt.compare(password, user.passwordHash)
           
           if (!isPasswordValid) {
             // Increment failed login attempts
-            const newFailedAttempts = (user.failed_login_attempts || 0) + 1
+            const newFailedAttempts = (user.failedLoginAttempts || 0) + 1
             let lockedUntil = null
             
             // Lock account after 5 failed attempts for 15 minutes
@@ -169,8 +169,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             await prisma.user.update({
               where: { id: user.id },
               data: {
-                failed_login_attempts: newFailedAttempts,
-                locked_until: lockedUntil
+                failedLoginAttempts: newFailedAttempts,
+                lockedUntil: lockedUntil
               }
             })
 
@@ -178,7 +178,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           }
 
           // 2FA Verification for Healthcare Security
-          if (user.two_factor_enabled) {
+          if (user.twoFactorEnabled) {
             const { totpCode } = validatedFields.data
             
             if (!totpCode) {
@@ -188,7 +188,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             // Verify TOTP code
             const isValidTOTP = authenticator.verify({
               token: totpCode,
-              secret: user.two_factor_secret!,
+              secret: user.twoFactorSecret!,
               window: 1 // Allow 1 time step tolerance (30 seconds before/after)
             })
             
@@ -197,7 +197,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
               await prisma.user.update({
                 where: { id: user.id },
                 data: {
-                  failed_login_attempts: { increment: 1 }
+                  failedLoginAttempts: { increment: 1 }
                 }
               })
               throw new Error("Invalid 2FA code")
@@ -208,9 +208,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           await prisma.user.update({
             where: { id: user.id },
             data: {
-              failed_login_attempts: 0,
-              locked_until: null,
-              last_login_at: new Date()
+              failedLoginAttempts: 0,
+              lockedUntil: null,
+              lastLoginAt: new Date()
             }
           })
 
@@ -242,14 +242,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             id: user.id,
             email: user.email,
             // Auth.js v5 expects these exact field names - use the actual schema fields
-            name: user.name || user.full_name || `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email.split('@')[0],
-            image: user.image || user.profile_picture_url,
+            name: user.name || user.fullName || `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email.split('@')[0],
+            image: user.image || user.profilePictureUrl,
             emailVerified: user.emailVerified, // Correct Prisma field name
             // Healthcare-specific fields (custom)
             role: user.role,
             businessId: businessId,
             profileId: profileData?.id || null,
-            accountStatus: user.account_status,
+            accountStatus: user.accountStatus,
             organizationId: profileData?.organization_id || null,
             profileData: profileData,
             // Healthcare business logic flags
@@ -375,9 +375,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
               image: user.image,
               emailVerified: new Date(), // OAuth users are auto-verified
               role: "PATIENT", // Default role for OAuth users
-              account_status: "ACTIVE", // OAuth users start active
+              accountStatus: "ACTIVE", // OAuth users start active
               first_name: user.name?.split(' ')[0] || user.email!.split('@')[0],
-              last_name: user.name?.split(' ').slice(1).join(' '),
+              lastName: user.name?.split(' ').slice(1).join(' '),
               full_name: user.name || user.email!.split('@')[0]
             }
           })
@@ -438,7 +438,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         // Update last login for all users
         await prisma.user.update({
           where: { email: user.email! },
-          data: { last_login_at: new Date() }
+          data: { lastLoginAt: new Date() }
         })
         
         // Update OAuth account last used time

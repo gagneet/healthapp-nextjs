@@ -30,8 +30,8 @@ export async function GET(
             user: {
               select: {
                 name: true,
-                first_name: true,
-                last_name: true,
+                firstName: true,
+                lastName: true,
                 email: true,
                 phone: true
               }
@@ -60,8 +60,8 @@ export async function GET(
             user: {
               select: {
                 name: true,
-                first_name: true,
-                last_name: true,
+                firstName: true,
+                lastName: true,
                 email: true
               }
             }
@@ -250,8 +250,8 @@ export async function PUT(
             user: {
               select: {
                 name: true,
-                first_name: true,
-                last_name: true,
+                firstName: true,
+                lastName: true,
                 email: true
               }
             }

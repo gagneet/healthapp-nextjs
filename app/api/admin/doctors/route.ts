@@ -40,9 +40,9 @@ export async function GET(request: NextRequest) {
             // ✅ Auth.js v5 fields
             { name: { contains: search, mode: 'insensitive' } },
             // ✅ Legacy fields for backward compatibility  
-            { first_name: { contains: search, mode: 'insensitive' } },
-            { last_name: { contains: search, mode: 'insensitive' } },
-            { full_name: { contains: search, mode: 'insensitive' } },
+            { firstName: { contains: search, mode: 'insensitive' } },
+            { lastName: { contains: search, mode: 'insensitive' } },
+            { fullName: { contains: search, mode: 'insensitive' } },
             { email: { contains: search, mode: 'insensitive' } }
           ]
         }
@@ -62,14 +62,14 @@ export async function GET(request: NextRequest) {
               image: true,
               emailVerified: true,
               // ✅ Legacy fields for backward compatibility
-              first_name: true,
-              last_name: true,
-              full_name: true,
-              profile_picture_url: true,
-              email_verified: true,
+              firstName: true,
+              lastName: true,
+              fullName: true,
+              profilePictureUrl: true,
+              emailVerifiedLegacy: true,
               // ✅ Additional fields
               phone: true,
-              account_status: true
+              accountStatus: true
             }
           },
           specialities: {
@@ -188,7 +188,7 @@ export async function POST(request: NextRequest) {
       const newUser = await tx.user.create({
         data: {
           email,
-          password_hash: hashedPassword,
+          passwordHash: hashedPassword,
           // Auth.js v5 fields
           name: fullName,
           emailVerified: new Date(),
@@ -196,13 +196,13 @@ export async function POST(request: NextRequest) {
           // Legacy fields for backward compatibility
           first_name,
           last_name,
-          full_name: fullName,
+          fullName: fullName,
           phone: mobile_number,
           date_of_birth: date_of_birth ? new Date(date_of_birth) : null,
           gender,
           role: 'DOCTOR',
-          account_status: 'ACTIVE',
-          email_verified: true,
+          accountStatus: 'ACTIVE',
+          emailVerifiedLegacy: true,
           created_at: new Date(),
           updated_at: new Date()
         }
@@ -231,8 +231,8 @@ export async function POST(request: NextRequest) {
             select: {
               id: true,
               email: true,
-              first_name: true,
-              last_name: true,
+              firstName: true,
+              lastName: true,
               phone: true
             }
           },

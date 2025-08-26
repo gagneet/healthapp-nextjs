@@ -116,11 +116,11 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
     const recentActivity = await prisma.user.findMany({
       select: {
         id: true,
-        first_name: true,
-        last_name: true,
+        firstName: true,
+        lastName: true,
         email: true,
         role: true,
-        account_status: true,
+        accountStatus: true,
         created_at: true
       },
       orderBy: { created_at: 'desc' },
@@ -160,11 +160,11 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
       alerts: {
         critical_vitals: criticalVitals,
         pending_verifications: await prisma.user.count({
-          where: { email_verified: false }
+          where: { emailVerifiedLegacy: false }
         }),
         inactive_users: await prisma.user.count({
           where: { 
-            account_status: 'INACTIVE',
+            accountStatus: 'INACTIVE',
             created_at: {
               lte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
             }

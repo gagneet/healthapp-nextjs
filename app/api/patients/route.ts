@@ -100,9 +100,9 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
               // ✅ Auth.js v5 fields
               { name: { contains: searchQuery, mode: 'insensitive' } },
               // ✅ Legacy fields for backward compatibility
-              { first_name: { contains: searchQuery, mode: 'insensitive' } },
-              { last_name: { contains: searchQuery, mode: 'insensitive' } },
-              { full_name: { contains: searchQuery, mode: 'insensitive' } },
+              { firstName: { contains: searchQuery, mode: 'insensitive' } },
+              { lastName: { contains: searchQuery, mode: 'insensitive' } },
+              { fullName: { contains: searchQuery, mode: 'insensitive' } },
               { email: { contains: searchQuery, mode: 'insensitive' } }
             ]
           }
@@ -125,7 +125,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
     if (statusFilter) {
       whereClause.user = {
         ...whereClause.user,
-        account_status: statusFilter.toUpperCase()
+        accountStatus: statusFilter.toUpperCase()
       };
     }
 
@@ -158,16 +158,16 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
             image: true,
             emailVerified: true,
             // ✅ Legacy fields for backward compatibility
-            first_name: true,
-            last_name: true,
-            full_name: true,
-            profile_picture_url: true,
-            email_verified: true,
+            firstName: true,
+            lastName: true,
+            fullName: true,
+            profilePictureUrl: true,
+            emailVerifiedLegacy: true,
             // ✅ Additional fields
             phone: true,
             date_of_birth: true,
             gender: true,
-            account_status: true,
+            accountStatus: true,
             created_at: true,
             updated_at: true
           }
@@ -183,10 +183,10 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
                 name: true,
                 image: true,
                 // ✅ Legacy fields for backward compatibility
-                first_name: true,
-                last_name: true,
-                full_name: true,
-                profile_picture_url: true
+                firstName: true,
+                lastName: true,
+                fullName: true,
+                profilePictureUrl: true
               }
             }
           }
@@ -327,11 +327,11 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
           emailVerified: null, // Will be set when email is verified (DateTime)
           
           // ✅ Legacy fields for backward compatibility
-          first_name: patientData.firstName,
-          last_name: patientData.lastName,
-          full_name: fullName,
-          profile_picture_url: null, // Legacy field
-          email_verified: false, // Legacy boolean field
+          firstName: patientData.firstName,
+          lastName: patientData.lastName,
+          fullName: fullName,
+          profilePictureUrl: null, // Legacy field
+          emailVerifiedLegacy: false, // Legacy boolean field
           
           // ✅ Additional healthcare fields
           middle_name: patientData.middleName,
@@ -339,12 +339,12 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
           date_of_birth: patientData.dateOfBirth,
           gender: patientData.gender,
           role: 'PATIENT',
-          account_status: 'ACTIVE',
+          accountStatus: 'ACTIVE',
           
           // ✅ Security fields
-          password_hash: '$2b$12$defaulthash', // This should be a properly hashed temporary password
-          two_factor_enabled: false,
-          failed_login_attempts: 0,
+          passwordHash: '$2b$12$defaulthash', // This should be a properly hashed temporary password
+          twoFactorEnabled: false,
+          failedLoginAttempts: 0,
           password_changed_at: new Date(),
           created_at: new Date(),
           updated_at: new Date()

@@ -59,8 +59,8 @@ export async function GET(request: NextRequest) {
             include: {
               user: {
                 select: {
-                  first_name: true,
-                  last_name: true,
+                  firstName: true,
+                  lastName: true,
                   name: true,
                   email: true
                 }
@@ -87,8 +87,8 @@ export async function GET(request: NextRequest) {
             include: {
               user: {
                 select: {
-                  first_name: true,
-                  last_name: true,
+                  firstName: true,
+                  lastName: true,
                   name: true,
                   email: true
                 }
@@ -114,8 +114,8 @@ export async function GET(request: NextRequest) {
             include: {
               user: {
                 select: {
-                  first_name: true,
-                  last_name: true,
+                  firstName: true,
+                  lastName: true,
                   name: true,
                   email: true
                 }

@@ -37,8 +37,8 @@ export async function GET(request: NextRequest) {
     if (search) {
       whereClause.OR = [
         { name: { contains: search, mode: 'insensitive' } },
-        { first_name: { contains: search, mode: 'insensitive' } },
-        { last_name: { contains: search, mode: 'insensitive' } },
+        { firstName: { contains: search, mode: 'insensitive' } },
+        { lastName: { contains: search, mode: 'insensitive' } },
         { email: { contains: search, mode: 'insensitive' } },
         { phone: { contains: search, mode: 'insensitive' } }
       ];
@@ -63,19 +63,19 @@ export async function GET(request: NextRequest) {
           image: true,
           email_verified_at: true,
           // Legacy fields
-          first_name: true,
-          last_name: true,
-          full_name: true,
+          firstName: true,
+          lastName: true,
+          fullName: true,
           phone: true,
           date_of_birth: true,
           gender: true,
           role: true,
-          account_status: true,
-          email_verified: true,
-          profile_picture_url: true,
+          accountStatus: true,
+          emailVerifiedLegacy: true,
+          profilePictureUrl: true,
           created_at: true,
           updated_at: true,
-          last_login_at: true,
+          lastLoginAt: true,
           // Relations
           doctors: {
             select: {
@@ -229,7 +229,7 @@ export async function POST(request: NextRequest) {
     const newUser = await prisma.user.create({
       data: {
         email,
-        password_hash: hashedPassword,
+        passwordHash: hashedPassword,
         // Auth.js v5 fields
         name: fullName,
         email_verified_at: new Date(),
@@ -237,13 +237,13 @@ export async function POST(request: NextRequest) {
         // Legacy fields for backward compatibility
         first_name,
         last_name,
-        full_name: fullName,
+        fullName: fullName,
         phone,
         date_of_birth: date_of_birth ? new Date(date_of_birth) : null,
         gender,
         role,
         account_status,
-        email_verified: true,
+        emailVerifiedLegacy: true,
         created_at: new Date(),
         updated_at: new Date()
       },
@@ -251,11 +251,11 @@ export async function POST(request: NextRequest) {
         id: true,
         email: true,
         name: true,
-        first_name: true,
-        last_name: true,
+        firstName: true,
+        lastName: true,
         phone: true,
         role: true,
-        account_status: true,
+        accountStatus: true,
         created_at: true
       }
     });

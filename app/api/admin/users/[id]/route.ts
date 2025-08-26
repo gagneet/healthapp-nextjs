@@ -39,19 +39,19 @@ export async function GET(
         image: true,
         email_verified_at: true,
         // Legacy fields
-        first_name: true,
-        last_name: true,
-        full_name: true,
+        firstName: true,
+        lastName: true,
+        fullName: true,
         phone: true,
         date_of_birth: true,
         gender: true,
         role: true,
-        account_status: true,
-        email_verified: true,
-        profile_picture_url: true,
+        accountStatus: true,
+        emailVerifiedLegacy: true,
+        profilePictureUrl: true,
         created_at: true,
         updated_at: true,
-        last_login_at: true,
+        lastLoginAt: true,
         // Relations with detailed info
         doctors: {
           select: {
@@ -102,8 +102,8 @@ export async function GET(
                 users_doctors_user_idTousers: {
                   select: {
                     name: true,
-                    first_name: true,
-                    last_name: true
+                    firstName: true,
+                    lastName: true
                   }
                 },
                 specialities: {
@@ -270,13 +270,13 @@ export async function PUT(
         id: true,
         email: true,
         name: true,
-        first_name: true,
-        last_name: true,
+        firstName: true,
+        lastName: true,
         phone: true,
         date_of_birth: true,
         gender: true,
         role: true,
-        account_status: true,
+        accountStatus: true,
         updated_at: true
       }
     });
@@ -352,7 +352,7 @@ export async function DELETE(
     await prisma.user.update({
       where: { id: userId },
       data: {
-        account_status: 'INACTIVE',
+        accountStatus: 'INACTIVE',
         updated_at: new Date()
       }
     });

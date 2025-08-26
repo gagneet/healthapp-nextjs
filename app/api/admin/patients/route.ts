@@ -39,8 +39,8 @@ export async function GET(request: NextRequest) {
       whereClause.user = {
         OR: [
           { name: { contains: search, mode: 'insensitive' } },
-          { first_name: { contains: search, mode: 'insensitive' } },
-          { last_name: { contains: search, mode: 'insensitive' } },
+          { firstName: { contains: search, mode: 'insensitive' } },
+          { lastName: { contains: search, mode: 'insensitive' } },
           { email: { contains: search, mode: 'insensitive' } },
           { phone: { contains: search, mode: 'insensitive' } }
         ]
@@ -50,7 +50,7 @@ export async function GET(request: NextRequest) {
     if (status) {
       whereClause.user = {
         ...whereClause.user,
-        account_status: status
+        accountStatus: status
       };
     }
 
@@ -76,13 +76,13 @@ export async function GET(request: NextRequest) {
               email: true,
               name: true,
               image: true,
-              first_name: true,
-              last_name: true,
+              firstName: true,
+              lastName: true,
               phone: true,
               date_of_birth: true,
               gender: true,
-              account_status: true,
-              email_verified: true,
+              accountStatus: true,
+              emailVerifiedLegacy: true,
               email_verified_at: true,
               created_at: true
             }
@@ -101,8 +101,8 @@ export async function GET(request: NextRequest) {
               users_doctors_user_idTousers: {
                 select: {
                   name: true,
-                  first_name: true,
-                  last_name: true,
+                  firstName: true,
+                  lastName: true,
                   email: true
                 }
               },
@@ -228,7 +228,7 @@ export async function POST(request: NextRequest) {
       const newUser = await tx.user.create({
         data: {
           email,
-          password_hash: hashedPassword,
+          passwordHash: hashedPassword,
           // Auth.js v5 fields
           name: fullName,
           email_verified_at: new Date(),
@@ -236,13 +236,13 @@ export async function POST(request: NextRequest) {
           // Legacy fields for backward compatibility
           first_name,
           last_name,
-          full_name: fullName,
+          fullName: fullName,
           phone,
           date_of_birth: date_of_birth ? new Date(date_of_birth) : null,
           gender,
           role: 'PATIENT',
-          account_status: 'ACTIVE',
-          email_verified: true,
+          accountStatus: 'ACTIVE',
+          emailVerifiedLegacy: true,
           created_at: new Date(),
           updated_at: new Date()
         }
@@ -275,8 +275,8 @@ export async function POST(request: NextRequest) {
               id: true,
               email: true,
               name: true,
-              first_name: true,
-              last_name: true,
+              firstName: true,
+              lastName: true,
               phone: true,
               date_of_birth: true,
               gender: true
@@ -289,8 +289,8 @@ export async function POST(request: NextRequest) {
               users_doctors_user_idTousers: {
                 select: {
                   name: true,
-                  first_name: true,
-                  last_name: true
+                  firstName: true,
+                  lastName: true
                 }
               }
             }

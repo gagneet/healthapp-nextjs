@@ -75,8 +75,8 @@ export async function GET(request: NextRequest) {
               patient_id: true,
               user: {
                 select: {
-                  first_name: true,
-                  last_name: true,
+                  firstName: true,
+                  lastName: true,
                   email: true
                 }
               }
@@ -94,8 +94,8 @@ export async function GET(request: NextRequest) {
                 select: {
                   user: {
                     select: {
-                      first_name: true,
-                      last_name: true
+                      firstName: true,
+                      lastName: true
                     }
                   }
                 }
@@ -216,8 +216,8 @@ export async function POST(request: NextRequest) {
             patient_id: true,
             user: {
               select: {
-                first_name: true,
-                last_name: true,
+                firstName: true,
+                lastName: true,
                 email: true
               }
             }
@@ -307,8 +307,8 @@ export async function PUT(request: NextRequest) {
             patient_id: true,
             user: {
               select: {
-                first_name: true,
-                last_name: true
+                firstName: true,
+                lastName: true
               }
             }
           }
@@ -360,8 +360,8 @@ async function getAvailablePlans(request: NextRequest) {
           select: {
             user: {
               select: {
-                first_name: true,
-                last_name: true
+                firstName: true,
+                lastName: true
               }
             }
           }

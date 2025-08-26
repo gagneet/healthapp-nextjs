@@ -55,14 +55,14 @@ export async function POST(req: NextRequest) {
     const user = await prisma.user.create({
       data: {
         email,
-        password_hash: passwordHash,
-        first_name: firstName,
-        last_name: lastName,
-        full_name: `${firstName} ${lastName}`,
+        passwordHash: passwordHash,
+        firstName: firstName,
+        lastName: lastName,
+        fullName: `${firstName} ${lastName}`,
         role: role as any,
         phone,
-        account_status: 'ACTIVE', // Set to PENDING_VERIFICATION if email verification required
-        email_verified: false, // Will be true after email verification
+        accountStatus: 'ACTIVE', // Set to PENDING_VERIFICATION if email verification required
+        emailVerifiedLegacy: false, // Will be true after email verification
       }
     })
 

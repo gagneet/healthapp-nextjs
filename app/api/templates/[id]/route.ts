@@ -34,8 +34,8 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       include: {
         User: {
           select: {
-            first_name: true,
-            last_name: true,
+            firstName: true,
+            lastName: true,
             email: true
           }
         },

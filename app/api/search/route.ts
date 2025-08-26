@@ -141,8 +141,8 @@ export async function GET(request: NextRequest) {
 async function searchPatients(searchValue: string, filters: SearchFilters, user: any) {
   let whereClause: any = {
     OR: [
-      { user: { first_name: { contains: searchValue, mode: 'insensitive' } } },
-      { user: { last_name: { contains: searchValue, mode: 'insensitive' } } },
+      { user: { firstName: { contains: searchValue, mode: 'insensitive' } } },
+      { user: { lastName: { contains: searchValue, mode: 'insensitive' } } },
       { user: { email: { contains: searchValue, mode: 'insensitive' } } },
       { patient_id: { contains: searchValue, mode: 'insensitive' } },
       { medical_record_number: { contains: searchValue, mode: 'insensitive' } }
@@ -170,8 +170,8 @@ async function searchPatients(searchValue: string, filters: SearchFilters, user:
       user: {
         select: {
           id: true,
-          first_name: true,
-          last_name: true,
+          firstName: true,
+          lastName: true,
           email: true,
           phone: true,
           date_of_birth: true,
@@ -185,8 +185,8 @@ async function searchPatients(searchValue: string, filters: SearchFilters, user:
       }
     },
     orderBy: [
-      { user: { first_name: 'asc' } },
-      { user: { last_name: 'asc' } }
+      { user: { firstName: 'asc' } },
+      { user: { lastName: 'asc' } }
     ]
   });
 }
@@ -195,8 +195,8 @@ async function searchDoctors(searchValue: string, filters: SearchFilters) {
   return await prisma.doctor.findMany({
     where: {
       OR: [
-        { users_Doctor_user_idTousers: { first_name: { contains: searchValue, mode: 'insensitive' } } },
-        { users_Doctor_user_idTousers: { last_name: { contains: searchValue, mode: 'insensitive' } } },
+        { users_Doctor_user_idTousers: { firstName: { contains: searchValue, mode: 'insensitive' } } },
+        { users_Doctor_user_idTousers: { lastName: { contains: searchValue, mode: 'insensitive' } } },
         { medical_license_number: { contains: searchValue, mode: 'insensitive' } },
         { doctor_id: { contains: searchValue, mode: 'insensitive' } }
       ]
@@ -211,8 +211,8 @@ async function searchDoctors(searchValue: string, filters: SearchFilters) {
       users_doctors_user_idTousers: {
         select: {
           id: true,
-          first_name: true,
-          last_name: true,
+          firstName: true,
+          lastName: true,
           email: true,
           phone: true
         }
@@ -226,8 +226,8 @@ async function searchDoctors(searchValue: string, filters: SearchFilters) {
       }
     },
     orderBy: [
-      { users_doctors_user_idTousers: { first_name: 'asc' } },
-      { users_doctors_user_idTousers: { last_name: 'asc' } }
+      { users_doctors_user_idTousers: { firstName: 'asc' } },
+      { users_doctors_user_idTousers: { lastName: 'asc' } }
     ]
   });
 }

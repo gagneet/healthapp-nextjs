@@ -23,13 +23,13 @@ export async function GET(request: NextRequest) {
       select: {
         id: true,
         email: true,
-        first_name: true,
-        last_name: true,
+        firstName: true,
+        lastName: true,
         role: true,
         timezone: true,
         locale: true,
         preferences: true,
-        two_factor_enabled: true,
+        twoFactorEnabled: true,
         created_at: true,
         updated_at: true
       }
@@ -67,7 +67,7 @@ export async function GET(request: NextRequest) {
         default_consultation_duration: 30
       },
       security: {
-        two_factor_enabled: user.two_factor_enabled || false,
+        twoFactorEnabled: user.two_factor_enabled || false,
         login_notifications: true,
         session_timeout: 24
       }
@@ -173,7 +173,7 @@ export async function PUT(request: NextRequest) {
         preferences: updatedPreferences,
         timezone: timezone,
         locale: locale,
-        ...(twoFactorEnabled !== undefined && { two_factor_enabled: twoFactorEnabled }),
+        ...(twoFactorEnabled !== undefined && { twoFactorEnabled: twoFactorEnabled }),
         updated_at: new Date()
       }
     });
@@ -238,7 +238,7 @@ export async function POST(request: NextRequest) {
     // Get current user with password hash
     const user = await prisma.user.findUnique({
       where: { id: session.user.id },
-      select: { id: true, password_hash: true }
+      select: { id: true, passwordHash: true }
     });
 
     if (!user || !user.password_hash) {
@@ -269,7 +269,7 @@ export async function POST(request: NextRequest) {
     await prisma.user.update({
       where: { id: session.user.id },
       data: {
-        password_hash: newPasswordHash,
+        passwordHash: newPasswordHash,
         updated_at: new Date()
       }
     });

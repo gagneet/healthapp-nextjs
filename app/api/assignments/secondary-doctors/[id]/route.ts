@@ -29,8 +29,8 @@ export async function GET(
             patient_id: true,
             user: {
               select: {
-                first_name: true,
-                last_name: true,
+                firstName: true,
+                lastName: true,
                 email: true,
                 phone: true
               }
@@ -42,8 +42,8 @@ export async function GET(
             id: true,
             users_doctors_user_idTousers: {
               select: {
-                first_name: true,
-                last_name: true,
+                firstName: true,
+                lastName: true,
                 email: true
               }
             },
@@ -59,8 +59,8 @@ export async function GET(
             id: true,
             users_doctors_user_idTousers: {
               select: {
-                first_name: true,
-                last_name: true,
+                firstName: true,
+                lastName: true,
                 email: true
               }
             },
@@ -76,8 +76,8 @@ export async function GET(
             id: true,
             users: {
               select: {
-                first_name: true,
-                last_name: true,
+                firstName: true,
+                lastName: true,
                 email: true
               }
             }
@@ -244,8 +244,8 @@ export async function PUT(
             patient_id: true,
             user: {
               select: {
-                first_name: true,
-                last_name: true,
+                firstName: true,
+                lastName: true,
                 email: true
               }
             }
@@ -256,8 +256,8 @@ export async function PUT(
             id: true,
             users_doctors_user_idTousers: {
               select: {
-                first_name: true,
-                last_name: true
+                firstName: true,
+                lastName: true
               }
             }
           }
@@ -267,8 +267,8 @@ export async function PUT(
             id: true,
             users_doctors_user_idTousers: {
               select: {
-                first_name: true,
-                last_name: true
+                firstName: true,
+                lastName: true
               }
             }
           }
@@ -278,8 +278,8 @@ export async function PUT(
             id: true,
             users: {
               select: {
-                first_name: true,
-                last_name: true
+                firstName: true,
+                lastName: true
               }
             }
           }

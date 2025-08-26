@@ -50,8 +50,8 @@ export async function GET(request: NextRequest) {
       include: {
         user: {
           select: {
-            first_name: true,
-            last_name: true,
+            firstName: true,
+            lastName: true,
             name: true,
             email: true
           }
@@ -84,8 +84,8 @@ export async function GET(request: NextRequest) {
       return {
         id: patient.id,
         patientId: patient.patient_id,
-        first_name: patient.user.first_name || '',
-        last_name: patient.user.last_name || '',
+        firstName: patient.user.first_name || '',
+        lastName: patient.user.last_name || '',
         name: userName,
         email: patient.user?.email,
         last_visit: patient.last_visit_date || patient.updated_at,

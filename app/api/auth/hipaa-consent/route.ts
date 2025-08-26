@@ -190,7 +190,7 @@ export async function GET(request: NextRequest) {
         email: true,
         name: true,
         role: true,
-        account_status: true,
+        accountStatus: true,
         hipaa_consent_date: true,
         terms_accepted_at: true,
         privacy_policy_accepted_at: true,

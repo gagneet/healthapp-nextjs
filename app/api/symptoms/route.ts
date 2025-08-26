@@ -138,8 +138,8 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
             user: {
               select: {
                 id: true,
-                first_name: true,
-                last_name: true,
+                firstName: true,
+                lastName: true,
                 email: true
               }
             }
@@ -261,8 +261,8 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
           include: {
             user: {
               select: {
-                first_name: true,
-                last_name: true,
+                firstName: true,
+                lastName: true,
                 email: true
               }
             }

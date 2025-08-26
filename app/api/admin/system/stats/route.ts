@@ -95,11 +95,11 @@ export async function GET(request: NextRequest) {
 
     // System health metrics
     const activeUsers = await prisma.user.count({
-      where: { account_status: 'ACTIVE' }
+      where: { accountStatus: 'ACTIVE' }
     });
 
     const verifiedUsers = await prisma.user.count({
-      where: { email_verified: true }
+      where: { emailVerifiedLegacy: true }
     });
 
     // Appointment statistics
@@ -150,8 +150,8 @@ export async function GET(request: NextRequest) {
           users_Doctor_user_idTousers: {
             select: {
               name: true,
-              first_name: true,
-              last_name: true
+              firstName: true,
+              lastName: true
             }
           },
           specialities: {
@@ -183,8 +183,8 @@ export async function GET(request: NextRequest) {
           id: true,
           email: true,
           name: true,
-          first_name: true,
-          last_name: true,
+          firstName: true,
+          lastName: true,
           role: true,
           created_at: true
         },

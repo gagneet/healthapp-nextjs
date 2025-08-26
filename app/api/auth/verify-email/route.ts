@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
       where: {
         email,
         email_verification_token: token,
-        account_status: "PENDING_VERIFICATION"
+        accountStatus: "PENDING_VERIFICATION"
       }
     })
     
@@ -62,11 +62,11 @@ export async function POST(request: NextRequest) {
           // ✅ Auth.js v5 field - set as DateTime when verified
           emailVerified: new Date(),
           // ✅ Legacy field for backward compatibility  
-          email_verified: true,
+          emailVerifiedLegacy: true,
           // ✅ Clear verification token after use
           email_verification_token: null,
           // ✅ Activate account after email verification
-          account_status: "ACTIVE",
+          accountStatus: "ACTIVE",
           updated_at: new Date()
         }
       })
@@ -80,7 +80,7 @@ export async function POST(request: NextRequest) {
           access_granted: true,
           user_role: user.role,
           data_changes: {
-            email_verified: true,
+            emailVerifiedLegacy: true,
             account_activated: true,
             verification_method: "email_token"
           },

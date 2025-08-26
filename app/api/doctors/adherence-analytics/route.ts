@@ -64,8 +64,8 @@ export async function GET(request: NextRequest) {
               overall_adherence_score: true,
               user: {
                 select: {
-                  first_name: true,
-                  last_name: true,
+                  firstName: true,
+                  lastName: true,
                   name: true
                 }
               }
@@ -88,8 +88,8 @@ export async function GET(request: NextRequest) {
           overall_adherence_score: true,
           user: {
             select: {
-              first_name: true,
-              last_name: true,
+              firstName: true,
+              lastName: true,
               name: true
             }
           }

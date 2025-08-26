@@ -150,7 +150,7 @@ export async function POST(request: NextRequest) {
         const newUser = await tx.user.create({
           data: {
             email,
-            password_hash: passwordHash,
+            passwordHash: passwordHash,
             
             // ✅ Auth.js v5 required fields
             name: fullName, // Required by Auth.js v5
@@ -158,16 +158,16 @@ export async function POST(request: NextRequest) {
             emailVerified: null, // Will be set when email is verified (DateTime)
             
             // ✅ Healthcare-specific fields
-            first_name: firstName,
-            last_name: lastName,
-            full_name: fullName,
+            firstName: firstName,
+            lastName: lastName,
+            fullName: fullName,
             role,
             phone: phone || null,
             date_of_birth: dateOfBirth ? new Date(dateOfBirth) : null,
-            account_status: "PENDING_VERIFICATION", // Better default for healthcare
-            email_verified: false, // Legacy field for backward compatibility
-            two_factor_enabled: false, // Default 2FA to disabled
-            failed_login_attempts: 0,
+            accountStatus: "PENDING_VERIFICATION", // Better default for healthcare
+            emailVerifiedLegacy: false, // Legacy field for backward compatibility
+            twoFactorEnabled: false, // Default 2FA to disabled
+            failedLoginAttempts: 0,
             password_changed_at: new Date(),
             created_at: new Date(),
             updated_at: new Date(),

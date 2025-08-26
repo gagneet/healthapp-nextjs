@@ -66,8 +66,8 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
                 patient_id: true,
                 user: {
                   select: {
-                    first_name: true,
-                    last_name: true
+                    firstName: true,
+                    lastName: true
                   }
                 }
               }
@@ -162,8 +162,8 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
                 patient_id: true,
                 user: {
                   select: {
-                    first_name: true,
-                    last_name: true
+                    firstName: true,
+                    lastName: true
                   }
                 }
               }
