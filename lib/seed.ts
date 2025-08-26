@@ -4,6 +4,17 @@ import * as bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
 
+// 🛠️ Helpers
+const getRandomPastDate = (minDaysAgo = 7, maxDaysAgo = 90): Date => {
+  const now = new Date();
+  const minDate = new Date(now.getTime() - maxDaysAgo * 86400000);
+  const maxDate = new Date(now.getTime() - minDaysAgo * 86400000);
+  return new Date(minDate.getTime() + Math.random() * (maxDate.getTime() - minDate.getTime()));
+};
+
+const getRecentDate = (): Date => getRandomPastDate(1, 7);
+const getFutureDate = (daysAhead = 1): Date => new Date(Date.now() + daysAhead * 86400000);
+
 // Database cleanup function to remove all existing data
 async function cleanDatabase() {
   console.log('🧹 Cleaning database - removing all existing data...');
