@@ -104,7 +104,7 @@ model User {
   patient_doctor_assignments                                   PatientDoctorAssignment[]
   patient_provider_assignments                                 PatientProviderAssignments[]
   patient                                                      Patient?
-  providers                                                    Providers[]
+  providers                                                    Provider[]
   scheduled_events                                             ScheduledEvents[]
   user_devices                                                 UserDevice[]
   user_roles                                                   UserRoles[]
@@ -1416,7 +1416,7 @@ model ProviderChangeHistory {
   @@map("ProviderChangeHistory")
 }
 
-model Providers {
+model Provider {
   id           String    @id @db.Uuid
   user_id      String    @db.Uuid
   name         String    @db.VarChar(100)
@@ -1528,7 +1528,7 @@ model SecondaryDoctorAssignments {
 }
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
-model SymptomsDatabase {
+model SymptomDatabase {
   id                  String    @id @db.Uuid
   diagnosis_name      String    @unique(map: "symptoms_database_diagnosis_name") @db.VarChar(255)
   symptoms            Json?     @default("{}")
@@ -1669,7 +1669,7 @@ model VitalRequirements {
   @@map("VitalRequirements")
 }
 
-model VitalTemplates {
+model VitalTemplate {
   id         String    @id @db.Uuid
   name       String    @db.VarChar(255)
   unit       String?   @db.VarChar(255)
@@ -1694,7 +1694,7 @@ model Vitals {
   updated_at        DateTime        @db.Timestamptz(6)
   deleted_at        DateTime?       @db.Timestamptz(6)
   care_plans        CarePlan        @relation(fields: [care_plan_id], references: [id], onDelete: NoAction)
-  vital_templates   VitalTemplates @relation(fields: [vital_template_id], references: [id], onDelete: NoAction)
+  vital_templates   VitalTemplate @relation(fields: [vital_template_id], references: [id], onDelete: NoAction)
 
   @@index([care_plan_id], map: "vitals_care_plan_id")
   @@index([vital_template_id], map: "vitals_vital_template_id")
