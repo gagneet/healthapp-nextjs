@@ -252,7 +252,7 @@ export class SecondaryDoctorService {
       await prisma.patientDoctorAssignment.update({
         where: { id: assignmentId },
         data: {
-          patientConsentStatus: ConsentStatus.GRANTED as any,
+          patientConsentStatus: ConsentStatus.GRANTED,
           consentGrantedAt: new Date(),
           consentOtp: null, // Clear OTP after successful verification
           consentOtpExpiresAt: null
