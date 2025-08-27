@@ -118,7 +118,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
     const formattedMedications = medications.map(med => {
       // Calculate adherence rate from medication logs
       const logs = med.medicationLogs || [];
-      const takenCount = logs.filter(log => log.adherenceStatus === 'TAKEN' && log.takenAt).length;
+      const takenCount = logs.filter(log => log.adherenceStatus?.toUpperCase() === 'TAKEN' && log.takenAt).length;
       const adherenceRate = logs.length > 0 ? Math.round((takenCount / logs.length) * 100) : 0;
       
       // Find last taken and next due
@@ -135,7 +135,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
         frequency: details.frequency || 'Frequency not specified',
         startDate: med.startDate,
         endDate: med.endDate,
-        isCritical: details.is_critical || false,
+        isCritical: details.isCritical || false,
         lastTaken: lastTakenLog?.takenAt || null,
         nextDue: nextScheduledLog?.scheduledAt || null,
         adherenceRate: adherenceRate,

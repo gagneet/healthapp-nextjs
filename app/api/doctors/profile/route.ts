@@ -160,7 +160,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
         medicalLicenseNumber: doctor.medicalLicenseNumber,
         yearsOfExperience: doctor.yearsOfExperience,
         consultationFee: doctor.consultationFee,
-        speciality: doctor.specialty ? {
+        specialty: doctor.specialty ? {
           id: doctor.specialty.id,
           name: doctor.specialty.name,
           description: doctor.specialty.description
