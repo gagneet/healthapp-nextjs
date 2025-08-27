@@ -735,7 +735,9 @@ export async function getDoctorDashboard(doctorUserId: string) {
         id: doctorUser.id,
         name: `${doctorUser.firstName} ${doctorUser.lastName}`.trim(),
         email: doctorUser.email,
-        specialty: doctorProfile?.specialty?.name || 'General Medicine',
+        specialty: (doctorProfile && doctorProfile.specialty && typeof doctorProfile.specialty.name === 'string')
+          ? doctorProfile.specialty.name
+          : 'General Medicine',
         license: doctorProfile?.medicalLicenseNumber,
         experience: doctorProfile?.yearsOfExperience
       },
