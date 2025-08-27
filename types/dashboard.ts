@@ -1,59 +1,58 @@
 // types/dashboard.ts
 
 export type ConsentStatus = 
-  | 'not_required' 
-  | 'pending' 
-  | 'requested' 
-  | 'granted' 
-  | 'denied' 
-  | 'expired'
+  | 'NOT_REQUIRED'
+  | 'PENDING'
+  | 'REQUESTED'
+  | 'GRANTED'
+  | 'DENIED'
+  | 'EXPIRED'
 
 export interface User {
   id: string
-  first_name: string
-  last_name: string
+  firstName: string
+  lastName: string
   email: string
   phone?: string
-  mobile_number?: string
-  date_of_birth?: string
+  mobileNumber?: string
+  dateOfBirth?: string
   gender?: string
-  profile_picture_url?: string
-  created_at?: string
-  updated_at?: string
+  profilePictureUrl?: string
+  createdAt?: string
+  updatedAt?: string
 }
 
 export interface Patient {
   id: string
-  user_id: string
-  organization_id?: string
-  medical_record_number?: string
-  patient_id?: string
+  userId: string
+  organizationId?: string
+  medicalRecordNumber?: string
+  patientId?: string
   
-  // Consent workflow fields
-  patient_type?: 'M' | 'R' // Main/Primary or Referred/Secondary
-  patient_type_label?: string
-  access_type?: 'primary' | 'secondary'
-  requires_consent?: boolean
-  consent_status?: ConsentStatus
-  access_granted?: boolean
-  can_view?: boolean
-  same_provider?: boolean
-  assignment_id?: string
-  assignment_reason?: string
-  specialty_focus?: string[]
-  primary_doctor_provider?: string
-  secondary_doctor_provider?: string
-  emergency_contacts?: Array<{
+  patientType?: 'M' | 'R'
+  patientTypeLabel?: string
+  accessType?: 'primary' | 'secondary'
+  requiresConsent?: boolean
+  consentStatus?: ConsentStatus
+  accessGranted?: boolean
+  canView?: boolean
+  sameProvider?: boolean
+  assignmentId?: string
+  assignmentReason?: string
+  specialtyFocus?: string[]
+  primaryDoctorProvider?: string
+  secondaryDoctorProvider?: string
+  emergencyContacts?: Array<{
     name: string
     relationship: string
     phone: string
     email?: string
     primary?: boolean
   }>
-  insurance_information?: Record<string, any>
-  medical_history?: Array<{
+  insuranceInformation?: Record<string, any>
+  medicalHistory?: Array<{
     condition: string
-    diagnosed_date?: string
+    diagnosedDate?: string
     status: 'active' | 'resolved' | 'chronic'
     notes?: string
   }>
@@ -63,107 +62,104 @@ export interface Patient {
     reaction?: string
     severity: 'mild' | 'moderate' | 'severe'
   }>
-  current_medications?: Array<Record<string, any>>
-  height_cm?: number
-  weight_kg?: number
-  blood_type?: string
-  primary_language?: string
-  risk_level?: 'low' | 'medium' | 'high' | 'critical'
-  risk_factors?: Array<string>
-  communication_preferences?: {
-    preferred_contact_method: 'email' | 'phone' | 'sms'
-    appointment_reminders: boolean
-    medication_reminders: boolean
-    health_tips: boolean
-    research_participation: boolean
+  currentMedications?: Array<Record<string, any>>
+  heightCm?: number
+  weightKg?: number
+  bloodType?: string
+  primaryLanguage?: string
+  riskLevel?: 'low' | 'medium' | 'high' | 'critical'
+  riskFactors?: Array<string>
+  communicationPreferences?: {
+    preferredContactMethod: 'email' | 'phone' | 'sms'
+    appointmentReminders: boolean
+    medicationReminders: boolean
+    healthTips: boolean
+    researchParticipation: boolean
     language: string
-    time_zone: string
+    timeZone: string
   }
-  privacy_settings?: {
-    share_with_family: boolean
-    share_for_research: boolean
-    marketing_communications: boolean
-    data_sharing_consent: boolean
-    provider_directory_listing: boolean
+  privacySettings?: {
+    shareWithFamily: boolean
+    shareForResearch: boolean
+    marketingCommunications: boolean
+    dataSharingConsent: boolean
+    providerDirectoryListing: boolean
   }
-  primary_care_doctor_id?: string
-  primary_care_hsp_id?: string
-  care_coordinator_id?: string
-  care_coordinator_type?: 'doctor' | 'hsp'
-  overall_adherence_score?: number
-  last_adherence_calculation?: string
-  total_appointments?: number
-  missed_appointments?: number
-  last_visit_date?: string
-  next_appointment_date?: string
+  primaryCareDoctorId?: string
+  primaryCareHspId?: string
+  careCoordinatorId?: string
+  careCoordinatorType?: 'doctor' | 'hsp'
+  overallAdherenceScore?: number
+  lastAdherenceCalculation?: string
+  totalAppointments?: number
+  missedAppointments?: number
+  lastVisitDate?: string
+  nextAppointmentDate?: string
   bmi?: number
-  is_active?: boolean
-  requires_interpreter?: boolean
-  has_mobility_issues?: boolean
-  created_at?: string
-  updated_at?: string
-  deleted_at?: string
-  // Provider linkage and consent tracking
-  linked_provider_id?: string
-  provider_linked_at?: string
-  provider_consent_given?: boolean
-  provider_consent_given_at?: string
-  provider_consent_method?: 'sms' | 'email' | 'in_person' | 'phone' | 'automatic'
-  // Navigation/computed fields for frontend
+  isActive?: boolean
+  requiresInterpreter?: boolean
+  hasMobilityIssues?: boolean
+  createdAt?: string
+  updatedAt?: string
+  deletedAt?: string
+  linkedProviderId?: string
+  providerLinkedAt?: string
+  providerConsentGiven?: boolean
+  providerConsentGivenAt?: string
+  providerConsentMethod?: 'sms' | 'email' | 'in_person' | 'phone' | 'automatic'
   user?: User
-  assigned_doctor?: string
-  assigned_hsp?: string
+  assignedDoctor?: string
+  assignedHsp?: string
   department?: string
   
-  // Legacy fields for compatibility
-  first_name?: string
-  last_name?: string
+  firstName?: string
+  lastName?: string
   email?: string
   phone?: string
-  date_of_birth?: string
+  dateOfBirth?: string
   gender?: string
-  adherence_rate?: number
-  critical_alerts?: number
+  adherenceRate?: number
+  criticalAlerts?: number
   status?: string
-  last_visit?: string
-  next_appointment?: string
-  profile_picture_url?: string
+  lastVisit?: string
+  nextAppointment?: string
+  profilePictureUrl?: string
 }
 
 export interface AdherenceMetrics {
-  overall_rate: number
+  overallRate: number
   medications: number
   appointments: number
   vitals: number
   diet: number
   exercise: number
-  last_updated: string
+  lastUpdated: string
 }
 
 export interface DashboardStats {
-  total_patients: number
-  active_patients: number
-  critical_alerts: number
-  appointments_today: number
-  medication_adherence: number
-  vital_readings_pending: number
+  totalPatients: number
+  activePatients: number
+  criticalAlerts: number
+  appointmentsToday: number
+  medicationAdherence: number
+  vitalReadingsPending: number
 }
 
 export interface CriticalAlert {
   id: string
-  patient_id: string
-  patient_name: string
+  patientId: string
+  patientName: string
   type: 'medication' | 'vital' | 'appointment' | 'symptom'
   severity: 'critical' | 'high' | 'medium' | 'low'
   message: string
-  created_at: string
+  createdAt: string
   acknowledged: boolean
 }
 
 export interface RecentActivity {
   id: string
-  patient_id: string
-  patient_name: string
+  patientId: string
+  patientName: string
   type: 'medication' | 'vital' | 'appointment' | 'symptom' | 'care_plan'
   action: string
   timestamp: string
@@ -180,42 +176,42 @@ export interface CarePlan {
   name: string
   status: 'draft' | 'active' | 'paused' | 'completed' | 'cancelled'
   priority: 'critical' | 'high' | 'medium' | 'low'
-  start_date: string
-  end_date?: string
-  medications_count: number
-  vitals_count: number
-  appointments_count: number
+  startDate: string
+  endDate?: string
+  medicationsCount: number
+  vitalsCount: number
+  appointmentsCount: number
 }
 
 export interface Medicine {
   id: string
   name: string
-  generic_name?: string
-  brand_names: string[]
+  genericName?: string
+  brandNames: string[]
   strength?: string
   form: string
-  route_of_administration: string[]
-  therapeutic_class?: string
+  routeOfAdministration: string[]
+  therapeuticClass?: string
   contraindications: string[]
-  side_effects: string[]
+  sideEffects: string[]
   interactions: string[]
-  storage_instructions?: string
-  is_prescription: boolean
-  controlled_substance?: boolean
-  created_at: string
-  updated_at: string
+  storageInstructions?: string
+  isPrescription: boolean
+  controlledSubstance?: boolean
+  createdAt: string
+  updatedAt: string
 }
 
 export interface Medication {
   id: string
-  participant_id: string
-  organizer_type?: 'doctor' | 'patient' | 'care_taker' | 'hsp' | 'provider' | 'admin'
-  organizer_id: string
-  medicine_id: string
+  participantId: string
+  organizerType?: 'doctor' | 'patient' | 'care_taker' | 'hsp' | 'provider' | 'admin'
+  organizerId: string
+  medicineId: string
   description?: string
-  start_date?: string
-  end_date?: string
-  rr_rule?: string
+  startDate?: string
+  endDate?: string
+  rrRule?: string
   details: {
     dosage?: string
     frequency?: string
@@ -223,19 +219,17 @@ export interface Medication {
     route?: string
     [key: string]: any
   }
-  frequency?: string // Virtual field from details.frequency
-  created_at: string
-  updated_at: string
-  deleted_at?: string
-  // Relations for frontend
+  frequency?: string
+  createdAt: string
+  updatedAt: string
+  deletedAt?: string
   medicine?: Medicine
-  // Computed fields for compatibility
   name?: string
   dosage?: string
-  is_critical?: boolean
-  adherence_rate?: number
-  last_taken?: string
-  next_due?: string
+  isCritical?: boolean
+  adherenceRate?: number
+  lastTaken?: string
+  nextDue?: string
 }
 
 export interface VitalReading {
@@ -243,9 +237,9 @@ export interface VitalReading {
   type: string
   value: number
   unit: string
-  reading_time: string
-  is_flagged: boolean
-  normal_range: {
+  readingTime: string
+  isFlagged: boolean
+  normalRange: {
     min?: number
     max?: number
   }
@@ -255,10 +249,10 @@ export interface Appointment {
   id: string
   title: string
   type: string
-  start_time: string
-  end_time: string
+  startTime: string
+  endTime: string
   status: 'scheduled' | 'confirmed' | 'in_progress' | 'completed' | 'cancelled' | 'no_show'
-  is_virtual: boolean
+  isVirtual: boolean
   notes?: string
 }
 
@@ -267,98 +261,96 @@ export interface Symptom {
   name: string
   severity: number
   description?: string
-  onset_time?: string
-  recorded_at: string
-  body_location?: Record<string, any>
+  onsetTime?: string
+  recordedAt: string
+  bodyLocation?: Record<string, any>
 }
 
 export interface MedicationLog {
   id: string
-  medication_id: string
-  patient_id: string
-  scheduled_at: string
-  taken_at?: string
-  dosage_taken?: string
+  medicationId: string
+  patientId: string
+  scheduledAt: string
+  takenAt?: string
+  dosageTaken?: string
   notes?: string
-  adherence_status: 'taken' | 'missed' | 'late' | 'partial'
-  reminder_sent: boolean
-  created_at: string
-  updated_at: string
-  // Relations
+  adherenceStatus: 'taken' | 'missed' | 'late' | 'partial'
+  reminderSent: boolean
+  createdAt: string
+  updatedAt: string
   medication?: Medication
   patient?: Patient
 }
 
 export interface PatientAlert {
   id: string
-  patient_id: string
-  alert_type: 'medication' | 'vital' | 'appointment' | 'symptom' | 'system'
+  patientId: string
+  alertType: 'medication' | 'vital' | 'appointment' | 'symptom' | 'system'
   severity: 'critical' | 'high' | 'medium' | 'low'
   title: string
   message: string
-  action_required: boolean
+  actionRequired: boolean
   acknowledged: boolean
-  acknowledged_at?: string
-  acknowledged_by?: string
+  acknowledgedAt?: string
+  acknowledgedBy?: string
   resolved: boolean
-  resolved_at?: string
+  resolvedAt?: string
   metadata: Record<string, any>
-  created_at: string
-  updated_at: string
-  // Relations
+  createdAt: string
+  updatedAt: string
   patient?: Patient
 }
 
 export interface DashboardMetric {
   id: string
-  entity_type: 'patient' | 'doctor' | 'organization' | 'system'
-  entity_id: string
-  metric_type: string
-  metric_data: Record<string, any>
-  calculated_at: string
-  valid_until?: string
-  created_at: string
-  updated_at: string
+  entityType: 'patient' | 'doctor' | 'organization' | 'system'
+  entityId: string
+  metricType: string
+  metricData: Record<string, any>
+  calculatedAt: string
+  validUntil?: string
+  createdAt: string
+  updatedAt: string
 }
 
 export interface PatientProviderConsentHistory {
   id: string
-  patient_id: string
-  previous_provider_id?: string
-  new_provider_id: string
-  doctor_id?: string
-  hsp_id?: string
-  consent_required: boolean
-  consent_requested: boolean
-  consent_requested_at?: string
-  consent_given: boolean
-  consent_given_at?: string
-  consent_method?: 'sms' | 'email' | 'in_person' | 'phone' | 'automatic'
-  consent_token?: string
-  consent_token_expires_at?: string
-  consent_verified: boolean
-  consent_denied: boolean
-  consent_denied_at?: string
+  patientId: string
+  previousProviderId?: string
+  newProviderId: string
+  doctorId?: string
+  hspId?: string
+  consentRequired: boolean
+  consentRequested: boolean
+  consentRequestedAt?: string
+  consentGiven: boolean
+  consentGivenAt?: string
+  consentMethod?: 'sms' | 'email' | 'in_person' | 'phone' | 'automatic'
+  consentToken?: string
+  consentTokenExpiresAt?: string
+  consentVerified: boolean
+  consentDenied: boolean
+  consentDeniedAt?: string
   reason?: string
-  initiated_by?: string
+  initiatedBy?: string
   status: 'pending' | 'consent_requested' | 'approved' | 'denied' | 'expired' | 'completed'
   metadata: Record<string, any>
-  created_at: string
-  updated_at: string
+  createdAt: string
+  updatedAt: string
 }
 
 export interface ProviderChangeHistory {
   id: string
-  practitioner_type: 'doctor' | 'hsp'
-  practitioner_id: string
-  previous_provider_id?: string
-  new_provider_id: string
-  change_date: string
-  affected_patients_count: number
-  consent_required_count: number
-  consent_obtained_count: number
+  practitionerType: 'doctor' | 'hsp'
+  practitionerId: string
+  previousProviderId?: string
+  newProviderId: string
+  changeDate: string
+  affectedPatientsCount: number
+  consentRequiredCount: number
+  consentObtainedCount: number
   reason?: string
   status: 'active' | 'processing' | 'completed'
-  created_at: string
-  updated_at: string
+  createdAt: string
+  updatedAt: string
 }

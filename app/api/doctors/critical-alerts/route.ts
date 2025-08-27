@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from "@/lib/auth";
 import { prisma } from '@/lib/prisma';
-import { MedicationAlertType, EmergencyPriority, AlertSeverity } from '@prisma/client';
 
 /**
  * GET /api/doctors/critical-alerts
@@ -18,7 +17,6 @@ export async function GET(request: NextRequest) {
       }, { status: 401 });
     }
 
-    // Only doctors can access this endpoint
     if (session.user.role !== 'DOCTOR') {
       return NextResponse.json({
         status: false,
@@ -30,9 +28,8 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const limit = parseInt(searchParams.get('limit') || '5');
 
-    // Get doctor ID
     const doctor = await prisma.doctor.findFirst({
-      where: { user_id: session.user.id }
+      where: { userId: session.user.id }
     });
 
     if (!doctor) {
@@ -43,13 +40,11 @@ export async function GET(request: NextRequest) {
       }, { status: 404 });
     }
 
-    // Get critical alerts from multiple sources
     const [emergencyAlerts, medicationAlerts, recentNotifications] = await Promise.all([
-      // Emergency alerts
       prisma.emergencyAlert.findMany({
         where: {
           patient: {
-            primary_care_doctor_id: doctor.id
+            primaryCareDoctorId: doctor.id
           },
           acknowledged: false,
           resolved: false
@@ -69,16 +64,15 @@ export async function GET(request: NextRequest) {
           }
         },
         orderBy: {
-          created_at: 'desc'
+          createdAt: 'desc'
         },
         take: Math.ceil(limit / 2)
       }),
 
-      // Medication safety alerts
       prisma.medicationSafetyAlert.findMany({
         where: {
           patient: {
-            primary_care_doctor_id: doctor.id
+            primaryCareDoctorId: doctor.id
           },
           resolved: false
         },
@@ -97,20 +91,19 @@ export async function GET(request: NextRequest) {
           }
         },
         orderBy: {
-          created_at: 'desc'
+          createdAt: 'desc'
         },
         take: Math.ceil(limit / 3)
       }),
 
-      // Critical notifications as alerts
       prisma.notification.findMany({
         where: {
-          doctor_id: doctor.id,
-          is_urgent: true,
-          read_at: null
+          doctorId: doctor.id,
+          isUrgent: true,
+          readAt: null
         },
         include: {
-          patients: {
+          patient: {
             include: {
               user: {
                 select: {
@@ -124,64 +117,62 @@ export async function GET(request: NextRequest) {
           }
         },
         orderBy: {
-          created_at: 'desc'
+          createdAt: 'desc'
         },
         take: Math.ceil(limit / 3)
       })
     ]);
 
-    // Format and combine all alerts
     const allAlerts = [
       ...emergencyAlerts.map(alert => {
         const patientName = alert.patient?.user.name || 
-                           `${alert.patient?.user.first_name || ''} ${alert.patient?.user.last_name || ''}`.trim();
+                           `${alert.patient?.user.firstName || ''} ${alert.patient?.user.lastName || ''}`.trim();
         return {
           id: alert.id,
           type: 'emergency',
-          severity: alert.priority_level,
-          title: alert.alert_title,
-          description: alert.alert_message,
+          severity: alert.priorityLevel,
+          title: alert.alertTitle,
+          description: alert.alertMessage,
           patientName,
-          patientId: alert.patient?.patient_id,
-          timestamp: alert.created_at,
+          patientId: alert.patient?.patientId,
+          timestamp: alert.createdAt,
           status: alert.acknowledged ? 'ACKNOWLEDGED' : 'ACTIVE'
         };
       }),
       ...medicationAlerts.map(alert => {
         const patientName = alert.patient?.user.name || 
-                           `${alert.patient?.user.first_name || ''} ${alert.patient?.user.last_name || ''}`.trim();
+                           `${alert.patient?.user.firstName || ''} ${alert.patient?.user.lastName || ''}`.trim();
         return {
           id: alert.id,
           type: 'medication',
           severity: alert.severity || 'HIGH',
-          title: alert.alert_title,
-          description: alert.alert_message,
+          title: alert.alertTitle,
+          description: alert.alertMessage,
           patientName,
-          patientId: alert.patient?.patient_id,
-          timestamp: alert.created_at,
+          patientId: alert.patient?.patientId,
+          timestamp: alert.createdAt,
           status: alert.resolved ? 'RESOLVED' : 'ACTIVE'
         };
       }),
       ...recentNotifications.map(notification => {
-        const patientName = notification.patients?.user.name || 
-                           `${notification.patients?.user.first_name || ''} ${notification.patients?.user.last_name || ''}`.trim();
+        const patientName = notification.patient?.user.name ||
+                           `${notification.patient?.user.firstName || ''} ${notification.patient?.user.lastName || ''}`.trim();
         return {
           id: notification.id,
           type: 'notification',
-          severity: notification.is_urgent ? 'HIGH' : 'MEDIUM',
+          severity: notification.isUrgent ? 'HIGH' : 'MEDIUM',
           title: notification.title,
           description: notification.message,
           patientName,
-          patientId: notification.patients?.patient_id,
-          timestamp: notification.created_at,
-          status: notification.read_at ? 'READ' : 'ACTIVE'
+          patientId: notification.patient?.patientId,
+          timestamp: notification.createdAt,
+          status: notification.readAt ? 'READ' : 'ACTIVE'
         };
       })
     ];
 
-    // Sort by timestamp and limit results
     const sortedAlerts = allAlerts
-      .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+      .sort((a, b) => new Date(b.timestamp as any).getTime() - new Date(a.timestamp as any).getTime())
       .slice(0, limit);
 
     return NextResponse.json({

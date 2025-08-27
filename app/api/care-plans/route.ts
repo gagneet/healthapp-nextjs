@@ -14,7 +14,6 @@ import {
   createForbiddenResponse,
   withErrorHandling
 } from "@/lib/api-response"
-import { CarePlanSchema } from "@/lib/validations/healthcare"
 import { z } from "zod"
 
 /**
@@ -39,7 +38,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
     doctorId: z.string().optional(),
     searchQuery: z.string().optional(),
     status: z.string().optional(),
-    sortBy: z.string().default('created_at'),
+    sortBy: z.string().default('createdAt'),
     sortOrder: z.enum(['asc', 'desc']).default('desc')
   })
 
@@ -50,7 +49,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
     doctorId: searchParams.get('doctor_id') || undefined,
     searchQuery: searchParams.get('search') || undefined,
     status: searchParams.get('status') || undefined,
-    sortBy: searchParams.get('sortBy') || 'created_at',
+    sortBy: searchParams.get('sortBy') || 'createdAt',
     sortOrder: searchParams.get('sortOrder') || 'desc'
   })
 
@@ -66,19 +65,17 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
     // Business Logic: Role-based data access control
     switch (session.user.role) {
       case 'DOCTOR':
-        // Doctors can see care plans for their patients
-        whereClause.primary_doctor_id = session.user.profileId
+        whereClause.createdByDoctorId = session.user.profileId
         break
       case 'HSP':
-        // HSPs can see care plans for patients they're treating
         whereClause.OR = [
-          { primary_doctor_id: session.user.profileId },
+          { createdByDoctorId: session.user.profileId },
           {
             patient: {
-              patient_doctor_assignments: {
+              patientDoctorAssignments: {
                 some: {
-                  doctor_id: session.user.profileId,
-                  assignment_type: { in: ['secondary', 'consulting', 'specialist'] }
+                  doctorId: session.user.profileId,
+                  assignmentType: { in: ['SECONDARY', 'CONSULTING', 'SPECIALIST'] }
                 }
               }
             }
@@ -86,48 +83,40 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
         ]
         break
       case 'PATIENT':
-        // Patients can only see their own care plans
-        whereClause.patient_id = session.user.profileId
+        whereClause.patientId = session.user.profileId
         break
       case 'SYSTEM_ADMIN':
-        // System admins can see all care plans
         break
       default:
         return createForbiddenResponse("Invalid role for care plan access")
     }
 
-    // Apply patient filter (for healthcare providers)
     if (patientId && ['DOCTOR', 'HSP', 'SYSTEM_ADMIN'].includes(session.user.role)) {
-      whereClause.patient_id = patientId
+      whereClause.patientId = patientId
     }
 
-    // Apply doctor filter (for admins)
     if (doctorId && session.user.role === 'SYSTEM_ADMIN') {
-      whereClause.primary_doctor_id = doctorId
+      whereClause.createdByDoctorId = doctorId
     }
 
-    // Apply search filter
     if (searchQuery) {
       whereClause.OR = [
         ...(whereClause.OR || []),
         {
-          plan_name: { contains: searchQuery, mode: 'insensitive' }
+          title: { contains: searchQuery, mode: 'insensitive' }
         },
         {
-          primary_diagnosis: { contains: searchQuery, mode: 'insensitive' }
+          description: { contains: searchQuery, mode: 'insensitive' }
         }
       ]
     }
 
-    // Apply status filter
     if (status) {
       whereClause.status = status.toUpperCase()
     }
 
-    // Get total count for pagination
     const total = await prisma.carePlan.count({ where: whereClause })
 
-    // Fetch care plans with related data
     const carePlans = await prisma.carePlan.findMany({
       where: whereClause,
       skip,
@@ -148,9 +137,9 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
             }
           }
         },
-        doctors: {
+        doctor: {
           include: {
-            users_doctors_user_idTousers: {
+            user: {
               select: {
                 id: true,
                 firstName: true,
@@ -158,7 +147,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
                 email: true
               }
             },
-            specialities: {
+            specialty: {
               select: {
                 name: true
               }
@@ -168,7 +157,6 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
       }
     })
 
-    // Return raw data for now
     const formattedCarePlans = carePlans
 
     return createSuccessResponse(

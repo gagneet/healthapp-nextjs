@@ -32,7 +32,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
     let doctorId = null;
     if (session.user.role === 'DOCTOR') {
       const doctor = await prisma.doctor.findFirst({
-        where: { user_id: session.user.id }
+        where: { userId: session.user.id }
       });
       
       if (!doctor) {
@@ -50,7 +50,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
     const patient = await prisma.patient.findFirst({
       where: { 
         id: patientId,
-        ...(doctorId ? { primary_care_doctor_id: doctorId } : {})
+        ...(doctorId ? { primaryCareDoctorId: doctorId } : {})
       }
     });
 
@@ -65,11 +65,11 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
     // Get appointments for this patient
     const appointments = await prisma.appointment.findMany({
       where: {
-        patient_id: patient.id, // appointments table uses patient primary key
-        ...(doctorId ? { doctor_id: doctorId } : {})
+        patientId: patient.id,
+        ...(doctorId ? { doctorId: doctorId } : {})
       },
       orderBy: {
-        start_time: 'desc'
+        startTime: 'desc'
       }
     });
 
@@ -77,13 +77,13 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
     const formattedAppointments = appointments.map(appointment => ({
       id: appointment.id,
       title: appointment.description || 'Appointment',
-      type: appointment.appointment_type?.toLowerCase() || 'consultation',
-      start_time: appointment.start_time,
-      end_time: appointment.end_time,
+      type: 'consultation', // Defaulting as appointment_type is not in schema
+      startTime: appointment.startTime,
+      endTime: appointment.endTime,
       status: appointment.status || 'scheduled',
-      is_virtual: appointment.is_virtual || false,
-      notes: appointment.notes,
-      created_at: appointment.created_at
+      isVirtual: (appointment.details as any)?.is_virtual || false, // Assuming is_virtual might be in details
+      notes: (appointment.details as any)?.notes,
+      createdAt: appointment.createdAt
     }));
 
     return NextResponse.json({
