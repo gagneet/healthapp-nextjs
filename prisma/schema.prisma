@@ -51,7 +51,9 @@ model User {
   passwordHash            String?             @db.VarChar(255)
   name                    String?             @db.VarChar(255)
   image                   String?             @db.VarChar(500)
-  emailVerified           DateTime?
+  emailVerified           DateTime?           @db.Timestamptz(6)
+  
+  // Healthcare-specific fields
   role                    UserRole
   accountStatus           UserAccountStatus?  @default(PENDING_VERIFICATION)
   firstName               String?             @db.VarChar(100)
@@ -73,12 +75,12 @@ model User {
   timezone                String?             @default("UTC") @db.VarChar(50)
   locale                  String?             @default("en") @db.VarChar(10)
   preferences             Json?
-  termsAcceptedAt         DateTime?
-  privacyPolicyAcceptedAt DateTime?
-  hipaaConsentDate        DateTime?
-  createdAt               DateTime?
-  updatedAt               DateTime?           @updatedAt
-  deletedAt               DateTime?
+  termsAcceptedAt         DateTime?           @db.Timestamptz(6)
+  privacyPolicyAcceptedAt DateTime?           @db.Timestamptz(6)
+  hipaaConsentDate        DateTime?           @db.Timestamptz(6)
+  createdAt               DateTime?           @db.Timestamptz(6)
+  updatedAt               DateTime?           @updatedAt @db.Timestamptz(6)
+  deletedAt               DateTime?           @db.Timestamptz(6)
   fullName                String?             @db.VarChar(255)
   appointmentSlots        AppointmentSlot[]
   appointments            Appointment[]
@@ -137,10 +139,10 @@ model Account {
   scope             String?
   idToken           String?  @db.Text
   sessionState      String?
-  providerEmail     String?  @db.VarChar(255)
-  providerName      String?  @db.VarChar(255)
-  linkedAt          DateTime @default(now()) @db.Timestamptz(6)
-  lastUsedAt        DateTime?@db.Timestamptz(6)
+  providerEmail     String?   @db.VarChar(255)
+  providerName      String?   @db.VarChar(255)
+  linkedAt          DateTime  @default(now()) @db.Timestamptz(6)
+  lastUsedAt        DateTime? @db.Timestamptz(6)
   user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
@@ -182,7 +184,7 @@ model AccountLink {
   providerAccountId String   @db.VarChar(255)
   providerEmail     String?  @db.VarChar(255)
   linkedAt          DateTime @default(now()) @db.Timestamptz(6)
-  lastUsedAt        DateTime?@db.Timestamptz(6)
+  lastUsedAt        DateTime? @db.Timestamptz(6)
   isPrimary         Boolean  @default(false)
   metadata          Json?    @default("{}")
   user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -334,8 +336,8 @@ model Specialty {
   name        String    @unique @db.VarChar(255)
   description String?   @db.VarChar(1000)
   userCreated Int?
-  createdAt   DateTime
-  updatedAt   DateTime  @updatedAt
+  createdAt   DateTime? @db.Timestamptz(6)
+  updatedAt   DateTime?  @updatedAt @db.Timestamptz(6)
   deletedAt   DateTime?
   doctors     Doctor[]
 
@@ -367,9 +369,9 @@ model Clinic {
   establishedYear    Int?
   facilities         Json?         @default("[]")
   insuranceAccepted  String[]      @default([])
-  createdAt          DateTime
-  updatedAt          DateTime      @updatedAt
-  deletedAt          DateTime?
+  createdAt          DateTime?     @db.Timestamptz(6)
+  updatedAt          DateTime?     @updatedAt @db.Timestamptz(6)
+  deletedAt          DateTime?     @db.Timestamptz(6)
   doctor             Doctor        @relation(fields: [doctorId], references: [id], onDelete: Cascade)
   organization       Organization? @relation(fields: [organizationId], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
@@ -1926,19 +1928,19 @@ enum VitalReadingAlertLevel {
 
 model DrugInteraction {
   id                String                  @id @default(uuid()) @db.Uuid
-  rxcuiOne          String                  @db.VarChar(50)
-  rxcuiTwo          String                  @db.VarChar(50)
+  rxcuiOne          String                  @db.VarChar(50)  // RxNorm identifier for first drug
+  rxcuiTwo          String                  @db.VarChar(50)  // RxNorm identifier for second drug
   drugNameOne       String                  @db.VarChar(255)
   drugNameTwo       String                  @db.VarChar(255)
   severityLevel     DrugInteractionSeverity
-  interactionType   String                  @db.VarChar(100)
+  interactionType   String                  @db.VarChar(100) // "pharmacokinetic", "pharmacodynamic", "duplicate"
   description       String                  @db.Text
   clinicalEffect    String                  @db.Text
   managementAdvice  String                  @db.Text
-  evidenceLevel     String                  @db.VarChar(10)
+  evidenceLevel     String                  @db.VarChar(10)  // "HIGH", "MODERATE", "LOW"
   source            String                  @default("RxNorm") @db.VarChar(50)
-  lastUpdatedAt     DateTime                @updatedAt
-  createdAt         DateTime                @default(now())
+  lastUpdatedAt     DateTime                @updatedAt @db.Timestamptz(6)
+  createdAt         DateTime                @default(now()) @db.Timestamptz(6)
   medicationSafetyAlerts MedicationSafetyAlert[]
 
   @@unique([rxcuiOne, rxcuiTwo])
@@ -1952,7 +1954,7 @@ model PatientAllergy {
   patientId         String           @db.Uuid
   allergenType      AllergenType
   allergenName      String           @db.VarChar(255)
-  allergenRxnorm    String?          @db.VarChar(50)
+  allergenRxnorm    String?          @db.VarChar(50) // RxNorm code if medication
   reactionSeverity  AllergySeverity
   reactionSymptoms  String?          @db.Text
   onsetDate         DateTime?        @db.Date
@@ -1960,8 +1962,8 @@ model PatientAllergy {
   verifiedBy        String?          @db.Uuid
   notes             String?          @db.Text
   isActive          Boolean          @default(true)
-  createdAt         DateTime         @default(now())
-  updatedAt         DateTime         @updatedAt
+  createdAt         DateTime         @default(now()) @db.Timestamptz(6)
+  updatedAt         DateTime         @updatedAt @db.Timestamptz(6)
 
   patient           Patient          @relation(fields: [patientId], references: [id], onDelete: Cascade)
   verifiedByUser    User?            @relation(fields: [verifiedBy], references: [id])
