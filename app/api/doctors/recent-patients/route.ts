@@ -79,24 +79,24 @@ export async function GET(request: NextRequest) {
 
     const formattedPatients = recentPatients.map(patient => {
       const userName = patient.user.name || 
-                      `${patient.user.first_name || ''} ${patient.user.last_name || ''}`.trim();
+                      `${patient.user.firstName || ''} ${patient.user.lastName || ''}`.trim();
       
       return {
         id: patient.id,
-        patientId: patient.patient_id,
-        firstName: patient.user.first_name || '',
-        lastName: patient.user.last_name || '',
+        patientId: patient.patientId,
+        firstName: patient.user.firstName || '',
+        lastName: patient.user.lastName || '',
         name: userName,
         email: patient.user?.email,
-        last_visit: patient.last_visit_date || patient.updated_at,
-        lastActivity: patient.last_visit_date || patient.updated_at,
-        lastAppointment: patient.appointments?.[0]?.start_time,
-        dateOfBirth: patient.date_of_birth,
+        last_visit: patient.lastVisitDate || patient.updatedAt,
+        lastActivity: patient.lastVisitDate || patient.updatedAt,
+        lastAppointment: patient.appointments?.[0]?.startTime,
+        dateOfBirth: patient.dateOfBirth,
         gender: patient.gender,
-        riskLevel: patient.risk_level || 'low',
+        riskLevel: patient.riskLevel || 'low',
         // Add fields expected by dashboard
         critical_alerts: 0, // Mock for now
-        adherence_rate: patient.overall_adherence_score || Math.floor(Math.random() * 40) + 60 // Mock if null
+        adherence_rate: patient.overallAdherenceScore || Math.floor(Math.random() * 40) + 60 // Mock if null
       };
     });
 

@@ -8,7 +8,12 @@
 import { prisma, healthcareDb } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import type { User, Patient, doctors, hsps } from './prisma-client';
+import type { User, Patient, Doctor, Hsp } from '@prisma/client';
+
+const sanitizeLog = (input: string | null | undefined): string => {
+  if (!input) return '';
+  return input.replace(/(\r\n|\n|\r)/gm, ' ');
+};
 
 // Type definitions for API responses
 export interface APIResponse<T = any> {
@@ -530,8 +535,8 @@ export async function getDoctorDashboard(doctorUserId: string) {
     // Handle missing doctor profile with detailed logging and mock data
     if (!doctorProfile?.id) {
       console.warn('=== MISSING DOCTOR PROFILE ===');
-      console.warn('Doctor User ID:', doctorUserId);
-      console.warn('Doctor Email:', doctorUser.email);
+      console.warn('Doctor User ID:', sanitizeLog(doctorUserId));
+      console.warn('Doctor Email:', sanitizeLog(doctorUser.email));
       console.warn('Doctor Role:', doctorUser.role);
       console.warn('Profile Object:', JSON.stringify(doctorProfile, null, 2));
       console.warn('This indicates a data integrity issue - user has DOCTOR role but no doctor profile');
@@ -757,7 +762,7 @@ export async function getDoctorDashboard(doctorUserId: string) {
     console.error('=== DOCTOR DASHBOARD ERROR ===');
     console.error('Error Type:', error instanceof Error ? error.constructor.name : typeof error);
     console.error('Error Message:', error instanceof Error ? error.message : String(error));
-    console.error('Doctor User ID:', doctorUserId);
+    console.error('Doctor User ID:', sanitizeLog(doctorUserId));
     // Note: doctorUser and doctorProfile might not be defined here if the error occurred during their fetch
     console.error('Full Error Stack:', error instanceof Error ? error.stack : 'No stack trace available');
     console.error('===========================');
