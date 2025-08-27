@@ -36,7 +36,7 @@ export async function GET(
         email: true,
         name: true,
         image: true,
-        emailVerifiedAt: true,
+        emailVerified: true,
         firstName: true,
         lastName: true,
         fullName: true,

@@ -153,7 +153,7 @@ export async function POST(request: NextRequest) {
             passwordHash: passwordHash,
             name: fullName,
             image: null,
-            emailVerifiedAt: null,
+            emailVerified: null,
             firstName: firstName,
             lastName: lastName,
             fullName: fullName,

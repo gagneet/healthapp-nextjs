@@ -86,6 +86,13 @@ async function generateSecurePasswordHash(password: string): Promise<string> {
     return await bcrypt.hash(password, saltRounds);
 }
 
+const sanitize = (input: any) => {
+  if (typeof input === 'string') {
+    return input.replace(/(\r\n|\n|\r)/gm, "");
+  }
+  return input;
+}
+
 export async function seedComprehensiveHealthcareData() {
     console.log('📊 Seeding comprehensive healthcare test data with updated schema...');
 
@@ -104,7 +111,7 @@ export async function seedComprehensiveHealthcareData() {
         const createUserData = (userData: any) => ({
             ...userData,
             name: `${userData.firstName} ${userData.lastName}`.trim(),
-            emailVerifiedAt: userData.emailVerifiedLegacy ? userData.createdAt : null,
+            emailVerified: userData.emailVerifiedLegacy ? userData.createdAt : null,
             image: null,
         });
 
@@ -922,7 +929,7 @@ export async function seedComprehensiveHealthcareData() {
         console.log(`\n🔑 Login Credentials:`);
         console.log(`   - Dr. Smith (3 patients + clinic): doctor@healthapp.com / TempPassword123!`);
         console.log(`   - Dr. Doe (2 patients): doctor1@healthapp.com / TempPassword123!`);
-        console.log(`   - All other users: email / ${defaultPassword}`);
+        console.log(`   - All other users: email / ${sanitize(defaultPassword)}`);
         console.log(`\n📈 Dashboard Data Ready:`);
         console.log(`   - Doctor Dashboards: Patient lists, appointments, medication tracking ✅`);
         console.log(`   - Patient Dashboards: Care plans, medications, symptoms, vitals ✅`);

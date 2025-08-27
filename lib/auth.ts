@@ -82,7 +82,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
               passwordHash: true,
               name: true,
               image: true,
-              emailVerifiedAt: true,
+              emailVerified: true,
               role: true,
               firstName: true,
               lastName: true,
@@ -236,7 +236,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             email: user.email,
             name: user.name || user.fullName || `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email.split('@')[0],
             image: user.image || user.profilePictureUrl,
-            emailVerified: user.emailVerifiedAt,
+            emailVerified: user.emailVerified,
             // Healthcare-specific fields (custom)
             role: user.role,
             businessId: businessId,
@@ -345,7 +345,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
               data: {
                 name: existingUser.name || user.name,
                 image: existingUser.image || user.image,
-                emailVerifiedAt: existingUser.emailVerifiedAt || new Date()
+                emailVerified: existingUser.emailVerified || new Date()
               }
             })
             return true
@@ -357,7 +357,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
               email: user.email!,
               name: user.name || user.email!.split('@')[0],
               image: user.image,
-              emailVerifiedAt: new Date(),
+              emailVerified: new Date(),
               role: "PATIENT",
               accountStatus: "ACTIVE",
               firstName: user.name?.split(' ')[0] || user.email!.split('@')[0],

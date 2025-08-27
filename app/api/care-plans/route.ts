@@ -75,7 +75,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
               patientDoctorAssignments: {
                 some: {
                   doctorId: session.user.profileId,
-                  assignmentType: { in: ['SPECIALIST'] }
+                  assignmentType: { in: ['SECONDARY', 'CONSULTING', 'SPECIALIST'] }
                 }
               }
             }

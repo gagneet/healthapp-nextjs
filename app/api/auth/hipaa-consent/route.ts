@@ -130,10 +130,10 @@ export async function POST(request: NextRequest) {
           ...(requiresAdditionalVerification && {
             verification: "Professional credentials verification required"
           }),
-          ...(updatedUser.emailVerifiedAt && {
+          ...(updatedUser.emailVerified && {
             accessGranted: "You can now access the healthcare platform"
           }),
-          ...(!updatedUser.emailVerifiedAt && {
+          ...(!updatedUser.emailVerified && {
             emailVerification: "Please verify your email address to complete registration"
           })
         }
@@ -194,7 +194,7 @@ export async function GET(request: NextRequest) {
         hipaaConsentDate: true,
         termsAcceptedAt: true,
         privacyPolicyAcceptedAt: true,
-        emailVerifiedAt: true,
+        emailVerified: true,
         createdAt: true
       }
     })
@@ -209,7 +209,7 @@ export async function GET(request: NextRequest) {
     const hasHipaaConsent = !!user.hipaaConsentDate
     const hasTermsAccepted = !!user.termsAcceptedAt
     const hasPrivacyAccepted = !!user.privacyPolicyAcceptedAt
-    const hasEmailVerified = !!user.emailVerifiedAt
+    const hasEmailVerified = !!user.emailVerified
     
     return NextResponse.json({
       user: {
@@ -238,7 +238,7 @@ export async function GET(request: NextRequest) {
         emailVerification: {
           required: true,
           completed: hasEmailVerified,
-          completedAt: user.emailVerifiedAt
+          completedAt: user.emailVerified
         }
       },
       overallCompliance: {

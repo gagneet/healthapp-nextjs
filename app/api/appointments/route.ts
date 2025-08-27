@@ -13,11 +13,11 @@ export async function GET(request: NextRequest) {
     const user = session.user;
 
     const { searchParams } = new URL(request.url);
-    const patient_id = searchParams.get('patient_id');
-    const doctor_id = searchParams.get('doctor_id');
+    const patientId = searchParams.get('patientId');
+    const doctorId = searchParams.get('doctorId');
     const status = searchParams.get('status');
-    const start_date = searchParams.get('start_date');
-    const end_date = searchParams.get('end_date');
+    const startDate = searchParams.get('startDate');
+    const endDate = searchParams.get('endDate');
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '20');
     const offset = (page - 1) * limit;
@@ -52,22 +52,22 @@ export async function GET(request: NextRequest) {
     }
 
     // Additional filters
-    if (patient_id && ['DOCTOR', 'HSP', 'ADMIN'].includes(user!.role)) {
-      whereClause.patientId = patient_id;
+    if (patientId && ['DOCTOR', 'HSP', 'ADMIN'].includes(user!.role)) {
+      whereClause.patientId = patientId;
     }
     
-    if (doctor_id && ['ADMIN', 'HSP'].includes(user!.role)) {
-      whereClause.doctorId = doctor_id;
+    if (doctorId && ['ADMIN', 'HSP'].includes(user!.role)) {
+      whereClause.doctorId = doctorId;
     }
     
     if (status) {
       whereClause.status = status;
     }
     
-    if (start_date && end_date) {
+    if (startDate && endDate) {
       whereClause.startTime = {
-        gte: new Date(start_date),
-        lte: new Date(end_date)
+        gte: new Date(startDate),
+        lte: new Date(endDate)
       };
     }
 
@@ -157,12 +157,12 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
     const {
-      patient_id,
-      doctor_id,
-      start_time,
-      end_time,
+      patientId,
+      doctorId,
+      startTime,
+      endTime,
       description,
-      slot_id,
+      slotId,
     } = body;
 
     // Validate user permissions
@@ -170,7 +170,7 @@ export async function POST(request: NextRequest) {
       const patient = await prisma.patient.findFirst({
         where: { userId: user!.id }
       });
-      if (!patient || patient.id !== patient_id) {
+      if (!patient || patient.id !== patientId) {
         return NextResponse.json({
           status: false,
           statusCode: 403,
@@ -201,13 +201,13 @@ export async function POST(request: NextRequest) {
       // Create appointment within the same transaction
       const newAppointment = await tx.appointment.create({
         data: {
-          patientId: patient_id,
-          doctorId: doctor_id,
-          startTime: new Date(start_time),
-          endTime: new Date(end_time),
+          patientId: patientId,
+          doctorId: doctorId,
+          startTime: new Date(startTime),
+          endTime: new Date(endTime),
           description: description || 'Appointment',
           status: 'SCHEDULED',
-          slotId: slot_id
+          slotId: slotId
         },
         include: {
           patient: {
@@ -280,7 +280,7 @@ export async function PUT(request: NextRequest) {
     const user = session.user;
 
     const body = await request.json();
-    const { id, status, notes, start_time, end_time } = body;
+    const { id, status, notes, startTime, endTime } = body;
 
     if (!id || typeof id !== 'string' || id.trim().length === 0) {
       return NextResponse.json({
@@ -333,8 +333,8 @@ export async function PUT(request: NextRequest) {
       data: {
         ...(status && { status }),
         ...(notes && { details: { ...(appointment.details as object || {}), notes } }),
-        ...(start_time && { startTime: new Date(start_time) }),
-        ...(end_time && { endTime: new Date(end_time) }),
+        ...(startTime && { startTime: new Date(startTime) }),
+        ...(endTime && { endTime: new Date(endTime) }),
         updatedAt: new Date()
       },
       include: {

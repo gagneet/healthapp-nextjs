@@ -94,7 +94,7 @@ export async function GET(request: NextRequest) {
     });
 
     const verifiedUsers = await prisma.user.count({
-      where: { emailVerifiedAt: { not: null } }
+      where: { emailVerified: { not: null } }
     });
 
     const appointmentsByStatus = await prisma.appointment.groupBy({

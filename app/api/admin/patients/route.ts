@@ -82,7 +82,7 @@ export async function GET(request: NextRequest) {
               dateOfBirth: true,
               gender: true,
               accountStatus: true,
-              emailVerifiedAt: true,
+              emailVerified: true,
               createdAt: true
             }
           },
@@ -228,7 +228,7 @@ export async function POST(request: NextRequest) {
           email,
           passwordHash: hashedPassword,
           name: fullName,
-          emailVerifiedAt: new Date(),
+          emailVerified: new Date(),
           image: null,
           firstName: first_name,
           lastName: last_name,

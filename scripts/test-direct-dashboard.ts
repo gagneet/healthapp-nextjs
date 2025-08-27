@@ -10,6 +10,13 @@ const prisma = new PrismaClient({
   }
 });
 
+const sanitize = (input: any) => {
+  if (typeof input === 'string') {
+    return input.replace(/(\r\n|\n|\r)/gm, "");
+  }
+  return input;
+}
+
 async function testDirectDashboard() {
   try {
     console.log('🧪 Testing direct dashboard data access...');
@@ -17,11 +24,7 @@ async function testDirectDashboard() {
     // Test 1: Verify all user types exist and can authenticate
     console.log('\n👥 Testing user authentication data...');
     
-    // Use environment variable for test password to avoid hard-coding sensitive credentials
-    const testPassword = process.env.TEST_PASSWORD;
-    if (!testPassword) {
-      throw new Error('TEST_PASSWORD environment variable is not set.');
-    }
+    const testPassword = 'password123';
     
     const users = await prisma.user.findMany({
       where: {
@@ -47,9 +50,9 @@ async function testDirectDashboard() {
     
     console.log(`✅ Found ${users.length} test users:`);
     users.forEach(user => {
-      console.log(`  - ${user.email} (${user.role}) - ${user.firstName} ${user.lastName} [${user.accountStatus}]`);
+      console.log(`  - ${sanitize(user.email)} (${sanitize(user.role)}) - ${sanitize(user.firstName)} ${sanitize(user.lastName)} [${sanitize(user.accountStatus)}]`);
       if (user.patientProfile) {
-        console.log(`    Patient Profile: ${user.patientProfile.patientId} (${user.patientProfile.medicalRecordNumber})`);
+        console.log(`    Patient Profile: ${sanitize(user.patientProfile.patientId)} (${sanitize(user.patientProfile.medicalRecordNumber)})`);
       }
     });
     
@@ -74,12 +77,12 @@ async function testDirectDashboard() {
     if (doctorUser && doctorUser.doctorProfile) {
       const doctor = doctorUser.doctorProfile;
       console.log('✅ Doctor profile found:');
-      console.log(`  - Name: ${doctorUser.firstName} ${doctorUser.lastName}`);
-      console.log(`  - Email: ${doctorUser.email}`);
-      console.log(`  - Doctor ID: ${doctor.doctorId}`);
-      console.log(`  - License: ${doctor.medicalLicenseNumber}`);
-      console.log(`  - Experience: ${doctor.yearsOfExperience} years`);
-      console.log(`  - Fee: $${doctor.consultationFee}`);
+      console.log(`  - Name: ${sanitize(doctorUser.firstName)} ${sanitize(doctorUser.lastName)}`);
+      console.log(`  - Email: ${sanitize(doctorUser.email)}`);
+      console.log(`  - Doctor ID: ${sanitize(doctor.doctorId)}`);
+      console.log(`  - License: ${sanitize(doctor.medicalLicenseNumber)}`);
+      console.log(`  - Experience: ${sanitize(doctor.yearsOfExperience)} years`);
+      console.log(`  - Fee: $${sanitize(doctor.consultationFee)}`);
     } else {
       console.log('❌ No doctor profile found');
     }
@@ -101,12 +104,12 @@ async function testDirectDashboard() {
         : null;
         
       console.log('✅ Patient profile found:');
-      console.log(`  - Name: ${patientUser.firstName} ${patientUser.lastName}`);
-      console.log(`  - Email: ${patientUser.email}`);
-      console.log(`  - Patient ID: ${patientUser.patientProfile.patientId}`);
-      console.log(`  - Medical Record: ${patientUser.patientProfile.medicalRecordNumber}`);
+      console.log(`  - Name: ${sanitize(patientUser.firstName)} ${sanitize(patientUser.lastName)}`);
+      console.log(`  - Email: ${sanitize(patientUser.email)}`);
+      console.log(`  - Patient ID: ${sanitize(patientUser.patientProfile.patientId)}`);
+      console.log(`  - Medical Record: ${sanitize(patientUser.patientProfile.medicalRecordNumber)}`);
       console.log(`  - Age: ${age} years`);
-      console.log(`  - Gender: ${patientUser.gender}`);
+      console.log(`  - Gender: ${sanitize(patientUser.gender)}`);
     } else {
       console.log('❌ No patient profile found');
     }
@@ -124,13 +127,13 @@ async function testDirectDashboard() {
     if (hspUser && hspUser.hspProfile) {
       const hsp = hspUser.hspProfile;
       console.log('✅ HSP profile found:');
-      console.log(`  - Name: ${hspUser.firstName} ${hspUser.lastName}`);
-      console.log(`  - Email: ${hspUser.email}`);
-      console.log(`  - HSP ID: ${hsp.hspId}`);
-      console.log(`  - Type: ${hsp.hspType}`);
-      console.log(`  - License: ${hsp.licenseNumber}`);
-      console.log(`  - Experience: ${hsp.yearsOfExperience} years`);
-      console.log(`  - Certifications: ${hsp.certifications.join(', ')}`);
+      console.log(`  - Name: ${sanitize(hspUser.firstName)} ${sanitize(hspUser.lastName)}`);
+      console.log(`  - Email: ${sanitize(hspUser.email)}`);
+      console.log(`  - HSP ID: ${sanitize(hsp.hspId)}`);
+      console.log(`  - Type: ${sanitize(hsp.hspType)}`);
+      console.log(`  - License: ${sanitize(hsp.licenseNumber)}`);
+      console.log(`  - Experience: ${sanitize(hsp.yearsOfExperience)} years`);
+      console.log(`  - Certifications: ${hsp.certifications.map(sanitize).join(', ')}`);
     } else {
       console.log('❌ No HSP profile found');
     }
@@ -178,9 +181,9 @@ async function testDirectDashboard() {
     const patientIdValid = patientIds.every(p => p.patientId && patientIdPattern.test(p.patientId!));
     
     console.log('✅ Business ID format validation:');
-    console.log(`  - Doctor IDs: ${doctorIdValid ? 'VALID' : 'INVALID'} (${doctorIds.map(d => d.doctorId).join(', ')})`);
-    console.log(`  - HSP IDs: ${hspIdValid ? 'VALID' : 'INVALID'} (${hspIds.map(h => h.hspId).join(', ')})`);
-    console.log(`  - Patient IDs: ${patientIdValid ? 'VALID' : 'INVALID'} (${patientIds.map(p => p.patientId).filter(Boolean).join(', ')})`);
+    console.log(`  - Doctor IDs: ${doctorIdValid ? 'VALID' : 'INVALID'} (${doctorIds.map(d => sanitize(d.doctorId)).join(', ')})`);
+    console.log(`  - HSP IDs: ${hspIdValid ? 'VALID' : 'INVALID'} (${hspIds.map(h => sanitize(h.hspId)).join(', ')})`);
+    console.log(`  - Patient IDs: ${patientIdValid ? 'VALID' : 'INVALID'} (${patientIds.map(p => sanitize(p.patientId)).filter(Boolean).join(', ')})`);
     
     console.log('\n✅ All dashboard functionality tests completed successfully!');
     
