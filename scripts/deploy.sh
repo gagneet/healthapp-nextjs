@@ -1320,48 +1320,23 @@ run_migrations() {
         # Run migrations in the app container
         log_info "Running Prisma migrations..."
         
-        # Create a temporary script for better error handling
-        docker exec "$container_id" sh -c 'cat > /tmp/migrate.sh << "EOF"
-#!/bin/sh
-set -e
-
-echo "Starting migration process..."
-echo "NODE_ENV: ${NODE_ENV}"
-echo "DATABASE_URL is ${DATABASE_URL:+set}${DATABASE_URL:-not set}"
-
-# Try to run migrations
-if npx prisma migrate deploy 2>&1; then
-    echo "Migrations completed successfully"
-    exit 0
-fi
-
-# If deploy fails, check if its because there are no migrations
-if npx prisma migrate status 2>&1 | grep -q "Database schema is up to date"; then
-    echo "Database schema is already up to date"
-    exit 0
-fi
-
-# For non-production or when migrations dont exist, try db push
-echo "Trying db push as fallback..."
-if npx prisma db push --accept-data-loss; then
-    echo "Database synchronized using db push"
-    exit 0
-fi
-
-echo "All migration attempts failed"
-exit 1
-EOF
-chmod +x /tmp/migrate.sh
-/tmp/migrate.sh
-'
-        
-        if [ $? -eq 0 ]; then
-            log_success "Database migrations completed successfully"
+        log_info "Checking for existing Prisma migrations..."
+        if docker exec "$container_id" sh -c '[ -d "prisma/migrations" ] && [ "$(find prisma/migrations -mindepth 1 -print -quit)" ]'; then
+            log_info "Migrations exist. Running 'prisma migrate deploy'..."
+            if docker exec "$container_id" npx prisma migrate deploy; then
+                log_success "Migrations applied successfully."
+            else
+                log_error "Migration deploy failed."
+                exit 1
+            fi
         else
-            log_error "Migration failed"
-            log_error "Showing recent application logs for debugging:"
-            show_service_logs "app" 30
-            exit 1
+            log_info "No migrations found. Running 'prisma db push' to sync schema..."
+            if docker exec "$container_id" npx prisma db push --accept-data-loss; then
+                log_success "Schema pushed successfully."
+            else
+                log_error "Schema push failed."
+                exit 1
+            fi
         fi
     fi
 }
