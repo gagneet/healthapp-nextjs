@@ -32,7 +32,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
     let doctorId = null;
     if (session.user.role === 'DOCTOR') {
       const doctor = await prisma.doctor.findFirst({
-        where: { user_id: session.user.id }
+        where: { userId: session.user.id }
       });
       
       if (!doctor) {
@@ -50,7 +50,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
     const patient = await prisma.patient.findFirst({
       where: { 
         id: patientId,
-        ...(doctorId ? { primary_care_doctor_id: doctorId } : {})
+        ...(doctorId ? { primaryCareDoctorId: doctorId } : {})
       }
     });
 
@@ -63,15 +63,15 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
     }
 
     // Get medication reminders for this patient through their care plans (proper business logic)
-    // Medications are linked through CarePlans as prescribed_medications (Medication Reminders)
+    // Medications are linked through CarePlans as prescribedMedications (Medication Reminders)
     const carePlansWithMedications = await prisma.carePlan.findMany({
       where: {
-        patient_id: patient.id,
+        patientId: patient.id,
         // Only show care plans where the doctor has access (if user is doctor)
-        ...(doctorId ? { created_by_doctor_id: doctorId } : {})
+        ...(doctorId ? { createdByDoctorId: doctorId } : {})
       },
       include: {
-        prescribed_medications: {
+        prescribedMedications: {
           include: {
             medicine: {
               select: {
@@ -81,15 +81,15 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
                 description: true
               }
             },
-            medication_logs: {
+            medicationLogs: {
               select: {
                 id: true,
-                scheduled_at: true,
-                taken_at: true,
-                adherence_status: true
+                scheduledAt: true,
+                takenAt: true,
+                adherenceStatus: true
               },
               orderBy: {
-                scheduled_at: 'desc'
+                scheduledAt: 'desc'
               },
               take: 5 // Last 5 logs for adherence calculation
             }
@@ -97,15 +97,15 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
         }
       },
       orderBy: {
-        created_at: 'desc'
+        createdAt: 'desc'
       }
     });
 
     // Extract all medications from all care plans
     const medications = carePlansWithMedications.flatMap(carePlan => 
-      carePlan.prescribed_medications.map(med => ({
+      carePlan.prescribedMedications.map(med => ({
         ...med,
-        care_plan: {
+        carePlan: {
           id: carePlan.id,
           title: carePlan.title,
           status: carePlan.status,
@@ -117,13 +117,13 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
     // Transform to expected format following healthcare business logic
     const formattedMedications = medications.map(med => {
       // Calculate adherence rate from medication logs
-      const logs = med.medication_logs || [];
-      const takenCount = logs.filter(log => log.adherence_status === 'taken' && log.taken_at).length;
+      const logs = med.medicationLogs || [];
+      const takenCount = logs.filter(log => log.adherenceStatus?.toUpperCase?.() === 'TAKEN' && log.takenAt).length;
       const adherenceRate = logs.length > 0 ? Math.round((takenCount / logs.length) * 100) : 0;
       
       // Find last taken and next due
-      const lastTakenLog = logs.find(log => log.taken_at);
-      const nextScheduledLog = logs.find(log => !log.taken_at && log.scheduled_at > new Date());
+      const lastTakenLog = logs.find(log => log.takenAt);
+      const nextScheduledLog = logs.find(log => !log.takenAt && log.scheduledAt > new Date());
       
       // Get medication details (dosage, frequency, etc. should be in Medication table)
       const details = med.details as any || {};
@@ -133,24 +133,24 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
         name: med.medicine?.name || 'Unknown Medication',
         dosage: details.dosage || 'Dosage not specified',
         frequency: details.frequency || 'Frequency not specified',
-        start_date: med.start_date,
-        end_date: med.end_date,
-        is_critical: details.is_critical || false,
-        last_taken: lastTakenLog?.taken_at || null,
-        next_due: nextScheduledLog?.scheduled_at || null,
-        adherence_rate: adherenceRate,
-        status: med.care_plan?.status || 'active',
+        startDate: med.startDate,
+        endDate: med.endDate,
+        isCritical: details.isCritical || false,
+        lastTaken: lastTakenLog?.takenAt || null,
+        nextDue: nextScheduledLog?.scheduledAt || null,
+        adherenceRate: adherenceRate,
+        status: med.carePlan?.status || 'active',
         instructions: med.description || med.medicine?.description,
-        care_plan: {
-          id: med.care_plan?.id,
-          title: med.care_plan?.title,
-          description: med.care_plan?.description
+        carePlan: {
+          id: med.carePlan?.id,
+          title: med.carePlan?.title,
+          description: med.carePlan?.description
         },
         // Additional medication reminder properties
-        medicine_type: med.medicine?.type,
-        participant_id: med.participant_id, // Patient ID
-        created_at: med.created_at,
-        updated_at: med.updated_at
+        medicineType: med.medicine?.type,
+        participantId: med.participantId, // Patient ID
+        createdAt: med.createdAt,
+        updatedAt: med.updatedAt
       };
     });
 

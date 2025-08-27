@@ -43,7 +43,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
     const doctor = await prisma.doctor.findUnique({
       where: { id: targetDoctorId },
       include: {
-        users_doctors_user_idTousers: {
+        user: {
           select: {
             id: true,
             email: true,
@@ -58,31 +58,31 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
             profilePictureUrl: true,
             emailVerifiedLegacy: true,
             // ✅ Additional fields
-            middle_name: true,
+            middleName: true,
             phone: true,
-            date_of_birth: true,
+            dateOfBirth: true,
             gender: true,
             accountStatus: true,
             timezone: true,
             locale: true,
-            created_at: true,
-            updated_at: true,
+            createdAt: true,
+            updatedAt: true,
             
           }
         },
-        specialities: {
+        specialty: {
           select: {
             id: true,
             name: true,
             description: true
           }
         },
-        organizations: {
+        organization: {
           select: {
             id: true,
             name: true,
             type: true,
-            contact_info: true
+            contactInfo: true
           }
         },
         patients: {
@@ -92,7 +92,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
         },
         appointments: {
           where: {
-            start_time: {
+            startTime: {
               gte: new Date(new Date().setDate(new Date().getDate() - 30)) // Last 30 days
             }
           },
@@ -116,23 +116,23 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
       : 0
 
     // ✅ Helper to get name with fallbacks
-    const userName = doctor.users_doctors_user_idTousers.name || 
-                    doctor.users_doctors_user_idTousers.full_name ||
-                    `${doctor.users_doctors_user_idTousers.first_name || ''} ${doctor.users_doctors_user_idTousers.last_name || ''}`.trim()
+    const userName = doctor.user.name ||
+                    doctor.user.fullName ||
+                    `${doctor.user.firstName || ''} ${doctor.user.lastName || ''}`.trim()
 
-    const userImage = doctor.users_doctors_user_idTousers.image || 
-                     doctor.users_doctors_user_idTousers.profile_picture_url
+    const userImage = doctor.user.image ||
+                     doctor.user.profilePictureUrl
 
-    const userEmailVerified = doctor.users_doctors_user_idTousers.emailVerified || 
-                             (doctor.users_doctors_user_idTousers.email_verified ? new Date() : null)
+    const userEmailVerified = doctor.user.emailVerified ||
+                             (doctor.user.emailVerifiedLegacy ? new Date() : null)
 
     // Format comprehensive response with dual field support
     const profileData = {
       id: doctor.id,
-      doctorId: doctor.doctor_id,
+      doctorId: doctor.doctorId,
       user: {
-        id: doctor.users_doctors_user_idTousers.id,
-        email: doctor.users_doctors_user_idTousers.email,
+        id: doctor.user.id,
+        email: doctor.user.email,
         
         // ✅ Auth.js v5 standard fields (preferred)
         name: userName,
@@ -140,44 +140,44 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
         emailVerified: userEmailVerified,
         
         // ✅ Legacy fields (for backward compatibility)
-        firstName: doctor.users_doctors_user_idTousers.first_name,
-        lastName: doctor.users_doctors_user_idTousers.last_name,
-        fullName: doctor.users_doctors_user_idTousers.full_name,
-        profilePictureUrl: doctor.users_doctors_user_idTousers.profile_picture_url,
-        emailVerifiedLegacy: doctor.users_doctors_user_idTousers.email_verified,
+        firstName: doctor.user.firstName,
+        lastName: doctor.user.lastName,
+        fullName: doctor.user.fullName,
+        profilePictureUrl: doctor.user.profilePictureUrl,
+        emailVerifiedLegacy: doctor.user.emailVerifiedLegacy,
         
         // ✅ Additional healthcare fields
-        middleName: doctor.users_doctors_user_idTousers.middle_name,
-        phone: doctor.users_doctors_user_idTousers.phone,
-        dateOfBirth: doctor.users_doctors_user_idTousers.date_of_birth,
-        gender: doctor.users_doctors_user_idTousers.gender,
-        accountStatus: doctor.users_doctors_user_idTousers.account_status,
-        timezone: doctor.users_doctors_user_idTousers.timezone,
-        locale: doctor.users_doctors_user_idTousers.locale,
-        lastLoginAt: doctor.users_doctors_user_idTousers.created_at
+        middleName: doctor.user.middleName,
+        phone: doctor.user.phone,
+        dateOfBirth: doctor.user.dateOfBirth,
+        gender: doctor.user.gender,
+        accountStatus: doctor.user.accountStatus,
+        timezone: doctor.user.timezone,
+        locale: doctor.user.locale,
+        lastLoginAt: doctor.user.createdAt
       },
       professional: {
-        medicalLicenseNumber: doctor.medical_license_number,
-        yearsOfExperience: doctor.years_of_experience,
-        consultationFee: doctor.consultation_fee,
-        speciality: doctor.specialities ? {
-          id: doctor.specialities.id,
-          name: doctor.specialities.name,
-          description: doctor.specialities.description
+        medicalLicenseNumber: doctor.medicalLicenseNumber,
+        yearsOfExperience: doctor.yearsOfExperience,
+        consultationFee: doctor.consultationFee,
+        specialty: doctor.specialty ? {
+          id: doctor.specialty.id,
+          name: doctor.specialty.name,
+          description: doctor.specialty.description
         } : null,
-        organization: doctor.organizations ? {
-          id: doctor.organizations.id,
-          name: doctor.organizations.name,
-          type: doctor.organizations.type,
-          contactInfo: doctor.organizations.contact_info
+        organization: doctor.organization ? {
+          id: doctor.organization.id,
+          name: doctor.organization.name,
+          type: doctor.organization.type,
+          contactInfo: doctor.organization.contactInfo
         } : null
       },
       statistics: {
         totalPatients,
         recentAppointments,
         appointmentCompletionRate,
-        accountCreated: doctor.created_at,
-        lastUpdated: doctor.updated_at
+        accountCreated: doctor.createdAt,
+        lastUpdated: doctor.updatedAt
       },
       settings: {
         // Placeholder - settings fields need to be resolved with proper schema

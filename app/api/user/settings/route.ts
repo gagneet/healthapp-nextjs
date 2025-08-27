@@ -30,8 +30,8 @@ export async function GET(request: NextRequest) {
         locale: true,
         preferences: true,
         twoFactorEnabled: true,
-        created_at: true,
-        updated_at: true
+        createdAt: true,
+        updatedAt: true
       }
     });
 
@@ -67,7 +67,7 @@ export async function GET(request: NextRequest) {
         default_consultation_duration: 30
       },
       security: {
-        twoFactorEnabled: user.two_factor_enabled || false,
+        twoFactorEnabled: user.twoFactorEnabled || false,
         login_notifications: true,
         session_timeout: 24
       }
@@ -89,8 +89,8 @@ export async function GET(request: NextRequest) {
           user: {
             id: user.id,
             email: user.email,
-            firstName: user.first_name,
-            lastName: user.last_name,
+            firstName: user.firstName,
+            lastName: user.lastName,
             role: user.role
           },
           settings: mergedSettings
@@ -174,7 +174,7 @@ export async function PUT(request: NextRequest) {
         timezone: timezone,
         locale: locale,
         ...(twoFactorEnabled !== undefined && { twoFactorEnabled: twoFactorEnabled }),
-        updated_at: new Date()
+        updatedAt: new Date()
       }
     });
 
@@ -241,7 +241,7 @@ export async function POST(request: NextRequest) {
       select: { id: true, passwordHash: true }
     });
 
-    if (!user || !user.password_hash) {
+    if (!user || !user.passwordHash) {
       return NextResponse.json({
         status: false,
         statusCode: 404,
@@ -251,7 +251,7 @@ export async function POST(request: NextRequest) {
 
     // Verify current password
     const bcrypt = require('bcryptjs');
-    const isValidPassword = await bcrypt.compare(body.currentPassword, user.password_hash);
+    const isValidPassword = await bcrypt.compare(body.currentPassword, user.passwordHash);
     
     if (!isValidPassword) {
       return NextResponse.json({
@@ -270,7 +270,7 @@ export async function POST(request: NextRequest) {
       where: { id: session.user.id },
       data: {
         passwordHash: newPasswordHash,
-        updated_at: new Date()
+        updatedAt: new Date()
       }
     });
 
