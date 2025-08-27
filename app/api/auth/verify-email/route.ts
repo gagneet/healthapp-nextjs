@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
     const user = await prisma.user.findFirst({
       where: {
         email,
-        email_verification_token: token,
+        emailVerificationToken: token,
         accountStatus: "PENDING_VERIFICATION"
       }
     })
@@ -59,32 +59,26 @@ export async function POST(request: NextRequest) {
       const updatedUser = await prisma.user.update({
         where: { id: user.id },
         data: {
-          // ✅ Auth.js v5 field - set as DateTime when verified
-          emailVerified: new Date(),
-          // ✅ Legacy field for backward compatibility  
-          emailVerifiedLegacy: true,
-          // ✅ Clear verification token after use
-          email_verification_token: null,
-          // ✅ Activate account after email verification
+          emailVerifiedAt: new Date(),
+          emailVerificationToken: null,
           accountStatus: "ACTIVE",
-          updated_at: new Date()
+          updatedAt: new Date()
         }
       })
       
       // ✅ Create audit log for email verification
       await prisma.auditLog.create({
         data: {
-          user_id: user.id,
+          userId: user.id,
           action: "EMAIL_VERIFICATION",
           resource: "user_account",
-          access_granted: true,
-          user_role: user.role,
-          data_changes: {
-            emailVerifiedLegacy: true,
-            account_activated: true,
-            verification_method: "email_token"
+          accessGranted: true,
+          userRole: user.role,
+          dataChanges: {
+            accountActivated: true,
+            verificationMethod: "email_token"
           },
-          ip_address: request.ip || request.headers.get('x-forwarded-for') || null,
+          ipAddress: request.ip || request.headers.get('x-forwarded-for') || null,
           timestamp: new Date()
         }
       })
@@ -96,7 +90,7 @@ export async function POST(request: NextRequest) {
           id: updatedUser.id,
           email: updatedUser.email,
           name: updatedUser.name,
-          accountStatus: updatedUser.account_status,
+          accountStatus: updatedUser.accountStatus,
           emailVerified: true,
           role: updatedUser.role
         },

@@ -72,40 +72,40 @@ export async function POST(request: NextRequest) {
       const updatedUser = await prisma.user.update({
         where: { id: session.user.id },
         data: {
-          hipaa_consent_date: new Date(),
-          terms_accepted_at: new Date(),
-          privacy_policy_accepted_at: new Date(),
-          updated_at: new Date()
+          hipaaConsentDate: new Date(),
+          termsAcceptedAt: new Date(),
+          privacyPolicyAcceptedAt: new Date(),
+          updatedAt: new Date()
         }
       })
       
       // Create detailed audit log for compliance
       await prisma.auditLog.create({
         data: {
-          user_id: session.user.id,
+          userId: session.user.id,
           action: "HIPAA_CONSENT",
           resource: "privacy_compliance",
-          access_granted: true,
-          user_role: session.user.role || "UNKNOWN",
-          data_changes: {
-            hipaa_consented: hipaaConsented,
-            terms_accepted: termsAccepted,
-            privacy_policy_accepted: privacyPolicyAccepted,
-            consent_version: consentVersion,
-            consent_method: "web_form",
-            user_agent: userAgent || request.headers.get('user-agent'),
-            consent_timestamp: new Date().toISOString()
+          accessGranted: true,
+          userRole: session.user.role || "UNKNOWN",
+          dataChanges: {
+            hipaaConsented: hipaaConsented,
+            termsAccepted: termsAccepted,
+            privacyPolicyAccepted: privacyPolicyAccepted,
+            consentVersion: consentVersion,
+            consentMethod: "web_form",
+            userAgent: userAgent || request.headers.get('user-agent'),
+            consentTimestamp: new Date().toISOString()
           },
-          ip_address: ipAddress || request.ip || request.headers.get('x-forwarded-for') || null,
-          user_agent: userAgent || request.headers.get('user-agent') || null,
+          ipAddress: ipAddress || request.ip || request.headers.get('x-forwarded-for') || null,
+          userAgent: userAgent || request.headers.get('user-agent') || null,
           timestamp: new Date()
         }
       })
       
       // Check if user needs additional verification steps
       const requiresAdditionalVerification = updatedUser.role !== "PATIENT" && 
-        (updatedUser.account_status === "PENDING_VERIFICATION" || 
-         updatedUser.account_status === "ACTIVE")
+        (updatedUser.accountStatus === "PENDING_VERIFICATION" ||
+         updatedUser.accountStatus === "ACTIVE")
       
       return NextResponse.json({
         success: true,
@@ -115,10 +115,10 @@ export async function POST(request: NextRequest) {
           email: updatedUser.email,
           name: updatedUser.name,
           role: updatedUser.role,
-          accountStatus: updatedUser.account_status,
-          hipaaConsentDate: updatedUser.hipaa_consent_date,
-          termsAcceptedAt: updatedUser.terms_accepted_at,
-          privacyPolicyAcceptedAt: updatedUser.privacy_policy_accepted_at
+          accountStatus: updatedUser.accountStatus,
+          hipaaConsentDate: updatedUser.hipaaConsentDate,
+          termsAcceptedAt: updatedUser.termsAcceptedAt,
+          privacyPolicyAcceptedAt: updatedUser.privacyPolicyAcceptedAt
         },
         compliance: {
           hipaaCompliant: true,
@@ -130,10 +130,10 @@ export async function POST(request: NextRequest) {
           ...(requiresAdditionalVerification && {
             verification: "Professional credentials verification required"
           }),
-          ...(updatedUser.emailVerified && {
+          ...(updatedUser.emailVerifiedAt && {
             accessGranted: "You can now access the healthcare platform"
           }),
-          ...(!updatedUser.emailVerified && {
+          ...(!updatedUser.emailVerifiedAt && {
             emailVerification: "Please verify your email address to complete registration"
           })
         }
@@ -191,11 +191,11 @@ export async function GET(request: NextRequest) {
         name: true,
         role: true,
         accountStatus: true,
-        hipaa_consent_date: true,
-        terms_accepted_at: true,
-        privacy_policy_accepted_at: true,
-        emailVerified: true,
-        created_at: true
+        hipaaConsentDate: true,
+        termsAcceptedAt: true,
+        privacyPolicyAcceptedAt: true,
+        emailVerifiedAt: true,
+        createdAt: true
       }
     })
     
@@ -206,10 +206,10 @@ export async function GET(request: NextRequest) {
       )
     }
     
-    const hasHipaaConsent = !!user.hipaa_consent_date
-    const hasTermsAccepted = !!user.terms_accepted_at
-    const hasPrivacyAccepted = !!user.privacy_policy_accepted_at
-    const hasEmailVerified = !!user.emailVerified
+    const hasHipaaConsent = !!user.hipaaConsentDate
+    const hasTermsAccepted = !!user.termsAcceptedAt
+    const hasPrivacyAccepted = !!user.privacyPolicyAcceptedAt
+    const hasEmailVerified = !!user.emailVerifiedAt
     
     return NextResponse.json({
       user: {
@@ -217,28 +217,28 @@ export async function GET(request: NextRequest) {
         email: user.email,
         name: user.name,
         role: user.role,
-        accountStatus: user.account_status
+        accountStatus: user.accountStatus
       },
       compliance: {
         hipaaConsent: {
           required: true,
           completed: hasHipaaConsent,
-          completedAt: user.hipaa_consent_date
+          completedAt: user.hipaaConsentDate
         },
         termsOfService: {
           required: true,
           completed: hasTermsAccepted,
-          completedAt: user.terms_accepted_at
+          completedAt: user.termsAcceptedAt
         },
         privacyPolicy: {
           required: true,
           completed: hasPrivacyAccepted,
-          completedAt: user.privacy_policy_accepted_at
+          completedAt: user.privacyPolicyAcceptedAt
         },
         emailVerification: {
           required: true,
           completed: hasEmailVerified,
-          completedAt: user.emailVerified
+          completedAt: user.emailVerifiedAt
         }
       },
       overallCompliance: {

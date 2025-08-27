@@ -17,7 +17,6 @@ export async function GET(request: NextRequest) {
       }, { status: 401 });
     }
 
-    // Only doctors can access this endpoint
     if (session.user.role !== 'DOCTOR') {
       return NextResponse.json({
         status: false,
@@ -31,9 +30,8 @@ export async function GET(request: NextRequest) {
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - days);
 
-    // Get doctor ID
     const doctor = await prisma.doctor.findFirst({
-      where: { user_id: session.user.id }
+      where: { userId: session.user.id }
     });
 
     if (!doctor) {
@@ -44,15 +42,13 @@ export async function GET(request: NextRequest) {
       }, { status: 404 });
     }
 
-    // Get adherence data for doctor's patients
     const [adherenceRecords, patientsStats] = await Promise.all([
-      // Adherence records for the time period
       prisma.adherenceRecord.findMany({
         where: {
           patient: {
-            primary_care_doctor_id: doctor.id
+            primaryCareDoctorId: doctor.id
           },
-          recorded_at: {
+          recordedAt: {
             gte: startDate
           }
         },
@@ -60,8 +56,8 @@ export async function GET(request: NextRequest) {
           patient: {
             select: {
               id: true,
-              patient_id: true,
-              overall_adherence_score: true,
+              patientId: true,
+              overallAdherenceScore: true,
               user: {
                 select: {
                   firstName: true,
@@ -73,19 +69,18 @@ export async function GET(request: NextRequest) {
           }
         },
         orderBy: {
-          recorded_at: 'desc'
+          recordedAt: 'desc'
         }
       }),
 
-      // Overall patient statistics
       prisma.patient.findMany({
         where: {
-          primary_care_doctor_id: doctor.id
+          primaryCareDoctorId: doctor.id
         },
         select: {
           id: true,
-          patient_id: true,
-          overall_adherence_score: true,
+          patientId: true,
+          overallAdherenceScore: true,
           user: {
             select: {
               firstName: true,
@@ -97,20 +92,18 @@ export async function GET(request: NextRequest) {
       })
     ]);
 
-    // Calculate analytics
     const totalPatients = patientsStats.length;
     const patientsWithRecords = adherenceRecords.length > 0 ? 
-      [...new Set(adherenceRecords.map(r => r.patient_id))].length : 0;
+      [...new Set(adherenceRecords.map(r => r.patientId))].length : 0;
     
     const adherenceScores = patientsStats
-      .filter(p => p.overall_adherence_score !== null)
-      .map(p => p.overall_adherence_score as number);
+      .filter(p => p.overallAdherenceScore !== null)
+      .map(p => p.overallAdherenceScore as number);
     
     const averageAdherence = adherenceScores.length > 0 
       ? adherenceScores.reduce((sum, score) => sum + score, 0) / adherenceScores.length
       : 0;
 
-    // Categorize patients by adherence level
     const adherenceCategories = {
       excellent: adherenceScores.filter(score => score >= 90).length,
       good: adherenceScores.filter(score => score >= 75 && score < 90).length,
@@ -118,7 +111,6 @@ export async function GET(request: NextRequest) {
       poor: adherenceScores.filter(score => score < 60).length
     };
 
-    // Get recent adherence trends (daily averages for last 7 days)
     const last7Days = Array.from({length: 7}, (_, i) => {
       const date = new Date();
       date.setDate(date.getDate() - i);
@@ -134,17 +126,17 @@ export async function GET(request: NextRequest) {
         const dayRecords = await prisma.adherenceRecord.findMany({
           where: {
             patient: {
-              primary_care_doctor_id: doctor.id
+              primaryCareDoctorId: doctor.id
             },
-            recorded_at: {
+            recordedAt: {
               gte: dayStart,
               lt: dayEnd
             }
           }
         });
 
-        const dayScores = dayRecords.filter(r => r.is_completed).map(r => 100).concat(
-          dayRecords.filter(r => r.is_missed).map(r => 0)
+        const dayScores = dayRecords.filter(r => r.isCompleted).map(r => 100).concat(
+          dayRecords.filter(r => r.isMissed).map(r => 0)
         );
         const dayAverage = dayScores.length > 0 
           ? dayScores.reduce((sum, score) => sum + score, 0) / dayScores.length
@@ -158,38 +150,34 @@ export async function GET(request: NextRequest) {
       })
     );
 
-    // Top patients by adherence
     const topPatients = patientsStats
-      .filter(p => p.overall_adherence_score !== null)
-      .sort((a, b) => (b.overall_adherence_score as number) - (a.overall_adherence_score as number))
+      .filter(p => p.overallAdherenceScore !== null)
+      .sort((a, b) => (b.overallAdherenceScore as number) - (a.overallAdherenceScore as number))
       .slice(0, 5)
       .map(p => ({
-        patientId: p.patient_id,
-        name: p.user?.name || `${p.user?.first_name || ''} ${p.user?.last_name || ''}`.trim(),
-        adherenceScore: p.overall_adherence_score
+        patientId: p.patientId,
+        name: p.user?.name || `${p.user?.firstName || ''} ${p.user?.lastName || ''}`.trim(),
+        adherenceScore: p.overallAdherenceScore
       }));
 
-    // Patients needing attention (low adherence)
     const patientsNeedingAttention = patientsStats
-      .filter(p => p.overall_adherence_score !== null && p.overall_adherence_score < 75)
-      .sort((a, b) => (a.overall_adherence_score as number) - (b.overall_adherence_score as number))
+      .filter(p => p.overallAdherenceScore !== null && (p.overallAdherenceScore as number) < 75)
+      .sort((a, b) => (a.overallAdherenceScore as number) - (b.overallAdherenceScore as number))
       .slice(0, 5)
       .map(p => ({
-        patientId: p.patient_id,
-        name: p.user?.name || `${p.user?.first_name || ''} ${p.user?.last_name || ''}`.trim(),
-        adherenceScore: p.overall_adherence_score,
-        riskLevel: p.overall_adherence_score < 60 ? 'high' : 'medium'
+        patientId: p.patientId,
+        name: p.user?.name || `${p.user?.firstName || ''} ${p.user?.lastName || ''}`.trim(),
+        adherenceScore: p.overallAdherenceScore,
+        riskLevel: (p.overallAdherenceScore as number) < 60 ? 'high' : 'medium'
       }));
 
-    // Format data to match frontend expectations
-    const adherence_overview = [
+    const adherenceOverview = [
       { name: 'Excellent (≥90%)', value: adherenceCategories.excellent, color: '#10B981' },
       { name: 'Good (75-89%)', value: adherenceCategories.good, color: '#3B82F6' },
       { name: 'Fair (60-74%)', value: adherenceCategories.fair, color: '#F59E0B' },
       { name: 'Poor (<60%)', value: adherenceCategories.poor, color: '#EF4444' }
     ];
 
-    // Generate monthly trends for last 6 months
     const monthlyTrends = Array.from({length: 6}, (_, i) => {
       const date = new Date();
       date.setMonth(date.getMonth() - i);
@@ -208,10 +196,9 @@ export async function GET(request: NextRequest) {
       statusCode: 200,
       payload: {
         data: {
-          adherence_overview,
-          monthly_trends: monthlyTrends,
-          // Keep the detailed analytics for future use
-          detailed_analytics: {
+          adherenceOverview,
+          monthlyTrends: monthlyTrends,
+          detailedAnalytics: {
             overview: {
               totalPatients,
               patientsWithRecords,

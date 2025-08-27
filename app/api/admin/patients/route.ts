@@ -57,13 +57,13 @@ export async function GET(request: NextRequest) {
     // Role-based filtering
     if (session.user.role === 'DOCTOR') {
       const doctor = await prisma.doctor.findFirst({
-        where: { user_id: session.user.id }
+        where: { userId: session.user.id }
       });
       if (doctor) {
-        whereClause.primary_care_doctor_id = doctor.id;
+        whereClause.primaryCareDoctorId = doctor.id;
       }
     } else if (doctorId && ['SYSTEM_ADMIN', 'HOSPITAL_ADMIN'].includes(session.user.role)) {
-      whereClause.primary_care_doctor_id = doctorId;
+      whereClause.primaryCareDoctorId = doctorId;
     }
 
     const [patients, totalCount] = await Promise.all([
@@ -79,12 +79,11 @@ export async function GET(request: NextRequest) {
               firstName: true,
               lastName: true,
               phone: true,
-              date_of_birth: true,
+              dateOfBirth: true,
               gender: true,
               accountStatus: true,
-              emailVerifiedLegacy: true,
-              email_verified_at: true,
-              created_at: true
+              emailVerifiedAt: true,
+              createdAt: true
             }
           },
           organization: {
@@ -94,11 +93,11 @@ export async function GET(request: NextRequest) {
               type: true
             }
           },
-          doctors: {
+          primaryCareDoctor: {
             select: {
               id: true,
-              doctor_id: true,
-              users_doctors_user_idTousers: {
+              doctorId: true,
+              user: {
                 select: {
                   name: true,
                   firstName: true,
@@ -106,7 +105,7 @@ export async function GET(request: NextRequest) {
                   email: true
                 }
               },
-              specialities: {
+              specialty: {
                 select: {
                   name: true
                 }
@@ -115,16 +114,16 @@ export async function GET(request: NextRequest) {
           },
           _count: {
             select: {
-              care_plans: true,
+              carePlans: true,
               appointments: true,
-              medications: true,
-              vitals: true
+              medicationLogs: true,
+              vitalReadings: true
             }
           }
         },
         skip: offset,
         take: limit,
-        orderBy: { created_at: 'desc' }
+        orderBy: { createdAt: 'desc' }
       }),
       prisma.patient.count({ where: whereClause })
     ]);
@@ -223,28 +222,24 @@ export async function POST(request: NextRequest) {
 
     // Create user and patient in transaction
     const result = await prisma.$transaction(async (tx) => {
-      // Create user with Auth.js v5 compatibility
       const fullName = `${first_name} ${last_name}`.trim();
       const newUser = await tx.user.create({
         data: {
           email,
           passwordHash: hashedPassword,
-          // Auth.js v5 fields
           name: fullName,
-          email_verified_at: new Date(),
+          emailVerifiedAt: new Date(),
           image: null,
-          // Legacy fields for backward compatibility
-          first_name,
-          last_name,
+          firstName: first_name,
+          lastName: last_name,
           fullName: fullName,
           phone,
-          date_of_birth: date_of_birth ? new Date(date_of_birth) : null,
+          dateOfBirth: date_of_birth ? new Date(date_of_birth) : null,
           gender,
           role: 'PATIENT',
           accountStatus: 'ACTIVE',
-          emailVerifiedLegacy: true,
-          created_at: new Date(),
-          updated_at: new Date()
+          createdAt: new Date(),
+          updatedAt: new Date()
         }
       });
 
@@ -255,19 +250,19 @@ export async function POST(request: NextRequest) {
       const patient = await tx.patient.create({
         data: {
           id: randomUUID(),
-          patient_id: patientId,
-          user_id: newUser.id,
-          primary_care_doctor_id,
-          organization_id,
-          medical_record_number: medical_record_number || `MRN-${patientId}`,
-          height_cm: height_cm ? parseFloat(height_cm) : null,
-          weight_kg: weight_kg ? parseFloat(weight_kg) : null,
-          blood_type,
+          patientId: patientId,
+          userId: newUser.id,
+          primaryCareDoctorId: primary_care_doctor_id,
+          organizationId: organization_id,
+          medicalRecordNumber: medical_record_number || `MRN-${patientId}`,
+          heightCm: height_cm ? parseFloat(height_cm) : null,
+          weightKg: weight_kg ? parseFloat(weight_kg) : null,
+          bloodType: blood_type,
           allergies: allergies || [],
-          medical_history: medical_history || [],
-          emergency_contacts: emergency_contacts || [],
-          created_at: new Date(),
-          updated_at: new Date()
+          medicalHistory: medical_history || [],
+          emergencyContacts: emergency_contacts || [],
+          createdAt: new Date(),
+          updatedAt: new Date()
         },
         include: {
           user: {
@@ -278,15 +273,15 @@ export async function POST(request: NextRequest) {
               firstName: true,
               lastName: true,
               phone: true,
-              date_of_birth: true,
+              dateOfBirth: true,
               gender: true
             }
           },
-          doctors: {
+          primaryCareDoctor: {
             select: {
               id: true,
-              doctor_id: true,
-              users_doctors_user_idTousers: {
+              doctorId: true,
+              user: {
                 select: {
                   name: true,
                   firstName: true,
