@@ -4,6 +4,7 @@
  */
 
 import { prisma } from '@/lib/prisma';
+import { PatientDoctorAssignment } from '@prisma/client';
 
 // Assignment Types as per documentation
 export enum AssignmentType {
@@ -110,7 +111,7 @@ export class SecondaryDoctorService {
       }
 
       // Validate doctor exists
-      const doctor = await prisma.doctors.findUnique({
+      const doctor = await prisma.doctor.findUnique({
         where: { id: request.doctorId },
         include: {
           organization: true
@@ -126,11 +127,11 @@ export class SecondaryDoctorService {
       }
 
       // Check for existing assignment
-      const existingAssignment = await prisma.PatientDoctorAssignment.findFirst({
+      const existingAssignment = await prisma.patientDoctorAssignment.findFirst({
         where: {
-          patient_id: request.patientId,
-          doctor_id: request.doctorId,
-          is_active: true
+          patientId: request.patientId,
+          doctorId: request.doctorId,
+          isActive: true
         }
       });
 
@@ -166,25 +167,25 @@ export class SecondaryDoctorService {
       }
 
       // Create the assignment
-      const assignment = await prisma.PatientDoctorAssignment.create({
+      const assignment = await prisma.patientDoctorAssignment.create({
         data: {
-          patient_id: request.patientId,
-          doctor_id: request.doctorId,
-          assignment_type: request.assignmentType,
+          patientId: request.patientId,
+          doctorId: request.doctorId,
+          assignmentType: request.assignmentType,
           permissions: permissions,
-          specialty_focus: request.specialtyFocus || [],
-          care_plan_ids: request.carePlanIds || [],
-          assigned_by_doctor_id: request.assignedBy,
-          patient_consent_required: requiresConsent,
-          patient_consent_status: consentStatus,
-          consent_otp: consentOtp,
-          consent_otp_expires_at: consentOtp ? new Date(Date.now() + 30 * 60 * 1000) : null, // 30 minutes
-          assignment_reason: request.assignmentReason,
+          specialtyFocus: request.specialtyFocus || [],
+          carePlanIds: request.carePlanIds || [],
+          assignedByDoctorId: request.assignedBy,
+          patientConsentRequired: requiresConsent,
+          patientConsentStatus: consentStatus as any,
+          consentOtp: consentOtp,
+          consentOtpExpiresAt: consentOtp ? new Date(Date.now() + 30 * 60 * 1000) : null, // 30 minutes
+          assignmentReason: request.assignmentReason,
           notes: request.notes,
-          requires_same_organization: request.requiresSameOrganization || false,
-          assignment_start_date: new Date(),
-          is_active: true,
-          created_at: new Date()
+          requiresSameOrganization: request.requiresSameOrganization || false,
+          assignmentStartDate: new Date(),
+          isActive: true,
+          createdAt: new Date()
         }
       });
 
@@ -218,7 +219,7 @@ export class SecondaryDoctorService {
    */
   static async verifyPatientConsent(assignmentId: string, otp: string): Promise<AssignmentResult> {
     try {
-      const assignment = await prisma.PatientDoctorAssignment.findUnique({
+      const assignment = await prisma.patientDoctorAssignment.findUnique({
         where: { id: assignmentId }
       });
 
@@ -231,7 +232,7 @@ export class SecondaryDoctorService {
       }
 
       // Check if OTP is valid and not expired
-      if (!assignment.consent_otp || assignment.consent_otp !== otp) {
+      if (!assignment.consentOtp || assignment.consentOtp !== otp) {
         return {
           success: false,
           message: 'Invalid OTP',
@@ -239,7 +240,7 @@ export class SecondaryDoctorService {
         };
       }
 
-      if (!assignment.consent_otp_expires_at || assignment.consent_otp_expires_at < new Date()) {
+      if (!assignment.consentOtpExpiresAt || assignment.consentOtpExpiresAt < new Date()) {
         return {
           success: false,
           message: 'OTP has expired',
@@ -248,13 +249,13 @@ export class SecondaryDoctorService {
       }
 
       // Grant consent
-      await prisma.PatientDoctorAssignment.update({
+      await prisma.patientDoctorAssignment.update({
         where: { id: assignmentId },
         data: {
-          patient_consent_status: ConsentStatus.GRANTED,
-          consent_granted_at: new Date(),
-          consent_otp: null, // Clear OTP after successful verification
-          consent_otp_expires_at: null
+          patientConsentStatus: ConsentStatus.GRANTED as any,
+          consentGrantedAt: new Date(),
+          consentOtp: null, // Clear OTP after successful verification
+          consentOtpExpiresAt: null
         }
       });
 
@@ -285,11 +286,11 @@ export class SecondaryDoctorService {
     reason?: string;
   }> {
     try {
-      const assignment = await prisma.PatientDoctorAssignment.findFirst({
+      const assignment = await prisma.patientDoctorAssignment.findFirst({
         where: {
-          doctor_id: doctorId,
-          patient_id: patientId,
-          is_active: true
+          doctorId: doctorId,
+          patientId: patientId,
+          isActive: true
         }
       });
 
@@ -300,9 +301,9 @@ export class SecondaryDoctorService {
         };
       }
 
-      const assignmentType = assignment.assignment_type as AssignmentType;
+      const assignmentType = assignment.assignmentType as AssignmentType;
       const permissions = assignment.permissions as DoctorPermissions;
-      const consentStatus = assignment.patient_consent_status as ConsentStatus;
+      const consentStatus = assignment.patientConsentStatus as ConsentStatus;
 
       // For transferred assignments, check consent status
       if (assignmentType === AssignmentType.TRANSFERRED) {
@@ -322,7 +323,7 @@ export class SecondaryDoctorService {
         canAccess: true,
         assignmentType,
         permissions,
-        requiresConsent: assignment.patient_consent_required || false,
+        requiresConsent: assignment.patientConsentRequired || false,
         consentStatus
       };
 
@@ -340,28 +341,28 @@ export class SecondaryDoctorService {
    */
   static async getPatientAssignments(patientId: string) {
     try {
-      const assignments = await prisma.PatientDoctorAssignment.findMany({
+      const assignments = await prisma.patientDoctorAssignment.findMany({
         where: {
-          patient_id: patientId,
-          is_active: true
+          patientId: patientId,
+          isActive: true
         },
         include: {
           doctor: {
             include: {
-              users_doctors_user_idTousers: {
+              user: {
                 select: {
-                  first_name: true,
-                  last_name: true,
+                  firstName: true,
+                  lastName: true,
                   email: true
                 }
               },
-              specialties: true,
+              specialty: true,
               organization: true
             }
           }
         },
         orderBy: {
-          created_at: 'desc'
+          createdAt: 'desc'
         }
       });
 
@@ -369,20 +370,20 @@ export class SecondaryDoctorService {
         success: true,
         assignments: assignments.map(assignment => ({
           id: assignment.id,
-          assignmentType: assignment.assignment_type,
+          assignmentType: assignment.assignmentType,
           permissions: assignment.permissions,
-          consentStatus: assignment.patient_consent_status,
-          requiresConsent: assignment.patient_consent_required,
-          specialtyFocus: assignment.specialty_focus,
+          consentStatus: assignment.patientConsentStatus,
+          requiresConsent: assignment.patientConsentRequired,
+          specialtyFocus: assignment.specialtyFocus,
           doctor: {
             id: assignment.doctor.id,
-            name: `${assignment.doctor.users_doctors_user_idTousers?.first_name || ''} ${assignment.doctor.users_doctors_user_idTousers?.last_name || ''}`.trim(),
-            email: assignment.doctor.users_doctors_user_idTousers?.email,
-            specialties: assignment.doctor.specialties,
+            name: `${assignment.doctor.user?.firstName || ''} ${assignment.doctor.user?.lastName || ''}`.trim(),
+            email: assignment.doctor.user?.email,
+            specialties: assignment.doctor.specialty ? [assignment.doctor.specialty.name] : [],
             organization: assignment.doctor.organization?.name
           },
-          createdAt: assignment.created_at,
-          assignmentReason: assignment.assignment_reason
+          createdAt: assignment.createdAt,
+          assignmentReason: assignment.assignmentReason
         }))
       };
 
@@ -419,20 +420,20 @@ export class SecondaryDoctorService {
     const patient = await prisma.patient.findUnique({
       where: { id: patientId },
       include: {
-        doctors: {
+        primaryCareDoctor: {
           include: { organization: true }
         }
       }
     });
 
-    const doctor = await prisma.doctors.findUnique({
+    const doctor = await prisma.doctor.findUnique({
       where: { id: doctorId },
       include: { organization: true }
     });
 
     // If both primary doctor and new doctor are from the same organization, no consent needed
-    if (patient?.doctors?.organization && doctor?.organization) {
-      if (patient.doctors.organization.id === doctor.organization.id) {
+    if (patient?.primaryCareDoctor?.organization && doctor?.organization) {
+      if (patient.primaryCareDoctor.organization.id === doctor.organization.id) {
         return false;
       }
     }

@@ -51,11 +51,11 @@ export async function GET(request: NextRequest) {
     if (user.role === 'DOCTOR') {
       // Import prisma locally to get doctor profile ID
       const { prisma } = await import('@/lib/prisma');
-      const doctor = await prisma.doctor.findFirst({
-        where: { user_id: user.id || user.userId }
+      const doctorProfile = await prisma.doctor.findFirst({
+        where: { userId: user.id || user.userId }
       });
       
-      if (!doctor) {
+      if (!doctorProfile) {
         return NextResponse.json({
           status: false,
           statusCode: 404,
@@ -63,7 +63,7 @@ export async function GET(request: NextRequest) {
         }, { status: 404 });
       }
       
-      doctorId = doctor.id;
+      doctorId = doctorProfile.id;
     }
 
     const patientsData = await getPatients(doctorId, pagination);
