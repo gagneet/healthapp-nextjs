@@ -17,7 +17,11 @@ async function testDirectDashboard() {
     // Test 1: Verify all user types exist and can authenticate
     console.log('\n👥 Testing user authentication data...');
     
-    const testPassword = 'password123';
+    // Use environment variable for test password to avoid hard-coding sensitive credentials
+    const testPassword = process.env.TEST_PASSWORD;
+    if (!testPassword) {
+      throw new Error('TEST_PASSWORD environment variable is not set.');
+    }
     
     const users = await prisma.user.findMany({
       where: {
