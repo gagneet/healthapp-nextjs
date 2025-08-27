@@ -1254,8 +1254,20 @@ check_schema_consistency() {
     fi
 
     log_info "Migrations directory found. Checking for schema consistency..."
-    # Check for any table that is NOT the prisma migrations table.
-    local check_tables_cmd="psql -h postgres -U \"$POSTGRES_USER\" -d \"$POSTGRES_DB\" -tc \"SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name != '_prisma_migrations' LIMIT 1;\" | grep -q 1"
+    # Check for any expected application table in the configured schema.
+    local schema_name="${POSTGRES_SCHEMA:-public}"
+    local expected_tables="${EXPECTED_TABLES:-}"
+    local table_condition=""
+    if [ -n "$expected_tables" ]; then
+        # Convert comma-separated list to SQL IN clause
+        # Remove spaces, wrap each table in single quotes
+        local tables_in_clause=$(echo "$expected_tables" | tr -d ' ' | sed "s/,/','/g; s/^/'/; s/\$/'/")
+        table_condition="table_name IN ($tables_in_clause)"
+    else
+        # Fallback: any table except '_prisma_migrations'
+        table_condition="table_name != '_prisma_migrations'"
+    fi
+    local check_tables_cmd="psql -h postgres -U \"$POSTGRES_USER\" -d \"$POSTGRES_DB\" -tc \"SELECT 1 FROM information_schema.tables WHERE table_schema = '$schema_name' AND $table_condition LIMIT 1;\" | grep -q 1"
 
     if docker exec -e PGPASSWORD="$POSTGRES_PASSWORD" "$1" sh -c "$check_tables_cmd"; then
         log_info "Application tables exist. Database schema appears consistent."
