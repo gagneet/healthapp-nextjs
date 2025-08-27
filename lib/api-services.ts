@@ -69,7 +69,7 @@ export async function authenticateUser(email: string, password: string): Promise
     }
 
     // Check password
-    const validPassword = await bcrypt.compare(password, user.password_hash);
+    const validPassword = await bcrypt.compare(password, user.passwordHash);
     if (!validPassword) {
       return {
         success: false,
@@ -78,10 +78,10 @@ export async function authenticateUser(email: string, password: string): Promise
     }
 
     // Check account status
-    if (user.account_status !== 'ACTIVE') {
+    if (user.accountStatus !== 'ACTIVE') {
       return {
         success: false,
-        message: `Account is ${user.account_status?.toLowerCase() || 'inactive'}`
+        message: `Account is ${user.accountStatus?.toLowerCase() || 'inactive'}`
       };
     }
 
@@ -106,8 +106,8 @@ export async function authenticateUser(email: string, password: string): Promise
           id: user.id,
           email: user.email,
           role: user.role,
-          firstName: user.first_name,
-          lastName: user.last_name
+          firstName: user.firstName,
+          lastName: user.lastName
         }
       }
     };
@@ -133,13 +133,13 @@ export async function verifyToken(token: string) {
         id: true,
         email: true,
         role: true,
-        first_name: true,
-        last_name: true,
-        account_status: true,
+        firstName: true,
+        lastName: true,
+        accountStatus: true,
       }
     });
 
-    if (!user || user.account_status !== 'ACTIVE') {
+    if (!user || user.accountStatus !== 'ACTIVE') {
       return null;
     }
 
@@ -147,8 +147,8 @@ export async function verifyToken(token: string) {
       id: user.id,
       email: user.email,
       role: user.role,
-      firstName: user.first_name,
-      lastName: user.last_name
+      firstName: user.firstName,
+      lastName: user.lastName
     };
   } catch (error) {
     return null;
@@ -186,11 +186,11 @@ export async function createUser(userData: {
     const user = await prisma.user.create({
       data: {
         email: userData.email.toLowerCase(),
-        password_hash: hashedPassword,
+        passwordHash: hashedPassword,
         role: userData.role as any,
-        first_name: userData.firstName,
-        last_name: userData.lastName,
-        account_status: 'PENDING_VERIFICATION'
+        firstName: userData.firstName,
+        lastName: userData.lastName,
+        accountStatus: 'PENDING_VERIFICATION'
       }
     });
 
@@ -198,14 +198,14 @@ export async function createUser(userData: {
     if (userData.role === 'PATIENT') {
       await prisma.patient.create({
         data: {
-          user_id: user.id,
+          userId: user.id,
           // Add any additional patient-specific fields from userData
         }
       });
     } else if (userData.role === 'DOCTOR' || userData.role === 'HSP') {
       await prisma.healthcareProvider.create({
         data: {
-          user_id: user.id,
+          userId: user.id,
           // HSP type would be stored in specialties array or other fields
           specialties: userData.role === 'HSP' && userData.hspType ? [userData.hspType] : [],
         }
@@ -220,8 +220,8 @@ export async function createUser(userData: {
           id: user.id,
           email: user.email,
           role: user.role,
-          firstName: user.first_name,
-          lastName: user.last_name
+          firstName: user.firstName,
+          lastName: user.lastName
         }
       }
     };
@@ -355,7 +355,7 @@ export async function getPatients(doctorId: string, pagination: {
         dateOfBirth: patient.user.dateOfBirth,
         primaryDoctor: patient.primaryCareDoctor ? {
           name: `${patient.primaryCareDoctor.user.firstName} ${patient.primaryCareDoctor.user.lastName}`,
-          speciality: patient.primaryCareDoctor.specialty?.name,
+          specialty: patient.primaryCareDoctor.specialty?.name,
         } : null,
         stats: {
           medicationsCount: patient._count.medicationLogs,
@@ -401,22 +401,22 @@ export async function getPatient(patientId: string) {
 
     return {
       id: patient.id,
-      patientId: patient.patient_id,
-      medicalRecordNumber: patient.medical_record_number,
+      patientId: patient.patientId,
+      medicalRecordNumber: patient.medicalRecordNumber,
       user: {
-        firstName: patient.user.first_name,
-        lastName: patient.user.last_name,
+        firstName: patient.user.firstName,
+        lastName: patient.user.lastName,
         email: patient.user.email,
         phone: patient.user.phone,
-        dateOfBirth: patient.user.date_of_birth,
+        dateOfBirth: patient.user.dateOfBirth,
         gender: patient.user.gender,
       },
       medicalInfo: {
-        bloodType: patient.blood_type,
+        bloodType: patient.bloodType,
         allergies: patient.allergies,
-        medicalHistory: patient.medical_history,
-        height: patient.height_cm,
-        weight: patient.weight_kg,
+        medicalHistory: patient.medicalHistory,
+        height: patient.heightCm,
+        weight: patient.weightKg,
       },
       // TODO: Restore full patient details when relationships are fixed
       careTeam: {
@@ -698,8 +698,8 @@ export async function getDoctorDashboard(doctorUserId: string) {
           id: doctorUser.id,
           name: `${doctorUser.firstName} ${doctorUser.lastName}`.trim(),
           email: doctorUser.email,
-          speciality: 'General Medicine',
-          license: doctorProfile.medical_license_number,
+          specialty: 'General Medicine',
+          license: doctorProfile.medicalLicenseNumber,
           experience: 0
         },
         statistics: {
@@ -735,24 +735,26 @@ export async function getDoctorDashboard(doctorUserId: string) {
         id: doctorUser.id,
         name: `${doctorUser.firstName} ${doctorUser.lastName}`.trim(),
         email: doctorUser.email,
-        speciality: doctorProfile?.speciality?.name || 'General Medicine',
-        license: doctorProfile?.medical_license_number,
-        experience: doctorProfile?.years_of_experience
+        specialty: (doctorProfile && doctorProfile.specialty && typeof doctorProfile.specialty.name === 'string')
+          ? doctorProfile.specialty.name
+          : 'General Medicine',
+        license: doctorProfile?.medicalLicenseNumber,
+        experience: doctorProfile?.yearsOfExperience
       },
       recentActivity: {
         recentPatients: recentPatients.map(patient => ({
           id: patient.id,
-          name: `${patient.user?.first_name} ${patient.user?.last_name}`.trim(),
+          name: `${patient.user?.firstName} ${patient.user?.lastName}`.trim(),
           email: patient.user?.email,
-          lastVisit: patient.updated_at
+          lastVisit: patient.updatedAt
         })),
         vitals: [], // Can be populated with recent vital readings if needed
       },
       upcomingAppointments: upcomingAppointments.map(apt => ({
         id: apt.id,
-        patientName: `${apt.patient?.user?.first_name} ${apt.patient?.user?.last_name}`.trim(),
-        date: apt.start_date,
-        time: apt.start_time,
+        patientName: `${apt.patient?.user?.firstName} ${apt.patient?.user?.lastName}`.trim(),
+        date: apt.startDate,
+        time: apt.startTime,
         description: apt.description
       })),
       timestamp: new Date().toISOString(),
@@ -944,39 +946,39 @@ export async function getDrugInteractions(searchParams: {
     const whereClause: any = {};
     
     if (searchParams.drug1) {
-      whereClause.drug_name_one = {
+      whereClause.drugNameOne = {
         contains: searchParams.drug1,
         mode: 'insensitive',
       };
     }
     
     if (searchParams.drug2) {
-      whereClause.drug_name_two = {
+      whereClause.drugNameTwo = {
         contains: searchParams.drug2,
         mode: 'insensitive',
       };
     }
     
     if (searchParams.severity) {
-      whereClause.severity_level = searchParams.severity.toUpperCase();
+      whereClause.severityLevel = searchParams.severity.toUpperCase();
     }
     
     if (searchParams.search) {
       whereClause.OR = [
         {
-          drug_name_one: {
+          drugNameOne: {
             contains: searchParams.search,
             mode: 'insensitive',
           },
         },
         {
-          drug_name_two: {
+          drugNameTwo: {
             contains: searchParams.search,
             mode: 'insensitive',
           },
         },
         {
-          clinical_effect: {
+          clinicalEffect: {
             contains: searchParams.search,
             mode: 'insensitive',
           },
@@ -990,7 +992,7 @@ export async function getDrugInteractions(searchParams: {
         skip,
         take: searchParams.limit,
         orderBy: {
-          severity_level: 'desc', // Show most severe first
+          severityLevel: 'desc', // Show most severe first
         },
       }),
       prisma.drugInteraction.count({ where: whereClause }),
@@ -999,17 +1001,17 @@ export async function getDrugInteractions(searchParams: {
     return {
       interactions: interactions.map(interaction => ({
         id: interaction.id,
-        drugOneName: interaction.drug_name_one,
-        drugTwoName: interaction.drug_name_two,
-        rxnormId1: interaction.rxcui_one,
-        rxnormId2: interaction.rxcui_two,
-        severityLevel: interaction.severity_level,
-        clinicalEffects: interaction.clinical_effect,
-        interactionType: interaction.interaction_type,
-        managementAdvice: interaction.management_advice,
-        evidenceLevel: interaction.evidence_level,
+        drugOneName: interaction.drugNameOne,
+        drugTwoName: interaction.drugNameTwo,
+        rxnormId1: interaction.rxcuiOne,
+        rxnormId2: interaction.rxcuiTwo,
+        severityLevel: interaction.severityLevel,
+        clinicalEffects: interaction.clinicalEffect,
+        interactionType: interaction.interactionType,
+        managementAdvice: interaction.managementAdvice,
+        evidenceLevel: interaction.evidenceLevel,
         source: interaction.source,
-        lastUpdated: interaction.last_updated,
+        lastUpdated: interaction.lastUpdatedAt,
       })),
       pagination: {
         page: searchParams.page,
@@ -1043,26 +1045,26 @@ export async function createDrugInteraction(interactionData: {
   try {
     const interaction = await prisma.drugInteraction.create({
       data: {
-        drug_name_one: interactionData.drugOneName,
-        drug_name_two: interactionData.drugTwoName,
-        rxcui_one: interactionData.rxnormId1 || '',
-        rxcui_two: interactionData.rxnormId2 || '',
-        severity_level: interactionData.severityLevel.toUpperCase() as any,
-        interaction_type: interactionData.mechanismOfAction || 'pharmacodynamic',
+        drugNameOne: interactionData.drugOneName,
+        drugNameTwo: interactionData.drugTwoName,
+        rxcuiOne: interactionData.rxnormId1 || '',
+        rxcuiTwo: interactionData.rxnormId2 || '',
+        severityLevel: interactionData.severityLevel.toUpperCase() as any,
+        interactionType: interactionData.mechanismOfAction || 'pharmacodynamic',
         description: interactionData.clinicalEffects,
-        clinical_effect: interactionData.clinicalEffects,
-        management_advice: interactionData.managementAdvice || '',
-        evidence_level: interactionData.evidenceLevel?.toUpperCase() || 'MODERATE',
+        clinicalEffect: interactionData.clinicalEffects,
+        managementAdvice: interactionData.managementAdvice || '',
+        evidenceLevel: interactionData.evidenceLevel?.toUpperCase() || 'MODERATE',
       },
     });
 
     return {
       id: interaction.id,
-      drugOneName: interaction.drug_name_one,
-      drugTwoName: interaction.drug_name_two,
-      severityLevel: interaction.severity_level,
-      clinicalEffects: interaction.clinical_effect,
-      createdAt: interaction.created_at,
+      drugOneName: interaction.drugNameOne,
+      drugTwoName: interaction.drugNameTwo,
+      severityLevel: interaction.severityLevel,
+      clinicalEffects: interaction.clinicalEffect,
+      createdAt: interaction.createdAt,
     };
   } catch (error) {
     console.error('Create drug interaction error:', error);
@@ -1103,14 +1105,14 @@ export async function checkPatientDrugInteractions(params: {
             OR: [
               {
                 AND: [
-                  { drug_name_one: { contains: drug1, mode: 'insensitive' } },
-                  { drug_name_two: { contains: drug2, mode: 'insensitive' } },
+                  { drugNameOne: { contains: drug1, mode: 'insensitive' } },
+                  { drugNameTwo: { contains: drug2, mode: 'insensitive' } },
                 ],
               },
               {
                 AND: [
-                  { drug_name_one: { contains: drug2, mode: 'insensitive' } },
-                  { drug_name_two: { contains: drug1, mode: 'insensitive' } },
+                  { drugNameOne: { contains: drug2, mode: 'insensitive' } },
+                  { drugNameTwo: { contains: drug1, mode: 'insensitive' } },
                 ],
               },
             ],
@@ -1123,20 +1125,20 @@ export async function checkPatientDrugInteractions(params: {
               id: interaction.id,
               drug1,
               drug2,
-              severityLevel: interaction.severity_level,
-              clinicalEffects: interaction.clinical_effect,
-              interactionType: interaction.interaction_type,
-              managementAdvice: interaction.management_advice,
-              evidenceLevel: interaction.evidence_level,
+              severityLevel: interaction.severityLevel,
+              clinicalEffects: interaction.clinicalEffect,
+              interactionType: interaction.interactionType,
+              managementAdvice: interaction.managementAdvice,
+              evidenceLevel: interaction.evidenceLevel,
               isNewMedicationInvolved: newMedication && (drug1 === newMedication || drug2 === newMedication),
             };
 
             interactionResults.push(result);
 
             // Categorize by severity
-            if (interaction.severity_level === 'CONTRAINDICATION' || interaction.severity_level === 'MAJOR') {
+            if (interaction.severityLevel === 'CONTRAINDICATION' || interaction.severityLevel === 'MAJOR') {
               criticalInteractions.push(result);
-            } else if (interaction.severity_level === 'MODERATE') {
+            } else if (interaction.severityLevel === 'MODERATE') {
               warnings.push(result);
             }
           }
@@ -1148,14 +1150,14 @@ export async function checkPatientDrugInteractions(params: {
     for (const criticalInteraction of criticalInteractions) {
       await prisma.medicationSafetyAlert.create({
         data: {
-          patient_id: patientId,
-          alert_type: 'DRUG_INTERACTION',
+          patientId: patientId,
+          alertType: 'DRUG_INTERACTION',
           severity: criticalInteraction.severityLevel === 'CONTRAINDICATION' ? 'CRITICAL' : 'HIGH',
-          alert_title: 'Drug Interaction Alert',
-          alert_message: `Critical drug interaction: ${criticalInteraction.drug1} and ${criticalInteraction.drug2}`,
+          alertTitle: 'Drug Interaction Alert',
+          alertMessage: `Critical drug interaction: ${criticalInteraction.drug1} and ${criticalInteraction.drug2}`,
           recommendation: criticalInteraction.managementAdvice,
-          requires_override: criticalInteraction.severityLevel === 'CONTRAINDICATION',
-          resolved_by: requestedBy,
+          requiresOverride: criticalInteraction.severityLevel === 'CONTRAINDICATION',
+          resolvedBy: requestedBy,
         },
       });
     }
@@ -1202,32 +1204,32 @@ export async function getPatientAllergies(searchParams: {
     
     // Build where clause for allergy search
     const whereClause: any = {
-      patient_id: searchParams.patientId,
-      is_active: true, // Only show active (not deleted) allergies
+      patientId: searchParams.patientId,
+      isActive: true, // Only show active (not deleted) allergies
     };
     
     if (searchParams.allergyType) {
-      whereClause.allergen_type = searchParams.allergyType.toUpperCase();
+      whereClause.allergenType = searchParams.allergyType.toUpperCase();
     }
     
     if (searchParams.severity) {
-      whereClause.reaction_severity = searchParams.severity.toUpperCase();
+      whereClause.reactionSeverity = searchParams.severity.toUpperCase();
     }
     
     if (searchParams.verified !== undefined) {
-      whereClause.verified_by_doctor = searchParams.verified;
+      whereClause.verifiedByDoctor = searchParams.verified;
     }
     
     if (searchParams.search) {
       whereClause.OR = [
         {
-          allergen_name: {
+          allergenName: {
             contains: searchParams.search,
             mode: 'insensitive',
           },
         },
         {
-          reaction_symptoms: {
+          reactionSymptoms: {
             contains: searchParams.search,
             mode: 'insensitive',
           },
@@ -1251,23 +1253,23 @@ export async function getPatientAllergies(searchParams: {
             include: {
               user: {
                 select: {
-                  first_name: true,
-                  last_name: true,
+                  firstName: true,
+                  lastName: true,
                 },
               },
             },
           },
-          verified_by_user: {
+          verifiedByUser: {
             select: {
-              first_name: true,
-              last_name: true,
+              firstName: true,
+              lastName: true,
               role: true,
             },
           },
         },
         orderBy: [
-          { reaction_severity: 'desc' }, // Most severe first
-          { created_at: 'desc' },
+          { reactionSeverity: 'desc' }, // Most severe first
+          { createdAt: 'desc' },
         ],
       }),
       prisma.patientAllergy.count({ where: whereClause }),
@@ -1276,22 +1278,22 @@ export async function getPatientAllergies(searchParams: {
     return {
       allergies: allergies.map(allergy => ({
         id: allergy.id,
-        patientId: allergy.patient_id,
-        patientName: `${allergy.patient.user.first_name} ${allergy.patient.user.last_name}`,
-        allergenName: allergy.allergen_name,
-        allergenType: allergy.allergen_type,
-        rxnormCode: allergy.allergen_rxnorm,
-        severityLevel: allergy.reaction_severity,
-        reactionSymptoms: allergy.reaction_symptoms,
-        onsetDate: allergy.onset_date,
-        isVerifiedByDoctor: allergy.verified_by_doctor,
-        verifiedBy: allergy.verified_by_user ? {
-          name: `${allergy.verified_by_user.first_name} ${allergy.verified_by_user.last_name}`,
-          role: allergy.verified_by_user.role,
+        patientId: allergy.patientId,
+        patientName: `${allergy.patient.user.firstName} ${allergy.patient.user.lastName}`,
+        allergenName: allergy.allergenName,
+        allergenType: allergy.allergenType,
+        rxnormCode: allergy.allergenRxnorm,
+        severityLevel: allergy.reactionSeverity,
+        reactionSymptoms: allergy.reactionSymptoms,
+        onsetDate: allergy.onsetDate,
+        isVerifiedByDoctor: allergy.verifiedByDoctor,
+        verifiedBy: allergy.verifiedByUser ? {
+          name: `${allergy.verifiedByUser.firstName} ${allergy.verifiedByUser.lastName}`,
+          role: allergy.verifiedByUser.role,
         } : null,
         notes: allergy.notes,
-        createdAt: allergy.created_at,
-        updatedAt: allergy.updated_at,
+        createdAt: allergy.createdAt,
+        updatedAt: allergy.updatedAt,
       })),
       pagination: {
         page: searchParams.page,
@@ -1301,8 +1303,8 @@ export async function getPatientAllergies(searchParams: {
       },
       summary: {
         totalAllergies: total,
-        verifiedAllergies: allergies.filter(a => a.verified_by_doctor).length,
-        criticalAllergies: allergies.filter(a => a.reaction_severity === 'SEVERE' || a.reaction_severity === 'ANAPHYLAXIS').length,
+        verifiedAllergies: allergies.filter(a => a.verifiedByDoctor).length,
+        criticalAllergies: allergies.filter(a => a.reactionSeverity === 'SEVERE' || a.reactionSeverity === 'ANAPHYLAXIS').length,
       },
     };
   } catch (error) {
@@ -1330,33 +1332,33 @@ export async function createPatientAllergy(allergyData: {
   try {
     const allergy = await prisma.patientAllergy.create({
       data: {
-        patient_id: allergyData.patientId,
-        allergen_name: allergyData.allergen,
-        allergen_type: allergyData.allergenType?.toUpperCase() as any || 'DRUG',
-        allergen_rxnorm: allergyData.rxnormCode,
-        reaction_severity: allergyData.severity.toUpperCase() as any,
-        reaction_symptoms: allergyData.reactionDescription,
-        onset_date: allergyData.onsetDate ? new Date(allergyData.onsetDate) : null,
+        patientId: allergyData.patientId,
+        allergenName: allergyData.allergen,
+        allergenType: allergyData.allergenType?.toUpperCase() as any || 'DRUG',
+        allergenRxnorm: allergyData.rxnormCode,
+        reactionSeverity: allergyData.severity.toUpperCase() as any,
+        reactionSymptoms: allergyData.reactionDescription,
+        onsetDate: allergyData.onsetDate ? new Date(allergyData.onsetDate) : null,
         notes: allergyData.notes,
-        verified_by_doctor: allergyData.isVerified,
-        verified_by: allergyData.verifiedBy,
-        is_active: true,
+        verifiedByDoctor: allergyData.isVerified,
+        verifiedBy: allergyData.verifiedBy,
+        isActive: true,
       },
       include: {
         patient: {
           include: {
             user: {
               select: {
-                first_name: true,
-                last_name: true,
+                firstName: true,
+                lastName: true,
               },
             },
           },
         },
-        verified_by_user: {
+        verifiedByUser: {
           select: {
-            first_name: true,
-            last_name: true,
+            firstName: true,
+            lastName: true,
             role: true,
           },
         },
@@ -1365,18 +1367,18 @@ export async function createPatientAllergy(allergyData: {
 
     return {
       id: allergy.id,
-      patientId: allergy.patient_id,
-      patientName: `${allergy.patient.user.first_name} ${allergy.patient.user.last_name}`,
-      allergenName: allergy.allergen_name,
-      allergenType: allergy.allergen_type,
-      severityLevel: allergy.reaction_severity,
-      reactionSymptoms: allergy.reaction_symptoms,
-      isVerifiedByDoctor: allergy.verified_by_doctor,
-      verifiedBy: allergy.verified_by_user ? {
-        name: `${allergy.verified_by_user.first_name} ${allergy.verified_by_user.last_name}`,
-        role: allergy.verified_by_user.role,
+      patientId: allergy.patientId,
+      patientName: `${allergy.patient.user.firstName} ${allergy.patient.user.lastName}`,
+      allergenName: allergy.allergenName,
+      allergenType: allergy.allergenType,
+      severityLevel: allergy.reactionSeverity,
+      reactionSymptoms: allergy.reactionSymptoms,
+      isVerifiedByDoctor: allergy.verifiedByDoctor,
+      verifiedBy: allergy.verifiedByUser ? {
+        name: `${allergy.verifiedByUser.firstName} ${allergy.verifiedByUser.lastName}`,
+        role: allergy.verifiedByUser.role,
       } : null,
-      createdAt: allergy.created_at,
+      createdAt: allergy.createdAt,
     };
   } catch (error) {
     console.error('Create patient allergy error:', error);
@@ -1392,13 +1394,13 @@ export async function updatePatientAllergy(allergyId: string, updateData: any) {
     // Prepare update data with correct field names
     const dataToUpdate: any = {};
     
-    if (updateData.allergen) dataToUpdate.allergen_name = updateData.allergen;
-    if (updateData.allergenType) dataToUpdate.allergen_type = updateData.allergenType.toUpperCase();
-    if (updateData.severity) dataToUpdate.reaction_severity = updateData.severity.toUpperCase();
-    if (updateData.reactionDescription) dataToUpdate.reaction_symptoms = updateData.reactionDescription;
-    if (updateData.onsetDate) dataToUpdate.onset_date = new Date(updateData.onsetDate);
+    if (updateData.allergen) dataToUpdate.allergenName = updateData.allergen;
+    if (updateData.allergenType) dataToUpdate.allergenType = updateData.allergenType.toUpperCase();
+    if (updateData.severity) dataToUpdate.reactionSeverity = updateData.severity.toUpperCase();
+    if (updateData.reactionDescription) dataToUpdate.reactionSymptoms = updateData.reactionDescription;
+    if (updateData.onsetDate) dataToUpdate.onsetDate = new Date(updateData.onsetDate);
     if (updateData.notes) dataToUpdate.notes = updateData.notes;
-    if (updateData.rxnormCode) dataToUpdate.allergen_rxnorm = updateData.rxnormCode;
+    if (updateData.rxnormCode) dataToUpdate.allergenRxnorm = updateData.rxnormCode;
 
     const updatedAllergy = await prisma.patientAllergy.update({
       where: { id: allergyId },
@@ -1407,12 +1409,12 @@ export async function updatePatientAllergy(allergyId: string, updateData: any) {
 
     return {
       id: updatedAllergy.id,
-      patientId: updatedAllergy.patient_id,
-      allergenName: updatedAllergy.allergen_name,
-      allergenType: updatedAllergy.allergen_type,
-      severityLevel: updatedAllergy.reaction_severity,
-      reactionSymptoms: updatedAllergy.reaction_symptoms,
-      updatedAt: updatedAllergy.updated_at,
+      patientId: updatedAllergy.patientId,
+      allergenName: updatedAllergy.allergenName,
+      allergenType: updatedAllergy.allergenType,
+      severityLevel: updatedAllergy.reactionSeverity,
+      reactionSymptoms: updatedAllergy.reactionSymptoms,
+      updatedAt: updatedAllergy.updatedAt,
     };
   } catch (error) {
     console.error('Update patient allergy error:', error);
@@ -1431,14 +1433,14 @@ export async function deletePatientAllergy(allergyId: string, deleteData: {
     const deletedAllergy = await prisma.patientAllergy.update({
       where: { id: allergyId },
       data: {
-        is_active: false,
+        isActive: false,
         notes: deleteData.deletionReason, // Store deletion reason in notes
       },
     });
 
     return {
       id: deletedAllergy.id,
-      isActive: deletedAllergy.is_active,
+      isActive: deletedAllergy.isActive,
       message: 'Allergy marked as inactive',
     };
   } catch (error) {
@@ -1458,15 +1460,15 @@ export async function verifyPatientAllergy(allergyId: string, verificationData: 
     const verifiedAllergy = await prisma.patientAllergy.update({
       where: { id: allergyId },
       data: {
-        verified_by_doctor: true,
-        verified_by: verificationData.verifiedBy,
+        verifiedByDoctor: true,
+        verifiedBy: verificationData.verifiedBy,
         notes: verificationData.verificationNotes || null,
       },
       include: {
-        verified_by_user: {
+        verifiedByUser: {
           select: {
-            first_name: true,
-            last_name: true,
+            firstName: true,
+            lastName: true,
             role: true,
           },
         },
@@ -1475,10 +1477,10 @@ export async function verifyPatientAllergy(allergyId: string, verificationData: 
 
     return {
       id: verifiedAllergy.id,
-      isVerifiedByDoctor: verifiedAllergy.verified_by_doctor,
-      verifiedBy: verifiedAllergy.verified_by_user ? {
-        name: `${verifiedAllergy.verified_by_user.first_name} ${verifiedAllergy.verified_by_user.last_name}`,
-        role: verifiedAllergy.verified_by_user.role,
+      isVerifiedByDoctor: verifiedAllergy.verifiedByDoctor,
+      verifiedBy: verifiedAllergy.verifiedByUser ? {
+        name: `${verifiedAllergy.verifiedByUser.firstName} ${verifiedAllergy.verifiedByUser.lastName}`,
+        role: verifiedAllergy.verifiedByUser.role,
       } : null,
       notes: verifiedAllergy.notes,
     };
@@ -1512,41 +1514,41 @@ export async function getEmergencyAlerts(searchParams: {
     const whereClause: any = {};
     
     if (searchParams.patientId) {
-      whereClause.patient_id = searchParams.patientId;
+      whereClause.patientId = searchParams.patientId;
     }
     
     if (searchParams.alertType) {
-      whereClause.alert_type = searchParams.alertType.toUpperCase();
+      whereClause.alertType = searchParams.alertType.toUpperCase();
     }
     
     if (searchParams.severity) {
-      whereClause.severity_level = searchParams.severity.toUpperCase();
+      whereClause.severityLevel = searchParams.severity.toUpperCase();
     }
     
     if (searchParams.status) {
-      whereClause.alert_status = searchParams.status.toUpperCase();
+      whereClause.alertStatus = searchParams.status.toUpperCase();
     }
     
     if (searchParams.resolved !== undefined) {
-      whereClause.is_resolved = searchParams.resolved;
+      whereClause.isResolved = searchParams.resolved;
     }
     
     if (searchParams.search) {
       whereClause.OR = [
         {
-          alert_message: {
+          alertMessage: {
             contains: searchParams.search,
             mode: 'insensitive',
           },
         },
         {
-          clinical_context: {
+          clinicalContext: {
             contains: searchParams.search,
             mode: 'insensitive',
           },
         },
         {
-          resolution_notes: {
+          resolutionNotes: {
             contains: searchParams.search,
             mode: 'insensitive',
           },
@@ -1564,37 +1566,37 @@ export async function getEmergencyAlerts(searchParams: {
             include: {
               user: {
                 select: {
-                  first_name: true,
-                  last_name: true,
+                  firstName: true,
+                  lastName: true,
                 },
               },
             },
           },
-          vital_reading: {
+          vitalReading: {
             select: {
-              measurement_value: true,
-              measurement_unit: true,
-              created_at: true,
+              measurementValue: true,
+              measurementUnit: true,
+              createdAt: true,
             },
           },
-          acknowledged_by_user: {
+          acknowledgedByUser: {
             select: {
-              first_name: true,
-              last_name: true,
+              firstName: true,
+              lastName: true,
               role: true,
             },
           },
-          resolved_by_user: {
+          resolvedByUser: {
             select: {
-              first_name: true,
-              last_name: true,
+              firstName: true,
+              lastName: true,
               role: true,
             },
           },
         },
         orderBy: [
-          { severity_level: 'desc' }, // Most severe first
-          { triggered_at: 'desc' }, // Most recent first
+          { severityLevel: 'desc' }, // Most severe first
+          { triggeredAt: 'desc' }, // Most recent first
         ],
       }),
       prisma.emergencyAlert.count({ where: whereClause }),
@@ -1603,35 +1605,35 @@ export async function getEmergencyAlerts(searchParams: {
     return {
       alerts: alerts.map(alert => ({
         id: alert.id,
-        patientId: alert.patient_id,
-        patientName: `${alert.patient.user.first_name} ${alert.patient.user.last_name}`,
-        alertType: alert.alert_type,
-        severityLevel: alert.severity_level,
-        alertStatus: alert.alert_status,
-        alertMessage: alert.alert_message,
-        clinicalContext: alert.clinical_context,
-        triggeredAt: alert.triggered_at,
-        vitalReading: alert.vital_reading ? {
-          value: alert.vital_reading.measurement_value,
-          unit: alert.vital_reading.measurement_unit,
-          timestamp: alert.vital_reading.created_at,
+        patientId: alert.patientId,
+        patientName: `${alert.patient.user.firstName} ${alert.patient.user.lastName}`,
+        alertType: alert.alertType,
+        severityLevel: alert.severityLevel,
+        alertStatus: alert.resolved ? "RESOLVED" : alert.acknowledged ? "ACKNOWLEDGED" : "UNACKNOWLEDGED",
+        alertMessage: alert.alertMessage,
+        clinicalContext: alert.clinicalContext,
+        triggeredAt: alert.triggeredAt,
+        vitalReading: alert.vitalReading ? {
+          value: alert.vitalReading.measurementValue,
+          unit: alert.vitalReading.measurementUnit,
+          timestamp: alert.vitalReading.createdAt,
         } : null,
-        isAcknowledged: alert.is_acknowledged,
-        acknowledgedBy: alert.acknowledged_by_user ? {
-          name: `${alert.acknowledged_by_user.first_name} ${alert.acknowledged_by_user.last_name}`,
-          role: alert.acknowledged_by_user.role,
+        isAcknowledged: alert.acknowledged,
+        acknowledgedBy: alert.acknowledgedByUser ? {
+          name: `${alert.acknowledgedByUser.firstName} ${alert.acknowledgedByUser.lastName}`,
+          role: alert.acknowledgedByUser.role,
         } : null,
-        acknowledgedAt: alert.acknowledged_at,
-        isResolved: alert.is_resolved,
-        resolvedBy: alert.resolved_by_user ? {
-          name: `${alert.resolved_by_user.first_name} ${alert.resolved_by_user.last_name}`,
-          role: alert.resolved_by_user.role,
+        acknowledgedAt: alert.acknowledgedAt,
+        isResolved: alert.resolved,
+        resolvedBy: alert.resolvedByUser ? {
+          name: `${alert.resolvedByUser.firstName} ${alert.resolvedByUser.lastName}`,
+          role: alert.resolvedByUser.role,
         } : null,
-        resolvedAt: alert.resolved_at,
-        resolutionNotes: alert.resolution_notes,
-        requiresEscalation: alert.requires_escalation,
-        escalationLevel: alert.escalation_level,
-        createdAt: alert.created_at,
+        resolvedAt: alert.resolvedAt,
+        resolutionNotes: alert.resolutionNotes,
+        requiresEscalation: !!alert.escalationLevel && alert.escalationLevel > 0,
+        escalationLevel: alert.escalationLevel,
+        createdAt: alert.createdAt,
       })),
       pagination: {
         page: searchParams.page,
@@ -1641,9 +1643,9 @@ export async function getEmergencyAlerts(searchParams: {
       },
       summary: {
         totalAlerts: total,
-        activeAlerts: alerts.filter(a => !a.is_resolved).length,
-        criticalAlerts: alerts.filter(a => a.severity_level === 'CRITICAL' || a.severity_level === 'EMERGENCY').length,
-        unacknowledgedAlerts: alerts.filter(a => !a.is_acknowledged).length,
+        activeAlerts: alerts.filter(a => !a.resolved).length,
+        criticalAlerts: alerts.filter(a => a.severityLevel === 'CRITICAL' || a.severityLevel === 'EMERGENCY').length,
+        unacknowledgedAlerts: alerts.filter(a => !a.acknowledged).length,
       },
     };
   } catch (error) {
@@ -1668,26 +1670,25 @@ export async function createEmergencyAlert(alertData: {
   try {
     const alert = await prisma.emergencyAlert.create({
       data: {
-        patient_id: alertData.patientId,
-        alert_type: alertData.alertType.toUpperCase() as any,
-        severity_level: alertData.severity.toUpperCase() as any,
-        alert_status: 'ACTIVE',
-        alert_message: alertData.alertMessage,
-        clinical_context: alertData.clinicalContext,
-        vital_reading_id: alertData.vitalReadingId,
-        triggered_at: new Date(alertData.triggeredAt),
-        requires_escalation: alertData.severity.toUpperCase() === 'EMERGENCY',
-        escalation_level: alertData.severity.toUpperCase() === 'EMERGENCY' ? 'IMMEDIATE' : null,
-        is_acknowledged: false,
-        is_resolved: false,
+        patientId: alertData.patientId,
+        alertType: alertData.alertType.toUpperCase() as any,
+        priorityLevel: alertData.severity.toUpperCase() as any,
+        alertTitle: 'Emergency Alert',
+        alertMessage: alertData.alertMessage,
+        clinicalContext: alertData.clinicalContext,
+        vitalReadingId: alertData.vitalReadingId,
+        createdAt: new Date(alertData.triggeredAt),
+        escalationLevel: alertData.severity.toUpperCase() === 'EMERGENCY' ? 1 : 0,
+        acknowledged: false,
+        resolved: false,
       },
       include: {
         patient: {
           include: {
             user: {
               select: {
-                first_name: true,
-                last_name: true,
+                firstName: true,
+                lastName: true,
               },
             },
           },
@@ -1697,14 +1698,14 @@ export async function createEmergencyAlert(alertData: {
 
     return {
       id: alert.id,
-      patientId: alert.patient_id,
-      patientName: `${alert.patient.user.first_name} ${alert.patient.user.last_name}`,
-      alertType: alert.alert_type,
-      severityLevel: alert.severity_level,
-      alertMessage: alert.alert_message,
-      triggeredAt: alert.triggered_at,
-      requiresEscalation: alert.requires_escalation,
-      createdAt: alert.created_at,
+      patientId: alert.patientId,
+      patientName: `${alert.patient.user.firstName} ${alert.patient.user.lastName}`,
+      alertType: alert.alertType,
+      severityLevel: alert.priorityLevel,
+      alertMessage: alert.alertMessage,
+      triggeredAt: alert.createdAt,
+      requiresEscalation: alert.escalationLevel,
+      createdAt: alert.createdAt,
     };
   } catch (error) {
     console.error('Create emergency alert error:', error);
@@ -1723,16 +1724,16 @@ export async function acknowledgeEmergencyAlert(alertId: string, acknowledgeData
     const acknowledgedAlert = await prisma.emergencyAlert.update({
       where: { id: alertId },
       data: {
-        is_acknowledged: true,
-        acknowledged_by: acknowledgeData.acknowledgedBy,
-        acknowledged_at: new Date(),
-        acknowledge_notes: acknowledgeData.acknowledgeNotes,
+        acknowledged: true,
+        acknowledgedBy: acknowledgeData.acknowledgedBy,
+        acknowledgedAt: new Date(),
+        resolutionNotes: acknowledgeData.acknowledgeNotes,
       },
       include: {
-        acknowledged_by_user: {
+        acknowledgedByUser: {
           select: {
-            first_name: true,
-            last_name: true,
+            firstName: true,
+            lastName: true,
             role: true,
           },
         },
@@ -1741,13 +1742,13 @@ export async function acknowledgeEmergencyAlert(alertId: string, acknowledgeData
 
     return {
       id: acknowledgedAlert.id,
-      isAcknowledged: acknowledgedAlert.is_acknowledged,
+      isAcknowledged: acknowledgedAlert.acknowledged,
       acknowledgedBy: {
-        name: `${acknowledgedAlert.acknowledged_by_user?.first_name} ${acknowledgedAlert.acknowledged_by_user?.last_name}`,
-        role: acknowledgedAlert.acknowledged_by_user?.role,
+        name: `${acknowledgedAlert.acknowledgedByUser?.firstName} ${acknowledgedAlert.acknowledgedByUser?.lastName}`,
+        role: acknowledgedAlert.acknowledgedByUser?.role,
       },
-      acknowledgedAt: acknowledgedAlert.acknowledged_at,
-      acknowledgeNotes: acknowledgedAlert.acknowledge_notes,
+      acknowledgedAt: acknowledgedAlert.acknowledgedAt,
+      acknowledgeNotes: acknowledgedAlert.resolutionNotes,
     };
   } catch (error) {
     console.error('Acknowledge emergency alert error:', error);
@@ -1767,18 +1768,16 @@ export async function resolveEmergencyAlert(alertId: string, resolveData: {
     const resolvedAlert = await prisma.emergencyAlert.update({
       where: { id: alertId },
       data: {
-        is_resolved: true,
-        alert_status: 'RESOLVED',
-        resolved_by: resolveData.resolvedBy,
-        resolved_at: new Date(),
-        resolution_notes: resolveData.resolutionNotes,
-        resolution_action: resolveData.resolutionAction?.toUpperCase() as any,
+        resolved: true,
+        resolvedBy: resolveData.resolvedBy,
+        resolvedAt: new Date(),
+        resolutionNotes: resolveData.resolutionNotes,
       },
       include: {
-        resolved_by_user: {
+        resolvedByUser: {
           select: {
-            first_name: true,
-            last_name: true,
+            firstName: true,
+            lastName: true,
             role: true,
           },
         },
@@ -1787,15 +1786,15 @@ export async function resolveEmergencyAlert(alertId: string, resolveData: {
 
     return {
       id: resolvedAlert.id,
-      isResolved: resolvedAlert.is_resolved,
-      alertStatus: resolvedAlert.alert_status,
+      isResolved: resolvedAlert.resolved,
+      alertStatus: 'RESOLVED',
       resolvedBy: {
-        name: `${resolvedAlert.resolved_by_user?.first_name} ${resolvedAlert.resolved_by_user?.last_name}`,
-        role: resolvedAlert.resolved_by_user?.role,
+        name: `${resolvedAlert.resolvedByUser?.firstName} ${resolvedAlert.resolvedByUser?.lastName}`,
+        role: resolvedAlert.resolvedByUser?.role,
       },
-      resolvedAt: resolvedAlert.resolved_at,
-      resolutionNotes: resolvedAlert.resolution_notes,
-      resolutionAction: resolvedAlert.resolution_action,
+      resolvedAt: resolvedAlert.resolvedAt,
+      resolutionNotes: resolvedAlert.resolutionNotes,
+      resolutionAction: 'NONE',
     };
   } catch (error) {
     console.error('Resolve emergency alert error:', error);
@@ -1815,21 +1814,21 @@ export async function escalateEmergencyAlert(alertId: string, escalateData: {
     const escalatedAlert = await prisma.emergencyAlert.update({
       where: { id: alertId },
       data: {
-        requires_escalation: true,
-        escalation_level: escalateData.escalationLevel?.toUpperCase() as any || 'SUPERVISOR',
-        escalation_reason: escalateData.escalationReason,
-        escalated_at: new Date(),
-        alert_status: 'ESCALATED',
+        escalationLevel: {
+          increment: 1
+        },
+        resolutionNotes: escalateData.escalationReason,
+        updatedAt: new Date(),
       },
     });
 
     return {
       id: escalatedAlert.id,
-      requiresEscalation: escalatedAlert.requires_escalation,
-      escalationLevel: escalatedAlert.escalation_level,
-      escalationReason: escalatedAlert.escalation_reason,
-      escalatedAt: escalatedAlert.escalated_at,
-      alertStatus: escalatedAlert.alert_status,
+      requiresEscalation: true,
+      escalationLevel: escalatedAlert.escalationLevel,
+      escalationReason: escalatedAlert.resolutionNotes,
+      escalatedAt: escalatedAlert.updatedAt,
+      alertStatus: 'ESCALATED',
     };
   } catch (error) {
     console.error('Escalate emergency alert error:', error);
