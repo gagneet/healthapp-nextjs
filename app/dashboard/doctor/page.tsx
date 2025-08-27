@@ -91,12 +91,19 @@ export default function DoctorDashboard() {
       const alertsData: APIResponse<CriticalAlertsAPI> = await alertsRes.json()
       const analyticsData: APIResponse<AdherenceAnalyticsAPI> = await analyticsRes.json()
 
+      // Check for API errors in the response body
+      if (!statsData.status || !patientsData.status || !alertsData.status || !analyticsData.status) {
+        // You can log the specific error messages if you want
+        const errorMsg = statsData.payload.message || patientsData.payload.message || alertsData.payload.message || analyticsData.payload.message || 'An API error occurred';
+        throw new Error(errorMsg);
+      }
+
       // Update state
       setDashboardStats(statsData.payload.data.stats)
-      setRecentPatients(patientsData.payload.data.patients)
-      setCriticalAlerts(alertsData.payload.data.alerts)
-      setAdherenceChartData(analyticsData.payload.data.adherence_overview)
-      setMonthlyAdherenceData(analyticsData.payload.data.monthly_trends)
+      setRecentPatients(patientsData.payload.data.patients || [])
+      setCriticalAlerts(alertsData.payload.data.alerts || [])
+      setAdherenceChartData(analyticsData.payload.data.adherence_overview || [])
+      setMonthlyAdherenceData(analyticsData.payload.data.monthly_trends || [])
 
     } catch (err) {
       console.error('Dashboard fetch error:', err)
