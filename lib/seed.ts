@@ -102,26 +102,9 @@ export async function seedComprehensiveHealthcareData() {
         // Always start with a clean database
         await cleanDatabase();
 
-        let testUsers: { count: number } = { count: 0 };
-        let provider: any;
-
-export async function seedComprehensiveHealthcareData() {
-    console.log('📊 Seeding comprehensive healthcare test data with updated schema...');
-
-    try {
-        await waitForTables();
-
-        // Always start with a clean database
-        await cleanDatabase();
-
-        let testUsers: { count: number } = { count: 0 };
-        let provider: any;
-        const defaultPassword = process.env.SEED_DEFAULT_PASSWORD || 'TempPassword123!';
-
-        await prisma.$transaction(async (tx) => {
-            console.log('🚀 Starting seeding transaction...');
-
+        const { users, provider } = await prisma.$transaction(async (tx) => {
             // Password setup
+            const defaultPassword = process.env.SEED_DEFAULT_PASSWORD || 'TempPassword123!';
             const hashedPassword = await bcrypt.hash(defaultPassword, 12);
             const basicDoctorPassword = await bcrypt.hash('TempPassword123!', 12);
 
@@ -923,22 +906,93 @@ export async function seedComprehensiveHealthcareData() {
                 console.log('✅ Created 3 adherence records');
             }
 
-            console.log('... transaction finished');
+            return { users: testUsers, provider };
         });
 
+        const testUsers = { count: users.count };
+        const defaultPassword = process.env.SEED_DEFAULT_PASSWORD || 'TempPassword123!';
+
         console.log(`\n🎉 Successfully seeded comprehensive healthcare test data!`);
-        // ... (rest of the console logs)
+        console.log(`📊 Summary:`);
+        console.log(`   - Users: ${testUsers.count} (5 patients, 3 doctors, 1 HSP, 1 system admin, 1 provider admin) ✅`);
+        console.log(`   - Doctor-Patient Relationships:`);
+        console.log(`     * Dr. John Smith (Cardiology): 3 patients + clinic ✅`);
+        console.log(`     * Dr. Jane Doe (Endocrinology): 2 patients ✅`);
+        console.log(`     * Dr. Emily Rodriguez (General Medicine): 0 patients ✅`);
+        console.log(`   - Provider Admin linked to Dr. Smith & Dr. Rodriguez ✅`);
+        console.log(`   - Organization: 1 ✅`);
+        console.log(`   - Medical Specialties: 11 ✅`);
+        console.log(`   - Medicines: 10 ✅`);
+        console.log(`   - Patient Care Plans: 5 (with diets, workouts, symptoms) ✅`);
+        console.log(`   - Patient Symptoms: 11 individual symptoms ✅`);
+        console.log(`   - Medication Reminders: 15 (3 per patient) ✅`);
+        console.log(`   - Clinic: 1 (Smith Cardiology Clinic) ✅`);
+        console.log(`   - Vital Templates: 4 ✅`);
+        console.log(`   - Symptoms Database: 5 ✅`);
+        console.log(`   - Treatments Database: 5 ✅`);
+        console.log(`   - Appointments: 3 ✅`);
+        console.log(`   - Adherence Records: 3 ✅`);
+        console.log(`   - Provider: ${provider ? '✅' : '⚠️'}`);
+        console.log(`\n🔑 Login Credentials:`);
+        console.log(`   - Dr. Smith (3 patients + clinic): doctor@healthapp.com / TempPassword123!`);
+        console.log(`   - Dr. Doe (2 patients): doctor1@healthapp.com / TempPassword123!`);
+        console.log(`   - All other users: email / ${sanitize(defaultPassword)}`);
+        console.log(`\n📈 Dashboard Data Ready:`);
+        console.log(`   - Doctor Dashboards: Patient lists, appointments, medication tracking ✅`);
+        console.log(`   - Patient Dashboards: Care plans, medications, symptoms, vitals ✅`);
 
         return {
             success: true,
             message: 'Comprehensive healthcare test data seeded successfully with exact structure requested',
             data: {
-                // ...
+                users: testUsers.count,
+                patients: 5,
+                doctors: 3,
+                doctorPatientDistribution: 'Dr.Smith(3), Dr.Doe(2), Dr.Rodriguez(0)',
+                hsp: 1,
+                systemAdmin: 1,
+                providerAdmin: 1,
+                organizations: 1,
+                clinics: 1,
+                specialties: 11,
+                medicines: 10,
+                carePlans: 5,
+                patientSymptoms: 11,
+                medicationReminders: 15,
+                vitalTemplates: 4,
+                symptomsDatabase: 5,
+                treatmentsDatabase: 5,
+                appointments: 3,
+                adherenceRecords: 3,
+                provider: provider ? 1 : 0,
+                providerDoctorLinks: 2
             }
         };
 
     } catch (error: any) {
-        // ...
+        console.error('❌ Error seeding healthcare data:', error);
+
+        if (error.code === 'P2002') {
+            console.error('🔍 Unique constraint violation - data may already exist or IDs conflict');
+        } else if (error.code === 'P2003') {
+            console.error('🔍 Foreign key constraint failed - relationship data missing or invalid');
+        } else if (error.code === 'P2021') {
+            console.error('🔍 Database table does not exist - run migrations first');
+        } else if (error.code === 'P2025') {
+            console.error('🔍 Record not found - dependency data missing');
+        } else if (error.message.includes('Unknown field')) {
+            console.error('🔍 Schema field mismatch - check Prisma schema against database');
+        } else {
+            console.error('🔍 Unexpected error during seeding process');
+        }
+
+        console.error('\n💡 Troubleshooting suggestions:');
+        console.error('   1. Run: npx prisma migrate dev');
+        console.error('   2. Run: npx prisma generate');
+        console.error('   3. Check database connection');
+        console.error('   4. Verify Prisma schema matches database structure');
+
+        throw error;
     } finally {
         await prisma.$disconnect();
     }
