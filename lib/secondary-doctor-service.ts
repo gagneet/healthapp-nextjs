@@ -379,7 +379,7 @@ export class SecondaryDoctorService {
             id: assignment.doctor.id,
             name: `${assignment.doctor.user?.firstName || ''} ${assignment.doctor.user?.lastName || ''}`.trim(),
             email: assignment.doctor.user?.email,
-            specialties: assignment.doctor.specialties,
+            specialties: assignment.doctor.specialty ? [assignment.doctor.specialty.name] : [],
             organization: assignment.doctor.organization?.name
           },
           createdAt: assignment.createdAt,

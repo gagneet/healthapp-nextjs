@@ -85,18 +85,19 @@ export async function GET(request: NextRequest) {
         id: patient.id,
         patientId: patient.patientId,
         firstName: patient.user.firstName || '',
-        lastName: patient.user.lastName || '',
+        lastName:
+          patient.user.lastName || '',
         name: userName,
         email: patient.user?.email,
-        last_visit: patient.lastVisitDate || patient.updatedAt,
+        lastVisit: patient.lastVisitDate || patient.updatedAt,
         lastActivity: patient.lastVisitDate || patient.updatedAt,
         lastAppointment: patient.appointments?.[0]?.startTime,
         dateOfBirth: patient.dateOfBirth,
         gender: patient.gender,
         riskLevel: patient.riskLevel || 'low',
         // Add fields expected by dashboard
-        critical_alerts: 0, // Mock for now
-        adherence_rate: patient.overallAdherenceScore || Math.floor(Math.random() * 40) + 60 // Mock if null
+        criticalAlerts: 0, // Mock for now
+        adherenceRate: patient.overallAdherenceScore || Math.floor(Math.random() * 40) + 60 // Mock if null
       };
     });
 
