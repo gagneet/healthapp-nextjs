@@ -30,11 +30,11 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '5');
 
     // Get doctor ID
-    const doctor = await prisma.doctor.findFirst({
-      where: { user_id: session.user.id }
+    const doctorProfile = await prisma.doctor.findFirst({
+      where: { userId: session.user.id }
     });
 
-    if (!doctor) {
+    if (!doctorProfile) {
       return NextResponse.json({
         status: false,
         statusCode: 404,
@@ -45,7 +45,7 @@ export async function GET(request: NextRequest) {
     // Get recent patients based on last visit or medication activity
     const recentPatients = await prisma.patient.findMany({
       where: {
-        primary_care_doctor_id: doctor.id
+        primaryCareDoctorId: doctorProfile.id
       },
       include: {
         user: {
@@ -58,20 +58,20 @@ export async function GET(request: NextRequest) {
         },
         appointments: {
           select: {
-            start_time: true
+            startTime: true
           },
           orderBy: {
-            start_time: 'desc'
+            startTime: 'desc'
           },
           take: 1
         }
       },
       orderBy: [
         {
-          last_visit_date: 'desc'
+          lastVisitDate: 'desc'
         },
         {
-          updated_at: 'desc'
+          updatedAt: 'desc'
         }
       ],
       take: limit

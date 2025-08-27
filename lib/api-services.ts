@@ -248,8 +248,8 @@ export async function getPatients(doctorId: string, pagination: {
     
     // Build where clause - use primary care doctor relationship
     const whereClause: any = {
-      primary_care_doctor_id: doctorId,
-      is_active: true,
+      primaryCareDoctorId: doctorId,
+      isActive: true,
     };
 
     // Add search functionality
@@ -257,7 +257,7 @@ export async function getPatients(doctorId: string, pagination: {
       whereClause.OR = [
         {
           user: {
-            first_name: {
+            firstName: {
               contains: pagination.search,
               mode: 'insensitive',
             },
@@ -265,7 +265,7 @@ export async function getPatients(doctorId: string, pagination: {
         },
         {
           user: {
-            last_name: {
+            lastName: {
               contains: pagination.search,
               mode: 'insensitive',
             },
@@ -280,7 +280,7 @@ export async function getPatients(doctorId: string, pagination: {
           },
         },
         {
-          patient_id: {
+          patientId: {
             contains: pagination.search,
             mode: 'insensitive',
           },
@@ -297,40 +297,40 @@ export async function getPatients(doctorId: string, pagination: {
         include: {
           user: {
             select: {
-              first_name: true,
-              last_name: true,
+              firstName: true,
+              lastName: true,
               email: true,
               phone: true,
-              date_of_birth: true,
+              dateOfBirth: true,
             },
           },
-          doctors: {
+          primaryCareDoctor: {
             include: {
-              users_doctors_user_idTousers: {
+              user: {
                 select: {
-                  first_name: true,
-                  last_name: true,
+                  firstName: true,
+                  lastName: true,
                 },
               },
-              specialities: true,
+              specialty: true,
             },
           },
           _count: {
             select: {
-              medication_logs: true,
+              medicationLogs: true,
               appointments: true,
-              adherence_records: true,
+              adherenceRecords: true,
             },
           },
         },
         orderBy: (() => {
           // Handle name sorting specially
           if (pagination.sortBy === 'name') {
-            return { user: { first_name: pagination.sortOrder || 'asc' } };
+            return { user: { firstName: pagination.sortOrder || 'asc' } };
           }
           
           // Handle field name mapping and default sorting
-          const sortField = pagination.sortBy === 'createdAt' ? 'created_at' : (pagination.sortBy || 'created_at');
+          const sortField = pagination.sortBy === 'createdAt' ? 'createdAt' : (pagination.sortBy || 'createdAt');
           const sortOrder = pagination.sortOrder || 'desc';
           
           return { [sortField]: sortOrder };
@@ -342,22 +342,22 @@ export async function getPatients(doctorId: string, pagination: {
     return {
       patients: patients.map(patient => ({
         id: patient.id,
-        patientId: patient.patient_id,
-        firstName: patient.user.first_name,
-        lastName: patient.user.last_name,
+        patientId: patient.patientId,
+        firstName: patient.user.firstName,
+        lastName: patient.user.lastName,
         email: patient.user.email,
         phone: patient.user.phone,
-        dateOfBirth: patient.user.date_of_birth,
-        primaryDoctor: patient.doctors ? {
-          name: `${patient.doctors.users_doctors_user_idTousers.first_name} ${patient.doctors.users_doctors_user_idTousers.last_name}`,
-          speciality: patient.doctors.specialities?.name,
+        dateOfBirth: patient.user.dateOfBirth,
+        primaryDoctor: patient.primaryCareDoctor ? {
+          name: `${patient.primaryCareDoctor.user.firstName} ${patient.primaryCareDoctor.user.lastName}`,
+          speciality: patient.primaryCareDoctor.specialty?.name,
         } : null,
         stats: {
-          medicationsCount: patient._count.medication_logs,
+          medicationsCount: patient._count.medicationLogs,
           appointmentsCount: patient._count.appointments,
-          vitalsCount: patient._count.adherence_records,
+          vitalsCount: patient._count.adherenceRecords,
         },
-        createdAt: patient.created_at,
+        createdAt: patient.createdAt,
       })),
       pagination: {
         page: pagination.page,
@@ -451,38 +451,38 @@ export async function createPatient(patientData: {
       const user = await tx.user.create({
         data: {
           email: patientData.email.toLowerCase(),
-          password_hash: await bcrypt.hash('temp-password', 12),
+          passwordHash: await bcrypt.hash('temp-password', 12),
           role: 'PATIENT',
-          first_name: patientData.firstName,
-          last_name: patientData.lastName,
-          date_of_birth: patientData.dateOfBirth,
+          firstName: patientData.firstName,
+          lastName: patientData.lastName,
+          dateOfBirth: patientData.dateOfBirth,
           phone: patientData.phone,
           gender: patientData.gender as any,
-          account_status: 'PENDING_VERIFICATION',
+          accountStatus: 'PENDING_VERIFICATION',
         },
       });
 
       // Create patient profile
       const patient = await tx.patient.create({
         data: {
-          user_id: user.id,
-          primary_care_doctor_id: patientData.doctorId,
-          blood_type: patientData.bloodType,
+          userId: user.id,
+          primaryCareDoctorId: patientData.doctorId,
+          bloodType: patientData.bloodType,
           allergies: patientData.allergies || [],
-          medical_history: patientData.medicalConditions || [],
-          height_cm: patientData.height,
-          weight_kg: patientData.weight,
-          emergency_contacts: patientData.emergencyContacts || [],
+          medicalHistory: patientData.medicalConditions || [],
+          heightCm: patientData.height,
+          weightKg: patientData.weight,
+          emergencyContacts: patientData.emergencyContacts || [],
         },
       });
 
       // Create doctor-patient assignment
       await tx.patientDoctorAssignment.create({
         data: {
-          patient_id: patient.id,
-          doctor_id: patientData.doctorId,
-          assignment_type: 'primary',
-          is_active: true,
+          patientId: patient.id,
+          doctorId: patientData.doctorId,
+          assignmentType: 'PRIMARY',
+          isActive: true,
         },
       });
 
@@ -492,10 +492,10 @@ export async function createPatient(patientData: {
     return {
       id: result.patient.id,
       userId: result.user.id,
-      firstName: result.user.first_name,
-      lastName: result.user.last_name,
+      firstName: result.user.firstName,
+      lastName: result.user.lastName,
       email: result.user.email,
-      createdAt: result.patient.created_at?.toISOString() || new Date().toISOString(),
+      createdAt: result.patient.createdAt?.toISOString() || new Date().toISOString(),
     };
   } catch (error) {
     console.error('Create patient error:', error);
@@ -509,30 +509,30 @@ export async function createPatient(patientData: {
 export async function getDoctorDashboard(doctorUserId: string) {
   try {
     // Get doctor user data with profile
-    const doctor = await prisma.user.findUnique({
+    const doctorUser = await prisma.user.findUnique({
       where: { id: doctorUserId },
       include: {
-        doctors_doctors_user_idTousers: {
+        doctorProfile: {
           include: {
-            specialities: true,
-            organizations: true
+            specialty: true,
+            organization: true
           }
         }
       }
     });
 
-    if (!doctor || doctor.role !== 'DOCTOR') {
+    if (!doctorUser || doctorUser.role !== 'DOCTOR') {
       throw new Error('Doctor not found or invalid role');
     }
 
-    let doctorProfile = doctor.doctors_doctors_user_idTousers;
+    let doctorProfile = doctorUser.doctorProfile;
     
     // Handle missing doctor profile with detailed logging and mock data
     if (!doctorProfile?.id) {
       console.warn('=== MISSING DOCTOR PROFILE ===');
       console.warn('Doctor User ID:', doctorUserId);
-      console.warn('Doctor Email:', doctor.email);
-      console.warn('Doctor Role:', doctor.role);
+      console.warn('Doctor Email:', doctorUser.email);
+      console.warn('Doctor Role:', doctorUser.role);
       console.warn('Profile Object:', JSON.stringify(doctorProfile, null, 2));
       console.warn('This indicates a data integrity issue - user has DOCTOR role but no doctor profile');
       console.warn('Possible causes:');
@@ -545,12 +545,51 @@ export async function getDoctorDashboard(doctorUserId: string) {
       // Use mock data to gracefully handle the missing profile
       doctorProfile = {
         id: 'mock-doctor-profile-' + doctorUserId,
-        doctor_id: 'mock-doctor-' + doctorUserId,
-        medical_license_number: 'MOCK-LICENSE-' + Date.now(),
-        speciality_id: null,
-        years_of_experience: 0,
-        consultation_fee: 0,
-        organization_id: null
+        userId: doctorUserId,
+        doctorId: 'mock-doctor-' + doctorUserId,
+        medicalLicenseNumber: 'MOCK-LICENSE-' + Date.now(),
+        specialtyId: null,
+        yearsOfExperience: 0,
+        consultationFee: 0,
+        organizationId: null,
+        // Add other required fields from the Doctor model with mock values
+        npiNumber: null,
+        boardCertifications: [],
+        medicalSchool: null,
+        residencyPrograms: {},
+        specialties: [],
+        subSpecialties: [],
+        capabilities: [],
+        isVerified: false,
+        verificationDocuments: {},
+        verificationDate: null,
+        verifiedBy: null,
+        availabilitySchedule: {},
+        languagesSpoken: [],
+        notificationPreferences: {},
+        practiceName: null,
+        practiceAddress: {},
+        practicePhone: null,
+        signaturePic: null,
+        razorpayAccountId: null,
+        totalPatients: 0,
+        activeTreatmentPlans: 0,
+        activeCarePlans: 0,
+        averageRating: null,
+        totalReviews: 0,
+        isAvailableOnline: false,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        deletedAt: null,
+        profilePictureUrl: null,
+        bannerImageUrl: null,
+        qualificationDetails: {},
+        registrationDetails: {},
+        subscriptionDetails: {},
+        signatureImageUrl: null,
+        signatureData: null,
+        gender: null,
+        mobileNumber: null,
       };
       
       console.warn('Using mock profile:', JSON.stringify(doctorProfile, null, 2));
@@ -561,27 +600,27 @@ export async function getDoctorDashboard(doctorUserId: string) {
       // Total patients assigned to this doctor
       prisma.patient.count({
         where: {
-          primary_care_doctor_id: doctorProfile?.id || null
+          primaryCareDoctorId: doctorProfile?.id || null
         }
       }),
       
       // Today's appointments
       prisma.appointment.count({
         where: {
-          doctor_id: doctorProfile?.id || null,
-          start_date: {
+          doctorId: doctorProfile?.id || null,
+          startDate: {
             gte: new Date(new Date().setHours(0, 0, 0, 0)),
             lt: new Date(new Date().setHours(23, 59, 59, 999))
           },
           // Note: Appointment model doesn't have status field, using date filter instead
-          start_time: { not: null } // Only appointments with actual times
+          startTime: { not: null } // Only appointments with actual times
         }
       }),
 
       // Active care plans
       prisma.carePlan.count({
         where: {
-          created_by_doctor_id: doctorProfile?.id,
+          createdByDoctorId: doctorProfile?.id,
           status: 'ACTIVE'
         }
       }),
@@ -590,9 +629,9 @@ export async function getDoctorDashboard(doctorUserId: string) {
       prisma.vitalReading.count({
         where: {
           patient: {
-            primary_care_doctor_id: doctorProfile?.id || null
+            primaryCareDoctorId: doctorProfile?.id || null
           },
-          created_at: {
+          createdAt: {
             gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
           }
         }
@@ -602,43 +641,43 @@ export async function getDoctorDashboard(doctorUserId: string) {
     // Get recent patients (last 5 modified)
     const recentPatients = await prisma.patient.findMany({
       where: {
-        primary_care_doctor_id: doctorProfile?.id || 'none'
+        primaryCareDoctorId: doctorProfile?.id || 'none'
       },
       include: {
         user: {
           select: {
-            first_name: true,
-            last_name: true,
+            firstName: true,
+            lastName: true,
             email: true
           }
         }
       },
-      orderBy: { updated_at: 'desc' },
+      orderBy: { updatedAt: 'desc' },
       take: 5
     });
 
     // Get upcoming appointments (next 3)
     const upcomingAppointments = await prisma.appointment.findMany({
       where: {
-        doctor_id: doctorProfile?.id || 'none',
-        start_date: {
+        doctorId: doctorProfile?.id || 'none',
+        startDate: {
           gte: new Date()
         },
-        start_time: { not: null } // Only scheduled appointments with actual times
+        startTime: { not: null } // Only scheduled appointments with actual times
       },
       include: {
         patient: {
           include: {
             user: {
               select: {
-                first_name: true,
-                last_name: true
+                firstName: true,
+                lastName: true
               }
             }
           }
         }
       },
-      orderBy: { start_date: 'asc' },
+      orderBy: { startDate: 'asc' },
       take: 3
     });
 
@@ -718,9 +757,8 @@ export async function getDoctorDashboard(doctorUserId: string) {
     console.error('=== DOCTOR DASHBOARD ERROR ===');
     console.error('Error Type:', error instanceof Error ? error.constructor.name : typeof error);
     console.error('Error Message:', error instanceof Error ? error.message : String(error));
-    console.error('Doctor ID:', doctorUserId);
-    console.error('Doctor Profile:', doctorProfile ? `ID: ${doctorProfile.id}, Doctor ID: ${doctorProfile.doctor_id}` : 'NOT FOUND');
-    console.error('User Details:', doctor ? `Role: ${doctor.role}, Email: ${doctor.email}` : 'USER NOT FOUND');
+    console.error('Doctor User ID:', doctorUserId);
+    // Note: doctorUser and doctorProfile might not be defined here if the error occurred during their fetch
     console.error('Full Error Stack:', error instanceof Error ? error.stack : 'No stack trace available');
     console.error('===========================');
     
