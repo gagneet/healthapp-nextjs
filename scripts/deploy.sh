@@ -1401,6 +1401,20 @@ run_seeds() {
         
         while [ $retry_count -lt $max_retries ]; do
             # Use psql with explicit parameters for robustness
+log_info "Verifying database connectivity before seeding..."
+        local max_retries=10
+        local retry_count=0
+        local database_ready=false
+        
+        # Validate required environment variables
+        if [ -z "$POSTGRES_PASSWORD" ] || [ -z "$POSTGRES_USER" ] || [ -z "$POSTGRES_DB" ]; then
+            log_error "Missing required environment variables for database connection"
+            log_error "POSTGRES_PASSWORD, POSTGRES_USER, and POSTGRES_DB must be set"
+            return 1
+        fi
+        
+        while [ $retry_count -lt $max_retries ]; do
+            # Use psql with explicit parameters for robustness
             if docker exec -e PGPASSWORD="$POSTGRES_PASSWORD" "$container_id" \
                 psql -h postgres -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "SELECT 1;" >/dev/null 2>&1; then
                 log_success "Database connectivity verified for seeding"
