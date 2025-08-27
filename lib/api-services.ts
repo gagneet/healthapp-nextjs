@@ -695,9 +695,9 @@ export async function getDoctorDashboard(doctorUserId: string) {
         developmentMessage: 'This page is still under development. We are working on implementing the doctor dashboard features.',
         usingMockData: true,
         doctor: {
-          id: doctor.id,
-          name: `${doctor.first_name} ${doctor.last_name}`.trim(),
-          email: doctor.email,
+          id: doctorUser.id,
+          name: `${doctorUser.first_name} ${doctorUser.last_name}`.trim(),
+          email: doctorUser.email,
           speciality: 'General Medicine',
           license: doctorProfile.medical_license_number,
           experience: 0
@@ -732,9 +732,9 @@ export async function getDoctorDashboard(doctorUserId: string) {
         recent_vitals: recentVitalsCount
       },
       doctor: {
-        id: doctor.id,
-        name: `${doctor.first_name} ${doctor.last_name}`.trim(),
-        email: doctor.email,
+        id: doctorUser.id,
+        name: `${doctorUser.first_name} ${doctorUser.last_name}`.trim(),
+        email: doctorUser.email,
         speciality: doctorProfile?.speciality?.name || 'General Medicine',
         license: doctorProfile?.medical_license_number,
         experience: doctorProfile?.years_of_experience
