@@ -1281,6 +1281,17 @@ run_migrations() {
         while [ $db_retry_count -lt $max_db_retries ]; do
             # Use psql with explicit parameters for robustness
             if docker exec -e PGPASSWORD="$POSTGRES_PASSWORD" "$container_id" \
+local database_ready=false
+        
+        while [ $db_retry_count -lt $max_db_retries ]; do
+            # Validate required PostgreSQL environment variables
+            if [ -z "$POSTGRES_PASSWORD" ] || [ -z "$POSTGRES_USER" ] || [ -z "$POSTGRES_DB" ]; then
+                log_error "Required PostgreSQL environment variables are not set"
+                exit 1
+            fi
+            
+            # Use psql with explicit parameters for robustness
+            if docker exec -e PGPASSWORD="$POSTGRES_PASSWORD" "$container_id" \
                 psql -h postgres -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "SELECT 1;" >/dev/null 2>&1; then
                 log_success "Database connectivity verified after $((db_retry_count * 5)) seconds"
                 database_ready=true
