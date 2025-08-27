@@ -235,6 +235,12 @@ confirm() {
     fi
 }
 
+log_sanitized_db_url() {
+    local container_id="$1"
+    log_debug "Checking DATABASE_URL inside the container..."
+    docker exec "$container_id" sh -c 'echo "DATABASE_URL (sanitized): $(echo ${DATABASE_URL} | sed -E "s/(postgresql.*):(.*)@/\1:<password>@/")"' || log_warning "Could not get DATABASE_URL from container."
+}
+
 # ============================================================================
 # Argument Parsing
 # ============================================================================
@@ -1279,40 +1285,24 @@ run_migrations() {
         local database_ready=false
         
         while [ $db_retry_count -lt $max_db_retries ]; do
-            # Use psql directly to check connectivity - simpler and more reliable
-            if docker exec "$container_id" sh -c 'echo "SELECT 1;" | psql "${DATABASE_URL}" >/dev/null 2>&1'; then
+            # Use psql with explicit parameters for robustness
+            if docker exec -e PGPASSWORD="$POSTGRES_PASSWORD" "$container_id" \
+                psql -h postgres -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "SELECT 1;" >/dev/null 2>&1; then
                 log_success "Database connectivity verified after $((db_retry_count * 5)) seconds"
                 database_ready=true
                 break
             fi
             
-            # Alternative check using Node.js if psql fails
-            if docker exec "$container_id" sh -c 'node -e "
-                const url = process.env.DATABASE_URL;
-                if (!url) {
-                    console.error(\"DATABASE_URL not set\");
-                    process.exit(1);
-                }
-                console.log(\"DATABASE_URL format check passed\");
-            "' >/dev/null 2>&1; then
-                log_debug "DATABASE_URL is set in container"
-            else
-                log_error "DATABASE_URL is not set in container environment"
-                docker exec "$container_id" sh -c 'echo "DATABASE_URL=${DATABASE_URL}"' || true
-                exit 1
-            fi
-            
             ((db_retry_count++))
             log_debug "Database not ready for migrations, retry $db_retry_count/$max_db_retries"
             
-            # Every 10 retries, show more debug info
-            if [ $((db_retry_count % 10)) -eq 0 ]; then
-                log_debug "Checking DATABASE_URL in container..."
-                docker exec "$container_id" sh -c 'echo "DATABASE_URL: ${DATABASE_URL:0:50}..."' || true
+            # Every 5 retries, show more debug info
+            if [ $((db_retry_count % 5)) -eq 0 ]; then
+                log_warning "Database connectivity check failing. Dumping debug info..."
+                log_sanitized_db_url "$container_id"
                 
-                # Try to check if postgres service is accessible from app container
-                log_debug "Testing network connectivity to postgres..."
-                docker exec "$container_id" sh -c 'ping -c 1 postgres 2>/dev/null || nc -zv postgres 5432 2>&1 || echo "Network test failed"' || true
+                log_debug "Testing network connectivity from app container to postgres..."
+                docker exec "$container_id" sh -c 'nc -zv postgres 5432' || log_warning "Network connectivity test to postgres:5432 failed."
             fi
             
             sleep 5
@@ -1404,14 +1394,22 @@ run_seeds() {
         local database_ready=false
         
         while [ $retry_count -lt $max_retries ]; do
-            # Simple connectivity check using psql
-            if docker exec "$container_id" sh -c 'echo "SELECT 1;" | psql "${DATABASE_URL}" >/dev/null 2>&1'; then
+            # Use psql with explicit parameters for robustness
+            if docker exec -e PGPASSWORD="$POSTGRES_PASSWORD" "$container_id" \
+                psql -h postgres -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "SELECT 1;" >/dev/null 2>&1; then
                 log_success "Database connectivity verified for seeding"
                 database_ready=true
                 break
             fi
             ((retry_count++))
             log_debug "Database not ready for seeding, retry $retry_count/$max_retries"
+
+            # On every 3rd retry, show debug info
+            if [ $((retry_count % 3)) -eq 0 ]; then
+                log_warning "Database connectivity check for seeding failing. Dumping debug info..."
+                log_sanitized_db_url "$container_id"
+            fi
+
             sleep 3
         done
         
