@@ -92,9 +92,11 @@ export default function DoctorDashboard() {
       const analyticsData: APIResponse<AdherenceAnalyticsAPI> = await analyticsRes.json()
 
       // Check for API errors in the response body
-      if (!statsData.status || !patientsData.status || !alertsData.status || !analyticsData.status) {
-        // You can log the specific error messages if you want
-        const errorMsg = statsData.payload.message || patientsData.payload.message || alertsData.payload.message || analyticsData.payload.message || 'An API error occurred';
+      const responses = [statsData, patientsData, alertsData, analyticsData];
+      if (responses.some(res => !res.status)) {
+        const errorMsg = responses.find(res => !res.status)?.payload?.error?.message ||
+                         responses.find(res => !res.status)?.payload?.message ||
+                         'An API error occurred';
         throw new Error(errorMsg);
       }
 

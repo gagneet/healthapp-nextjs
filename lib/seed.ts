@@ -102,11 +102,26 @@ export async function seedComprehensiveHealthcareData() {
         // Always start with a clean database
         await cleanDatabase();
 
+        let testUsers: { count: number } = { count: 0 };
+        let provider: any;
+
+export async function seedComprehensiveHealthcareData() {
+    console.log('📊 Seeding comprehensive healthcare test data with updated schema...');
+
+    try {
+        await waitForTables();
+
+        // Always start with a clean database
+        await cleanDatabase();
+
+        let testUsers: { count: number } = { count: 0 };
+        let provider: any;
+        const defaultPassword = process.env.SEED_DEFAULT_PASSWORD || 'TempPassword123!';
+
         await prisma.$transaction(async (tx) => {
             console.log('🚀 Starting seeding transaction...');
 
             // Password setup
-            const defaultPassword = process.env.SEED_DEFAULT_PASSWORD || 'TempPassword123!';
             const hashedPassword = await bcrypt.hash(defaultPassword, 12);
             const basicDoctorPassword = await bcrypt.hash('TempPassword123!', 12);
 
