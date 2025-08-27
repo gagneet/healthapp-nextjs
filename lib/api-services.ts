@@ -1644,7 +1644,7 @@ export async function getEmergencyAlerts(searchParams: {
       summary: {
         totalAlerts: total,
         activeAlerts: alerts.filter(a => !a.resolved).length,
-        criticalAlerts: alerts.filter(a => a.priorityLevel === 'CRITICAL' || a.priorityLevel === 'EMERGENCY').length,
+        criticalAlerts: alerts.filter(a => a.severityLevel === 'CRITICAL' || a.severityLevel === 'EMERGENCY').length,
         unacknowledgedAlerts: alerts.filter(a => !a.acknowledged).length,
       },
     };
