@@ -85,8 +85,7 @@ export async function GET(request: NextRequest) {
         id: patient.id,
         patientId: patient.patientId,
         firstName: patient.user.firstName || '',
-        lastName:
-          patient.user.lastName || '',
+        lastName: patient.user.lastName || '',
         name: userName,
         email: patient.user?.email,
         lastVisit: patient.lastVisitDate || patient.updatedAt,
