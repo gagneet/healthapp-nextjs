@@ -696,7 +696,7 @@ export async function getDoctorDashboard(doctorUserId: string) {
         usingMockData: true,
         doctor: {
           id: doctorUser.id,
-          name: `${doctorUser.firstName} ${doctorUser.lastName}`.trim(),
+          name: `${doctorUser.first_name} ${doctorUser.last_name}`.trim(),
           email: doctorUser.email,
           speciality: 'General Medicine',
           license: doctorProfile.medical_license_number,
@@ -733,9 +733,9 @@ export async function getDoctorDashboard(doctorUserId: string) {
       },
       doctor: {
         id: doctorUser.id,
-        name: `${doctorUser.firstName} ${doctorUser.lastName}`.trim(),
+        name: `${doctorUser.first_name} ${doctorUser.last_name}`.trim(),
         email: doctorUser.email,
-        speciality: doctorProfile?.speciality?.name || 'General Medicine',
+        speciality: doctorProfile?.specialty?.name || 'General Medicine',
         license: doctorProfile?.medical_license_number,
         experience: doctorProfile?.years_of_experience
       },
