@@ -1281,17 +1281,6 @@ run_migrations() {
         while [ $db_retry_count -lt $max_db_retries ]; do
             # Use psql with explicit parameters for robustness
             if docker exec -e PGPASSWORD="$POSTGRES_PASSWORD" "$container_id" \
-local database_ready=false
-        
-        while [ $db_retry_count -lt $max_db_retries ]; do
-            # Validate required PostgreSQL environment variables
-            if [ -z "$POSTGRES_PASSWORD" ] || [ -z "$POSTGRES_USER" ] || [ -z "$POSTGRES_DB" ]; then
-                log_error "Required PostgreSQL environment variables are not set"
-                exit 1
-            fi
-            
-            # Use psql with explicit parameters for robustness
-            if docker exec -e PGPASSWORD="$POSTGRES_PASSWORD" "$container_id" \
                 psql -h postgres -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "SELECT 1;" >/dev/null 2>&1; then
                 log_success "Database connectivity verified after $((db_retry_count * 5)) seconds"
                 database_ready=true
@@ -1301,14 +1290,14 @@ local database_ready=false
             ((db_retry_count++))
             log_debug "Database not ready for migrations, retry $db_retry_count/$max_db_retries"
             
-            # Every 10 retries, show more debug info
-            if [ $((db_retry_count % 10)) -eq 0 ]; then
-                log_debug "Checking database connection details..."
-                docker exec "$container_id" sh -c 'echo "Host: postgres, User: $POSTGRES_USER, DB: $POSTGRES_DB"' || true
+            # Every 5 retries, show more debug info
+            if [ $((db_retry_count % 5)) -eq 0 ]; then
+                log_warning "Database connectivity check failing. Dumping debug info..."
+                log_debug "Checking DATABASE_URL inside the container..."
+                docker exec "$container_id" sh -c 'echo "DATABASE_URL (sanitized): $(echo ${DATABASE_URL} | sed -E "s/(postgresql.*):(.*)@/\1:<password>@/")"' || log_warning "Could not get DATABASE_URL from container."
                 
-                # Try to check if postgres service is accessible from app container
-                log_debug "Testing network connectivity to postgres..."
-                docker exec "$container_id" sh -c 'ping -c 1 postgres 2>/dev/null || nc -zv postgres 5432 2>&1 || echo "Network test failed"' || true
+                log_debug "Testing network connectivity from app container to postgres..."
+                docker exec "$container_id" sh -c 'curl -v telnet://postgres:5432 2>&1' || log_warning "Network connectivity test to postgres:5432 failed."
             fi
             
             sleep 5
@@ -1401,20 +1390,6 @@ run_seeds() {
         
         while [ $retry_count -lt $max_retries ]; do
             # Use psql with explicit parameters for robustness
-log_info "Verifying database connectivity before seeding..."
-        local max_retries=10
-        local retry_count=0
-        local database_ready=false
-        
-        # Validate required environment variables
-        if [ -z "$POSTGRES_PASSWORD" ] || [ -z "$POSTGRES_USER" ] || [ -z "$POSTGRES_DB" ]; then
-            log_error "Missing required environment variables for database connection"
-            log_error "POSTGRES_PASSWORD, POSTGRES_USER, and POSTGRES_DB must be set"
-            return 1
-        fi
-        
-        while [ $retry_count -lt $max_retries ]; do
-            # Use psql with explicit parameters for robustness
             if docker exec -e PGPASSWORD="$POSTGRES_PASSWORD" "$container_id" \
                 psql -h postgres -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "SELECT 1;" >/dev/null 2>&1; then
                 log_success "Database connectivity verified for seeding"
@@ -1423,6 +1398,13 @@ log_info "Verifying database connectivity before seeding..."
             fi
             ((retry_count++))
             log_debug "Database not ready for seeding, retry $retry_count/$max_retries"
+
+            # On every 3rd retry, show debug info
+            if [ $((retry_count % 3)) -eq 0 ]; then
+                log_warning "Database connectivity check for seeding failing. Dumping debug info..."
+                docker exec "$container_id" sh -c 'echo "DATABASE_URL (sanitized): $(echo ${DATABASE_URL} | sed -E "s/(postgresql.*):(.*)@/\1:<password>@/")"' || log_warning "Could not get DATABASE_URL from container."
+            fi
+
             sleep 3
         done
         
