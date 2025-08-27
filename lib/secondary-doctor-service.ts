@@ -177,7 +177,7 @@ export class SecondaryDoctorService {
           carePlanIds: request.carePlanIds || [],
           assignedByDoctorId: request.assignedBy,
           patientConsentRequired: requiresConsent,
-          patientConsentStatus: consentStatus as any,
+          patientConsentStatus: consentStatus,
           consentOtp: consentOtp,
           consentOtpExpiresAt: consentOtp ? new Date(Date.now() + 30 * 60 * 1000) : null, // 30 minutes
           assignmentReason: request.assignmentReason,
