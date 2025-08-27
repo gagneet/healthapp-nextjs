@@ -1246,6 +1246,73 @@ check_pgadmin_health() {
 # Enhanced Database Functions with Better Error Handling
 # ============================================================================
 
+check_schema_consistency() {
+    # This check is for inside the container
+    if ! docker exec "$1" sh -c '[ -d "prisma/migrations" ] && [ "$(find prisma/migrations -mindepth 1 -print -quit)" ]'; then
+        log_info "No migrations directory found."
+        return 2 # No migrations
+    fi
+
+    log_info "Migrations directory found. Checking for schema consistency..."
+    # Check for any expected application table in the configured schema.
+    local schema_name="${POSTGRES_SCHEMA:-public}"
+    local expected_tables="${EXPECTED_TABLES:-}"
+    local table_condition=""
+    if [ -n "$expected_tables" ]; then
+        # Convert comma-separated list to SQL IN clause
+        # Remove spaces, wrap each table in single quotes
+        local tables_in_clause=$(echo "$expected_tables" | tr -d ' ' | sed "s/,/','/g; s/^/'/; s/\$/'/")
+        table_condition="table_name IN ($tables_in_clause)"
+    else
+        # Fallback: any table except '_prisma_migrations'
+        table_condition="table_name != '_prisma_migrations'"
+    fi
+    local check_tables_cmd="psql -h postgres -U \"$POSTGRES_USER\" -d \"$POSTGRES_DB\" -tc \"SELECT 1 FROM information_schema.tables WHERE table_schema = '$schema_name' AND $table_condition LIMIT 1;\" | grep -q 1"
+
+    if docker exec -e PGPASSWORD="$POSTGRES_PASSWORD" "$1" sh -c "$check_tables_cmd"; then
+        log_info "Application tables exist. Database schema appears consistent."
+        return 0 # Consistent
+    else
+        log_warning "No application tables found, but migrations exist. Database may be in an inconsistent state."
+        return 1 # Inconsistent
+    fi
+}
+
+run_migration_logic() {
+    local container_id="$1"
+    local consistency_status="$2"
+
+    if [ "$consistency_status" -eq 0 ]; then
+        log_info "Running standard migration."
+        if docker exec "$container_id" npx prisma migrate deploy; then
+            log_success "Migrations applied successfully."
+        else
+            log_error "Migration deploy failed."
+            exit 1
+        fi
+    elif [ "$consistency_status" -eq 1 ]; then
+        log_warning "Requesting database reset to restore consistency."
+        confirm "Reset database and re-apply all migrations for $ENVIRONMENT environment?"
+        if docker exec "$container_id" npx prisma migrate reset --force; then
+            log_success "Database reset and migrations applied successfully."
+        else
+            log_error "Database reset failed."
+            exit 1
+        fi
+    elif [ "$consistency_status" -eq 2 ]; then
+        log_info "No migrations found. Running 'prisma db push' to sync schema..."
+        if docker exec "$container_id" npx prisma db push --accept-data-loss; then
+            log_success "Schema pushed successfully."
+        else
+            log_error "Schema push failed."
+            exit 1
+        fi
+    else
+        log_error "Unknown consistency status: $consistency_status"
+        exit 1
+    fi
+}
+
 run_migrations() {
     local should_migrate="${1:-false}"
     
@@ -1319,25 +1386,9 @@ run_migrations() {
         
         # Run migrations in the app container
         log_info "Running Prisma migrations..."
-        
-        log_info "Checking for existing Prisma migrations..."
-        if docker exec "$container_id" sh -c '[ -d "prisma/migrations" ] && [ "$(find prisma/migrations -mindepth 1 -print -quit)" ]'; then
-            log_info "Migrations exist. Running 'prisma migrate deploy'..."
-            if docker exec "$container_id" npx prisma migrate deploy; then
-                log_success "Migrations applied successfully."
-            else
-                log_error "Migration deploy failed."
-                exit 1
-            fi
-        else
-            log_info "No migrations found. Running 'prisma db push' to sync schema..."
-            if docker exec "$container_id" npx prisma db push --accept-data-loss; then
-                log_success "Schema pushed successfully."
-            else
-                log_error "Schema push failed."
-                exit 1
-            fi
-        fi
+        check_schema_consistency "$container_id"
+        local consistency_status=$?
+        run_migration_logic "$container_id" "$consistency_status"
     fi
 }
 
