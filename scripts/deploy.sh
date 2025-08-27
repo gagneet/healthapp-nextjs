@@ -1279,27 +1279,12 @@ run_migrations() {
         local database_ready=false
         
         while [ $db_retry_count -lt $max_db_retries ]; do
-            # Use psql directly to check connectivity - simpler and more reliable
-            if docker exec "$container_id" sh -c 'echo "SELECT 1;" | psql "${DATABASE_URL}" >/dev/null 2>&1'; then
+            # Use psql with explicit parameters for robustness
+            if docker exec -e PGPASSWORD="$POSTGRES_PASSWORD" "$container_id" \
+                psql -h postgres -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "SELECT 1;" >/dev/null 2>&1; then
                 log_success "Database connectivity verified after $((db_retry_count * 5)) seconds"
                 database_ready=true
                 break
-            fi
-            
-            # Alternative check using Node.js if psql fails
-            if docker exec "$container_id" sh -c 'node -e "
-                const url = process.env.DATABASE_URL;
-                if (!url) {
-                    console.error(\"DATABASE_URL not set\");
-                    process.exit(1);
-                }
-                console.log(\"DATABASE_URL format check passed\");
-            "' >/dev/null 2>&1; then
-                log_debug "DATABASE_URL is set in container"
-            else
-                log_error "DATABASE_URL is not set in container environment"
-                docker exec "$container_id" sh -c 'echo "DATABASE_URL=${DATABASE_URL}"' || true
-                exit 1
             fi
             
             ((db_retry_count++))
@@ -1307,8 +1292,8 @@ run_migrations() {
             
             # Every 10 retries, show more debug info
             if [ $((db_retry_count % 10)) -eq 0 ]; then
-                log_debug "Checking DATABASE_URL in container..."
-                docker exec "$container_id" sh -c 'echo "DATABASE_URL: ${DATABASE_URL:0:50}..."' || true
+                log_debug "Checking database connection details..."
+                docker exec "$container_id" sh -c 'echo "Host: postgres, User: $POSTGRES_USER, DB: $POSTGRES_DB"' || true
                 
                 # Try to check if postgres service is accessible from app container
                 log_debug "Testing network connectivity to postgres..."
@@ -1404,8 +1389,9 @@ run_seeds() {
         local database_ready=false
         
         while [ $retry_count -lt $max_retries ]; do
-            # Simple connectivity check using psql
-            if docker exec "$container_id" sh -c 'echo "SELECT 1;" | psql "${DATABASE_URL}" >/dev/null 2>&1'; then
+            # Use psql with explicit parameters for robustness
+            if docker exec -e PGPASSWORD="$POSTGRES_PASSWORD" "$container_id" \
+                psql -h postgres -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "SELECT 1;" >/dev/null 2>&1; then
                 log_success "Database connectivity verified for seeding"
                 database_ready=true
                 break
