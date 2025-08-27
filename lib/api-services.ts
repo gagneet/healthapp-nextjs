@@ -355,7 +355,7 @@ export async function getPatients(doctorId: string, pagination: {
         dateOfBirth: patient.user.dateOfBirth,
         primaryDoctor: patient.primaryCareDoctor ? {
           name: `${patient.primaryCareDoctor.user.firstName} ${patient.primaryCareDoctor.user.lastName}`,
-          speciality: patient.primaryCareDoctor.specialty?.name,
+          specialty: patient.primaryCareDoctor.specialty?.name,
         } : null,
         stats: {
           medicationsCount: patient._count.medicationLogs,
@@ -698,7 +698,7 @@ export async function getDoctorDashboard(doctorUserId: string) {
           id: doctorUser.id,
           name: `${doctorUser.firstName} ${doctorUser.lastName}`.trim(),
           email: doctorUser.email,
-          speciality: 'General Medicine',
+          specialty: 'General Medicine',
           license: doctorProfile.medicalLicenseNumber,
           experience: 0
         },
@@ -735,7 +735,7 @@ export async function getDoctorDashboard(doctorUserId: string) {
         id: doctorUser.id,
         name: `${doctorUser.firstName} ${doctorUser.lastName}`.trim(),
         email: doctorUser.email,
-        speciality: doctorProfile?.specialty?.name || 'General Medicine',
+        specialty: doctorProfile?.specialty?.name || 'General Medicine',
         license: doctorProfile?.medicalLicenseNumber,
         experience: doctorProfile?.yearsOfExperience
       },
@@ -1606,11 +1606,11 @@ export async function getEmergencyAlerts(searchParams: {
         patientId: alert.patientId,
         patientName: `${alert.patient.user.firstName} ${alert.patient.user.lastName}`,
         alertType: alert.alertType,
-        severityLevel: alert.priorityLevel,
-        alertStatus: alert.acknowledged,
+        severityLevel: alert.severityLevel,
+        alertStatus: alert.resolved ? "RESOLVED" : alert.acknowledged ? "ACKNOWLEDGED" : "UNACKNOWLEDGED",
         alertMessage: alert.alertMessage,
         clinicalContext: alert.clinicalContext,
-        triggeredAt: alert.createdAt,
+        triggeredAt: alert.triggeredAt,
         vitalReading: alert.vitalReading ? {
           value: alert.vitalReading.measurementValue,
           unit: alert.vitalReading.measurementUnit,
@@ -1629,7 +1629,7 @@ export async function getEmergencyAlerts(searchParams: {
         } : null,
         resolvedAt: alert.resolvedAt,
         resolutionNotes: alert.resolutionNotes,
-        requiresEscalation: alert.escalationLevel,
+        requiresEscalation: !!alert.escalationLevel && alert.escalationLevel > 0,
         escalationLevel: alert.escalationLevel,
         createdAt: alert.createdAt,
       })),
