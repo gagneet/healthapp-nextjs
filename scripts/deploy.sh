@@ -1323,21 +1323,18 @@ run_migrations() {
         log_info "Checking for existing Prisma migrations..."
         if docker exec "$container_id" sh -c '[ -d "prisma/migrations" ] && [ -n "$(ls -A "prisma/migrations")" ]'; then
             log_info "Migrations exist. Running 'prisma migrate deploy'..."
-            if docker exec "$container_id" npx prisma migrate deploy; then
-                log_success "Migrations applied successfully."
-            else
+            if ! docker exec "$container_id" npx prisma migrate deploy; then
                 log_error "Migration deploy failed."
                 exit 1
             fi
         else
             log_info "No migrations found. Running 'prisma db push' to sync schema..."
-            if docker exec "$container_id" npx prisma db push --accept-data-loss; then
-                log_success "Schema pushed successfully."
-            else
+            if ! docker exec "$container_id" npx prisma db push --accept-data-loss; then
                 log_error "Schema push failed."
                 exit 1
             fi
         fi
+        log_success "Database migrations completed successfully"
     fi
 }
 
