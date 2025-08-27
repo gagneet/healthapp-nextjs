@@ -1321,7 +1321,7 @@ run_migrations() {
         log_info "Running Prisma migrations..."
         
         log_info "Checking for existing Prisma migrations..."
-        if docker exec "$container_id" sh -c '[ -d "prisma/migrations" ] && [ -n "$(ls -A "prisma/migrations")" ]'; then
+        if docker exec "$container_id" sh -c '[ -d "prisma/migrations" ] && [ "$(find prisma/migrations -mindepth 1 -print -quit)" ]'; then
             log_info "Migrations exist. Running 'prisma migrate deploy'..."
             if docker exec "$container_id" npx prisma migrate deploy; then
                 log_success "Migrations applied successfully."
