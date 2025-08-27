@@ -1,5 +1,5 @@
 // Test core dashboard functionality by directly querying data
-import { PrismaClient } from '@/prisma/index';
+import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient({
@@ -10,6 +10,13 @@ const prisma = new PrismaClient({
   }
 });
 
+const sanitize = (input: any) => {
+  if (typeof input === 'string') {
+    return input.replace(/(\r\n|\n|\r)/gm, "");
+  }
+  return input;
+}
+
 async function testDirectDashboard() {
   try {
     console.log('🧪 Testing direct dashboard data access...');
@@ -18,7 +25,6 @@ async function testDirectDashboard() {
     console.log('\n👥 Testing user authentication data...');
     
     const testPassword = 'password123';
-    const hashedPassword = await bcrypt.hash(testPassword, 12);
     
     const users = await prisma.user.findMany({
       where: {
@@ -28,15 +34,15 @@ async function testDirectDashboard() {
         id: true,
         email: true,
         role: true,
-        first_name: true,
-        last_name: true,
-        password_hash: true,
-        account_status: true,
-        patient: {
+        firstName: true,
+        lastName: true,
+        passwordHash: true,
+        accountStatus: true,
+        patientProfile: {
           select: {
             id: true,
-            patient_id: true,
-            medical_record_number: true
+            patientId: true,
+            medicalRecordNumber: true
           }
         }
       }
@@ -44,16 +50,16 @@ async function testDirectDashboard() {
     
     console.log(`✅ Found ${users.length} test users:`);
     users.forEach(user => {
-      console.log(`  - ${user.email} (${user.role}) - ${user.first_name} ${user.last_name} [${user.account_status}]`);
-      if (user.patient) {
-        console.log(`    Patient Profile: ${user.patient.patient_id} (${user.patient.medical_record_number})`);
+      console.log(`  - ${sanitize(user.email)} (${sanitize(user.role)}) - ${sanitize(user.firstName)} ${sanitize(user.lastName)} [${sanitize(user.accountStatus)}]`);
+      if (user.patientProfile) {
+        console.log(`    Patient Profile: ${sanitize(user.patientProfile.patientId)} (${sanitize(user.patientProfile.medicalRecordNumber)})`);
       }
     });
     
     // Test password validation for a sample user
     const sampleUser = users.find(u => u.email === 'doctor1@healthapp.com');
-    if (sampleUser) {
-      const validPassword = await bcrypt.compare(testPassword, sampleUser.password_hash);
+    if (sampleUser && sampleUser.passwordHash) {
+      const validPassword = await bcrypt.compare(testPassword, sampleUser.passwordHash);
       console.log(`✅ Password validation test: ${validPassword ? 'PASSED' : 'FAILED'}`);
     }
     
@@ -64,19 +70,19 @@ async function testDirectDashboard() {
     const doctorUser = await prisma.user.findFirst({
       where: { role: 'DOCTOR' },
       include: {
-        doctors_doctors_user_idTousers: true
+        doctorProfile: true
       }
     });
     
-    if (doctorUser && doctorUser.doctors_doctors_user_idTousers) {
-      const doctor = doctorUser.doctors_doctors_user_idTousers;
+    if (doctorUser && doctorUser.doctorProfile) {
+      const doctor = doctorUser.doctorProfile;
       console.log('✅ Doctor profile found:');
-      console.log(`  - Name: ${doctorUser.first_name} ${doctorUser.last_name}`);
-      console.log(`  - Email: ${doctorUser.email}`);
-      console.log(`  - Doctor ID: ${doctor.doctor_id}`);
-      console.log(`  - License: ${doctor.medical_license_number}`);
-      console.log(`  - Experience: ${doctor.years_of_experience} years`);
-      console.log(`  - Fee: $${doctor.consultation_fee}`);
+      console.log(`  - Name: ${sanitize(doctorUser.firstName)} ${sanitize(doctorUser.lastName)}`);
+      console.log(`  - Email: ${sanitize(doctorUser.email)}`);
+      console.log(`  - Doctor ID: ${sanitize(doctor.doctorId)}`);
+      console.log(`  - License: ${sanitize(doctor.medicalLicenseNumber)}`);
+      console.log(`  - Experience: ${sanitize(doctor.yearsOfExperience)} years`);
+      console.log(`  - Fee: $${sanitize(doctor.consultationFee)}`);
     } else {
       console.log('❌ No doctor profile found');
     }
@@ -88,34 +94,22 @@ async function testDirectDashboard() {
     const patientUser = await prisma.user.findFirst({
       where: { role: 'PATIENT' },
       include: {
-        patient: {
-          include: {
-            user: {
-              select: {
-                first_name: true,
-                last_name: true,
-                email: true,
-                date_of_birth: true,
-                gender: true
-              }
-            }
-          }
-        }
+        patientProfile: true
       }
     });
     
-    if (patientUser && patientUser.patient) {
-      const age = patientUser.patient.user.date_of_birth 
-        ? Math.floor((new Date().getTime() - new Date(patientUser.patient.user.date_of_birth).getTime()) / (365.25 * 24 * 60 * 60 * 1000))
+    if (patientUser && patientUser.patientProfile) {
+      const age = patientUser.dateOfBirth
+        ? Math.floor((new Date().getTime() - new Date(patientUser.dateOfBirth).getTime()) / (365.25 * 24 * 60 * 60 * 1000))
         : null;
         
       console.log('✅ Patient profile found:');
-      console.log(`  - Name: ${patientUser.patient.user.first_name} ${patientUser.patient.user.last_name}`);
-      console.log(`  - Email: ${patientUser.patient.user.email}`);
-      console.log(`  - Patient ID: ${patientUser.patient.patient_id}`);
-      console.log(`  - Medical Record: ${patientUser.patient.medical_record_number}`);
+      console.log(`  - Name: ${sanitize(patientUser.firstName)} ${sanitize(patientUser.lastName)}`);
+      console.log(`  - Email: ${sanitize(patientUser.email)}`);
+      console.log(`  - Patient ID: ${sanitize(patientUser.patientProfile.patientId)}`);
+      console.log(`  - Medical Record: ${sanitize(patientUser.patientProfile.medicalRecordNumber)}`);
       console.log(`  - Age: ${age} years`);
-      console.log(`  - Gender: ${patientUser.patient.user.gender}`);
+      console.log(`  - Gender: ${sanitize(patientUser.gender)}`);
     } else {
       console.log('❌ No patient profile found');
     }
@@ -126,20 +120,20 @@ async function testDirectDashboard() {
     const hspUser = await prisma.user.findFirst({
       where: { role: 'HSP' },
       include: {
-        hsps_hsps_user_idTousers: true
+        hspProfile: true
       }
     });
     
-    if (hspUser && hspUser.hsps_hsps_user_idTousers) {
-      const hsp = hspUser.hsps_hsps_user_idTousers;
+    if (hspUser && hspUser.hspProfile) {
+      const hsp = hspUser.hspProfile;
       console.log('✅ HSP profile found:');
-      console.log(`  - Name: ${hspUser.first_name} ${hspUser.last_name}`);
-      console.log(`  - Email: ${hspUser.email}`);
-      console.log(`  - HSP ID: ${hsp.hsp_id}`);
-      console.log(`  - Type: ${hsp.hsp_type}`);
-      console.log(`  - License: ${hsp.license_number}`);
-      console.log(`  - Experience: ${hsp.years_of_experience} years`);
-      console.log(`  - Certifications: ${hsp.certifications.join(', ')}`);
+      console.log(`  - Name: ${sanitize(hspUser.firstName)} ${sanitize(hspUser.lastName)}`);
+      console.log(`  - Email: ${sanitize(hspUser.email)}`);
+      console.log(`  - HSP ID: ${sanitize(hsp.hspId)}`);
+      console.log(`  - Type: ${sanitize(hsp.hspType)}`);
+      console.log(`  - License: ${sanitize(hsp.licenseNumber)}`);
+      console.log(`  - Experience: ${sanitize(hsp.yearsOfExperience)} years`);
+      console.log(`  - Certifications: ${hsp.certifications.map(sanitize).join(', ')}`);
     } else {
       console.log('❌ No HSP profile found');
     }
@@ -148,10 +142,10 @@ async function testDirectDashboard() {
     console.log('\n🏥 Testing admin dashboard data...');
     
     const adminStats = await Promise.all([
-      prisma.user.count({ where: { account_status: 'ACTIVE' } }),
-      prisma.doctors.count(),
+      prisma.user.count({ where: { accountStatus: 'ACTIVE' } }),
+      prisma.doctor.count(),
       prisma.patient.count(),
-      prisma.hsps.count(),
+      prisma.hsp.count(),
       prisma.user.count({ where: { role: 'SYSTEM_ADMIN' } }),
       prisma.user.count({ where: { role: 'HOSPITAL_ADMIN' } })
     ]);
@@ -170,26 +164,26 @@ async function testDirectDashboard() {
     console.log('\n🆔 Testing business ID integrity...');
     
     const businessIds = await Promise.all([
-      prisma.doctors.findMany({ select: { doctor_id: true } }),
-      prisma.hsps.findMany({ select: { hsp_id: true } }),
-      prisma.patient.findMany({ select: { patient_id: true } })
+      prisma.doctor.findMany({ select: { doctorId: true } }),
+      prisma.hsp.findMany({ select: { hspId: true } }),
+      prisma.patient.findMany({ select: { patientId: true } })
     ]);
     
     const [doctorIds, hspIds, patientIds] = businessIds;
     
     // Check ID format
-    const doctorIdPattern = /^DOC-\d{4}-\d{3}$/;
-    const hspIdPattern = /^HSP-\d{4}-\d{3}$/;
-    const patientIdPattern = /^PAT-\d{4}-\d{3}$/;
+    const doctorIdPattern = /^DOC-\d{4}-\d{4}$/;
+    const hspIdPattern = /^HSP-\d{4}-\d{4}$/;
+    const patientIdPattern = /^PAT-\d{4}-\d{4}$/;
     
-    const doctorIdValid = doctorIds.every(d => doctorIdPattern.test(d.doctor_id));
-    const hspIdValid = hspIds.every(h => hspIdPattern.test(h.hsp_id));
-    const patientIdValid = patientIds.every(p => patientIdPattern.test(p.patient_id!));
+    const doctorIdValid = doctorIds.every(d => d.doctorId && doctorIdPattern.test(d.doctorId));
+    const hspIdValid = hspIds.every(h => h.hspId && hspIdPattern.test(h.hspId));
+    const patientIdValid = patientIds.every(p => p.patientId && patientIdPattern.test(p.patientId!));
     
     console.log('✅ Business ID format validation:');
-    console.log(`  - Doctor IDs: ${doctorIdValid ? 'VALID' : 'INVALID'} (${doctorIds.map(d => d.doctor_id).join(', ')})`);
-    console.log(`  - HSP IDs: ${hspIdValid ? 'VALID' : 'INVALID'} (${hspIds.map(h => h.hsp_id).join(', ')})`);
-    console.log(`  - Patient IDs: ${patientIdValid ? 'VALID' : 'INVALID'} (${patientIds.map(p => p.patient_id).filter(Boolean).join(', ')})`);
+    console.log(`  - Doctor IDs: ${doctorIdValid ? 'VALID' : 'INVALID'} (${doctorIds.map(d => sanitize(d.doctorId)).join(', ')})`);
+    console.log(`  - HSP IDs: ${hspIdValid ? 'VALID' : 'INVALID'} (${hspIds.map(h => sanitize(h.hspId)).join(', ')})`);
+    console.log(`  - Patient IDs: ${patientIdValid ? 'VALID' : 'INVALID'} (${patientIds.map(p => sanitize(p.patientId)).filter(Boolean).join(', ')})`);
     
     console.log('\n✅ All dashboard functionality tests completed successfully!');
     

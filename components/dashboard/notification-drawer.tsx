@@ -42,7 +42,7 @@ const mockNotifications: Notification[] = [
     message: 'Patient Jane Smith has missed 3 consecutive blood pressure medications',
     patient_name: 'Jane Smith',
     patient_id: '2',
-    created_at: '2024-01-22T10:30:00Z',
+    created_at: '2025-01-22T10:30:00Z',
     read: false,
     action_required: true,
     category: 'medication'
@@ -54,7 +54,7 @@ const mockNotifications: Notification[] = [
     message: 'Blood pressure reading 165/95 mmHg exceeds normal range',
     patient_name: 'Michael Johnson',
     patient_id: '3',
-    created_at: '2024-01-22T09:15:00Z',
+    created_at: '2025-01-22T09:15:00Z',
     read: false,
     action_required: true,
     category: 'vital'
@@ -66,7 +66,7 @@ const mockNotifications: Notification[] = [
     message: 'Upcoming appointment with John Doe tomorrow at 10:00 AM',
     patient_name: 'John Doe',
     patient_id: '1',
-    created_at: '2024-01-22T08:00:00Z',
+    created_at: '2025-01-22T08:00:00Z',
     read: true,
     action_required: false,
     category: 'appointment'
@@ -78,7 +78,7 @@ const mockNotifications: Notification[] = [
     message: 'Sarah Wilson has successfully completed her 30-day medication adherence plan',
     patient_name: 'Sarah Wilson',
     patient_id: '4',
-    created_at: '2024-01-21T16:45:00Z',
+    created_at: '2025-01-21T16:45:00Z',
     read: true,
     action_required: false,
     category: 'medication'
@@ -90,7 +90,7 @@ const mockNotifications: Notification[] = [
     message: 'Patient Robert Brown missed scheduled appointment today',
     patient_name: 'Robert Brown',
     patient_id: '5',
-    created_at: '2024-01-21T14:30:00Z',
+    created_at: '2025-01-21T14:30:00Z',
     read: false,
     action_required: true,
     category: 'appointment'
@@ -100,7 +100,7 @@ const mockNotifications: Notification[] = [
     type: 'info',
     title: 'System Update',
     message: 'New features available in your Healthcare Application dashboard',
-    created_at: '2024-01-21T09:00:00Z',
+    created_at: '2025-01-21T09:00:00Z',
     read: true,
     action_required: false,
     category: 'system'
@@ -112,7 +112,7 @@ const mockNotifications: Notification[] = [
     message: 'Patient Lisa Davis reported severe chest pain symptoms',
     patient_name: 'Lisa Davis',
     patient_id: '6',
-    created_at: '2024-01-20T22:15:00Z',
+    created_at: '2025-01-20T22:15:00Z',
     read: false,
     action_required: true,
     category: 'alert'

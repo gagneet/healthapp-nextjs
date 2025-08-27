@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from "@/lib/auth";
+import { auth } from "@/lib/auth";
 import { prisma, checkDatabaseConnection } from '@/lib/prisma';
 import { handleApiError, formatApiSuccess } from '@/lib/api-services';
 
@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
         const [userCount, patientCount, doctorCount] = await Promise.all([
           prisma.user.count().catch(() => null),
           prisma.patient.count().catch(() => null), 
-          prisma.doctors.count().catch(() => null)
+          prisma.doctor.count().catch(() => null)
         ]);
         
         // If all queries succeeded, schema exists

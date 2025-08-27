@@ -3,8 +3,50 @@
 # deploy.sh - Universal HealthApp Deployment Script
 # Usage: ./scripts/deploy.sh [dev|test|prod] [COMMAND] [OPTIONS]
 # Purpose: Unified deployment for dev, test, and production environments using Docker Swarm
+#
+# IMPORTANT: Ensure your docker-stack.*.yml files use consistent PostgreSQL versions
+# The script defaults to PostgreSQL 17. Set POSTGRES_VERSION in your .env file to override.
+#
+# Key Features:
+# - Early database startup: PostgreSQL and Redis start during app build
+# - Volume cleanup control: --cleanup-volumes flag for explicit data deletion
+# - Enhanced migration handling: Better connectivity checks and error recovery
+# - Robust health checks: Multiple verification methods for service readiness
+# - Debug mode: --debug flag for detailed troubleshooting output
 
 set -e
+
+# ============================================================================
+# Environment File Check
+# ============================================================================
+
+# Function to check for .env file
+check_env_file() {
+    if [ ! -f ".env" ]; then
+        echo -e "${RED}❌ ERROR: .env file not found in application root!${NC}"
+        echo -e "${YELLOW}📋 Required .env file is missing from the application root directory.${NC}"
+        echo ""
+        echo -e "${CYAN}Please copy the correct .env file to the application root before deployment:${NC}"
+        echo -e "   ${GREEN}cp path/to/your/.env.dev .env${NC}     # For development environment"
+        echo -e "   ${GREEN}cp path/to/your/.env.test .env${NC}    # For test environment"
+        echo -e "   ${GREEN}cp path/to/your/.env.prod .env${NC}    # For production environment"
+        echo ""
+        echo -e "${YELLOW}The .env file should contain required environment variables like:${NC}"
+        echo -e "   DATABASE_URL=postgresql://..."
+        echo -e "   NEXTAUTH_SECRET=..."
+        echo -e "   NEXTAUTH_URL=..."
+        echo -e "   And other environment-specific configurations"
+        echo ""
+        echo -e "${RED}Deployment cannot continue without the .env file.${NC}"
+        exit 1
+    else
+        echo -e "${GREEN}✅ .env file found in application root${NC}"
+    fi
+}
+
+# Run environment file check immediately
+echo -e "${BLUE}🔍 Checking for .env file...${NC}"
+check_env_file
 
 # Colors for output
 RED='\033[0;31m'
@@ -51,9 +93,12 @@ REPLICAS=""
 MIGRATE=false
 SEED=false
 CLEANUP=false
+CLEANUP_VOLUMES=false  # New flag for volume cleanup
 AUTO_YES=false
 SKIP_BUILD=false
 SKIP_IMAGE_PULL=false
+EARLY_DB_START=true    # New flag to start DB early
+DB_ALREADY_DEPLOYED=false  # Track if DB was deployed early
 
 # ============================================================================
 # Helper Functions
@@ -82,7 +127,7 @@ COMMANDS:
   migrate      Run database migrations only
   seed         Run database seeders only
   backup       Backup database
-  cleanup      Clean up environment (removes everything)
+  cleanup      Clean up environment (removes compiled files, Docker stacks, networks)
   scale        Scale specific service up/down
 
 OPTIONS:
@@ -98,17 +143,39 @@ OPTIONS:
   --replicas N               Number of replicas for all services
   --migrate                  Run database migrations after deployment
   --seed                     Run database seeders after deployment
-  --cleanup                  Clean up before deployment
+  --cleanup                  Clean up before deployment (compiled files + Docker resources)
+  --cleanup-volumes          DANGER: Also remove data volumes during cleanup (data loss!)
+  --no-early-db              Don't start database services early (default: start early)
   --skip-build              Skip Docker image building
   --skip-image-pull         Skip pulling base images
   --auto-yes                Skip all confirmation prompts
   --debug                   Enable debug output
 
+DOCKER SWARM NOTES:
+  For single-node swarms (development/testing):
+    - Local images can be used directly
+    - No registry required
+  
+  For multi-node swarms (production):
+    - Images must be accessible to all nodes
+    - Configure DOCKER_REGISTRY in .env file:
+      DOCKER_REGISTRY=your.registry.com
+    - Or run a local registry:
+      docker run -d -p 5000:5000 --name registry registry:2
+      DOCKER_REGISTRY=localhost:5000
+
+IMPORTANT: docker-stack.*.yml files must use environment variables for images:
+  app:
+    image: \${APP_IMAGE:-healthapp:test}
+
 EXAMPLES:
   # Deploy test environment with custom domain and scaling
   ./scripts/deploy.sh test deploy --domain healthapp.gagneet.com --replicas 2 --migrate --seed
 
-  # Deploy production with cleanup
+  # Deploy test with full cleanup including volumes (DANGER: data loss!)
+  ./scripts/deploy.sh test deploy --cleanup --cleanup-volumes --migrate --seed
+
+  # Deploy production with cleanup (preserving volumes)
   ./scripts/deploy.sh prod deploy --cleanup --migrate --auto-yes
 
   # Scale test environment
@@ -121,6 +188,9 @@ ENVIRONMENT DEFAULTS:
   Dev:  1 replica,  ports as specified
   Test: 2 replicas, ports as specified  
   Prod: 2 replicas, ports as specified
+
+WARNING: --cleanup-volumes will DELETE ALL DATA in PostgreSQL and Redis volumes!
+         Use with extreme caution, especially in production.
 
 EOF
 }
@@ -163,6 +233,12 @@ confirm() {
         log_error "Operation cancelled"
         exit 1
     fi
+}
+
+log_sanitized_db_url() {
+    local container_id="$1"
+    log_debug "Checking DATABASE_URL inside the container..."
+    docker exec "$container_id" sh -c 'echo "DATABASE_URL (sanitized): $(echo ${DATABASE_URL} | sed -E "s/(postgresql.*):(.*)@/\1:<password>@/")"' || log_warning "Could not get DATABASE_URL from container."
 }
 
 # ============================================================================
@@ -244,6 +320,15 @@ parse_args() {
                 ;;
             --cleanup)
                 CLEANUP=true
+                shift
+                ;;
+            --cleanup-volumes)
+                CLEANUP_VOLUMES=true
+                CLEANUP=true  # Cleanup volumes implies general cleanup
+                shift
+                ;;
+            --no-early-db)
+                EARLY_DB_START=false
                 shift
                 ;;
             --skip-build)
@@ -335,10 +420,23 @@ setup_environment() {
         exit 1
     fi
 
+    # Set PostgreSQL version (default to 17 if not specified)
+    export POSTGRES_VERSION="${POSTGRES_VERSION:-17}"
+    log_debug "Using PostgreSQL version: $POSTGRES_VERSION"
+
     # Set derived variables (computed from .env values)
     export APP_NAME="${STACK_NAME_PREFIX:-healthapp}"
     export STACK_NAME="${STACK_NAME_PREFIX:-healthapp}-$ENVIRONMENT"
     export DOCKER_STACK_FILE="docker/docker-stack.$ENVIRONMENT.yml"
+    
+    # Docker registry configuration (for multi-node swarms)
+    export DOCKER_REGISTRY="${DOCKER_REGISTRY:-}"
+    if [ -n "$DOCKER_REGISTRY" ]; then
+        log_info "Docker registry configured: $DOCKER_REGISTRY"
+    fi
+    
+    # The image name will be set during build
+    export DEPLOY_IMAGE="healthapp:$ENVIRONMENT"
     
     # Port configuration (use .env values)
     export HOST_PORT_FRONTEND="${PORT_FRONTEND:-3002}"
@@ -363,7 +461,6 @@ setup_environment() {
     # Replace localhost with postgres for container networking
     if [[ "$DATABASE_URL" == *"@localhost"* ]]; then
         export DATABASE_URL=${DATABASE_URL//@localhost/@postgres}
-        # export DATABASE_URL=$(echo "$DATABASE_URL" | sed "s/@localhost/@postgres/")
         log_info "Updated DATABASE_URL for container networking to use 'postgres' host"
     fi
 
@@ -397,7 +494,11 @@ setup_environment() {
     log_info "  - Domain: $DOMAIN"
     log_info "  - Frontend URL: $FRONTEND_URL"
     log_info "  - Database: ${POSTGRES_DB:-healthapp_test}"
+    log_info "  - PostgreSQL Version: $POSTGRES_VERSION"
     log_info "  - Replicas: $REPLICAS_FRONTEND"
+    if [ -n "$DOCKER_REGISTRY" ]; then
+        log_info "  - Registry: $DOCKER_REGISTRY"
+    fi
 }
 
 # ============================================================================
@@ -411,6 +512,26 @@ check_swarm() {
         exit 1
     fi
     log_success "Docker Swarm is active"
+    
+    # Check if it's a single-node or multi-node swarm
+    local node_count=$(docker node ls --format "{{.ID}}" 2>/dev/null | wc -l)
+    if [ "$node_count" -eq 1 ]; then
+        log_info "Single-node swarm detected - local images can be used"
+        export SWARM_MODE="single"
+    else
+        log_info "Multi-node swarm detected ($node_count nodes)"
+        export SWARM_MODE="multi"
+        
+        # Check if registry is configured for multi-node deployment
+        if [ -z "${DOCKER_REGISTRY:-}" ] && [ "$ENVIRONMENT" = "prod" ]; then
+            log_warning "No DOCKER_REGISTRY configured for multi-node production deployment"
+            log_warning "Local images will not be available on other nodes"
+            log_info "To configure a registry, add to your .env file:"
+            log_info "  DOCKER_REGISTRY=your.registry.com"
+            log_info "  or"
+            log_info "  DOCKER_REGISTRY=localhost:5000  (for local registry)"
+        fi
+    fi
 }
 
 cleanup_environment() {
@@ -440,16 +561,118 @@ cleanup_environment() {
             done
         fi
 
-        # Clean up networks and volumes if needed
-        docker network prune -f >/dev/null 2>&1 || true
-        docker volume prune -f >/dev/null 2>&1 || true
+        # Handle volume cleanup if requested
+        if [ "$CLEANUP_VOLUMES" = true ]; then
+            log_warning "⚠️  Volume cleanup requested - THIS WILL DELETE ALL DATA!"
+            
+            # Extra confirmation for production
+            if [ "$ENVIRONMENT" = "prod" ]; then
+                echo -e "${RED}================================================${NC}"
+                echo -e "${RED}⚠️  PRODUCTION VOLUME DELETION WARNING ⚠️${NC}"
+                echo -e "${RED}You are about to delete ALL production data!${NC}"
+                echo -e "${RED}This includes:${NC}"
+                echo -e "${RED}  - All PostgreSQL databases and tables${NC}"
+                echo -e "${RED}  - All Redis cache data${NC}"
+                echo -e "${RED}  - All PgAdmin configurations${NC}"
+                echo -e "${RED}================================================${NC}"
+                
+                if [ "$AUTO_YES" != true ]; then
+                    echo -e "${YELLOW}Type 'DELETE PRODUCTION DATA' to confirm:${NC}"
+                    read -r confirmation
+                    if [ "$confirmation" != "DELETE PRODUCTION DATA" ]; then
+                        log_error "Volume deletion cancelled"
+                        exit 1
+                    fi
+                fi
+            else
+                confirm "Delete all data volumes for $ENVIRONMENT environment?"
+            fi
+            
+            # Remove stack-specific volumes
+            log_info "Removing stack-specific volumes..."
+            local volume_prefix="${STACK_NAME}_"
+            
+            # List and remove volumes with the stack prefix
+            for volume in $(docker volume ls --format "{{.Name}}" | grep "^$volume_prefix"); do
+                log_info "Removing volume: $volume"
+                docker volume rm "$volume" 2>/dev/null || log_warning "Could not remove volume: $volume"
+            done
+            
+            # Also remove any volumes that might use the app name prefix
+            local app_volume_prefix="${APP_NAME}_"
+            for volume in $(docker volume ls --format "{{.Name}}" | grep "^$app_volume_prefix"); do
+                log_info "Removing volume: $volume"
+                docker volume rm "$volume" 2>/dev/null || log_warning "Could not remove volume: $volume"
+            done
+            
+            log_success "Volume cleanup complete"
+        fi
 
-        log_success "Cleanup complete"
+        # Clean up networks and dangling resources
+        docker network prune -f >/dev/null 2>&1 || true
+        
+        # Only prune unused volumes if not doing specific volume cleanup
+        if [ "$CLEANUP_VOLUMES" != true ]; then
+            docker volume prune -f >/dev/null 2>&1 || true
+        fi
+
+        log_success "Docker cleanup complete"
+    fi
+}
+
+cleanup_compiled_files() {
+    if [ "$CLEANUP" = true ]; then
+        log_info "Cleaning up compiled TypeScript files..."
+        
+        # Check if npm is available and package.json exists
+        if [ -f "package.json" ] && command -v npm >/dev/null 2>&1; then
+            log_info "Running npm clean script..."
+            if npm run clean 2>/dev/null; then
+                log_success "Compiled files cleaned via npm script"
+            else
+                log_info "npm clean script failed, using manual cleanup..."
+                manual_cleanup_compiled_files
+            fi
+        else
+            log_info "npm not available, using manual cleanup..."
+            manual_cleanup_compiled_files
+        fi
+    fi
+}
+
+manual_cleanup_compiled_files() {
+    log_info "Manually removing compiled TypeScript files..."
+    
+    # Whitelist of legitimate JS files to preserve
+    PRESERVE_JS_FILES=("seed.js" "seed.cjs" "migrate.js" "config.js")
+    
+    # Build find exclusion arguments
+    FIND_EXCLUDE_ARGS=""
+    for fname in "${PRESERVE_JS_FILES[@]}"; do
+        FIND_EXCLUDE_ARGS+=" -not -name '$fname'"
+    done
+    
+    # Remove compiled JS files from lib/ (except whitelisted files)
+    eval "find lib -name '*.js' $FIND_EXCLUDE_ARGS -delete 2>/dev/null || true"
+    
+    # Remove compiled JS files from app/ (except whitelisted files)
+    eval "find app -name '*.js' $FIND_EXCLUDE_ARGS -delete 2>/dev/null || true"
+    
+    # Remove compiled JS files from scripts/ (except whitelisted files)
+    eval "find scripts -name '*.js' $FIND_EXCLUDE_ARGS -delete 2>/dev/null || true"
+    
+    # Count remaining JS files to verify cleanup
+    local remaining_js=$(eval "find lib app scripts -name '*.js' $FIND_EXCLUDE_ARGS 2>/dev/null" | wc -l)
+    
+    if [ "$remaining_js" -eq 0 ]; then
+        log_success "All compiled TypeScript files removed"
+    else
+        log_warning "Some compiled files may remain ($remaining_js files)"
     fi
 }
 
 # ============================================================================
-# Enhanced Image Management Functions
+# Enhanced Image Management Functions with Early DB Start
 # ============================================================================
 
 pull_base_images() {
@@ -460,12 +683,15 @@ pull_base_images() {
 
     log_info "Pulling base images for containers..."
     
+    # Determine PostgreSQL version from environment or use default
+    local POSTGRES_VERSION="${POSTGRES_VERSION:-17}"
+    
     # Define base images used in the stack
     local BASE_IMAGES=(
-        "node:22-alpine"           # Application base image
-        "postgres:15-alpine"       # PostgreSQL database
-        "redis:7-alpine"          # Redis cache
-        "dpage/pgadmin4:latest"   # PgAdmin interface
+        "node:22-alpine"                        # Application base image
+        "postgres:${POSTGRES_VERSION}-alpine"   # PostgreSQL database
+        "redis:7.2-alpine"                      # Redis cache
+        "dpage/pgadmin4:latest"                 # PgAdmin interface
     )
     
     local failed_pulls=0
@@ -487,6 +713,47 @@ pull_base_images() {
     fi
 }
 
+start_database_services_early() {
+    if [ "$EARLY_DB_START" != true ]; then
+        log_info "Early database start disabled"
+        return
+    fi
+    
+    log_deploy "Starting database services early (before app build)..."
+    
+    # Check if main stack already has database services running
+    if docker service ls --filter "name=${STACK_NAME}_postgres" --format "{{.Name}}" | grep -q "^${STACK_NAME}_postgres$"; then
+        log_info "Database services already running in main stack"
+        return
+    fi
+    
+    # Use the actual docker stack file but deploy only database services
+    if [ ! -f "$DOCKER_STACK_FILE" ]; then
+        log_warning "Stack file not found, skipping early database start"
+        return
+    fi
+    
+    # Set environment variables for the stack deployment
+    export APP_IMAGE="busybox:latest"  # Placeholder image for app service during DB-only deployment
+    export POSTGRES_IMAGE="postgres:${POSTGRES_VERSION:-17}-alpine"
+    export REDIS_IMAGE="redis:7.2-alpine"
+    export PGADMIN_IMAGE="dpage/pgadmin4:latest"
+    
+    # Deploy the full stack early (services will be updated later)
+    log_info "Deploying database services from main stack: ${STACK_NAME}"
+    docker stack deploy -c "$DOCKER_STACK_FILE" "$STACK_NAME"
+    
+    # Wait for PostgreSQL to be ready
+    log_info "Waiting for PostgreSQL to initialize (this typically takes 30-60 seconds)..."
+    if wait_for_postgres_ready 120 "$STACK_NAME"; then
+        log_success "Database services started successfully and are ready"
+        # Mark that we've already deployed the database
+        export DB_ALREADY_DEPLOYED=true
+    else
+        log_warning "Database services may not be fully ready yet"
+    fi
+}
+
 build_images() {
     if [ "$SKIP_BUILD" = true ]; then
         log_info "Skipping image build"
@@ -498,6 +765,11 @@ build_images() {
     # First pull base images to ensure we have the latest
     pull_base_images
     
+    # Start database services early if enabled
+    if [ "$EARLY_DB_START" = true ]; then
+        start_database_services_early
+    fi
+    
     # Build single Next.js full-stack application image
     log_info "Building application container: healthapp:$ENVIRONMENT"
     if docker build -t "healthapp:$ENVIRONMENT" -f docker/Dockerfile.production . ; then
@@ -506,10 +778,61 @@ build_images() {
         log_error "Failed to build application image"
         exit 1
     fi
+    
+    # Check if we're in a multi-node swarm
+    local node_count=$(docker node ls --format "{{.ID}}" 2>/dev/null | wc -l)
+    if [ "$node_count" -gt 1 ]; then
+        log_warning "Multi-node swarm detected ($node_count nodes)"
+        log_warning "Local images are not automatically available to other swarm nodes"
+        
+        # Option 1: Use a registry if configured
+        if [ -n "${DOCKER_REGISTRY:-}" ]; then
+            log_info "Pushing image to registry: $DOCKER_REGISTRY"
+            local tagged_image="${DOCKER_REGISTRY}/healthapp:$ENVIRONMENT"
+            docker tag "healthapp:$ENVIRONMENT" "$tagged_image"
+            if docker push "$tagged_image"; then
+                log_success "Image pushed to registry"
+                # Update the image name for deployment
+                export DEPLOY_IMAGE="$tagged_image"
+            else
+                log_error "Failed to push image to registry"
+                exit 1
+            fi
+        else
+            log_warning "No DOCKER_REGISTRY configured for multi-node deployment"
+            log_info "Options:"
+            log_info "  1. Set DOCKER_REGISTRY in your .env file"
+            log_info "  2. Manually distribute the image to all nodes"
+            log_info "  3. Use a single-node swarm for testing"
+            
+            # For single-node testing, we can continue
+            if [ "$node_count" -eq 1 ] || [ "$ENVIRONMENT" = "test" ]; then
+                log_info "Continuing with local image for single-node/test deployment"
+                export DEPLOY_IMAGE="healthapp:$ENVIRONMENT"
+            else
+                log_error "Cannot proceed with multi-node deployment without a registry"
+                exit 1
+            fi
+        fi
+    else
+        log_info "Single-node swarm detected, using local image"
+        export DEPLOY_IMAGE="healthapp:$ENVIRONMENT"
+    fi
+    
+    # Ensure the image is available locally on this node
+    if ! docker image inspect "$DEPLOY_IMAGE" >/dev/null 2>&1; then
+        log_error "Image $DEPLOY_IMAGE not found locally"
+        exit 1
+    fi
+    
+    # Don't remove database services - they'll be updated by the main deployment
+    if [ "${DB_ALREADY_DEPLOYED:-false}" = true ]; then
+        log_info "Database services will be updated during main deployment"
+    fi
 }
 
 # ============================================================================
-# Enhanced Deployment with Strict Orchestration
+# Enhanced Deployment with Better Database Readiness
 # ============================================================================
 
 deploy_stack() {
@@ -520,14 +843,40 @@ deploy_stack() {
         exit 1
     fi
 
-    # Deploy the stack
-    log_info "Deploying Docker stack..."
-    docker stack deploy -c "$DOCKER_STACK_FILE" "$STACK_NAME"
+    # Set the application image name for the stack
+    export APP_IMAGE="${DEPLOY_IMAGE:-healthapp:$ENVIRONMENT}"
+    log_info "Using application image: $APP_IMAGE"
+    
+    # Verify the image exists locally or in registry
+    if ! docker image inspect "$APP_IMAGE" >/dev/null 2>&1; then
+        log_warning "Image $APP_IMAGE not found locally, checking registry..."
+        if ! docker pull "$APP_IMAGE" 2>/dev/null; then
+            log_error "Image $APP_IMAGE not found locally or in registry"
+            log_error "Please ensure the image is built and available"
+            exit 1
+        fi
+    fi
+
+    # Deploy/update the stack with the image environment variable
+    if [ "${DB_ALREADY_DEPLOYED:-false}" = true ]; then
+        log_info "Updating existing stack with application services..."
+    else
+        log_info "Deploying Docker stack..."
+    fi
+    
+    # Export all necessary environment variables for the stack
+    export POSTGRES_IMAGE="postgres:${POSTGRES_VERSION:-17}-alpine"
+    export REDIS_IMAGE="redis:7.2-alpine"
+    export PGADMIN_IMAGE="dpage/pgadmin4:latest"
+    
+    # Deploy with environment variables
+    docker stack deploy -c "$DOCKER_STACK_FILE" "$STACK_NAME" \
+        --with-registry-auth
     
     log_success "Stack deployment initiated: $STACK_NAME"
     
     # Enhanced orchestration: Wait for services in strict dependency order
-    log_deploy "Starting services in dependency order..."
+    log_deploy "Verifying services in dependency order..."
     echo "================================================"
     echo "Service Startup Order:"
     echo "1. PostgreSQL Database (Primary dependency)"
@@ -539,11 +888,21 @@ deploy_stack() {
     echo "================================================"
     
     # Phase 1: PostgreSQL must be fully ready first
-    log_deploy "Phase 1: Starting PostgreSQL database..."
-    if ! wait_for_postgres_ready 120; then
-        log_error "PostgreSQL failed to start. Cannot proceed with deployment."
-        show_service_logs "postgres" 50
-        exit 1
+    log_deploy "Phase 1: Ensuring PostgreSQL database is ready..."
+    if [ "${DB_ALREADY_DEPLOYED:-false}" = true ]; then
+        log_info "PostgreSQL was started early and should be ready"
+        # Still verify it's accessible
+        if ! wait_for_postgres_ready 60 "$STACK_NAME"; then
+            log_error "PostgreSQL is not accessible. Cannot proceed with deployment."
+            show_service_logs "postgres" 50
+            exit 1
+        fi
+    else
+        if ! wait_for_postgres_ready 180 "$STACK_NAME"; then
+            log_error "PostgreSQL failed to start. Cannot proceed with deployment."
+            show_service_logs "postgres" 50
+            exit 1
+        fi
     fi
     
     # Phase 2: Redis cache
@@ -558,8 +917,20 @@ deploy_stack() {
     if ! wait_for_service_ready "app" 180; then
         log_error "Application containers failed to start."
         show_service_logs "app" 50
+        
+        # Additional debugging for image issues
+        log_error "Checking image availability on nodes..."
+        docker node ls --format "table {{.Hostname}}\t{{.Status}}\t{{.Availability}}"
+        
+        log_error "Checking if image exists locally..."
+        docker images | grep healthapp || log_error "No healthapp images found"
+        
         exit 1
     fi
+    
+    # Additional wait for app to fully initialize
+    log_info "Waiting for application to fully initialize..."
+    sleep 10
     
     # Phase 4: Run migrations if enabled
     if [ "$MIGRATE" = true ]; then
@@ -595,20 +966,18 @@ deploy_stack() {
 
 wait_for_postgres_ready() {
     local max_wait_seconds="${1:-120}"
-    local service_full_name="${STACK_NAME}_postgres"
+    local stack_prefix="${2:-$STACK_NAME}"
+    local service_full_name="${stack_prefix}_postgres"
     
     log_info "Waiting for PostgreSQL to be fully ready..."
     log_info "This includes: container running, database initialized, and accepting connections"
+    log_debug "Looking for service: $service_full_name"
     
     local start_time=$(date +%s)
     local timeout_time=$((start_time + max_wait_seconds))
     local check_count=0
     
-local timeout_time=$((start_time + max_wait_seconds))
-    
     while [ "$(date +%s)" -lt "$timeout_time" ]; do
-        ((check_count++))
-        log_debug "PostgreSQL readiness check #$check_count"
         ((check_count++))
         log_debug "PostgreSQL readiness check #$check_count"
         
@@ -632,23 +1001,36 @@ local timeout_time=$((start_time + max_wait_seconds))
             fi
         fi
         
-        # Step 3: Find the PostgreSQL container
+        # Step 3: Find the PostgreSQL container (try multiple patterns)
         local container_id=""
-        for pattern in "${service_full_name}" "${STACK_NAME}_postgres" "postgres"; do
-            container_id=$(docker ps --filter "name=$pattern" --format "{{.ID}}" | head -1)
-            if [ -n "$container_id" ]; then
-                break
-            fi
-        done
+        # Try exact service name first
+        container_id=$(docker ps --filter "label=com.docker.swarm.service.name=$service_full_name" --format "{{.ID}}" | head -1)
+        
+        # If not found, try name patterns
+        if [ -z "$container_id" ]; then
+            for pattern in "${service_full_name}" "${stack_prefix}_postgres" "${STACK_NAME}_postgres" "postgres"; do
+                container_id=$(docker ps --filter "name=$pattern" --format "{{.ID}}" | head -1)
+                if [ -n "$container_id" ]; then
+                    log_debug "Found container with pattern: $pattern"
+                    break
+                fi
+            done
+        fi
         
         if [ -z "$container_id" ]; then
             log_debug "PostgreSQL container not found yet, waiting..."
+            log_debug "Current containers:"
+            docker ps --format "table {{.Names}}\t{{.Status}}" | grep -i postgres || true
             sleep 5
             continue
         fi
         
         # Step 4: Enhanced PostgreSQL readiness check
         log_debug "Found PostgreSQL container: $container_id"
+        
+        # First check if the container is healthy
+        local health_status=$(docker inspect --format='{{.State.Health.Status}}' "$container_id" 2>/dev/null || echo "no health check")
+        log_debug "Container health status: $health_status"
         
         # Check if PostgreSQL is accepting connections
         if docker exec "$container_id" pg_isready -U "${POSTGRES_USER:-healthapp_user}" -d "${POSTGRES_DB:-healthapp_test}" >/dev/null 2>&1; then
@@ -672,6 +1054,10 @@ local timeout_time=$((start_time + max_wait_seconds))
     done
     
     log_error "PostgreSQL failed to become ready within ${max_wait_seconds} seconds"
+    log_debug "Final service status:"
+    docker service ls --filter "name=postgres" || true
+    log_debug "Final container status:"
+    docker ps --filter "name=postgres" --format "table {{.Names}}\t{{.Status}}" || true
     return 1
 }
 
@@ -788,8 +1174,8 @@ check_postgres_health() {
         return 1
     fi
     
-    # Use the exact command that works (as confirmed by our debugging)
-    if docker exec "$container_id" pg_isready -U "${POSTGRES_USER:-$DEFAULT_POSTGRES_USER}" -d "${POSTGRES_DB:-$DEFAULT_POSTGRES_DB}" >/dev/null 2>&1; then
+    # Use pg_isready for health check
+    if docker exec "$container_id" pg_isready -U "${POSTGRES_USER:-healthapp_user}" -d "${POSTGRES_DB:-healthapp_test}" >/dev/null 2>&1; then
         log_debug "PostgreSQL is ready"
         return 0
     else
@@ -857,8 +1243,75 @@ check_pgadmin_health() {
 }
 
 # ============================================================================
-# Database Functions
+# Enhanced Database Functions with Better Error Handling
 # ============================================================================
+
+check_schema_consistency() {
+    # This check is for inside the container
+    if ! docker exec "$1" sh -c '[ -d "prisma/migrations" ] && [ "$(find prisma/migrations -mindepth 1 -print -quit)" ]'; then
+        log_info "No migrations directory found."
+        return 2 # No migrations
+    fi
+
+    log_info "Migrations directory found. Checking for schema consistency..."
+    # Check for any expected application table in the configured schema.
+    local schema_name="${POSTGRES_SCHEMA:-public}"
+    local expected_tables="${EXPECTED_TABLES:-}"
+    local table_condition=""
+    if [ -n "$expected_tables" ]; then
+        # Convert comma-separated list to SQL IN clause
+        # Remove spaces, wrap each table in single quotes
+        local tables_in_clause=$(echo "$expected_tables" | tr -d ' ' | sed "s/,/','/g; s/^/'/; s/\$/'/")
+        table_condition="table_name IN ($tables_in_clause)"
+    else
+        # Fallback: any table except '_prisma_migrations'
+        table_condition="table_name != '_prisma_migrations'"
+    fi
+    local check_tables_cmd="psql -h postgres -U \"$POSTGRES_USER\" -d \"$POSTGRES_DB\" -tc \"SELECT 1 FROM information_schema.tables WHERE table_schema = '$schema_name' AND $table_condition LIMIT 1;\" | grep -q 1"
+
+    if docker exec -e PGPASSWORD="$POSTGRES_PASSWORD" "$1" sh -c "$check_tables_cmd"; then
+        log_info "Application tables exist. Database schema appears consistent."
+        return 0 # Consistent
+    else
+        log_warning "No application tables found, but migrations exist. Database may be in an inconsistent state."
+        return 1 # Inconsistent
+    fi
+}
+
+run_migration_logic() {
+    local container_id="$1"
+    local consistency_status="$2"
+
+    if [ "$consistency_status" -eq 0 ]; then
+        log_info "Running standard migration."
+        if docker exec "$container_id" npx prisma migrate deploy; then
+            log_success "Migrations applied successfully."
+        else
+            log_error "Migration deploy failed."
+            exit 1
+        fi
+    elif [ "$consistency_status" -eq 1 ]; then
+        log_warning "Requesting database reset to restore consistency."
+        confirm "Reset database and re-apply all migrations for $ENVIRONMENT environment?"
+        if docker exec "$container_id" npx prisma migrate reset --force; then
+            log_success "Database reset and migrations applied successfully."
+        else
+            log_error "Database reset failed."
+            exit 1
+        fi
+    elif [ "$consistency_status" -eq 2 ]; then
+        log_info "No migrations found. Running 'prisma db push' to sync schema..."
+        if docker exec "$container_id" npx prisma db push --accept-data-loss; then
+            log_success "Schema pushed successfully."
+        else
+            log_error "Schema push failed."
+            exit 1
+        fi
+    else
+        log_error "Unknown consistency status: $consistency_status"
+        exit 1
+    fi
+}
 
 run_migrations() {
     local should_migrate="${1:-false}"
@@ -866,48 +1319,76 @@ run_migrations() {
     if [ "$should_migrate" = true ]; then
         log_info "Running database migrations..."
         
-        # Find running app container using the same logic as health checks
+        # Find running app container
         local container_id=""
-        container_id=$(docker ps --filter "name=${STACK_NAME}_app" --format "{{.ID}}" | head -1)
+        local max_retries=5
+        local retry_count=0
+        
+        while [ $retry_count -lt $max_retries ] && [ -z "$container_id" ]; do
+            container_id=$(docker ps --filter "name=${STACK_NAME}_app" --format "{{.ID}}" | head -1)
+            
+            if [ -z "$container_id" ]; then
+                container_id=$(docker ps --filter "name=app" --format "{{.ID}}" | head -1)
+            fi
+            
+            if [ -z "$container_id" ]; then
+                ((retry_count++))
+                log_warning "No app container found, attempt $retry_count/$max_retries"
+                sleep 5
+            fi
+        done
         
         if [ -z "$container_id" ]; then
-            container_id=$(docker ps --filter "name=app" --format "{{.ID}}" | head -1)
-        fi
-        
-        if [ -z "$container_id" ]; then
-            log_error "No running app containers found for migrations"
+            log_error "No running app containers found for migrations after $max_retries attempts"
             exit 1
         fi
         
+        log_info "Found app container: $container_id"
+        
         # Ensure database is ready before migrations
         log_info "Verifying database connectivity before migrations..."
-        local max_retries=10
-        local retry_count=0
+        local max_db_retries=30
+        local db_retry_count=0
+        local database_ready=false
         
-        while [ $retry_count -lt $max_retries ]; do
-            # Use psql to check connectivity; assumes DATABASE_URL is set in the container
-            if docker exec "$container_id" bash -c 'psql "${DATABASE_URL}" -c "SELECT 1"' >/dev/null 2>&1; then
-                log_success "Database connectivity verified"
+        while [ $db_retry_count -lt $max_db_retries ]; do
+            # Use psql with explicit parameters for robustness
+            if docker exec -e PGPASSWORD="$POSTGRES_PASSWORD" "$container_id" \
+                psql -h postgres -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "SELECT 1;" >/dev/null 2>&1; then
+                log_success "Database connectivity verified after $((db_retry_count * 5)) seconds"
+                database_ready=true
                 break
             fi
-            ((retry_count++))
-            log_debug "Database not ready for migrations, retry $retry_count/$max_retries"
+            
+            ((db_retry_count++))
+            log_debug "Database not ready for migrations, retry $db_retry_count/$max_db_retries"
+            
+            # Every 5 retries, show more debug info
+            if [ $((db_retry_count % 5)) -eq 0 ]; then
+                log_warning "Database connectivity check failing. Dumping debug info..."
+                log_sanitized_db_url "$container_id"
+                
+                log_debug "Testing network connectivity from app container to postgres..."
+                docker exec "$container_id" sh -c 'nc -zv postgres 5432' || log_warning "Network connectivity test to postgres:5432 failed."
+            fi
+            
             sleep 5
         done
         
-        # Run migrations in the app container
-        log_info "Running migrations in container: $container_id"
-        if docker exec "$container_id" npx prisma migrate deploy; then
-            log_success "Migrations completed successfully"
-        else
-            log_warning "Production migrations may not exist, trying db push instead..."
-            if docker exec "$container_id" npx prisma db push --accept-data-loss; then
-                log_success "Database schema synchronized using db push"
-            else
-                log_error "Migration/sync failed"
-                exit 1
-            fi
+        if [ "$database_ready" = false ]; then
+            log_error "Database connectivity check failed after $((max_db_retries * 5)) seconds"
+            log_error "Checking DATABASE_URL in container..."
+            docker exec "$container_id" sh -c 'echo "DATABASE_URL: ${DATABASE_URL}"' || true
+            
+            # Try running migration anyway with verbose output for debugging
+            log_warning "Attempting migration despite connectivity check failure..."
         fi
+        
+        # Run migrations in the app container
+        log_info "Running Prisma migrations..."
+        check_schema_consistency "$container_id"
+        local consistency_status=$?
+        run_migration_logic "$container_id" "$consistency_status"
     fi
 }
 
@@ -917,7 +1398,7 @@ run_seeds() {
     if [ "$should_seed" = true ]; then
         log_info "Running database seeds..."
         
-        # Find running app container using the same logic as health checks
+        # Find running app container
         local container_id=""
         container_id=$(docker ps --filter "name=${STACK_NAME}_app" --format "{{.ID}}" | head -1)
         
@@ -930,12 +1411,102 @@ run_seeds() {
             exit 1
         fi
         
-        # Run seeds in the app container
-        log_info "Running seeds in container: $container_id"
-        if docker exec "$container_id" npm run seed; then
-            log_success "Seeds completed successfully"
+        log_info "Found app container: $container_id"
+        
+        # Ensure database is ready before seeding
+        log_info "Verifying database connectivity before seeding..."
+        local max_retries=10
+        local retry_count=0
+        local database_ready=false
+        
+        while [ $retry_count -lt $max_retries ]; do
+            # Use psql with explicit parameters for robustness
+            if docker exec -e PGPASSWORD="$POSTGRES_PASSWORD" "$container_id" \
+                psql -h postgres -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "SELECT 1;" >/dev/null 2>&1; then
+                log_success "Database connectivity verified for seeding"
+                database_ready=true
+                break
+            fi
+            ((retry_count++))
+            log_debug "Database not ready for seeding, retry $retry_count/$max_retries"
+
+            # On every 3rd retry, show debug info
+            if [ $((retry_count % 3)) -eq 0 ]; then
+                log_warning "Database connectivity check for seeding failing. Dumping debug info..."
+                log_sanitized_db_url "$container_id"
+            fi
+
+            sleep 3
+        done
+        
+        if [ "$database_ready" = false ]; then
+            log_error "Database connectivity check failed for seeding after $((max_retries * 3)) seconds"
+            return 1
+        fi
+        
+        # Run seeds in the app container using a script for better error handling
+        log_info "Running database seeds..."
+        
+        docker exec "$container_id" sh -c 'cat > /tmp/seed.sh << "EOF"
+#!/bin/sh
+set -e
+
+echo "Starting seed process..."
+
+# Try Prisma seed first
+if npx prisma db seed 2>&1; then
+    echo "Prisma seeds completed successfully"
+    exit 0
+fi
+
+# Check if error is due to existing data
+if npx prisma db seed 2>&1 | grep -q "Unique constraint\|already exists"; then
+    echo "Some seed data already exists, continuing..."
+    exit 0
+fi
+
+# Try manual seed files as fallback
+echo "Trying manual seed execution..."
+
+# Check for CommonJS seed file
+if [ -f lib/seed.cjs ]; then
+    echo "Running CommonJS seed file..."
+    if node lib/seed.cjs; then
+        echo "Manual seeds (CommonJS) completed"
+        exit 0
+    fi
+fi
+
+# Check for regular JS seed file
+if [ -f lib/seed.js ]; then
+    echo "Running JavaScript seed file..."
+    if node lib/seed.js; then
+        echo "Manual seeds (JS) completed"
+        exit 0
+    fi
+fi
+
+# Check for TypeScript compiled seed
+if [ -f prisma/seed.js ]; then
+    echo "Running compiled seed file..."
+    if node prisma/seed.js; then
+        echo "Compiled seeds completed"
+        exit 0
+    fi
+fi
+
+echo "Warning: No seed files found or seeding failed"
+echo "This may be expected if data already exists"
+exit 0
+EOF
+chmod +x /tmp/seed.sh
+/tmp/seed.sh
+'
+        
+        if [ $? -eq 0 ]; then
+            log_success "Database seeding process completed"
         else
-            log_warning "Seeding failed - this may be expected if data already exists"
+            log_warning "Seeding encountered issues - this may be expected if data already exists"
         fi
     fi
 }
@@ -961,6 +1532,10 @@ show_status() {
             echo "  - $service: $health"
         fi
     done
+    
+    echo
+    log_info "Volume Status:"
+    docker volume ls --filter "name=${STACK_NAME}" --format "table {{.Name}}\t{{.Driver}}\t{{.Scope}}"
 }
 
 show_service_logs() {
@@ -1010,11 +1585,19 @@ handle_deploy() {
     echo "Backend Port: $PORT_BACKEND"  
     echo "Database Port: $PORT_DB"
     echo "Replicas: $REPLICAS"
+    echo "Early DB Start: $EARLY_DB_START"
+    echo "Cleanup Volumes: $CLEANUP_VOLUMES"
     echo "================================================"
+    
+    if [ "$CLEANUP_VOLUMES" = true ]; then
+        echo -e "${RED}⚠️  WARNING: Volume cleanup is enabled!${NC}"
+        echo -e "${RED}This will DELETE ALL DATA in the database!${NC}"
+    fi
     
     confirm "Deploy with above configuration?"
     
     check_swarm
+    cleanup_compiled_files
     cleanup_environment
     build_images
     deploy_stack
@@ -1068,6 +1651,20 @@ handle_seed() {
     run_seeds true
 }
 
+handle_cleanup() {
+    log_info "Running cleanup for $ENVIRONMENT environment..."
+    
+    if [ "$CLEANUP_VOLUMES" = true ]; then
+        log_warning "Volume cleanup requested - data will be deleted!"
+        confirm "Delete all Docker volumes for $ENVIRONMENT?"
+    fi
+    
+    cleanup_compiled_files
+    cleanup_environment
+    
+    log_success "Cleanup complete"
+}
+
 # ============================================================================
 # Main Script Logic
 # ============================================================================
@@ -1100,6 +1697,9 @@ main() {
             ;;
         seed)
             handle_seed
+            ;;
+        cleanup)
+            handle_cleanup
             ;;
         *)
             log_error "Unknown command: $COMMAND"

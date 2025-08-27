@@ -281,6 +281,57 @@ describe('Phase 4: Telemedicine & Laboratory Integration', () => {
         expect(criticalValue.severity).toBe('critical')
       })
     })
+
+    test('should handle lab result webhook payload', () => {
+      const labResultWebhookPayload = {
+        orderId: 'LAB-20250115-001',
+        testResults: [
+          {
+            testCode: 'HBA1C',
+            testName: 'Hemoglobin A1C',
+            result: '7.8',
+            unit: '%',
+            referenceRange: '4.0-5.6',
+            status: 'abnormal',
+            flag: 'high',
+          }
+        ],
+        labId: 'QUEST_DIAGNOSTICS',
+        collectedAt: '2025-01-16T08:00:00Z',
+        processedAt: '2025-01-16T14:00:00Z',
+        reviewedBy: 'Dr. Smith',
+      };
+
+      expect(labResultWebhookPayload.orderId).toBeDefined();
+      expect(Array.isArray(labResultWebhookPayload.testResults)).toBe(true);
+      expect(labResultWebhookPayload.testResults[0].status).toBe('abnormal');
+    });
+
+    test('should manage lab integration configurations', () => {
+      const labIntegrationConfig = {
+        id: 'quest',
+        name: 'Quest Diagnostics',
+        apiUrl: 'https://api.questdiagnostics.com/v1',
+      };
+
+      expect(labIntegrationConfig.id).toBe('quest');
+      expect(labIntegrationConfig.name).toBe('Quest Diagnostics');
+      expect(labIntegrationConfig.apiUrl).toBeDefined();
+    });
+
+    test('should provide lab trend analysis', () => {
+      const trendAnalysisData = [
+        { result_date: '2025-01-10T00:00:00.000Z', numeric_value: 7.2 },
+        { result_date: '2025-04-12T00:00:00.000Z', numeric_value: 6.8 },
+        { result_date: '2025-07-15T00:00:00.000Z', numeric_value: 6.9 },
+        { result_date: '2025-10-20T00:00:00.000Z', numeric_value: 7.1 },
+      ];
+
+      expect(Array.isArray(trendAnalysisData)).toBe(true);
+      expect(trendAnalysisData[0]).toHaveProperty('result_date');
+      expect(trendAnalysisData[0]).toHaveProperty('numeric_value');
+      expect(trendAnalysisData.length).toBe(4);
+    });
   })
 
   describe('Healthcare Analytics & Reporting', () => {

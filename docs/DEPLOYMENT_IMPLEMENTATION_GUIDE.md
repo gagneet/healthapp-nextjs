@@ -149,7 +149,7 @@ The main deployment script features enhanced orchestration with strict dependenc
 
 The deployment follows a strict orchestration order:
 
-1. **Phase 1**: Pull base images (node:22-alpine, postgres:15-alpine, redis:7-alpine, pgadmin4)
+1. **Phase 1**: Pull base images (node:22-alpine, postgres:17-alpine, redis:7-alpine, pgadmin4)
 2. **Phase 2**: Build application container
 3. **Phase 3**: Deploy Docker stack
 4. **Phase 4**: PostgreSQL startup with enhanced readiness verification

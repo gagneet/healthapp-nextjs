@@ -1,370 +1,65 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+Healthcare Management Platform guidance for Claude Code.
 
 ## Project Overview
 
-This is the **Healthcare Management Platform** - a modern, full-stack TypeScript application built with Next.js 14 with Auth.js v5 (NextAuth.js v5) authentication. The system manages patients, doctors, medications, care plans, appointments, and vital signs tracking. It's designed to help healthcare providers monitor patient medication adherence and overall care management with real-time capabilities.
+**Healthcare Management Platform** - Full-stack TypeScript Next.js 14 with Auth.js v5. Manages patients, doctors, medications, care plans, appointments, vital signs tracking with real-time capabilities.
 
 ## Development Commands
 
 ```bash
-# Next.js Full-Stack Development
-npm run dev                    # Start Next.js development server (port 3000)
-npm run build                  # Build Next.js production bundle
-npm start                      # Start Next.js production server
-npm run lint                   # Run Next.js ESLint
-npm run type-check             # TypeScript type checking
-
-# Database Management (Prisma)
-npx prisma generate            # Generate Prisma client
-npx prisma migrate dev         # Create and apply migration
-npx prisma migrate deploy      # Apply migrations in production
-npx prisma db seed            # Seed database with initial data
-npx prisma studio             # Open Prisma Studio (database GUI)
-
-# Deployment Scripts
-./scripts/deploy-local.sh start --migrate --seed    # Local development
-./scripts/deploy.sh dev deploy --migrate --seed     # Development server
-./scripts/deploy.sh test deploy --test               # Test environment
-./scripts/deploy.sh prod deploy --domain <domain>   # Production deployment
-
-# Testing
-npm test                      # Run Jest test suite
-npm run test:watch            # Run tests in watch mode
-npm run test:coverage         # Generate test coverage report
-
-# Code Quality
-npm run lint                  # Run ESLint
-npm run lint:fix              # Auto-fix ESLint issues
+# Core Commands
+npm run dev build start lint type-check
+npx prisma generate migrate dev deploy db seed studio
+./scripts/deploy-local.sh start --migrate --seed
+./scripts/deploy.sh {dev|test|prod} deploy
+npm test test:watch test:coverage lint:fix
 ```
 
-## Architecture Overview
-
-### Core Technology Stack
-
-- **Full-Stack**: Next.js 14 with App Router + TypeScript (unified frontend/backend)
-- **Database**: PostgreSQL with Prisma ORM
-- **Authentication**: Auth.js v5 (NextAuth.js v5) with PrismaAdapter and role-based access control  
-- **Security**: Auth.js v5 database sessions, input validation, role-based access
-- **Caching**: Redis integration for enhanced session management
-- **Cloud Storage**: AWS S3 SDK v3 for file uploads
-- **Real-time**: Socket.io ready for notifications
-- **Testing**: Jest with TypeScript support
-- **Deployment**: Universal Docker Swarm deployment scripts (dev/test/prod)
-
-### Business Logic Rules
-
-#### User Role Hierarchy
-
-- **Doctor**: Can be independent or assigned/linked to a Provider
-- **Health Service Provider (HSP)**: Can be independent or linked to a Provider  
-- **Patient**: Can only be linked to a Doctor or HSP
-- **Provider Admin**: Can view, add, edit Doctors linked to the Provider
-
-#### Permission Matrix
-
-| Role | Medicine/Medication Reminders | Diets | Workouts | Appointments | Vitals | Services | Subscriptions |
-|------|------------------------------|-------|-----------|-------------|--------|----------|--------------|
-| **Doctor** | ✅ Add/Manage | ✅ Add/Manage | ✅ Add/Manage | ✅ Add/Manage | ✅ Add/Manage | ✅ Add/Manage | ✅ Add/Manage |
-| **HSP** | ❌ Cannot Add | ✅ Add/Manage | ✅ Add/Manage | ✅ Add/Manage | ✅ Add/Manage | ❌ Cannot Add | ❌ Cannot Add |
-| **Patient** | 👁️ View Only | 👁️ View Only | 👁️ View Only | 👁️ View Only | ➕ Can Record | ❌ No Access | ❌ No Access |
-| **Provider Admin** | 👁️ View Only | 👁️ View Reports | 👁️ View Reports | 👁️ View Reports | 👁️ View Reports | 👁️ View Reports | 👁️ Manage Billing |
-
-#### Service & Subscription Logic
-
-- **Services**: Linked to a Doctor, each has an amount and duration
-- **Services**: One-time unless linked to a Subscription
-- **Subscriptions**: Linked to one or more Service(s) with recurring payment duration
-- **Chronic Care**: Doctors can add Services and Subscriptions for Patients
-
-#### Provider Relationships
-
-- **Doctor Clinic**: Doctor can have own Clinic and be linked to a Provider
-- **Assignment Rules**: HSP cannot assign/link Medicine to Patient (Doctor-only privilege)
-
-### Current Architecture: Next.js Full-Stack with Auth.js v5
-
-The application uses a **modern Next.js full-stack architecture**:
-
-1. **Next.js Full-Stack Application** (TypeScript) - Port 3002
-   - Handles both frontend UI/UX and backend API routes  
-   - Next.js API routes provide REST endpoints
-   - Auth.js v5 handles authentication with database sessions
-
-2. **Database Layer** (PostgreSQL with Prisma)  
-   - PostgreSQL database with Prisma ORM
-   - Database-backed sessions via Auth.js v5 PrismaAdapter
-   - Type-safe database operations and migrations
-
-3. **Authentication & Session Management**
-   - Auth.js v5 with PrismaAdapter for database sessions
-   - Role-based access control for healthcare workflows
-   - Enhanced security over stateless JWT tokens
-
-4. **Deployment Architecture**
-   - Universal Docker Swarm deployment for dev/test/prod
-   - Database-first deployment approach
-   - Environment-specific configurations and scaling
-
-### Database Architecture
-
-The application uses Prisma with PostgreSQL and the following core models:
-
-**User Management**:
-- `User` (base user table) → `UserRole` (many-to-many roles)
-- `User` → `Doctor`, `Patient`, `Provider`, `HSP` (one-to-one specialized profiles)
-
-**Healthcare Domain**:
-- `Doctor` → `Speciality` (belongs to speciality)
-- `Patient` → `CarePlan` (one-to-many care plans)
-- `CarePlan` → `Medication`, `Vital` (one-to-many)
-- `Medicine` → `Medication` (template to instance relationship)
-- `VitalTemplate` → `Vital` (template to instance relationship)
-
-**Provider Management**:
-- `Provider` → `Doctor` (one-to-many assignment)
-- `Provider` → `HSP` (one-to-many assignment)
-- `PatientDoctorAssignment` (primary, specialist, substitute, transferred)
-
-**Services & Subscriptions**:
-- `Service` → `Doctor` (belongs to doctor)
-- `Subscription` → `Service[]` (many-to-many)
-- `PatientService` (patient service assignments)
-- `PatientSubscription` (patient subscription tracking)
-
-### Project Structure
-
-```text
-healthapp-nextjs/
-├── app/                    # Next.js 14 App Router (Frontend)
-│   ├── dashboard/          # Role-based dashboard layouts
-│   │   ├── doctor/         # Doctor dashboard pages
-│   │   ├── patient/        # Patient dashboard pages
-│   │   ├── hospital/       # HSP dashboard pages
-│   │   └── admin/          # Provider admin pages
-│   ├── auth/               # Authentication pages
-│   ├── globals.css         # Global styles
-│   └── layout.tsx          # Root layout
-├── components/             # React components
-│   ├── ui/                 # Base UI components
-│   └── dashboard/          # Dashboard-specific components
-├── lib/                    # Utilities and configurations
-│   ├── auth.ts             # Auth.js v5 configuration
-│   ├── prisma.ts           # Prisma client
-│   └── utils.ts            # Utility functions
-├── types/                  # TypeScript type definitions
-├── prisma/                 # Database schema and migrations
-│   ├── schema.prisma       # Database schema definition
-│   ├── migrations/         # Prisma migrations
-│   └── seed.ts             # Database seeding script
-├── docker/                 # Docker configurations
-├── scripts/                # Deployment and utility scripts
-└── docs/                   # Documentation
-```
-
-### Key Architectural Patterns
-
-**TypeScript-First Development**:
-- Both frontend and backend use strict TypeScript
-- Shared types between frontend and backend
-- TypeScript compilation for backend: `npm run backend:build`
-- TypeScript migration compilation: `npm run migrations:build`
-
-**Modern ES Module Architecture**:
-- Full ES module implementation with `import/export` syntax
-- All imports use `.js` extensions for proper module resolution (TypeScript compilation requirement)
-- Top-level await support ready for Node.js 22+
-- Modern async/await patterns throughout
-
-**Authentication & Authorization**:
-- Auth.js v5 with PrismaAdapter for database sessions
-- Role-based access control via healthcare role enforcement
-- API route protection: `getServerSession()` → role validation → controller
-- Database-backed sessions for enhanced security over JWT tokens
-
-**Database Patterns**:
-- All models use Prisma with PostgreSQL
-- Consistent naming (camelCase in code, snake_case in DB)
-- Relations defined in Prisma schema with type safety
-- Prisma migration-driven schema management with versioned changes
-- Seeded data for initial system setup (specialists, medicines, vital templates)
-- Connection pooling configured for production scalability
-- Database timezone set to UTC (+00:00)
-
-**Service Layer Architecture**:
-- Auth.js v5 integration - Modern authentication with database sessions
-- `PatientService.ts` - Patient data processing and business rules
-- `MedicationService.ts` - Medication management and adherence tracking
-- `SchedulingService.ts` - Appointment and scheduling logic
-
-**API Response Format**:
-
-All API responses follow a consistent structure via `responseFormatter.ts`:
-
-```typescript
-{
-  status: boolean,
-  statusCode: number,
-  payload: {
-    data?: any,
-    message?: string,
-    error?: { status: string, message: string }
-  }
-}
-```
-
-**Enhanced Security Stack**:
-- CORS configured for frontend integration with multiple origins
-- Helmet for security headers
-- Rate limiting on `/api` and `/m-api` routes
-- Input validation using Joi and express-validator
-- Password hashing with bcryptjs
-- Request size limits (10mb)
-- Redis integration for session management and caching
-- AWS S3 SDK v3 for secure file uploads
-
-## Development Guidelines
-
-### TypeScript Development Rules
-
-1. **Always use TypeScript** - Never convert to JavaScript
-2. **Strict type checking** - Enable strict mode in tsconfig.json
-3. **Proper type definitions** - Use interfaces for complex objects
-4. **Type-safe API calls** - Define request/response types
-5. **Shared types** - Use common types between frontend and backend
-
-### Modern ES Module Development
-
-- Always use `import/export` syntax, never `require()`
-- Include `.js` file extensions in all relative imports (TypeScript requirement)
-- Use top-level await when needed (Node.js 22+ support)
-- Leverage modern async/await patterns over callbacks or promises chains
-
-### Database Development
-
-- Use migrations for all schema changes (`npx sequelize-cli migration:generate`)
-- Compile TypeScript migrations: `npm run migrations:build`
-- Database syncs automatically in development with `{ alter: true }`
-- Production deployments must use migrations, never sync
-- Use seeders for initial data population (`npm run seed`)
-- All sensitive data must use environment variables
-
-### API Development
-
-- Controllers should be thin - business logic belongs in the service layer
-- Use Auth.js v5 for authentication and established service classes: PatientService, MedicationService, SchedulingService
-- Utilize middleware for cross-cutting concerns (auth, validation, logging, rate limiting)
-- Follow consistent error handling via `errorHandler.ts` middleware
-- Use `responseFormatter.ts` for consistent API responses
-- All routes prefixed with `/api` (web) and `/m-api` (mobile) - both use same routes
-- Follow business logic rules for role permissions
-
-### Frontend Development
-
-- Use Next.js 14 App Router patterns
-- TypeScript for all components and pages
-- Follow role-based access control in UI
-- Use Next.js rewrites for API proxying (no Next.js API routes)
-- Implement proper loading states and error handling
-- Follow accessibility guidelines (WCAG 2.1 AA)
-
-### Code Quality & Testing
-
-- Run `npm run lint:backend` before commits - ESLint configured for TypeScript
-- Use `npm run lint:fix` for auto-fixable issues
-- Use `npm run type-check` for TypeScript validation
-- Jest configured with `--detectOpenHandles` for proper cleanup
-- Write tests using modern async/await syntax with TypeScript
-- Use `npm run test:coverage` to maintain coverage standards
-
-### Environment Configuration
-
-- Database: `POSTGRES_HOST`, `POSTGRES_PORT`, `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`
-- Authentication: `JWT_SECRET` for token signing
-- Application: `PORT`, `NODE_ENV`, `FRONTEND_URL`, `BACKEND_URL` for CORS
-- Cloud: AWS S3 credentials for file uploads
-- Caching: Redis connection parameters
-- Docker: `HOST_IP` for multi-service deployment
-
-## Key Implementation Notes
-
-### Fully Implemented Architecture
-
-The codebase now includes a complete, production-ready implementation:
-
-#### ✅ Complete TypeScript Stack
-
-- Full-Stack: Next.js 14 with TypeScript and App Router (unified frontend/backend)
-- Database: PostgreSQL with Prisma ORM and type-safe operations
-- Authentication: Auth.js v5 with PrismaAdapter for database sessions
-- Migrations: Prisma migrations with proper schema evolution
-
-#### ✅ Complete Route Layer
-
-- 10+ organized route files covering all healthcare domains
-- Proper route organization with `/api` and `/m-api` endpoints
-- Comprehensive CRUD operations for all entities
-- Role-based access control implemented
-
-#### ✅ Service Layer Architecture
-
-- Auth.js v5: Modern authentication with database sessions
-- PatientService: Patient data processing and business rules
-- MedicationService: Medication adherence and tracking logic
-- SchedulingService: Appointment and calendar management
-
-#### ✅ Database Infrastructure
-
-- Prisma migration system with versioned schema changes
-- Seeded initial data (specialists, medicines, vital templates)
-- 40+ comprehensive models with proper relations (Prisma schema)
-- PostgreSQL optimization with proper indexing
-- Auth.js v5 session tables integrated
-
-#### ✅ Modern Development Stack
-
-- Full TypeScript conversion for type safety
-- ESLint configuration for code quality
-- Enhanced Jest testing setup with coverage reporting
-- Docker containerization for development and production
-
-#### ✅ Universal Deployment Infrastructure
-
-- **Universal Scripts**: Single deployment system (`./scripts/deploy.sh`) for all environments
-- **Multi-Environment Support**: Dedicated dev/test/prod configurations with proper isolation
-- **Docker Swarm**: Production-ready orchestration with auto-scaling capabilities
-- **Database-First Approach**: Proper migration and seeding in deployment pipeline
-- **Zero-Downtime Updates**: Rolling updates for production environments
-- **Environment Variables**: Secure Auth.js v5 credential management
-- **Automated Testing**: Integrated test execution in deployment workflows
-
-### Ready-to-Implement Features
-
-The dependencies and structure are in place for:
-
-- **Real-time Notifications**: Socket.io integrated, ready for medication reminders
-- **File Upload System**: AWS S3 SDK v3 configured for document/image uploads
-- **Caching Layer**: Redis integration ready for session management and data caching
-- **Scheduled Tasks**: node-cron available for medication reminders and alerts
-- **Background Jobs**: Infrastructure ready for adherence monitoring
-
-### Healthcare-Specific Implementation Ready
-
-- **HIPAA Compliance**: Audit logging patterns established, secure data handling
-- **Medication Safety**: Models support drug interaction checking and adherence tracking
-- **Care Coordination**: Comprehensive care plan management with provider workflows
-- **Patient Engagement**: Timeline tracking for medications, vitals, and appointments
-- **Role-Based Permissions**: Strict business logic enforcement for healthcare roles
-
-### Performance & Scalability Features
-
-- **Database Optimization**: Connection pooling, proper indexing patterns
-- **Modern Caching**: Redis integration for high-performance data access
-- **Monitoring Ready**: Winston logging configured for production monitoring
-- **Security Hardened**: Rate limiting, input validation, secure headers
-- **Mobile Optimized**: Separate mobile API endpoints with optimized responses
-- **Docker Deployment**: Production-ready containerization with Docker Swarm support
+## Architecture
+
+**Stack**: Next.js 14 + TypeScript + PostgreSQL/Prisma + Auth.js v5 + Redis + AWS S3 + Docker Swarm
+
+### Business Rules
+
+**Roles**: Doctor (full access), HSP (limited - no medications/services), Patient (view + record vitals), Provider Admin (view/billing)
+
+**Critical**: Only Doctors can prescribe medications, create services/subscriptions. HSPs cannot manage medications. Patients can only record own vitals.
+
+### Architecture
+
+**Next.js Full-Stack** (TypeScript, Port 3002) + **PostgreSQL/Prisma** + **Auth.js v5 PrismaAdapter** (database sessions) + **Docker Swarm** deployment
+
+### Database Models
+
+**Core**: User → Doctor/Patient/Provider/HSP profiles, CarePlan → Medication/Vital, Medicine/VitalTemplate (templates), Service/Subscription management, PatientDoctorAssignment
+
+### Structure
+
+`app/dashboard/{doctor,patient,hospital,admin}`, `components/{ui,dashboard}`, `lib/{auth,prisma,utils}`, `prisma/{schema,migrations,seed}`, `scripts/deploy`
+
+### Patterns
+
+**TypeScript**: Strict typing, ES modules, `.js` imports
+**Auth**: Auth.js v5 + PrismaAdapter, `getServerSession()`, role validation
+**Database**: Prisma migrations, camelCase client/snake_case DB, UTC timezone
+**API**: Consistent `responseFormatter.ts` structure, `/api` + `/m-api` routes
+**Security**: CORS, Helmet, rate limiting, input validation, Redis caching
+
+## Guidelines
+
+**TypeScript**: Always strict mode, proper interfaces, shared types, `.js` imports
+**Database**: Prisma migrations only (never sync), environment variables
+**API**: Thin controllers, service layer logic, Auth.js v5 auth, consistent responses
+**Frontend**: Next.js 14 App Router, TypeScript, role-based access, rewrites not API routes
+**Quality**: `npm run lint type-check` before commits, Jest with TypeScript
+**Environment**: PostgreSQL, JWT_SECRET, CORS URLs, AWS S3, Redis, Docker HOST_IP
+
+## Implementation Status
+
+**Complete**: TypeScript stack, 10+ API routes, service layer, 40+ Prisma models, deployment scripts
+**Ready**: Socket.io notifications, AWS S3 uploads, Redis caching, HIPAA compliance patterns, Docker Swarm
 
 # CODING_RULES - Healthcare Management Platform
 
@@ -768,6 +463,58 @@ app.use('/api', apiLimiter);
 
 These coding rules ensure maintainable, secure, and compliant healthcare application development while leveraging modern TypeScript and Next.js best practices.
 
+## 10. Prisma Naming Convention Standards ⚠️ CRITICAL
+
+### 10.1 Official Prisma Naming Convention Rules - FINAL STANDARD
+- **MANDATORY**: Follow these exact Prisma naming conventions for consistency across the entire codebase
+- **SCHEMA MODELS**: Use PascalCase (model User, model Patient, model Doctor)
+- **DATABASE TABLES**: Use PascalCase via @@map directive (@@map("Users"), @@map("Patients"), @@map("Doctors"))
+- **CLIENT PROPERTIES**: Always use camelCase (prisma.user, prisma.patient, prisma.doctor)
+- **ABSOLUTE RULE**: Do not fight Prisma conventions → accept camelCase client properties
+- **STANDARD**: This approach keeps database pretty (PascalCase tables), schema standard (PascalCase models), and code consistent (camelCase client)
+
+### 10.2 Correct Implementation Pattern
+```typescript
+// ✅ GOOD: Schema definition (prisma/schema.prisma)
+model User {
+  id       String @id @default(uuid())
+  email    String @unique
+  name     String?
+  // ... other fields
+  @@map("Users")  // PascalCase database table
+}
+
+model Patient {
+  id      String @id @default(uuid())  
+  user_id String @unique
+  // ... other fields
+  @@map("Patients")  // PascalCase database table
+}
+
+// ✅ GOOD: Client usage in application code
+const users = await prisma.user.findMany()        // camelCase client property
+const patient = await prisma.patient.findFirst()  // camelCase client property
+const doctors = await prisma.doctor.findMany()    // camelCase client property
+
+// ❌ BAD: Using PascalCase client properties
+const users = await prisma.User.findMany()        // Wrong - don't use PascalCase
+const patient = await prisma.Patient.findFirst()  // Wrong - inconsistent
+```
+
+### 10.3 Database Architecture Benefits
+- **Database Tables**: Clean PascalCase names (Users, Patients, Doctors, Appointments)
+- **Schema Models**: Standard PascalCase (model User, model Patient) 
+- **Application Code**: Consistent camelCase client usage (prisma.user, prisma.patient)
+- **Type Safety**: Full TypeScript support maintained throughout
+
+### 10.4 Migration and Schema Consistency Rules - CRITICAL
+- **REQUIREMENT**: ALL @@map directives MUST use PascalCase table names consistently
+- **STANDARD**: Every model MUST have @@map("PascalCaseTableName") directive  
+- **VALIDATION**: Migrations must create PascalCase tables to match schema expectations
+- **ENFORCEMENT**: Schema changes require corresponding @@map directives for PascalCase tables
+- **ABSOLUTE RULE**: If migrations create lowercase tables, schema must be updated or migrations must be fixed to create PascalCase tables
+- **TESTING**: Always test that prisma.camelCaseModel correctly maps to PascalCaseTable after schema changes
+
 ## 8. Critical System-Wide Impact Rules
 
 ### 8.1 NO ISOLATION TESTING - System-Wide Impact Analysis ⚠️ CRITICAL
@@ -875,11 +622,90 @@ const records = await prisma.AdherenceRecord.findMany({
 - **STANDARD**: Use grep to find all instances of incorrect model usage across the entire codebase
 - **ENFORCEMENT**: Fix all related API routes, not just the one causing immediate errors
 
-# important-instruction-reminders
-Do what has been asked; nothing more, nothing less.
-NEVER create files unless they're absolutely necessary for achieving your goal.
-ALWAYS prefer editing an existing file to creating a new one.
-NEVER proactively create documentation files (*.md) or README files. Only create documentation files if explicitly requested by the User.
+## 9. ✅ Validated Prisma + Next.js Best Practices ⚠️ CRITICAL
 
-      
-      IMPORTANT: this context may or may not be relevant to your tasks. You should not respond to this context unless it is highly relevant to your task.
+### **9.1 Naming Conventions**
+
+#### Schema Level (prisma.schema)
+- **Models**: Use PascalCase singular form (e.g., `User`, `Post`, `Comment`)
+- **Fields**: Use camelCase for field names (e.g., `firstName`, `createdAt`)
+- **Enums**: Use PascalCase for enum names and UPPER_CASE for values
+
+#### Database Level
+- **Tables**: Common practice is plural snake_case (e.g., `users`, `posts`)
+- **Columns**: Snake_case is the general database convention (e.g., `created_at`, `user_id`)
+
+#### Client Level
+- **The Prisma Client ALWAYS generates camelCase property names** - this is not configurable
+- You access models via `prisma.user`, `prisma.post` (lowercase first letter)
+
+### **9.2 Mapping Strategy**
+
+Use `@@map` and `@map` to bridge the naming convention gap:
+
+```prisma
+model User {
+  id        Int      @id @default(autoincrement())
+  firstName String   @map("first_name")
+  createdAt DateTime @default(now()) @map("created_at")
+  posts     Post[]
+
+  @@map("users")
+}
+```
+
+This approach gives you:
+- ✅ Clean PascalCase models in schema
+- ✅ Standard snake_case in database
+- ✅ Natural camelCase in TypeScript/JavaScript code
+
+### **9.3 Next.js Specific Best Practices**
+
+#### Singleton Pattern (Critical)
+To prevent multiple Prisma Client instances during Next.js hot-reloading:
+
+```typescript
+// lib/prisma.ts
+import { PrismaClient } from '@prisma/client'
+
+const prismaClientSingleton = () => {
+  return new PrismaClient()
+}
+
+declare const globalThis: {
+  prismaGlobal: ReturnType<typeof prismaClientSingleton>;
+} & typeof global;
+
+const prisma = globalThis.prismaGlobal ?? prismaClientSingleton()
+
+export default prisma
+
+if (process.env.NODE_ENV !== 'production') globalThis.prismaGlobal = prisma
+```
+
+#### Data Caching Considerations
+Next.js Data Cache can cause stale data issues. Use `export const dynamic = 'force-dynamic'` in route segments when you need fresh data
+
+### **9.4 Additional Validated Rules**
+
+#### Performance
+- Strategic index placement is crucial for query performance
+- Use `@unique` and `@@unique` for constraints
+- Consider `@@index` for frequently queried field combinations
+
+#### Type Safety
+- The generated Prisma Client provides full TypeScript support
+- Model types are automatically generated (e.g., `User`, `Post` types)
+- Relation fields are not included in base types by default but can be accessed via helper types
+
+**Migrations**: `npx prisma generate` after changes, `migrate dev/deploy`
+
+**Field Rules**: camelCase client operations (firstName), snake_case DB (@map), never mix conventions
+
+**Separation**: Database (snake_case) → Schema (PascalCase) → Client (camelCase)
+
+# Reminders
+
+- Do only what's asked, nothing more
+- Edit existing files, don't create new ones unless absolutely necessary  
+- Never proactively create documentation files unless explicitly requested

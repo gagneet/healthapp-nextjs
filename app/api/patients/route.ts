@@ -4,7 +4,7 @@
  */
 
 import { NextRequest, NextResponse } from "next/server"
-import { getServerSession } from "@/lib/auth";
+import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma"
 import { 
   createSuccessResponse, 
@@ -27,7 +27,7 @@ import { generatePatientId } from "@/lib/id-generation"
  * Business Logic: Only doctors, HSPs, and admins can access patient lists
  */
 export const GET = withErrorHandling(async (request: NextRequest) => {
-  const session = await getServerSession()
+  const session = await auth()
   
   if (!session) {
     return createUnauthorizedResponse()
@@ -100,9 +100,9 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
               // ✅ Auth.js v5 fields
               { name: { contains: searchQuery, mode: 'insensitive' } },
               // ✅ Legacy fields for backward compatibility
-              { first_name: { contains: searchQuery, mode: 'insensitive' } },
-              { last_name: { contains: searchQuery, mode: 'insensitive' } },
-              { full_name: { contains: searchQuery, mode: 'insensitive' } },
+              { firstName: { contains: searchQuery, mode: 'insensitive' } },
+              { lastName: { contains: searchQuery, mode: 'insensitive' } },
+              { fullName: { contains: searchQuery, mode: 'insensitive' } },
               { email: { contains: searchQuery, mode: 'insensitive' } }
             ]
           }
@@ -125,15 +125,15 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
     if (statusFilter) {
       whereClause.user = {
         ...whereClause.user,
-        account_status: statusFilter.toUpperCase()
+        accountStatus: statusFilter.toUpperCase()
       };
     }
 
     // Get total count for pagination
-    const total = await prisma.Patient.count({ where: whereClause });
+    const total = await prisma.patient.count({ where: whereClause });
 
     // Fetch patients with user details
-    const patients = await prisma.Patient.findMany({
+    const patients = await prisma.patient.findMany({
       where: whereClause,
       skip,
       take: limit,
@@ -158,16 +158,16 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
             image: true,
             emailVerified: true,
             // ✅ Legacy fields for backward compatibility
-            first_name: true,
-            last_name: true,
-            full_name: true,
-            profile_picture_url: true,
-            email_verified: true,
+            firstName: true,
+            lastName: true,
+            fullName: true,
+            profilePictureUrl: true,
+            emailVerifiedLegacy: true,
             // ✅ Additional fields
             phone: true,
             date_of_birth: true,
             gender: true,
-            account_status: true,
+            accountStatus: true,
             created_at: true,
             updated_at: true
           }
@@ -183,10 +183,10 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
                 name: true,
                 image: true,
                 // ✅ Legacy fields for backward compatibility
-                first_name: true,
-                last_name: true,
-                full_name: true,
-                profile_picture_url: true
+                firstName: true,
+                lastName: true,
+                fullName: true,
+                profilePictureUrl: true
               }
             }
           }
@@ -275,7 +275,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
  * Business Logic: Only doctors and admins can create patient records
  */
 export const POST = withErrorHandling(async (request: NextRequest) => {
-  const session = await getServerSession()
+  const session = await auth()
   
   if (!session) {
     return createUnauthorizedResponse()
@@ -297,7 +297,7 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
 
   try {
     // Check if user with email already exists
-    const existingUser = await prisma.User.findUnique({
+    const existingUser = await prisma.user.findUnique({
       where: { email: patientData.email }
     })
 
@@ -327,11 +327,11 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
           emailVerified: null, // Will be set when email is verified (DateTime)
           
           // ✅ Legacy fields for backward compatibility
-          first_name: patientData.firstName,
-          last_name: patientData.lastName,
-          full_name: fullName,
-          profile_picture_url: null, // Legacy field
-          email_verified: false, // Legacy boolean field
+          firstName: patientData.firstName,
+          lastName: patientData.lastName,
+          fullName: fullName,
+          profilePictureUrl: null, // Legacy field
+          emailVerifiedLegacy: false, // Legacy boolean field
           
           // ✅ Additional healthcare fields
           middle_name: patientData.middleName,
@@ -339,12 +339,12 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
           date_of_birth: patientData.dateOfBirth,
           gender: patientData.gender,
           role: 'PATIENT',
-          account_status: 'ACTIVE',
+          accountStatus: 'ACTIVE',
           
           // ✅ Security fields
-          password_hash: '$2b$12$defaulthash', // This should be a properly hashed temporary password
-          two_factor_enabled: false,
-          failed_login_attempts: 0,
+          passwordHash: '$2b$12$defaulthash', // This should be a properly hashed temporary password
+          twoFactorEnabled: false,
+          failedLoginAttempts: 0,
           password_changed_at: new Date(),
           created_at: new Date(),
           updated_at: new Date()

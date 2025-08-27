@@ -1,6 +1,6 @@
 // app/api/payments/[id]/route.ts - Individual payment management API
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from "@/lib/auth";
+import { auth } from "@/lib/auth";
 import { prisma } from '@/lib/prisma';
 
 // Get specific payment by ID
@@ -9,7 +9,7 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    const session = await getServerSession();
+    const session = await auth();
     if (!session?.user) {
       return NextResponse.json({
         status: false,
@@ -30,8 +30,8 @@ export async function GET(
             user: {
               select: {
                 name: true,
-                first_name: true,
-                last_name: true,
+                firstName: true,
+                lastName: true,
                 email: true,
                 phone: true
               }
@@ -60,8 +60,8 @@ export async function GET(
             user: {
               select: {
                 name: true,
-                first_name: true,
-                last_name: true,
+                firstName: true,
+                lastName: true,
                 email: true
               }
             }
@@ -80,7 +80,7 @@ export async function GET(
 
     // Check access permissions
     if (session.user.role === 'PATIENT') {
-      const patient = await prisma.Patient.findFirst({
+      const patient = await prisma.patient.findFirst({
         where: { user_id: session.user.id }
       });
       if (!patient || payment.patient_id !== patient.id) {
@@ -91,13 +91,31 @@ export async function GET(
         }, { status: 403 });
       }
     } else if (session.user.role === 'DOCTOR') {
-      const doctor = await prisma.doctors.findFirst({
+      const doctor = await prisma.doctor.findFirst({
         where: { user_id: session.user.id }
       });
-      const patient = await prisma.Patient.findUnique({
+      
+      if (!doctor) {
+        return NextResponse.json({
+          status: false,
+          statusCode: 404,
+          payload: { error: { status: 'not_found', message: 'Doctor profile not found' } }
+        }, { status: 404 });
+      }
+      
+      const patient = await prisma.patient.findUnique({
         where: { id: payment.patient_id }
       });
-      if (!doctor || !patient || patient.primary_care_doctor_id !== doctor.id) {
+      
+      if (!patient) {
+        return NextResponse.json({
+          status: false,
+          statusCode: 404,
+          payload: { error: { status: 'not_found', message: 'Patient not found' } }
+        }, { status: 404 });
+      }
+      
+      if (patient.primary_care_doctor_id !== doctor.id) {
         return NextResponse.json({
           status: false,
           statusCode: 403,
@@ -131,7 +149,7 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   try {
-    const session = await getServerSession();
+    const session = await auth();
     if (!session?.user) {
       return NextResponse.json({
         status: false,
@@ -175,10 +193,10 @@ export async function PUT(
 
     // Check permissions for doctors
     if (session.user.role === 'DOCTOR') {
-      const doctor = await prisma.doctors.findFirst({
+      const doctor = await prisma.doctor.findFirst({
         where: { user_id: session.user.id }
       });
-      const patient = await prisma.Patient.findUnique({
+      const patient = await prisma.patient.findUnique({
         where: { id: existingPayment.patient_id }
       });
       if (!doctor || !patient || patient.primary_care_doctor_id !== doctor.id) {
@@ -232,8 +250,8 @@ export async function PUT(
             user: {
               select: {
                 name: true,
-                first_name: true,
-                last_name: true,
+                firstName: true,
+                lastName: true,
                 email: true
               }
             }
@@ -277,7 +295,7 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    const session = await getServerSession();
+    const session = await auth();
     if (!session?.user) {
       return NextResponse.json({
         status: false,
@@ -324,10 +342,10 @@ export async function DELETE(
 
     // Check permissions for doctors
     if (session.user.role === 'DOCTOR') {
-      const doctor = await prisma.doctors.findFirst({
+      const doctor = await prisma.doctor.findFirst({
         where: { user_id: session.user.id }
       });
-      const patient = await prisma.Patient.findUnique({
+      const patient = await prisma.patient.findUnique({
         where: { id: existingPayment.patient_id }
       });
       if (!doctor || !patient || patient.primary_care_doctor_id !== doctor.id) {

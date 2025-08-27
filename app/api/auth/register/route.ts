@@ -5,10 +5,11 @@
  */
 
 import { NextRequest, NextResponse } from "next/server"
-import { getServerSession } from "@/lib/auth";
+import { auth } from "@/lib/auth";
 import bcrypt from "bcryptjs"
 import { prisma } from "@/lib/prisma"
 import { z } from "zod"
+import { randomUUID } from "crypto"
 
 // Enhanced registration schema with healthcare-specific validation
 const registerSchema = z.object({
@@ -111,7 +112,7 @@ export async function POST(request: NextRequest) {
     const { email, password, firstName, lastName, role, phone, dateOfBirth, medicalLicenseNumber, specialtyId, organizationId } = validation.data
     
     // Check if user already exists
-    const existingUser = await prisma.User.findUnique({
+    const existingUser = await prisma.user.findUnique({
       where: { email }
     })
     
@@ -124,8 +125,8 @@ export async function POST(request: NextRequest) {
 
     // For DOCTOR registrations, validate medical license if provided
     if (role === "DOCTOR" && medicalLicenseNumber) {
-      const existingDoctor = await prisma.doctors.findFirst({
-        where: { medical_license_number: medicalLicenseNumber }
+      const existingDoctor = await prisma.doctor.findFirst({
+        where: { medicalLicenseNumber: medicalLicenseNumber }
       })
       
       if (existingDoctor) {
@@ -149,37 +150,25 @@ export async function POST(request: NextRequest) {
         const newUser = await tx.user.create({
           data: {
             email,
-            password_hash: passwordHash,
-            
-            // ✅ Auth.js v5 required fields
-            name: fullName, // Required by Auth.js v5
-            image: null, // Profile picture can be set later
-            emailVerified: null, // Will be set when email is verified (DateTime)
-            
-            // ✅ Healthcare-specific fields
-            first_name: firstName,
-            last_name: lastName,
-            full_name: fullName,
+            passwordHash: passwordHash,
+            name: fullName,
+            image: null,
+            emailVerified: null,
+            firstName: firstName,
+            lastName: lastName,
+            fullName: fullName,
             role,
             phone: phone || null,
-            date_of_birth: dateOfBirth ? new Date(dateOfBirth) : null,
-            account_status: "PENDING_VERIFICATION", // Better default for healthcare
-            email_verified: false, // Legacy field for backward compatibility
-            two_factor_enabled: false, // Default 2FA to disabled
-            failed_login_attempts: 0,
-            password_changed_at: new Date(),
-            created_at: new Date(),
-            updated_at: new Date(),
-            
-            // ✅ Healthcare compliance fields
-            hipaa_consent_date: null, // Will be set when user accepts HIPAA terms
-            terms_accepted_at: null,
-            privacy_policy_accepted_at: null,
-            
-            // ✅ Generate email verification token
-            email_verification_token: crypto.randomUUID(), // For email verification flow
-            
-            // ✅ Default preferences for healthcare
+            dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : null,
+            accountStatus: "PENDING_VERIFICATION",
+            twoFactorEnabled: false,
+            failedLoginAttempts: 0,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            hipaaConsentDate: null,
+            termsAcceptedAt: null,
+            privacyPolicyAcceptedAt: null,
+            emailVerificationToken: randomUUID(),
             preferences: {
               privacy: {
                 profile_visible: true,
@@ -202,45 +191,44 @@ export async function POST(request: NextRequest) {
         let profileData = null
 
         if (role === "DOCTOR") {
-          profileData = await tx.doctors.create({
+          profileData = await tx.doctor.create({
             data: {
-              user_id: newUser.id,
-              doctor_id: `DOC-${Date.now()}`, // Generate unique doctor ID
-              medical_license_number: medicalLicenseNumber || null,
-              speciality_id: specialtyId || null,
-              organization_id: organizationId || null,
-              years_of_experience: 0,
-              consultation_fee: 0,
-              is_accepting_patients: true,
-              created_at: new Date(),
-              updated_at: new Date()
+              userId: newUser.id,
+              doctorId: `DOC-${randomUUID().substring(0, 8).toUpperCase()}`,
+              medicalLicenseNumber: medicalLicenseNumber || null,
+              specialtyId: specialtyId || null,
+              organizationId: organizationId || null,
+              yearsOfExperience: 0,
+              consultationFee: 0,
+              createdAt: new Date(),
+              updatedAt: new Date()
             }
           })
         } else if (role === "PATIENT") {
-          profileData = await tx.patients.create({
+          profileData = await tx.patient.create({
             data: {
-              user_id: newUser.id,
-              patient_id: `PAT-${Date.now()}`, // Generate unique patient ID  
-              medical_record_number: `MRN-${Date.now()}`,
-              blood_type: null,
-              height_cm: null,
-              weight_kg: null,
-              emergency_contact: null,
-              created_at: new Date(),
-              updated_at: new Date()
+              userId: newUser.id,
+              patientId: `PAT-${randomUUID().substring(0, 8).toUpperCase()}`,
+              medicalRecordNumber: `MRN-${randomUUID().substring(0, 10).toUpperCase()}`,
+              bloodType: null,
+              heightCm: null,
+              weightKg: null,
+              emergencyContacts: [],
+              createdAt: new Date(),
+              updatedAt: new Date()
             }
           })
         } else if (role === "HSP") {
-          profileData = await tx.hsps.create({
+          profileData = await tx.hsp.create({
             data: {
-              user_id: newUser.id,
-              hsp_id: `HSP-${Date.now()}`, // Generate unique HSP ID
-              license_number: null,
-              certifications: null,
-              years_of_experience: 0,
-              organization_id: organizationId || null,
-              created_at: new Date(),
-              updated_at: new Date()
+              userId: newUser.id,
+              hspId: `HSP-${randomUUID().substring(0, 8).toUpperCase()}`,
+              licenseNumber: null,
+              certifications: [],
+              yearsOfExperience: 0,
+              organizationId: organizationId || null,
+              createdAt: new Date(),
+              updatedAt: new Date()
             }
           })
         }
@@ -255,17 +243,17 @@ export async function POST(request: NextRequest) {
         user: {
           id: result.user.id,
           email: result.user.email,
-          name: result.user.name, // Now using Auth.js v5 compatible field
-          firstName: result.user.first_name,
-          lastName: result.user.last_name,
+          name: result.user.name,
+          firstName: result.user.firstName,
+          lastName: result.user.lastName,
           role: result.user.role,
-          accountStatus: result.user.account_status,
+          accountStatus: result.user.accountStatus,
           profileId: result.profile?.id || null,
-          businessId: result.profile?.doctor_id || result.profile?.patient_id || result.profile?.hsp_id || null,
+          businessId: (result.profile as any)?.doctorId || (result.profile as any)?.patientId || (result.profile as any)?.hspId || null,
           requiresVerification: role !== "PATIENT", // Doctors and HSPs need verification
           requiresEmailVerification: true,
           requiresHipaaConsent: true,
-          emailVerificationToken: result.user.email_verification_token
+          emailVerificationToken: result.user.emailVerificationToken
         },
         nextSteps: {
           emailVerification: "Check your email for verification link",

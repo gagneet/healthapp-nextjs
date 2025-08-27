@@ -2,15 +2,15 @@
  * Smart Business ID Generation Service
  * 
  * Generates human-readable business IDs for healthcare entities:
- * - DOC-2024-001, DOC-2024-002, etc. for doctors
- * - HSP-2024-001, HSP-2024-002, etc. for HSPs
- * - PAT-2024-001, PAT-2024-002, etc. for patients
+ * - DOC-2025-001, DOC-2025-002, etc. for doctors
+ * - HSP-2025-001, HSP-2025-002, etc. for HSPs
+ * - PAT-2025-001, PAT-2025-002, etc. for patients
  * 
  * Uses existing database records to determine next sequence number
  * Avoids collisions and provides predictable, sortable IDs
  */
 
-import { prisma } from "./prisma.js"
+import { prisma } from "@/lib/prisma"
 
 export interface BusinessIdConfig {
   prefix: string;
@@ -26,7 +26,7 @@ export interface GeneratedId {
 
 /**
  * Generate next business ID for doctors
- * Format: DOC-YYYY-XXX (e.g., DOC-2024-001)
+ * Format: DOC-YYYY-XXX (e.g., DOC-2025-001)
  */
 export async function generateDoctorId(): Promise<GeneratedId> {
   return generateBusinessId({
@@ -38,7 +38,7 @@ export async function generateDoctorId(): Promise<GeneratedId> {
 
 /**
  * Generate next business ID for HSPs
- * Format: HSP-YYYY-XXX (e.g., HSP-2024-001)
+ * Format: HSP-YYYY-XXX (e.g., HSP-2025-001)
  */
 export async function generateHspId(): Promise<GeneratedId> {
   return generateBusinessId({
@@ -50,7 +50,7 @@ export async function generateHspId(): Promise<GeneratedId> {
 
 /**
  * Generate next business ID for patients
- * Format: PAT-YYYY-XXX (e.g., PAT-2024-001)
+ * Format: PAT-YYYY-XXX (e.g., PAT-2025-001)
  */
 export async function generatePatientId(): Promise<GeneratedId> {
   return generateBusinessId({
@@ -78,7 +78,7 @@ async function generateBusinessId(config: {
     
     switch (config.tableName) {
       case 'doctors':
-        const doctors = await prisma.doctors.findMany({
+        const doctors = await prisma.doctor.findMany({
           where: {
             doctor_id: {
               startsWith: yearPrefix
@@ -92,7 +92,7 @@ async function generateBusinessId(config: {
         break;
         
       case 'hsps':
-        const hsps = await prisma.hsps.findMany({
+        const hsps = await prisma.hsp.findMany({
           where: {
             hsp_id: {
               startsWith: yearPrefix

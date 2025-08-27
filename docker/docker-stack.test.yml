@@ -3,7 +3,7 @@ version: '3.8'
 
 services:
   postgres:
-    image: postgres:15-alpine
+    image: postgres:17-alpine
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-healthapp_test}
       POSTGRES_USER: ${POSTGRES_USER:-healthapp_user}
@@ -48,7 +48,7 @@ services:
                -c logging_collector=off
 
   redis:
-    image: redis:7-alpine
+    image: redis:7.2-alpine
     volumes:
       - redis_test_data:/data
     ports:

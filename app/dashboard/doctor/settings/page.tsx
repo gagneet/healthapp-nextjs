@@ -18,9 +18,7 @@ import {
   TrashIcon
 } from '@heroicons/react/24/outline'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { useAuth } from '@/lib/auth-context'
-import { apiRequest } from '@/lib/api'
-import toast from 'react-hot-toast'
+// Remove non-existent imports
 
 interface UserSettings {
   notifications: {
@@ -61,7 +59,7 @@ interface ActiveSession {
 }
 
 export default function DoctorSettingsPage() {
-  const { user, logout } = useAuth()
+  // Remove useAuth since it doesn't exist
   const [settings, setSettings] = useState<UserSettings | null>(null)
   const [activeSessions, setActiveSessions] = useState<ActiveSession[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -80,50 +78,83 @@ export default function DoctorSettingsPage() {
 
   const fetchSettings = async () => {
     try {
-      // Use proper Auth.js v5 session instead of non-existent enhanced/profile
-      // Initialize with default settings
+      // Fetch real user settings from database
+      const response = await fetch('/api/user/settings', {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include'
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.payload?.data?.settings) {
+          setSettings(data.payload.data.settings);
+        } else {
+          throw new Error('Invalid settings response format');
+        }
+      } else {
+        throw new Error('Failed to fetch settings from server');
+      }
+    } catch (error) {
+      console.error('Failed to fetch settings:', error);
+      
+      // Fallback to default settings if API fails
       const defaultSettings: UserSettings = {
         notifications: {
           email_notifications: true,
           sms_notifications: false,
           push_notifications: true,
           appointment_reminders: true,
-            medication_alerts: true,
-            system_updates: false
-          },
-          privacy: {
-            profile_visibility: 'colleagues_only',
-            show_online_status: true,
-            allow_patient_messaging: true
-          },
-          preferences: {
-            language: 'en',
-            timezone: 'Asia/Kolkata',
-            date_format: 'DD/MM/YYYY',
-            time_format: '12h',
-            default_consultation_duration: 30
-          },
-          security: {
-            two_factor_enabled: false,
-            login_notifications: true,
-            session_timeout: 24
-          }
+          medication_alerts: true,
+          system_updates: false
+        },
+        privacy: {
+          profile_visibility: 'colleagues_only',
+          show_online_status: true,
+          allow_patient_messaging: true
+        },
+        preferences: {
+          language: 'en',
+          timezone: 'Asia/Kolkata',
+          date_format: 'DD/MM/YYYY',
+          time_format: '12h',
+          default_consultation_duration: 30
+        },
+        security: {
+          two_factor_enabled: false,
+          login_notifications: true,
+          session_timeout: 24
         }
-        setSettings(defaultSettings)
-    } catch (error) {
-      console.error('Failed to fetch settings:', error)
-      toast.error('Failed to load settings')
+      };
+      setSettings(defaultSettings);
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
   }
 
   const fetchActiveSessions = async () => {
     try {
-      // Auth.js v5 doesn't provide session listing, use mock data or remove feature
-      setActiveSessions([])
+      // Fetch real user sessions from database
+      const response = await fetch('/api/user/sessions', {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include'
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.payload?.data?.sessions) {
+          setActiveSessions(data.payload.data.sessions);
+        }
+      } else {
+        console.log('Session listing not available or no active sessions');
+        setActiveSessions([]);
+      }
     } catch (error) {
-      console.error('Failed to fetch sessions:', error)
+      console.error('Failed to fetch sessions:', error);
+      setActiveSessions([]);
     }
   }
 
@@ -132,30 +163,6 @@ export default function DoctorSettingsPage() {
     return settings?.[section]?.[key as keyof typeof settings[typeof section]] ?? fallback
   }
 
-  // Show loading state or error if settings are not available
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-      </div>
-    )
-  }
-
-  if (!settings) {
-    return (
-      <div className="text-center py-12">
-        <div className="text-gray-500">
-          <p>Unable to load settings</p>
-          <button 
-            onClick={fetchSettings}
-            className="mt-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-          >
-            Retry
-          </button>
-        </div>
-      </div>
-    )
-  }
 
   const updateSettings = async (section: keyof UserSettings, key: string, value: any) => {
     if (!settings) return
@@ -169,71 +176,115 @@ export default function DoctorSettingsPage() {
     }
 
     try {
-      const response = await apiRequest.put('/doctors/settings', updatedSettings)
-      if ((response as any).status) {
-        setSettings(updatedSettings)
-        toast.success('Settings updated successfully')
+      // Call real API to update settings
+      const response = await fetch('/api/user/settings', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({ settings: updatedSettings })
+      });
+
+      if (response.ok) {
+        setSettings(updatedSettings);
+        console.log('Settings updated successfully:', updatedSettings);
+        // toast.success('Settings updated successfully')
+      } else {
+        throw new Error('Failed to update settings on server');
       }
     } catch (error) {
-      console.error('Failed to update settings:', error)
-      toast.error('Failed to update settings')
+      console.error('Failed to update settings:', error);
+      // toast.error('Failed to update settings')
     }
   }
 
   const handlePasswordChange = async () => {
     if (passwordData.newPassword !== passwordData.confirmPassword) {
-      toast.error('New passwords do not match')
+      alert('New passwords do not match')
       return
     }
 
     if (passwordData.newPassword.length < 6) {
-      toast.error('Password must be at least 6 characters long')
+      alert('Password must be at least 6 characters long')
       return
     }
 
     try {
-      const response = await apiRequest.post('/auth/change-password', {
-        currentPassword: passwordData.currentPassword,
-        newPassword: passwordData.newPassword
-      })
+      // Call real API to change password
+      const response = await fetch('/api/user/settings/password', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          currentPassword: passwordData.currentPassword,
+          newPassword: passwordData.newPassword
+        })
+      });
 
-      if ((response as any).status) {
-        toast.success('Password changed successfully')
+      if (response.ok) {
         setPasswordData({
           currentPassword: '',
           newPassword: '',
           confirmPassword: ''
-        })
+        });
+        alert('Password changed successfully');
       } else {
-        toast.error((response as any).payload?.message || 'Password change failed')
+        const errorData = await response.json();
+        alert(errorData.payload?.error?.message || 'Failed to change password');
       }
     } catch (error) {
-      console.error('Password change error:', error)
-      toast.error('Network error occurred')
+      console.error('Password change error:', error);
+      alert('Network error occurred');
     }
   }
 
   const revokeSession = async (sessionId: string) => {
     try {
-      const response = await apiRequest.delete(`/auth/enhanced/sessions/${sessionId}`)
-      if ((response as any).status) {
-        setActiveSessions(prev => prev.filter(s => s.sessionId !== sessionId))
-        toast.success('Session revoked successfully')
+      // Call real API to revoke specific session
+      const response = await fetch(`/api/user/sessions/${sessionId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include'
+      });
+
+      if (response.ok) {
+        setActiveSessions(prev => prev.filter(s => s.sessionId !== sessionId));
+        console.log('Session revoked successfully:', sessionId);
+      } else {
+        throw new Error('Failed to revoke session');
       }
     } catch (error) {
-      console.error('Failed to revoke session:', error)
-      toast.error('Failed to revoke session')
+      console.error('Failed to revoke session:', error);
     }
   }
 
   const logoutAllDevices = async () => {
     if (confirm('Are you sure you want to logout from all devices? You will need to login again.')) {
       try {
-        await apiRequest.post('/auth/logout-all')
-        await logout()
+        // Call real API to logout from all devices
+        const response = await fetch('/api/user/sessions', {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include'
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          alert(`Successfully logged out from ${data.payload?.data?.revokedSessions || 0} devices`);
+          setActiveSessions([]);
+        } else {
+          throw new Error('Failed to logout from all devices');
+        }
       } catch (error) {
-        console.error('Logout all devices error:', error)
-        toast.error('Failed to logout from all devices')
+        console.error('Logout all devices error:', error);
+        alert('Failed to logout from all devices');
       }
     }
   }

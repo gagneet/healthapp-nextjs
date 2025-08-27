@@ -4,7 +4,7 @@
  */
 
 import { NextRequest, NextResponse } from "next/server"
-import { getServerSession } from "@/lib/auth";
+import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma"
 import bcrypt from "bcryptjs"
 import { z } from "zod"
@@ -37,7 +37,7 @@ export async function POST(req: NextRequest) {
     const { email, password, firstName, lastName, role, phone } = validationResult.data
 
     // Check if user already exists
-    const existingUser = await prisma.User.findUnique({
+    const existingUser = await prisma.user.findUnique({
       where: { email }
     })
 
@@ -52,17 +52,17 @@ export async function POST(req: NextRequest) {
     const passwordHash = await bcrypt.hash(password, 12)
 
     // Create user
-    const user = await prisma.User.create({
+    const user = await prisma.user.create({
       data: {
         email,
-        password_hash: passwordHash,
-        first_name: firstName,
-        last_name: lastName,
-        full_name: `${firstName} ${lastName}`,
+        passwordHash: passwordHash,
+        firstName: firstName,
+        lastName: lastName,
+        fullName: `${firstName} ${lastName}`,
         role: role as any,
         phone,
-        account_status: 'ACTIVE', // Set to PENDING_VERIFICATION if email verification required
-        email_verified: false, // Will be true after email verification
+        accountStatus: 'ACTIVE', // Set to PENDING_VERIFICATION if email verification required
+        emailVerifiedLegacy: false, // Will be true after email verification
       }
     })
 

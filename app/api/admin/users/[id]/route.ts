@@ -1,6 +1,6 @@
 // app/api/admin/users/[id]/route.ts - Individual user management API
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from "@/lib/auth";
+import { auth } from "@/lib/auth";
 import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
 
@@ -10,7 +10,7 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    const session = await getServerSession();
+    const session = await auth();
     if (!session?.user) {
       return NextResponse.json({
         status: false,
@@ -29,47 +29,44 @@ export async function GET(
       }, { status: 403 });
     }
 
-    const user = await prisma.User.findUnique({
+    const user = await prisma.user.findUnique({
       where: { id: userId },
       select: {
         id: true,
         email: true,
-        // Auth.js v5 fields
         name: true,
         image: true,
-        email_verified_at: true,
-        // Legacy fields
-        first_name: true,
-        last_name: true,
-        full_name: true,
+        emailVerified: true,
+        firstName: true,
+        lastName: true,
+        fullName: true,
         phone: true,
-        date_of_birth: true,
+        dateOfBirth: true,
         gender: true,
         role: true,
-        account_status: true,
-        email_verified: true,
-        profile_picture_url: true,
-        created_at: true,
-        updated_at: true,
-        last_login_at: true,
+        accountStatus: true,
+        profilePictureUrl: true,
+        createdAt: true,
+        updatedAt: true,
+        lastLoginAt: true,
         // Relations with detailed info
-        doctors: {
+        doctorProfile: {
           select: {
             id: true,
-            doctor_id: true,
-            medical_license_number: true,
-            years_of_experience: true,
-            qualification_details: true,
-            consultation_fee: true,
-            mobile_number: true,
-            specialities: {
+            doctorId: true,
+            medicalLicenseNumber: true,
+            yearsOfExperience: true,
+            qualificationDetails: true,
+            consultationFee: true,
+            mobileNumber: true,
+            specialty: {
               select: {
                 id: true,
                 name: true,
                 description: true
               }
             },
-            organizations: {
+            organization: {
               select: {
                 id: true,
                 name: true,
@@ -78,58 +75,58 @@ export async function GET(
             },
             _count: {
               select: {
-                doctor_assignments: true,
+                doctorAssignments: true,
                 appointments: true
               }
             }
           }
         },
-        patients: {
+        patientProfile: {
           select: {
             id: true,
-            patient_id: true,
-            medical_record_number: true,
-            height_cm: true,
-            weight_kg: true,
-            blood_type: true,
+            patientId: true,
+            medicalRecordNumber: true,
+            heightCm: true,
+            weightKg: true,
+            bloodType: true,
             allergies: true,
-            medical_history: true,
-            emergency_contacts: true,
-            doctors: {
+            medicalHistory: true,
+            emergencyContacts: true,
+            primaryCareDoctor: {
               select: {
                 id: true,
-                doctor_id: true,
-                users_doctors_user_idTousers: {
+                doctorId: true,
+                user: {
                   select: {
                     name: true,
-                    first_name: true,
-                    last_name: true
+                    firstName: true,
+                    lastName: true
                   }
                 },
-                specialities: {
+                specialty: {
                   select: { name: true }
                 }
               }
             },
             _count: {
               select: {
-                care_plans: true,
+                carePlans: true,
                 appointments: true,
-                medications: true,
-                vitals: true
+                medicationLogs: true,
+                vitalReadings: true
               }
             }
           }
         },
-        hsps: {
+        hspProfile: {
           select: {
             id: true,
-            hsp_id: true,
-            qualification: true,
-            license_number: true,
-            years_of_experience: true,
-            consultation_fee: true,
-            mobile_number: true
+            hspId: true,
+            certifications: true,
+            licenseNumber: true,
+            yearsOfExperience: true,
+            hourlyRate: true,
+            departments: true
           }
         }
       }
@@ -168,7 +165,7 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   try {
-    const session = await getServerSession();
+    const session = await auth();
     if (!session?.user) {
       return NextResponse.json({
         status: false,
@@ -211,7 +208,7 @@ export async function PUT(
     }
 
     // Find existing user
-    const existingUser = await prisma.User.findUnique({
+    const existingUser = await prisma.user.findUnique({
       where: { id: userId }
     });
 
@@ -225,59 +222,57 @@ export async function PUT(
 
     // Prepare update data
     const updateData: any = {
-      updated_at: new Date()
+      updatedAt: new Date()
     };
 
     if (first_name !== undefined) {
-      updateData.first_name = first_name;
-      // Update Auth.js v5 name field if both first_name and last_name available
-      const newLastName = last_name !== undefined ? last_name : existingUser.last_name;
+      updateData.firstName = first_name;
+      const newLastName = last_name !== undefined ? last_name : existingUser.lastName;
       if (newLastName) {
         updateData.name = `${first_name} ${newLastName}`.trim();
-        updateData.full_name = `${first_name} ${newLastName}`.trim();
+        updateData.fullName = `${first_name} ${newLastName}`.trim();
       }
     }
 
     if (last_name !== undefined) {
-      updateData.last_name = last_name;
-      // Update Auth.js v5 name field if both first_name and last_name available
-      const newFirstName = first_name !== undefined ? first_name : existingUser.first_name;
+      updateData.lastName = last_name;
+      const newFirstName = first_name !== undefined ? first_name : existingUser.firstName;
       if (newFirstName) {
         updateData.name = `${newFirstName} ${last_name}`.trim();
-        updateData.full_name = `${newFirstName} ${last_name}`.trim();
+        updateData.fullName = `${newFirstName} ${last_name}`.trim();
       }
     }
 
     if (phone !== undefined) updateData.phone = phone;
-    if (date_of_birth !== undefined) updateData.date_of_birth = date_of_birth ? new Date(date_of_birth) : null;
+    if (date_of_birth !== undefined) updateData.dateOfBirth = date_of_birth ? new Date(date_of_birth) : null;
     if (gender !== undefined) updateData.gender = gender;
     
     // Admin-only fields
     if (session.user.role === 'SYSTEM_ADMIN') {
       if (role !== undefined) updateData.role = role;
-      if (account_status !== undefined) updateData.account_status = account_status;
+      if (account_status !== undefined) updateData.accountStatus = account_status;
     }
 
     // Password update
     if (password) {
-      updateData.password_hash = await bcrypt.hash(password, 12);
+      updateData.passwordHash = await bcrypt.hash(password, 12);
     }
 
-    const updatedUser = await prisma.User.update({
+    const updatedUser = await prisma.user.update({
       where: { id: userId },
       data: updateData,
       select: {
         id: true,
         email: true,
         name: true,
-        first_name: true,
-        last_name: true,
+        firstName: true,
+        lastName: true,
         phone: true,
-        date_of_birth: true,
+        dateOfBirth: true,
         gender: true,
         role: true,
-        account_status: true,
-        updated_at: true
+        accountStatus: true,
+        updatedAt: true
       }
     });
 
@@ -306,7 +301,7 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    const session = await getServerSession();
+    const session = await auth();
     if (!session?.user) {
       return NextResponse.json({
         status: false,
@@ -327,7 +322,7 @@ export async function DELETE(
     const userId = params.id;
 
     // Check if user exists
-    const existingUser = await prisma.User.findUnique({
+    const existingUser = await prisma.user.findUnique({
       where: { id: userId }
     });
 
@@ -349,11 +344,11 @@ export async function DELETE(
     }
 
     // Soft delete - deactivate user
-    await prisma.User.update({
+    await prisma.user.update({
       where: { id: userId },
       data: {
-        account_status: 'INACTIVE',
-        updated_at: new Date()
+        accountStatus: 'INACTIVE',
+        updatedAt: new Date()
       }
     });
 
@@ -361,7 +356,7 @@ export async function DELETE(
       status: true,
       statusCode: 200,
       payload: {
-        data: { user_id: userId },
+        data: { userId: userId },
         message: 'User deactivated successfully'
       }
     });

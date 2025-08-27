@@ -181,7 +181,7 @@ The Healthcare Management Platform uses a **modern Next.js 14 full-stack archite
 
 ```sql
 -- PostgreSQL with optimized configuration
-- PostgreSQL 15+ (primary database)
+- PostgreSQL 17+ (primary database)
 - Redis 7+ (caching and sessions)
 - Connection pooling
 - Database migrations with Sequelize

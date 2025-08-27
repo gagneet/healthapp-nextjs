@@ -232,7 +232,7 @@ fix_common_issues() {
     echo "4. Check port conflicts (5432, 6379, 3002, 5050)"
     echo
     echo "5. Manual PostgreSQL test:"
-    echo "   docker run --rm -it -e POSTGRES_DB=healthapp_test -e POSTGRES_USER=healthapp_user -e POSTGRES_PASSWORD=pg_password postgres:15-alpine"
+    echo "   docker run --rm -it -e POSTGRES_DB=healthapp_test -e POSTGRES_USER=healthapp_user -e POSTGRES_PASSWORD=pg_password postgres:17-alpine"
     echo
     echo "6. View real-time logs:"
     echo "   docker service logs -f ${STACK_NAME}_postgres"

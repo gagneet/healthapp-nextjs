@@ -40,7 +40,7 @@ const mockDoctors = [
     specialty: 'Cardiology',
     patients_count: 45,
     status: 'active',
-    last_login: '2024-01-22T08:30:00Z',
+    last_login: '2025-01-22T08:30:00Z',
     joined_date: '2023-03-15',
   },
   {
@@ -51,7 +51,7 @@ const mockDoctors = [
     specialty: 'Endocrinology',
     patients_count: 38,
     status: 'active',
-    last_login: '2024-01-22T07:45:00Z',
+    last_login: '2025-01-22T07:45:00Z',
     joined_date: '2023-06-20',
   },
   {
@@ -62,7 +62,7 @@ const mockDoctors = [
     specialty: 'Internal Medicine',
     patients_count: 52,
     status: 'active',
-    last_login: '2024-01-21T16:20:00Z',
+    last_login: '2025-01-21T16:20:00Z',
     joined_date: '2022-11-10',
   },
 ]
@@ -77,7 +77,7 @@ const mockHSPs = [
     department: 'Cardiology',
     patients_assigned: 12,
     status: 'active',
-    last_login: '2024-01-22T06:15:00Z',
+    last_login: '2025-01-22T06:15:00Z',
   },
   {
     id: '2',
@@ -88,7 +88,7 @@ const mockHSPs = [
     department: 'Pharmacy',
     patients_assigned: 8,
     status: 'active',
-    last_login: '2024-01-22T08:00:00Z',
+    last_login: '2025-01-22T08:00:00Z',
   },
 ]
 

@@ -7,8 +7,10 @@ RUN apk add --no-cache \
     postgresql-client \
     curl \
     bash \
+    vim \
     openssl \
-    ca-certificates
+    ca-certificates \
+    netcat-openbsd
 
 WORKDIR /app
 

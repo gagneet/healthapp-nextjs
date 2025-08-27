@@ -237,7 +237,7 @@ JSONB Fields: Flexible data storage
 ```text
 Next.js 14 Full-Stack Healthcare Platform
 ├── Auth.js v5 + PrismaAdapter (Database Sessions)
-├── PostgreSQL 15+ + Prisma ORM v6.14.0
+├── PostgreSQL 17+ + Prisma ORM v6.14.0
 ├── TypeScript-First Development
 ├── Docker Swarm Production Deployment  
 ├── 46+ Healthcare Models with Real Relationships

@@ -14,7 +14,7 @@ const sampleSymptoms = [
     y: 0.8,
     z: 0,
     description: 'Severe headache with throbbing pain',
-    onset_time: '2024-01-15T10:30:00Z'
+    onset_time: '2025-01-15T10:30:00Z'
   },
   {
     id: '2', 
@@ -24,7 +24,7 @@ const sampleSymptoms = [
     y: 0.2,
     z: 0,
     description: 'Sharp chest pain on left side',
-    onset_time: '2024-01-15T12:00:00Z'
+    onset_time: '2025-01-15T12:00:00Z'
   },
   {
     id: '3',
@@ -34,7 +34,7 @@ const sampleSymptoms = [
     y: -0.2,
     z: 0,
     description: 'Mild stomach discomfort after eating',
-    onset_time: '2024-01-15T14:30:00Z'
+    onset_time: '2025-01-15T14:30:00Z'
   },
   {
     id: '4',
@@ -44,7 +44,7 @@ const sampleSymptoms = [
     y: -1.2,
     z: 0,
     description: 'Left knee pain when walking',
-    onset_time: '2024-01-15T16:00:00Z'
+    onset_time: '2025-01-15T16:00:00Z'
   }
 ]
 

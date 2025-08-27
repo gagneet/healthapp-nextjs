@@ -1,13 +1,13 @@
 // app/api/admin/doctors/route.ts - Admin doctor management API
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from "@/lib/auth";
+import { auth } from "@/lib/auth";
 import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
 import { randomUUID } from 'crypto';
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession();
+    const session = await auth();
     if (!session?.user) {
       return NextResponse.json({
         status: false,
@@ -35,14 +35,12 @@ export async function GET(request: NextRequest) {
     
     if (search) {
       whereClause = {
-        users_doctors_user_idTousers: {
+        user: {
           OR: [
-            // ✅ Auth.js v5 fields
             { name: { contains: search, mode: 'insensitive' } },
-            // ✅ Legacy fields for backward compatibility  
-            { first_name: { contains: search, mode: 'insensitive' } },
-            { last_name: { contains: search, mode: 'insensitive' } },
-            { full_name: { contains: search, mode: 'insensitive' } },
+            { firstName: { contains: search, mode: 'insensitive' } },
+            { lastName: { contains: search, mode: 'insensitive' } },
+            { fullName: { contains: search, mode: 'insensitive' } },
             { email: { contains: search, mode: 'insensitive' } }
           ]
         }
@@ -50,36 +48,32 @@ export async function GET(request: NextRequest) {
     }
 
     const [doctors, totalCount] = await Promise.all([
-      prisma.doctors.findMany({
+      prisma.doctor.findMany({
         where: whereClause,
         include: {
-          users_doctors_user_idTousers: {
+          user: {
             select: {
               id: true,
               email: true,
-              // ✅ Auth.js v5 fields
               name: true,
               image: true,
               emailVerified: true,
-              // ✅ Legacy fields for backward compatibility
-              first_name: true,
-              last_name: true,
-              full_name: true,
-              profile_picture_url: true,
-              email_verified: true,
-              // ✅ Additional fields
+              firstName: true,
+              lastName: true,
+              fullName: true,
+              profilePictureUrl: true,
               phone: true,
-              account_status: true
+              accountStatus: true
             }
           },
-          specialities: {
+          specialty: {
             select: {
               id: true,
               name: true,
               description: true
             }
           },
-          organizations: {
+          organization: {
             select: {
               id: true,
               name: true,
@@ -88,16 +82,16 @@ export async function GET(request: NextRequest) {
           },
           _count: {
             select: {
-              doctor_assignments: true,
+              doctorAssignments: true,
               appointments: true
             }
           }
         },
         skip: offset,
         take: limit,
-        orderBy: { created_at: 'desc' }
+        orderBy: { createdAt: 'desc' }
       }),
-      prisma.doctors.count({ where: whereClause })
+      prisma.doctor.count({ where: whereClause })
     ]);
 
     return NextResponse.json({
@@ -128,7 +122,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession();
+    const session = await auth();
     if (!session?.user) {
       return NextResponse.json({
         status: false,
@@ -137,7 +131,6 @@ export async function POST(request: NextRequest) {
       }, { status: 401 });
     }
 
-    // Only admins can create doctors
     if (!['SYSTEM_ADMIN', 'HOSPITAL_ADMIN'].includes(session.user.role)) {
       return NextResponse.json({
         status: false,
@@ -156,17 +149,14 @@ export async function POST(request: NextRequest) {
       date_of_birth,
       gender,
       speciality_id,
-      medical_license_number: license_number,
-      years_of_experience: years_experience,
-      qualification_details: qualifications,
-      organization_id: provider_id,
+      medical_license_number,
+      years_of_experience,
+      qualification_details,
+      organization_id,
       consultation_fee,
-      // Note: available_days and available_hours are now part of availability_schedule JSON field
-      // They could be stored in availability_schedule if needed
     } = body;
 
-    // Check if user already exists
-    const existingUser = await prisma.User.findUnique({
+    const existingUser = await prisma.user.findUnique({
       where: { email }
     });
 
@@ -178,65 +168,57 @@ export async function POST(request: NextRequest) {
       }, { status: 409 });
     }
 
-    // Hash password
     const hashedPassword = await bcrypt.hash(password, 12);
 
-    // Create user and doctor in transaction
     const result = await prisma.$transaction(async (tx) => {
-      // Create user with Auth.js v5 compatibility
       const fullName = `${first_name} ${last_name}`.trim();
       const newUser = await tx.user.create({
         data: {
           email,
-          password_hash: hashedPassword,
-          // Auth.js v5 fields
+          passwordHash: hashedPassword,
           name: fullName,
-          email_verified_at: new Date(),
+          emailVerified: new Date(),
           image: null,
-          // Legacy fields for backward compatibility
-          first_name,
-          last_name,
-          full_name: fullName,
+          firstName: first_name,
+          lastName: last_name,
+          fullName: fullName,
           phone: mobile_number,
-          date_of_birth: date_of_birth ? new Date(date_of_birth) : null,
+          dateOfBirth: date_of_birth ? new Date(date_of_birth) : null,
           gender,
           role: 'DOCTOR',
-          account_status: 'ACTIVE',
-          email_verified: true,
-          created_at: new Date(),
-          updated_at: new Date()
+          accountStatus: 'ACTIVE',
+          createdAt: new Date(),
+          updatedAt: new Date()
         }
       });
 
-      // Create doctor profile
-      const doctor = await tx.doctors.create({
+      const doctor = await tx.doctor.create({
         data: {
           id: randomUUID(),
-          doctor_id: `DOC-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 10000)).padStart(4, '0')}`,
-          user_id: newUser.id,
-          speciality_id,
-          medical_license_number: license_number,
-          years_of_experience: years_experience ? parseInt(years_experience) : null,
-          qualification_details: qualifications,
-          organization_id: provider_id,
-          consultation_fee: consultation_fee ? parseFloat(consultation_fee) : null,
-          // availability_schedule can be set here if needed
-          mobile_number,
+          doctorId: `DOC-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 10000)).padStart(4, '0')}`,
+          userId: newUser.id,
+          specialtyId: speciality_id,
+          medicalLicenseNumber: medical_license_number,
+          yearsOfExperience: years_of_experience ? parseInt(years_of_experience) : null,
+          qualificationDetails: qualification_details,
+          organizationId: organization_id,
+          consultationFee: consultation_fee ? parseFloat(consultation_fee) : null,
+          mobileNumber: mobile_number,
           gender,
-          created_at: new Date(),
-          updated_at: new Date()
+          createdAt: new Date(),
+          updatedAt: new Date()
         },
         include: {
-          users_doctors_user_idTousers: {
+          user: {
             select: {
               id: true,
               email: true,
-              first_name: true,
-              last_name: true,
+              firstName: true,
+              lastName: true,
               phone: true
             }
           },
-          specialities: {
+          specialty: {
             select: {
               name: true,
               description: true

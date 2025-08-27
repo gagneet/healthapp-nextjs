@@ -36,7 +36,7 @@ export default {
           gender: 'FEMALE',
           account_status: 'ACTIVE',
           email_verified: true,
-          created_at: new Date('2024-01-01'),
+          created_at: new Date('2025-01-01'),
           updated_at: new Date()
         },
         {
@@ -51,7 +51,7 @@ export default {
           gender: 'MALE',
           account_status: 'ACTIVE',
           email_verified: true,
-          created_at: new Date('2024-01-02'),
+          created_at: new Date('2025-01-02'),
           updated_at: new Date()
         },
         {
@@ -66,7 +66,7 @@ export default {
           gender: 'FEMALE',
           account_status: 'ACTIVE',
           email_verified: true,
-          created_at: new Date('2024-01-01'),
+          created_at: new Date('2025-01-01'),
           updated_at: new Date()
         }
       ];
@@ -78,7 +78,7 @@ export default {
         {
           id: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', // Deterministic UUID for patient profile 1
           user_id: testUsers[0].id,
-          patient_id: 'PAT-2024-001',
+          patient_id: 'PAT-2025-001',
           height_cm: 165.0,
           weight_kg: 68.5,
           blood_type: 'A+',
@@ -107,16 +107,16 @@ export default {
           last_adherence_calculation: new Date(),
           total_appointments: 8,
           missed_appointments: 1,
-          last_visit_date: new Date('2024-01-15'),
+          last_visit_date: new Date('2025-01-15'),
           next_appointment_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
           is_active: true,
-          created_at: new Date('2024-01-01'),
+          created_at: new Date('2025-01-01'),
           updated_at: new Date()
         },
         {
           id: 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', // Deterministic UUID for patient profile 2
           user_id: testUsers[1].id,
-          patient_id: 'PAT-2024-002',
+          patient_id: 'PAT-2025-002',
           height_cm: 178.0,
           weight_kg: 82.3,
           blood_type: 'O-',
@@ -141,10 +141,10 @@ export default {
           last_adherence_calculation: new Date(),
           total_appointments: 5,
           missed_appointments: 0,
-          last_visit_date: new Date('2024-01-10'),
+          last_visit_date: new Date('2025-01-10'),
           next_appointment_date: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000),
           is_active: true,
-          created_at: new Date('2024-01-02'),
+          created_at: new Date('2025-01-02'),
           updated_at: new Date()
         }
       ];
@@ -164,7 +164,7 @@ export default {
         ]),
         medical_school: 'Harvard Medical School',
         specialties: ['internal_medicine', 'diabetes_care'],
-        created_at: new Date('2024-01-01'),
+        created_at: new Date('2025-01-01'),
         updated_at: new Date()
       }];
 
@@ -191,7 +191,7 @@ export default {
             organizer_id: doctors[0].id,
             medicine_id: medicines[0].id,
             description: 'Take with breakfast for diabetes management',
-            start_date: new Date('2024-01-01'),
+            start_date: new Date('2025-01-01'),
             end_date: null,
             details: JSON.stringify({
               frequency: 'daily',
@@ -200,7 +200,7 @@ export default {
               instructions: 'Take with food',
               duration_days: null
             }),
-            created_at: new Date('2024-01-01'),
+            created_at: new Date('2025-01-01'),
             updated_at: new Date()
           },
           {
@@ -210,7 +210,7 @@ export default {
             organizer_id: doctors[0].id,
             medicine_id: medicines[1].id,
             description: 'Blood pressure medication',
-            start_date: new Date('2024-01-01'),
+            start_date: new Date('2025-01-01'),
             end_date: null,
             details: JSON.stringify({
               frequency: 'daily',
@@ -219,7 +219,7 @@ export default {
               instructions: 'Take at same time daily',
               duration_days: null
             }),
-            created_at: new Date('2024-01-01'),
+            created_at: new Date('2025-01-01'),
             updated_at: new Date()
           }
         );
@@ -233,8 +233,8 @@ export default {
             organizer_id: doctors[0].id,
             medicine_id: medicines[2].id,
             description: 'Seasonal allergy relief',
-            start_date: new Date('2024-01-01'),
-            end_date: new Date('2024-06-01'),
+            start_date: new Date('2025-01-01'),
+            end_date: new Date('2025-06-01'),
             details: JSON.stringify({
               frequency: 'daily',
               time_of_day: ['20:00'],
@@ -242,7 +242,7 @@ export default {
               instructions: 'Take before bedtime',
               duration_days: 120
             }),
-            created_at: new Date('2024-01-01'),
+            created_at: new Date('2025-01-01'),
             updated_at: new Date()
           });
         }
@@ -671,7 +671,7 @@ export default {
         patient_id: { [Sequelize.Op.in]: await queryInterface.sequelize.query(
           'SELECT id FROM patients WHERE patient_id IN (?, ?)',
           { 
-            replacements: ['PAT-2024-001', 'PAT-2024-002'],
+            replacements: ['PAT-2025-001', 'PAT-2025-002'],
             type: Sequelize.QueryTypes.SELECT 
           }
         ).then((results: any) => results.map((r: any) => r.id)) }
@@ -681,7 +681,7 @@ export default {
         patient_id: { [Sequelize.Op.in]: await queryInterface.sequelize.query(
           'SELECT id FROM patients WHERE patient_id IN (?, ?)',
           { 
-            replacements: ['PAT-2024-001', 'PAT-2024-002'],
+            replacements: ['PAT-2025-001', 'PAT-2025-002'],
             type: Sequelize.QueryTypes.SELECT 
           }
         ).then((results: any) => results.map((r: any) => r.id)) }
@@ -691,7 +691,7 @@ export default {
         patient_id: { [Sequelize.Op.in]: await queryInterface.sequelize.query(
           'SELECT id FROM patients WHERE patient_id IN (?, ?)',
           { 
-            replacements: ['PAT-2024-001', 'PAT-2024-002'],
+            replacements: ['PAT-2025-001', 'PAT-2025-002'],
             type: Sequelize.QueryTypes.SELECT 
           }
         ).then((results: any) => results.map((r: any) => r.id)) }
@@ -701,7 +701,7 @@ export default {
         patient_id: { [Sequelize.Op.in]: await queryInterface.sequelize.query(
           'SELECT id FROM patients WHERE patient_id IN (?, ?)',
           { 
-            replacements: ['PAT-2024-001', 'PAT-2024-002'],
+            replacements: ['PAT-2025-001', 'PAT-2025-002'],
             type: Sequelize.QueryTypes.SELECT 
           }
         ).then((results: any) => results.map((r: any) => r.id)) }
@@ -711,7 +711,7 @@ export default {
         patient_id: { [Sequelize.Op.in]: await queryInterface.sequelize.query(
           'SELECT id FROM patients WHERE patient_id IN (?, ?)',
           { 
-            replacements: ['PAT-2024-001', 'PAT-2024-002'],
+            replacements: ['PAT-2025-001', 'PAT-2025-002'],
             type: Sequelize.QueryTypes.SELECT 
           }
         ).then((results: any) => results.map((r: any) => r.id)) }
@@ -721,7 +721,7 @@ export default {
         participant_id: { [Sequelize.Op.in]: await queryInterface.sequelize.query(
           'SELECT id FROM patients WHERE patient_id IN (?, ?)',
           { 
-            replacements: ['PAT-2024-001', 'PAT-2024-002'],
+            replacements: ['PAT-2025-001', 'PAT-2025-002'],
             type: Sequelize.QueryTypes.SELECT 
           }
         ).then((results: any) => results.map((r: any) => r.id)) }
@@ -738,7 +738,7 @@ export default {
       }, { transaction, ignoreDuplicates: true });
 
       await queryInterface.bulkDelete('patients', { 
-        patient_id: { [Sequelize.Op.in]: ['PAT-2024-001', 'PAT-2024-002'] }
+        patient_id: { [Sequelize.Op.in]: ['PAT-2025-001', 'PAT-2025-002'] }
       }, { transaction, ignoreDuplicates: true });
 
       await queryInterface.bulkDelete('user_roles', {

@@ -1,7 +1,6 @@
 // Test dashboard functionality directly without starting the server
-import { PrismaClient } from '@/prisma/index';
+import { PrismaClient } from '@prisma/client';
 import { getDoctorDashboard, getPatientDashboard, authenticateUser } from '@/lib/api-services';
-import { authenticateUser } from '@/lib/api-services.js';
 
 const prisma = new PrismaClient({
   datasources: {
@@ -64,15 +63,15 @@ async function testDashboards() {
     const patientUser = await prisma.user.findUnique({
       where: { email: 'patient1@healthapp.com' },
       include: {
-        patient: true
+        patientProfile: true
       }
     });
     
-    if (!patientUser || !patientUser.patient) {
+    if (!patientUser || !patientUser.patientProfile) {
       throw new Error('Patient profile not found');
     }
     
-    const patientId = patientUser.patient.id;
+    const patientId = patientUser.patientProfile.id;
     console.log('Patient Profile ID:', patientId);
     
     try {
@@ -92,15 +91,15 @@ async function testDashboards() {
     console.log('\n🏥 Testing data relationships...');
     
     // Verify business IDs are properly stored
-    const doctors = await prisma.doctors.findMany({
+    const doctors = await prisma.doctor.findMany({
       select: {
         id: true,
-        doctor_id: true,
-        medical_license_number: true,
-        users_doctors_user_idTousers: {
+        doctorId: true,
+        medicalLicenseNumber: true,
+        user: {
           select: {
-            first_name: true,
-            last_name: true,
+            firstName: true,
+            lastName: true,
             email: true
           }
         }
@@ -109,18 +108,18 @@ async function testDashboards() {
     
     console.log('👨‍⚕️ Doctors with business IDs:');
     doctors.forEach(doc => {
-      console.log(`  - ${doc.doctor_id} (${doc.medical_license_number}) - ${doc.users_doctors_user_idTousers.first_name} ${doc.users_doctors_user_idTousers.last_name} (${doc.users_doctors_user_idTousers.email})`);
+      console.log(`  - ${doc.doctorId} (${doc.medicalLicenseNumber}) - ${doc.user.firstName} ${doc.user.lastName} (${doc.user.email})`);
     });
     
     const patients = await prisma.patient.findMany({
       select: {
         id: true,
-        patient_id: true,
-        medical_record_number: true,
+        patientId: true,
+        medicalRecordNumber: true,
         user: {
           select: {
-            first_name: true,
-            last_name: true,
+            firstName: true,
+            lastName: true,
             email: true
           }
         }
@@ -129,19 +128,19 @@ async function testDashboards() {
     
     console.log('👥 Patients with business IDs:');
     patients.forEach(pat => {
-      console.log(`  - ${pat.patient_id} (${pat.medical_record_number}) - ${pat.user.first_name} ${pat.user.last_name} (${pat.user.email})`);
+      console.log(`  - ${pat.patientId} (${pat.medicalRecordNumber}) - ${pat.user.firstName} ${pat.user.lastName} (${pat.user.email})`);
     });
     
-    const hsps = await prisma.hsps.findMany({
+    const hsps = await prisma.hsp.findMany({
       select: {
         id: true,
-        hsp_id: true,
-        hsp_type: true,
-        license_number: true,
-        users_hsps_user_idTousers: {
+        hspId: true,
+        hspType: true,
+        licenseNumber: true,
+        user: {
           select: {
-            first_name: true,
-            last_name: true,
+            firstName: true,
+            lastName: true,
             email: true
           }
         }
@@ -150,7 +149,7 @@ async function testDashboards() {
     
     console.log('🔬 HSPs with business IDs:');
     hsps.forEach(hsp => {
-      console.log(`  - ${hsp.hsp_id} (${hsp.license_number}) - ${hsp.users_hsps_user_idTousers.first_name} ${hsp.users_hsps_user_idTousers.last_name} (${hsp.users_hsps_user_idTousers.email})`);
+      console.log(`  - ${hsp.hspId} (${hsp.licenseNumber}) - ${hsp.user.firstName} ${hsp.user.lastName} (${hsp.user.email})`);
     });
     
     console.log('\n✅ Dashboard testing completed successfully!');

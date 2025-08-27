@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from "@/lib/auth";
+import { auth } from "@/lib/auth";
 import { checkRateLimit } from "@/lib/auth-helpers";
 import { getPatients, handleApiError, formatApiSuccess } from '@/lib/api-services';
 
@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Authenticate user and check permissions
-    const session = await getServerSession();
+    const session = await auth();
     if (!session?.user) {
       return NextResponse.json({
         status: false,
@@ -46,7 +46,27 @@ export async function GET(request: NextRequest) {
       sortOrder: (searchParams.get('sortOrder') || 'desc') as 'asc' | 'desc'
     };
 
-    const patientsData = await getPatients(user.id || user.userId, pagination);
+    // For doctors, we need to get the doctor profile ID, not the user ID
+    let doctorId = user.id || user.userId;
+    if (user.role === 'DOCTOR') {
+      // Import prisma locally to get doctor profile ID
+      const { prisma } = await import('@/lib/prisma');
+      const doctorProfile = await prisma.doctor.findFirst({
+        where: { userId: user.id || user.userId }
+      });
+      
+      if (!doctorProfile) {
+        return NextResponse.json({
+          status: false,
+          statusCode: 404,
+          payload: { error: { status: 'not_found', message: 'Doctor profile not found' } }
+        }, { status: 404 });
+      }
+      
+      doctorId = doctorProfile.id;
+    }
+
+    const patientsData = await getPatients(doctorId, pagination);
     
     return NextResponse.json(formatApiSuccess(patientsData, 'Patients retrieved successfully'));
   } catch (error) {

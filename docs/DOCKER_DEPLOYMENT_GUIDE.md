@@ -64,7 +64,7 @@ docker-compose --version
 
 ### Technology Stack
 - **Full-Stack**: Next.js 14 with TypeScript (unified frontend/backend)
-- **Database**: PostgreSQL 15 with Prisma ORM
+- **Database**: PostgreSQL 17 with Prisma ORM
 - **Authentication**: NextAuth.js with PrismaAdapter and database sessions  
 - **Cache**: Redis for enhanced session management and caching
 - **Orchestration**: Docker Compose (local) / Docker Swarm (dev/test/prod)
@@ -75,7 +75,7 @@ docker-compose --version
 | Service | Local (Compose) | Dev/Test/Prod (Swarm) | Purpose |
 |---------|-----------------|----------------------|---------|
 | **Application** | next.js:dev | healthapp:production | Full-stack Next.js with API routes |
-| **Database** | postgres:15-alpine | postgres:15-alpine | Data persistence + NextAuth sessions |
+| **Database** | postgres:17-alpine | postgres:17-alpine | Data persistence + NextAuth sessions |
 | **Cache** | redis:7-alpine | redis:7-alpine | Session storage & caching |
 | **Admin** | pgadmin4 | pgadmin4 | Database administration |
 

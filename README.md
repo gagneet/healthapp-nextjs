@@ -135,7 +135,7 @@ healthapp-nextjs/
 ### Prerequisites
 
 - **Node.js** 22+ LTS (required for latest Auth.js v5 and ES modules)
-- **PostgreSQL** 15+ (or Docker for containerized setup)
+- **PostgreSQL** 17+ (or Docker for containerized setup)
 - **Docker** & **Docker Swarm** (recommended for production deployment)
 - **TypeScript** knowledge (the entire system is TypeScript-first)
 
@@ -184,7 +184,7 @@ For production deployment with high availability:
 
 ```bash
 # Set required Auth.js v5 environment variables
-export NEXTAUTH_SECRET=healthcare-nextauth-secret-2024-secure
+export NEXTAUTH_SECRET=healthcare-nextauth-secret-2025-secure
 export POSTGRES_PASSWORD=secure_prod_password
 export REDIS_PASSWORD=secure_redis_password
 
@@ -859,8 +859,235 @@ This application is designed for real-world healthcare use:
 
 ---
 
+## Patient Adherence Healthcare Application - Core Rules & Requirements
+
+## Core Purpose & Principles
+
+### Primary Objective
+A Medical Healthcare application focused on **Patient Adherence** - monitoring and ensuring patients follow their prescribed treatment regimens across multiple health dimensions.
+
+### Key Monitoring Areas
+1. **Medication Adherence** - Prescribed vs. actual medication intake
+2. **Appointment Compliance** - Critical and non-critical appointment attendance
+3. **Dietary Adherence** - Prescribed diet vs. actual food consumption
+4. **Exercise Compliance** - Prescribed workouts vs. actual physical activity
+5. **Vital Signs Monitoring** - Regular health metrics tracking (BP, temperature, urine samples, etc.)
+
+## System Architecture Rules
+
+### 1. Core Data Relationships
+
+#### Patient-Centric Model
+```
+Patient → Care Plan Templates → Active Care Plans → Components
+```
+
+#### Care Plan Composition
+A Care Plan consists of:
+- **Medication Reminders** (linked to Medicine database)
+- **Appointments** (critical/non-critical)
+- **Vitals Schedules** (BP, temperature, urine samples, etc.)
+- **Diet Plans** (prescribed meals/nutrition)
+- **Workout Plans** (exercise routines)
+- **Subscription Services** (ongoing care services)
+- **Symptoms** (patient-reported)
+
+#### Initial Patient Setup Workflow
+1. Doctor adds Patient → Creates initial **Treatment Plan**
+2. System generates a "ghost" Care Plan with:
+    - Empty Treatment placeholder
+    - Empty Diagnosis placeholder
+    - Empty Symptoms placeholder
+3. Care Plan gets populated as components are added
+
+### 2. User Role Hierarchy & Permissions
+
+#### Doctor (Primary)
+- **Can do everything**: Add/edit patients, medications, appointments, care plans
+- Create and manage Care Plan Templates
+- Convert Services to Subscriptions
+- Add Medicine to database (if not exists via Algolia)
+- Link to Secondary Doctors with patient consent
+- Access all patient data and analytics
+
+#### Secondary Doctor
+- **Limited access**: Based on primary doctor permissions and patient consent
+- Requires OTP-based consent workflow
+- Can view/edit only permitted patient data
+
+#### HSP User (Healthcare Service Provider)
+- **Cannot add medicines** to database
+- **Cannot add medication reminders** (only doctors can)
+- Limited to service-related functions
+
+#### Patient
+- **View-only** for prescribed plans
+- **Input actual data**: What they ate, exercises done, vitals taken
+- **Add symptoms** to their care plan
+- Mobile-optimized interface for daily compliance tracking
+
+#### Admin
+- **System management**: Doctor profiles, medicine database
+- **Cannot access** patient medical data directly
+- Manage clinics and provider relationships
+
+### 3. Medicine & Medication Management
+
+#### Medicine Database Integration
+- **Algolia integration** for medicine search/autocomplete
+- When adding medication reminder:
+    1. Search Algolia for medicine
+    2. If exists in local `medicines` table → use existing
+    3. If not exists → add to `medicines` table
+    4. Create medication reminder linked to medicine
+
+#### Medication Reminder Workflow
+- **Only Doctors** can create medication reminders
+- Links: `Patient → Care Plan → Medication Reminder → Medicine`
+- Contains: dosage, frequency, timing, criticality
+- **Not directly linked** to Care Plan (through Medication Reminder)
+
+### 4. Doctor-Provider-Clinic Relationships
+
+#### Hierarchy
+```
+Provider → Clinic → Doctor → Patients
+```
+
+#### Clinic Management
+- Doctors belong to Clinics
+- Clinics belong to Providers
+- Doctor profiles include clinic information
+- Clinic details: location, services, contact info
+
+### 5. Care Plan vs Treatment Distinction
+
+#### Treatment Plan
+- **Initial medical assessment**
+- Contains: Diagnosis, Symptoms, Medical History
+- Created when patient is first added
+- **Foundation** for Care Plans
+
+#### Care Plan
+- **Actionable adherence plan**
+- Contains: Specific tasks, schedules, reminders
+- **Derived from** Treatment Plan
+- **Dynamic**: Updated as treatment progresses
+
+#### Care Plan Templates
+- **Reusable patterns** for common conditions
+- Applied to patients to create active Care Plans
+- Customizable per patient needs
+
+### 6. Subscription & Service Model
+
+#### Service to Subscription Workflow
+1. Doctor creates a **Service** (e.g., "Daily BP Monitoring")
+2. Service defines: frequency, duration, requirements
+3. Doctor converts Service to **Subscription** for patient
+4. Subscription generates recurring tasks in Care Plan
+5. Patient sees scheduled activities in "My Scheduled Activities"
+
+### 7. Consent & Secondary Doctor Linking
+
+#### OTP Consent Process
+1. Primary Doctor initiates Secondary Doctor link
+2. System sends OTP to Patient
+3. Patient confirms consent via OTP
+4. Secondary Doctor gains specified access permissions
+5. Audit trail maintained for all access
+
+## Mobile-First Requirements
+
+### Patient Mobile Experience
+- **Daily Dashboard**: Today's medications, appointments, meals, exercises
+- **Quick Input**: Simple forms for "taken/done" confirmations
+- **Visual Progress**: Charts showing adherence percentages
+- **Reminders**: Push notifications for upcoming tasks
+- **Offline Support**: Basic functionality without internet
+
+### Doctor Mobile Experience
+- **Patient Overview**: Quick access to patient adherence data
+- **Emergency Alerts**: Critical missed medications/appointments
+- **Quick Messaging**: Communication with patients
+- **Approval Workflows**: Medication adjustments, plan modifications
+
+## Missing Requirements & Enhancements
+
+### 1. Advanced Patient Adherence Features
+- **Adherence Scoring**: Algorithm to calculate overall patient compliance
+- **Predictive Analytics**: ML models to predict non-adherence risk
+- **Behavioral Insights**: Patterns in missed medications/appointments
+- **Family/Caregiver Access**: Limited view for patient supporters
+
+### 2. Clinical Decision Support
+- **Drug Interaction Checking**: Integration with pharmaceutical databases
+- **Allergy Alerts**: Patient allergy checks against prescribed medications
+- **Dosage Validation**: Age/weight/condition-based dosage recommendations
+- **Clinical Guidelines**: Evidence-based treatment recommendations
+
+### 3. Integration & Interoperability
+- **EHR Integration**: Connect with existing hospital systems
+- **Pharmacy Integration**: Direct prescription sending
+- **Lab Results**: Automatic vital signs from connected devices
+- **Insurance Verification**: Real-time coverage checking
+
+### 4. Advanced Monitoring
+- **IoT Device Integration**: Smart pill dispensers, BP monitors, glucometers
+- **Biometric Tracking**: Heart rate, sleep patterns, activity levels
+- **Environmental Factors**: Weather, air quality impact on conditions
+- **Social Determinants**: Transportation, financial barriers to adherence
+
+### 5. Communication & Support
+- **Telemedicine**: Video consultations within app
+- **AI Chatbot**: 24/7 patient support for basic questions
+- **Peer Support**: Patient community features (anonymized)
+- **Educational Content**: Condition-specific learning materials
+
+### 6. Regulatory & Compliance
+- **HIPAA Compliance**: Complete audit trails, encryption
+- **FDA Integration**: Drug safety alerts and recalls
+- **Clinical Trial Matching**: Connect eligible patients to research
+- **Quality Metrics**: HEDIS measures for healthcare quality
+
+### 7. Analytics & Reporting
+- **Population Health**: Aggregate adherence trends
+- **Provider Scorecards**: Doctor performance metrics
+- **Outcome Tracking**: Treatment effectiveness measurements
+- **Cost Analysis**: Healthcare cost reduction through adherence
+
+## Technical Architecture Considerations
+
+### Backend Scalability
+- **Microservices**: Separate services for each major component
+- **Message Queues**: For notification and reminder processing
+- **Caching Strategy**: Redis for frequently accessed patient data
+- **Database Optimization**: Proper indexing for patient lookup queries
+
+### Security Requirements
+- **End-to-End Encryption**: All patient data transmission
+- **Role-Based Access Control**: Granular permissions by user type
+- **Audit Logging**: Complete trail of all data access/modifications
+- **Secure Authentication**: Multi-factor authentication for healthcare providers
+
+### Mobile Performance
+- **Progressive Web App**: Works across all devices
+- **Offline Sync**: Local storage with background synchronization
+- **Image Optimization**: Efficient handling of medical images/documents
+- **Battery Optimization**: Minimal background processing
+
+## Compliance & Standards
+- **HL7 FHIR**: Standard healthcare data exchange
+- **SNOMED CT**: Standardized medical terminology
+- **ICD-10**: Diagnosis coding standards
+- **CPT Codes**: Procedure coding integration
+
+This framework provides a comprehensive foundation for building a robust Patient Adherence healthcare application that prioritizes patient outcomes while maintaining clinical workflow efficiency.
+
+---
+
 - **Built with ❤️ for healthcare providers and patients**
 
 - *Next.js Healthcare Management Platform - Production-ready full-stack application with NextAuth.js, Prisma, and PostgreSQL*
 
-**Last updated: August 2025** | Next.js 14 | PostgreSQL 15+ | NextAuth.js | TypeScript
+**Last updated: August 2025** | Next.js 14 | PostgreSQL 17+ | NextAuth.js | TypeScript

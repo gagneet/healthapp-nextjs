@@ -46,7 +46,7 @@ const mockMissedItems: MissedItem[] = [
     id: '1',
     type: 'medication',
     name: 'Lisinopril 10mg',
-    dueTime: '2024-01-22T08:00:00Z',
+    dueTime: '2025-01-22T08:00:00Z',
     severity: 'critical',
     description: 'Blood pressure medication - daily dose'
   },
@@ -54,7 +54,7 @@ const mockMissedItems: MissedItem[] = [
     id: '2',
     type: 'vital',
     name: 'Blood Pressure Reading',
-    dueTime: '2024-01-22T09:00:00Z',
+    dueTime: '2025-01-22T09:00:00Z',
     severity: 'important',
     description: 'Morning BP check'
   },
@@ -62,7 +62,7 @@ const mockMissedItems: MissedItem[] = [
     id: '3',
     type: 'diet',
     name: 'Low Sodium Breakfast',
-    dueTime: '2024-01-22T07:30:00Z',
+    dueTime: '2025-01-22T07:30:00Z',
     severity: 'normal',
     description: 'Heart-healthy breakfast plan'
   },
@@ -70,7 +70,7 @@ const mockMissedItems: MissedItem[] = [
     id: '4',
     type: 'workout',
     name: '30-min Walk',
-    dueTime: '2024-01-21T18:00:00Z',
+    dueTime: '2025-01-21T18:00:00Z',
     severity: 'important',
     description: 'Evening cardio exercise'
   },
@@ -81,7 +81,7 @@ const mockCurrentMedications: CurrentMedication[] = [
     id: '1',
     name: 'Lisinopril',
     dosage: '10mg',
-    nextDue: '2024-01-23T08:00:00Z',
+    nextDue: '2025-01-23T08:00:00Z',
     isOverdue: false,
     reminderTime: '8:00 AM daily'
   },
@@ -89,7 +89,7 @@ const mockCurrentMedications: CurrentMedication[] = [
     id: '2',
     name: 'Metformin',
     dosage: '500mg',
-    nextDue: '2024-01-22T20:00:00Z',
+    nextDue: '2025-01-22T20:00:00Z',
     isOverdue: true,
     reminderTime: '8:00 AM & 8:00 PM daily'
   },
@@ -97,7 +97,7 @@ const mockCurrentMedications: CurrentMedication[] = [
     id: '3',
     name: 'Atorvastatin',
     dosage: '20mg',
-    nextDue: '2024-01-23T22:00:00Z',
+    nextDue: '2025-01-23T22:00:00Z',
     isOverdue: false,
     reminderTime: '10:00 PM daily'
   },
@@ -107,13 +107,13 @@ const upcomingAppointments = [
   {
     id: '1',
     title: 'Follow-up Consultation',
-    date: '2024-02-01T10:00:00Z',
+    date: '2025-02-01T10:00:00Z',
     type: 'in-person'
   },
   {
     id: '2',
     title: 'Blood Work Review',
-    date: '2024-01-25T14:00:00Z',
+    date: '2025-01-25T14:00:00Z',
     type: 'virtual'
   },
 ]

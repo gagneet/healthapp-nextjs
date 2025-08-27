@@ -1,12 +1,13 @@
 // app/api/assignments/secondary-doctors/consent/route.ts
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from "@/lib/auth";
+import { auth } from "@/lib/auth";
 import { prisma } from '@/lib/prisma';
+import { randomUUID } from 'crypto';
 
 // Generate OTP for patient consent
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession();
+    const session = await auth();
     if (!session?.user) {
       return NextResponse.json({
         status: false,
@@ -18,19 +19,19 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { assignment_id, patient_phone, consent_method = 'SMS' } = body;
 
-    if (!assignment_id) {
+    if (!assignment_id || typeof assignment_id !== 'string' || assignment_id.trim().length === 0) {
       return NextResponse.json({
         status: false,
         statusCode: 400,
-        payload: { error: { status: 'validation_error', message: 'Assignment ID is required' } }
+        payload: { error: { status: 'validation_error', message: 'Valid assignment ID is required' } }
       }, { status: 400 });
     }
 
     // Find the assignment
-    const assignment = await prisma.secondary_doctor_assignments.findUnique({
+    const assignment = await prisma.secondaryDoctorAssignment.findUnique({
       where: { id: assignment_id },
       include: {
-        patients: {
+        patient: {
           include: {
             user: true
           }
@@ -38,7 +39,7 @@ export async function POST(request: NextRequest) {
       }
     });
 
-    if (!assignment) {
+    if (!assignment || !assignment.patient) {
       return NextResponse.json({
         status: false,
         statusCode: 404,
@@ -48,10 +49,10 @@ export async function POST(request: NextRequest) {
 
     // Verify user has permission to request consent for this assignment
     if (session.user.role === 'DOCTOR') {
-      const doctor = await prisma.doctors.findFirst({
-        where: { user_id: session.user.id }
+      const doctor = await prisma.doctor.findFirst({
+        where: { userId: session.user.id }
       });
-      if (!doctor || doctor.id !== assignment.primary_doctor_id) {
+      if (!doctor || doctor.id !== assignment.primaryDoctorId) {
         return NextResponse.json({
           status: false,
           statusCode: 403,
@@ -65,16 +66,22 @@ export async function POST(request: NextRequest) {
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes from now
 
     // Create consent OTP record
-    const consentOTP = await prisma.patient_consent_otp.create({
+    const consentOTP = await prisma.patientConsentOtp.create({
       data: {
-        secondary_assignment_id: assignment_id,
-        patient_phone: patient_phone || assignment.patients.user.phone,
-        consent_method,
-        otp_code: otp,
-        expires_at: expiresAt,
-        is_verified: false,
-        attempts_count: 0,
-        created_at: new Date()
+        id: randomUUID(),
+        secondaryAssignmentId: assignment_id,
+        patientId: assignment.patientId,
+        primaryDoctorId: assignment.primaryDoctorId,
+        secondaryDoctorId: assignment.secondaryDoctorId,
+        secondaryHspId: assignment.secondaryHspId,
+        requestedByUserId: session.user.id,
+        patientPhone: patient_phone || assignment.patient.user.phone,
+        otpMethod: consent_method,
+        otpCode: otp,
+        expiresAt: expiresAt,
+        isVerified: false,
+        attemptsCount: 0,
+        createdAt: new Date()
       }
     });
 
@@ -86,11 +93,11 @@ export async function POST(request: NextRequest) {
       statusCode: 201,
       payload: {
         data: {
-          otp_id: consentOTP.id,
-          otp_code: otp, // Remove this in production
-          expires_at: expiresAt,
-          patient_phone: consentOTP.patient_phone,
-          consent_method
+          otpId: consentOTP.id,
+          otpCode: otp, // Remove this in production
+          expiresAt: expiresAt,
+          patientPhone: consentOTP.patientPhone,
+          consentMethod
         },
         message: `OTP sent to patient's ${consent_method.toLowerCase()}`
       }
@@ -109,7 +116,7 @@ export async function POST(request: NextRequest) {
 // Verify OTP and grant consent
 export async function PUT(request: NextRequest) {
   try {
-    const session = await getServerSession();
+    const session = await auth();
     if (!session?.user) {
       return NextResponse.json({
         status: false,
@@ -121,20 +128,19 @@ export async function PUT(request: NextRequest) {
     const body = await request.json();
     const { otp_id, otp_code, assignment_id } = body;
 
-    if (!otp_id || !otp_code || !assignment_id) {
+    if (!otp_id || typeof otp_id !== 'string' || otp_id.trim().length === 0 ||
+        !otp_code || typeof otp_code !== 'string' || otp_code.trim().length === 0 ||
+        !assignment_id || typeof assignment_id !== 'string' || assignment_id.trim().length === 0) {
       return NextResponse.json({
         status: false,
         statusCode: 400,
-        payload: { error: { status: 'validation_error', message: 'OTP ID, OTP code, and assignment ID are required' } }
+        payload: { error: { status: 'validation_error', message: 'Valid OTP ID, OTP code, and assignment ID are required' } }
       }, { status: 400 });
     }
 
     // Find the OTP record
-    const otpRecord = await prisma.patient_consent_otp.findUnique({
-      where: { id: otp_id },
-      include: {
-        secondary_doctor_assignments: true
-      }
+    const otpRecord = await prisma.patientConsentOtp.findUnique({
+      where: { id: otp_id }
     });
 
     if (!otpRecord) {
@@ -146,7 +152,7 @@ export async function PUT(request: NextRequest) {
     }
 
     // Check if OTP has expired
-    if (new Date() > otpRecord.expires_at) {
+    if (new Date() > otpRecord.expiresAt) {
       return NextResponse.json({
         status: false,
         statusCode: 400,
@@ -155,7 +161,7 @@ export async function PUT(request: NextRequest) {
     }
 
     // Check if OTP is already verified
-    if (otpRecord.is_verified) {
+    if (otpRecord.isVerified) {
       return NextResponse.json({
         status: false,
         statusCode: 400,
@@ -164,7 +170,7 @@ export async function PUT(request: NextRequest) {
     }
 
     // Check attempt count
-    if (otpRecord.attempts_count >= 3) {
+    if (otpRecord.attemptsCount && otpRecord.attemptsCount >= 3) {
       return NextResponse.json({
         status: false,
         statusCode: 400,
@@ -173,11 +179,11 @@ export async function PUT(request: NextRequest) {
     }
 
     // Verify OTP code
-    if (otpRecord.otp_code !== otp_code) {
+    if (otpRecord.otpCode !== otp_code) {
       // Increment attempt count
-      await prisma.patient_consent_otp.update({
+      await prisma.patientConsentOtp.update({
         where: { id: otp_id },
-        data: { attempts_count: otpRecord.attempts_count + 1 }
+        data: { attemptsCount: { increment: 1 } }
       });
 
       return NextResponse.json({
@@ -189,20 +195,20 @@ export async function PUT(request: NextRequest) {
 
     // Mark OTP as verified and update assignment consent status
     await prisma.$transaction([
-      prisma.patient_consent_otp.update({
+      prisma.patientConsentOtp.update({
         where: { id: otp_id },
         data: {
-          is_verified: true,
-          verified_at: new Date()
+          isVerified: true,
+          verifiedAt: new Date()
         }
       }),
-      prisma.secondary_doctor_assignments.update({
+      prisma.secondaryDoctorAssignment.update({
         where: { id: assignment_id },
         data: {
-          consent_status: 'granted',
-          access_granted: true,
-          access_granted_at: new Date(),
-          updated_at: new Date()
+          consentStatus: 'GRANTED',
+          accessGranted: true,
+          accessGrantedAt: new Date(),
+          updatedAt: new Date()
         }
       })
     ]);
@@ -212,9 +218,9 @@ export async function PUT(request: NextRequest) {
       statusCode: 200,
       payload: {
         data: {
-          assignment_id,
-          consent_status: 'granted',
-          access_granted: true
+          assignmentId: assignment_id,
+          consentStatus: 'GRANTED',
+          accessGranted: true
         },
         message: 'Patient consent verified successfully'
       }

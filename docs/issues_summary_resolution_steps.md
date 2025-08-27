@@ -1253,7 +1253,7 @@ Recommendation: Use local PostgreSQL for VM deployment - it provides the best pe
     - Updated authentication from custom JWT → NextAuth.js with healthcare roles
   2. Technology Stack Updates:
     - Frontend + Backend: Single Next.js 14 application with API routes
-    - Database: PostgreSQL 15+ with Prisma for type-safe operations
+    - Database: PostgreSQL 17+ with Prisma for type-safe operations
     - Authentication: NextAuth.js with role-based healthcare workflows
     - TypeScript: End-to-end type safety throughout
   3. Deployment Options:
@@ -2108,7 +2108,7 @@ Ready for Production Deployment:
 
 The production deployment on healthapp.gagneet.com can now proceed with:
 POSTGRES_PASSWORD=secure_healthcare_password \
-NEXTAUTH_SECRET=healthcare-nextauth-secret-2024-secure \
+NEXTAUTH_SECRET=healthcare-nextauth-secret-2025-secure \
 REDIS_PASSWORD=secure_redis_password \
 PGADMIN_PASSWORD=secure_admin_password \
 ./scripts/deploy-production.sh deploy --domain healthapp.gagneet.com --migrate --seed --auto-yes
@@ -2486,14 +2486,14 @@ $:~/healthapp-nextjs$ docker ps -a
 CONTAINER ID   IMAGE                   COMMAND                  CREATED         STATUS         PORTS             NAMES
 2ea9cc05bc06   dpage/pgadmin4:latest   "/entrypoint.sh"         8 minutes ago   Up 8 minutes   80/tcp, 443/tcp   healthapp-test_pgadmin.1.tpbmfvaznj9zdq404ak1ihp2v
 967cb4aaa5e2   redis:7-alpine          "docker-entrypoint.s…"   8 minutes ago   Up 8 minutes   6379/tcp          healthapp-test_redis.1.rcms4kkd34hfkogirkj08933w
-2977e12238b1   postgres:15-alpine      "docker-entrypoint.s…"   8 minutes ago   Up 8 minutes   5432/tcp          healthapp-test_postgres.1.hro5o0dpoad0tm9dfib0v2mmi
+2977e12238b1   postgres:17-alpine      "docker-entrypoint.s…"   8 minutes ago   Up 8 minutes   5432/tcp          healthapp-test_postgres.1.hro5o0dpoad0tm9dfib0v2mmi
 
 $:~/healthapp-nextjs$ docker service ls
 ID             NAME                      MODE         REPLICAS   IMAGE                     PORTS
 r0b7uggb97vf   healthapp-test_backend    replicated   0/2        healthapp-backend:test    *:5001->5001/tcp
 wuonnjwyrn8o   healthapp-test_frontend   replicated   0/2        healthapp-frontend:test   *:3002->3002/tcp
 4htjmnqtyu53   healthapp-test_pgadmin    replicated   1/1        dpage/pgadmin4:latest     *:5050->80/tcp
-o8ynvpew8rdi   healthapp-test_postgres   replicated   1/1        postgres:15-alpine        *:5432->5432/tcp
+o8ynvpew8rdi   healthapp-test_postgres   replicated   1/1        postgres:17-alpine        *:5432->5432/tcp
 6ndhb3hd0ylh   healthapp-test_redis      replicated   1/1        redis:7-alpine            *:6379->6379/tcp
 
 $:~/healthapp-nextjs$ docker image ls
@@ -2844,7 +2844,7 @@ gagneet@ubuntu-svr:~/healthapp-nextjs$ docker ps -a
 CONTAINER ID   IMAGE                   COMMAND                  CREATED          STATUS                   PORTS             NAMES
 82b1a79438e5   healthapp:prod          "docker-entrypoint.s…"   7 minutes ago    Up 7 minutes (healthy)   3002/tcp          healthapp-prod_app.2.baykf36igc17q98ab2j01j4oi
 7ed4f361ee2c   healthapp:prod          "docker-entrypoint.s…"   7 minutes ago    Up 7 minutes (healthy)   3002/tcp          healthapp-prod_app.1.pfmfcdf6nb4zzop8t2ghl3z5w
-9a9f6e2487bf   postgres:15-alpine      "docker-entrypoint.s…"   9 minutes ago    Up 9 minutes             5432/tcp          healthapp-prod_postgres.1.t3n3tqvl7yhvymoebyhey8rnn
+9a9f6e2487bf   postgres:17-alpine      "docker-entrypoint.s…"   9 minutes ago    Up 9 minutes             5432/tcp          healthapp-prod_postgres.1.t3n3tqvl7yhvymoebyhey8rnn
 5c89dc1fe5f1   redis:7-alpine          "docker-entrypoint.s…"   10 minutes ago   Up 10 minutes            6379/tcp          healthapp-prod_redis.1.kcq4nxy3luipkd92627ahb1gd
 58bdeb6a7ced   dpage/pgadmin4:latest   "/entrypoint.sh"         10 minutes ago   Up 10 minutes            80/tcp, 443/tcp   healthapp-prod_pgadmin.1.vqvm7mlu3ihlifirocc54fus5
 ```
@@ -3351,7 +3351,7 @@ Environment Variables for Test
 
 Set these before deployment:
 export POSTGRES_PASSWORD=secure_test_password
-export NEXTAUTH_SECRET=test-nextauth-secret-2024-secure
+export NEXTAUTH_SECRET=test-nextauth-secret-2025-secure
 export REDIS_PASSWORD=secure_test_redis
 export PGADMIN_PASSWORD=secure_admin_password
 
@@ -3359,7 +3359,7 @@ export PGADMIN_PASSWORD=secure_admin_password
 
 # Set environment variables
 export POSTGRES_PASSWORD=secure_test_password
-export NEXTAUTH_SECRET=test-nextauth-secret-2024-secure
+export NEXTAUTH_SECRET=test-nextauth-secret-2025-secure
 export REDIS_PASSWORD=secure_test_redis
 export PGADMIN_PASSWORD=secure_admin_password
 
@@ -4642,7 +4642,7 @@ The healthapp.gagneet.com:3002 deployment should now be fully functional for tes
 - ✅ Created /api/doctors/adherence-analytics
 
 4. Database Issues:
-- ✅ Verified patient exists with ID PAT-2024-001
+- ✅ Verified patient exists with ID PAT-2025-001
 - ✅ Assigned patient to both doctors properly
 - ✅ Database connections and credentials working correctly
 

@@ -4,7 +4,7 @@
  */
 
 import { NextRequest, NextResponse } from "next/server"
-import { getServerSession } from "@/lib/auth";
+import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma"
 import { z } from "zod"
 
@@ -36,15 +36,15 @@ export async function POST(request: NextRequest) {
     const { token, email } = validation.data
     
     // Find user with matching email and verification token
-    const user = await prisma.User.findFirst({
+    const user = await prisma.user.findFirst({
       where: {
         email,
-        email_verification_token: token,
-        account_status: "PENDING_VERIFICATION"
+        emailVerificationToken: token,
+        accountStatus: "PENDING_VERIFICATION"
       }
     })
     
-    if (!user) {
+    if (!user || !user.id || typeof user.id !== 'string') {
       return NextResponse.json(
         { 
           error: "Invalid or expired verification token",
@@ -56,35 +56,29 @@ export async function POST(request: NextRequest) {
     
     try {
       // Update user as verified using Auth.js v5 compatible fields
-      const updatedUser = await prisma.User.update({
+      const updatedUser = await prisma.user.update({
         where: { id: user.id },
         data: {
-          // ✅ Auth.js v5 field - set as DateTime when verified
           emailVerified: new Date(),
-          // ✅ Legacy field for backward compatibility  
-          email_verified: true,
-          // ✅ Clear verification token after use
-          email_verification_token: null,
-          // ✅ Activate account after email verification
-          account_status: "ACTIVE",
-          updated_at: new Date()
+          emailVerificationToken: null,
+          accountStatus: "ACTIVE",
+          updatedAt: new Date()
         }
       })
       
       // ✅ Create audit log for email verification
       await prisma.auditLog.create({
         data: {
-          user_id: user.id,
+          userId: user.id,
           action: "EMAIL_VERIFICATION",
           resource: "user_account",
-          access_granted: true,
-          user_role: user.role,
-          data_changes: {
-            email_verified: true,
-            account_activated: true,
-            verification_method: "email_token"
+          accessGranted: true,
+          userRole: user.role,
+          dataChanges: {
+            accountActivated: true,
+            verificationMethod: "email_token"
           },
-          ip_address: request.ip || request.headers.get('x-forwarded-for') || null,
+          ipAddress: request.ip || request.headers.get('x-forwarded-for') || null,
           timestamp: new Date()
         }
       })
@@ -96,7 +90,7 @@ export async function POST(request: NextRequest) {
           id: updatedUser.id,
           email: updatedUser.email,
           name: updatedUser.name,
-          accountStatus: updatedUser.account_status,
+          accountStatus: updatedUser.accountStatus,
           emailVerified: true,
           role: updatedUser.role
         },

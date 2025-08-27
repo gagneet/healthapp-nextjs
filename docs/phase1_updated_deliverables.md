@@ -426,7 +426,7 @@ services:
       - redis
     
   postgres:
-    image: postgres:15-alpine
+    image: postgres:17-alpine
     environment:
       - POSTGRES_DB=healthapp_prod
       - POSTGRES_USER=healthapp_user

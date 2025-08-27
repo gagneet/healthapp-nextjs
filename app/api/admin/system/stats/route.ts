@@ -1,11 +1,14 @@
 // app/api/admin/system/stats/route.ts - System statistics and overview API
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from "@/lib/auth";
+import { auth } from "@/lib/auth";
 import { prisma } from '@/lib/prisma';
+
+export const dynamic = 'force-dynamic'
+export const runtime = 'nodejs'
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession();
+    const session = await auth();
     if (!session?.user) {
       return NextResponse.json({
         status: false,
@@ -14,7 +17,6 @@ export async function GET(request: NextRequest) {
       }, { status: 401 });
     }
 
-    // Only admins can view system statistics
     if (!['SYSTEM_ADMIN', 'HOSPITAL_ADMIN'].includes(session.user.role)) {
       return NextResponse.json({
         status: false,
@@ -30,7 +32,6 @@ export async function GET(request: NextRequest) {
     const periodDate = new Date();
     periodDate.setDate(periodDate.getDate() - parseInt(period));
 
-    // Basic counts
     const [
       totalUsers,
       totalDoctors,
@@ -42,122 +43,114 @@ export async function GET(request: NextRequest) {
       totalVitals,
       totalSecondaryAssignments
     ] = await Promise.all([
-      prisma.User.count(),
-      prisma.doctors.count(),
-      prisma.Patient.count(),
-      prisma.hsps.count(),
-      prisma.appointments.count(),
-      prisma.care_plans.count(),
-      prisma.medications.count(),
-      prisma.vitals.count(),
-      prisma.secondary_doctor_assignments.count()
+      prisma.user.count(),
+      prisma.doctor.count(),
+      prisma.patient.count(),
+      prisma.hsp.count(),
+      prisma.appointment.count(),
+      prisma.carePlan.count(),
+      prisma.medication.count(),
+      prisma.vital.count(),
+      prisma.secondaryDoctorAssignment.count()
     ]);
 
-    // User statistics by role and status
-    const usersByRole = await prisma.User.groupBy({
+    const usersByRole = await prisma.user.groupBy({
       by: ['role'],
       _count: { id: true },
       orderBy: { _count: { id: 'desc' } }
     });
 
-    const usersByStatus = await prisma.User.groupBy({
-      by: ['account_status'],
+    const usersByStatus = await prisma.user.groupBy({
+      by: ['accountStatus'],
       _count: { id: true }
     });
 
-    // Recent activity (last 30 days)
-    const recentUsers = await prisma.User.count({
+    const recentUsers = await prisma.user.count({
       where: {
-        created_at: {
+        createdAt: {
           gte: periodDate
         }
       }
     });
 
-    const recentAppointments = await prisma.appointments.count({
+    const recentAppointments = await prisma.appointment.count({
       where: {
-        created_at: {
+        createdAt: {
           gte: periodDate
         }
       }
     });
 
-    const recentCarePlans = await prisma.care_plans.count({
+    const recentCarePlans = await prisma.carePlan.count({
       where: {
-        created_at: {
+        createdAt: {
           gte: periodDate
         }
       }
     });
 
-    // System health metrics
-    const activeUsers = await prisma.User.count({
-      where: { account_status: 'ACTIVE' }
+    const activeUsers = await prisma.user.count({
+      where: { accountStatus: 'ACTIVE' }
     });
 
-    const verifiedUsers = await prisma.User.count({
-      where: { email_verified: true }
+    const verifiedUsers = await prisma.user.count({
+      where: { emailVerified: { not: null } }
     });
 
-    // Appointment statistics
-    const appointmentsByStatus = await prisma.appointments.groupBy({
+    const appointmentsByStatus = await prisma.appointment.groupBy({
       by: ['status'],
       _count: { id: true }
     });
 
-    // Care plan statistics
-    const carePlansByStatus = await prisma.care_plans.groupBy({
+    const carePlansByStatus = await prisma.carePlan.groupBy({
       by: ['status'],
       _count: { id: true }
     });
 
-    // Secondary assignment statistics
-    const assignmentsByStatus = await prisma.secondary_doctor_assignments.groupBy({
-      by: ['consent_status'],
+    const assignmentsByStatus = await prisma.secondaryDoctorAssignment.groupBy({
+      by: ['consentStatus'],
       _count: { id: true }
     });
 
     let detailedStats = {};
     
     if (includeDetails) {
-      // Top specialties
-      const topSpecialties = await prisma.speciality.findMany({
+      const topSpecialties = await prisma.specialty.findMany({
         select: {
           id: true,
           name: true,
           _count: {
             select: {
-              doctors_doctors_speciality_idTospecialiy: true
+              doctors: true
             }
           }
         },
         orderBy: {
-          doctors_doctors_speciality_idTospecialiy: {
+          doctors: {
             _count: 'desc'
           }
         },
         take: 10
       });
 
-      // Most active doctors (by appointment count)
-      const activeDoctors = await prisma.doctors.findMany({
+      const activeDoctors = await prisma.doctor.findMany({
         select: {
           id: true,
-          doctor_id: true,
-          users_doctors_user_idTousers: {
+          doctorId: true,
+          user: {
             select: {
               name: true,
-              first_name: true,
-              last_name: true
+              firstName: true,
+              lastName: true
             }
           },
-          specialities: {
+          specialty: {
             select: { name: true }
           },
           _count: {
             select: {
               appointments: true,
-              doctor_assignments: true
+              doctorAssignments: true
             }
           }
         },
@@ -169,10 +162,9 @@ export async function GET(request: NextRequest) {
         take: 10
       });
 
-      // Recent system activity
-      const recentActivity = await prisma.User.findMany({
+      const recentActivity = await prisma.user.findMany({
         where: {
-          created_at: {
+          createdAt: {
             gte: periodDate
           }
         },
@@ -180,12 +172,12 @@ export async function GET(request: NextRequest) {
           id: true,
           email: true,
           name: true,
-          first_name: true,
-          last_name: true,
+          firstName: true,
+          lastName: true,
           role: true,
-          created_at: true
+          createdAt: true
         },
-        orderBy: { created_at: 'desc' },
+        orderBy: { createdAt: 'desc' },
         take: 20
       });
 
@@ -193,23 +185,23 @@ export async function GET(request: NextRequest) {
         topSpecialties: topSpecialties.map(spec => ({
           id: spec.id,
           name: spec.name,
-          doctorCount: spec._count.doctors_doctors_speciality_idTospecialiy
+          doctorCount: spec._count.doctors
         })),
         activeDoctors: activeDoctors.map(doc => ({
           id: doc.id,
-          doctor_id: doc.doctor_id,
-          name: doc.users_doctors_user_idTousers?.name || 
-                `${doc.users_doctors_user_idTousers?.first_name} ${doc.users_doctors_user_idTousers?.last_name}`.trim(),
-          specialty: doc.specialities?.name,
+          doctorId: doc.doctorId,
+          name: doc.user?.name ||
+                `${doc.user?.firstName} ${doc.user?.lastName}`.trim(),
+          specialty: doc.specialty?.name,
           appointmentCount: doc._count.appointments,
-          assignmentCount: doc._count.doctor_assignments
+          assignmentCount: doc._count.doctorAssignments
         })),
         recentActivity: recentActivity.map(user => ({
           id: user.id,
           email: user.email,
-          name: user.name || `${user.first_name} ${user.last_name}`.trim(),
+          name: user.name || `${user.firstName} ${user.lastName}`.trim(),
           role: user.role,
-          createdAt: user.created_at
+          createdAt: user.createdAt
         }))
       };
     }
@@ -232,7 +224,7 @@ export async function GET(request: NextRequest) {
           return acc;
         }, {} as Record<string, number>),
         byStatus: usersByStatus.reduce((acc, item) => {
-          acc[item.account_status] = item._count.id;
+          if (item.accountStatus) acc[item.accountStatus] = item._count.id;
           return acc;
         }, {} as Record<string, number>),
         activeUsers,
@@ -247,19 +239,19 @@ export async function GET(request: NextRequest) {
       },
       appointmentStatistics: {
         byStatus: appointmentsByStatus.reduce((acc, item) => {
-          acc[item.status] = item._count.id;
+          if (item.status) acc[item.status] = item._count.id;
           return acc;
         }, {} as Record<string, number>)
       },
       carePlanStatistics: {
         byStatus: carePlansByStatus.reduce((acc, item) => {
-          acc[item.status] = item._count.id;
+          if (item.status) acc[item.status] = item._count.id;
           return acc;
         }, {} as Record<string, number>)
       },
       assignmentStatistics: {
         byConsentStatus: assignmentsByStatus.reduce((acc, item) => {
-          acc[item.consent_status || 'unknown'] = item._count.id;
+          acc[item.consentStatus || 'unknown'] = item._count.id;
           return acc;
         }, {} as Record<string, number>)
       },

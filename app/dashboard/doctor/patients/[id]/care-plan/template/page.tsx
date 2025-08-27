@@ -27,7 +27,7 @@ const mockTemplates = [
     vitals: 5,
     appointments: 8,
     popularity: 95,
-    lastUpdated: '2024-01-15',
+    lastUpdated: '2025-01-15',
     features: [
       'Blood glucose monitoring protocol',
       'HbA1c tracking schedule',
@@ -46,7 +46,7 @@ const mockTemplates = [
     vitals: 3,
     appointments: 6,
     popularity: 88,
-    lastUpdated: '2024-01-18',
+    lastUpdated: '2025-01-18',
     features: [
       'Blood pressure monitoring schedule',
       'Antihypertensive medication protocols',
@@ -65,7 +65,7 @@ const mockTemplates = [
     vitals: 6,
     appointments: 12,
     popularity: 82,
-    lastUpdated: '2024-01-10',
+    lastUpdated: '2025-01-10',
     features: [
       'Fluid balance monitoring',
       'ACE inhibitor titration protocol',
@@ -84,7 +84,7 @@ const mockTemplates = [
     vitals: 4,
     appointments: 8,
     popularity: 76,
-    lastUpdated: '2024-01-12',
+    lastUpdated: '2025-01-12',
     features: [
       'Spirometry monitoring schedule',
       'Inhaler technique assessment',
@@ -103,7 +103,7 @@ const mockTemplates = [
     vitals: 5,
     appointments: 10,
     popularity: 71,
-    lastUpdated: '2024-01-08',
+    lastUpdated: '2025-01-08',
     features: [
       'eGFR monitoring protocol',
       'Mineral and bone disorder management',
@@ -122,7 +122,7 @@ const mockTemplates = [
     vitals: 3,
     appointments: 9,
     popularity: 68,
-    lastUpdated: '2024-01-05',
+    lastUpdated: '2025-01-05',
     features: [
       'Disease activity monitoring (DAS28)',
       'DMARD therapy protocols',

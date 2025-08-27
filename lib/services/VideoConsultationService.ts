@@ -19,29 +19,83 @@ export interface JoinConsultationData {
 }
 
 export class VideoConsultationService {
-  private readonly WEBRTC_SERVER_URL = process.env.WEBRTC_SERVER_URL || 'https://meet.healthapp.gagneet.com';
-  private readonly CONSULTATION_SECRET = process.env.CONSULTATION_SECRET || 'secure-consultation-key';
+  private readonly DAILY_API_URL = process.env.DAILY_API_URL || 'https://api.daily.co/v1';
+  private readonly DAILY_API_KEY = process.env.DAILY_API_KEY;
+
+  /**
+   * Create a new Daily.co video call room
+   */
+  private async createDailyRoom(duration: number, startTime: Date): Promise<{ id: string; url: string; name: string } | null> {
+    if (!this.DAILY_API_KEY || this.DAILY_API_KEY === 'YOUR_DAILY_API_KEY') {
+      console.error('Daily.co API key is not configured.');
+      // In a real app, you might want to throw an error here
+      // For this implementation, we'll return a mock room for development if no key is present
+      if (process.env.NODE_ENV === 'development') {
+        const roomId = `dev_room_${crypto.randomBytes(8).toString('hex')}`;
+        return {
+          id: roomId,
+          url: `https://your-daily-co-domain.daily.co/${roomId}`,
+          name: roomId,
+        };
+      }
+      return null;
+    }
+
+    try {
+      const response = await fetch(`${this.DAILY_API_URL}/rooms`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${this.DAILY_API_KEY}`,
+        },
+        body: JSON.stringify({
+          properties: {
+            // Room expires 30 minutes after the scheduled end time
+            exp: Math.floor((startTime.getTime() + duration * 60 * 1000 + 30 * 60 * 1000) / 1000),
+            enable_recording: 'cloud',
+          },
+        }),
+      });
+
+      if (!response.ok) {
+        const errorBody = await response.text();
+        console.error('Failed to create Daily.co room:', response.status, errorBody);
+        return null;
+      }
+
+      const room = await response.json();
+      return { id: room.id, url: room.url, name: room.name };
+    } catch (error) {
+      console.error('Error creating Daily.co room:', error);
+      return null;
+    }
+  }
 
   /**
    * Create a new video consultation session
    */
   async createConsultation(data: CreateConsultationData) {
     try {
-      // Generate secure room ID and tokens
-      const roomId = this.generateRoomId();
-      const roomToken = this.generateRoomToken(roomId);
+      const dailyRoom = await this.createDailyRoom(data.duration, data.scheduledStartTime);
+
+      if (!dailyRoom) {
+        return {
+          success: false,
+          error: 'Failed to create video consultation room',
+          message: 'Could not create a room with the video provider. Please ensure the API keys are set up correctly.'
+        };
+      }
       
-      // Create consultation record
       const consultation = await prisma.videoConsultation.create({
         data: {
           consultation_id: crypto.randomUUID(),
           doctor_id: data.doctorId,
           patient_id: data.patientId,
           appointment_id: data.appointmentId,
-          room_id: roomId,
-          room_token: roomToken,
-          doctor_join_url: this.generateJoinUrl(roomId, 'doctor', data.doctorId),
-          patient_join_url: this.generateJoinUrl(roomId, 'patient', data.patientId),
+          room_id: dailyRoom.id,
+          room_token: null, // We will generate meeting tokens on demand
+          doctor_join_url: dailyRoom.url,
+          patient_join_url: dailyRoom.url,
           scheduled_start: data.scheduledStartTime,
           scheduled_end: new Date(data.scheduledStartTime.getTime() + (data.duration * 60 * 1000)),
           duration_minutes: data.duration,
@@ -58,35 +112,19 @@ export class VideoConsultationService {
           doctor: {
             select: {
               id: true,
-              user: {
-                select: {
-                  first_name: true,
-                  last_name: true,
-                  email: true,
-                }
-              },
+              user: { select: { first_name: true, last_name: true, email: true } },
               specialization: true,
             }
           },
           patient: {
             select: {
               id: true,
-              user: {
-                select: {
-                  first_name: true,
-                  last_name: true,
-                  email: true,
-                }
-              },
+              user: { select: { first_name: true, last_name: true, email: true } },
               date_of_birth: true,
             }
           },
           appointment: {
-            select: {
-              id: true,
-              appointment_date: true,
-              status: true,
-            }
+            select: { id: true, appointment_date: true, status: true, }
           }
         }
       });
@@ -111,7 +149,6 @@ export class VideoConsultationService {
    */
   async joinConsultation({ consultationId, userId, userType }: JoinConsultationData) {
     try {
-      // Find the consultation
       const consultation = await prisma.videoConsultation.findUnique({
         where: { consultation_id: consultationId },
         include: {
@@ -121,34 +158,23 @@ export class VideoConsultationService {
       });
 
       if (!consultation) {
-        return {
-          success: false,
-          error: 'Consultation not found'
-        };
+        return { success: false, error: 'Consultation not found' };
       }
 
-      // Verify user permissions
       const canJoin = this.verifyJoinPermissions(consultation, userId, userType);
       if (!canJoin.success) {
         return canJoin;
       }
 
-      // Update consultation status to in_progress if first join
       if (consultation.status === 'SCHEDULED') {
         await prisma.videoConsultation.update({
           where: { id: consultation.id },
-          data: {
-            status: 'active',
-            actual_start_time: new Date(),
-            updated_at: new Date(),
-          }
+          data: { status: 'IN_PROGRESS', actual_start: new Date(), updated_at: new Date() }
         });
       }
 
-      // Generate join URL based on user type
-      const joinUrl = userType === 'doctor' 
-        ? consultation.doctor_join_url 
-        : consultation.patient_join_url;
+      // The joinUrl is the same for both participants now
+      const joinUrl = consultation.doctor_join_url;
 
       return {
         success: true,
@@ -181,27 +207,20 @@ export class VideoConsultationService {
       });
 
       if (!consultation) {
-        return {
-          success: false,
-          error: 'Consultation not found'
-        };
+        return { success: false, error: 'Consultation not found' };
       }
 
-      // Verify user can end consultation (doctor or patient)
       if (consultation.doctor_id !== userId && consultation.patient_id !== userId) {
-        return {
-          success: false,
-          error: 'Unauthorized to end consultation'
-        };
+        return { success: false, error: 'Unauthorized to end consultation' };
       }
 
-      // Update consultation status and end time
       const updatedConsultation = await prisma.videoConsultation.update({
         where: { id: consultation.id },
         data: {
-          status: 'COMPLETED' as any,
+          status: 'COMPLETED',
           actual_end: new Date(),
-          summary,
+          // The 'summary' parameter is stored in 'consultation_notes' as per the database schema.
+          consultation_notes: summary,
           updated_at: new Date(),
         }
       });
@@ -226,61 +245,26 @@ export class VideoConsultationService {
    */
   async getConsultationHistory(userId: string, userType: 'doctor' | 'patient', page = 1, limit = 10) {
     try {
-      const whereClause = userType === 'doctor' 
-        ? { doctor_id: userId }
-        : { patient_id: userId };
+      const whereClause = userType === 'doctor' ? { doctor_id: userId } : { patient_id: userId };
 
       const consultations = await prisma.videoConsultation.findMany({
         where: whereClause,
         include: {
-          doctor: {
-            select: {
-              id: true,
-              user: {
-                select: {
-                  first_name: true,
-                  last_name: true,
-                }
-              },
-              specialization: true,
-            }
-          },
-          patient: {
-            select: {
-              id: true,
-              user: {
-                select: {
-                  first_name: true,
-                  last_name: true,
-                }
-              },
-            }
-          },
-          appointment: {
-            select: {
-              id: true,
-              appointment_date: true,
-            }
-          }
+          doctor: { select: { id: true, user: { select: { first_name: true, last_name: true, } }, specialization: true, } },
+          patient: { select: { id: true, user: { select: { first_name: true, last_name: true, } }, } },
+          appointment: { select: { id: true, appointment_date: true, } }
         },
         orderBy: { created_at: 'desc' },
         skip: (page - 1) * limit,
         take: limit,
       });
 
-      const total = await prisma.videoConsultation.count({
-        where: whereClause,
-      });
+      const total = await prisma.videoConsultation.count({ where: whereClause });
 
       return {
         success: true,
         consultations,
-        pagination: {
-          page,
-          limit,
-          total,
-          pages: Math.ceil(total / limit),
-        }
+        pagination: { page, limit, total, pages: Math.ceil(total / limit) }
       };
     } catch (error) {
       console.error('Error fetching consultation history:', error);
@@ -293,51 +277,9 @@ export class VideoConsultationService {
   }
 
   /**
-   * Generate a secure room ID
-   */
-  private generateRoomId(): string {
-    const timestamp = Date.now().toString(36);
-    const randomBytes = crypto.randomBytes(8).toString('hex');
-    return `room_${timestamp}_${randomBytes}`;
-  }
-
-  /**
-   * Generate room token for WebRTC authentication
-   */
-  private generateRoomToken(roomId: string): string {
-    const data = {
-      roomId,
-      timestamp: Date.now(),
-      expires: Date.now() + (24 * 60 * 60 * 1000), // 24 hours
-    };
-    
-    const token = crypto
-      .createHmac('sha256', this.CONSULTATION_SECRET)
-      .update(JSON.stringify(data))
-      .digest('hex');
-    
-    return Buffer.from(JSON.stringify({ ...data, signature: token })).toString('base64');
-  }
-
-  /**
-   * Generate join URL for WebRTC client
-   */
-  private generateJoinUrl(roomId: string, userType: string, userId: string): string {
-    const params = new URLSearchParams({
-      room: roomId,
-      user: userId,
-      type: userType,
-      t: Date.now().toString(),
-    });
-    
-    return `${this.WEBRTC_SERVER_URL}/room/${roomId}?${params.toString()}`;
-  }
-
-  /**
    * Determine if recording should be enabled for consultation type
    */
   private shouldEnableRecording(consultationType: string): boolean {
-    // Enable recording for emergency and scheduled consultations
     return ['emergency', 'scheduled'].includes(consultationType);
   }
 
@@ -346,32 +288,105 @@ export class VideoConsultationService {
    */
   private verifyJoinPermissions(consultation: any, userId: string, userType: string) {
     if (userType === 'doctor' && consultation.doctor_id !== userId) {
-      return {
-        success: false,
-        error: 'Not authorized to join this consultation as doctor'
-      };
+      return { success: false, error: 'Not authorized to join this consultation as doctor' };
     }
     
     if (userType === 'patient' && consultation.patient_id !== userId) {
-      return {
-        success: false,
-        error: 'Not authorized to join this consultation as patient'
-      };
+      return { success: false, error: 'Not authorized to join this consultation as patient' };
     }
 
-    // Check if consultation is still valid (not expired)
     const now = new Date();
     const scheduledTime = new Date(consultation.scheduled_start);
-    const maxJoinTime = new Date(scheduledTime.getTime() + (consultation.duration_minutes || 60) * 60 * 1000 + (30 * 60 * 1000)); // 30min grace period
+    const maxJoinTime = new Date(scheduledTime.getTime() + (consultation.duration_minutes || 60) * 60 * 1000 + (30 * 60 * 1000));
 
     if (now > maxJoinTime && consultation.status !== 'IN_PROGRESS') {
-      return {
-        success: false,
-        error: 'Consultation has expired'
-      };
+      return { success: false, error: 'Consultation has expired' };
     }
 
     return { success: true };
+  }
+
+  /**
+   * Toggle recording for a consultation
+   */
+  async toggleRecording(consultationId: string, action: 'start' | 'stop', userId: string) {
+    try {
+      const consultation = await prisma.videoConsultation.findUnique({
+        where: { consultation_id: consultationId },
+      });
+
+      if (!consultation) {
+        return { success: false, error: 'Consultation not found' };
+      }
+
+      if (consultation.doctor_id !== userId) {
+        return { success: false, error: 'Only the doctor can toggle recording' };
+      }
+
+      const response = await this._dailyApiRequest(`/recordings`, 'POST', {
+        room: consultation.room_id,
+        action: action,
+      });
+
+      if (!response.success) {
+        return { success: false, error: 'Failed to toggle recording', message: response.error };
+      }
+
+      if (action === 'stop' && response.data.url) {
+        await prisma.videoConsultation.update({
+          where: { id: consultation.id },
+          data: { recording_url: response.data.url },
+        });
+      }
+
+      return { success: true, data: response.data };
+    } catch (error) {
+      console.error(`Error toggling recording for consultation ${consultationId}:`, error);
+      return { success: false, error: 'Internal server error' };
+    }
+  }
+
+  /**
+   * Private helper to validate API key
+   */
+  private _isApiKeyValid(): boolean {
+    return !!this.DAILY_API_KEY && this.DAILY_API_KEY !== 'YOUR_DAILY_API_KEY';
+  }
+
+  /**
+   * Private helper to make requests to the Daily.co API
+   */
+  private async _dailyApiRequest(endpoint: string, method: 'GET' | 'POST' | 'DELETE', body?: object) {
+    if (!this._isApiKeyValid()) {
+      console.error('Daily.co API key is not configured.');
+      if (process.env.NODE_ENV === 'development') {
+        return { success: true, data: { message: "This is a mock response in development." } };
+      }
+      return { success: false, error: 'Video provider not configured' };
+    }
+
+    try {
+      const response = await fetch(`${this.DAILY_API_URL}${endpoint}`, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${this.DAILY_API_KEY}`,
+        },
+        body: body ? JSON.stringify(body) : undefined,
+      });
+
+      if (!response.ok) {
+        const errorBody = await response.text();
+        console.error(`Daily.co API request to ${endpoint} failed:`, response.status, errorBody);
+        return { success: false, error: `API request failed: ${errorBody}` };
+      }
+
+      const data = await response.json();
+      return { success: true, data };
+    } catch (error) {
+      console.error(`Error making Daily.co API request to ${endpoint}:`, error);
+      return { success: false, error: 'API request error' };
+    }
   }
 
   /**
@@ -387,37 +402,13 @@ export class VideoConsultationService {
       const consultations = await prisma.videoConsultation.findMany({
         where: whereClause,
         include: {
-          doctor: {
-            select: {
-              id: true,
-              user: {
-                select: {
-                  first_name: true,
-                  last_name: true,
-                }
-              },
-              specialization: true,
-            }
-          },
-          patient: {
-            select: {
-              id: true,
-              user: {
-                select: {
-                  first_name: true,
-                  last_name: true,
-                }
-              },
-            }
-          }
+          doctor: { select: { id: true, user: { select: { first_name: true, last_name: true, } }, specialization: true, } },
+          patient: { select: { id: true, user: { select: { first_name: true, last_name: true, } }, } }
         },
         orderBy: { actual_start: 'desc' },
       });
 
-      return {
-        success: true,
-        consultations,
-      };
+      return { success: true, consultations };
     } catch (error) {
       console.error('Error fetching active consultations:', error);
       return {

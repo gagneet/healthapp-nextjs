@@ -1,12 +1,12 @@
 // app/api/service-plans/route.ts - Service plans management API
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from "@/lib/auth";
+import { auth } from "@/lib/auth";
 import { prisma } from '@/lib/prisma';
 import { randomUUID } from 'crypto';
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession();
+    const session = await auth();
     if (!session?.user) {
       return NextResponse.json({
         status: false,
@@ -30,14 +30,14 @@ export async function GET(request: NextRequest) {
 
     // Role-based filtering
     if (session.user.role === 'DOCTOR') {
-      const doctor = await prisma.doctors.findFirst({
+      const doctor = await prisma.doctor.findFirst({
         where: { user_id: session.user.id }
       });
       if (doctor?.organization_id) {
         whereClause.provider_id = doctor.organization_id;
       }
     } else if (session.user.role === 'HSP') {
-      const hsp = await prisma.hsps.findFirst({
+      const hsp = await prisma.hsp.findFirst({
         where: { user_id: session.user.id }
       });
       if (hsp?.organization_id) {
@@ -84,8 +84,8 @@ export async function GET(request: NextRequest) {
               user: {
                 select: {
                   name: true,
-                  first_name: true,
-                  last_name: true,
+                  firstName: true,
+                  lastName: true,
                   email: true
                 }
               },
@@ -167,7 +167,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession();
+    const session = await auth();
     if (!session?.user) {
       return NextResponse.json({
         status: false,
@@ -213,7 +213,7 @@ export async function POST(request: NextRequest) {
     // Permission check for non-admins
     if (!['SYSTEM_ADMIN', 'HOSPITAL_ADMIN'].includes(session.user.role)) {
       if (session.user.role === 'DOCTOR') {
-        const doctor = await prisma.doctors.findFirst({
+        const doctor = await prisma.doctor.findFirst({
           where: { user_id: session.user.id }
         });
         if (!doctor || doctor.organization_id !== provider_id) {
@@ -224,7 +224,7 @@ export async function POST(request: NextRequest) {
           }, { status: 403 });
         }
       } else if (session.user.role === 'HSP') {
-        const hsp = await prisma.hsps.findFirst({
+        const hsp = await prisma.hsp.findFirst({
           where: { user_id: session.user.id }
         });
         if (!hsp || hsp.organization_id !== provider_id) {
@@ -273,8 +273,8 @@ export async function POST(request: NextRequest) {
             user: {
               select: {
                 name: true,
-                first_name: true,
-                last_name: true
+                firstName: true,
+                lastName: true
               }
             },
             organization_type: true
