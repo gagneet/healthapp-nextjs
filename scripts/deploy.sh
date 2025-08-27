@@ -99,6 +99,7 @@ SKIP_BUILD=false
 SKIP_IMAGE_PULL=false
 EARLY_DB_START=true    # New flag to start DB early
 DB_ALREADY_DEPLOYED=false  # Track if DB was deployed early
+CREATE_MIGRATION=false # New flag for creating initial migration
 
 # ============================================================================
 # Helper Functions
@@ -143,6 +144,7 @@ OPTIONS:
   --replicas N               Number of replicas for all services
   --migrate                  Run database migrations after deployment
   --seed                     Run database seeders after deployment
+  --create-migration         Create an initial migration if one doesn't exist. Use for first-time setup.
   --cleanup                  Clean up before deployment (compiled files + Docker resources)
   --cleanup-volumes          DANGER: Also remove data volumes during cleanup (data loss!)
   --no-early-db              Don't start database services early (default: start early)
@@ -345,6 +347,10 @@ parse_args() {
                 ;;
             --debug)
                 export DEBUG=true
+                shift
+                ;;
+            --create-migration)
+                CREATE_MIGRATION=true
                 shift
                 ;;
             --help)
@@ -1320,41 +1326,18 @@ run_migrations() {
         # Run migrations in the app container
         log_info "Running Prisma migrations..."
         
-        # Create a temporary script for better error handling
-        docker exec "$container_id" sh -c 'cat > /tmp/migrate.sh << "EOF"
-#!/bin/sh
-set -e
+        if [ "$CREATE_MIGRATION" = true ]; then
+            log_info "Attempting to create initial migration with 'prisma migrate dev'..."
+            if docker exec "$container_id" npx prisma migrate dev --name init --skip-generate; then
+                log_success "Initial migration created and applied successfully."
+            else
+                log_warning "Could not create initial migration. This might be okay if migrations already exist. Proceeding with 'migrate deploy'."
+                docker exec "$container_id" npx prisma migrate deploy
+            fi
+        else
+            docker exec "$container_id" npx prisma migrate deploy
+        fi
 
-echo "Starting migration process..."
-echo "NODE_ENV: ${NODE_ENV}"
-echo "DATABASE_URL is ${DATABASE_URL:+set}${DATABASE_URL:-not set}"
-
-# Try to run migrations
-if npx prisma migrate deploy 2>&1; then
-    echo "Migrations completed successfully"
-    exit 0
-fi
-
-# If deploy fails, check if its because there are no migrations
-if npx prisma migrate status 2>&1 | grep -q "Database schema is up to date"; then
-    echo "Database schema is already up to date"
-    exit 0
-fi
-
-# For non-production or when migrations dont exist, try db push
-echo "Trying db push as fallback..."
-if npx prisma db push --accept-data-loss; then
-    echo "Database synchronized using db push"
-    exit 0
-fi
-
-echo "All migration attempts failed"
-exit 1
-EOF
-chmod +x /tmp/migrate.sh
-/tmp/migrate.sh
-'
-        
         if [ $? -eq 0 ]; then
             log_success "Database migrations completed successfully"
         else
