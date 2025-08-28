@@ -35,7 +35,7 @@ async function authenticateAndAuthorize(session: any) {
 async function getProviderProfile(session: any) {
   if (session.user.role === 'DOCTOR') {
     const doctor = await prisma.doctor.findFirst({
-      where: { user_id: session.user.id }
+      where: { userId: session.user.id }
     });
     
     if (!doctor) {
@@ -51,7 +51,7 @@ async function getProviderProfile(session: any) {
     return { success: true, doctorId: doctor.id, hspId: null };
   } else if (session.user.role === 'HSP') {
     const hsp = await prisma.hsp.findFirst({
-      where: { user_id: session.user.id }
+      where: { userId: session.user.id }
     });
     
     if (!hsp) {

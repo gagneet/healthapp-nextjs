@@ -31,7 +31,7 @@ export async function GET(request: NextRequest, { params }: { params: { patientI
 
     // Get doctor profile
     const doctor = await prisma.doctor.findFirst({
-      where: { user_id: session.user.id }
+      where: { userId: session.user.id }
     });
 
     if (!doctor) {
