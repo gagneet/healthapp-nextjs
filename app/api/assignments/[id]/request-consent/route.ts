@@ -25,11 +25,11 @@ const RequestConsentSchema = z.object({
 })
 
 /**
- * POST /api/assignments/:assignmentId/request-consent
+ * POST /api/assignments/:id/request-consent
  * Request patient consent for assignment
  * Business Logic: Only assigned doctors can request consent
  */
-export const POST = withErrorHandling(async (request: NextRequest, { params }: { params: { assignmentId: string } }) => {
+export const POST = withErrorHandling(async (request: NextRequest, { params }: { params: { id: string } }) => {
   const session = await auth()
   
   if (!session) {
@@ -41,7 +41,7 @@ export const POST = withErrorHandling(async (request: NextRequest, { params }: {
     return createForbiddenResponse("Only doctors can request patient consent")
   }
 
-  const { assignmentId } = params
+  const { id: assignmentId } = params
   const body = await request.json()
   const validationResult = RequestConsentSchema.safeParse(body)
 
@@ -67,7 +67,7 @@ export const POST = withErrorHandling(async (request: NextRequest, { params }: {
         id: assignmentId,
         OR: [
           { primaryDoctorId: requestingDoctor.id },
-          { secondaryDoctorId: requestingDoctor.id }
+          { doctorId: requestingDoctor.id }
         ]
       },
       include: {
@@ -78,12 +78,12 @@ export const POST = withErrorHandling(async (request: NextRequest, { params }: {
             }
           }
         },
-        primaryDoctor: {
+        assignedByDoctor: {
           include: {
             user: { select: { firstName: true, lastName: true } }
           }
         },
-        secondaryDoctor: {
+        doctor: {
           include: {
             user: { select: { firstName: true, lastName: true } }
           }
@@ -95,11 +95,11 @@ export const POST = withErrorHandling(async (request: NextRequest, { params }: {
       return createErrorResponse(new Error("Assignment not found or access denied"))
     }
 
-    if (!assignment.requiresConsent) {
+    if (!assignment.patientConsentRequired) {
       return createErrorResponse(new Error("Consent not required for this assignment"))
     }
 
-    if (assignment.consentStatus === 'granted') {
+    if (assignment.patientConsentStatus === 'GRANTED') {
       return createErrorResponse(new Error("Consent already granted for this assignment"))
     }
 
@@ -110,7 +110,7 @@ export const POST = withErrorHandling(async (request: NextRequest, { params }: {
     // Check for existing active OTP
     const existingOtp = await prisma.patientConsentOtp.findFirst({
       where: {
-        patientDoctorAssignmentId: assignmentId,
+        secondaryAssignmentId: assignmentId,
         expiresAt: { gt: new Date() },
         isVerified: false,
         isBlocked: false
@@ -126,8 +126,8 @@ export const POST = withErrorHandling(async (request: NextRequest, { params }: {
         existing_otp: {
           expires_at: existingOtp.expiresAt,
           remaining_time_seconds: remainingTime,
-          consent_method: existingOtp.consentMethod,
-          verification_attempts_remaining: 3 - existingOtp.verificationAttempts
+          consent_method: existingOtp.otpMethod,
+          verification_attempts_remaining: (existingOtp.maxAttempts || 3) - (existingOtp.attemptsCount || 0)
         },
         message: "Active OTP already exists. Please use existing OTP or wait for expiration."
       })
@@ -140,15 +140,22 @@ export const POST = withErrorHandling(async (request: NextRequest, { params }: {
 
     const otpRecord = await prisma.patientConsentOtp.create({
       data: {
-        patientDoctorAssignmentId: assignmentId,
+        id: crypto.randomUUID(),
+        secondaryAssignmentId: assignmentId,
+        patientId: assignment.patientId,
+        primaryDoctorId: assignment.assignedByDoctorId || requestingDoctor.id,
+        secondaryDoctorId: assignment.doctorId,
         otpCode,
+        otpMethod: consentMethod === 'sms_otp' ? 'SMS' : consentMethod === 'email_otp' ? 'EMAIL' : 'BOTH',
+        patientPhone: assignment.patient.user.phone,
+        patientEmail: assignment.patient.user.email,
+        generatedAt: new Date(),
         expiresAt,
-        consentMethod,
-        requestedBy: session.user.id,
-        customMessage,
+        requestedByUserId: session.user.id,
         isVerified: false,
         isBlocked: false,
-        verificationAttempts: 0
+        attemptsCount: 0,
+        maxAttempts: 3
       }
     })
 
@@ -169,10 +176,10 @@ export const POST = withErrorHandling(async (request: NextRequest, { params }: {
       assignment_info: {
         assignment_type: assignment.assignmentType,
         assignment_reason: assignment.assignmentReason,
-        primary_doctor: assignment.primaryDoctor ? 
-          `${assignment.primaryDoctor.user.firstName} ${assignment.primaryDoctor.user.lastName}`.trim() : null,
-        secondary_doctor: assignment.secondaryDoctor ? 
-          `${assignment.secondaryDoctor.user.firstName} ${assignment.secondaryDoctor.user.lastName}`.trim() : null
+        primary_doctor: assignment.assignedByDoctor ? 
+          `${assignment.assignedByDoctor.user.firstName} ${assignment.assignedByDoctor.user.lastName}`.trim() : null,
+        secondary_doctor: assignment.doctor ? 
+          `${assignment.doctor.user.firstName} ${assignment.doctor.user.lastName}`.trim() : null
       },
       otp_details: {
         consent_method: consentMethod,
