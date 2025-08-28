@@ -17,7 +17,7 @@ export default {
         primaryKey: true,
         defaultValue: Sequelize.UUIDV4,
       },
-      patient_id: {
+      patientId: {
         type: Sequelize.UUID,
         allowNull: false,
         references: {
@@ -105,12 +105,12 @@ export default {
 
     // Add indexes with error handling
     const indexes = [
-      { fields: ['patient_id'], name: 'idx_vital_readings_patient' },
+      { fields: ['patientId'], name: 'idx_vital_readings_patient' },
       { fields: ['vital_type_id'], name: 'idx_vital_readings_vital_type' },
       { fields: ['reading_time'], name: 'idx_vital_readings_time' },
       { fields: ['is_flagged'], name: 'idx_vital_readings_flagged' },
       { fields: ['is_validated'], name: 'idx_vital_readings_validated' },
-      { fields: ['patient_id', 'vital_type_id', 'reading_time'], name: 'idx_vital_readings_composite' }
+      { fields: ['patientId', 'vital_type_id', 'reading_time'], name: 'idx_vital_readings_composite' }
     ];
 
     for (const index of indexes) {

@@ -74,7 +74,7 @@ export const AUDIT_OUTCOMES = {
 export interface AuditLogEntry {
   id?: string;
   userId?: string;
-  patient_id?: string;
+  patientId?: string;
   event_type: keyof typeof AUDIT_EVENTS;
   outcome: keyof typeof AUDIT_OUTCOMES;
   risk_level: keyof typeof RISK_LEVELS;
@@ -101,7 +101,7 @@ export class HealthcareAuditLogger {
         data: {
           id: entry.id || randomUUID(),
           userId: entry.userId || null,
-          patient_id: entry.patient_id || null,
+          patientId: entry.patientId || null,
           event_type: entry.event_type,
           outcome: entry.outcome,
           risk_level: entry.risk_level,
@@ -172,7 +172,7 @@ export class HealthcareAuditLogger {
 
     await this.createAuditLog({
       userId: userId,
-      patient_id: patientId,
+      patientId: patientId,
       event_type: eventTypeMap[accessType],
       outcome: AUDIT_OUTCOMES.SUCCESS,
       risk_level: accessType === 'VIEW' ? RISK_LEVELS.LOW : RISK_LEVELS.MEDIUM,
@@ -201,7 +201,7 @@ export class HealthcareAuditLogger {
     
     await this.createAuditLog({
       userId: userId,
-      patient_id: patientId,
+      patientId: patientId,
       event_type: operation === 'READ' ? AUDIT_EVENTS.MEDICAL_RECORD_ACCESSED : AUDIT_EVENTS.MEDICAL_RECORD_UPDATED,
       outcome: AUDIT_OUTCOMES.SUCCESS,
       risk_level: RISK_LEVELS.MEDIUM,
@@ -239,7 +239,7 @@ export class HealthcareAuditLogger {
 
     await this.createAuditLog({
       userId: userId,
-      patient_id: patientId,
+      patientId: patientId,
       event_type: eventTypeMap[event],
       outcome: AUDIT_OUTCOMES.SUCCESS,
       risk_level: event === 'VIEWED' ? RISK_LEVELS.LOW : RISK_LEVELS.MEDIUM,
@@ -324,7 +324,7 @@ export class HealthcareAuditLogger {
     
     await this.createAuditLog({
       userId: doctorId,
-      patient_id: patientId,
+      patientId: patientId,
       event_type: AUDIT_EVENTS.EMERGENCY_ACCESS_GRANTED,
       outcome: granted ? AUDIT_OUTCOMES.SUCCESS : AUDIT_OUTCOMES.FAILURE,
       risk_level: RISK_LEVELS.CRITICAL,
@@ -418,7 +418,7 @@ export class HealthcareAuditLogger {
     };
 
     if (filters.userId) whereClause.userId = filters.userId;
-    if (filters.patientId) whereClause.patient_id = filters.patientId;
+    if (filters.patientId) whereClause.patientId = filters.patientId;
     if (filters.eventTypes?.length) whereClause.event_type = { in: filters.eventTypes };
     if (filters.riskLevels?.length) whereClause.risk_level = { in: filters.riskLevels };
 
@@ -468,7 +468,7 @@ export class HealthcareAuditLogger {
     console.warn('CRITICAL SECURITY EVENT:', {
       eventType: entry.event_type,
       userId: entry.userId,
-      patientId: entry.patient_id,
+      patientId: entry.patientId,
       description: entry.description,
       timestamp: entry.timestamp
     });

@@ -18,7 +18,7 @@ export default {
       },
       
       // Core assignment relationships
-      patient_id: {
+      patientId: {
         type: Sequelize.UUID,
         allowNull: false,
         references: {
@@ -181,7 +181,7 @@ export default {
 
     // Add indexes for performance
     const indexes = [
-      { fields: ['patient_id'], name: 'idx_secondary_doctor_assignments_patient_id' },
+      { fields: ['patientId'], name: 'idx_secondary_doctor_assignments_patient_id' },
       { fields: ['primary_doctor_id'], name: 'idx_secondary_doctor_assignments_primary_doctor_id' },
       { fields: ['secondary_doctor_id'], name: 'idx_secondary_doctor_assignments_secondary_doctor_id' },
       { fields: ['secondary_hsp_id'], name: 'idx_secondary_doctor_assignments_secondary_hsp_id' },
@@ -202,7 +202,7 @@ export default {
     // Add unique constraint to prevent duplicate assignments
     try {
       await queryInterface.addIndex('secondary_doctor_assignments', {
-        fields: ['patient_id', 'secondary_doctor_id', 'secondary_hsp_id'],
+        fields: ['patientId', 'secondary_doctor_id', 'secondary_hsp_id'],
         unique: true,
         where: {
           is_active: true

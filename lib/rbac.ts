@@ -241,7 +241,7 @@ export class HealthcareRBAC {
       // Check secondary doctor assignments
       const secondaryAssignment = await prisma.secondary_doctor_assignments.findFirst({
         where: {
-          patient_id: patientId,
+          patientId: patientId,
           secondary_doctor_id: doctor.id,
           is_active: true,
           access_granted: true
@@ -266,7 +266,7 @@ export class HealthcareRBAC {
       // Check if HSP has secondary assignment
       const hspAssignment = await prisma.secondary_doctor_assignments.findFirst({
         where: {
-          patient_id: patientId,
+          patientId: patientId,
           secondary_hsp_id: hsp.id,
           is_active: true,
           access_granted: true
@@ -344,12 +344,12 @@ export class HealthcareRBAC {
             is_active: true,
             access_granted: true
           },
-          select: { patient_id: true }
+          select: { patientId: true }
         });
 
         whereClause.OR = [
           { primaryCareDoctorId: doctor.id },
-          { id: { in: secondaryPatients.map(sp => sp.patient_id) } }
+          { id: { in: secondaryPatients.map(sp => sp.patientId) } }
         ];
       }
     } else if (userRole === 'HSP') {
@@ -364,10 +364,10 @@ export class HealthcareRBAC {
             is_active: true,
             access_granted: true
           },
-          select: { patient_id: true }
+          select: { patientId: true }
         });
 
-        whereClause.id = { in: hspPatients.map(hp => hp.patient_id) };
+        whereClause.id = { in: hspPatients.map(hp => hp.patientId) };
       }
     }
     // SYSTEM_ADMIN and HOSPITAL_ADMIN can access all patients (no additional filtering)
@@ -426,7 +426,7 @@ export class HealthcareRBAC {
     const emergencySession = await prisma.emergency_access_logs.create({
       data: {
         requesting_doctor_id: userId,
-        patient_id: patientId,
+        patientId: patientId,
         reason,
         granted_at: new Date(),
         expires_at: new Date(Date.now() + 4 * 60 * 60 * 1000), // 4 hours

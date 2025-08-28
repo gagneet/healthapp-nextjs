@@ -10,7 +10,7 @@ export default (sequelize: any) => {
     },
     
     // Core Relationships
-    patient_id: {
+    patientId: {
       type: DataTypes.UUID,
       allowNull: false,
       references: {
@@ -404,7 +404,7 @@ export default (sequelize: any) => {
     
     indexes: [
       {
-        fields: ['patient_id']
+        fields: ['patientId']
       },
       {
         fields: ['prescribing_doctor_id']
@@ -439,7 +439,7 @@ export default (sequelize: any) => {
       },
       {
         // Composite index for active prescriptions
-        fields: ['patient_id', 'status', 'prescribed_date']
+        fields: ['patientId', 'status', 'prescribed_date']
       },
       {
         // Index for pharmacy processing
@@ -509,7 +509,7 @@ export default (sequelize: any) => {
   Prescription.findActiveForPatient = async function(patientId: any) {
     return await this.findAll({
       where: {
-        patient_id: patientId,
+        patientId: patientId,
         status: 'active',
         expiration_date: {
           [sequelize.Sequelize.Op.gt]: new Date()

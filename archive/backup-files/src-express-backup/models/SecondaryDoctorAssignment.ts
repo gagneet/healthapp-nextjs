@@ -10,7 +10,7 @@ export default (sequelize: any) => {
     },
     
     // Core assignment relationships
-    patient_id: {
+    patientId: {
       type: DataTypes.UUID,
       allowNull: false,
       references: {
@@ -174,7 +174,7 @@ export default (sequelize: any) => {
     underscored: true,
     
     indexes: [
-      { fields: ['patient_id'] },
+      { fields: ['patientId'] },
       { fields: ['primary_doctor_id'] },
       { fields: ['secondary_doctor_id'] },
       { fields: ['secondary_hsp_id'] },

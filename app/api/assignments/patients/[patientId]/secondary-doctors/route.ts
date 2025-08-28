@@ -199,7 +199,7 @@ export const POST = withErrorHandling(async (request: NextRequest, { params }: {
       assignment_id: assignment.id,
       patient: {
         id: patient.id,
-        patient_id: patient.patientId,
+        patientId: patient.patientId,
         name: `${patient.user.firstName} ${patient.user.lastName}`.trim(),
         email: patient.user.email,
         phone: patient.user.phone
@@ -419,7 +419,7 @@ export const GET = withErrorHandling(async (request: NextRequest, { params }: { 
     return createSuccessResponse({
       patient: {
         id: patient.id,
-        patient_id: patient.patientId,
+        patientId: patient.patientId,
         name: `${patient.user.firstName} ${patient.user.lastName}`.trim(),
         email: patient.user.email,
         phone: patient.user.phone

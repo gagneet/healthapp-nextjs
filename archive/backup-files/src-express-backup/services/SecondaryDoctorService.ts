@@ -70,8 +70,8 @@ export class SecondaryDoctorService {
       // Check if this doctor is already assigned to this patient
       const existingAssignment = await PatientDoctorAssignment.findOne({
         where: {
-          patient_id: patientId,
-          doctor_id: doctorId,
+          patientId: patientId,
+          doctorId: doctorId,
           is_active: true
         }
       });
@@ -89,8 +89,8 @@ export class SecondaryDoctorService {
 
       // Create assignment data
       const assignmentData = {
-        patient_id: patientId,
-        doctor_id: doctorId,
+        patientId: patientId,
+        doctorId: doctorId,
         assignment_type: assignmentType,
         specialty_focus: specialtyFocus,
         care_plan_ids: carePlanIds,
@@ -146,8 +146,8 @@ export class SecondaryDoctorService {
     // Check if assigning doctor has permission to assign doctors to this patient
     const primaryAssignment = await PatientDoctorAssignment.findOne({
       where: {
-        patient_id: patient.id,
-        doctor_id: assigningDoctor.id,
+        patientId: patient.id,
+        doctorId: assigningDoctor.id,
         assignment_type: 'primary',
         is_active: true
       }
@@ -187,7 +187,7 @@ export class SecondaryDoctorService {
    */
   static async getPatientDoctorAssignments(patientId: string, includeInactive: boolean = false) {
     try {
-      const whereClause = { patient_id: patientId };
+      const whereClause = { patientId: patientId };
       if (!includeInactive) {
         (whereClause as any).is_active = true;
       }
@@ -320,8 +320,8 @@ export class SecondaryDoctorService {
       // Validate that updater is the primary doctor
       const primaryAssignment = await PatientDoctorAssignment.findOne({
         where: {
-          patient_id: assignment.patient_id,
-          doctor_id: updatedBy,
+          patientId: assignment.patientId,
+          doctorId: updatedBy,
           assignment_type: 'primary',
           is_active: true
         }
@@ -357,8 +357,8 @@ export class SecondaryDoctorService {
       // Only primary doctor can deactivate assignments
       const primaryAssignment = await PatientDoctorAssignment.findOne({
         where: {
-          patient_id: assignment.patient_id,
-          doctor_id: deactivatedBy,
+          patientId: assignment.patientId,
+          doctorId: deactivatedBy,
           assignment_type: 'primary',
           is_active: true
         }
@@ -468,8 +468,8 @@ export class SecondaryDoctorService {
     try {
       const assignment = await PatientDoctorAssignment.findOne({
         where: {
-          doctor_id: doctorId,
-          patient_id: patientId,
+          doctorId: doctorId,
+          patientId: patientId,
           is_active: true
         }
       });

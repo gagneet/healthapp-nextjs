@@ -21,7 +21,7 @@ interface Notification {
   is_read: boolean
   is_urgent: boolean
   patient_name?: string
-  patient_id?: string
+  patientId?: string
   created_at: string
 }
 
@@ -56,7 +56,7 @@ export default function NotificationsPage() {
             is_read: alert.status === 'READ',
             is_urgent: alert.severity === 'high',
             patient_name: alert.patientName,
-            patient_id: alert.patientId,
+            patientId: alert.patientId,
             created_at: alert.timestamp || alert.created_at
           }))
           setNotifications(transformedNotifications)
@@ -74,7 +74,7 @@ export default function NotificationsPage() {
           is_read: false,
           is_urgent: true,
           patient_name: 'John Doe',
-          patient_id: 'patient-1',
+          patientId: 'patient-1',
           created_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString()
         },
         {
@@ -85,7 +85,7 @@ export default function NotificationsPage() {
           is_read: false,
           is_urgent: false,
           patient_name: 'Jane Smith',
-          patient_id: 'patient-2',
+          patientId: 'patient-2',
           created_at: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString()
         },
         {
@@ -340,9 +340,9 @@ export default function NotificationsPage() {
                       </div>
                     </div>
                     <div className="flex items-center space-x-2 ml-4">
-                      {notification.patient_id && (
+                      {notification.patientId && (
                         <Link
-                          href={`/dashboard/doctor/patients/${notification.patient_id}`}
+                          href={`/dashboard/doctor/patients/${notification.patientId}`}
                           className="p-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-md"
                           title="View Patient"
                         >

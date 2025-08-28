@@ -45,8 +45,8 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
   const paginationResult = paginationSchema.safeParse({
     page: parseInt(searchParams.get('page') || '1'),
     limit: parseInt(searchParams.get('limit') || '20'),
-    patientId: searchParams.get('patient_id') || undefined,
-    doctorId: searchParams.get('doctor_id') || undefined,
+    patientId: searchParams.get('patientId') || undefined,
+    doctorId: searchParams.get('doctorId') || undefined,
     searchQuery: searchParams.get('search') || undefined,
     status: searchParams.get('status') || undefined,
     sortBy: searchParams.get('sortBy') || 'createdAt',

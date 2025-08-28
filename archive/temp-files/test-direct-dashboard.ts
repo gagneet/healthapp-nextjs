@@ -35,7 +35,7 @@ async function testDirectDashboard() {
         patient: {
           select: {
             id: true,
-            patient_id: true,
+            patientId: true,
             medical_record_number: true
           }
         }
@@ -46,7 +46,7 @@ async function testDirectDashboard() {
     users.forEach(user => {
       console.log(`  - ${user.email} (${user.role}) - ${user.first_name} ${user.last_name} [${user.account_status}]`);
       if (user.patient) {
-        console.log(`    Patient Profile: ${user.patient.patient_id} (${user.patient.medical_record_number})`);
+        console.log(`    Patient Profile: ${user.patient.patientId} (${user.patient.medical_record_number})`);
       }
     });
     
@@ -73,7 +73,7 @@ async function testDirectDashboard() {
       console.log('✅ Doctor profile found:');
       console.log(`  - Name: ${doctorUser.first_name} ${doctorUser.last_name}`);
       console.log(`  - Email: ${doctorUser.email}`);
-      console.log(`  - Doctor ID: ${doctor.doctor_id}`);
+      console.log(`  - Doctor ID: ${doctor.doctorId}`);
       console.log(`  - License: ${doctor.medical_license_number}`);
       console.log(`  - Experience: ${doctor.years_of_experience} years`);
       console.log(`  - Fee: $${doctor.consultation_fee}`);
@@ -112,7 +112,7 @@ async function testDirectDashboard() {
       console.log('✅ Patient profile found:');
       console.log(`  - Name: ${patientUser.patient.user.first_name} ${patientUser.patient.user.last_name}`);
       console.log(`  - Email: ${patientUser.patient.user.email}`);
-      console.log(`  - Patient ID: ${patientUser.patient.patient_id}`);
+      console.log(`  - Patient ID: ${patientUser.patient.patientId}`);
       console.log(`  - Medical Record: ${patientUser.patient.medical_record_number}`);
       console.log(`  - Age: ${age} years`);
       console.log(`  - Gender: ${patientUser.patient.user.gender}`);
@@ -170,9 +170,9 @@ async function testDirectDashboard() {
     console.log('\n🆔 Testing business ID integrity...');
     
     const businessIds = await Promise.all([
-      prisma.doctors.findMany({ select: { doctor_id: true } }),
+      prisma.doctors.findMany({ select: { doctorId: true } }),
       prisma.hsps.findMany({ select: { hsp_id: true } }),
-      prisma.patient.findMany({ select: { patient_id: true } })
+      prisma.patient.findMany({ select: { patientId: true } })
     ]);
     
     const [doctorIds, hspIds, patientIds] = businessIds;
@@ -182,14 +182,14 @@ async function testDirectDashboard() {
     const hspIdPattern = /^HSP-\d{4}-\d{3}$/;
     const patientIdPattern = /^PAT-\d{4}-\d{3}$/;
     
-    const doctorIdValid = doctorIds.every(d => doctorIdPattern.test(d.doctor_id));
+    const doctorIdValid = doctorIds.every(d => doctorIdPattern.test(d.doctorId));
     const hspIdValid = hspIds.every(h => hspIdPattern.test(h.hsp_id));
-    const patientIdValid = patientIds.every(p => patientIdPattern.test(p.patient_id!));
+    const patientIdValid = patientIds.every(p => patientIdPattern.test(p.patientId!));
     
     console.log('✅ Business ID format validation:');
-    console.log(`  - Doctor IDs: ${doctorIdValid ? 'VALID' : 'INVALID'} (${doctorIds.map(d => d.doctor_id).join(', ')})`);
+    console.log(`  - Doctor IDs: ${doctorIdValid ? 'VALID' : 'INVALID'} (${doctorIds.map(d => d.doctorId).join(', ')})`);
     console.log(`  - HSP IDs: ${hspIdValid ? 'VALID' : 'INVALID'} (${hspIds.map(h => h.hsp_id).join(', ')})`);
-    console.log(`  - Patient IDs: ${patientIdValid ? 'VALID' : 'INVALID'} (${patientIds.map(p => p.patient_id).filter(Boolean).join(', ')})`);
+    console.log(`  - Patient IDs: ${patientIdValid ? 'VALID' : 'INVALID'} (${patientIds.map(p => p.patientId).filter(Boolean).join(', ')})`);
     
     console.log('\n✅ All dashboard functionality tests completed successfully!');
     

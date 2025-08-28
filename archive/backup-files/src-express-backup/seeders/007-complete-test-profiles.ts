@@ -182,7 +182,7 @@ export default {
         // Create a clinic for the doctor
         await queryInterface.bulkInsert('clinics', [{
           id: '55555555-5555-5555-5555-555555555555', // Deterministic UUID for clinic
-          doctor_id: doctorId,
+          doctorId: doctorId,
           name: 'Main Family Practice Clinic',
           address: JSON.stringify({
             street: '123 Medical Center Drive',
@@ -240,7 +240,7 @@ export default {
           id: patientId,
           userId: patientUser.id,
           medical_record_number: 'MRN-2025-001',
-          patient_id: 'JMD/202501/000001', // Doctor initials/Year-Month/Sequence
+          patientId: 'JMD/202501/000001', // Doctor initials/Year-Month/Sequence
           primaryCareDoctorId: doctorRecord.length > 0 ? doctorRecord[0].id : null,
           emergency_contacts: JSON.stringify([
             {
@@ -397,7 +397,7 @@ export default {
   down: async (queryInterface: any, Sequelize: any) => {
     // Delete in reverse order due to foreign key constraints
     await queryInterface.bulkDelete('clinics', {
-      doctor_id: {
+      doctorId: {
         [Sequelize.Op.in]: queryInterface.sequelize.literal(
           "(SELECT d.id FROM doctors d JOIN users u ON d.userId = u.id WHERE u.email = 'doctor@healthapp.com')"
         )

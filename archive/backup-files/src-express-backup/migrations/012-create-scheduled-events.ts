@@ -56,7 +56,7 @@ export default {
         primaryKey: true,
         defaultValue: Sequelize.UUIDV4,
       },
-      patient_id: {
+      patientId: {
         type: Sequelize.UUID,
         allowNull: false,
         references: {
@@ -150,7 +150,7 @@ export default {
 
     // Add indexes with error handling
     const indexes = [
-      { fields: ['patient_id'], options: { where: { deleted_at: null }, name: 'idx_events_patient' } },
+      { fields: ['patientId'], options: { where: { deleted_at: null }, name: 'idx_events_patient' } },
       { fields: ['scheduled_for'], options: { where: { deleted_at: null }, name: 'idx_events_scheduled_for' } },
       { fields: ['status'], options: { where: { deleted_at: null }, name: 'idx_events_status' } },
       { fields: ['event_type'], options: { where: { deleted_at: null }, name: 'idx_events_type' } },

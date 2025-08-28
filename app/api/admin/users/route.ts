@@ -80,7 +80,7 @@ export async function GET(request: NextRequest) {
           doctors: {
             select: {
               id: true,
-              doctor_id: true,
+              doctorId: true,
               medical_license_number: true,
               specialities: {
                 select: { name: true }
@@ -90,7 +90,7 @@ export async function GET(request: NextRequest) {
           patients: {
             select: {
               id: true,
-              patient_id: true,
+              patientId: true,
               medical_record_number: true
             }
           },

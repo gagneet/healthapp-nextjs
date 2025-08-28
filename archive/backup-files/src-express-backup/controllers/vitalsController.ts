@@ -8,7 +8,7 @@ class VitalsController {
   async createVital(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const {
-        patient_id,
+        patientId,
         vital_template_id,
         care_plan_id,
         description,
@@ -27,7 +27,7 @@ class VitalsController {
         details: {
           repeat_interval_id: repeat_interval,
           repeat_days,
-          patient_id
+          patientId
         }
       });
 
@@ -53,7 +53,7 @@ class VitalsController {
 
       // Find care plans for this patient
       const carePlans = await CarePlan.findAll({
-        where: { patient_id: patientId }
+        where: { patientId: patientId }
       });
 
       const carePlanIds = carePlans.map((cp: any) => cp.id);

@@ -270,7 +270,7 @@ CREATE TABLE drug_interactions (
 -- Patient Allergy Management
 CREATE TABLE patient_allergies (
     id INT PRIMARY KEY AUTO_INCREMENT,
-    patient_id INT,
+    patientId INT,
     allergen_type ENUM('MEDICATION', 'FOOD', 'ENVIRONMENTAL'),
     allergen_name VARCHAR(255),
     reaction_severity ENUM('MILD', 'MODERATE', 'SEVERE', 'ANAPHYLAXIS'),
@@ -332,7 +332,7 @@ const mmasQuestions = [
 ```sql
 CREATE TABLE medication_adherence_analytics (
     id INT PRIMARY KEY AUTO_INCREMENT,
-    patient_id INT,
+    patientId INT,
     medication_id INT,
     adherence_score DECIMAL(5,2), -- 0-100%
     mmas_score DECIMAL(3,1), -- 0-8 scale
@@ -377,7 +377,7 @@ CREATE TABLE medication_adherence_analytics (
 ```sql
 CREATE TABLE nutrition_plans (
     id INT PRIMARY KEY AUTO_INCREMENT,
-    patient_id INT,
+    patientId INT,
     care_plan_id INT,
     created_by_provider_id INT,
     
@@ -406,7 +406,7 @@ CREATE TABLE nutrition_plans (
 
 CREATE TABLE food_intake_logs (
     id INT PRIMARY KEY AUTO_INCREMENT,
-    patient_id INT,
+    patientId INT,
     nutrition_plan_id INT,
     
     -- Meal information
@@ -508,7 +508,7 @@ class IntermittentFastingService {
 ```sql
 CREATE TABLE exercise_prescriptions (
     id INT PRIMARY KEY AUTO_INCREMENT,
-    patient_id INT,
+    patientId INT,
     care_plan_id INT,
     prescribed_by_provider_id INT,
     
@@ -542,7 +542,7 @@ CREATE TABLE exercise_prescriptions (
 
 CREATE TABLE exercise_sessions (
     id INT PRIMARY KEY AUTO_INCREMENT,
-    patient_id INT,
+    patientId INT,
     prescription_id INT,
     
     -- Session details
@@ -681,7 +681,7 @@ CREATE TABLE appointment_types (
 
 CREATE TABLE appointments (
     id INT PRIMARY KEY AUTO_INCREMENT,
-    patient_id INT,
+    patientId INT,
     provider_id INT,
     appointment_type_id INT,
     care_plan_id INT,
@@ -822,7 +822,7 @@ CREATE TABLE vital_sign_types (
 
 CREATE TABLE vital_sign_readings (
     id INT PRIMARY KEY AUTO_INCREMENT,
-    patient_id INT NOT NULL,
+    patientId INT NOT NULL,
     vital_sign_type_id INT NOT NULL,
     care_plan_id INT,
     
@@ -992,7 +992,7 @@ class VitalSignsCDSS {
 ```sql
 CREATE TABLE care_plans (
     id INT PRIMARY KEY AUTO_INCREMENT,
-    patient_id INT NOT NULL,
+    patientId INT NOT NULL,
     primary_provider_id INT NOT NULL,
     care_coordinator_id INT,
     
@@ -1152,7 +1152,7 @@ CREATE TABLE care_plan_outcomes (
 CREATE TABLE phi_access_logs (
     id INT PRIMARY KEY AUTO_INCREMENT,
     user_id INT NOT NULL,
-    patient_id INT NOT NULL,
+    patientId INT NOT NULL,
     access_type ENUM('CREATE', 'READ', 'UPDATE', 'DELETE', 'EXPORT', 'PRINT'),
     data_category VARCHAR(100), -- medication, vitals, appointments, etc.
     accessed_data_id INT,
@@ -1342,10 +1342,10 @@ spec:
 ```sql
 -- Optimized indexing strategy for healthcare queries
 CREATE INDEX idx_patients_provider_status ON patients(primary_provider_id, status, created_at);
-CREATE INDEX idx_medications_patient_active ON medications(patient_id, active, start_date);
+CREATE INDEX idx_medications_patient_active ON medications(patientId, active, start_date);
 CREATE INDEX idx_appointments_provider_date ON appointments(provider_id, scheduled_date, appointment_status);
-CREATE INDEX idx_vitals_patient_timestamp ON vital_sign_readings(patient_id, reading_timestamp DESC);
-CREATE INDEX idx_care_plans_patient_active ON care_plans(patient_id, plan_status, start_date);
+CREATE INDEX idx_vitals_patient_timestamp ON vital_sign_readings(patientId, reading_timestamp DESC);
+CREATE INDEX idx_care_plans_patient_active ON care_plans(patientId, plan_status, start_date);
 
 -- Partitioning for large tables
 CREATE TABLE vital_sign_readings_2025_q1 PARTITION OF vital_sign_readings
@@ -1925,7 +1925,7 @@ class IoTDeviceIntegration {
 -- Analytics materialized views for performance
 CREATE MATERIALIZED VIEW patient_adherence_summary AS
 SELECT 
-    p.id as patient_id,
+    p.id as patientId,
     p.first_name,
     p.last_name,
     p.date_of_birth,
@@ -1961,18 +1961,18 @@ SELECT
     -- Data freshness
     CURRENT_TIMESTAMP as calculated_at
 FROM patients p
-LEFT JOIN patient_adherence_analytics pa ON p.id = pa.patient_id
-LEFT JOIN appointments a ON p.id = a.patient_id 
+LEFT JOIN patient_adherence_analytics pa ON p.id = pa.patientId
+LEFT JOIN appointments a ON p.id = a.patientId 
     AND a.scheduled_date >= CURRENT_DATE - INTERVAL '90 days'
-LEFT JOIN emergency_visits eh ON p.id = eh.patient_id 
+LEFT JOIN emergency_visits eh ON p.id = eh.patientId 
     AND eh.visit_date >= CURRENT_DATE - INTERVAL '90 days'
-LEFT JOIN vital_sign_readings vs ON p.id = vs.patient_id 
+LEFT JOIN vital_sign_readings vs ON p.id = vs.patientId 
     AND vs.vital_sign_type_id = (SELECT id FROM vital_sign_types WHERE name = 'Blood Pressure Systolic')
     AND vs.reading_timestamp >= CURRENT_TIMESTAMP - INTERVAL '30 days'
-LEFT JOIN vital_sign_readings vs2 ON p.id = vs2.patient_id 
+LEFT JOIN vital_sign_readings vs2 ON p.id = vs2.patientId 
     AND vs2.vital_sign_type_id = (SELECT id FROM vital_sign_types WHERE name = 'Blood Glucose')
     AND vs2.reading_timestamp >= CURRENT_TIMESTAMP - INTERVAL '30 days'
-LEFT JOIN medication_activity_logs mal ON p.id = mal.patient_id 
+LEFT JOIN medication_activity_logs mal ON p.id = mal.patientId 
     AND mal.created_at >= CURRENT_DATE - INTERVAL '30 days'
 GROUP BY p.id, p.first_name, p.last_name, p.date_of_birth;
 
@@ -2012,7 +2012,7 @@ SELECT
     CURRENT_TIMESTAMP as calculated_at
 FROM providers pr
 JOIN patients p ON pr.id = p.primary_provider_id
-JOIN patient_adherence_summary pas ON p.id = pas.patient_id
+JOIN patient_adherence_summary pas ON p.id = pas.patientId
 GROUP BY pr.id, pr.first_name, pr.last_name, pr.specialty;
 ```
 

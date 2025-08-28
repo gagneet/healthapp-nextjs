@@ -65,7 +65,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
     // Get vital readings for this patient
     const vitals = await prisma.vitalReading.findMany({
       where: {
-        patient_id: patient.id
+        patientId: patient.id
       },
       include: {
         vital_type: {

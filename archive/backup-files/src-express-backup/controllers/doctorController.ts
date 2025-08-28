@@ -636,7 +636,7 @@ class DoctorController {
       }
 
       const clinics = await Clinic.findAll({
-        where: { doctor_id: doctor.id, is_active: true },
+        where: { doctorId: doctor.id, is_active: true },
         order: [['is_primary', 'DESC'], ['created_at', 'ASC']]
       });
 
@@ -676,7 +676,7 @@ class DoctorController {
       // Prepare clinic data with geo-location
       const clinicCreateData = {
         ...clinicData,
-        doctor_id: doctor.id
+        doctorId: doctor.id
       };
 
       // If address is provided, attempt to geocode it
@@ -752,7 +752,7 @@ class DoctorController {
       }
 
       const clinic = await Clinic.findOne({
-        where: { id: clinicId, doctor_id: doctor.id }
+        where: { id: clinicId, doctorId: doctor.id }
       });
 
       if (!clinic) {
@@ -854,7 +854,7 @@ class DoctorController {
       }
 
       const clinic = await Clinic.findOne({
-        where: { id: clinicId, doctor_id: doctor.id }
+        where: { id: clinicId, doctorId: doctor.id }
       });
 
       if (!clinic) {
@@ -1103,7 +1103,7 @@ class DoctorController {
       lowAdherencePatients.forEach((patient: any) => {
         criticalAlerts.push({
           id: `adherence_${patient.id}`,
-          patient_id: patient.id.toString(),
+          patientId: patient.id.toString(),
           patient_name: `${patient.user?.first_name || ''} ${patient.user?.middle_name || ''} ${patient.user?.last_name || ''}`.replace(/\s+/g, ' ').trim() || 'Unknown Patient',
           type: 'medication',
           severity: patient.overall_adherence_score < 50 ? 'critical' : 'high',
@@ -1134,7 +1134,7 @@ class DoctorController {
       highRiskPatients.forEach((patient: any) => {
         criticalAlerts.push({
           id: `risk_${patient.id}`,
-          patient_id: patient.id.toString(),
+          patientId: patient.id.toString(),
           patient_name: `${patient.user?.first_name || ''} ${patient.user?.middle_name || ''} ${patient.user?.last_name || ''}`.replace(/\s+/g, ' ').trim() || 'Unknown Patient',
           type: 'vital',
           severity: 'critical',
@@ -1321,7 +1321,7 @@ class DoctorController {
       }
 
       const clinic = await Clinic.findOne({
-        where: { id: clinicId, doctor_id: doctor.id }
+        where: { id: clinicId, doctorId: doctor.id }
       });
 
       if (!clinic) {

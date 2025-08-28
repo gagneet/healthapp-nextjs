@@ -66,7 +66,7 @@ interface ABDMIntegration {
 -- New tables required for ABDM compliance
 CREATE TABLE abdm_health_ids (
   id UUID PRIMARY KEY,
-  patient_id UUID REFERENCES patients(id),
+  patientId UUID REFERENCES patients(id),
   health_id_number VARCHAR(14) UNIQUE NOT NULL,
   mobile_number VARCHAR(15),
   verification_status VARCHAR(20),
@@ -76,7 +76,7 @@ CREATE TABLE abdm_health_ids (
 
 CREATE TABLE abdm_consent_management (
   id UUID PRIMARY KEY,
-  patient_id UUID REFERENCES patients(id),
+  patientId UUID REFERENCES patients(id),
   provider_id UUID REFERENCES providers(id),
   consent_type VARCHAR(50),
   purpose VARCHAR(100),

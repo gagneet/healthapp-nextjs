@@ -29,7 +29,7 @@ export default {
         onUpdate: 'CASCADE',
         onDelete: 'CASCADE',
       },
-      patient_id: {
+      patientId: {
         type: Sequelize.UUID,
         allowNull: false,
         references: {
@@ -124,7 +124,7 @@ export default {
 
     // Add indexes
     await queryInterface.addIndex('payments', ['subscription_id']);
-    await queryInterface.addIndex('payments', ['patient_id']);
+    await queryInterface.addIndex('payments', ['patientId']);
     await queryInterface.addIndex('payments', ['provider_id']);
     await queryInterface.addIndex('payments', ['status']);
     await queryInterface.addIndex('payments', ['stripe_payment_intent_id']);

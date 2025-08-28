@@ -92,7 +92,7 @@ export default function SymptomReporter({
       status: 'active' as const,
       duration: formData.duration,
       triggers: formData.triggers,
-      patient_id: patientId || ''
+      patientId: patientId || ''
     }
 
     try {

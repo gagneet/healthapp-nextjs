@@ -216,7 +216,7 @@ export const requirePatientAccess = (patientIdParam = 'patientId') => {
         const { CarePlan } = req.app.get('models');
         const carePlans = await CarePlan.findAll({
           where: {
-            patient_id: patientId,
+            patientId: patientId,
             status: 'ACTIVE'
           }
         });

@@ -11,7 +11,7 @@ export default (sequelize: any) => {
       primaryKey: true,
     },
     
-    patient_id: {
+    patientId: {
       type: DataTypes.UUID,
       allowNull: false,
       references: {
@@ -21,7 +21,7 @@ export default (sequelize: any) => {
       onDelete: 'CASCADE'
     },
     
-    doctor_id: {
+    doctorId: {
       type: DataTypes.UUID,
       allowNull: false,
       references: {
@@ -240,10 +240,10 @@ export default (sequelize: any) => {
     
     indexes: [
       {
-        fields: ['patient_id']
+        fields: ['patientId']
       },
       {
-        fields: ['doctor_id']
+        fields: ['doctorId']
       },
       {
         fields: ['organization_id']

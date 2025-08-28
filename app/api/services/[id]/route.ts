@@ -45,7 +45,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
     const service = await prisma.services.findFirst({
       where: { 
         id: serviceId,
-        doctor_id: doctor.id // Only show services owned by this doctor
+        doctorId: doctor.id // Only show services owned by this doctor
       },
       include: {
         doctors: {
@@ -170,7 +170,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     const existingService = await prisma.services.findFirst({
       where: { 
         id: serviceId,
-        doctor_id: doctor.id
+        doctorId: doctor.id
       }
     });
 
@@ -261,7 +261,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
     const existingService = await prisma.services.findFirst({
       where: { 
         id: serviceId,
-        doctor_id: doctor.id
+        doctorId: doctor.id
       }
     });
 

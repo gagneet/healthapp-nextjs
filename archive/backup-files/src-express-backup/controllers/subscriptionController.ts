@@ -243,7 +243,7 @@ class SubscriptionController {
         });
       }
 
-      const whereClause = { patient_id: targetPatientId };
+      const whereClause = { patientId: targetPatientId };
       if (status) {
         (whereClause as any).status = (status as any).toUpperCase();
       }
@@ -473,7 +473,7 @@ class SubscriptionController {
 
       const paymentMethods = await PaymentMethod.findAll({
         where: { 
-          patient_id: targetPatientId,
+          patientId: targetPatientId,
           is_active: true
         },
         order: [['is_default', 'DESC'], ['created_at', 'DESC']]
@@ -588,7 +588,7 @@ class SubscriptionController {
         });
       }
 
-      const whereClause = { patient_id: targetPatientId };
+      const whereClause = { patientId: targetPatientId };
       if (status) {
         (whereClause as any).status = status;
       }

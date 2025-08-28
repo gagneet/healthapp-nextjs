@@ -108,7 +108,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
           }
         },
         {
-          patient_id: { contains: searchQuery, mode: 'insensitive' }
+          patientId: { contains: searchQuery, mode: 'insensitive' }
         },
         {
           medical_record_number: { contains: searchQuery, mode: 'insensitive' }
@@ -142,7 +142,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
       },
       select: {
         id: true,
-        patient_id: true,
+        patientId: true,
         medical_record_number: true,
         height_cm: true,
         weight_kg: true,
@@ -175,7 +175,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
         // Include primary doctor info
         doctors: {
           select: {
-            doctor_id: true,
+            doctorId: true,
             users_doctors_userIdTousers: {
               select: {
                 email: true,
@@ -211,7 +211,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
 
       return {
         id: patient.id,
-        patientId: patient.patient_id,
+        patientId: patient.patientId,
         medicalRecordNumber: patient.medical_record_number,
         user: {
           id: patient.user.id,
@@ -236,7 +236,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
           accountStatus: patient.user.account_status
         },
         primaryDoctor: patient.doctors ? {
-          doctorId: patient.doctors.doctor_id,
+          doctorId: patient.doctors.doctorId,
           
           // ✅ Auth.js v5 standard fields (preferred)
           name: doctorName,
@@ -355,7 +355,7 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
       const patient = await tx.patient.create({
         data: {
           userId: user.id,
-          patient_id: patientBusinessId,
+          patientId: patientBusinessId,
           medical_record_number: `MRN${Date.now()}`, // Generate unique MRN
           primaryCareDoctorId: patientData.primaryDoctorId,
           height_cm: patientData.height,
@@ -380,7 +380,7 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
 
     const responseData = {
       id: result.patient.id,
-      patientId: result.patient.patient_id,
+      patientId: result.patient.patientId,
       medicalRecordNumber: result.patient.medical_record_number,
       user: {
         id: result.user.id,

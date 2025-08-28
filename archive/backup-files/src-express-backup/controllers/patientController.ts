@@ -597,7 +597,7 @@ class PatientController {
       }
 
       // Build query conditions
-      const whereClause: any = { patient_id: patient.id };
+      const whereClause: any = { patientId: patient.id };
       
       if (startDate && endDate) {
         whereClause.created_at = {
@@ -638,7 +638,7 @@ class PatientController {
       res.status(200).json(ResponseFormatter.success(
         { 
           events: formattedEvents,
-          patient_id: patientId,
+          patientId: patientId,
           total_events: formattedEvents.length
         },
         'Patient events retrieved successfully'
@@ -674,7 +674,7 @@ class PatientController {
 
       // Create medication event log
       const eventLog = await (sequelize as any).models.MedicationLog?.create({
-        patient_id: patient.id,
+        patientId: patient.id,
         medication_id,
         event_type, // 'completed', 'missed', 'delayed'
         scheduled_time: new Date(scheduled_time),
@@ -787,7 +787,7 @@ class PatientController {
 
       // Create consent request record
       const consentRequest = await (sequelize as any).models.PatientConsentOtp?.create({
-        patient_id: patient.id,
+        patientId: patient.id,
         primary_doctor_id: requestingDoctor.id,
         secondary_doctor_id: secondary_doctor_id || null,
         secondary_hsp_id: secondary_hsp_id || null,
@@ -876,7 +876,7 @@ class PatientController {
 
       // Create the secondary doctor assignment
       const assignment = await (sequelize as any).models.SecondaryDoctorAssignment?.create({
-        patient_id: consentRequest.patient_id,
+        patientId: consentRequest.patientId,
         primary_doctor_id: consentRequest.primary_doctor_id,
         secondary_doctor_id: consentRequest.secondary_doctor_id,
         secondary_hsp_id: consentRequest.secondary_hsp_id,
@@ -930,7 +930,7 @@ class PatientController {
       // Get active secondary assignments
       const assignments = await (sequelize as any).models.SecondaryDoctorAssignment?.findAll({
         where: { 
-          patient_id: patient.id,
+          patientId: patient.id,
           assignment_status: 'active'
         },
         include: [
@@ -959,7 +959,7 @@ class PatientController {
       // Get pending consent requests
       const pendingRequests = await (sequelize as any).models.PatientConsentOtp?.findAll({
         where: {
-          patient_id: patient.id,
+          patientId: patient.id,
           status: 'pending',
           expires_at: { [Op.gt]: new Date() }
         }

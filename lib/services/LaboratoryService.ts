@@ -189,8 +189,8 @@ export class LaboratoryService {
       const labOrder = await prisma.labOrder.create({
         data: {
           order_number: orderNumber,
-          doctor_id: data.doctorId,
-          patient_id: data.patientId,
+          doctorId: data.doctorId,
+          patientId: data.patientId,
           ordered_tests: data.testCodes,
           priority: data.priority,
           status: 'pending',
@@ -346,8 +346,8 @@ export class LaboratoryService {
   async getLabOrders(userId: string, userRole: 'doctor' | 'patient', status?: string) {
     try {
       const whereClause = userRole === 'doctor' 
-        ? { doctor_id: userId }
-        : { patient_id: userId };
+        ? { doctorId: userId }
+        : { patientId: userId };
 
       if (status) {
         (whereClause as any).status = status;
@@ -438,8 +438,8 @@ export class LaboratoryService {
 
       // Check permissions
       const hasAccess = userRole === 'doctor' 
-        ? order.doctor_id === userId
-        : order.patient_id === userId;
+        ? order.doctorId === userId
+        : order.patientId === userId;
 
       if (!hasAccess) {
         return {
@@ -530,8 +530,8 @@ export class LaboratoryService {
         criticalResults.map(result => 
           prisma.medicalAlert.create({
             data: {
-              patient_id: order.patient_id,
-              doctor_id: order.doctor_id,
+              patientId: order.patientId,
+              doctorId: order.doctorId,
               alert_type: 'critical_lab_result',
               severity: 'critical',
               title: `Critical Lab Result: ${result.test_name}`,
@@ -633,7 +633,7 @@ export class LaboratoryService {
       const results = await prisma.labResult.findMany({
         where: {
           lab_order: {
-            patient_id: patientId,
+            patientId: patientId,
           },
           test_code: testCode,
         },
@@ -678,7 +678,7 @@ export class LaboratoryService {
       }
 
       // Verify permissions (only ordering doctor can cancel)
-      if (order.doctor_id !== userId) {
+      if (order.doctorId !== userId) {
         return {
           success: false,
           error: 'Only the ordering physician can cancel this order'

@@ -333,7 +333,7 @@ export default function PatientsPage() {
             phone: patient.basic_info?.mobile_number || patient.phone,
             date_of_birth: patient.basic_info?.date_of_birth || patient.date_of_birth,
             gender: patient.basic_info?.gender || patient.gender,
-            medical_record_number: patient.basic_info?.patient_id || patient.medical_record_number,
+            medical_record_number: patient.basic_info?.patientId || patient.medical_record_number,
             last_visit: patient.medical_info?.last_visit || patient.last_visit || null,
             next_appointment: patient.medical_info?.next_appointment || patient.next_appointment || null,
             adherence_rate: patient.medical_info?.adherence_rate ?? patient.adherence_rate ?? 0,

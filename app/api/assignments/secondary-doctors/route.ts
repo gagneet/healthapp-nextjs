@@ -160,7 +160,7 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
     const {
-      patient_id,
+      patientId,
       primary_doctor_id,
       secondary_doctor_id,
       secondary_hsp_id,
@@ -172,7 +172,7 @@ export async function POST(request: NextRequest) {
       assignment_end_date
     } = body;
 
-    if (!patient_id || !primary_doctor_id) {
+    if (!patientId || !primary_doctor_id) {
       return NextResponse.json({
         status: false,
         statusCode: 400,
@@ -209,7 +209,7 @@ export async function POST(request: NextRequest) {
     const assignment = await prisma.secondaryDoctorAssignment.create({
       data: {
         id: assignmentId,
-        patientId: patient_id,
+        patientId: patientId,
         primaryDoctorId: primary_doctor_id,
         secondaryDoctorId: secondary_doctor_id || null,
         secondaryHspId: secondary_hsp_id || null,

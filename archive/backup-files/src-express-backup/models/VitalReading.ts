@@ -9,7 +9,7 @@ export default (sequelize: any) => {
       primaryKey: true,
     },
     
-    patient_id: {
+    patientId: {
       type: DataTypes.UUID,
       allowNull: false,
       references: {
@@ -202,7 +202,7 @@ export default (sequelize: any) => {
     
     indexes: [
       {
-        fields: ['patient_id']
+        fields: ['patientId']
       },
       {
         fields: ['vital_type_id']
@@ -217,7 +217,7 @@ export default (sequelize: any) => {
         fields: ['is_validated']
       },
       {
-        fields: ['patient_id', 'vital_type_id', 'reading_time']
+        fields: ['patientId', 'vital_type_id', 'reading_time']
       }
     ],
     

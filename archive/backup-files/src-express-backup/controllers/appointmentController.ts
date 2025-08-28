@@ -23,7 +23,7 @@ class AppointmentController {
       }
 
       const {
-        patient_id,
+        patientId,
         description,
         start_date,
         end_date,
@@ -87,7 +87,7 @@ class AppointmentController {
         participant_one_type: req.userCategory || req.user!.role || 'user',
         participant_one_id: req.user!.id,
         participant_two_type: 'patient',
-        participant_two_id: patient_id,
+        participant_two_id: patientId,
         organizer_type: req.userCategory || req.user!.role || 'user',
         organizer_id: req.user!.id,
         description,
@@ -147,7 +147,7 @@ class AppointmentController {
 
       const appointments = await Appointment.findAll({
         where: {
-          patient_id: patientId
+          patientId: patientId
         },
         include: [
           {
@@ -368,7 +368,7 @@ class AppointmentController {
         status: true,
         statusCode: 200,
         payload: {
-          data: { slots, date, doctor_id: doctorId },
+          data: { slots, date, doctorId: doctorId },
           message: 'Available slots retrieved successfully'
         }
       });

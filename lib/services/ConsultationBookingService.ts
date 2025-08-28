@@ -44,8 +44,8 @@ export class ConsultationBookingService {
       // Create appointment first
       const appointment = await prisma.appointment.create({
         data: {
-          doctor_id: data.doctorId,
-          patient_id: data.patientId,
+          doctorId: data.doctorId,
+          patientId: data.patientId,
           organizer_type: 'DOCTOR',
           organizer_id: data.doctorId,
           participant_one_type: 'DOCTOR',
@@ -124,7 +124,7 @@ export class ConsultationBookingService {
       // Get existing appointments for the day
       const existingAppointments = await prisma.appointment.findMany({
         where: {
-          doctor_id: doctorId,
+          doctorId: doctorId,
           appointment_date: {
             gte: startOfDay,
             lt: endOfDay
@@ -194,7 +194,7 @@ export class ConsultationBookingService {
 
       const conflictingAppointments = await prisma.appointment.count({
         where: {
-          doctor_id: doctorId,
+          doctorId: doctorId,
           status: {
             in: ['scheduled', 'confirmed', 'in_progress']
           },
@@ -242,7 +242,7 @@ export class ConsultationBookingService {
       }
 
       // Verify user permissions (doctor or patient can reschedule)
-      if (appointment.doctor_id !== userId && appointment.patient_id !== userId) {
+      if (appointment.doctorId !== userId && appointment.patientId !== userId) {
         return {
           success: false,
           error: 'Unauthorized to reschedule this appointment'
@@ -251,7 +251,7 @@ export class ConsultationBookingService {
 
       // Check if new slot is available
       const isAvailable = await this.isSlotAvailable(
-        appointment.doctor_id,
+        appointment.doctorId,
         newDateTime,
         appointment.duration_minutes
       );
@@ -322,7 +322,7 @@ export class ConsultationBookingService {
       }
 
       // Verify user permissions
-      if (appointment.doctor_id !== userId && appointment.patient_id !== userId) {
+      if (appointment.doctorId !== userId && appointment.patientId !== userId) {
         return {
           success: false,
           error: 'Unauthorized to cancel this appointment'
@@ -372,8 +372,8 @@ export class ConsultationBookingService {
   async getUpcomingConsultations(userId: string, userRole: string, limit: number = 5) {
     try {
       const whereClause = userRole === 'DOCTOR' 
-        ? { doctor_id: userId }
-        : { patient_id: userId };
+        ? { doctorId: userId }
+        : { patientId: userId };
 
       const consultations = await prisma.appointment.findMany({
         where: {
@@ -450,7 +450,7 @@ export class ConsultationBookingService {
     try {
       const appointments = await prisma.appointment.findMany({
         where: {
-          doctor_id: doctorId,
+          doctorId: doctorId,
           appointment_date: {
             gte: startDate,
             lte: endDate

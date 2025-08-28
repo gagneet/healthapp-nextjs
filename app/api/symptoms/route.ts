@@ -64,7 +64,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
   switch (session.user.role) {
       case 'PATIENT':
         // Patients can only see their own symptoms
-        whereClause.patient_id = session.user.profileId
+        whereClause.patientId = session.user.profileId
         break
       case 'DOCTOR':
         // Doctors can see symptoms for their patients
@@ -91,7 +91,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
 
   // Apply patient filter (for healthcare providers)
   if (patientId && ['DOCTOR', 'HSP', 'SYSTEM_ADMIN'].includes(session.user.role)) {
-    whereClause.patient_id = patientId
+    whereClause.patientId = patientId
   }
 
   // Apply search filter on symptom names
@@ -153,7 +153,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
       id: record.id,
       patient: {
         id: record.patient.id,
-        patientId: record.patient.patient_id,
+        patientId: record.patient.patientId,
         name: `${record.patient.user.first_name} ${record.patient.user.last_name}`.trim(),
         email: record.patient.user.email
       },
@@ -242,7 +242,7 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
     // Create symptom record with 2D/3D body mapping support
     const symptomRecord = await prisma.symptom.create({
       data: {
-        patient_id: targetPatientId,
+        patientId: targetPatientId,
         symptom_name: symptomData.symptoms[0]?.name || 'General symptoms',
         severity: typeof symptomData.symptoms[0]?.severity === 'number' 
           ? symptomData.symptoms[0].severity 
@@ -276,7 +276,7 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
       id: symptomRecord.id,
       patient: {
         id: symptomRecord.patient.id,
-        patientId: symptomRecord.patient.patient_id,
+        patientId: symptomRecord.patient.patientId,
         name: `${symptomRecord.patient.user.first_name} ${symptomRecord.patient.user.last_name}`.trim(),
         email: symptomRecord.patient.user.email
       },

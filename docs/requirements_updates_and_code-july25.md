@@ -23,7 +23,7 @@ Successfully implemented a comprehensive business ID generation system for all h
 #### **Technical Implementation:**
 
 - **Service Layer**: `lib/id-generation.ts` - Centralized ID generation service
-- **Database Schema**: Added `doctor_id`, `hsp_id` fields with proper constraints
+- **Database Schema**: Added `doctorId`, `hsp_id` fields with proper constraints
 - **Migration System**: Created Prisma migrations for schema updates
 - **Validation System**: Format validation and ID parsing utilities
 - **Bulk Operations**: Support for generating multiple IDs efficiently
@@ -124,7 +124,7 @@ Updated key documentation files to reflect current implementation:
 
 ```sql
 -- Added to doctors table
-ALTER TABLE doctors ADD COLUMN doctor_id VARCHAR(50) UNIQUE NOT NULL;
+ALTER TABLE doctors ADD COLUMN doctorId VARCHAR(50) UNIQUE NOT NULL;
 
 -- Added to hsps table  
 ALTER TABLE hsps ADD COLUMN hsp_id VARCHAR(50) UNIQUE NOT NULL;

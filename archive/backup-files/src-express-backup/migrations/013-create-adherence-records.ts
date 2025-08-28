@@ -17,7 +17,7 @@ export default {
         primaryKey: true,
         defaultValue: Sequelize.UUIDV4,
       },
-      patient_id: {
+      patientId: {
         type: Sequelize.UUID,
         allowNull: false,
         references: {
@@ -93,7 +93,7 @@ export default {
 
     // Add indexes with error handling
     const indexes = [
-      { fields: ['patient_id'], name: 'idx_adherence_patient' },
+      { fields: ['patientId'], name: 'idx_adherence_patient' },
       { fields: ['due_at'], name: 'idx_adherence_due_at' },
       { fields: ['adherence_type'], name: 'idx_adherence_type' },
       { fields: ['is_completed', 'is_missed'], name: 'idx_adherence_status' }

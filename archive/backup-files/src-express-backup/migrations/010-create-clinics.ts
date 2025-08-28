@@ -27,7 +27,7 @@ export default {
         type: Sequelize.STRING(255),
         allowNull: false
       },
-      doctor_id: {
+      doctorId: {
         type: Sequelize.UUID,
         allowNull: false,
         references: {
@@ -143,7 +143,7 @@ export default {
     });
 
     // Add indexes
-    await queryInterface.addIndex('clinics', ['doctor_id']);
+    await queryInterface.addIndex('clinics', ['doctorId']);
     await queryInterface.addIndex('clinics', ['organization_id']);
     await queryInterface.addIndex('clinics', ['is_active']);
     await queryInterface.addIndex('clinics', ['is_primary']);

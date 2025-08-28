@@ -43,7 +43,7 @@ interface Subscription {
   id: string
   service_id: string
   service_name: string
-  patient_id: string
+  patientId: string
   patient_name: string
   status: 'ACTIVE' | 'PENDING' | 'CANCELLED' | 'EXPIRED' | 'PAUSED'
   start_date: string
@@ -163,7 +163,7 @@ const mockSubscriptions: Subscription[] = [
     id: '1',
     service_id: '1',
     service_name: 'Comprehensive Diabetes Management',
-    patient_id: 'p1',
+    patientId: 'p1',
     patient_name: 'John Doe',
     status: 'ACTIVE',
     start_date: '2025-01-15T00:00:00Z',
@@ -176,7 +176,7 @@ const mockSubscriptions: Subscription[] = [
     id: '2',
     service_id: '2',
     service_name: 'Hypertension Control Program',
-    patient_id: 'p2',
+    patientId: 'p2',
     patient_name: 'Jane Smith',
     status: 'ACTIVE',
     start_date: '2025-01-20T00:00:00Z',
@@ -189,7 +189,7 @@ const mockSubscriptions: Subscription[] = [
     id: '3',
     service_id: '3',
     service_name: 'Virtual Consultation Package',
-    patient_id: 'p3',
+    patientId: 'p3',
     patient_name: 'Michael Johnson',
     status: 'PENDING',
     start_date: '2025-01-25T00:00:00Z',

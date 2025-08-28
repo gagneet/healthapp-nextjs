@@ -21,7 +21,7 @@ export class HIPAAAuditLog {
         resource: req.originalUrl,
         ip_address: req.ip || req.connection.remoteAddress,
         user_agent: req.get('User-Agent'),
-        patient_id: req.params.patientId || req.body.patient_id,
+        patientId: req.params.patientId || req.body.patientId,
         phi_accessed: HIPAAAuditLog.containsPHI(req),
         access_granted: true, // Will be updated if access is denied
         session_id: req.sessionID,
@@ -54,7 +54,7 @@ export class HIPAAAuditLog {
         resource: req.originalUrl,
         ip_address: req.ip || req.connection.remoteAddress,
         user_agent: req.get('User-Agent'),
-        patient_id: req.params.patientId || req.body.patient_id,
+        patientId: req.params.patientId || req.body.patientId,
         phi_accessed: false,
         access_granted: false,
         denial_reason: reason,
@@ -345,7 +345,7 @@ export class BreachDetection {
   static async detectUnusualAccess(req: any, res: any, next: any) {
     try {
       const user = req.user;
-      const patientId = req.params.patientId || req.body.patient_id;
+      const patientId = req.params.patientId || req.body.patientId;
       
       if (!user || !patientId) {
         return next();
@@ -364,7 +364,7 @@ export class BreachDetection {
       if (alerts.length > 0) {
         await BreachDetection.logSecurityAlert({
           userId: user.id,
-          patient_id: patientId,
+          patientId: patientId,
           alerts,
           request_details: {
             ip: req.ip,

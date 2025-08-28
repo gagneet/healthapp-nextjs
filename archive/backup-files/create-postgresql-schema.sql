@@ -323,8 +323,8 @@ CREATE TABLE patients (
 -- Treatment Plans table (short-term, acute issues)
 CREATE TABLE treatment_plans (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    patient_id UUID NOT NULL REFERENCES patients(id) ON DELETE CASCADE,
-    doctor_id UUID NOT NULL REFERENCES doctors(id),
+    patientId UUID NOT NULL REFERENCES patients(id) ON DELETE CASCADE,
+    doctorId UUID NOT NULL REFERENCES doctors(id),
     organization_id UUID REFERENCES organizations(id),
     
     -- Basic Information
@@ -380,7 +380,7 @@ CREATE TABLE treatment_plans (
 -- Care Plans table (long-term, chronic conditions)
 CREATE TABLE care_plans (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    patient_id UUID NOT NULL REFERENCES patients(id) ON DELETE CASCADE,
+    patientId UUID NOT NULL REFERENCES patients(id) ON DELETE CASCADE,
     created_by_doctor_id UUID REFERENCES doctors(id),
     created_by_hsp_id UUID REFERENCES hsps(id),
     organization_id UUID REFERENCES organizations(id),
@@ -459,7 +459,7 @@ CREATE TABLE care_plans (
 -- Prescriptions table (formal prescription management)
 CREATE TABLE prescriptions (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    patient_id UUID NOT NULL REFERENCES patients(id) ON DELETE CASCADE,
+    patientId UUID NOT NULL REFERENCES patients(id) ON DELETE CASCADE,
     prescribing_doctor_id UUID REFERENCES doctors(id),
     prescribing_hsp_id UUID REFERENCES hsps(id),
     organization_id UUID REFERENCES organizations(id),
@@ -560,8 +560,8 @@ CREATE TABLE prescriptions (
 -- Notifications table
 CREATE TABLE notifications (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    patient_id UUID REFERENCES patients(id) ON DELETE CASCADE,
-    doctor_id UUID REFERENCES doctors(id),
+    patientId UUID REFERENCES patients(id) ON DELETE CASCADE,
+    doctorId UUID REFERENCES doctors(id),
     hsp_id UUID REFERENCES hsps(id),
     organization_id UUID REFERENCES organizations(id),
     
@@ -616,7 +616,7 @@ CREATE TABLE notifications (
 -- Adherence Logs table
 CREATE TABLE adherence_logs (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    patient_id UUID NOT NULL REFERENCES patients(id) ON DELETE CASCADE,
+    patientId UUID NOT NULL REFERENCES patients(id) ON DELETE CASCADE,
     organization_id UUID REFERENCES organizations(id),
     
     -- Type of adherence being tracked
@@ -680,7 +680,7 @@ CREATE TABLE adherence_logs (
 -- Lab Results table
 CREATE TABLE lab_results (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    patient_id UUID NOT NULL REFERENCES patients(id) ON DELETE CASCADE,
+    patientId UUID NOT NULL REFERENCES patients(id) ON DELETE CASCADE,
     ordering_doctor_id UUID REFERENCES doctors(id),
     ordering_hsp_id UUID REFERENCES hsps(id),
     organization_id UUID REFERENCES organizations(id),
@@ -770,7 +770,7 @@ CREATE TABLE lab_results (
 -- Medical Devices table
 CREATE TABLE medical_devices (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    patient_id UUID REFERENCES patients(id) ON DELETE SET NULL,
+    patientId UUID REFERENCES patients(id) ON DELETE SET NULL,
     organization_id UUID REFERENCES organizations(id),
     assigned_by_doctor_id UUID REFERENCES doctors(id),
     assigned_by_hsp_id UUID REFERENCES hsps(id),
@@ -859,7 +859,7 @@ CREATE TABLE audit_logs (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     userId UUID REFERENCES users(id),
     organization_id UUID REFERENCES organizations(id),
-    patient_id UUID REFERENCES patients(id),
+    patientId UUID REFERENCES patients(id),
     
     -- Action Details
     action VARCHAR(10) NOT NULL,
@@ -894,7 +894,7 @@ CREATE TABLE audit_logs (
 -- Legacy tables (keep for backward compatibility during migration)
 CREATE TABLE medications (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    patient_id UUID REFERENCES patients(id),
+    patientId UUID REFERENCES patients(id),
     name VARCHAR(255),
     dosage VARCHAR(100),
     frequency VARCHAR(100),
@@ -909,8 +909,8 @@ CREATE TABLE medications (
 
 CREATE TABLE appointments (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    patient_id UUID REFERENCES patients(id),
-    doctor_id UUID REFERENCES doctors(id),
+    patientId UUID REFERENCES patients(id),
+    doctorId UUID REFERENCES doctors(id),
     hsp_id UUID REFERENCES hsps(id),
     appointment_date TIMESTAMP WITH TIME ZONE,
     duration_minutes INTEGER DEFAULT 30,
@@ -923,7 +923,7 @@ CREATE TABLE appointments (
 
 CREATE TABLE vitals (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    patient_id UUID REFERENCES patients(id),
+    patientId UUID REFERENCES patients(id),
     care_plan_id UUID REFERENCES care_plans(id),
     vital_type VARCHAR(50),
     value DECIMAL(10,3),
@@ -966,45 +966,45 @@ CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_patients_primary_hsp ON patients(pri
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_patients_active ON patients(is_active);
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_patients_allergies ON patients USING GIN(allergies);
 
-CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_treatment_plans_patient ON treatment_plans(patient_id);
-CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_treatment_plans_doctor ON treatment_plans(doctor_id);
+CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_treatment_plans_patient ON treatment_plans(patientId);
+CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_treatment_plans_doctor ON treatment_plans(doctorId);
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_treatment_plans_status ON treatment_plans(status);
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_treatment_plans_start_date ON treatment_plans(start_date);
 
-CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_care_plans_patient ON care_plans(patient_id);
+CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_care_plans_patient ON care_plans(patientId);
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_care_plans_doctor ON care_plans(created_by_doctor_id);
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_care_plans_hsp ON care_plans(created_by_hsp_id);
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_care_plans_status ON care_plans(status);
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_care_plans_review_date ON care_plans(next_review_date);
 
-CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_prescriptions_patient ON prescriptions(patient_id);
+CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_prescriptions_patient ON prescriptions(patientId);
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_prescriptions_doctor ON prescriptions(prescribing_doctor_id);
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_prescriptions_hsp ON prescriptions(prescribing_hsp_id);
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_prescriptions_number ON prescriptions(prescription_number);
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_prescriptions_status ON prescriptions(status);
 
-CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_notifications_patient ON notifications(patient_id);
+CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_notifications_patient ON notifications(patientId);
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_notifications_status ON notifications(status);
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_notifications_scheduled ON notifications(scheduled_for);
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_notifications_type ON notifications(type);
 
-CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_adherence_logs_patient ON adherence_logs(patient_id);
+CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_adherence_logs_patient ON adherence_logs(patientId);
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_adherence_logs_type ON adherence_logs(adherence_type);
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_adherence_logs_scheduled ON adherence_logs(scheduled_datetime);
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_adherence_logs_status ON adherence_logs(status);
 
-CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_lab_results_patient ON lab_results(patient_id);
+CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_lab_results_patient ON lab_results(patientId);
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_lab_results_order_number ON lab_results(order_number);
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_lab_results_status ON lab_results(status);
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_lab_results_critical ON lab_results(has_critical_values);
 
-CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_medical_devices_patient ON medical_devices(patient_id);
+CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_medical_devices_patient ON medical_devices(patientId);
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_medical_devices_type ON medical_devices(device_type);
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_medical_devices_status ON medical_devices(status);
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_medical_devices_connected ON medical_devices(is_connected);
 
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_audit_logs_user ON audit_logs(userId);
-CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_audit_logs_patient ON audit_logs(patient_id);
+CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_audit_logs_patient ON audit_logs(patientId);
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_audit_logs_timestamp ON audit_logs(timestamp);
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_audit_logs_action ON audit_logs(action);
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_audit_logs_phi ON audit_logs(phi_accessed);

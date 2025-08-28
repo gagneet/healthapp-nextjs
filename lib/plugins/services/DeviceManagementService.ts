@@ -88,7 +88,7 @@ export class DeviceManagementService extends EventEmitter {
       const device = await this.prisma.connectedDevice.create({
         data: {
           device_id: registration.deviceIdentifier,
-          patient_id: registration.patientId,
+          patientId: registration.patientId,
           device_type: registration.deviceType as any,
           device_name: registration.deviceName,
           manufacturer: 'Unknown',

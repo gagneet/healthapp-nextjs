@@ -51,7 +51,7 @@ export default (sequelize: any) => {
       comment: 'URL path of the accessed resource'
     },
     
-    patient_id: {
+    patientId: {
       type: DataTypes.UUID,
       allowNull: true,
       references: {
@@ -164,7 +164,7 @@ export default (sequelize: any) => {
         fields: ['userId']
       },
       {
-        fields: ['patient_id']
+        fields: ['patientId']
       },
       {
         fields: ['organization_id']
@@ -199,7 +199,7 @@ export default (sequelize: any) => {
       },
       {
         // Index for patient access audits
-        fields: ['patient_id', 'phi_accessed', 'timestamp']
+        fields: ['patientId', 'phi_accessed', 'timestamp']
       },
       {
         // Security monitoring index
@@ -226,7 +226,7 @@ export default (sequelize: any) => {
   AuditLog.findPatientAccess = async function(patientId: any, startDate: any, endDate: any) {
     return await this.findAll({
       where: {
-        patient_id: patientId,
+        patientId: patientId,
         timestamp: {
           [sequelize.Sequelize.Op.between]: [startDate, endDate]
         }
@@ -310,9 +310,9 @@ export default (sequelize: any) => {
         col: 'userId'
       }),
       this.count({
-        where: { ...where, patient_id: { [sequelize.Sequelize.Op.ne]: null } },
+        where: { ...where, patientId: { [sequelize.Sequelize.Op.ne]: null } },
         distinct: true,
-        col: 'patient_id'
+        col: 'patientId'
       })
     ]);
     

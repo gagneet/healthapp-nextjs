@@ -10,7 +10,7 @@ export default (sequelize: any) => {
     },
     
     // Patient and Organization
-    patient_id: {
+    patientId: {
       type: DataTypes.UUID,
       allowNull: false,
       references: {
@@ -305,7 +305,7 @@ export default (sequelize: any) => {
     
     indexes: [
       {
-        fields: ['patient_id']
+        fields: ['patientId']
       },
       {
         fields: ['organization_id']
@@ -330,7 +330,7 @@ export default (sequelize: any) => {
       },
       {
         // Composite index for patient adherence analysis
-        fields: ['patient_id', 'adherence_type', 'scheduled_datetime']
+        fields: ['patientId', 'adherence_type', 'scheduled_datetime']
       },
       {
         // Composite index for medication adherence
@@ -338,7 +338,7 @@ export default (sequelize: any) => {
       },
       {
         // Index for adherence rate calculations
-        fields: ['patient_id', 'status', 'created_at']
+        fields: ['patientId', 'status', 'created_at']
       }
     ],
     
@@ -376,7 +376,7 @@ export default (sequelize: any) => {
   AdherenceLog.calculateMedicationAdherence = async function(patientId: any, medicationId: any, startDate: any, endDate: any) {
     const logs = await this.findAll({
       where: {
-        patient_id: patientId,
+        patientId: patientId,
         related_medication_id: medicationId,
         adherence_type: 'medication',
         scheduled_datetime: {
@@ -411,7 +411,7 @@ export default (sequelize: any) => {
     
     const logs = await this.findAll({
       where: {
-        patient_id: patientId,
+        patientId: patientId,
         scheduled_datetime: {
           [sequelize.Sequelize.Op.between]: [startDate, endDate]
         }
@@ -449,7 +449,7 @@ export default (sequelize: any) => {
   
   AdherenceLog.findPatternsOfNonAdherence = async function(patientId: any, medicationId = null) {
     const where = {
-      patient_id: patientId,
+      patientId: patientId,
       status: 'missed',
       scheduled_datetime: {
         [sequelize.Sequelize.Op.gte]: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000) // Last 90 days

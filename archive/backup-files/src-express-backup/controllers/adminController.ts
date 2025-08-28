@@ -358,7 +358,7 @@ class AdminController {
       // Create initial clinic if provided
       if (clinic_name) {
         await Clinic.create({
-          doctor_id: doctor.id,
+          doctorId: doctor.id,
           name: clinic_name,
           address: clinic_address || {},
           phone: clinic_phone,
@@ -819,7 +819,7 @@ class AdminController {
       await Clinic.update(
         { is_active: false },
         { 
-          where: { doctor_id: doctor.id },
+          where: { doctorId: doctor.id },
           transaction 
         }
       );

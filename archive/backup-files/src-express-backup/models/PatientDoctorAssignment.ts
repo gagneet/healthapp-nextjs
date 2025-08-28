@@ -9,7 +9,7 @@ export default (sequelize: any) => {
       primaryKey: true,
     },
     
-    patient_id: {
+    patientId: {
       type: DataTypes.UUID,
       allowNull: false,
       references: {
@@ -19,7 +19,7 @@ export default (sequelize: any) => {
       onDelete: 'CASCADE'
     },
     
-    doctor_id: {
+    doctorId: {
       type: DataTypes.UUID,
       allowNull: false,
       references: {
@@ -178,10 +178,10 @@ export default (sequelize: any) => {
     
     indexes: [
       {
-        fields: ['patient_id']
+        fields: ['patientId']
       },
       {
-        fields: ['doctor_id']
+        fields: ['doctorId']
       },
       {
         fields: ['assignment_type']
@@ -194,7 +194,7 @@ export default (sequelize: any) => {
       },
       {
         unique: true,
-        fields: ['patient_id', 'assignment_type'],
+        fields: ['patientId', 'assignment_type'],
         where: {
           assignment_type: 'primary',
           is_active: true

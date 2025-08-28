@@ -209,7 +209,7 @@ class PatientAccessService {
 
       // Create the assignment
       const assignment = await SecondaryDoctorAssignment.create({
-        patient_id: patientId,
+        patientId: patientId,
         primary_doctor_id: primaryDoctorId,
         secondary_doctor_id: secondaryDoctorId,
         primary_doctor_provider_id: primaryProviderId,
@@ -273,7 +273,7 @@ class PatientAccessService {
       // Check secondary access
       const secondaryAssignment = await SecondaryDoctorAssignment.findOne({
         where: {
-          patient_id: patientId,
+          patientId: patientId,
           secondary_doctor_id: doctorRecord.id,
           is_active: true
         }
@@ -347,7 +347,7 @@ class PatientAccessService {
       // Generate new OTP
       const otp = await PatientConsentOtp.create({
         secondary_assignment_id: assignmentId,
-        patient_id: assignment.patient_id,
+        patientId: assignment.patientId,
         primary_doctor_id: assignment.primary_doctor_id,
         secondary_doctor_id: assignment.secondary_doctor_id,
         secondary_hsp_id: assignment.secondary_hsp_id,
@@ -463,7 +463,7 @@ class PatientAccessService {
       
       // TODO: Add actual patient_provider_consent_history record
       // await PatientProviderConsentHistory.create({
-      //   patient_id: assignment.patient_id,
+      //   patientId: assignment.patientId,
       //   provider_id: assignment.secondary_doctor_provider_id,
       //   consent_type: 'automatic_same_provider',
       //   consent_status: 'granted',
@@ -486,7 +486,7 @@ class PatientAccessService {
       
       // TODO: Add actual patient_provider_consent_history record
       // await PatientProviderConsentHistory.create({
-      //   patient_id: assignment.patient_id,
+      //   patientId: assignment.patientId,
       //   provider_id: assignment.secondary_doctor_provider_id,
       //   consent_type: 'otp_verification',
       //   consent_status: 'granted',

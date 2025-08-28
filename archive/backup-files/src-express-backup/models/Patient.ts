@@ -40,7 +40,7 @@ export default (sequelize: any) => {
       comment: 'Organization-specific patient identifier'
     },
     
-    patient_id: {
+    patientId: {
       type: DataTypes.STRING(100),
       allowNull: true,
       unique: true,

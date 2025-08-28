@@ -580,7 +580,7 @@ User Action → Component → Action Creator → API Request → State Update �
 ```javascript
 // Enhanced Vital Signs Table Structure Needed
 vital_protocols: {
-  patient_id: int,
+  patientId: int,
   condition_specific_ranges: json, // Age, condition-based normal ranges
   monitoring_frequency: string,    // Based on medical condition
   alert_thresholds: json,         // Critical value alerts
@@ -590,7 +590,7 @@ vital_protocols: {
 
 // Emergency Response System
 vital_alerts: {
-  patient_id: int,
+  patientId: int,
   vital_type: enum,              // BP, glucose, temperature, etc.
   critical_value: decimal,
   alert_level: enum,             // WARNING, CRITICAL, EMERGENCY
@@ -619,7 +619,7 @@ drug_interactions: {
 
 // Allergy Management System  
 patient_allergies: {
-  patient_id: int,
+  patientId: int,
   allergen_type: enum,           // DRUG, FOOD, ENVIRONMENTAL
   allergen_name: string,
   reaction_severity: enum,        // MILD, MODERATE, SEVERE, ANAPHYLAXIS
@@ -629,7 +629,7 @@ patient_allergies: {
 
 // Active Medication Validation
 medication_safety_checks: {
-  patient_id: int,
+  patientId: int,
   prescribed_medicine_id: int,
   interaction_alerts: json,       // Drug-drug interactions
   allergy_alerts: json,          // Allergy conflicts  
@@ -677,7 +677,7 @@ treatment_protocols: {
 ```javascript
 // Gamification System
 patient_achievements: {
-  patient_id: int,
+  patientId: int,
   achievement_type: enum,        // MEDICATION_STREAK, APPOINTMENT_COMPLIANCE
   achievement_level: enum,       // BRONZE, SILVER, GOLD, PLATINUM
   points_earned: int,
@@ -687,7 +687,7 @@ patient_achievements: {
 
 // Behavioral Insights
 adherence_analytics: {
-  patient_id: int,
+  patientId: int,
   medication_compliance_score: decimal,    // 0-100%
   appointment_adherence_rate: decimal,
   lifestyle_compliance_score: decimal,
@@ -740,7 +740,7 @@ adherence_analytics: {
 -- Enhanced Vital Signs Monitoring
 CREATE TABLE vital_protocols (
     id INT PRIMARY KEY AUTO_INCREMENT,
-    patient_id INT,
+    patientId INT,
     condition_id INT,
     vital_type ENUM('BP', 'GLUCOSE', 'TEMPERATURE', 'WEIGHT', 'HEART_RATE'),
     normal_range_min DECIMAL(8,2),
@@ -767,7 +767,7 @@ CREATE TABLE drug_interactions (
 -- Patient Allergy Management  
 CREATE TABLE patient_allergies (
     id INT PRIMARY KEY AUTO_INCREMENT,
-    patient_id INT,
+    patientId INT,
     allergen_type ENUM('MEDICATION', 'FOOD', 'ENVIRONMENTAL'),
     allergen_name VARCHAR(255),
     reaction_severity ENUM('MILD', 'MODERATE', 'SEVERE', 'ANAPHYLAXIS'),
@@ -780,7 +780,7 @@ CREATE TABLE patient_allergies (
 -- Gamification System
 CREATE TABLE patient_achievements (
     id INT PRIMARY KEY AUTO_INCREMENT,
-    patient_id INT,
+    patientId INT,
     achievement_type ENUM('MEDICATION_STREAK', 'APPOINTMENT_COMPLIANCE', 'VITAL_TRACKING'),
     achievement_level ENUM('BRONZE', 'SILVER', 'GOLD', 'PLATINUM'),
     points_earned INT DEFAULT 0,
@@ -934,7 +934,7 @@ class MedicationSafetyService {
   
   async checkAllergies(patientId, medicineId) {
     const medicine = await Medicine.findByPk(medicineId);
-    const allergies = await PatientAllergy.findAll({ where: { patient_id: patientId } });
+    const allergies = await PatientAllergy.findAll({ where: { patientId: patientId } });
     
     // Check ingredient matching logic
     return allergies.filter(allergy => 
@@ -951,7 +951,7 @@ class VitalSignsService {
   async recordVital(patientId, vitalType, value, recordedAt) {
     // Get patient's vital protocols
     const protocols = await VitalProtocol.findAll({
-      where: { patient_id: patientId, vital_type: vitalType }
+      where: { patientId: patientId, vital_type: vitalType }
     });
     
     // Check against normal ranges
@@ -965,7 +965,7 @@ class VitalSignsService {
     }).filter(Boolean);
     
     // Save vital and trigger alerts if needed
-    const vital = await Vital.create({ patient_id: patientId, type: vitalType, value, recorded_at: recordedAt });
+    const vital = await Vital.create({ patientId: patientId, type: vitalType, value, recorded_at: recordedAt });
     
     if (alerts.length > 0) {
       await this.triggerVitalAlerts(patientId, alerts);
