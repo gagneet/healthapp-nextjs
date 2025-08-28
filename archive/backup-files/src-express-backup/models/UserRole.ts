@@ -6,7 +6,7 @@ export default (sequelize: any, DataTypes: any) => {
       defaultValue: DataTypes.UUIDV4,
       primaryKey: true,
     },
-    user_identity: {
+    userIdentity: {
       type: DataTypes.UUID,
       allowNull: false,
       references: {

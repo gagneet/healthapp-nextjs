@@ -73,7 +73,7 @@ class ConsentController {
 
       // Get current doctor (primary doctor)
       const primaryDoctor = await Doctor.findOne({
-        where: { user_id: req.user!.id }
+        where: { userId: req.user!.id }
       });
 
       if (!primaryDoctor) {
@@ -149,7 +149,7 @@ class ConsentController {
 
       // Find the secondary assignment for this doctor and patient
       const doctorRecord = await Doctor.findOne({
-        where: { user_id: requestingUserId }
+        where: { userId: requestingUserId }
       });
 
       if (!doctorRecord) {

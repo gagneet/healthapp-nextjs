@@ -6,7 +6,7 @@ export default (sequelize: any, DataTypes: any) => {
       defaultValue: DataTypes.UUIDV4,
       primaryKey: true,
     },
-    user_id: {
+    userId: {
       type: DataTypes.UUID,
       allowNull: false,
       references: {
@@ -57,7 +57,7 @@ export default (sequelize: any, DataTypes: any) => {
     charset: 'latin1',
     paranoid: true,
     indexes: [
-      { fields: ['user_id'] },
+      { fields: ['userId'] },
     ],
   });
 

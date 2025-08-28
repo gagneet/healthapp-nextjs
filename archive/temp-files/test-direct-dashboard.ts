@@ -64,12 +64,12 @@ async function testDirectDashboard() {
     const doctorUser = await prisma.user.findFirst({
       where: { role: 'DOCTOR' },
       include: {
-        doctors_doctors_user_idTousers: true
+        doctors_doctors_userIdTousers: true
       }
     });
     
-    if (doctorUser && doctorUser.doctors_doctors_user_idTousers) {
-      const doctor = doctorUser.doctors_doctors_user_idTousers;
+    if (doctorUser && doctorUser.doctors_doctors_userIdTousers) {
+      const doctor = doctorUser.doctors_doctors_userIdTousers;
       console.log('✅ Doctor profile found:');
       console.log(`  - Name: ${doctorUser.first_name} ${doctorUser.last_name}`);
       console.log(`  - Email: ${doctorUser.email}`);
@@ -126,12 +126,12 @@ async function testDirectDashboard() {
     const hspUser = await prisma.user.findFirst({
       where: { role: 'HSP' },
       include: {
-        hsps_hsps_user_idTousers: true
+        hsps_hsps_userIdTousers: true
       }
     });
     
-    if (hspUser && hspUser.hsps_hsps_user_idTousers) {
-      const hsp = hspUser.hsps_hsps_user_idTousers;
+    if (hspUser && hspUser.hsps_hsps_userIdTousers) {
+      const hsp = hspUser.hsps_hsps_userIdTousers;
       console.log('✅ HSP profile found:');
       console.log(`  - Name: ${hspUser.first_name} ${hspUser.last_name}`);
       console.log(`  - Email: ${hspUser.email}`);

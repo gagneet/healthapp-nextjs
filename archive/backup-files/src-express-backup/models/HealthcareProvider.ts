@@ -12,7 +12,7 @@ export default (sequelize: any) => {
       primaryKey: true,
     },
     
-    user_id: {
+    userId: {
       type: DataTypes.UUID,
       allowNull: false,
       unique: true,
@@ -211,7 +211,7 @@ export default (sequelize: any) => {
     
     indexes: [
       {
-        fields: ['user_id'],
+        fields: ['userId'],
         unique: true
       },
       {

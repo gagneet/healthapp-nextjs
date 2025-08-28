@@ -54,7 +54,7 @@ class AdminController {
       for (const doctor of doctors) {
         // Get patient count
         const patientCount = await Patient.count({
-          where: { assigned_doctor_id: doctor.user_id }
+          where: { assigned_doctor_id: doctor.userId }
         });
 
         responseData.doctors[doctor.id] = {
@@ -319,7 +319,7 @@ class AdminController {
 
       // Create UserRole
       await UserRole.create({
-        user_identity: user.id,
+        userIdentity: user.id,
         role_name: USER_CATEGORIES.DOCTOR,
         role_value: 'doctor',
         status: 'active'
@@ -327,7 +327,7 @@ class AdminController {
 
       // Create Doctor profile
       const doctor = await Doctor.create({
-        user_id: user.id,
+        userId: user.id,
         mobile_number,
         gender,
         medical_license_number,
@@ -669,7 +669,7 @@ class AdminController {
         profile: {
           // Basic Information
           id: doctor.id.toString(),
-          user_id: doctor.user_id.toString(),
+          userId: doctor.userId.toString(),
           full_name: `${doctor.user?.first_name || ''} ${doctor.user?.middle_name || ''} ${doctor.user?.last_name || ''}`.replace(/\s+/g, ' ').trim(),
           first_name: doctor.user?.first_name || '',
           middle_name: doctor.user?.middle_name || '',

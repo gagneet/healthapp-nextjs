@@ -31,14 +31,14 @@ export async function GET(request: NextRequest) {
     // Role-based filtering
     if (session.user.role === 'DOCTOR') {
       const doctor = await prisma.doctor.findFirst({
-        where: { user_id: session.user.id }
+        where: { userId: session.user.id }
       });
       if (doctor?.organization_id) {
         whereClause.provider_id = doctor.organization_id;
       }
     } else if (session.user.role === 'HSP') {
       const hsp = await prisma.hsp.findFirst({
-        where: { user_id: session.user.id }
+        where: { userId: session.user.id }
       });
       if (hsp?.organization_id) {
         whereClause.provider_id = hsp.organization_id;
@@ -214,7 +214,7 @@ export async function POST(request: NextRequest) {
     if (!['SYSTEM_ADMIN', 'HOSPITAL_ADMIN'].includes(session.user.role)) {
       if (session.user.role === 'DOCTOR') {
         const doctor = await prisma.doctor.findFirst({
-          where: { user_id: session.user.id }
+          where: { userId: session.user.id }
         });
         if (!doctor || doctor.organization_id !== provider_id) {
           return NextResponse.json({
@@ -225,7 +225,7 @@ export async function POST(request: NextRequest) {
         }
       } else if (session.user.role === 'HSP') {
         const hsp = await prisma.hsp.findFirst({
-          where: { user_id: session.user.id }
+          where: { userId: session.user.id }
         });
         if (!hsp || hsp.organization_id !== provider_id) {
           return NextResponse.json({

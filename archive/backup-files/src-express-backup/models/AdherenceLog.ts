@@ -206,7 +206,7 @@ export default (sequelize: any) => {
       }
     },
     
-    recorded_by_user_id: {
+    recorded_by_userId: {
       type: DataTypes.UUID,
       allowNull: true,
       references: {

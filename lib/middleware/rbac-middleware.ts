@@ -159,7 +159,7 @@ export async function rbacMiddleware(
         auditInfo: { 
           warning: 'Unconfigured endpoint',
           endpoint: fullEndpoint,
-          user_id: user.id,
+          userId: user.id,
           role: user.role 
         }
       };
@@ -230,7 +230,7 @@ export async function rbacMiddleware(
     return { 
       allowed: true,
       auditInfo: {
-        user_id: user.id,
+        userId: user.id,
         role: user.role,
         permissions: requiredPermissions,
         endpoint: fullEndpoint

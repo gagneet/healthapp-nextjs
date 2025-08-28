@@ -56,22 +56,22 @@ export default function defineAssociations(models: any) {
   // User -> Profile relationships
   if (User && Doctor) {
     User.hasOne(Doctor, {
-      foreignKey: 'user_id',
+      foreignKey: 'userId',
       as: 'doctorProfile'
     });
     Doctor.belongsTo(User, {
-      foreignKey: 'user_id',
+      foreignKey: 'userId',
       as: 'user'
     });
   }
 
   if (User && Patient) {
     User.hasOne(Patient, {
-      foreignKey: 'user_id',
+      foreignKey: 'userId',
       as: 'patientProfile'
     });
     Patient.belongsTo(User, {
-      foreignKey: 'user_id',
+      foreignKey: 'userId',
       as: 'user'
     });
   }
@@ -258,11 +258,11 @@ export default function defineAssociations(models: any) {
   // UserRole associations (direct relationship)
   if (User && UserRole) {
     User.hasMany(UserRole, { 
-      foreignKey: 'user_identity', 
+      foreignKey: 'userIdentity', 
       as: 'roles' 
     });
     UserRole.belongsTo(User, { 
-      foreignKey: 'user_identity', 
+      foreignKey: 'userIdentity', 
       as: 'user' 
     });
   }
@@ -271,14 +271,14 @@ export default function defineAssociations(models: any) {
   if (User && Role && UserRole) {
     User.belongsToMany(Role, {
       through: UserRole,
-      foreignKey: 'user_id',
+      foreignKey: 'userId',
       otherKey: 'role_id',
       as: 'userRoles'
     });
     Role.belongsToMany(User, {
       through: UserRole,
       foreignKey: 'role_id',
-      otherKey: 'user_id',
+      otherKey: 'userId',
       as: 'roleUsers'
     });
   }
@@ -321,11 +321,11 @@ export default function defineAssociations(models: any) {
   // Audit logs
   if (AuditLog && User) {
     AuditLog.belongsTo(User, {
-      foreignKey: 'user_id',
+      foreignKey: 'userId',
       as: 'user'
     });
     User.hasMany(AuditLog, {
-      foreignKey: 'user_id',
+      foreignKey: 'userId',
       as: 'auditLogs'
     });
   }
@@ -525,11 +525,11 @@ export default function defineAssociations(models: any) {
     // User relationship for request tracking
     if (User) {
       PatientConsentOtp.belongsTo(User, {
-        foreignKey: 'requested_by_user_id',
+        foreignKey: 'requested_by_userId',
         as: 'requestedByUser'
       });
       User.hasMany(PatientConsentOtp, {
-        foreignKey: 'requested_by_user_id',
+        foreignKey: 'requested_by_userId',
         as: 'requestedOtps'
       });
     }

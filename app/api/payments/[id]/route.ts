@@ -81,7 +81,7 @@ export async function GET(
     // Check access permissions
     if (session.user.role === 'PATIENT') {
       const patient = await prisma.patient.findFirst({
-        where: { user_id: session.user.id }
+        where: { userId: session.user.id }
       });
       if (!patient || payment.patient_id !== patient.id) {
         return NextResponse.json({
@@ -92,7 +92,7 @@ export async function GET(
       }
     } else if (session.user.role === 'DOCTOR') {
       const doctor = await prisma.doctor.findFirst({
-        where: { user_id: session.user.id }
+        where: { userId: session.user.id }
       });
       
       if (!doctor) {
@@ -194,7 +194,7 @@ export async function PUT(
     // Check permissions for doctors
     if (session.user.role === 'DOCTOR') {
       const doctor = await prisma.doctor.findFirst({
-        where: { user_id: session.user.id }
+        where: { userId: session.user.id }
       });
       const patient = await prisma.patient.findUnique({
         where: { id: existingPayment.patient_id }
@@ -343,7 +343,7 @@ export async function DELETE(
     // Check permissions for doctors
     if (session.user.role === 'DOCTOR') {
       const doctor = await prisma.doctor.findFirst({
-        where: { user_id: session.user.id }
+        where: { userId: session.user.id }
       });
       const patient = await prisma.patient.findUnique({
         where: { id: existingPayment.patient_id }

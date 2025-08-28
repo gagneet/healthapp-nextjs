@@ -24,7 +24,7 @@ class PatientAccessService {
     try {
       // Get the doctor record
       const doctorRecord = await Doctor.findOne({
-        where: { user_id: doctorUserId },
+        where: { userId: doctorUserId },
         include: [
           {
             model: User,
@@ -246,7 +246,7 @@ class PatientAccessService {
   async canAccessPatient(doctorUserId: any, patientId: any) {
     try {
       const doctorRecord = await Doctor.findOne({
-        where: { user_id: doctorUserId }
+        where: { userId: doctorUserId }
       });
 
       if (!doctorRecord) {
@@ -353,7 +353,7 @@ class PatientAccessService {
         secondary_hsp_id: assignment.secondary_hsp_id,
         patient_phone: assignment.patient.user.phone,
         patient_email: assignment.patient.user.email,
-        requested_by_user_id: requestedByUserId,
+        requested_by_userId: requestedByUserId,
         request_ip_address: (requestInfo as any).ip,
         request_user_agent: (requestInfo as any).userAgent
       });

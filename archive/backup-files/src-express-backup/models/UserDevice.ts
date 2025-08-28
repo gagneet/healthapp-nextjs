@@ -9,7 +9,7 @@ export default (sequelize: any) => {
       primaryKey: true,
     },
     
-    user_id: {
+    userId: {
       type: DataTypes.UUID,
       allowNull: false,
       references: {
@@ -85,7 +85,7 @@ export default (sequelize: any) => {
     
     indexes: [
       {
-        fields: ['user_id']
+        fields: ['userId']
       },
       {
         fields: ['device_type']
@@ -100,7 +100,7 @@ export default (sequelize: any) => {
         fields: ['last_used_at']
       },
       {
-        fields: ['user_id', 'push_token'],
+        fields: ['userId', 'push_token'],
         unique: true
       }
     ],

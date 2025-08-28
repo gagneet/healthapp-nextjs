@@ -171,7 +171,7 @@ const authorizeWithProfile = (...categories: string[]) => {
       // Validate role-specific profiles
       if (req.userCategory === USER_CATEGORIES.DOCTOR) {
         const doctorRecord = await Doctor.findOne({
-          where: { user_id: req.user!.userId }
+          where: { userId: req.user!.userId }
         });
 
         if (!doctorRecord) {
@@ -194,7 +194,7 @@ const authorizeWithProfile = (...categories: string[]) => {
 
       if (req.userCategory === USER_CATEGORIES.PATIENT) {
         const patientRecord = await Patient.findOne({
-          where: { user_id: req.user!.userId }
+          where: { userId: req.user!.userId }
         });
 
         if (!patientRecord) {

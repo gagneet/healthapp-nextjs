@@ -35,11 +35,11 @@ export default {
           cp.updated_at
       FROM care_plans cp
       JOIN patients p ON cp.patient_id = p.id
-      JOIN users u_patient ON p.user_id = u_patient.id
+      JOIN users u_patient ON p.userId = u_patient.id
       LEFT JOIN healthcare_providers hp ON cp.created_by_hsp_id = hp.id
-      LEFT JOIN users u_provider ON hp.user_id = u_provider.id
+      LEFT JOIN users u_provider ON hp.userId = u_provider.id
       LEFT JOIN doctors d ON cp.created_by_doctor_id = d.id
-      LEFT JOIN users u_doctor ON d.user_id = u_doctor.id
+      LEFT JOIN users u_doctor ON d.userId = u_doctor.id
       WHERE cp.deleted_at IS NULL 
           AND p.deleted_at IS NULL 
           AND u_patient.deleted_at IS NULL
@@ -72,7 +72,7 @@ export default {
           p.created_at,
           p.updated_at
       FROM patients p
-      JOIN users u ON p.user_id = u.id
+      JOIN users u ON p.userId = u.id
       LEFT JOIN adherence_records ar ON p.id = ar.patient_id 
           AND ar.due_at >= NOW() - INTERVAL '30 days'
       WHERE p.deleted_at IS NULL 
@@ -104,12 +104,12 @@ export default {
           se.created_at
       FROM scheduled_events se
       JOIN patients p ON se.patient_id = p.id
-      JOIN users u_patient ON p.user_id = u_patient.id
+      JOIN users u_patient ON p.userId = u_patient.id
       LEFT JOIN care_plans cp ON se.care_plan_id = cp.id
       LEFT JOIN healthcare_providers hp ON cp.created_by_hsp_id = hp.id
-      LEFT JOIN users u_provider ON hp.user_id = u_provider.id
+      LEFT JOIN users u_provider ON hp.userId = u_provider.id
       LEFT JOIN doctors d2 ON cp.created_by_doctor_id = d2.id
-      LEFT JOIN users u_doctor2 ON d2.user_id = u_doctor2.id
+      LEFT JOIN users u_doctor2 ON d2.userId = u_doctor2.id
       WHERE se.deleted_at IS NULL 
           AND p.deleted_at IS NULL 
           AND u_patient.deleted_at IS NULL

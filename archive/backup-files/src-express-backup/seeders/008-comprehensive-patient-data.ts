@@ -77,7 +77,7 @@ export default {
       const patients = [
         {
           id: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', // Deterministic UUID for patient profile 1
-          user_id: testUsers[0].id,
+          userId: testUsers[0].id,
           patient_id: 'PAT-2025-001',
           height_cm: 165.0,
           weight_kg: 68.5,
@@ -115,7 +115,7 @@ export default {
         },
         {
           id: 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', // Deterministic UUID for patient profile 2
-          user_id: testUsers[1].id,
+          userId: testUsers[1].id,
           patient_id: 'PAT-2025-002',
           height_cm: 178.0,
           weight_kg: 82.3,
@@ -154,7 +154,7 @@ export default {
       // Create doctor record
       const doctors = [{
         id: uuidv4(),
-        user_id: testUsers[2].id,
+        userId: testUsers[2].id,
         medical_license_number: 'MD123456',
         speciality_id: null, // Will be set after specialties are created
         years_of_experience: 15,
@@ -728,7 +728,7 @@ export default {
       }, { transaction, ignoreDuplicates: true });
 
       await queryInterface.bulkDelete('doctors', {
-        user_id: { [Sequelize.Op.in]: await queryInterface.sequelize.query(
+        userId: { [Sequelize.Op.in]: await queryInterface.sequelize.query(
           'SELECT id FROM users WHERE email = ?',
           { 
             replacements: ['doctor1@healthapp.com'],
@@ -742,7 +742,7 @@ export default {
       }, { transaction, ignoreDuplicates: true });
 
       await queryInterface.bulkDelete('user_roles', {
-        user_id: { [Sequelize.Op.in]: await queryInterface.sequelize.query(
+        userId: { [Sequelize.Op.in]: await queryInterface.sequelize.query(
           'SELECT id FROM users WHERE email IN (?, ?, ?)',
           { 
             replacements: ['patient1@healthapp.com', 'patient2@healthapp.com', 'doctor1@healthapp.com'],

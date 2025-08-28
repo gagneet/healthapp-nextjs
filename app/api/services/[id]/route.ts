@@ -30,7 +30,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
 
     // Get doctor profile
     const doctor = await prisma.doctor.findFirst({
-      where: { user_id: session.user.id }
+      where: { userId: session.user.id }
     });
 
     if (!doctor) {
@@ -50,7 +50,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       include: {
         doctors: {
           include: {
-            users_doctors_user_idTousers: {
+            users_doctors_userIdTousers: {
               select: {
                 firstName: true,
                 lastName: true,
@@ -93,8 +93,8 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       revenue_generated: revenueGenerated,
       active_subscriptions: activeSubscriptions,
       doctor: service.doctors ? {
-        name: `${service.doctors.users_doctors_user_idTousers?.first_name || ''} ${service.doctors.users_doctors_user_idTousers?.last_name || ''}`.trim(),
-        email: service.doctors.users_doctors_user_idTousers?.email
+        name: `${service.doctors.users_doctors_userIdTousers?.first_name || ''} ${service.doctors.users_doctors_userIdTousers?.last_name || ''}`.trim(),
+        email: service.doctors.users_doctors_userIdTousers?.email
       } : null
     };
 
@@ -155,7 +155,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
 
     // Get doctor profile
     const doctor = await prisma.doctor.findFirst({
-      where: { user_id: session.user.id }
+      where: { userId: session.user.id }
     });
 
     if (!doctor) {
@@ -246,7 +246,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
 
     // Get doctor profile
     const doctor = await prisma.doctor.findFirst({
-      where: { user_id: session.user.id }
+      where: { userId: session.user.id }
     });
 
     if (!doctor) {

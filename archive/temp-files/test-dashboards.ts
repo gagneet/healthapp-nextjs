@@ -97,7 +97,7 @@ async function testDashboards() {
         id: true,
         doctor_id: true,
         medical_license_number: true,
-        users_doctors_user_idTousers: {
+        users_doctors_userIdTousers: {
           select: {
             first_name: true,
             last_name: true,
@@ -109,7 +109,7 @@ async function testDashboards() {
     
     console.log('👨‍⚕️ Doctors with business IDs:');
     doctors.forEach(doc => {
-      console.log(`  - ${doc.doctor_id} (${doc.medical_license_number}) - ${doc.users_doctors_user_idTousers.first_name} ${doc.users_doctors_user_idTousers.last_name} (${doc.users_doctors_user_idTousers.email})`);
+      console.log(`  - ${doc.doctor_id} (${doc.medical_license_number}) - ${doc.users_doctors_userIdTousers.first_name} ${doc.users_doctors_userIdTousers.last_name} (${doc.users_doctors_userIdTousers.email})`);
     });
     
     const patients = await prisma.patient.findMany({
@@ -138,7 +138,7 @@ async function testDashboards() {
         hsp_id: true,
         hsp_type: true,
         license_number: true,
-        users_hsps_user_idTousers: {
+        users_hsps_userIdTousers: {
           select: {
             first_name: true,
             last_name: true,
@@ -150,7 +150,7 @@ async function testDashboards() {
     
     console.log('🔬 HSPs with business IDs:');
     hsps.forEach(hsp => {
-      console.log(`  - ${hsp.hsp_id} (${hsp.license_number}) - ${hsp.users_hsps_user_idTousers.first_name} ${hsp.users_hsps_user_idTousers.last_name} (${hsp.users_hsps_user_idTousers.email})`);
+      console.log(`  - ${hsp.hsp_id} (${hsp.license_number}) - ${hsp.users_hsps_userIdTousers.first_name} ${hsp.users_hsps_userIdTousers.last_name} (${hsp.users_hsps_userIdTousers.email})`);
     });
     
     console.log('\n✅ Dashboard testing completed successfully!');

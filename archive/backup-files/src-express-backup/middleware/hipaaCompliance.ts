@@ -14,7 +14,7 @@ export class HIPAAAuditLog {
       const auditEntry = {
         id: crypto.randomUUID(),
         timestamp: new Date(),
-        user_id: req.user?.id,
+        userId: req.user?.id,
         user_role: req.user?.role,
         organization_id: req.user?.organization_id || req.provider?.organization_id,
         action: req.method,
@@ -47,7 +47,7 @@ export class HIPAAAuditLog {
       const auditEntry = {
         id: crypto.randomUUID(),
         timestamp: new Date(),
-        user_id: req.user?.id,
+        userId: req.user?.id,
         user_role: req.user?.role,
         organization_id: req.user?.organization_id || req.provider?.organization_id,
         action: req.method,
@@ -363,7 +363,7 @@ export class BreachDetection {
       
       if (alerts.length > 0) {
         await BreachDetection.logSecurityAlert({
-          user_id: user.id,
+          userId: user.id,
           patient_id: patientId,
           alerts,
           request_details: {

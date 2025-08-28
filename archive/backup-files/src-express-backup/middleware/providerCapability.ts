@@ -32,11 +32,11 @@ export const requireCapability = (requiredCapability: any) => {
       // Get provider based on user role
       if (user.role === USER_ROLES.DOCTOR) {
         const { Doctor } = req.app.get('models');
-        provider = await Doctor.findOne({ where: { user_id: user.id } });
+        provider = await Doctor.findOne({ where: { userId: user.id } });
         providerType = 'doctor';
       } else if (user.role === USER_ROLES.HSP) {
         const { HSP } = req.app.get('models');
-        provider = await HSP.findOne({ where: { user_id: user.id } });
+        provider = await HSP.findOne({ where: { userId: user.id } });
         providerType = 'hsp';
       } else {
         return res.status(403).json({

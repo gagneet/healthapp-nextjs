@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
         properties: {
           room_name: roomName,
           user_name: session.user.name || 'Participant',
-          user_id: session.user.id,
+          userId: session.user.id,
           // Token expires in 1 hour
           exp: Math.floor(Date.now() / 1000) + 3600,
         },

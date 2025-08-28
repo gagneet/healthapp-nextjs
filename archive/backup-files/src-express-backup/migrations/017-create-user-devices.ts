@@ -17,7 +17,7 @@ export default {
         primaryKey: true,
         defaultValue: Sequelize.UUIDV4,
       },
-      user_id: {
+      userId: {
         type: Sequelize.UUID,
         allowNull: false,
         references: {
@@ -69,7 +69,7 @@ export default {
 
     // Add indexes with error handling
     const indexes = [
-      { fields: ['user_id'], name: 'idx_user_devices_user' },
+      { fields: ['userId'], name: 'idx_user_devices_user' },
       { fields: ['device_type'], name: 'idx_user_devices_type' },
       { fields: ['is_active'], name: 'idx_user_devices_active' },
       { fields: ['push_token'], name: 'idx_user_devices_push_token' },

@@ -65,7 +65,7 @@ router.get('/sessions', authenticate, (req, res) => {
       data: {
         sessions: [{
           id: 'session_1',
-          user_id: req.user?.id,
+          userId: req.user?.id,
           active: true,
           created_at: new Date().toISOString()
         }]

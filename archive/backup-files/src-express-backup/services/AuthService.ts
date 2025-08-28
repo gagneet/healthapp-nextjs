@@ -32,7 +32,7 @@ class AuthService {
 
     // Create user role
     const userRole = await UserRole.create({
-      user_identity: user.id,
+      userIdentity: user.id,
       linked_with: category,
       linked_id: null
     });

@@ -156,7 +156,7 @@ export default {
       },
       
       // Request context
-      requested_by_user_id: {
+      requested_by_userId: {
         type: Sequelize.UUID,
         allowNull: false,
         references: {
@@ -238,7 +238,7 @@ export default {
       { fields: ['is_expired'], name: 'idx_patient_consent_otp_is_expired' },
       { fields: ['is_blocked'], name: 'idx_patient_consent_otp_is_blocked' },
       { fields: ['generated_at'], name: 'idx_patient_consent_otp_generated_at' },
-      { fields: ['requested_by_user_id'], name: 'idx_patient_consent_otp_requested_by_user_id' }
+      { fields: ['requested_by_userId'], name: 'idx_patient_consent_otp_requested_by_userId' }
     ];
 
     for (const index of indexes) {

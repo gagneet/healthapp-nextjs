@@ -170,7 +170,7 @@ class CarePlanController {
       } = req.body;
 
       // Get doctor ID from authenticated user
-      const doctor = await Doctor.findOne({ where: { user_id: req.user!.id } });
+      const doctor = await Doctor.findOne({ where: { userId: req.user!.id } });
       if (!doctor) {
         res.status(403).json({
           status: false,

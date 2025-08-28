@@ -71,13 +71,13 @@ class AuthController {
 
       if (user.role === USER_CATEGORIES.DOCTOR) {
         const doctorRecord = await Doctor.findOne({
-          where: { user_id: user.id }
+          where: { userId: user.id }
         });
         profileComplete = !!doctorRecord;
         profileData = doctorRecord;
       } else if (user.role === USER_CATEGORIES.PATIENT) {
         const patientRecord = await Patient.findOne({
-          where: { user_id: user.id }
+          where: { userId: user.id }
         });
         profileComplete = !!patientRecord;
         profileData = patientRecord;
@@ -176,7 +176,7 @@ class AuthController {
 
       // Create user role
       const userRole = await UserRole.create({
-        user_identity: user.id,
+        userIdentity: user.id,
         linked_with: category,
         linked_id: null // Will be set when profile is completed
       });
@@ -184,13 +184,13 @@ class AuthController {
       // Create category-specific record
       if (category === USER_CATEGORIES.DOCTOR) {
         await Doctor.create({
-          user_id: user.id,
+          userId: user.id,
           first_name,
           last_name
         });
       } else if (category === USER_CATEGORIES.PATIENT) {
         await Patient.create({
-          user_id: user.id,
+          userId: user.id,
           first_name,
           last_name
         });

@@ -153,7 +153,7 @@ async function searchPatients(searchValue: string, filters: SearchFilters, user:
   if (user.role === 'DOCTOR') {
     // Doctors can only search their assigned patients
     const doctor = await prisma.doctor.findFirst({
-      where: { user_id: user.id }
+      where: { userId: user.id }
     });
     if (doctor) {
       whereClause.primary_care_doctor_id = doctor.id;
@@ -195,8 +195,8 @@ async function searchDoctors(searchValue: string, filters: SearchFilters) {
   return await prisma.doctor.findMany({
     where: {
       OR: [
-        { users_Doctor_user_idTousers: { firstName: { contains: searchValue, mode: 'insensitive' } } },
-        { users_Doctor_user_idTousers: { lastName: { contains: searchValue, mode: 'insensitive' } } },
+        { users_Doctor_userIdTousers: { firstName: { contains: searchValue, mode: 'insensitive' } } },
+        { users_Doctor_userIdTousers: { lastName: { contains: searchValue, mode: 'insensitive' } } },
         { medical_license_number: { contains: searchValue, mode: 'insensitive' } },
         { doctor_id: { contains: searchValue, mode: 'insensitive' } }
       ]
@@ -208,7 +208,7 @@ async function searchDoctors(searchValue: string, filters: SearchFilters) {
       medical_license_number: true,
       years_of_experience: true,
       consultation_fee: true,
-      users_doctors_user_idTousers: {
+      users_doctors_userIdTousers: {
         select: {
           id: true,
           firstName: true,
@@ -226,8 +226,8 @@ async function searchDoctors(searchValue: string, filters: SearchFilters) {
       }
     },
     orderBy: [
-      { users_doctors_user_idTousers: { firstName: 'asc' } },
-      { users_doctors_user_idTousers: { lastName: 'asc' } }
+      { users_doctors_userIdTousers: { firstName: 'asc' } },
+      { users_doctors_userIdTousers: { lastName: 'asc' } }
     ]
   });
 }

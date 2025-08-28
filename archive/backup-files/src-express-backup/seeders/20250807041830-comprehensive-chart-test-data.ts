@@ -24,12 +24,12 @@ export default {
 
     // Get existing data
     const existingPatients = await queryInterface.sequelize.query(
-      'SELECT p.id, p.user_id FROM patients p JOIN users u ON p.user_id = u.id WHERE u.deleted_at IS NULL LIMIT 20',
+      'SELECT p.id, p.userId FROM patients p JOIN users u ON p.userId = u.id WHERE u.deleted_at IS NULL LIMIT 20',
       { type: Sequelize.QueryTypes.SELECT }
     );
 
     const existingDoctors = await queryInterface.sequelize.query(
-      'SELECT d.id, d.user_id FROM doctors d JOIN users u ON d.user_id = u.id WHERE u.deleted_at IS NULL LIMIT 10',
+      'SELECT d.id, d.userId FROM doctors d JOIN users u ON d.userId = u.id WHERE u.deleted_at IS NULL LIMIT 10',
       { type: Sequelize.QueryTypes.SELECT }
     );
 

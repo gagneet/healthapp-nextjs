@@ -17,7 +17,7 @@ export default {
         primaryKey: true,
         defaultValue: Sequelize.UUIDV4,
       },
-      user_id: {
+      userId: {
         type: Sequelize.UUID,
         allowNull: true,
         references: {
@@ -74,12 +74,12 @@ export default {
 
     // Add indexes with error handling
     const indexes = [
-      { fields: ['user_id'], name: 'idx_audit_logs_user' },
+      { fields: ['userId'], name: 'idx_audit_logs_user' },
       { fields: ['action'], name: 'idx_audit_logs_action' },
       { fields: ['resource_type'], name: 'idx_audit_logs_resource_type' },
       { fields: ['resource_id'], name: 'idx_audit_logs_resource_id' },
       { fields: ['created_at'], name: 'idx_audit_logs_created_at' },
-      { fields: ['user_id', 'created_at'], name: 'idx_audit_logs_user_time' },
+      { fields: ['userId', 'created_at'], name: 'idx_audit_logs_user_time' },
       { fields: ['resource_type', 'resource_id'], name: 'idx_audit_logs_resource_composite' }
     ];
 

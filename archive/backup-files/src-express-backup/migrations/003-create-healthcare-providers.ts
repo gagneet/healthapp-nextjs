@@ -17,7 +17,7 @@ export default {
         primaryKey: true,
         defaultValue: Sequelize.UUIDV4,
       },
-      user_id: {
+      userId: {
         type: Sequelize.UUID,
         allowNull: false,
         references: {
@@ -112,14 +112,14 @@ export default {
 
     // Add indexes with error handling
     try {
-      await queryInterface.addIndex('healthcare_providers', ['user_id'], { 
-        name: 'idx_providers_user_id'
+      await queryInterface.addIndex('healthcare_providers', ['userId'], { 
+        name: 'idx_providers_userId'
       });
     } catch (error) {
       if (!(error as any).message.includes('already exists')) {
         throw error;
       }
-      console.log('Index idx_providers_user_id already exists, skipping');
+      console.log('Index idx_providers_userId already exists, skipping');
     }
 
     try {

@@ -13,7 +13,7 @@ export default (sequelize: any) => {
     },
     
     // Who accessed the data
-    user_id: {
+    userId: {
       type: DataTypes.UUID,
       allowNull: true,
       references: {
@@ -161,7 +161,7 @@ export default (sequelize: any) => {
     
     indexes: [
       {
-        fields: ['user_id']
+        fields: ['userId']
       },
       {
         fields: ['patient_id']
@@ -195,7 +195,7 @@ export default (sequelize: any) => {
       },
       {
         // Composite index for common queries
-        fields: ['user_id', 'timestamp']
+        fields: ['userId', 'timestamp']
       },
       {
         // Index for patient access audits
@@ -245,7 +245,7 @@ export default (sequelize: any) => {
   AuditLog.findUserActivity = async function(userId: any, startDate: any, endDate: any) {
     return await this.findAll({
       where: {
-        user_id: userId,
+        userId: userId,
         timestamp: {
           [sequelize.Sequelize.Op.between]: [startDate, endDate]
         }
@@ -307,7 +307,7 @@ export default (sequelize: any) => {
       this.count({
         where,
         distinct: true,
-        col: 'user_id'
+        col: 'userId'
       }),
       this.count({
         where: { ...where, patient_id: { [sequelize.Sequelize.Op.ne]: null } },

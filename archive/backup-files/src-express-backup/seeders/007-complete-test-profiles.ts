@@ -129,7 +129,7 @@ export default {
     // CREATE DOCTOR PROFILE
     if (doctorUser) {
       const existingDoctor = await queryInterface.sequelize.query(
-        "SELECT id FROM doctors WHERE user_id = :userId",
+        "SELECT id FROM doctors WHERE userId = :userId",
         { 
           replacements: { userId: doctorUser.id },
           type: Sequelize.QueryTypes.SELECT 
@@ -140,7 +140,7 @@ export default {
         const doctorId = '44444444-4444-4444-4444-444444444444'; // Deterministic UUID for doctor profile
         await queryInterface.bulkInsert('doctors', [{
           id: doctorId,
-          user_id: doctorUser.id,
+          userId: doctorUser.id,
           medical_license_number: 'LIC-TX-123456789',
           npi_number: '1234567890',
           speciality_id: 1, // General Medicine
@@ -218,7 +218,7 @@ export default {
     // CREATE PATIENT PROFILE
     if (patientUser && doctorUser) {
       const existingPatient = await queryInterface.sequelize.query(
-        "SELECT id FROM patients WHERE user_id = :userId",
+        "SELECT id FROM patients WHERE userId = :userId",
         { 
           replacements: { userId: patientUser.id },
           type: Sequelize.QueryTypes.SELECT 
@@ -228,7 +228,7 @@ export default {
       if (existingPatient.length === 0) {
         // Get the doctor ID first
         const doctorRecord = await queryInterface.sequelize.query(
-          "SELECT id FROM doctors WHERE user_id = :userId",
+          "SELECT id FROM doctors WHERE userId = :userId",
           { 
             replacements: { userId: doctorUser.id },
             type: Sequelize.QueryTypes.SELECT 
@@ -238,7 +238,7 @@ export default {
         const patientId = '66666666-6666-6666-6666-666666666666'; // Deterministic UUID for patient profile
         await queryInterface.bulkInsert('patients', [{
           id: patientId,
-          user_id: patientUser.id,
+          userId: patientUser.id,
           medical_record_number: 'MRN-2025-001',
           patient_id: 'JMD/202501/000001', // Doctor initials/Year-Month/Sequence
           primary_care_doctor_id: doctorRecord.length > 0 ? doctorRecord[0].id : null,
@@ -399,13 +399,13 @@ export default {
     await queryInterface.bulkDelete('clinics', {
       doctor_id: {
         [Sequelize.Op.in]: queryInterface.sequelize.literal(
-          "(SELECT d.id FROM doctors d JOIN users u ON d.user_id = u.id WHERE u.email = 'doctor@healthapp.com')"
+          "(SELECT d.id FROM doctors d JOIN users u ON d.userId = u.id WHERE u.email = 'doctor@healthapp.com')"
         )
       }
     });
 
     await queryInterface.bulkDelete('patients', {
-      user_id: {
+      userId: {
         [Sequelize.Op.in]: queryInterface.sequelize.literal(
           "(SELECT id FROM users WHERE email = 'patient@healthapp.com')"
         )
@@ -413,7 +413,7 @@ export default {
     });
 
     await queryInterface.bulkDelete('doctors', {
-      user_id: {
+      userId: {
         [Sequelize.Op.in]: queryInterface.sequelize.literal(
           "(SELECT id FROM users WHERE email = 'doctor@healthapp.com')"
         )

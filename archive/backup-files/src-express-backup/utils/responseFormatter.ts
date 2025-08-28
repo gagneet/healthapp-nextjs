@@ -41,7 +41,7 @@ class ResponseFormatter {
       [patient.id]: {
         basic_info: {
           id: patient.id.toString(),
-          user_id: patient.user_id.toString(),
+          userId: patient.userId.toString(),
           gender: patient.gender,
           height: patient.height,
           weight: patient.weight,
@@ -79,7 +79,7 @@ class ResponseFormatter {
       [doctor.id]: {
         basic_info: {
           id: doctor.id.toString(),
-          user_id: doctor.user_id.toString(),
+          userId: doctor.userId.toString(),
           gender: doctor.gender,
           first_name: doctor.first_name,
           middle_name: doctor.middle_name,

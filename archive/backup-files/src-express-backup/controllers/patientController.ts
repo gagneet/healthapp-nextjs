@@ -60,7 +60,7 @@ class PatientController {
           [patient.id]: {
             basic_info: {
               id: patient.id.toString(),
-              user_id: patient.user.id.toString(),
+              userId: patient.user.id.toString(),
               
               // Common fields from User model
               gender: patient.user.gender,
@@ -297,7 +297,7 @@ class PatientController {
             acc[patient.id] = {
               basic_info: {
                 id: patient.id.toString(),
-                user_id: patient.user_id?.toString() || patient.user?.id?.toString(),
+                userId: patient.userId?.toString() || patient.user?.id?.toString(),
                 full_name: `${patient.user?.first_name || patient.first_name || ''} ${patient.user?.last_name || patient.last_name || ''}`.trim(),
                 first_name: patient.user?.first_name || patient.first_name,
                 last_name: patient.user?.last_name || patient.last_name,
@@ -396,7 +396,7 @@ class PatientController {
           acc[user.patientProfile.id] = {
             basic_info: {
               id: user.patientProfile.id.toString(),
-              user_id: user.id.toString(),
+              userId: user.id.toString(),
               full_name: `${user.first_name || ''} ${user.middle_name || ''} ${user.last_name || ''}`.replace(/\s+/g, ' ').trim(),
               first_name: user.first_name,
               last_name: user.last_name,
@@ -518,7 +518,7 @@ class PatientController {
       const dashboardData = {
         patient_info: {
           id: patient.id.toString(),
-          user_id: user.id.toString(),
+          userId: user.id.toString(),
           full_name: `${user.first_name || ''} ${user.last_name || ''}`.trim(),
           age: user.current_age,
           gender: user.gender,
@@ -584,7 +584,7 @@ class PatientController {
 
       // Verify patient exists
       const patient = await Patient.findOne({
-        where: { user_id: patientId },
+        where: { userId: patientId },
         include: [{
           model: User,
           as: 'user',
@@ -665,7 +665,7 @@ class PatientController {
 
       // Verify patient exists
       const patient = await Patient.findOne({
-        where: { user_id: patientId }
+        where: { userId: patientId }
       });
 
       if (!patient) {
@@ -755,7 +755,7 @@ class PatientController {
 
       // Verify patient exists
       const patient = await Patient.findOne({
-        where: { user_id: patientId },
+        where: { userId: patientId },
         include: [{
           model: User,
           as: 'user',
@@ -769,7 +769,7 @@ class PatientController {
 
       // Get the requesting doctor's information
       const requestingDoctor = await Doctor.findOne({
-        where: { user_id: req.user!.id },
+        where: { userId: req.user!.id },
         include: [{
           model: User,
           as: 'user',
@@ -796,7 +796,7 @@ class PatientController {
         otp_code: otp,
         consent_method,
         expires_at: expiresAt,
-        requested_by_user_id: req.user!.id,
+        requested_by_userId: req.user!.id,
         status: 'pending'
       }) || {};
 
@@ -886,7 +886,7 @@ class PatientController {
         consent_given: true,
         consent_given_at: new Date(),
         consent_method: consentRequest.consent_method,
-        created_by: consentRequest.requested_by_user_id
+        created_by: consentRequest.requested_by_userId
       }) || {};
 
       res.status(200).json(ResponseFormatter.success(
@@ -913,7 +913,7 @@ class PatientController {
 
       // Get patient with assignments
       const patient = await Patient.findOne({
-        where: { user_id: patientId },
+        where: { userId: patientId },
         include: [
           {
             model: User,
@@ -1013,7 +1013,7 @@ class PatientController {
     if (userCategory === USER_CATEGORIES.DOCTOR) {
       // Get the doctor record ID for the current user
       const doctorRecord = await Doctor.findOne({
-        where: { user_id: userId }
+        where: { userId: userId }
       });
       
       if (doctorRecord) {

@@ -149,7 +149,7 @@ export default (sequelize: any) => {
     },
     
     // Request context
-    requested_by_user_id: {
+    requested_by_userId: {
       type: DataTypes.UUID,
       allowNull: false,
       references: {
@@ -232,7 +232,7 @@ export default (sequelize: any) => {
       { fields: ['is_expired'] },
       { fields: ['is_blocked'] },
       { fields: ['generated_at'] },
-      { fields: ['requested_by_user_id'] }
+      { fields: ['requested_by_userId'] }
     ],
     
     validate: {

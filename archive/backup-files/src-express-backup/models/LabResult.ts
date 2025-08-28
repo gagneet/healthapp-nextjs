@@ -475,7 +475,7 @@ export default (sequelize: any) => {
         {
           model: sequelize.models.Patient,
           as: 'patient',
-          attributes: ['id', 'user_id']
+          attributes: ['id', 'userId']
         }
       ]
     });

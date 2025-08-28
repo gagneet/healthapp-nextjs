@@ -73,7 +73,7 @@ export const AUDIT_OUTCOMES = {
 
 export interface AuditLogEntry {
   id?: string;
-  user_id?: string;
+  userId?: string;
   patient_id?: string;
   event_type: keyof typeof AUDIT_EVENTS;
   outcome: keyof typeof AUDIT_OUTCOMES;
@@ -100,7 +100,7 @@ export class HealthcareAuditLogger {
       await prisma.audit_logs.create({
         data: {
           id: entry.id || randomUUID(),
-          user_id: entry.user_id || null,
+          userId: entry.userId || null,
           patient_id: entry.patient_id || null,
           event_type: entry.event_type,
           outcome: entry.outcome,
@@ -171,7 +171,7 @@ export class HealthcareAuditLogger {
     };
 
     await this.createAuditLog({
-      user_id: userId,
+      userId: userId,
       patient_id: patientId,
       event_type: eventTypeMap[accessType],
       outcome: AUDIT_OUTCOMES.SUCCESS,
@@ -200,7 +200,7 @@ export class HealthcareAuditLogger {
   ): Promise<void> {
     
     await this.createAuditLog({
-      user_id: userId,
+      userId: userId,
       patient_id: patientId,
       event_type: operation === 'READ' ? AUDIT_EVENTS.MEDICAL_RECORD_ACCESSED : AUDIT_EVENTS.MEDICAL_RECORD_UPDATED,
       outcome: AUDIT_OUTCOMES.SUCCESS,
@@ -238,7 +238,7 @@ export class HealthcareAuditLogger {
     };
 
     await this.createAuditLog({
-      user_id: userId,
+      userId: userId,
       patient_id: patientId,
       event_type: eventTypeMap[event],
       outcome: AUDIT_OUTCOMES.SUCCESS,
@@ -269,7 +269,7 @@ export class HealthcareAuditLogger {
     const outcome = event === 'LOGIN_FAILED' ? AUDIT_OUTCOMES.FAILURE : AUDIT_OUTCOMES.SUCCESS;
 
     await this.createAuditLog({
-      user_id: userId,
+      userId: userId,
       event_type: AUDIT_EVENTS[event],
       outcome,
       risk_level: riskLevel,
@@ -294,7 +294,7 @@ export class HealthcareAuditLogger {
   ): Promise<void> {
     
     await this.createAuditLog({
-      user_id: userId,
+      userId: userId,
       event_type: AUDIT_EVENTS.UNAUTHORIZED_ACCESS_ATTEMPT,
       outcome: AUDIT_OUTCOMES.FAILURE,
       risk_level: RISK_LEVELS.HIGH,
@@ -323,7 +323,7 @@ export class HealthcareAuditLogger {
   ): Promise<void> {
     
     await this.createAuditLog({
-      user_id: doctorId,
+      userId: doctorId,
       patient_id: patientId,
       event_type: AUDIT_EVENTS.EMERGENCY_ACCESS_GRANTED,
       outcome: granted ? AUDIT_OUTCOMES.SUCCESS : AUDIT_OUTCOMES.FAILURE,
@@ -352,7 +352,7 @@ export class HealthcareAuditLogger {
   ): Promise<void> {
     
     await this.createAuditLog({
-      user_id: userId,
+      userId: userId,
       event_type: AUDIT_EVENTS.DATA_EXPORTED,
       outcome: AUDIT_OUTCOMES.SUCCESS,
       risk_level: RISK_LEVELS.HIGH,
@@ -381,7 +381,7 @@ export class HealthcareAuditLogger {
   ): Promise<void> {
     
     await this.createAuditLog({
-      user_id: adminUserId,
+      userId: adminUserId,
       event_type: AUDIT_EVENTS[event],
       outcome: AUDIT_OUTCOMES.SUCCESS,
       risk_level: RISK_LEVELS.HIGH,
@@ -417,7 +417,7 @@ export class HealthcareAuditLogger {
       }
     };
 
-    if (filters.userId) whereClause.user_id = filters.userId;
+    if (filters.userId) whereClause.userId = filters.userId;
     if (filters.patientId) whereClause.patient_id = filters.patientId;
     if (filters.eventTypes?.length) whereClause.event_type = { in: filters.eventTypes };
     if (filters.riskLevels?.length) whereClause.risk_level = { in: filters.riskLevels };
@@ -467,7 +467,7 @@ export class HealthcareAuditLogger {
     // Implementation would depend on alerting system (email, Slack, PagerDuty, etc.)
     console.warn('CRITICAL SECURITY EVENT:', {
       eventType: entry.event_type,
-      userId: entry.user_id,
+      userId: entry.userId,
       patientId: entry.patient_id,
       description: entry.description,
       timestamp: entry.timestamp

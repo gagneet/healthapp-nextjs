@@ -176,7 +176,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
         doctors: {
           select: {
             doctor_id: true,
-            users_doctors_user_idTousers: {
+            users_doctors_userIdTousers: {
               select: {
                 email: true,
                 // ✅ Auth.js v5 fields
@@ -204,9 +204,9 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
       const userImage = patient.user.image || patient.user.profile_picture_url
       
       const doctorName = patient.doctors ? 
-        (patient.doctors.users_doctors_user_idTousers.name ||
-         patient.doctors.users_doctors_user_idTousers.full_name ||
-         `${patient.doctors.users_doctors_user_idTousers.first_name || ''} ${patient.doctors.users_doctors_user_idTousers.last_name || ''}`.trim())
+        (patient.doctors.users_doctors_userIdTousers.name ||
+         patient.doctors.users_doctors_userIdTousers.full_name ||
+         `${patient.doctors.users_doctors_userIdTousers.first_name || ''} ${patient.doctors.users_doctors_userIdTousers.last_name || ''}`.trim())
         : null
 
       return {
@@ -240,15 +240,15 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
           
           // ✅ Auth.js v5 standard fields (preferred)
           name: doctorName,
-          image: patient.doctors.users_doctors_user_idTousers.image || patient.doctors.users_doctors_user_idTousers.profile_picture_url,
+          image: patient.doctors.users_doctors_userIdTousers.image || patient.doctors.users_doctors_userIdTousers.profile_picture_url,
           
           // ✅ Legacy fields (for backward compatibility)  
-          firstName: patient.doctors.users_doctors_user_idTousers.first_name,
-          lastName: patient.doctors.users_doctors_user_idTousers.last_name,
-          fullName: patient.doctors.users_doctors_user_idTousers.full_name,
-          profilePictureUrl: patient.doctors.users_doctors_user_idTousers.profile_picture_url,
+          firstName: patient.doctors.users_doctors_userIdTousers.first_name,
+          lastName: patient.doctors.users_doctors_userIdTousers.last_name,
+          fullName: patient.doctors.users_doctors_userIdTousers.full_name,
+          profilePictureUrl: patient.doctors.users_doctors_userIdTousers.profile_picture_url,
           
-          email: patient.doctors.users_doctors_user_idTousers.email
+          email: patient.doctors.users_doctors_userIdTousers.email
         } : null,
         height: patient.height_cm,
         weight: patient.weight_kg,
@@ -354,7 +354,7 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
       // Create patient profile
       const patient = await tx.patient.create({
         data: {
-          user_id: user.id,
+          userId: user.id,
           patient_id: patientBusinessId,
           medical_record_number: `MRN${Date.now()}`, // Generate unique MRN
           primary_care_doctor_id: patientData.primaryDoctorId,

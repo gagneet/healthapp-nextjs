@@ -36,7 +36,7 @@ export default {
         concurrently: true
       },
       {
-        fields: ['user_id', 'primary_care_doctor_id'],
+        fields: ['userId', 'primary_care_doctor_id'],
         name: 'idx_patients_user_doctor',
         concurrently: true
       }
@@ -241,7 +241,7 @@ export default {
     // 10. USER ROLES INDEXES
     const userRoleIndexes = [
       {
-        fields: ['user_identity', 'linked_with'],
+        fields: ['userIdentity', 'linked_with'],
         name: 'idx_userroles_identity_linked',
         concurrently: true
       }
@@ -254,7 +254,7 @@ export default {
     // 11. AUDIT LOGS INDEXES (Compliance and monitoring)
     const auditIndexes = [
       {
-        fields: ['user_id', 'created_at', 'action'],
+        fields: ['userId', 'created_at', 'action'],
         name: 'idx_audit_user_created_action',
         concurrently: true
       },

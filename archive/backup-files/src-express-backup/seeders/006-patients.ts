@@ -127,7 +127,7 @@ export default {
       await queryInterface.bulkInsert('patients', [
         {
           id: '550e8400-e29b-41d4-a716-446655440030',
-          user_id: '550e8400-e29b-41d4-a716-446655440010',
+          userId: '550e8400-e29b-41d4-a716-446655440010',
           medical_record_number: 'MRN001',
           primary_care_doctor_id: doctorId,
           emergency_contacts: JSON.stringify([{
@@ -156,7 +156,7 @@ export default {
         },
         {
           id: '550e8400-e29b-41d4-a716-446655440031',
-          user_id: '550e8400-e29b-41d4-a716-446655440011',
+          userId: '550e8400-e29b-41d4-a716-446655440011',
           medical_record_number: 'MRN002',
           primary_care_doctor_id: doctorId,
           emergency_contacts: JSON.stringify([{
@@ -185,7 +185,7 @@ export default {
         },
         {
           id: '550e8400-e29b-41d4-a716-446655440032',
-          user_id: '550e8400-e29b-41d4-a716-446655440012',
+          userId: '550e8400-e29b-41d4-a716-446655440012',
           medical_record_number: 'MRN003',
           primary_care_doctor_id: doctorId,
           emergency_contacts: JSON.stringify([{
@@ -214,7 +214,7 @@ export default {
         },
         {
           id: '550e8400-e29b-41d4-a716-446655440033',
-          user_id: '550e8400-e29b-41d4-a716-446655440013',
+          userId: '550e8400-e29b-41d4-a716-446655440013',
           medical_record_number: 'MRN004',
           primary_care_doctor_id: doctorId,
           emergency_contacts: JSON.stringify([{
@@ -243,7 +243,7 @@ export default {
         },
         {
           id: '550e8400-e29b-41d4-a716-446655440034',
-          user_id: '550e8400-e29b-41d4-a716-446655440014',
+          userId: '550e8400-e29b-41d4-a716-446655440014',
           medical_record_number: 'MRN005',
           primary_care_doctor_id: doctorId,
           emergency_contacts: JSON.stringify([{

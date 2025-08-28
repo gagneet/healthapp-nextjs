@@ -213,7 +213,7 @@ export class HealthcareRBAC {
     // Patient accessing own data
     if (userRole === 'PATIENT') {
       const patient = await prisma.patient.findFirst({
-        where: { id: patientId, user_id: userId }
+        where: { id: patientId, userId: userId }
       });
       return { hasAccess: !!patient, relationship: 'self' };
     }
@@ -221,7 +221,7 @@ export class HealthcareRBAC {
     // Doctor accessing patient data
     if (userRole === 'DOCTOR') {
       const doctor = await prisma.doctors.findFirst({
-        where: { user_id: userId }
+        where: { userId: userId }
       });
 
       if (!doctor) return { hasAccess: false };
@@ -258,7 +258,7 @@ export class HealthcareRBAC {
     // HSP accessing patient data
     if (userRole === 'HSP') {
       const hsp = await prisma.hsps.findFirst({
-        where: { user_id: userId }
+        where: { userId: userId }
       });
 
       if (!hsp) return { hasAccess: false };
@@ -303,7 +303,7 @@ export class HealthcareRBAC {
     if (userRole === 'DOCTOR') {
       const doctor = await prisma.doctors.findFirst({
         where: { 
-          user_id: userId,
+          userId: userId,
           organization_id: providerId
         }
       });
@@ -313,7 +313,7 @@ export class HealthcareRBAC {
     if (userRole === 'HSP') {
       const hsp = await prisma.hsps.findFirst({
         where: {
-          user_id: userId,
+          userId: userId,
           organization_id: providerId
         }
       });
@@ -330,10 +330,10 @@ export class HealthcareRBAC {
     let whereClause = { ...additionalFilters };
 
     if (userRole === 'PATIENT') {
-      whereClause.user_id = userId;
+      whereClause.userId = userId;
     } else if (userRole === 'DOCTOR') {
       const doctor = await prisma.doctors.findFirst({
-        where: { user_id: userId }
+        where: { userId: userId }
       });
       
       if (doctor) {
@@ -354,7 +354,7 @@ export class HealthcareRBAC {
       }
     } else if (userRole === 'HSP') {
       const hsp = await prisma.hsps.findFirst({
-        where: { user_id: userId }
+        where: { userId: userId }
       });
       
       if (hsp) {
@@ -389,7 +389,7 @@ export class HealthcareRBAC {
     try {
       await prisma.audit_logs.create({
         data: {
-          user_id: userId,
+          userId: userId,
           action,
           resource_type: resourceType,
           resource_id: resourceId,

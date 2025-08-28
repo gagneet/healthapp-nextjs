@@ -94,7 +94,7 @@ export default {
     // Check for existing doctor records by email to handle both new and existing users
     const existingDoctorUsers = await queryInterface.sequelize.query(
       `SELECT u.id, u.email FROM users u 
-       LEFT JOIN doctors d ON u.id = d.user_id 
+       LEFT JOIN doctors d ON u.id = d.userId 
        WHERE u.role = 'DOCTOR' AND d.id IS NULL`,
       { type: Sequelize.QueryTypes.SELECT }
     );
@@ -110,7 +110,7 @@ export default {
 
       const doctorRecords = existingDoctorUsers.map((user: any) => ({
         id: uuidv4(),
-        user_id: user.id,
+        userId: user.id,
         medical_license_number: user.email === 'doctor@healthapp.com' ? 'LIC-12345-TEST' : `LIC-${Math.random().toString(36).substr(2, 9).toUpperCase()}`,
         speciality_id: 3, // General Medicine
         specialties: ['general medicine'],
@@ -134,8 +134,8 @@ export default {
     console.log('🩺 Updating existing doctor profiles with complete information...');
     
     const existingDoctorsToUpdate = await queryInterface.sequelize.query(
-      `SELECT d.id, d.user_id, u.email FROM doctors d 
-       JOIN users u ON d.user_id = u.id 
+      `SELECT d.id, d.userId, u.email FROM doctors d 
+       JOIN users u ON d.userId = u.id 
        WHERE u.role = 'DOCTOR' AND (d.speciality_id IS NULL OR d.specialties = '{}' OR d.is_verified = false)`,
       { type: Sequelize.QueryTypes.SELECT }
     );
@@ -185,7 +185,7 @@ export default {
     // Check for existing patient records by email to handle both new and existing users
     const existingPatientUsers = await queryInterface.sequelize.query(
       `SELECT u.id, u.email FROM users u 
-       LEFT JOIN patients p ON u.id = p.user_id 
+       LEFT JOIN patients p ON u.id = p.userId 
        WHERE u.role = 'PATIENT' AND p.id IS NULL`,
       { type: Sequelize.QueryTypes.SELECT }
     );
@@ -193,7 +193,7 @@ export default {
     if (existingPatientUsers.length > 0) {
       const patientRecords = existingPatientUsers.map((user: any, index: any) => ({
         id: uuidv4(),
-        user_id: user.id,
+        userId: user.id,
         medical_record_number: user.email === 'patient@healthapp.com' ? 'MRN-TEST-001' : `MRN-TEST-${String(index + 2).padStart(3, '0')}`,
         created_at: new Date(),
         updated_at: new Date(),

@@ -107,7 +107,7 @@ class PatientService {
       let primaryCareDoctorId = null;
       if (creatorId) {
         const doctorRecord = await Doctor.findOne({
-          where: { user_id: creatorId },
+          where: { userId: creatorId },
           transaction
         });
         primaryCareDoctorId = doctorRecord ? doctorRecord.id : null;
@@ -115,7 +115,7 @@ class PatientService {
 
       // Create patient with medical-specific fields
       const patient = await Patient.create({
-        user_id: user.id,
+        userId: user.id,
         medical_record_number: finalMedicalRecordNumber ? finalMedicalRecordNumber.trim() : null,
         height_cm,
         weight_kg,
@@ -222,7 +222,7 @@ class PatientService {
           patient: {
             id: user.patientProfile.id,
             patient_id: user.patientProfile.patient_id,
-            user_id: user.id,
+            userId: user.id,
             first_name: user.first_name,
             middle_name: user.middle_name,
             last_name: user.last_name,

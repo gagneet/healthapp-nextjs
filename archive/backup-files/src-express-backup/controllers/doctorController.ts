@@ -49,7 +49,7 @@ class DoctorController {
       const userId = req.user!.id;
 
       const doctor = await Doctor.findOne({
-        where: { user_id: userId },
+        where: { userId: userId },
         include: [
           {
             model: User,
@@ -91,7 +91,7 @@ class DoctorController {
         profile: {
           // Basic Information
           id: doctor.id.toString(),
-          user_id: doctor.user_id.toString(),
+          userId: doctor.userId.toString(),
           full_name: `${doctor.user?.first_name || ''} ${doctor.user?.middle_name || ''} ${doctor.user?.last_name || ''}`.replace(/\s+/g, ' ').trim(),
           first_name: doctor.user?.first_name || '',
           middle_name: doctor.user?.middle_name || '',
@@ -243,7 +243,7 @@ class DoctorController {
 
       // Find doctor
       const doctor = await Doctor.findOne({
-        where: { user_id: userId },
+        where: { userId: userId },
         include: [{ model: User, as: 'user' }],
         transaction
       });
@@ -350,7 +350,7 @@ class DoctorController {
           return;
         }
 
-        const doctor = await Doctor.findOne({ where: { user_id: userId } });
+        const doctor = await Doctor.findOne({ where: { userId: userId } });
         if (!doctor) {
           res.status(404).json({
             status: false,
@@ -441,7 +441,7 @@ class DoctorController {
 
       const responseData = {
         id: doctor.id.toString(),
-        user_id: doctor.user_id.toString(),
+        userId: doctor.userId.toString(),
         full_name: `${doctor.user?.first_name || ''} ${doctor.user?.middle_name || ''} ${doctor.user?.last_name || ''}`.replace(/\s+/g, ' ').trim(),
         first_name: doctor.user?.first_name,
         last_name: doctor.user?.last_name,
@@ -621,7 +621,7 @@ class DoctorController {
     try {
       const userId = req.user!.id;
 
-      const doctor = await Doctor.findOne({ where: { user_id: userId } });
+      const doctor = await Doctor.findOne({ where: { userId: userId } });
       if (!doctor) {
         return res.status(404).json({
           status: false,
@@ -659,7 +659,7 @@ class DoctorController {
       const userId = req.user!.id;
       const clinicData = req.body;
 
-      const doctor = await Doctor.findOne({ where: { user_id: userId } });
+      const doctor = await Doctor.findOne({ where: { userId: userId } });
       if (!doctor) {
         return res.status(404).json({
           status: false,
@@ -737,7 +737,7 @@ class DoctorController {
       const updateData = req.body;
       const userId = req.user!.id;
 
-      const doctor = await Doctor.findOne({ where: { user_id: userId } });
+      const doctor = await Doctor.findOne({ where: { userId: userId } });
       if (!doctor) {
         return res.status(404).json({
           status: false,
@@ -839,7 +839,7 @@ class DoctorController {
       const { clinicId } = req.params;
       const userId = req.user!.id;
 
-      const doctor = await Doctor.findOne({ where: { user_id: userId } });
+      const doctor = await Doctor.findOne({ where: { userId: userId } });
       if (!doctor) {
         return res.status(404).json({
           status: false,
@@ -889,7 +889,7 @@ class DoctorController {
     try {
       const userId = req.user!.id;
 
-      const doctor = await Doctor.findOne({ where: { user_id: userId } });
+      const doctor = await Doctor.findOne({ where: { userId: userId } });
       if (!doctor) {
         return res.status(404).json({
           status: false,
@@ -1000,7 +1000,7 @@ class DoctorController {
       const userId = req.user!.id;
       const { limit = 5 } = req.query;
 
-      const doctor = await Doctor.findOne({ where: { user_id: userId } });
+      const doctor = await Doctor.findOne({ where: { userId: userId } });
       if (!doctor) {
         return res.status(404).json({
           status: false,
@@ -1029,7 +1029,7 @@ class DoctorController {
 
       const recentPatients = patients.map((patient: any) => ({
         id: patient.id.toString(),
-        user_id: patient.user_id.toString(),
+        userId: patient.userId.toString(),
         first_name: patient.user?.first_name || '',
         last_name: patient.user?.last_name || '',
         full_name: `${patient.user?.first_name || ''} ${patient.user?.middle_name || ''} ${patient.user?.last_name || ''}`.replace(/\s+/g, ' ').trim(),
@@ -1065,7 +1065,7 @@ class DoctorController {
       const userId = req.user!.id;
       const { limit = 10 } = req.query;
 
-      const doctor = await Doctor.findOne({ where: { user_id: userId } });
+      const doctor = await Doctor.findOne({ where: { userId: userId } });
       if (!doctor) {
         return res.status(404).json({
           status: false,
@@ -1176,7 +1176,7 @@ class DoctorController {
     try {
       const userId = req.user!.id;
 
-      const doctor = await Doctor.findOne({ where: { user_id: userId } });
+      const doctor = await Doctor.findOne({ where: { userId: userId } });
       if (!doctor) {
         return res.status(404).json({
           status: false,
@@ -1306,7 +1306,7 @@ class DoctorController {
       const { clinicId } = req.params;
       const userId = req.user!.id;
 
-      const doctor = await Doctor.findOne({ where: { user_id: userId } });
+      const doctor = await Doctor.findOne({ where: { userId: userId } });
       if (!doctor) {
         return res.status(404).json({
           status: false,
