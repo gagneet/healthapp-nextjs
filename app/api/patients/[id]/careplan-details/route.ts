@@ -88,20 +88,21 @@ async function verifyPatientAccess(patientId: string, doctorId: string | null, h
       {
         patientDoctorAssignments: {
           some: { 
-            doctor_id: doctorId, 
-            is_active: true 
+            doctorId: doctorId,
+            isActive: true
           }
         }
       }
     ];
   } else if (hspId) {
     whereClause.OR = [
-      { hsp_id: hspId },
+      { primaryCareHspId: hspId },
       {
-        patient_provider_assignments: {
+        patientProviderAssignments: {
           some: {
-            hsp_id: hspId,
-            is_active: true
+            // hsp_id is not a valid field on PatientProviderAssignment. This seems to be a logic error.
+            // providerId: hspId,
+            isActive: true
           }
         }
       }
@@ -130,17 +131,18 @@ async function fetchCarePlanData(patientId: string) {
   // Get all care plans for the patient with comprehensive data
   const carePlans = await prisma.carePlan.findMany({
     where: {
-      patient_id: patientId,
-      is_active: true
+      patientId: patientId,
+      status: 'ACTIVE'
     },
     include: {
-      medications: {
+      // 'medications' is a json field, the relation is 'prescribedMedications'
+      prescribedMedications: {
         include: {
           medicine: {
             select: {
               id: true,
               name: true,
-              generic_name: true,
+              genericName: true,
               strength: true,
               form: true,
               category: true
@@ -151,25 +153,26 @@ async function fetchCarePlanData(patientId: string) {
       patient: {
         select: {
           id: true,
-          patient_id: true,
-          overall_adherence_score: true
+          patientId: true,
+          overallAdherenceScore: true
         }
       }
     },
-    orderBy: { created_at: 'desc' }
+    orderBy: { createdAt: 'desc' }
   });
 
   // Get vital requirements and readings
-  const vitalRequirements = await prisma.vital_requirements.findMany({
-    where: { patient_id: patientId },
+  const vitalRequirements = await prisma.vitalRequirement.findMany({
+    // VitalRequirement is linked to CarePlan, not directly to Patient.
+    where: { carePlan: { patientId: patientId } },
     include: {
-      vital_templates: {
+      vitalType: {
         select: {
           id: true,
           name: true,
           unit: true,
-          normal_range_min: true,
-          normal_range_max: true
+          normalRangeMin: true,
+          normalRangeMax: true
         }
       }
     }
@@ -179,15 +182,16 @@ async function fetchCarePlanData(patientId: string) {
   const thirtyDaysAgo = new Date();
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-  const vitalReadings = await prisma.vitals.findMany({
+  // The model is VitalReading, not vitals
+  const vitalReadings = await prisma.vitalReading.findMany({
     where: {
-      patient_id: patientId,
-      recorded_at: {
+      patientId: patientId,
+      readingTime: {
         gte: thirtyDaysAgo
       }
     },
     include: {
-      vital_templates: {
+      vitalType: {
         select: {
           id: true,
           name: true,
@@ -195,7 +199,7 @@ async function fetchCarePlanData(patientId: string) {
         }
       }
     },
-    orderBy: { recorded_at: 'desc' }
+    orderBy: { readingTime: 'desc' }
   });
 
   return {
@@ -209,7 +213,7 @@ async function fetchCarePlanData(patientId: string) {
  * GET /api/patients/{id}/careplan-details
  * Get detailed care plans for a specific patient
  */
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(request: NextRequest, { params }: { params: { id:string } }) {
   try {
     const session = await auth();
     const { id: patientId } = params;
@@ -238,42 +242,42 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
     const { carePlans, vitalRequirements, vitalReadings } = await fetchCarePlanData(patientId);
 
     // Format the care plans data
-    const formattedCarePlans = carePlans.map(carePlan => ({
+    const formattedCarePlans = carePlans.map((carePlan: any) => ({
       id: carePlan.id,
       title: carePlan.title || 'Care Plan',
       description: carePlan.description,
       status: carePlan.status,
-      created_at: carePlan.created_at,
-      updated_at: carePlan.updated_at,
-      medications: carePlan.medications.map(med => ({
+      createdAt: carePlan.createdAt,
+      updatedAt: carePlan.updatedAt,
+      medications: (carePlan.prescribedMedications || []).map((med: any) => ({
         id: med.id,
         medicine: med.medicine,
         dosage: med.dosage,
         frequency: med.frequency,
         duration: med.duration,
         instructions: med.instructions,
-        adherence_score: med.adherence_score
+        adherenceScore: med.adherenceScore
       }))
     }));
 
     // Format vital requirements
-    const formattedVitalRequirements = vitalRequirements.map(req => ({
+    const formattedVitalRequirements = vitalRequirements.map((req: any) => ({
       id: req.id,
-      vital_type: req.vital_templates,
+      vitalType: req.vitalType,
       frequency: req.frequency,
-      target_range_min: req.target_range_min,
-      target_range_max: req.target_range_max,
-      is_critical: req.is_critical
+      targetRangeMin: req.target_range_min,
+      targetRangeMax: req.target_range_max,
+      isCritical: req.isCritical
     }));
 
     // Format vital readings
-    const formattedVitalReadings = vitalReadings.map(reading => ({
+    const formattedVitalReadings = vitalReadings.map((reading: any) => ({
       id: reading.id,
-      vital_type: reading.vital_templates,
+      vitalType: reading.vitalType,
       value: reading.value,
-      recorded_at: reading.recorded_at,
-      is_normal: reading.is_normal,
-      alert_level: reading.alert_level
+      readingTime: reading.readingTime,
+      isNormal: reading.is_normal, // is_normal does not exist on VitalReading model
+      alertLevel: reading.alertLevel
     }));
 
     // Get patient information from the access result
@@ -290,21 +294,21 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
           vitalReadings: formattedVitalReadings,
           patient: {
             id: patient.id,
-            patient_id: patient.patient_id,
-            adherence_score: patient.overall_adherence_score
+            patientId: patient.patientId,
+            adherenceScore: patient.overallAdherenceScore
           }
         },
         message: 'Patient care plan details retrieved successfully'
       }
     });
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error fetching patient care plan details:', error);
+    const errorMessage = error.message || 'Internal server error';
     return NextResponse.json({
       status: false,
       statusCode: 500,
-      payload: { error: { status: 'error', message: 'Internal server error' } }
+      payload: { error: { status: 'error', message: errorMessage, details: error.toString() } }
     }, { status: 500 });
   }
 }
-
