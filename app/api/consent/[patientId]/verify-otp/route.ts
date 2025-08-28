@@ -243,7 +243,7 @@ export const POST = withErrorHandling(async (request: NextRequest, { params }: {
 
     return createSuccessResponse({
       verification_successful: true,
-      access_granted: true,
+      accessGranted: true,
       verified_at: new Date().toISOString(),
       assignment_id: assignment.id,
       patient: {
@@ -262,7 +262,7 @@ export const POST = withErrorHandling(async (request: NextRequest, { params }: {
         verified_by_role: session.user.role,
         verified_by_name: `${session.user.firstName} ${session.user.lastName}`.trim(),
         assignment_reason: assignment.assignmentReason,
-        specialty_focus: assignment.specialtyFocus || [],
+        specialtyFocus: assignment.specialtyFocus || [],
         expires_at: assignment.expiresAt
       },
       next_steps: {

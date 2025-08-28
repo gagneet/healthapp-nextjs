@@ -22,24 +22,24 @@ export default {
           name: 'General Medicine',
           description: 'General practice and family medicine',
           category: 'primary_care',
-          created_at: new Date(),
-          updated_at: new Date()
+          createdAt: new Date(),
+          updatedAt: new Date()
         },
         {
           id: 2,
           name: 'Cardiology',
           description: 'Heart and cardiovascular system',
           category: 'specialist',
-          created_at: new Date(),
-          updated_at: new Date()
+          createdAt: new Date(),
+          updatedAt: new Date()
         },
         {
           id: 3,
           name: 'Internal Medicine',
           description: 'Internal medicine and adult primary care',
           category: 'primary_care',
-          created_at: new Date(),
-          updated_at: new Date()
+          createdAt: new Date(),
+          updatedAt: new Date()
         }
       ], { ignoreDuplicates: true });
     }
@@ -68,8 +68,8 @@ export default {
         last_name: 'Administrator',
         phone: '+1-555-0001',
         email_verified: true,
-        created_at: new Date(),
-        updated_at: new Date(),
+        createdAt: new Date(),
+        updatedAt: new Date(),
       });
     }
 
@@ -87,8 +87,8 @@ export default {
         date_of_birth: '1980-05-15',
         gender: 'MALE',
         email_verified: true,
-        created_at: new Date(),
-        updated_at: new Date(),
+        createdAt: new Date(),
+        updatedAt: new Date(),
       });
     }
 
@@ -106,8 +106,8 @@ export default {
         date_of_birth: '1990-08-22',
         gender: 'FEMALE',
         email_verified: true,
-        created_at: new Date(),
-        updated_at: new Date(),
+        createdAt: new Date(),
+        updatedAt: new Date(),
       });
     }
 
@@ -175,14 +175,14 @@ export default {
           average_rating: 4.8,
           total_reviews: 127,
           is_available_online: true,
-          created_at: new Date(),
-          updated_at: new Date()
+          createdAt: new Date(),
+          updatedAt: new Date()
         }], { ignoreDuplicates: true });
 
         // Create a clinic for the doctor
         await queryInterface.bulkInsert('clinics', [{
           id: '55555555-5555-5555-5555-555555555555', // Deterministic UUID for clinic
-          doctor_id: doctorId,
+          doctorId: doctorId,
           name: 'Main Family Practice Clinic',
           address: JSON.stringify({
             street: '123 Medical Center Drive',
@@ -204,9 +204,9 @@ export default {
           }),
           services_offered: ['consultation', 'preventive_care', 'chronic_disease_management', 'vaccinations'],
           is_primary: true,
-          is_active: true,
-          created_at: new Date(),
-          updated_at: new Date()
+          isActive: true,
+          createdAt: new Date(),
+          updatedAt: new Date()
         }], { ignoreDuplicates: true });
 
         console.log('✅ Complete doctor profile created for doctor@healthapp.com');
@@ -240,7 +240,7 @@ export default {
           id: patientId,
           userId: patientUser.id,
           medical_record_number: 'MRN-2025-001',
-          patient_id: 'JMD/202501/000001', // Doctor initials/Year-Month/Sequence
+          patientId: 'JMD/202501/000001', // Doctor initials/Year-Month/Sequence
           primaryCareDoctorId: doctorRecord.length > 0 ? doctorRecord[0].id : null,
           emergency_contacts: JSON.stringify([
             {
@@ -323,11 +323,11 @@ export default {
           total_appointments: 12,
           missed_appointments: 1,
           last_visit_date: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), // 30 days ago
-          is_active: true,
+          isActive: true,
           requires_interpreter: false,
           has_mobility_issues: false,
-          created_at: new Date(),
-          updated_at: new Date()
+          createdAt: new Date(),
+          updatedAt: new Date()
         }], { ignoreDuplicates: true });
 
         console.log('✅ Complete patient profile created for patient@healthapp.com');
@@ -344,7 +344,7 @@ export default {
          phone = COALESCE(phone, '+1-555-0002'),
          date_of_birth = COALESCE(date_of_birth, '1980-05-15'),
          gender = COALESCE(gender, 'MALE'),
-         updated_at = NOW()
+         updatedAt = NOW()
          WHERE id = :userId`,
         {
           replacements: { userId: doctorUser.id },
@@ -360,7 +360,7 @@ export default {
          phone = COALESCE(phone, '+1-555-0003'),
          date_of_birth = COALESCE(date_of_birth, '1990-08-22'),
          gender = COALESCE(gender, 'FEMALE'),
-         updated_at = NOW()
+         updatedAt = NOW()
          WHERE id = :userId`,
         {
           replacements: { userId: patientUser.id },
@@ -374,7 +374,7 @@ export default {
       await queryInterface.sequelize.query(
         `UPDATE users SET 
          phone = COALESCE(phone, '+1-555-0001'),
-         updated_at = NOW()
+         updatedAt = NOW()
          WHERE id = :userId`,
         {
           replacements: { userId: adminUser.id },
@@ -397,7 +397,7 @@ export default {
   down: async (queryInterface: any, Sequelize: any) => {
     // Delete in reverse order due to foreign key constraints
     await queryInterface.bulkDelete('clinics', {
-      doctor_id: {
+      doctorId: {
         [Sequelize.Op.in]: queryInterface.sequelize.literal(
           "(SELECT d.id FROM doctors d JOIN users u ON d.userId = u.id WHERE u.email = 'doctor@healthapp.com')"
         )

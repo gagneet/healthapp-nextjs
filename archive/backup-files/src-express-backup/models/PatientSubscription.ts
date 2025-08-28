@@ -6,7 +6,7 @@ export default (sequelize: any, DataTypes: any) => {
       defaultValue: DataTypes.UUIDV4,
       primaryKey: true,
     },
-    patient_id: {
+    patientId: {
       type: DataTypes.UUID,
       allowNull: false,
       references: {
@@ -83,12 +83,12 @@ export default (sequelize: any, DataTypes: any) => {
       type: DataTypes.JSON,
       defaultValue: {},
     },
-    created_at: {
+    createdAt: {
       type: DataTypes.DATE,
       allowNull: false,
       defaultValue: DataTypes.NOW,
     },
-    updated_at: {
+    updatedAt: {
       type: DataTypes.DATE,
       allowNull: false,
       defaultValue: DataTypes.NOW,
@@ -100,14 +100,14 @@ export default (sequelize: any, DataTypes: any) => {
   }, {
     tableName: 'patient_subscriptions',
     indexes: [
-      { fields: ['patient_id'] },
+      { fields: ['patientId'] },
       { fields: ['provider_id'] },
       { fields: ['service_plan_id'] },
       { fields: ['status'] },
       { fields: ['next_billing_date'] },
       { fields: ['stripe_subscription_id'] },
       { fields: ['stripe_customer_id'] },
-      { fields: ['patient_id', 'provider_id'] },
+      { fields: ['patientId', 'provider_id'] },
     ],
   });
 

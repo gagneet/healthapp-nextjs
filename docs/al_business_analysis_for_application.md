@@ -264,20 +264,20 @@ CREATE TABLE drug_interactions (
     clinical_significance TEXT,
     management_strategy TEXT,
     evidence_level ENUM('A', 'B', 'C', 'D'),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Patient Allergy Management
 CREATE TABLE patient_allergies (
     id INT PRIMARY KEY AUTO_INCREMENT,
-    patient_id INT,
+    patientId INT,
     allergen_type ENUM('MEDICATION', 'FOOD', 'ENVIRONMENTAL'),
     allergen_name VARCHAR(255),
     reaction_severity ENUM('MILD', 'MODERATE', 'SEVERE', 'ANAPHYLAXIS'),
     reaction_symptoms TEXT,
     onset_date DATE,
     verified_by_provider BOOLEAN DEFAULT FALSE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 ```
 
@@ -332,7 +332,7 @@ const mmasQuestions = [
 ```sql
 CREATE TABLE medication_adherence_analytics (
     id INT PRIMARY KEY AUTO_INCREMENT,
-    patient_id INT,
+    patientId INT,
     medication_id INT,
     adherence_score DECIMAL(5,2), -- 0-100%
     mmas_score DECIMAL(3,1), -- 0-8 scale
@@ -377,7 +377,7 @@ CREATE TABLE medication_adherence_analytics (
 ```sql
 CREATE TABLE nutrition_plans (
     id INT PRIMARY KEY AUTO_INCREMENT,
-    patient_id INT,
+    patientId INT,
     care_plan_id INT,
     created_by_provider_id INT,
     
@@ -401,12 +401,12 @@ CREATE TABLE nutrition_plans (
     fasting_days JSON, -- for alternate day fasting
     
     active BOOLEAN DEFAULT TRUE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE food_intake_logs (
     id INT PRIMARY KEY AUTO_INCREMENT,
-    patient_id INT,
+    patientId INT,
     nutrition_plan_id INT,
     
     -- Meal information
@@ -431,7 +431,7 @@ CREATE TABLE food_intake_logs (
     satisfaction_rating INT, -- 1-5 scale
     notes TEXT,
     
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 ```
 
@@ -508,7 +508,7 @@ class IntermittentFastingService {
 ```sql
 CREATE TABLE exercise_prescriptions (
     id INT PRIMARY KEY AUTO_INCREMENT,
-    patient_id INT,
+    patientId INT,
     care_plan_id INT,
     prescribed_by_provider_id INT,
     
@@ -537,12 +537,12 @@ CREATE TABLE exercise_prescriptions (
     review_date DATE,
     
     active BOOLEAN DEFAULT TRUE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE exercise_sessions (
     id INT PRIMARY KEY AUTO_INCREMENT,
-    patient_id INT,
+    patientId INT,
     prescription_id INT,
     
     -- Session details
@@ -575,7 +575,7 @@ CREATE TABLE exercise_sessions (
     source_device VARCHAR(100), -- Fitbit, Apple Watch, manual entry
     raw_device_data JSON,
     
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 ```
 
@@ -676,12 +676,12 @@ CREATE TABLE appointment_types (
     requires_care_team BOOLEAN DEFAULT FALSE,
     care_team_roles JSON, -- array of required roles
     
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE appointments (
     id INT PRIMARY KEY AUTO_INCREMENT,
-    patient_id INT,
+    patientId INT,
     provider_id INT,
     appointment_type_id INT,
     care_plan_id INT,
@@ -719,8 +719,8 @@ CREATE TABLE appointments (
     confirmation_required BOOLEAN DEFAULT TRUE,
     confirmed_at DATETIME,
     
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 ```
 
@@ -799,8 +799,8 @@ CREATE TABLE vital_sign_types (
     id INT PRIMARY KEY AUTO_INCREMENT,
     name VARCHAR(100) NOT NULL, -- Blood Pressure, Heart Rate, etc.
     unit VARCHAR(20) NOT NULL, -- mmHg, bpm, °F, etc.
-    normal_range_min DECIMAL(8,2),
-    normal_range_max DECIMAL(8,2),
+    normalRangeMin DECIMAL(8,2),
+    normalRangeMax DECIMAL(8,2),
     critical_low DECIMAL(8,2),
     critical_high DECIMAL(8,2),
     measurement_method ENUM('MANUAL', 'DEVICE_INTEGRATED', 'CALCULATED'),
@@ -817,12 +817,12 @@ CREATE TABLE vital_sign_types (
     cardiac_monitoring_required BOOLEAN DEFAULT FALSE,
     
     active BOOLEAN DEFAULT TRUE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE vital_sign_readings (
     id INT PRIMARY KEY AUTO_INCREMENT,
-    patient_id INT NOT NULL,
+    patientId INT NOT NULL,
     vital_sign_type_id INT NOT NULL,
     care_plan_id INT,
     
@@ -859,7 +859,7 @@ CREATE TABLE vital_sign_readings (
     trend_direction ENUM('IMPROVING', 'STABLE', 'DECLINING'),
     trend_significance ENUM('NOT_SIGNIFICANT', 'MINOR', 'MODERATE', 'MAJOR'),
     
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 ```
 
@@ -992,7 +992,7 @@ class VitalSignsCDSS {
 ```sql
 CREATE TABLE care_plans (
     id INT PRIMARY KEY AUTO_INCREMENT,
-    patient_id INT NOT NULL,
+    patientId INT NOT NULL,
     primary_provider_id INT NOT NULL,
     care_coordinator_id INT,
     
@@ -1036,8 +1036,8 @@ CREATE TABLE care_plans (
     outcome_achieved BOOLEAN,
     effectiveness_rating INT, -- 1-5 scale
     
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
 CREATE TABLE care_plan_activities (
@@ -1073,7 +1073,7 @@ CREATE TABLE care_plan_activities (
     activity_status ENUM('ACTIVE', 'PAUSED', 'COMPLETED', 'CANCELLED'),
     priority_level ENUM('LOW', 'MEDIUM', 'HIGH', 'URGENT'),
     
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 ```
 
@@ -1121,7 +1121,7 @@ CREATE TABLE care_plan_outcomes (
     care_plan_effectiveness_rating INT, -- 1-5 scale
     modifications_needed JSON,
     
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 ```
 
@@ -1152,7 +1152,7 @@ CREATE TABLE care_plan_outcomes (
 CREATE TABLE phi_access_logs (
     id INT PRIMARY KEY AUTO_INCREMENT,
     user_id INT NOT NULL,
-    patient_id INT NOT NULL,
+    patientId INT NOT NULL,
     access_type ENUM('CREATE', 'READ', 'UPDATE', 'DELETE', 'EXPORT', 'PRINT'),
     data_category VARCHAR(100), -- medication, vitals, appointments, etc.
     accessed_data_id INT,
@@ -1174,7 +1174,7 @@ CREATE TABLE phi_access_logs (
     anomaly_detected BOOLEAN DEFAULT FALSE,
     access_approved BOOLEAN DEFAULT TRUE,
     
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Data encryption tracking
@@ -1188,7 +1188,7 @@ CREATE TABLE encryption_status (
     last_rotation DATETIME,
     next_rotation_due DATE,
     compliance_status ENUM('COMPLIANT', 'NEEDS_ATTENTION', 'NON_COMPLIANT'),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 ```
 
@@ -1341,11 +1341,11 @@ spec:
 
 ```sql
 -- Optimized indexing strategy for healthcare queries
-CREATE INDEX idx_patients_provider_status ON patients(primary_provider_id, status, created_at);
-CREATE INDEX idx_medications_patient_active ON medications(patient_id, active, start_date);
+CREATE INDEX idx_patients_provider_status ON patients(primary_provider_id, status, createdAt);
+CREATE INDEX idx_medications_patient_active ON medications(patientId, active, start_date);
 CREATE INDEX idx_appointments_provider_date ON appointments(provider_id, scheduled_date, appointment_status);
-CREATE INDEX idx_vitals_patient_timestamp ON vital_sign_readings(patient_id, reading_timestamp DESC);
-CREATE INDEX idx_care_plans_patient_active ON care_plans(patient_id, plan_status, start_date);
+CREATE INDEX idx_vitals_patient_timestamp ON vital_sign_readings(patientId, reading_timestamp DESC);
+CREATE INDEX idx_care_plans_patient_active ON care_plans(patientId, plan_status, start_date);
 
 -- Partitioning for large tables
 CREATE TABLE vital_sign_readings_2025_q1 PARTITION OF vital_sign_readings
@@ -1375,7 +1375,7 @@ app.get('/fhir/R4/Patient/:id', async (req, res) => {
       id: patient.id,
       meta: {
         versionId: patient.version,
-        lastUpdated: patient.updated_at,
+        lastUpdated: patient.updatedAt,
         profile: ["http://hl7.org/fhir/us/core/StructureDefinition/us-core-patient"]
       },
       identifier: [
@@ -1555,7 +1555,7 @@ CREATE TABLE user_roles (
     access_time_restrictions JSON, -- business hours, specific days
     session_timeout_minutes INT DEFAULT 30,
     
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Insert standard healthcare roles
@@ -1925,7 +1925,7 @@ class IoTDeviceIntegration {
 -- Analytics materialized views for performance
 CREATE MATERIALIZED VIEW patient_adherence_summary AS
 SELECT 
-    p.id as patient_id,
+    p.id as patientId,
     p.first_name,
     p.last_name,
     p.date_of_birth,
@@ -1955,25 +1955,25 @@ SELECT
     AVG(vs2.value_primary) as avg_glucose,
     
     -- Engagement metrics
-    COUNT(DISTINCT DATE(mal.created_at)) as active_days_last_30,
-    MAX(mal.created_at) as last_activity_date,
+    COUNT(DISTINCT DATE(mal.createdAt)) as active_days_last_30,
+    MAX(mal.createdAt) as last_activity_date,
     
     -- Data freshness
     CURRENT_TIMESTAMP as calculated_at
 FROM patients p
-LEFT JOIN patient_adherence_analytics pa ON p.id = pa.patient_id
-LEFT JOIN appointments a ON p.id = a.patient_id 
+LEFT JOIN patient_adherence_analytics pa ON p.id = pa.patientId
+LEFT JOIN appointments a ON p.id = a.patientId 
     AND a.scheduled_date >= CURRENT_DATE - INTERVAL '90 days'
-LEFT JOIN emergency_visits eh ON p.id = eh.patient_id 
+LEFT JOIN emergency_visits eh ON p.id = eh.patientId 
     AND eh.visit_date >= CURRENT_DATE - INTERVAL '90 days'
-LEFT JOIN vital_sign_readings vs ON p.id = vs.patient_id 
+LEFT JOIN vital_sign_readings vs ON p.id = vs.patientId 
     AND vs.vital_sign_type_id = (SELECT id FROM vital_sign_types WHERE name = 'Blood Pressure Systolic')
     AND vs.reading_timestamp >= CURRENT_TIMESTAMP - INTERVAL '30 days'
-LEFT JOIN vital_sign_readings vs2 ON p.id = vs2.patient_id 
+LEFT JOIN vital_sign_readings vs2 ON p.id = vs2.patientId 
     AND vs2.vital_sign_type_id = (SELECT id FROM vital_sign_types WHERE name = 'Blood Glucose')
     AND vs2.reading_timestamp >= CURRENT_TIMESTAMP - INTERVAL '30 days'
-LEFT JOIN medication_activity_logs mal ON p.id = mal.patient_id 
-    AND mal.created_at >= CURRENT_DATE - INTERVAL '30 days'
+LEFT JOIN medication_activity_logs mal ON p.id = mal.patientId 
+    AND mal.createdAt >= CURRENT_DATE - INTERVAL '30 days'
 GROUP BY p.id, p.first_name, p.last_name, p.date_of_birth;
 
 -- Index for performance
@@ -2012,7 +2012,7 @@ SELECT
     CURRENT_TIMESTAMP as calculated_at
 FROM providers pr
 JOIN patients p ON pr.id = p.primary_provider_id
-JOIN patient_adherence_summary pas ON p.id = pas.patient_id
+JOIN patient_adherence_summary pas ON p.id = pas.patientId
 GROUP BY pr.id, pr.first_name, pr.last_name, pr.specialty;
 ```
 

@@ -22,7 +22,7 @@ export default (sequelize: any) => {
       comment: 'Secondary doctor assignment this OTP is for'
     },
     
-    patient_id: {
+    patientId: {
       type: DataTypes.UUID,
       allowNull: false,
       references: {
@@ -209,12 +209,12 @@ export default (sequelize: any) => {
       comment: 'Email sending error if any'
     },
     
-    created_at: {
+    createdAt: {
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW
     },
     
-    updated_at: {
+    updatedAt: {
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW
     }
@@ -225,7 +225,7 @@ export default (sequelize: any) => {
     
     indexes: [
       { fields: ['secondary_assignment_id'] },
-      { fields: ['patient_id'] },
+      { fields: ['patientId'] },
       { fields: ['otp_code'] },
       { fields: ['expires_at'] },
       { fields: ['is_verified'] },

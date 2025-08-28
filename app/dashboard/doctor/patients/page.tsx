@@ -333,7 +333,7 @@ export default function PatientsPage() {
             phone: patient.basic_info?.mobile_number || patient.phone,
             date_of_birth: patient.basic_info?.date_of_birth || patient.date_of_birth,
             gender: patient.basic_info?.gender || patient.gender,
-            medical_record_number: patient.basic_info?.patient_id || patient.medical_record_number,
+            medical_record_number: patient.basic_info?.patientId || patient.medical_record_number,
             last_visit: patient.medical_info?.last_visit || patient.last_visit || null,
             next_appointment: patient.medical_info?.next_appointment || patient.next_appointment || null,
             adherence_rate: patient.medical_info?.adherence_rate ?? patient.adherence_rate ?? 0,
@@ -341,7 +341,7 @@ export default function PatientsPage() {
             total_appointments: patient.medical_info?.total_appointments ?? patient.total_appointments ?? 0,
             active_care_plans: patient.medical_info?.active_care_plans ?? patient.active_care_plans ?? 0,
             status: patient.basic_info?.status || patient.status || 'active',
-            created_at: patient.basic_info?.created_at || patient.created_at,
+            createdAt: patient.basic_info?.createdAt || patient.createdAt,
             
             // Consent workflow fields
             patient_type: patient.patient_type || 'M',
@@ -349,12 +349,12 @@ export default function PatientsPage() {
             access_type: patient.access_type || 'primary',
             requires_consent: patient.requires_consent || false,
             consent_status: patient.consent_status || 'not_required',
-            access_granted: patient.access_granted ?? true,
+            accessGranted: patient.accessGranted ?? true,
             can_view: patient.can_view ?? true,
             same_provider: patient.same_provider || false,
             assignment_id: patient.assignment_id || null,
             assignment_reason: patient.assignment_reason || null,
-            specialty_focus: patient.specialty_focus || [],
+            specialtyFocus: patient.specialtyFocus || [],
             primary_doctor_provider: patient.primary_doctor_provider || null,
             secondary_doctor_provider: patient.secondary_doctor_provider || null
           }))

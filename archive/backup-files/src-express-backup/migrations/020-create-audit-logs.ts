@@ -65,7 +65,7 @@ export default {
       },
       
       // Timestamps
-      created_at: {
+      createdAt: {
         type: Sequelize.DATE,
         allowNull: false,
         defaultValue: Sequelize.NOW,
@@ -78,8 +78,8 @@ export default {
       { fields: ['action'], name: 'idx_audit_logs_action' },
       { fields: ['resource_type'], name: 'idx_audit_logs_resource_type' },
       { fields: ['resource_id'], name: 'idx_audit_logs_resource_id' },
-      { fields: ['created_at'], name: 'idx_audit_logs_created_at' },
-      { fields: ['userId', 'created_at'], name: 'idx_audit_logs_user_time' },
+      { fields: ['createdAt'], name: 'idx_audit_logs_created_at' },
+      { fields: ['userId', 'createdAt'], name: 'idx_audit_logs_user_time' },
       { fields: ['resource_type', 'resource_id'], name: 'idx_audit_logs_resource_composite' }
     ];
 

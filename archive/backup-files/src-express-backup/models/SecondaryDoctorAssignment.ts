@@ -10,7 +10,7 @@ export default (sequelize: any) => {
     },
     
     // Core assignment relationships
-    patient_id: {
+    patientId: {
       type: DataTypes.UUID,
       allowNull: false,
       references: {
@@ -61,7 +61,7 @@ export default (sequelize: any) => {
       comment: 'Reason for assigning secondary doctor (specialist referral, etc.)'
     },
     
-    specialty_focus: {
+    specialtyFocus: {
       type: DataTypes.ARRAY(DataTypes.TEXT),
       defaultValue: [],
       comment: 'Specific conditions or specialties this assignment covers'
@@ -109,7 +109,7 @@ export default (sequelize: any) => {
       comment: 'Current consent status'
     },
     
-    access_granted: {
+    accessGranted: {
       type: DataTypes.BOOLEAN,
       defaultValue: false,
       comment: 'Whether secondary doctor can access patient details'
@@ -141,7 +141,7 @@ export default (sequelize: any) => {
     },
     
     // Assignment status
-    is_active: {
+    isActive: {
       type: DataTypes.BOOLEAN,
       defaultValue: true,
       comment: 'Whether this assignment is currently active'
@@ -159,12 +159,12 @@ export default (sequelize: any) => {
       comment: 'Optional end date for temporary assignments'
     },
     
-    created_at: {
+    createdAt: {
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW
     },
     
-    updated_at: {
+    updatedAt: {
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW
     }
@@ -174,13 +174,13 @@ export default (sequelize: any) => {
     underscored: true,
     
     indexes: [
-      { fields: ['patient_id'] },
+      { fields: ['patientId'] },
       { fields: ['primary_doctor_id'] },
       { fields: ['secondary_doctor_id'] },
       { fields: ['secondary_hsp_id'] },
       { fields: ['consent_status'] },
-      { fields: ['access_granted'] },
-      { fields: ['is_active'] },
+      { fields: ['accessGranted'] },
+      { fields: ['isActive'] },
       { fields: ['consent_expires_at'] }
     ],
     
@@ -198,7 +198,7 @@ export default (sequelize: any) => {
             (this as any).primary_doctor_provider_id === (this as any).secondary_doctor_provider_id) {
           (this as any).consent_required = false;
           (this as any).consent_status = 'granted';
-          (this as any).access_granted = true;
+          (this as any).accessGranted = true;
           
           if (!(this as any).access_granted_at) {
             (this as any).access_granted_at = new Date();
@@ -206,7 +206,7 @@ export default (sequelize: any) => {
         } else if (!(this as any).primary_doctor_provider_id || !(this as any).secondary_doctor_provider_id) {
           // Different or no provider = consent required
           (this as any).consent_required = true;
-          if ((this as any).consent_status === 'pending' && (this as any).access_granted) {
+          if ((this as any).consent_status === 'pending' && (this as any).accessGranted) {
             throw new Error('Cannot grant access without consent for different providers');
           }
         }
@@ -243,16 +243,16 @@ export default (sequelize: any) => {
   };
   
   SecondaryDoctorAssignment.prototype.canAccess = function() {
-    if (!this.is_active) return false;
+    if (!this.isActive) return false;
     
     // Check if consent has expired
     if (this.consent_expires_at && new Date() > this.consent_expires_at) {
       this.consent_status = 'expired';
-      this.access_granted = false;
+      this.accessGranted = false;
       return false;
     }
     
-    return this.access_granted;
+    return this.accessGranted;
   };
   
   SecondaryDoctorAssignment.prototype.requiresConsent = function() {
@@ -260,7 +260,7 @@ export default (sequelize: any) => {
   };
   
   SecondaryDoctorAssignment.prototype.grantAccess = function() {
-    this.access_granted = true;
+    this.accessGranted = true;
     this.access_granted_at = new Date();
     this.consent_status = 'granted';
     

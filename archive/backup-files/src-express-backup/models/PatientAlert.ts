@@ -8,7 +8,7 @@ export default (sequelize: any) => {
       defaultValue: DataTypes.UUIDV4,
       primaryKey: true,
     },
-    patient_id: {
+    patientId: {
       type: DataTypes.UUID,
       allowNull: false,
       references: {
@@ -60,11 +60,11 @@ export default (sequelize: any) => {
       type: DataTypes.JSONB,
       defaultValue: {},
     },
-    created_at: {
+    createdAt: {
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW,
     },
-    updated_at: {
+    updatedAt: {
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW,
     },
@@ -74,13 +74,13 @@ export default (sequelize: any) => {
     paranoid: false,
     indexes: [
       {
-        fields: ['patient_id', 'alert_type', 'severity'],
+        fields: ['patientId', 'alert_type', 'severity'],
       },
       {
         fields: ['acknowledged', 'resolved'],
       },
       {
-        fields: ['created_at'],
+        fields: ['createdAt'],
       },
     ],
   });

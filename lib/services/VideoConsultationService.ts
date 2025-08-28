@@ -89,8 +89,8 @@ export class VideoConsultationService {
       const consultation = await prisma.videoConsultation.create({
         data: {
           consultation_id: crypto.randomUUID(),
-          doctor_id: data.doctorId,
-          patient_id: data.patientId,
+          doctorId: data.doctorId,
+          patientId: data.patientId,
           appointment_id: data.appointmentId,
           room_id: dailyRoom.id,
           room_token: null, // We will generate meeting tokens on demand
@@ -105,8 +105,8 @@ export class VideoConsultationService {
           consultation_notes: data.notes,
           created_by: data.doctorId,
           recording_enabled: this.shouldEnableRecording(data.consultationType),
-          created_at: new Date(),
-          updated_at: new Date(),
+          createdAt: new Date(),
+          updatedAt: new Date(),
         },
         include: {
           doctor: {
@@ -169,7 +169,7 @@ export class VideoConsultationService {
       if (consultation.status === 'SCHEDULED') {
         await prisma.videoConsultation.update({
           where: { id: consultation.id },
-          data: { status: 'IN_PROGRESS', actual_start: new Date(), updated_at: new Date() }
+          data: { status: 'IN_PROGRESS', actual_start: new Date(), updatedAt: new Date() }
         });
       }
 
@@ -210,7 +210,7 @@ export class VideoConsultationService {
         return { success: false, error: 'Consultation not found' };
       }
 
-      if (consultation.doctor_id !== userId && consultation.patient_id !== userId) {
+      if (consultation.doctorId !== userId && consultation.patientId !== userId) {
         return { success: false, error: 'Unauthorized to end consultation' };
       }
 
@@ -221,7 +221,7 @@ export class VideoConsultationService {
           actual_end: new Date(),
           // The 'summary' parameter is stored in 'consultation_notes' as per the database schema.
           consultation_notes: summary,
-          updated_at: new Date(),
+          updatedAt: new Date(),
         }
       });
 
@@ -245,7 +245,7 @@ export class VideoConsultationService {
    */
   async getConsultationHistory(userId: string, userType: 'doctor' | 'patient', page = 1, limit = 10) {
     try {
-      const whereClause = userType === 'doctor' ? { doctor_id: userId } : { patient_id: userId };
+      const whereClause = userType === 'doctor' ? { doctorId: userId } : { patientId: userId };
 
       const consultations = await prisma.videoConsultation.findMany({
         where: whereClause,
@@ -254,7 +254,7 @@ export class VideoConsultationService {
           patient: { select: { id: true, user: { select: { first_name: true, last_name: true, } }, } },
           appointment: { select: { id: true, appointment_date: true, } }
         },
-        orderBy: { created_at: 'desc' },
+        orderBy: { createdAt: 'desc' },
         skip: (page - 1) * limit,
         take: limit,
       });
@@ -287,11 +287,11 @@ export class VideoConsultationService {
    * Verify user permissions to join consultation
    */
   private verifyJoinPermissions(consultation: any, userId: string, userType: string) {
-    if (userType === 'doctor' && consultation.doctor_id !== userId) {
+    if (userType === 'doctor' && consultation.doctorId !== userId) {
       return { success: false, error: 'Not authorized to join this consultation as doctor' };
     }
     
-    if (userType === 'patient' && consultation.patient_id !== userId) {
+    if (userType === 'patient' && consultation.patientId !== userId) {
       return { success: false, error: 'Not authorized to join this consultation as patient' };
     }
 
@@ -319,7 +319,7 @@ export class VideoConsultationService {
         return { success: false, error: 'Consultation not found' };
       }
 
-      if (consultation.doctor_id !== userId) {
+      if (consultation.doctorId !== userId) {
         return { success: false, error: 'Only the doctor can toggle recording' };
       }
 
@@ -396,7 +396,7 @@ export class VideoConsultationService {
     try {
       const whereClause = {
         status: 'IN_PROGRESS' as any,
-        ...(userType === 'doctor' ? { doctor_id: userId } : { patient_id: userId })
+        ...(userType === 'doctor' ? { doctorId: userId } : { patientId: userId })
       };
 
       const consultations = await prisma.videoConsultation.findMany({

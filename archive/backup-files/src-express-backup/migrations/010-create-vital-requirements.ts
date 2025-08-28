@@ -25,7 +25,7 @@ export default {
           key: 'id'
         },
       },
-      vital_type_id: {
+      vitalTypeId: {
         type: Sequelize.UUID,
         allowNull: false,
         references: {
@@ -51,12 +51,12 @@ export default {
         allowNull: true,
       },
       
-      created_at: {
+      createdAt: {
         type: Sequelize.DATE,
         allowNull: false,
         defaultValue: Sequelize.NOW,
       },
-      updated_at: {
+      updatedAt: {
         type: Sequelize.DATE,
         allowNull: false,
         defaultValue: Sequelize.NOW,
@@ -70,7 +70,7 @@ export default {
     // Add indexes with error handling
     const indexes = [
       { fields: ['care_plan_id'], name: 'idx_vital_requirements_care_plan' },
-      { fields: ['vital_type_id'], name: 'idx_vital_requirements_vital_type' },
+      { fields: ['vitalTypeId'], name: 'idx_vital_requirements_vital_type' },
       { fields: ['is_critical'], name: 'idx_vital_requirements_critical' },
       { fields: ['frequency'], name: 'idx_vital_requirements_frequency' }
     ];

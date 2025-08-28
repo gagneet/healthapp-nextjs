@@ -103,7 +103,7 @@ export default (sequelize: any) => {
     },
     
     // Status and control
-    is_active: {
+    isActive: {
       type: DataTypes.BOOLEAN,
       defaultValue: true
     },
@@ -127,12 +127,12 @@ export default (sequelize: any) => {
     },
     
     // Timestamps
-    created_at: {
+    createdAt: {
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW
     },
     
-    updated_at: {
+    updatedAt: {
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW
     }
@@ -157,7 +157,7 @@ export default (sequelize: any) => {
         fields: ['severity_level']
       },
       {
-        fields: ['is_active']
+        fields: ['isActive']
       },
       {
         fields: ['applicable_conditions'],
@@ -195,7 +195,7 @@ export default (sequelize: any) => {
         applicable_conditions: {
           [sequelize.Sequelize.Op.contains]: [condition]
         },
-        is_active: true
+        isActive: true
       },
       order: [['treatment_name', 'ASC']]
     });
@@ -205,7 +205,7 @@ export default (sequelize: any) => {
     return this.findAll({
       where: {
         treatment_type: treatmentType,
-        is_active: true
+        isActive: true
       },
       order: [['treatment_name', 'ASC']]
     });
@@ -226,7 +226,7 @@ export default (sequelize: any) => {
             }
           }
         ],
-        is_active: true
+        isActive: true
       },
       order: [['treatment_name', 'ASC']]
     });

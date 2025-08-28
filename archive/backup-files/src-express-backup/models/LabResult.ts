@@ -10,7 +10,7 @@ export default (sequelize: any) => {
     },
     
     // Core Relationships
-    patient_id: {
+    patientId: {
       type: DataTypes.UUID,
       allowNull: false,
       references: {
@@ -338,12 +338,12 @@ export default (sequelize: any) => {
     },
     
     // Timestamps
-    created_at: {
+    createdAt: {
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW
     },
     
-    updated_at: {
+    updatedAt: {
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW
     },
@@ -360,7 +360,7 @@ export default (sequelize: any) => {
     
     indexes: [
       {
-        fields: ['patient_id']
+        fields: ['patientId']
       },
       {
         fields: ['ordering_doctor_id']
@@ -398,7 +398,7 @@ export default (sequelize: any) => {
       },
       {
         // Composite index for patient results
-        fields: ['patient_id', 'status', 'ordered_datetime']
+        fields: ['patientId', 'status', 'ordered_datetime']
       },
       {
         // Index for critical value alerts
@@ -483,7 +483,7 @@ export default (sequelize: any) => {
   
   LabResult.findPatientResults = async function(patientId: any, testCategory = null, limit = 50) {
     const where = {
-      patient_id: patientId,
+      patientId: patientId,
       status: 'completed'
     };
     
@@ -501,7 +501,7 @@ export default (sequelize: any) => {
   LabResult.generateLabSummary = async function(patientId: any, startDate: any, endDate: any) {
     const results = await this.findAll({
       where: {
-        patient_id: patientId,
+        patientId: patientId,
         status: 'completed',
         resulted_datetime: {
           [sequelize.Sequelize.Op.between]: [startDate, endDate]

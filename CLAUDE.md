@@ -249,7 +249,7 @@ export async function up(queryInterface: QueryInterface): Promise<void> {
       defaultValue: DataTypes.UUIDV4,
       primaryKey: true,
     },
-    patient_id: {
+    patientId: {
       type: DataTypes.UUID,
       allowNull: false,
       references: {
@@ -259,7 +259,7 @@ export async function up(queryInterface: QueryInterface): Promise<void> {
       onUpdate: 'CASCADE',
       onDelete: 'CASCADE',
     },
-    vital_type_id: {
+    vitalTypeId: {
       type: DataTypes.UUID,
       allowNull: false,
       references: {
@@ -285,12 +285,12 @@ export async function up(queryInterface: QueryInterface): Promise<void> {
       type: DataTypes.JSONB,
       allowNull: true,
     },
-    created_at: {
+    createdAt: {
       type: DataTypes.DATE,
       allowNull: false,
       defaultValue: Sequelize.literal('CURRENT_TIMESTAMP'),
     },
-    updated_at: {
+    updatedAt: {
       type: DataTypes.DATE,
       allowNull: false,
       defaultValue: Sequelize.literal('CURRENT_TIMESTAMP'),
@@ -298,7 +298,7 @@ export async function up(queryInterface: QueryInterface): Promise<void> {
   });
   
   // Add proper indexes for performance
-  await queryInterface.addIndex('vital_readings', ['patient_id', 'created_at']);
+  await queryInterface.addIndex('vital_readings', ['patientId', 'createdAt']);
   await queryInterface.addIndex('vital_readings', ['alert_level']);
 }
 
@@ -633,7 +633,7 @@ const records = await prisma.AdherenceRecord.findMany({
 
 #### Database Level
 - **Tables**: Common practice is plural snake_case (e.g., `users`, `posts`)
-- **Columns**: Snake_case is the general database convention (e.g., `created_at`, `user_id`)
+- **Columns**: Snake_case is the general database convention (e.g., `createdAt`, `user_id`)
 
 #### Client Level
 - **The Prisma Client ALWAYS generates camelCase property names** - this is not configurable
@@ -647,7 +647,7 @@ Use `@@map` and `@map` to bridge the naming convention gap:
 model User {
   id        Int      @id @default(autoincrement())
   firstName String   @map("first_name")
-  createdAt DateTime @default(now()) @map("created_at")
+  createdAt DateTime @default(now()) @map("createdAt")
   posts     Post[]
 
   @@map("users")

@@ -46,18 +46,18 @@ CREATE TABLE drug_interactions (
     clinical_significance TEXT,
     management_recommendation TEXT,
     evidence_level VARCHAR(5),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE patient_allergies (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    patient_id UUID REFERENCES patients(id),
+    patientId UUID REFERENCES patients(id),
     allergen_type VARCHAR(50) NOT NULL,
     allergen_name VARCHAR(255) NOT NULL,
     reaction_severity VARCHAR(20) NOT NULL,
     reaction_symptoms TEXT,
     verified_by_doctor BOOLEAN DEFAULT FALSE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 ```
 
@@ -439,19 +439,19 @@ CREATE TABLE drug_interactions (
     clinical_significance TEXT,
     management_recommendation TEXT,
     evidence_level VARCHAR(5),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE patient_allergies (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    patient_id UUID REFERENCES patients(id),
+    patientId UUID REFERENCES patients(id),
     allergen_type VARCHAR(50) NOT NULL,
     allergen_name VARCHAR(255) NOT NULL,
     reaction_severity VARCHAR(20) NOT NULL,
     reaction_symptoms TEXT,
     onset_date DATE,
     verified_by_doctor BOOLEAN DEFAULT FALSE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 ```
 

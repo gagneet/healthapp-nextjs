@@ -59,7 +59,7 @@ class SymptomsDiagnosisController {
   async getAllDiagnoses(req: Request, res: Response, next: NextFunction): Promise<void | Response> {
     try {
       const diagnoses = await SymptomsDatabase.findAll({
-        where: { is_active: true },
+        where: { isActive: true },
         attributes: ['id', 'diagnosis_name', 'category', 'symptoms'],
         order: [['diagnosis_name', 'ASC']]
       });
@@ -188,7 +188,7 @@ class SymptomsDiagnosisController {
   async getAllTreatments(req: Request, res: Response, next: NextFunction): Promise<void | Response> {
     try {
       const { condition, category, severity } = req.query;
-      const whereClause = { is_active: true };
+      const whereClause = { isActive: true };
 
       if (condition) {
         (whereClause as any).applicable_conditions = {
@@ -326,7 +326,7 @@ class SymptomsDiagnosisController {
           category: category || 'General',
           symptoms: { [symptomName]: true },
           created_by: req.user!.id,
-          is_active: true
+          isActive: true
         }
       });
 
@@ -390,7 +390,7 @@ class SymptomsDiagnosisController {
         category: category || 'General',
         symptoms: symptomsObj,
         created_by: req.user!.id,
-        is_active: true
+        isActive: true
       });
 
       res.status(201).json(ResponseFormatter.success(

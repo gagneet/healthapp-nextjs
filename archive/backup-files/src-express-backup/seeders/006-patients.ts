@@ -52,8 +52,8 @@ export default {
           role: 'PATIENT',
           account_status: 'ACTIVE',
           email_verified: true,
-          created_at: new Date(),
-          updated_at: new Date()
+          createdAt: new Date(),
+          updatedAt: new Date()
         },
         {
           id: '550e8400-e29b-41d4-a716-446655440011',
@@ -68,8 +68,8 @@ export default {
           role: 'PATIENT',
           account_status: 'ACTIVE',
           email_verified: true,
-          created_at: new Date(),
-          updated_at: new Date()
+          createdAt: new Date(),
+          updatedAt: new Date()
         },
         {
           id: '550e8400-e29b-41d4-a716-446655440012',
@@ -84,8 +84,8 @@ export default {
           role: 'PATIENT',
           account_status: 'ACTIVE',
           email_verified: true,
-          created_at: new Date(),
-          updated_at: new Date()
+          createdAt: new Date(),
+          updatedAt: new Date()
         },
         {
           id: '550e8400-e29b-41d4-a716-446655440013',
@@ -100,8 +100,8 @@ export default {
           role: 'PATIENT',
           account_status: 'ACTIVE',
           email_verified: true,
-          created_at: new Date(),
-          updated_at: new Date()
+          createdAt: new Date(),
+          updatedAt: new Date()
         },
         {
           id: '550e8400-e29b-41d4-a716-446655440014',
@@ -116,8 +116,8 @@ export default {
           role: 'PATIENT',
           account_status: 'ACTIVE',
           email_verified: true,
-          created_at: new Date(),
-          updated_at: new Date()
+          createdAt: new Date(),
+          updatedAt: new Date()
         }
       ], { transaction, returning: true, ignoreDuplicates: true });
 
@@ -150,9 +150,9 @@ export default {
           overall_adherence_score: 92.00,
           last_visit_date: '2025-01-15',
           next_appointment_date: '2025-02-01',
-          is_active: true,
-          created_at: new Date(),
-          updated_at: new Date()
+          isActive: true,
+          createdAt: new Date(),
+          updatedAt: new Date()
         },
         {
           id: '550e8400-e29b-41d4-a716-446655440031',
@@ -179,9 +179,9 @@ export default {
           overall_adherence_score: 65.00,
           last_visit_date: '2025-01-18',
           next_appointment_date: '2025-01-25',
-          is_active: true,
-          created_at: new Date(),
-          updated_at: new Date()
+          isActive: true,
+          createdAt: new Date(),
+          updatedAt: new Date()
         },
         {
           id: '550e8400-e29b-41d4-a716-446655440032',
@@ -208,9 +208,9 @@ export default {
           overall_adherence_score: 78.00,
           last_visit_date: '2025-01-20',
           next_appointment_date: '2025-01-30',
-          is_active: true,
-          created_at: new Date(),
-          updated_at: new Date()
+          isActive: true,
+          createdAt: new Date(),
+          updatedAt: new Date()
         },
         {
           id: '550e8400-e29b-41d4-a716-446655440033',
@@ -237,9 +237,9 @@ export default {
           overall_adherence_score: 95.00,
           last_visit_date: '2025-01-12',
           next_appointment_date: '2025-02-05',
-          is_active: true,
-          created_at: new Date(),
-          updated_at: new Date()
+          isActive: true,
+          createdAt: new Date(),
+          updatedAt: new Date()
         },
         {
           id: '550e8400-e29b-41d4-a716-446655440034',
@@ -266,9 +266,9 @@ export default {
           overall_adherence_score: 88.00,
           last_visit_date: '2025-01-08',
           next_appointment_date: '2025-01-28',
-          is_active: true,
-          created_at: new Date(),
-          updated_at: new Date()
+          isActive: true,
+          createdAt: new Date(),
+          updatedAt: new Date()
         }
       ], { transaction, ignoreDuplicates: true });
 

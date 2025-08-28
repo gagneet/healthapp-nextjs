@@ -36,7 +36,7 @@ export default {
         primaryKey: true,
         defaultValue: Sequelize.UUIDV4,
       },
-      patient_id: {
+      patientId: {
         type: Sequelize.UUID,
         allowNull: false,
         references: {
@@ -122,12 +122,12 @@ export default {
       },
       
       // Timestamps
-      created_at: {
+      createdAt: {
         type: Sequelize.DATE,
         allowNull: false,
         defaultValue: Sequelize.NOW,
       },
-      updated_at: {
+      updatedAt: {
         type: Sequelize.DATE,
         allowNull: false,
         defaultValue: Sequelize.NOW,
@@ -140,12 +140,12 @@ export default {
 
     // Add indexes with error handling
     const indexes = [
-      { fields: ['patient_id'], name: 'idx_patient_subscriptions_patient' },
+      { fields: ['patientId'], name: 'idx_patient_subscriptions_patient' },
       { fields: ['provider_id'], name: 'idx_patient_subscriptions_provider' },
       { fields: ['service_plan_id'], name: 'idx_patient_subscriptions_plan' },
       { fields: ['status'], name: 'idx_patient_subscriptions_status' },
       { fields: ['next_billing_date'], name: 'idx_patient_subscriptions_billing' },
-      { fields: ['patient_id', 'provider_id'], name: 'idx_patient_subscriptions_composite' }
+      { fields: ['patientId', 'provider_id'], name: 'idx_patient_subscriptions_composite' }
     ];
 
     for (const index of indexes) {

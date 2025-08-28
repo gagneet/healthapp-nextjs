@@ -176,12 +176,12 @@ export async function PUT(
       secondary_doctor_id,
       secondary_hsp_id,
       assignment_reason,
-      specialty_focus,
+      specialtyFocus,
       care_plan_ids,
       consent_duration_months,
       assignment_start_date,
       assignment_end_date,
-      is_active
+      isActive
     } = body;
 
     const existingAssignment = await prisma.secondaryDoctorAssignment.findUnique({
@@ -216,12 +216,12 @@ export async function PUT(
     if (secondary_doctor_id !== undefined) updateData.secondaryDoctorId = secondary_doctor_id;
     if (secondary_hsp_id !== undefined) updateData.secondaryHspId = secondary_hsp_id;
     if (assignment_reason !== undefined) updateData.assignmentReason = assignment_reason;
-    if (specialty_focus !== undefined) updateData.specialtyFocus = specialty_focus;
+    if (specialtyFocus !== undefined) updateData.specialtyFocus = specialtyFocus;
     if (care_plan_ids !== undefined) updateData.carePlanIds = care_plan_ids;
     if (consent_duration_months !== undefined) updateData.consentDurationMonths = consent_duration_months;
     if (assignment_start_date !== undefined) updateData.assignmentStartDate = new Date(assignment_start_date);
     if (assignment_end_date !== undefined) updateData.assignmentEndDate = assignment_end_date ? new Date(assignment_end_date) : null;
-    if (is_active !== undefined) updateData.isActive = is_active;
+    if (isActive !== undefined) updateData.isActive = isActive;
 
     if (consent_duration_months !== undefined) {
       const newExpiresAt = new Date();

@@ -29,7 +29,7 @@ export default {
         onUpdate: 'CASCADE',
         onDelete: 'CASCADE',
       },
-      patient_id: {
+      patientId: {
         type: Sequelize.UUID,
         allowNull: false,
         references: {
@@ -106,12 +106,12 @@ export default {
         type: Sequelize.JSON,
         defaultValue: {},
       },
-      created_at: {
+      createdAt: {
         type: Sequelize.DATE,
         allowNull: false,
         defaultValue: Sequelize.NOW,
       },
-      updated_at: {
+      updatedAt: {
         type: Sequelize.DATE,
         allowNull: false,
         defaultValue: Sequelize.NOW,
@@ -124,11 +124,11 @@ export default {
 
     // Add indexes
     await queryInterface.addIndex('payments', ['subscription_id']);
-    await queryInterface.addIndex('payments', ['patient_id']);
+    await queryInterface.addIndex('payments', ['patientId']);
     await queryInterface.addIndex('payments', ['provider_id']);
     await queryInterface.addIndex('payments', ['status']);
     await queryInterface.addIndex('payments', ['stripe_payment_intent_id']);
-    await queryInterface.addIndex('payments', ['created_at']);
+    await queryInterface.addIndex('payments', ['createdAt']);
     await queryInterface.addIndex('payments', ['billing_period_start', 'billing_period_end']);
   },
 

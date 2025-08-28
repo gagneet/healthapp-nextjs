@@ -78,7 +78,7 @@ export default (sequelize: any) => {
       }
     },
     
-    is_active: {
+    isActive: {
       type: DataTypes.BOOLEAN,
       defaultValue: true
     },
@@ -97,12 +97,12 @@ export default (sequelize: any) => {
     },
     
     // Audit fields
-    created_at: {
+    createdAt: {
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW
     },
     
-    updated_at: {
+    updatedAt: {
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW
     },
@@ -134,7 +134,7 @@ export default (sequelize: any) => {
         }
       },
       {
-        fields: ['is_active']
+        fields: ['isActive']
       }
     ],
     
@@ -168,7 +168,7 @@ export default (sequelize: any) => {
       
       // Check if organization is active
       isActive() {
-        return this.is_active && !(this as any).deleted_at;
+        return this.isActive && !(this as any).deleted_at;
       },
       
       // Get organization timezone
@@ -183,7 +183,7 @@ export default (sequelize: any) => {
       findActive() {
         return (this as any).findAll({
           where: {
-            is_active: true,
+            isActive: true,
             deleted_at: null
           }
         });
@@ -194,7 +194,7 @@ export default (sequelize: any) => {
         return (this as any).findAll({
           where: {
             type,
-            is_active: true,
+            isActive: true,
             deleted_at: null
           }
         });

@@ -20,17 +20,17 @@ const FIELD_MAPPINGS = {
   'last_login_at': 'last_used_at',      // Use existing field
   
   // Common field fixes
-  'created_at': 'created_at',
-  'updated_at': 'updated_at',
+  'createdAt': 'createdAt',
+  'updatedAt': 'updatedAt',
   'deleted_at': 'deleted_at',
   
   // Healthcare specific
-  'patient_id': 'patient_id',
-  'doctor_id': 'doctor_id',
+  'patientId': 'patientId',
+  'doctorId': 'doctorId',
   'care_plan_id': 'care_plan_id',
   'medication_id': 'medication_id',
   'vital_template_id': 'vital_template_id',
-  'reading_date': 'reading_time',       // Actual field name in schema
+  'reading_date': 'readingTime',       // Actual field name in schema
   'recorded_by': 'recorded_at',         // Use timestamp instead
   
   // Relationship corrections

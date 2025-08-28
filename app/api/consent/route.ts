@@ -26,14 +26,14 @@ export async function GET(request: NextRequest) {
           payload: { error: { status: 'forbidden', message: 'Patient profile not found' } }
         }, { status: 403 });
       }
-      whereClause.patient_id = patient.id;
+      whereClause.patientId = patient.id;
     }
 
     const { searchParams } = new URL(request.url);
-    const patientId = searchParams.get('patient_id');
+    const patientId = searchParams.get('patientId');
 
     if (patientId && ['DOCTOR', 'HSP', 'ADMIN'].includes(user!.role)) {
-      whereClause.patient_id = patientId;
+      whereClause.patientId = patientId;
     }
 
     const consents = await prisma.patient_consent.findMany({
@@ -51,7 +51,7 @@ export async function GET(request: NextRequest) {
           }
         }
       },
-      orderBy: { created_at: 'desc' }
+      orderBy: { createdAt: 'desc' }
     });
 
     return NextResponse.json({
@@ -82,7 +82,7 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
     const {
-      patient_id,
+      patientId,
       consent_type,
       consent_given,
       consent_details,
@@ -90,7 +90,7 @@ export async function POST(request: NextRequest) {
     } = body;
 
     // Validation
-    if (!patient_id || !consent_type || consent_given === undefined) {
+    if (!patientId || !consent_type || consent_given === undefined) {
       return NextResponse.json({
         status: false,
         statusCode: 400,
@@ -103,7 +103,7 @@ export async function POST(request: NextRequest) {
       const patient = await prisma.Patient.findFirst({
         where: { userId: user!.id }
       });
-      if (!patient || patient.id !== patient_id) {
+      if (!patient || patient.id !== patientId) {
         return NextResponse.json({
           status: false,
           statusCode: 403,
@@ -114,7 +114,7 @@ export async function POST(request: NextRequest) {
 
     const consent = await prisma.patient_consent.create({
       data: {
-        patient_id,
+        patientId,
         consent_type,
         consent_given,
         consent_details: consent_details || '',

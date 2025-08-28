@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
     }
 
     const { searchParams } = new URL(request.url);
-    const patientId = searchParams.get('patient_id');
+    const patientId = searchParams.get('patientId');
     const subscriptionId = searchParams.get('subscription_id');
     const status = searchParams.get('status');
     const providerId = searchParams.get('provider_id');
@@ -40,7 +40,7 @@ export async function GET(request: NextRequest) {
           payload: { error: { status: 'forbidden', message: 'Patient profile not found' } }
         }, { status: 403 });
       }
-      whereClause.patient_id = patient.id;
+      whereClause.patientId = patient.id;
     } else if (session.user.role === 'DOCTOR') {
       const doctor = await prisma.doctor.findFirst({
         where: { userId: session.user.id }
@@ -51,13 +51,13 @@ export async function GET(request: NextRequest) {
           where: { primaryCareDoctorId: doctor.id },
           select: { id: true }
         });
-        whereClause.patient_id = { in: doctorPatients.map(p => p.id) };
+        whereClause.patientId = { in: doctorPatients.map(p => p.id) };
       }
     }
 
     // Additional filters
     if (patientId && ['DOCTOR', 'HSP', 'SYSTEM_ADMIN', 'HOSPITAL_ADMIN'].includes(session.user.role)) {
-      whereClause.patient_id = patientId;
+      whereClause.patientId = patientId;
     }
 
     if (subscriptionId) {
@@ -74,12 +74,12 @@ export async function GET(request: NextRequest) {
 
     // Date range filter
     if (startDate || endDate) {
-      whereClause.created_at = {};
+      whereClause.createdAt = {};
       if (startDate) {
-        whereClause.created_at.gte = new Date(startDate);
+        whereClause.createdAt.gte = new Date(startDate);
       }
       if (endDate) {
-        whereClause.created_at.lte = new Date(endDate);
+        whereClause.createdAt.lte = new Date(endDate);
       }
     }
 
@@ -90,7 +90,7 @@ export async function GET(request: NextRequest) {
           patients: {
             select: {
               id: true,
-              patient_id: true,
+              patientId: true,
               user: {
                 select: {
                   name: true,
@@ -129,7 +129,7 @@ export async function GET(request: NextRequest) {
         },
         skip: offset,
         take: limit,
-        orderBy: { created_at: 'desc' }
+        orderBy: { createdAt: 'desc' }
       }),
       prisma.payments.count({ where: whereClause })
     ]);
@@ -214,7 +214,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const {
       subscription_id,
-      patient_id,
+      patientId,
       provider_id,
       amount,
       currency = 'USD',
@@ -226,7 +226,7 @@ export async function POST(request: NextRequest) {
     } = body;
 
     // Validation
-    if (!subscription_id || !patient_id || !provider_id || !amount || !payment_method) {
+    if (!subscription_id || !patientId || !provider_id || !amount || !payment_method) {
       return NextResponse.json({
         status: false,
         statusCode: 400,
@@ -258,7 +258,7 @@ export async function POST(request: NextRequest) {
         where: { userId: session.user.id }
       });
       const patient = await prisma.patient.findUnique({
-        where: { id: patient_id }
+        where: { id: patientId }
       });
       
       if (!doctor || !patient || patient.primaryCareDoctorId !== doctor.id) {
@@ -275,7 +275,7 @@ export async function POST(request: NextRequest) {
       data: {
         id: randomUUID(),
         subscription_id,
-        patient_id,
+        patientId,
         provider_id,
         amount: parseFloat(amount),
         currency,
@@ -285,14 +285,14 @@ export async function POST(request: NextRequest) {
         billing_period_end: billing_period_end ? new Date(billing_period_end) : null,
         invoice_id,
         metadata,
-        created_at: new Date(),
-        updated_at: new Date()
+        createdAt: new Date(),
+        updatedAt: new Date()
       },
       include: {
         patients: {
           select: {
             id: true,
-            patient_id: true,
+            patientId: true,
             user: {
               select: {
                 name: true,

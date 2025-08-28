@@ -43,7 +43,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
   const paginationResult = PaginationSchema.safeParse({
     page: parseInt(searchParams.get('page') || '1'),
     limit: parseInt(searchParams.get('limit') || '20'),
-    sortBy: searchParams.get('sortBy') || 'created_at',
+    sortBy: searchParams.get('sortBy') || 'createdAt',
     sortOrder: searchParams.get('sortOrder') || 'desc'
   })
 
@@ -108,7 +108,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
           }
         },
         {
-          patient_id: { contains: searchQuery, mode: 'insensitive' }
+          patientId: { contains: searchQuery, mode: 'insensitive' }
         },
         {
           medical_record_number: { contains: searchQuery, mode: 'insensitive' }
@@ -138,17 +138,17 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
       skip,
       take: limit,
       orderBy: {
-        [sortBy === 'createdAt' ? 'created_at' : sortBy as string]: sortOrder as 'asc' | 'desc'
+        [sortBy === 'createdAt' ? 'createdAt' : sortBy as string]: sortOrder as 'asc' | 'desc'
       },
       select: {
         id: true,
-        patient_id: true,
+        patientId: true,
         medical_record_number: true,
         height_cm: true,
         weight_kg: true,
         blood_type: true,
-        created_at: true,
-        updated_at: true,
+        createdAt: true,
+        updatedAt: true,
         user: {
           select: {
             id: true,
@@ -168,14 +168,14 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
             date_of_birth: true,
             gender: true,
             accountStatus: true,
-            created_at: true,
-            updated_at: true
+            createdAt: true,
+            updatedAt: true
           }
         },
         // Include primary doctor info
         doctors: {
           select: {
-            doctor_id: true,
+            doctorId: true,
             users_doctors_userIdTousers: {
               select: {
                 email: true,
@@ -211,7 +211,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
 
       return {
         id: patient.id,
-        patientId: patient.patient_id,
+        patientId: patient.patientId,
         medicalRecordNumber: patient.medical_record_number,
         user: {
           id: patient.user.id,
@@ -236,7 +236,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
           accountStatus: patient.user.account_status
         },
         primaryDoctor: patient.doctors ? {
-          doctorId: patient.doctors.doctor_id,
+          doctorId: patient.doctors.doctorId,
           
           // ✅ Auth.js v5 standard fields (preferred)
           name: doctorName,
@@ -253,8 +253,8 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
         height: patient.height_cm,
         weight: patient.weight_kg,
         bloodType: patient.blood_type,
-        createdAt: patient.created_at,
-        updatedAt: patient.updated_at
+        createdAt: patient.createdAt,
+        updatedAt: patient.updatedAt
       }
     });
 
@@ -346,8 +346,8 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
           twoFactorEnabled: false,
           failedLoginAttempts: 0,
           password_changed_at: new Date(),
-          created_at: new Date(),
-          updated_at: new Date()
+          createdAt: new Date(),
+          updatedAt: new Date()
         }
       })
 
@@ -355,7 +355,7 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
       const patient = await tx.patient.create({
         data: {
           userId: user.id,
-          patient_id: patientBusinessId,
+          patientId: patientBusinessId,
           medical_record_number: `MRN${Date.now()}`, // Generate unique MRN
           primaryCareDoctorId: patientData.primaryDoctorId,
           height_cm: patientData.height,
@@ -365,8 +365,8 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
           allergies: patientData.allergies,
           emergency_contacts: patientData.emergencyContact,
           insurance_information: patientData.insuranceDetails,
-          created_at: new Date(),
-          updated_at: new Date()
+          createdAt: new Date(),
+          updatedAt: new Date()
         }
       })
 
@@ -380,7 +380,7 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
 
     const responseData = {
       id: result.patient.id,
-      patientId: result.patient.patient_id,
+      patientId: result.patient.patientId,
       medicalRecordNumber: result.patient.medical_record_number,
       user: {
         id: result.user.id,
@@ -410,7 +410,7 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
       medicalHistory: result.patient.medical_history,
       allergies: result.patient.allergies,
       emergencyContact: result.patient.emergency_contacts,
-      createdAt: result.patient.created_at
+      createdAt: result.patient.createdAt
     };
 
     // TODO: Send welcome email with temporary password

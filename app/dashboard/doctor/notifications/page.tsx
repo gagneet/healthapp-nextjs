@@ -21,8 +21,8 @@ interface Notification {
   is_read: boolean
   is_urgent: boolean
   patient_name?: string
-  patient_id?: string
-  created_at: string
+  patientId?: string
+  createdAt: string
 }
 
 export default function NotificationsPage() {
@@ -56,8 +56,8 @@ export default function NotificationsPage() {
             is_read: alert.status === 'READ',
             is_urgent: alert.severity === 'high',
             patient_name: alert.patientName,
-            patient_id: alert.patientId,
-            created_at: alert.timestamp || alert.created_at
+            patientId: alert.patientId,
+            createdAt: alert.timestamp || alert.createdAt
           }))
           setNotifications(transformedNotifications)
         }
@@ -74,8 +74,8 @@ export default function NotificationsPage() {
           is_read: false,
           is_urgent: true,
           patient_name: 'John Doe',
-          patient_id: 'patient-1',
-          created_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString()
+          patientId: 'patient-1',
+          createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString()
         },
         {
           id: '2', 
@@ -85,8 +85,8 @@ export default function NotificationsPage() {
           is_read: false,
           is_urgent: false,
           patient_name: 'Jane Smith',
-          patient_id: 'patient-2',
-          created_at: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString()
+          patientId: 'patient-2',
+          createdAt: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString()
         },
         {
           id: '3',
@@ -95,7 +95,7 @@ export default function NotificationsPage() {
           type: 'info',
           is_read: true,
           is_urgent: false,
-          created_at: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
+          createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
         }
       ])
     } finally {
@@ -332,7 +332,7 @@ export default function NotificationsPage() {
                           {notification.message}
                         </p>
                         <div className="mt-2 flex items-center space-x-4 text-xs text-gray-500">
-                          <span>{formatDateTime(notification.created_at)}</span>
+                          <span>{formatDateTime(notification.createdAt)}</span>
                           {notification.patient_name && (
                             <span>Patient: {notification.patient_name}</span>
                           )}
@@ -340,9 +340,9 @@ export default function NotificationsPage() {
                       </div>
                     </div>
                     <div className="flex items-center space-x-2 ml-4">
-                      {notification.patient_id && (
+                      {notification.patientId && (
                         <Link
-                          href={`/dashboard/doctor/patients/${notification.patient_id}`}
+                          href={`/dashboard/doctor/patients/${notification.patientId}`}
                           className="p-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-md"
                           title="View Patient"
                         >

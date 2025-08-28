@@ -19,7 +19,7 @@ export default (sequelize: any) => {
       comment: 'Name of the medical device'
     },
     
-    device_type: {
+    deviceType: {
       type: DataTypes.STRING(50),
       allowNull: false,
       validate: {
@@ -76,7 +76,7 @@ export default (sequelize: any) => {
     },
     
     // Patient Assignment
-    patient_id: {
+    patientId: {
       type: DataTypes.UUID,
       allowNull: true,
       references: {
@@ -349,12 +349,12 @@ export default (sequelize: any) => {
       comment: 'When device was activated'
     },
     
-    created_at: {
+    createdAt: {
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW
     },
     
-    updated_at: {
+    updatedAt: {
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW
     },
@@ -371,13 +371,13 @@ export default (sequelize: any) => {
     
     indexes: [
       {
-        fields: ['patient_id']
+        fields: ['patientId']
       },
       {
         fields: ['organization_id']
       },
       {
-        fields: ['device_type']
+        fields: ['deviceType']
       },
       {
         fields: ['status']
@@ -402,7 +402,7 @@ export default (sequelize: any) => {
       },
       {
         // Composite index for patient devices
-        fields: ['patient_id', 'status', 'device_type']
+        fields: ['patientId', 'status', 'deviceType']
       },
       {
         // Index for maintenance scheduling
@@ -432,7 +432,7 @@ export default (sequelize: any) => {
         }
         
         // Set assigned date when patient is assigned
-        if (device.changed('patient_id') && device.patient_id && !device.assigned_date) {
+        if (device.changed('patientId') && device.patientId && !device.assigned_date) {
           device.assigned_date = new Date();
         }
       }
@@ -442,12 +442,12 @@ export default (sequelize: any) => {
   // Class methods
   MedicalDevice.findByPatient = async function(patientId: any, deviceType = null) {
     const where = {
-      patient_id: patientId,
+      patientId: patientId,
       status: 'active'
     };
     
     if (deviceType) {
-      (where as any).device_type = deviceType;
+      (where as any).deviceType = deviceType;
     }
     
     return await this.findAll({
@@ -576,7 +576,7 @@ export default (sequelize: any) => {
   };
   
   MedicalDevice.prototype.assignToPatient = function(patientId: any, assignedBy: any, assignerType: any) {
-    this.patient_id = patientId;
+    this.patientId = patientId;
     this.assigned_date = new Date();
     
     if (assignerType === 'doctor') {
@@ -589,7 +589,7 @@ export default (sequelize: any) => {
   };
   
   MedicalDevice.prototype.unassignFromPatient = function() {
-    this.patient_id = null;
+    this.patientId = null;
     this.assigned_date = null;
     this.status = 'inactive';
     

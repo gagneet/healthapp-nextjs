@@ -28,8 +28,8 @@ export default {
           strength: '500mg'
         }),
         public_medicine: true,
-        created_at: new Date(),
-        updated_at: new Date(),
+        createdAt: new Date(),
+        updatedAt: new Date(),
       },
       {
         id: '550e8400-e29b-41d4-a716-446655440002',
@@ -42,8 +42,8 @@ export default {
           strength: '10mg'
         }),
         public_medicine: true,
-        created_at: new Date(),
-        updated_at: new Date(),
+        createdAt: new Date(),
+        updatedAt: new Date(),
       },
       {
         id: '550e8400-e29b-41d4-a716-446655440003',
@@ -56,8 +56,8 @@ export default {
           strength: '81mg'
         }),
         public_medicine: true,
-        created_at: new Date(),
-        updated_at: new Date(),
+        createdAt: new Date(),
+        updatedAt: new Date(),
       },
       {
         id: '550e8400-e29b-41d4-a716-446655440004',
@@ -70,8 +70,8 @@ export default {
           strength: '200mg'
         }),
         public_medicine: true,
-        created_at: new Date(),
-        updated_at: new Date(),
+        createdAt: new Date(),
+        updatedAt: new Date(),
       },
       {
         id: '550e8400-e29b-41d4-a716-446655440005',
@@ -84,8 +84,8 @@ export default {
           strength: '5mg'
         }),
         public_medicine: true,
-        created_at: new Date(),
-        updated_at: new Date(),
+        createdAt: new Date(),
+        updatedAt: new Date(),
       }
     ], { ignoreDuplicates: true });
     

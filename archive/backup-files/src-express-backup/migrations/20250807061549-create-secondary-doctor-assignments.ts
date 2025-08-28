@@ -18,7 +18,7 @@ export default {
       },
       
       // Core assignment relationships
-      patient_id: {
+      patientId: {
         type: Sequelize.UUID,
         allowNull: false,
         references: {
@@ -69,7 +69,7 @@ export default {
         comment: 'Reason for assigning secondary doctor (specialist referral, etc.)'
       },
       
-      specialty_focus: {
+      specialtyFocus: {
         type: Sequelize.ARRAY(Sequelize.TEXT),
         defaultValue: [],
         comment: 'Specific conditions or specialties this assignment covers'
@@ -117,7 +117,7 @@ export default {
         comment: 'Current consent status'
       },
       
-      access_granted: {
+      accessGranted: {
         type: Sequelize.BOOLEAN,
         defaultValue: false,
         comment: 'Whether secondary doctor can access patient details'
@@ -149,7 +149,7 @@ export default {
       },
       
       // Assignment status
-      is_active: {
+      isActive: {
         type: Sequelize.BOOLEAN,
         defaultValue: true,
         comment: 'Whether this assignment is currently active'
@@ -168,12 +168,12 @@ export default {
       },
       
       // Audit fields
-      created_at: {
+      createdAt: {
         type: Sequelize.DATE,
         defaultValue: Sequelize.literal('CURRENT_TIMESTAMP')
       },
       
-      updated_at: {
+      updatedAt: {
         type: Sequelize.DATE,
         defaultValue: Sequelize.literal('CURRENT_TIMESTAMP')
       }
@@ -181,13 +181,13 @@ export default {
 
     // Add indexes for performance
     const indexes = [
-      { fields: ['patient_id'], name: 'idx_secondary_doctor_assignments_patient_id' },
+      { fields: ['patientId'], name: 'idx_secondary_doctor_assignments_patient_id' },
       { fields: ['primary_doctor_id'], name: 'idx_secondary_doctor_assignments_primary_doctor_id' },
       { fields: ['secondary_doctor_id'], name: 'idx_secondary_doctor_assignments_secondary_doctor_id' },
       { fields: ['secondary_hsp_id'], name: 'idx_secondary_doctor_assignments_secondary_hsp_id' },
       { fields: ['consent_status'], name: 'idx_secondary_doctor_assignments_consent_status' },
-      { fields: ['access_granted'], name: 'idx_secondary_doctor_assignments_access_granted' },
-      { fields: ['is_active'], name: 'idx_secondary_doctor_assignments_is_active' },
+      { fields: ['accessGranted'], name: 'idx_secondary_doctor_assignments_access_granted' },
+      { fields: ['isActive'], name: 'idx_secondary_doctor_assignments_is_active' },
       { fields: ['consent_expires_at'], name: 'idx_secondary_doctor_assignments_consent_expires_at' }
     ];
 
@@ -202,10 +202,10 @@ export default {
     // Add unique constraint to prevent duplicate assignments
     try {
       await queryInterface.addIndex('secondary_doctor_assignments', {
-        fields: ['patient_id', 'secondary_doctor_id', 'secondary_hsp_id'],
+        fields: ['patientId', 'secondary_doctor_id', 'secondary_hsp_id'],
         unique: true,
         where: {
-          is_active: true
+          isActive: true
         },
         name: 'unique_active_secondary_assignment'
       });

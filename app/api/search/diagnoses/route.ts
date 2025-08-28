@@ -38,7 +38,7 @@ export async function GET(request: NextRequest) {
 
     let whereClause: any = {
       AND: [
-        { is_active: true },
+        { isActive: true },
         { diagnosis_name: { contains: query, mode: 'insensitive' } }
       ]
     };
@@ -79,8 +79,8 @@ export async function GET(request: NextRequest) {
         common_age_groups: true,
         gender_specific: true,
         risk_factors: true,
-        created_at: true,
-        updated_at: true
+        createdAt: true,
+        updatedAt: true
       },
       orderBy: { diagnosis_name: 'asc' }
     });
@@ -112,7 +112,7 @@ export async function GET(request: NextRequest) {
             common_age_groups: diagnosis.common_age_groups || [],
             gender_specific: diagnosis.gender_specific,
             risk_factors: diagnosis.risk_factors || [],
-            last_updated: diagnosis.updated_at
+            last_updated: diagnosis.updatedAt
           })),
           metadata: {
             query,

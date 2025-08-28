@@ -95,7 +95,7 @@ async function testDashboards() {
     const doctors = await prisma.doctors.findMany({
       select: {
         id: true,
-        doctor_id: true,
+        doctorId: true,
         medical_license_number: true,
         users_doctors_userIdTousers: {
           select: {
@@ -109,13 +109,13 @@ async function testDashboards() {
     
     console.log('👨‍⚕️ Doctors with business IDs:');
     doctors.forEach(doc => {
-      console.log(`  - ${doc.doctor_id} (${doc.medical_license_number}) - ${doc.users_doctors_userIdTousers.first_name} ${doc.users_doctors_userIdTousers.last_name} (${doc.users_doctors_userIdTousers.email})`);
+      console.log(`  - ${doc.doctorId} (${doc.medical_license_number}) - ${doc.users_doctors_userIdTousers.first_name} ${doc.users_doctors_userIdTousers.last_name} (${doc.users_doctors_userIdTousers.email})`);
     });
     
     const patients = await prisma.patient.findMany({
       select: {
         id: true,
-        patient_id: true,
+        patientId: true,
         medical_record_number: true,
         user: {
           select: {
@@ -129,7 +129,7 @@ async function testDashboards() {
     
     console.log('👥 Patients with business IDs:');
     patients.forEach(pat => {
-      console.log(`  - ${pat.patient_id} (${pat.medical_record_number}) - ${pat.user.first_name} ${pat.user.last_name} (${pat.user.email})`);
+      console.log(`  - ${pat.patientId} (${pat.medical_record_number}) - ${pat.user.first_name} ${pat.user.last_name} (${pat.user.email})`);
     });
     
     const hsps = await prisma.hsps.findMany({

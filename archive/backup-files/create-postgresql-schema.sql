@@ -109,11 +109,11 @@ CREATE TABLE organizations (
     contact_info JSONB DEFAULT '{}',
     address JSONB DEFAULT '{}',
     settings JSONB DEFAULT '{}',
-    is_active BOOLEAN DEFAULT TRUE,
+    isActive BOOLEAN DEFAULT TRUE,
     hipaa_covered_entity BOOLEAN DEFAULT TRUE,
     business_associate_agreement JSONB,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    createdAt TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updatedAt TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     deleted_at TIMESTAMP WITH TIME ZONE
 );
 
@@ -157,8 +157,8 @@ CREATE TABLE users (
     hipaa_consent_date TIMESTAMP WITH TIME ZONE,
     
     -- Audit fields
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    createdAt TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updatedAt TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     deleted_at TIMESTAMP WITH TIME ZONE
 );
 
@@ -209,8 +209,8 @@ CREATE TABLE doctors (
     is_available_online BOOLEAN DEFAULT TRUE,
     
     -- Timestamps
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    createdAt TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updatedAt TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     deleted_at TIMESTAMP WITH TIME ZONE
 );
 
@@ -262,8 +262,8 @@ CREATE TABLE hsps (
     is_available BOOLEAN DEFAULT TRUE,
     
     -- Timestamps
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    createdAt TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updatedAt TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     deleted_at TIMESTAMP WITH TIME ZONE
 );
 
@@ -310,21 +310,21 @@ CREATE TABLE patients (
     next_appointment_date TIMESTAMP WITH TIME ZONE,
     
     -- Status flags
-    is_active BOOLEAN DEFAULT TRUE,
+    isActive BOOLEAN DEFAULT TRUE,
     requires_interpreter BOOLEAN DEFAULT FALSE,
     has_mobility_issues BOOLEAN DEFAULT FALSE,
     
     -- Timestamps
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    createdAt TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updatedAt TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     deleted_at TIMESTAMP WITH TIME ZONE
 );
 
 -- Treatment Plans table (short-term, acute issues)
 CREATE TABLE treatment_plans (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    patient_id UUID NOT NULL REFERENCES patients(id) ON DELETE CASCADE,
-    doctor_id UUID NOT NULL REFERENCES doctors(id),
+    patientId UUID NOT NULL REFERENCES patients(id) ON DELETE CASCADE,
+    doctorId UUID NOT NULL REFERENCES doctors(id),
     organization_id UUID REFERENCES organizations(id),
     
     -- Basic Information
@@ -372,15 +372,15 @@ CREATE TABLE treatment_plans (
     care_team_notes JSONB DEFAULT '[]',
     
     -- Timestamps
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    createdAt TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updatedAt TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     deleted_at TIMESTAMP WITH TIME ZONE
 );
 
 -- Care Plans table (long-term, chronic conditions)
 CREATE TABLE care_plans (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    patient_id UUID NOT NULL REFERENCES patients(id) ON DELETE CASCADE,
+    patientId UUID NOT NULL REFERENCES patients(id) ON DELETE CASCADE,
     created_by_doctor_id UUID REFERENCES doctors(id),
     created_by_hsp_id UUID REFERENCES hsps(id),
     organization_id UUID REFERENCES organizations(id),
@@ -445,8 +445,8 @@ CREATE TABLE care_plans (
     channel_id VARCHAR(255),
     
     -- Timestamps
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    createdAt TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updatedAt TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     deleted_at TIMESTAMP WITH TIME ZONE,
     
     -- Ensure either doctor or HSP created the plan
@@ -459,7 +459,7 @@ CREATE TABLE care_plans (
 -- Prescriptions table (formal prescription management)
 CREATE TABLE prescriptions (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    patient_id UUID NOT NULL REFERENCES patients(id) ON DELETE CASCADE,
+    patientId UUID NOT NULL REFERENCES patients(id) ON DELETE CASCADE,
     prescribing_doctor_id UUID REFERENCES doctors(id),
     prescribing_hsp_id UUID REFERENCES hsps(id),
     organization_id UUID REFERENCES organizations(id),
@@ -546,8 +546,8 @@ CREATE TABLE prescriptions (
     metadata JSONB DEFAULT '{}',
     
     -- Timestamps
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    createdAt TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updatedAt TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     deleted_at TIMESTAMP WITH TIME ZONE,
     
     -- Ensure either doctor or HSP prescribed
@@ -560,8 +560,8 @@ CREATE TABLE prescriptions (
 -- Notifications table
 CREATE TABLE notifications (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    patient_id UUID REFERENCES patients(id) ON DELETE CASCADE,
-    doctor_id UUID REFERENCES doctors(id),
+    patientId UUID REFERENCES patients(id) ON DELETE CASCADE,
+    doctorId UUID REFERENCES doctors(id),
     hsp_id UUID REFERENCES hsps(id),
     organization_id UUID REFERENCES organizations(id),
     
@@ -608,15 +608,15 @@ CREATE TABLE notifications (
     personalization_data JSONB DEFAULT '{}',
     
     -- Timestamps
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    createdAt TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updatedAt TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     deleted_at TIMESTAMP WITH TIME ZONE
 );
 
 -- Adherence Logs table
 CREATE TABLE adherence_logs (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    patient_id UUID NOT NULL REFERENCES patients(id) ON DELETE CASCADE,
+    patientId UUID NOT NULL REFERENCES patients(id) ON DELETE CASCADE,
     organization_id UUID REFERENCES organizations(id),
     
     -- Type of adherence being tracked
@@ -672,15 +672,15 @@ CREATE TABLE adherence_logs (
     metadata JSONB DEFAULT '{}',
     
     -- Timestamps
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    createdAt TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updatedAt TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     deleted_at TIMESTAMP WITH TIME ZONE
 );
 
 -- Lab Results table
 CREATE TABLE lab_results (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    patient_id UUID NOT NULL REFERENCES patients(id) ON DELETE CASCADE,
+    patientId UUID NOT NULL REFERENCES patients(id) ON DELETE CASCADE,
     ordering_doctor_id UUID REFERENCES doctors(id),
     ordering_hsp_id UUID REFERENCES hsps(id),
     organization_id UUID REFERENCES organizations(id),
@@ -756,8 +756,8 @@ CREATE TABLE lab_results (
     metadata JSONB DEFAULT '{}',
     
     -- Timestamps
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    createdAt TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updatedAt TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     deleted_at TIMESTAMP WITH TIME ZONE,
     
     -- Ensure either doctor or HSP ordered the test
@@ -770,14 +770,14 @@ CREATE TABLE lab_results (
 -- Medical Devices table
 CREATE TABLE medical_devices (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    patient_id UUID REFERENCES patients(id) ON DELETE SET NULL,
+    patientId UUID REFERENCES patients(id) ON DELETE SET NULL,
     organization_id UUID REFERENCES organizations(id),
     assigned_by_doctor_id UUID REFERENCES doctors(id),
     assigned_by_hsp_id UUID REFERENCES hsps(id),
     
     -- Device Identification
     device_name VARCHAR(255) NOT NULL,
-    device_type VARCHAR(50) NOT NULL,
+    deviceType VARCHAR(50) NOT NULL,
     manufacturer VARCHAR(255) NOT NULL,
     model_number VARCHAR(100) NOT NULL,
     serial_number VARCHAR(100),
@@ -849,8 +849,8 @@ CREATE TABLE medical_devices (
     -- Timestamps
     assigned_date TIMESTAMP WITH TIME ZONE,
     activation_date TIMESTAMP WITH TIME ZONE,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    createdAt TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updatedAt TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     deleted_at TIMESTAMP WITH TIME ZONE
 );
 
@@ -859,14 +859,14 @@ CREATE TABLE audit_logs (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     userId UUID REFERENCES users(id),
     organization_id UUID REFERENCES organizations(id),
-    patient_id UUID REFERENCES patients(id),
+    patientId UUID REFERENCES patients(id),
     
     -- Action Details
     action VARCHAR(10) NOT NULL,
     resource VARCHAR(500) NOT NULL,
     user_role VARCHAR(50),
     phi_accessed BOOLEAN DEFAULT FALSE,
-    access_granted BOOLEAN NOT NULL,
+    accessGranted BOOLEAN NOT NULL,
     denial_reason TEXT,
     
     -- Technical Details
@@ -888,42 +888,42 @@ CREATE TABLE audit_logs (
     
     -- Timestamps (no soft delete)
     timestamp TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    createdAt TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
 -- Legacy tables (keep for backward compatibility during migration)
 CREATE TABLE medications (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    patient_id UUID REFERENCES patients(id),
+    patientId UUID REFERENCES patients(id),
     name VARCHAR(255),
     dosage VARCHAR(100),
     frequency VARCHAR(100),
     instructions TEXT,
     start_date TIMESTAMP WITH TIME ZONE,
     end_date TIMESTAMP WITH TIME ZONE,
-    is_active BOOLEAN DEFAULT TRUE,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    isActive BOOLEAN DEFAULT TRUE,
+    createdAt TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updatedAt TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     deleted_at TIMESTAMP WITH TIME ZONE
 );
 
 CREATE TABLE appointments (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    patient_id UUID REFERENCES patients(id),
-    doctor_id UUID REFERENCES doctors(id),
+    patientId UUID REFERENCES patients(id),
+    doctorId UUID REFERENCES doctors(id),
     hsp_id UUID REFERENCES hsps(id),
     appointment_date TIMESTAMP WITH TIME ZONE,
     duration_minutes INTEGER DEFAULT 30,
     status appointment_status DEFAULT 'SCHEDULED',
     notes TEXT,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    createdAt TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updatedAt TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     deleted_at TIMESTAMP WITH TIME ZONE
 );
 
 CREATE TABLE vitals (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    patient_id UUID REFERENCES patients(id),
+    patientId UUID REFERENCES patients(id),
     care_plan_id UUID REFERENCES care_plans(id),
     vital_type VARCHAR(50),
     value DECIMAL(10,3),
@@ -932,8 +932,8 @@ CREATE TABLE vitals (
     recorded_by UUID REFERENCES users(id),
     device_id UUID REFERENCES medical_devices(id),
     notes TEXT,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    createdAt TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updatedAt TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     deleted_at TIMESTAMP WITH TIME ZONE
 );
 
@@ -944,7 +944,7 @@ CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_users_organization ON users(organiza
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_users_deleted_at ON users(deleted_at);
 
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_organizations_type ON organizations(type);
-CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_organizations_active ON organizations(is_active);
+CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_organizations_active ON organizations(isActive);
 
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_doctors_user_id ON doctors(userId);
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_doctors_organization ON doctors(organization_id);
@@ -963,63 +963,63 @@ CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_patients_organization ON patients(or
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_patients_mrn ON patients(medical_record_number);
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_patients_primary_doctor ON patients(primaryCareDoctorId);
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_patients_primary_hsp ON patients(primary_care_hsp_id);
-CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_patients_active ON patients(is_active);
+CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_patients_active ON patients(isActive);
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_patients_allergies ON patients USING GIN(allergies);
 
-CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_treatment_plans_patient ON treatment_plans(patient_id);
-CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_treatment_plans_doctor ON treatment_plans(doctor_id);
+CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_treatment_plans_patient ON treatment_plans(patientId);
+CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_treatment_plans_doctor ON treatment_plans(doctorId);
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_treatment_plans_status ON treatment_plans(status);
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_treatment_plans_start_date ON treatment_plans(start_date);
 
-CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_care_plans_patient ON care_plans(patient_id);
+CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_care_plans_patient ON care_plans(patientId);
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_care_plans_doctor ON care_plans(created_by_doctor_id);
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_care_plans_hsp ON care_plans(created_by_hsp_id);
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_care_plans_status ON care_plans(status);
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_care_plans_review_date ON care_plans(next_review_date);
 
-CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_prescriptions_patient ON prescriptions(patient_id);
+CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_prescriptions_patient ON prescriptions(patientId);
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_prescriptions_doctor ON prescriptions(prescribing_doctor_id);
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_prescriptions_hsp ON prescriptions(prescribing_hsp_id);
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_prescriptions_number ON prescriptions(prescription_number);
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_prescriptions_status ON prescriptions(status);
 
-CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_notifications_patient ON notifications(patient_id);
+CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_notifications_patient ON notifications(patientId);
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_notifications_status ON notifications(status);
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_notifications_scheduled ON notifications(scheduled_for);
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_notifications_type ON notifications(type);
 
-CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_adherence_logs_patient ON adherence_logs(patient_id);
+CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_adherence_logs_patient ON adherence_logs(patientId);
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_adherence_logs_type ON adherence_logs(adherence_type);
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_adherence_logs_scheduled ON adherence_logs(scheduled_datetime);
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_adherence_logs_status ON adherence_logs(status);
 
-CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_lab_results_patient ON lab_results(patient_id);
+CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_lab_results_patient ON lab_results(patientId);
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_lab_results_order_number ON lab_results(order_number);
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_lab_results_status ON lab_results(status);
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_lab_results_critical ON lab_results(has_critical_values);
 
-CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_medical_devices_patient ON medical_devices(patient_id);
-CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_medical_devices_type ON medical_devices(device_type);
+CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_medical_devices_patient ON medical_devices(patientId);
+CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_medical_devices_type ON medical_devices(deviceType);
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_medical_devices_status ON medical_devices(status);
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_medical_devices_connected ON medical_devices(is_connected);
 
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_audit_logs_user ON audit_logs(userId);
-CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_audit_logs_patient ON audit_logs(patient_id);
+CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_audit_logs_patient ON audit_logs(patientId);
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_audit_logs_timestamp ON audit_logs(timestamp);
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_audit_logs_action ON audit_logs(action);
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_audit_logs_phi ON audit_logs(phi_accessed);
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_audit_logs_retention ON audit_logs(retention_date);
 
--- Create triggers for updated_at timestamps
+-- Create triggers for updatedAt timestamps
 CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS TRIGGER AS $$
 BEGIN
-    NEW.updated_at = NOW();
+    NEW.updatedAt = NOW();
     RETURN NEW;
 END;
 $$ language 'plpgsql';
 
--- Apply triggers to all tables with updated_at
+-- Apply triggers to all tables with updatedAt
 CREATE TRIGGER update_organizations_updated_at BEFORE UPDATE ON organizations FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 CREATE TRIGGER update_users_updated_at BEFORE UPDATE ON users FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 CREATE TRIGGER update_doctors_updated_at BEFORE UPDATE ON doctors FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
@@ -1076,7 +1076,7 @@ CREATE VIEW active_patients AS
 SELECT p.*, u.first_name, u.last_name, u.email, u.phone
 FROM patients p
 JOIN users u ON p.userId = u.id
-WHERE p.is_active = TRUE AND p.deleted_at IS NULL AND u.deleted_at IS NULL;
+WHERE p.isActive = TRUE AND p.deleted_at IS NULL AND u.deleted_at IS NULL;
 
 CREATE VIEW verified_providers AS
 SELECT 'doctor' as provider_type, d.id, d.userId, d.organization_id, u.first_name, u.last_name, d.specialties
@@ -1090,7 +1090,7 @@ JOIN users u ON h.userId = u.id
 WHERE h.is_verified = TRUE AND h.deleted_at IS NULL;
 
 -- Insert initial data for testing/migration
-INSERT INTO organizations (id, name, type, is_active, hipaa_covered_entity) 
+INSERT INTO organizations (id, name, type, isActive, hipaa_covered_entity)
 VALUES (uuid_generate_v4(), 'Default Healthcare Organization', 'clinic', TRUE, TRUE);
 
 -- Schema creation completed

@@ -171,8 +171,8 @@ CREATE TABLE users (
     hipaa_consent_date TIMESTAMPTZ,
     
     -- Timestamps
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW(),
+    createdAt TIMESTAMPTZ DEFAULT NOW(),
+    updatedAt TIMESTAMPTZ DEFAULT NOW(),
     deleted_at TIMESTAMPTZ
 );
 
@@ -190,8 +190,8 @@ CREATE TABLE accounts (
     scope VARCHAR(255),
     id_token TEXT,
     session_state VARCHAR(255),
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW(),
+    createdAt TIMESTAMPTZ DEFAULT NOW(),
+    updatedAt TIMESTAMPTZ DEFAULT NOW(),
     UNIQUE(provider, provider_account_id)
 );
 
@@ -201,8 +201,8 @@ CREATE TABLE sessions (
     session_token VARCHAR(255) UNIQUE NOT NULL,
     userId UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     expires TIMESTAMPTZ NOT NULL,
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW()
+    createdAt TIMESTAMPTZ DEFAULT NOW(),
+    updatedAt TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- Verification Tokens (Auth.js v5)
@@ -221,7 +221,7 @@ CREATE TABLE user_roles (
     granted_by UUID REFERENCES users(id),
     granted_at TIMESTAMPTZ DEFAULT NOW(),
     revoked_at TIMESTAMPTZ,
-    is_active BOOLEAN DEFAULT TRUE,
+    isActive BOOLEAN DEFAULT TRUE,
     UNIQUE(userId, role)
 );
 
@@ -238,11 +238,11 @@ CREATE TABLE organizations (
     contact_info JSON DEFAULT '{}',
     address JSON DEFAULT '{}',
     settings JSON DEFAULT '{"timezone": "UTC", "working_hours": {"monday": {"start": "09:00", "end": "17:00"}, "tuesday": {"start": "09:00", "end": "17:00"}, "wednesday": {"start": "09:00", "end": "17:00"}, "thursday": {"start": "09:00", "end": "17:00"}, "friday": {"start": "09:00", "end": "17:00"}, "saturday": {"start": "09:00", "end": "13:00"}, "sunday": {"closed": true}}}',
-    is_active BOOLEAN DEFAULT TRUE,
+    isActive BOOLEAN DEFAULT TRUE,
     hipaa_covered_entity BOOLEAN DEFAULT TRUE,
     business_associate_agreement JSON,
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW(),
+    createdAt TIMESTAMPTZ DEFAULT NOW(),
+    updatedAt TIMESTAMPTZ DEFAULT NOW(),
     deleted_at TIMESTAMPTZ
 );
 
@@ -253,8 +253,8 @@ CREATE TABLE specialities (
     description TEXT,
     is_primary_care BOOLEAN DEFAULT FALSE,
     parent_specialty_id UUID REFERENCES specialities(id),
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW()
+    createdAt TIMESTAMPTZ DEFAULT NOW(),
+    updatedAt TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- Healthcare Providers (Generic)
@@ -266,16 +266,16 @@ CREATE TABLE healthcare_providers (
     organization_id UUID REFERENCES organizations(id),
     verified_by UUID REFERENCES users(id),
     verified_at TIMESTAMPTZ,
-    is_active BOOLEAN DEFAULT TRUE,
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW()
+    isActive BOOLEAN DEFAULT TRUE,
+    createdAt TIMESTAMPTZ DEFAULT NOW(),
+    updatedAt TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- Doctors (Medical Physicians)
 CREATE TABLE doctors (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     userId UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    doctor_id VARCHAR(50) UNIQUE NOT NULL,
+    doctorId VARCHAR(50) UNIQUE NOT NULL,
     medical_license_number VARCHAR(100) UNIQUE,
     speciality_id UUID REFERENCES specialities(id),
     organization_id UUID REFERENCES organizations(id),
@@ -289,8 +289,8 @@ CREATE TABLE doctors (
     consultation_duration_minutes INTEGER DEFAULT 30,
     verified_by UUID REFERENCES users(id),
     verified_at TIMESTAMPTZ,
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW()
+    createdAt TIMESTAMPTZ DEFAULT NOW(),
+    updatedAt TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- Health Service Providers (Nurses, Therapists, etc.)
@@ -307,15 +307,15 @@ CREATE TABLE hsps (
     supervisor_doctor_id UUID REFERENCES doctors(id),
     verified_by UUID REFERENCES users(id),
     verified_at TIMESTAMPTZ,
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW()
+    createdAt TIMESTAMPTZ DEFAULT NOW(),
+    updatedAt TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- Patients
 CREATE TABLE patients (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     userId UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    patient_id VARCHAR(50) UNIQUE NOT NULL,
+    patientId VARCHAR(50) UNIQUE NOT NULL,
     medical_record_number VARCHAR(100) UNIQUE,
     primaryCareDoctorId UUID REFERENCES doctors(id),
     linked_provider_id UUID REFERENCES organizations(id),
@@ -330,22 +330,22 @@ CREATE TABLE patients (
     current_medications JSON DEFAULT '[]',
     family_history JSON DEFAULT '[]',
     lifestyle_factors JSON DEFAULT '{}',
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW()
+    createdAt TIMESTAMPTZ DEFAULT NOW(),
+    updatedAt TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- Patient-Doctor Assignments (Many-to-many with types)
 CREATE TABLE patient_doctor_assignments (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    patient_id UUID NOT NULL REFERENCES patients(id) ON DELETE CASCADE,
-    doctor_id UUID NOT NULL REFERENCES doctors(id) ON DELETE CASCADE,
+    patientId UUID NOT NULL REFERENCES patients(id) ON DELETE CASCADE,
+    doctorId UUID NOT NULL REFERENCES doctors(id) ON DELETE CASCADE,
     assignment_type enum_assignment_type DEFAULT 'PRIMARY',
     assigned_by UUID REFERENCES users(id),
     assigned_at TIMESTAMPTZ DEFAULT NOW(),
     expires_at TIMESTAMPTZ,
-    is_active BOOLEAN DEFAULT TRUE,
+    isActive BOOLEAN DEFAULT TRUE,
     notes TEXT,
-    UNIQUE(patient_id, doctor_id, assignment_type)
+    UNIQUE(patientId, doctorId, assignment_type)
 );
 
 -- =============================================
@@ -373,14 +373,14 @@ CREATE TABLE medicines (
     rxnorm_code VARCHAR(50),
     ndc_codes JSON DEFAULT '[]',
     manufacturer VARCHAR(255),
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW()
+    createdAt TIMESTAMPTZ DEFAULT NOW(),
+    updatedAt TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- Patient Medications (Prescriptions)
 CREATE TABLE medications (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    patient_id UUID NOT NULL REFERENCES patients(id) ON DELETE CASCADE,
+    patientId UUID NOT NULL REFERENCES patients(id) ON DELETE CASCADE,
     medicine_id UUID NOT NULL REFERENCES medicines(id),
     prescribed_by UUID NOT NULL REFERENCES doctors(id),
     prescription_number VARCHAR(100),
@@ -391,13 +391,13 @@ CREATE TABLE medications (
     start_date DATE NOT NULL,
     end_date DATE,
     refills_remaining INTEGER DEFAULT 0,
-    is_active BOOLEAN DEFAULT TRUE,
+    isActive BOOLEAN DEFAULT TRUE,
     adherence_level enum_medication_adherence_level DEFAULT 'UNKNOWN',
     side_effects_reported JSON DEFAULT '[]',
     effectiveness_rating INTEGER CHECK (effectiveness_rating >= 1 AND effectiveness_rating <= 5),
     notes TEXT,
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW()
+    createdAt TIMESTAMPTZ DEFAULT NOW(),
+    updatedAt TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- Care Plan Templates
@@ -410,17 +410,17 @@ CREATE TABLE care_plan_templates (
     created_by UUID NOT NULL REFERENCES users(id),
     template_data JSON NOT NULL DEFAULT '{}',
     is_public BOOLEAN DEFAULT FALSE,
-    is_active BOOLEAN DEFAULT TRUE,
+    isActive BOOLEAN DEFAULT TRUE,
     version VARCHAR(20) DEFAULT '1.0',
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW()
+    createdAt TIMESTAMPTZ DEFAULT NOW(),
+    updatedAt TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- Patient Care Plans
 CREATE TABLE care_plans (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    patient_id UUID NOT NULL REFERENCES patients(id) ON DELETE CASCADE,
-    doctor_id UUID NOT NULL REFERENCES doctors(id),
+    patientId UUID NOT NULL REFERENCES patients(id) ON DELETE CASCADE,
+    doctorId UUID NOT NULL REFERENCES doctors(id),
     template_id UUID REFERENCES care_plan_templates(id),
     name VARCHAR(255) NOT NULL,
     description TEXT,
@@ -433,15 +433,15 @@ CREATE TABLE care_plans (
     progress_notes JSON DEFAULT '[]',
     outcome_measures JSON DEFAULT '[]',
     notes TEXT,
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW()
+    createdAt TIMESTAMPTZ DEFAULT NOW(),
+    updatedAt TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- Appointments
 CREATE TABLE appointments (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    patient_id UUID NOT NULL REFERENCES patients(id) ON DELETE CASCADE,
-    doctor_id UUID NOT NULL REFERENCES doctors(id) ON DELETE CASCADE,
+    patientId UUID NOT NULL REFERENCES patients(id) ON DELETE CASCADE,
+    doctorId UUID NOT NULL REFERENCES doctors(id) ON DELETE CASCADE,
     appointment_type VARCHAR(100) DEFAULT 'consultation',
     status enum_appointments_status DEFAULT 'SCHEDULED',
     scheduled_start_time TIMESTAMPTZ NOT NULL,
@@ -459,14 +459,14 @@ CREATE TABLE appointments (
     cancellation_reason VARCHAR(255),
     reminder_sent_at TIMESTAMPTZ,
     created_by UUID REFERENCES users(id),
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW()
+    createdAt TIMESTAMPTZ DEFAULT NOW(),
+    updatedAt TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- Doctor Availability
 CREATE TABLE doctor_availability (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    doctor_id UUID NOT NULL REFERENCES doctors(id) ON DELETE CASCADE,
+    doctorId UUID NOT NULL REFERENCES doctors(id) ON DELETE CASCADE,
     day_of_week INTEGER NOT NULL CHECK (day_of_week >= 0 AND day_of_week <= 6),
     start_time TIME NOT NULL,
     end_time TIME NOT NULL,
@@ -474,23 +474,23 @@ CREATE TABLE doctor_availability (
     break_start TIME,
     break_end TIME,
     max_appointments_per_slot INTEGER DEFAULT 1,
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW(),
-    UNIQUE(doctor_id, day_of_week, start_time)
+    createdAt TIMESTAMPTZ DEFAULT NOW(),
+    updatedAt TIMESTAMPTZ DEFAULT NOW(),
+    UNIQUE(doctorId, day_of_week, start_time)
 );
 
 -- Appointment Slots (Pre-generated time slots)
 CREATE TABLE appointment_slots (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    doctor_id UUID NOT NULL REFERENCES doctors(id) ON DELETE CASCADE,
+    doctorId UUID NOT NULL REFERENCES doctors(id) ON DELETE CASCADE,
     slot_date DATE NOT NULL,
     start_time TIME NOT NULL,
     end_time TIME NOT NULL,
     is_available BOOLEAN DEFAULT TRUE,
     appointment_id UUID REFERENCES appointments(id),
     created_by UUID REFERENCES users(id),
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    UNIQUE(doctor_id, slot_date, start_time)
+    createdAt TIMESTAMPTZ DEFAULT NOW(),
+    UNIQUE(doctorId, slot_date, start_time)
 );
 
 -- =============================================
@@ -502,8 +502,8 @@ CREATE TABLE vital_templates (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name VARCHAR(100) NOT NULL UNIQUE,
     unit VARCHAR(20) NOT NULL,
-    normal_range_min DECIMAL(10,3),
-    normal_range_max DECIMAL(10,3),
+    normalRangeMin DECIMAL(10,3),
+    normalRangeMax DECIMAL(10,3),
     critical_low DECIMAL(10,3),
     critical_high DECIMAL(10,3),
     warning_low DECIMAL(10,3),
@@ -511,15 +511,15 @@ CREATE TABLE vital_templates (
     data_type VARCHAR(20) DEFAULT 'decimal',
     category VARCHAR(50),
     display_order INTEGER DEFAULT 0,
-    is_active BOOLEAN DEFAULT TRUE,
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW()
+    isActive BOOLEAN DEFAULT TRUE,
+    createdAt TIMESTAMPTZ DEFAULT NOW(),
+    updatedAt TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- Patient Vital Signs
 CREATE TABLE vitals (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    patient_id UUID NOT NULL REFERENCES patients(id) ON DELETE CASCADE,
+    patientId UUID NOT NULL REFERENCES patients(id) ON DELETE CASCADE,
     vital_template_id UUID NOT NULL REFERENCES vital_templates(id),
     value DECIMAL(10,3) NOT NULL,
     systolic_value DECIMAL(5,2),
@@ -533,7 +533,7 @@ CREATE TABLE vitals (
     alert_level VARCHAR(20),
     alert_reasons JSON DEFAULT '[]',
     notes TEXT,
-    created_at TIMESTAMPTZ DEFAULT NOW()
+    createdAt TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- =============================================
@@ -547,14 +547,14 @@ CREATE TABLE services (
     description TEXT,
     service_code VARCHAR(50),
     category VARCHAR(100),
-    doctor_id UUID REFERENCES doctors(id),
+    doctorId UUID REFERENCES doctors(id),
     organization_id UUID REFERENCES organizations(id),
     base_price DECIMAL(10,2) NOT NULL DEFAULT 0.00,
     duration_minutes INTEGER DEFAULT 30,
     requires_appointment BOOLEAN DEFAULT TRUE,
-    is_active BOOLEAN DEFAULT TRUE,
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW()
+    isActive BOOLEAN DEFAULT TRUE,
+    createdAt TIMESTAMPTZ DEFAULT NOW(),
+    updatedAt TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- Service Subscriptions
@@ -565,37 +565,37 @@ CREATE TABLE subscriptions (
     duration_months INTEGER NOT NULL,
     price DECIMAL(10,2) NOT NULL,
     services JSON DEFAULT '[]',
-    is_active BOOLEAN DEFAULT TRUE,
+    isActive BOOLEAN DEFAULT TRUE,
     created_by UUID REFERENCES users(id),
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW()
+    createdAt TIMESTAMPTZ DEFAULT NOW(),
+    updatedAt TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- Patient Services
 CREATE TABLE patient_services (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    patient_id UUID NOT NULL REFERENCES patients(id) ON DELETE CASCADE,
+    patientId UUID NOT NULL REFERENCES patients(id) ON DELETE CASCADE,
     service_id UUID NOT NULL REFERENCES services(id),
     assigned_by UUID NOT NULL REFERENCES doctors(id),
     start_date DATE NOT NULL,
     end_date DATE,
     status VARCHAR(50) DEFAULT 'active',
     notes TEXT,
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW()
+    createdAt TIMESTAMPTZ DEFAULT NOW(),
+    updatedAt TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- Patient Subscriptions
 CREATE TABLE patient_subscriptions (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    patient_id UUID NOT NULL REFERENCES patients(id) ON DELETE CASCADE,
+    patientId UUID NOT NULL REFERENCES patients(id) ON DELETE CASCADE,
     subscription_id UUID NOT NULL REFERENCES subscriptions(id),
     start_date DATE NOT NULL,
     end_date DATE NOT NULL,
     auto_renew BOOLEAN DEFAULT FALSE,
     payment_status VARCHAR(50) DEFAULT 'pending',
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW()
+    createdAt TIMESTAMPTZ DEFAULT NOW(),
+    updatedAt TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- =============================================
@@ -613,17 +613,17 @@ CREATE TABLE user_devices (
     platform VARCHAR(50),
     app_version VARCHAR(50),
     os_version VARCHAR(50),
-    is_active BOOLEAN DEFAULT TRUE,
+    isActive BOOLEAN DEFAULT TRUE,
     last_used_at TIMESTAMPTZ DEFAULT NOW(),
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW(),
+    createdAt TIMESTAMPTZ DEFAULT NOW(),
+    updatedAt TIMESTAMPTZ DEFAULT NOW(),
     UNIQUE(userId, device_id)
 );
 
 -- IoT Medical Devices
 CREATE TABLE iot_devices (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    patient_id UUID REFERENCES patients(id),
+    patientId UUID REFERENCES patients(id),
     device_type VARCHAR(100) NOT NULL,
     device_model VARCHAR(255),
     serial_number VARCHAR(255) UNIQUE,
@@ -635,18 +635,18 @@ CREATE TABLE iot_devices (
     battery_level INTEGER,
     device_settings JSON DEFAULT '{}',
     calibration_data JSON DEFAULT '{}',
-    is_active BOOLEAN DEFAULT TRUE,
+    isActive BOOLEAN DEFAULT TRUE,
     assigned_by UUID REFERENCES users(id),
     assigned_at TIMESTAMPTZ,
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW()
+    createdAt TIMESTAMPTZ DEFAULT NOW(),
+    updatedAt TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- IoT Device Data
 CREATE TABLE iot_device_data (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     device_id UUID NOT NULL REFERENCES iot_devices(id) ON DELETE CASCADE,
-    patient_id UUID NOT NULL REFERENCES patients(id),
+    patientId UUID NOT NULL REFERENCES patients(id),
     data_type VARCHAR(100) NOT NULL,
     raw_data JSON NOT NULL,
     processed_data JSON,
@@ -655,7 +655,7 @@ CREATE TABLE iot_device_data (
     is_processed BOOLEAN DEFAULT FALSE,
     quality_score DECIMAL(3,2),
     anomaly_detected BOOLEAN DEFAULT FALSE,
-    created_at TIMESTAMPTZ DEFAULT NOW()
+    createdAt TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- =============================================
@@ -678,8 +678,8 @@ CREATE TABLE video_consultations (
     recording_consent BOOLEAN DEFAULT FALSE,
     technical_issues JSON DEFAULT '[]',
     quality_rating INTEGER CHECK (quality_rating >= 1 AND quality_rating <= 5),
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW()
+    createdAt TIMESTAMPTZ DEFAULT NOW(),
+    updatedAt TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- Lab Test Catalog
@@ -695,16 +695,16 @@ CREATE TABLE lab_tests (
     turnaround_time_hours INTEGER,
     cost DECIMAL(10,2),
     requires_fasting BOOLEAN DEFAULT FALSE,
-    is_active BOOLEAN DEFAULT TRUE,
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW()
+    isActive BOOLEAN DEFAULT TRUE,
+    createdAt TIMESTAMPTZ DEFAULT NOW(),
+    updatedAt TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- Lab Orders
 CREATE TABLE lab_orders (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    patient_id UUID NOT NULL REFERENCES patients(id),
-    doctor_id UUID NOT NULL REFERENCES doctors(id),
+    patientId UUID NOT NULL REFERENCES patients(id),
+    doctorId UUID NOT NULL REFERENCES doctors(id),
     order_number VARCHAR(100) UNIQUE NOT NULL,
     status enum_lab_test_status DEFAULT 'ORDERED',
     lab_tests JSON NOT NULL,
@@ -714,8 +714,8 @@ CREATE TABLE lab_orders (
     estimated_completion TIMESTAMPTZ,
     actual_completion TIMESTAMPTZ,
     lab_facility VARCHAR(255),
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW()
+    createdAt TIMESTAMPTZ DEFAULT NOW(),
+    updatedAt TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- Lab Results
@@ -731,7 +731,7 @@ CREATE TABLE lab_results (
     interpretation TEXT,
     reviewed_by UUID REFERENCES doctors(id),
     reviewed_at TIMESTAMPTZ,
-    created_at TIMESTAMPTZ DEFAULT NOW()
+    createdAt TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- =============================================
@@ -741,7 +741,7 @@ CREATE TABLE lab_results (
 -- Emergency Alerts
 CREATE TABLE emergency_alerts (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    patient_id UUID NOT NULL REFERENCES patients(id),
+    patientId UUID NOT NULL REFERENCES patients(id),
     alert_type VARCHAR(100) NOT NULL,
     severity enum_emergency_alert_severity NOT NULL,
     title VARCHAR(255) NOT NULL,
@@ -750,29 +750,29 @@ CREATE TABLE emergency_alerts (
     device_data JSON,
     location_data JSON,
     triggered_by VARCHAR(255),
-    is_active BOOLEAN DEFAULT TRUE,
+    isActive BOOLEAN DEFAULT TRUE,
     acknowledged_by UUID REFERENCES users(id),
     acknowledged_at TIMESTAMPTZ,
     resolved_by UUID REFERENCES users(id),
     resolved_at TIMESTAMPTZ,
     resolution_notes TEXT,
-    created_at TIMESTAMPTZ DEFAULT NOW()
+    createdAt TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- Patient Allergies
 CREATE TABLE patient_allergies (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    patient_id UUID NOT NULL REFERENCES patients(id) ON DELETE CASCADE,
+    patientId UUID NOT NULL REFERENCES patients(id) ON DELETE CASCADE,
     allergen VARCHAR(255) NOT NULL,
     allergy_type VARCHAR(100) NOT NULL,
     severity VARCHAR(50) NOT NULL,
     reaction_description TEXT,
     date_identified DATE,
     identified_by UUID REFERENCES users(id),
-    is_active BOOLEAN DEFAULT TRUE,
+    isActive BOOLEAN DEFAULT TRUE,
     notes TEXT,
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW()
+    createdAt TIMESTAMPTZ DEFAULT NOW(),
+    updatedAt TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- =============================================
@@ -786,9 +786,9 @@ CREATE TABLE audit_logs (
     action VARCHAR(100) NOT NULL,
     resource VARCHAR(100) NOT NULL,
     resource_id UUID,
-    patient_id UUID REFERENCES patients(id),
+    patientId UUID REFERENCES patients(id),
     phi_accessed BOOLEAN DEFAULT FALSE,
-    access_granted BOOLEAN NOT NULL,
+    accessGranted BOOLEAN NOT NULL,
     ip_address INET,
     user_agent TEXT,
     session_id VARCHAR(255),
@@ -810,13 +810,13 @@ CREATE TABLE notifications (
     is_read BOOLEAN DEFAULT FALSE,
     read_at TIMESTAMPTZ,
     expires_at TIMESTAMPTZ,
-    created_at TIMESTAMPTZ DEFAULT NOW()
+    createdAt TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- Consent Management
 CREATE TABLE patient_consent (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    patient_id UUID NOT NULL REFERENCES patients(id),
+    patientId UUID NOT NULL REFERENCES patients(id),
     consent_type VARCHAR(100) NOT NULL,
     consent_version VARCHAR(20),
     granted BOOLEAN NOT NULL,
@@ -826,7 +826,7 @@ CREATE TABLE patient_consent (
     consent_document JSON,
     ip_address INET,
     user_agent TEXT,
-    created_at TIMESTAMPTZ DEFAULT NOW()
+    createdAt TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- =============================================
@@ -837,15 +837,15 @@ CREATE TABLE patient_consent (
 CREATE TABLE chart_analytics (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     chart_type VARCHAR(100) NOT NULL,
-    patient_id UUID REFERENCES patients(id),
-    doctor_id UUID REFERENCES doctors(id),
+    patientId UUID REFERENCES patients(id),
+    doctorId UUID REFERENCES doctors(id),
     organization_id UUID REFERENCES organizations(id),
     data_source VARCHAR(100) NOT NULL,
     metrics JSON NOT NULL,
     aggregation_period VARCHAR(50) NOT NULL,
     date_range_start DATE NOT NULL,
     date_range_end DATE NOT NULL,
-    created_at TIMESTAMPTZ DEFAULT NOW()
+    createdAt TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- Scheduled Events (Cron-like tasks)
@@ -853,7 +853,7 @@ CREATE TABLE scheduled_events (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     event_type VARCHAR(100) NOT NULL,
     userId UUID REFERENCES users(id),
-    patient_id UUID REFERENCES patients(id),
+    patientId UUID REFERENCES patients(id),
     scheduled_for TIMESTAMPTZ NOT NULL,
     executed_at TIMESTAMPTZ,
     status VARCHAR(50) DEFAULT 'pending',
@@ -862,8 +862,8 @@ CREATE TABLE scheduled_events (
     error_message TEXT,
     retry_count INTEGER DEFAULT 0,
     max_retries INTEGER DEFAULT 3,
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW()
+    createdAt TIMESTAMPTZ DEFAULT NOW(),
+    updatedAt TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- =============================================
@@ -874,7 +874,7 @@ CREATE TABLE scheduled_events (
 CREATE INDEX idx_users_email ON users(email);
 CREATE INDEX idx_users_role ON users(role);
 CREATE INDEX idx_users_account_status ON users(account_status);
-CREATE INDEX idx_users_created_at ON users(created_at);
+CREATE INDEX idx_users_created_at ON users(createdAt);
 CREATE INDEX idx_users_deleted_at ON users(deleted_at) WHERE deleted_at IS NOT NULL;
 CREATE INDEX idx_users_email_verified ON users(email_verified);
 
@@ -888,16 +888,16 @@ CREATE INDEX idx_sessions_session_token ON sessions(session_token);
 -- Healthcare provider indexes
 CREATE INDEX idx_organizations_name ON organizations(name);
 CREATE INDEX idx_organizations_type ON organizations(type);
-CREATE INDEX idx_organizations_is_active ON organizations(is_active);
+CREATE INDEX idx_organizations_is_active ON organizations(isActive);
 
 CREATE INDEX idx_doctors_user_id ON doctors(userId);
-CREATE INDEX idx_doctors_doctor_id ON doctors(doctor_id);
+CREATE INDEX idx_doctors_doctor_id ON doctors(doctorId);
 CREATE INDEX idx_doctors_speciality_id ON doctors(speciality_id);
 CREATE INDEX idx_doctors_organization_id ON doctors(organization_id);
 CREATE INDEX idx_doctors_is_accepting ON doctors(is_accepting_patients);
 
 CREATE INDEX idx_patients_user_id ON patients(userId);
-CREATE INDEX idx_patients_patient_id ON patients(patient_id);
+CREATE INDEX idx_patients_patient_id ON patients(patientId);
 CREATE INDEX idx_patients_primaryCareDoctorId ON patients(primaryCareDoctorId);
 CREATE INDEX idx_patients_medical_record_number ON patients(medical_record_number);
 
@@ -906,51 +906,51 @@ CREATE INDEX idx_hsps_hsp_id ON hsps(hsp_id);
 CREATE INDEX idx_hsps_organization_id ON hsps(organization_id);
 
 -- Medical management indexes
-CREATE INDEX idx_medications_patient_id ON medications(patient_id);
+CREATE INDEX idx_medications_patient_id ON medications(patientId);
 CREATE INDEX idx_medications_medicine_id ON medications(medicine_id);
 CREATE INDEX idx_medications_prescribed_by ON medications(prescribed_by);
-CREATE INDEX idx_medications_is_active ON medications(is_active);
+CREATE INDEX idx_medications_is_active ON medications(isActive);
 CREATE INDEX idx_medications_start_date ON medications(start_date);
 
-CREATE INDEX idx_appointments_patient_id ON appointments(patient_id);
-CREATE INDEX idx_appointments_doctor_id ON appointments(doctor_id);
+CREATE INDEX idx_appointments_patient_id ON appointments(patientId);
+CREATE INDEX idx_appointments_doctor_id ON appointments(doctorId);
 CREATE INDEX idx_appointments_scheduled_start_time ON appointments(scheduled_start_time);
 CREATE INDEX idx_appointments_status ON appointments(status);
 CREATE INDEX idx_appointments_date ON appointments(scheduled_start_time::date);
 
-CREATE INDEX idx_vitals_patient_id ON vitals(patient_id);
+CREATE INDEX idx_vitals_patient_id ON vitals(patientId);
 CREATE INDEX idx_vitals_vital_template_id ON vitals(vital_template_id);
 CREATE INDEX idx_vitals_recorded_at ON vitals(recorded_at);
 CREATE INDEX idx_vitals_is_critical ON vitals(is_critical);
 
-CREATE INDEX idx_care_plans_patient_id ON care_plans(patient_id);
-CREATE INDEX idx_care_plans_doctor_id ON care_plans(doctor_id);
+CREATE INDEX idx_care_plans_patient_id ON care_plans(patientId);
+CREATE INDEX idx_care_plans_doctor_id ON care_plans(doctorId);
 CREATE INDEX idx_care_plans_status ON care_plans(status);
 
 -- Device and IoT indexes
-CREATE INDEX idx_iot_devices_patient_id ON iot_devices(patient_id);
+CREATE INDEX idx_iot_devices_patient_id ON iot_devices(patientId);
 CREATE INDEX idx_iot_devices_device_type ON iot_devices(device_type);
 CREATE INDEX idx_iot_devices_status ON iot_devices(status);
 CREATE INDEX idx_iot_device_data_device_id ON iot_device_data(device_id);
-CREATE INDEX idx_iot_device_data_patient_id ON iot_device_data(patient_id);
+CREATE INDEX idx_iot_device_data_patient_id ON iot_device_data(patientId);
 CREATE INDEX idx_iot_device_data_timestamp ON iot_device_data(measurement_timestamp);
 
 -- Telemedicine indexes
 CREATE INDEX idx_video_consultations_appointment_id ON video_consultations(appointment_id);
-CREATE INDEX idx_lab_orders_patient_id ON lab_orders(patient_id);
-CREATE INDEX idx_lab_orders_doctor_id ON lab_orders(doctor_id);
+CREATE INDEX idx_lab_orders_patient_id ON lab_orders(patientId);
+CREATE INDEX idx_lab_orders_doctor_id ON lab_orders(doctorId);
 CREATE INDEX idx_lab_orders_status ON lab_orders(status);
 CREATE INDEX idx_lab_results_lab_order_id ON lab_results(lab_order_id);
 
 -- Emergency and alerts indexes
-CREATE INDEX idx_emergency_alerts_patient_id ON emergency_alerts(patient_id);
+CREATE INDEX idx_emergency_alerts_patient_id ON emergency_alerts(patientId);
 CREATE INDEX idx_emergency_alerts_severity ON emergency_alerts(severity);
-CREATE INDEX idx_emergency_alerts_is_active ON emergency_alerts(is_active);
-CREATE INDEX idx_emergency_alerts_created_at ON emergency_alerts(created_at);
+CREATE INDEX idx_emergency_alerts_is_active ON emergency_alerts(isActive);
+CREATE INDEX idx_emergency_alerts_created_at ON emergency_alerts(createdAt);
 
 -- Audit and compliance indexes
 CREATE INDEX idx_audit_logs_user_id ON audit_logs(userId);
-CREATE INDEX idx_audit_logs_patient_id ON audit_logs(patient_id);
+CREATE INDEX idx_audit_logs_patient_id ON audit_logs(patientId);
 CREATE INDEX idx_audit_logs_timestamp ON audit_logs(timestamp);
 CREATE INDEX idx_audit_logs_action ON audit_logs(action);
 CREATE INDEX idx_audit_logs_phi_accessed ON audit_logs(phi_accessed) WHERE phi_accessed = true;
@@ -958,7 +958,7 @@ CREATE INDEX idx_audit_logs_phi_accessed ON audit_logs(phi_accessed) WHERE phi_a
 CREATE INDEX idx_notifications_user_id ON notifications(userId);
 CREATE INDEX idx_notifications_type ON notifications(type);
 CREATE INDEX idx_notifications_is_read ON notifications(is_read);
-CREATE INDEX idx_notifications_created_at ON notifications(created_at);
+CREATE INDEX idx_notifications_created_at ON notifications(createdAt);
 
 -- Scheduled events indexes
 CREATE INDEX idx_scheduled_events_scheduled_for ON scheduled_events(scheduled_for);
@@ -972,12 +972,12 @@ CREATE INDEX idx_scheduled_events_event_type ON scheduled_events(event_type);
 CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS TRIGGER AS $$
 BEGIN
-    NEW.updated_at = NOW();
+    NEW.updatedAt = NOW();
     RETURN NEW;
 END;
 $$ LANGUAGE 'plpgsql';
 
--- Apply triggers to all tables with updated_at columns
+-- Apply triggers to all tables with updatedAt columns
 CREATE TRIGGER update_users_updated_at BEFORE UPDATE ON users FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 CREATE TRIGGER update_accounts_updated_at BEFORE UPDATE ON accounts FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 CREATE TRIGGER update_sessions_updated_at BEFORE UPDATE ON sessions FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
@@ -1015,7 +1015,7 @@ INSERT INTO specialities (id, name, description, is_primary_care) VALUES
     (gen_random_uuid(), 'Endocrinology', 'Hormone and metabolism disorders', false);
 
 -- Vital Sign Templates
-INSERT INTO vital_templates (id, name, unit, normal_range_min, normal_range_max, critical_low, critical_high, warning_low, warning_high, category) VALUES
+INSERT INTO vital_templates (id, name, unit, normalRangeMin, normalRangeMax, critical_low, critical_high, warning_low, warning_high, category) VALUES
     (gen_random_uuid(), 'Blood Pressure Systolic', 'mmHg', 90, 140, 70, 180, 80, 160, 'cardiovascular'),
     (gen_random_uuid(), 'Blood Pressure Diastolic', 'mmHg', 60, 90, 40, 120, 50, 100, 'cardiovascular'),
     (gen_random_uuid(), 'Heart Rate', 'bpm', 60, 100, 40, 150, 50, 120, 'cardiovascular'),
@@ -1048,7 +1048,7 @@ SELECT
     u.last_name,
     u.role,
     CASE 
-        WHEN u.role = 'DOCTOR' THEN d.doctor_id
+        WHEN u.role = 'DOCTOR' THEN d.doctorId
         WHEN u.role = 'HSP' THEN h.hsp_id
         ELSE NULL
     END as business_id,
@@ -1076,7 +1076,7 @@ AND u.deleted_at IS NULL;
 CREATE VIEW v_patient_summary AS
 SELECT 
     p.id,
-    p.patient_id,
+    p.patientId,
     u.first_name,
     u.last_name,
     u.email,
@@ -1088,7 +1088,7 @@ SELECT
     p.weight_kg,
     p.bmi,
     p.primaryCareDoctorId,
-    d.doctor_id as primary_doctor_business_id,
+    d.doctorId as primary_doctor_business_id,
     du.first_name as primary_doctor_first_name,
     du.last_name as primary_doctor_last_name,
     COUNT(m.id) as active_medications,
@@ -1098,33 +1098,33 @@ FROM patients p
 JOIN users u ON p.userId = u.id
 LEFT JOIN doctors d ON p.primaryCareDoctorId = d.id
 LEFT JOIN users du ON d.userId = du.id
-LEFT JOIN medications m ON p.id = m.patient_id AND m.is_active = true
-LEFT JOIN vitals v ON p.id = v.patient_id
-LEFT JOIN appointments a ON p.id = a.patient_id
+LEFT JOIN medications m ON p.id = m.patientId AND m.isActive = true
+LEFT JOIN vitals v ON p.id = v.patientId
+LEFT JOIN appointments a ON p.id = a.patientId
 WHERE u.account_status = 'ACTIVE' AND u.deleted_at IS NULL
-GROUP BY p.id, p.patient_id, u.first_name, u.last_name, u.email, u.phone, 
+GROUP BY p.id, p.patientId, u.first_name, u.last_name, u.email, u.phone,
          u.date_of_birth, p.blood_type, p.height_cm, p.weight_kg, p.bmi,
-         p.primaryCareDoctorId, d.doctor_id, du.first_name, du.last_name;
+         p.primaryCareDoctorId, d.doctorId, du.first_name, du.last_name;
 
 -- Critical Alerts Summary
 CREATE VIEW v_critical_alerts AS
 SELECT 
     ea.id,
-    ea.patient_id,
-    p.patient_id as patient_business_id,
+    ea.patientId,
+    p.patientId as patient_business_id,
     u.first_name || ' ' || u.last_name as patient_name,
     ea.alert_type,
     ea.severity,
     ea.title,
     ea.description,
-    ea.is_active,
+    ea.isActive,
     ea.acknowledged_by,
     ea.acknowledged_at,
-    ea.created_at
+    ea.createdAt
 FROM emergency_alerts ea
-JOIN patients p ON ea.patient_id = p.id
+JOIN patients p ON ea.patientId = p.id
 JOIN users u ON p.userId = u.id
-WHERE ea.is_active = true
+WHERE ea.isActive = true
 ORDER BY 
     CASE ea.severity 
         WHEN 'CRITICAL' THEN 1 
@@ -1132,7 +1132,7 @@ ORDER BY
         WHEN 'MEDIUM' THEN 3 
         WHEN 'LOW' THEN 4 
     END,
-    ea.created_at DESC;
+    ea.createdAt DESC;
 
 -- =============================================
 -- COMMENTS FOR DOCUMENTATION

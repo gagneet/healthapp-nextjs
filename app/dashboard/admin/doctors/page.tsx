@@ -54,8 +54,8 @@ interface Doctor {
   email_verified?: boolean
   account_status?: string
   is_available_online?: boolean
-  created_at: string
-  updated_at?: string
+  createdAt: string
+  updatedAt?: string
 }
 
 interface Speciality {
@@ -115,7 +115,7 @@ export default function AdminDoctorsPage() {
             is_verified: basicInfo.verification_status === 'verified',
             practice_name: basicInfo.practice_name || '',
             account_status: basicInfo.account_status || 'pending',
-            created_at: basicInfo.created_at || new Date().toISOString()
+            createdAt: basicInfo.createdAt || new Date().toISOString()
           }
         })
         setDoctors(doctorsArray)

@@ -46,7 +46,7 @@ class AdminController {
         ],
         offset,
         limit: limitNum,
-        order: [['created_at', 'DESC']]
+        order: [['createdAt', 'DESC']]
       });
 
       const responseData: { doctors: Record<string, any> } = { doctors: {} };
@@ -115,7 +115,7 @@ class AdminController {
         where: whereClause,
         offset,
         limit: limitNum,
-        order: [['created_at', 'DESC']]
+        order: [['createdAt', 'DESC']]
       });
 
       const responseData: { medicines: Record<string, any> } = { medicines: {} };
@@ -180,7 +180,7 @@ class AdminController {
       // Get recent activity
       const recentDoctors = await Doctor.count({
         where: {
-          created_at: {
+          createdAt: {
             [Op.gte]: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) // Last 30 days
           }
         }
@@ -188,7 +188,7 @@ class AdminController {
 
       const recentPatients = await Patient.count({
         where: {
-          created_at: {
+          createdAt: {
             [Op.gte]: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
           }
         }
@@ -358,7 +358,7 @@ class AdminController {
       // Create initial clinic if provided
       if (clinic_name) {
         await Clinic.create({
-          doctor_id: doctor.id,
+          doctorId: doctor.id,
           name: clinic_name,
           address: clinic_address || {},
           phone: clinic_phone,
@@ -367,7 +367,7 @@ class AdminController {
           services_offered: clinic_services_offered || [],
           consultation_fee: clinic_consultation_fee || consultation_fee || 0,
           is_primary: true,
-          is_active: true
+          isActive: true
         }, { transaction });
       }
 
@@ -379,7 +379,7 @@ class AdminController {
           {
             model: User,
             as: 'user',
-            attributes: ['id', 'email', 'phone', 'first_name', 'middle_name', 'last_name', 'gender', 'email_verified', 'created_at']
+            attributes: ['id', 'email', 'phone', 'first_name', 'middle_name', 'last_name', 'gender', 'email_verified', 'createdAt']
           },
           {
             model: Speciality,
@@ -632,7 +632,7 @@ class AdminController {
           {
             model: User,
             as: 'user',
-            attributes: ['id', 'email', 'phone', 'first_name', 'middle_name', 'last_name', 'gender', 'email_verified', 'account_status', 'created_at']
+            attributes: ['id', 'email', 'phone', 'first_name', 'middle_name', 'last_name', 'gender', 'email_verified', 'account_status', 'createdAt']
           },
           {
             model: Speciality,
@@ -727,8 +727,8 @@ class AdminController {
           is_available_online: doctor.is_available_online,
           
           // Timestamps
-          created_at: doctor.created_at,
-          updated_at: doctor.updated_at
+          createdAt: doctor.createdAt,
+          updatedAt: doctor.updatedAt
         },
         
         // Clinics
@@ -744,7 +744,7 @@ class AdminController {
           banner_image: clinic.banner_image,
           is_primary: clinic.is_primary,
           consultation_fee: clinic.consultation_fee,
-          is_active: clinic.is_active
+          isActive: clinic.isActive
         })) : []
       };
 
@@ -817,9 +817,9 @@ class AdminController {
 
       // Deactivate all clinics
       await Clinic.update(
-        { is_active: false },
+        { isActive: false },
         { 
-          where: { doctor_id: doctor.id },
+          where: { doctorId: doctor.id },
           transaction 
         }
       );
@@ -977,11 +977,11 @@ class AdminController {
       const offset = (pageNum - 1) * limitNum;
 
       interface ConditionWhereClause {
-        is_active: boolean;
+        isActive: boolean;
         diagnosis_name?: { [Op.like]: string };
       }
       
-      const whereClause: ConditionWhereClause = { is_active: true };
+      const whereClause: ConditionWhereClause = { isActive: true };
       if (search) {
         const searchString = parseQueryParam(search);
         whereClause.diagnosis_name = { [Op.like]: `%${searchString}%` };
@@ -991,7 +991,7 @@ class AdminController {
         where: whereClause,
         offset,
         limit: limitNum,
-        order: [['created_at', 'DESC']]
+        order: [['createdAt', 'DESC']]
       });
 
       const responseData: { conditions: Record<string, any> } = { conditions: {} };
@@ -1006,12 +1006,12 @@ class AdminController {
             severity_indicators: condition.severity_indicators,
             common_age_groups: condition.common_age_groups,
             gender_specific: condition.gender_specific,
-            is_active: condition.is_active
+            isActive: condition.isActive
           },
           metadata: {
             created_by: condition.created_by?.toString(),
-            created_at: condition.created_at,
-            updated_at: condition.updated_at
+            createdAt: condition.createdAt,
+            updatedAt: condition.updatedAt
           }
         };
       }
@@ -1053,7 +1053,7 @@ class AdminController {
         severity_indicators: typeof severity_indicators === 'object' ? severity_indicators : JSON.parse(severity_indicators || '{}'),
         common_age_groups: Array.isArray(common_age_groups) ? common_age_groups : JSON.parse(common_age_groups || '[]'),
         gender_specific,
-        is_active: true,
+        isActive: true,
         created_by: req.user?.userId
       });
 
@@ -1080,7 +1080,7 @@ class AdminController {
         severity_indicators,
         common_age_groups,
         gender_specific,
-        is_active
+        isActive
       } = req.body;
 
       const condition = await SymptomsDatabase.findByPk(conditionId);
@@ -1105,7 +1105,7 @@ class AdminController {
         severity_indicators: typeof severity_indicators === 'object' ? severity_indicators : JSON.parse(severity_indicators || '{}'),
         common_age_groups: Array.isArray(common_age_groups) ? common_age_groups : JSON.parse(common_age_groups || '[]'),
         gender_specific,
-        is_active
+        isActive
       });
 
       res.status(200).json({
@@ -1140,8 +1140,8 @@ class AdminController {
         return;
       }
 
-      // Soft delete by setting is_active to false
-      await condition.update({ is_active: false });
+      // Soft delete by setting isActive to false
+      await condition.update({ isActive: false });
 
       res.status(200).json({
         status: true,
@@ -1164,11 +1164,11 @@ class AdminController {
       const offset = (pageNum - 1) * limitNum;
 
       interface TreatmentWhereClause {
-        is_active: boolean;
+        isActive: boolean;
         treatment_name?: { [Op.like]: string };
       }
       
-      const whereClause: TreatmentWhereClause = { is_active: true };
+      const whereClause: TreatmentWhereClause = { isActive: true };
       if (search) {
         const searchString = parseQueryParam(search);
         whereClause.treatment_name = { [Op.like]: `%${searchString}%` };
@@ -1178,7 +1178,7 @@ class AdminController {
         where: whereClause,
         offset,
         limit: limitNum,
-        order: [['created_at', 'DESC']]
+        order: [['createdAt', 'DESC']]
       });
 
       const responseData: { treatments: Record<string, any> } = { treatments: {} };
@@ -1198,7 +1198,7 @@ class AdminController {
             severity_level: treatment.severity_level,
             requires_specialist: treatment.requires_specialist,
             prescription_required: treatment.prescription_required,
-            is_active: treatment.is_active
+            isActive: treatment.isActive
           },
           safety_info: {
             age_restrictions: treatment.age_restrictions,
@@ -1208,8 +1208,8 @@ class AdminController {
           },
           metadata: {
             created_by: treatment.created_by?.toString(),
-            created_at: treatment.created_at,
-            updated_at: treatment.updated_at
+            createdAt: treatment.createdAt,
+            updatedAt: treatment.updatedAt
           }
         };
       }
@@ -1269,7 +1269,7 @@ class AdminController {
         monitoring_required: Array.isArray(monitoring_required) ? monitoring_required : JSON.parse(monitoring_required || '[]'),
         requires_specialist,
         prescription_required,
-        is_active: true,
+        isActive: true,
         created_by: req.user?.userId
       });
 
@@ -1305,7 +1305,7 @@ class AdminController {
         monitoring_required,
         requires_specialist,
         prescription_required,
-        is_active
+        isActive
       } = req.body;
 
       const treatment = await TreatmentDatabase.findByPk(treatmentId);
@@ -1339,7 +1339,7 @@ class AdminController {
         monitoring_required: Array.isArray(monitoring_required) ? monitoring_required : JSON.parse(monitoring_required || '[]'),
         requires_specialist,
         prescription_required,
-        is_active
+        isActive
       });
 
       res.status(200).json({
@@ -1374,8 +1374,8 @@ class AdminController {
         return;
       }
 
-      // Soft delete by setting is_active to false
-      await treatment.update({ is_active: false });
+      // Soft delete by setting isActive to false
+      await treatment.update({ isActive: false });
 
       res.status(200).json({
         status: true,

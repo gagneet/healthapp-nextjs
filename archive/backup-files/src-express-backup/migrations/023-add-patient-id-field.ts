@@ -4,26 +4,26 @@ export default {
   up: async (queryInterface: any, Sequelize: any) => {
     // Check if column already exists
     const tableDescription = await queryInterface.describeTable('patients');
-    if (tableDescription.patient_id) {
-      console.log('Column patient_id already exists in patients table, skipping');
+    if (tableDescription.patientId) {
+      console.log('Column patientId already exists in patients table, skipping');
       return;
     }
 
-    // Add patient_id field to patients table
-    await queryInterface.addColumn('patients', 'patient_id', {
+    // Add patientId field to patients table
+    await queryInterface.addColumn('patients', 'patientId', {
       type: Sequelize.STRING(100),
       allowNull: true,
       unique: true,
       comment: 'Custom patient identifier - supports any format (numbers, alphanumeric, structured)'
     });
 
-    // Add index for patient_id with error handling
+    // Add index for patientId with error handling
     try {
-      await queryInterface.addIndex('patients', ['patient_id'], { 
+      await queryInterface.addIndex('patients', ['patientId'], { 
         name: 'idx_patients_patient_id',
         unique: true,
         where: { 
-          patient_id: { [Sequelize.Op.ne]: null },
+          patientId: { [Sequelize.Op.ne]: null },
           deleted_at: null 
         }
       });
@@ -40,6 +40,6 @@ export default {
     await queryInterface.removeIndex('patients', 'idx_patients_patient_id');
     
     // Remove column
-    await queryInterface.removeColumn('patients', 'patient_id');
+    await queryInterface.removeColumn('patients', 'patientId');
   }
 };

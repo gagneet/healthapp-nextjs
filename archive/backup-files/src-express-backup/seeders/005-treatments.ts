@@ -51,11 +51,11 @@ export default {
           'Renal function',
           'Vitamin B12 levels annually'
         ]),
-        is_active: true,
+        isActive: true,
         requires_specialist: false,
         prescription_required: true,
-        created_at: new Date(),
-        updated_at: new Date(),
+        createdAt: new Date(),
+        updatedAt: new Date(),
       },
       {
         id: '550e8400-e29b-41d4-a716-446655440022',
@@ -91,11 +91,11 @@ export default {
           'Renal function',
           'Serum potassium'
         ]),
-        is_active: true,
+        isActive: true,
         requires_specialist: false,
         prescription_required: true,
-        created_at: new Date(),
-        updated_at: new Date(),
+        createdAt: new Date(),
+        updatedAt: new Date(),
       },
       {
         id: '550e8400-e29b-41d4-a716-446655440023',
@@ -127,11 +127,11 @@ export default {
           'Hydration status',
           'Symptom progression'
         ]),
-        is_active: true,
+        isActive: true,
         requires_specialist: false,
         prescription_required: false,
-        created_at: new Date(),
-        updated_at: new Date(),
+        createdAt: new Date(),
+        updatedAt: new Date(),
       },
       {
         id: '550e8400-e29b-41d4-a716-446655440024',
@@ -170,11 +170,11 @@ export default {
           'Blood pressure',
           'Cardiovascular risk factors'
         ]),
-        is_active: true,
+        isActive: true,
         requires_specialist: true,
         prescription_required: true,
-        created_at: new Date(),
-        updated_at: new Date(),
+        createdAt: new Date(),
+        updatedAt: new Date(),
       },
       {
         id: '550e8400-e29b-41d4-a716-446655440025',
@@ -209,11 +209,11 @@ export default {
           'Functional improvement',
           'Treatment adherence'
         ]),
-        is_active: true,
+        isActive: true,
         requires_specialist: true,
         prescription_required: false,
-        created_at: new Date(),
-        updated_at: new Date(),
+        createdAt: new Date(),
+        updatedAt: new Date(),
       }
     ], { ignoreDuplicates: true });
     

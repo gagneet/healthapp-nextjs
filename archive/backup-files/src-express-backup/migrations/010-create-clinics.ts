@@ -27,7 +27,7 @@ export default {
         type: Sequelize.STRING(255),
         allowNull: false
       },
-      doctor_id: {
+      doctorId: {
         type: Sequelize.UUID,
         allowNull: false,
         references: {
@@ -101,7 +101,7 @@ export default {
         allowNull: false,
         comment: 'Indicates if this is the doctors primary clinic'
       },
-      is_active: {
+      isActive: {
         type: Sequelize.BOOLEAN,
         defaultValue: true,
         allowNull: false
@@ -126,12 +126,12 @@ export default {
         defaultValue: [],
         allowNull: true
       },
-      created_at: {
+      createdAt: {
         type: Sequelize.DATE,
         allowNull: false,
         defaultValue: Sequelize.fn('NOW')
       },
-      updated_at: {
+      updatedAt: {
         type: Sequelize.DATE,
         allowNull: false,
         defaultValue: Sequelize.fn('NOW')
@@ -143,9 +143,9 @@ export default {
     });
 
     // Add indexes
-    await queryInterface.addIndex('clinics', ['doctor_id']);
+    await queryInterface.addIndex('clinics', ['doctorId']);
     await queryInterface.addIndex('clinics', ['organization_id']);
-    await queryInterface.addIndex('clinics', ['is_active']);
+    await queryInterface.addIndex('clinics', ['isActive']);
     await queryInterface.addIndex('clinics', ['is_primary']);
 
     console.log('✅ Clinics table created successfully');

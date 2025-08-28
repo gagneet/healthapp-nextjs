@@ -19,7 +19,7 @@ export default {
         defaultValue: Sequelize.UUIDV4,
         primaryKey: true,
       },
-      doctor_id: {
+      doctorId: {
         type: Sequelize.UUID,
         allowNull: false,
         references: {
@@ -61,12 +61,12 @@ export default {
         type: Sequelize.TEXT,
         allowNull: true,
       },
-      created_at: {
+      createdAt: {
         type: Sequelize.DATE,
         allowNull: false,
         defaultValue: Sequelize.NOW,
       },
-      updated_at: {
+      updatedAt: {
         type: Sequelize.DATE,
         allowNull: false,
         defaultValue: Sequelize.NOW,
@@ -74,8 +74,8 @@ export default {
     });
 
     // Add indexes
-    await queryInterface.addIndex('appointment_slots', ['doctor_id', 'date', 'start_time']);
-    await queryInterface.addIndex('appointment_slots', ['doctor_id', 'is_available']);
+    await queryInterface.addIndex('appointment_slots', ['doctorId', 'date', 'start_time']);
+    await queryInterface.addIndex('appointment_slots', ['doctorId', 'is_available']);
     await queryInterface.addIndex('appointment_slots', ['date', 'is_available']);
   },
 

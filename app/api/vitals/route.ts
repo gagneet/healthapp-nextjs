@@ -37,7 +37,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
   }
 
     const { searchParams } = new URL(request.url);
-    const patientId = searchParams.get('patient_id');
+    const patientId = searchParams.get('patientId');
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '10');
     const offset = (page - 1) * limit;
@@ -46,7 +46,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
     const vitals = await prisma.vitals.findMany({
       where: patientId ? { 
         care_plans: {
-          patient_id: patientId
+          patientId: patientId
         }
       } : {},
       include: {
@@ -59,11 +59,11 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
         },
         care_plans: {
           select: {
-            patient_id: true,
+            patientId: true,
             patient: {
               select: {
                 id: true,
-                patient_id: true,
+                patientId: true,
                 user: {
                   select: {
                     firstName: true,
@@ -77,13 +77,13 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
       },
       skip: offset,
       take: limit,
-      orderBy: { created_at: 'desc' }
+      orderBy: { createdAt: 'desc' }
     });
 
     const totalCount = await prisma.vital.count({
       where: patientId ? { 
         care_plans: {
-          patient_id: patientId
+          patientId: patientId
         }
       } : {}
     });
@@ -120,7 +120,7 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
 
     const body = await request.json();
     const {
-      patient_id,
+      patientId,
       vital_template_id,
       care_plan_id,
       description,
@@ -142,10 +142,10 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
         details: {
           repeat_interval_id: repeat_interval,
           repeat_days,
-          patient_id
+          patientId
         },
-        created_at: new Date(),
-        updated_at: new Date()
+        createdAt: new Date(),
+        updatedAt: new Date()
       },
       include: {
         vital_templates: {
@@ -156,10 +156,10 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
         },
         care_plans: {
           select: {
-            patient_id: true,
+            patientId: true,
             patient: {
               select: {
-                patient_id: true,
+                patientId: true,
                 user: {
                   select: {
                     firstName: true,

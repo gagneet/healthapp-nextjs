@@ -304,7 +304,7 @@ CREATE TABLE patients (
   id INT AUTO_INCREMENT PRIMARY KEY,
   name VARCHAR(255),
   email VARCHAR(255),
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 ```
 
@@ -317,8 +317,8 @@ CREATE TABLE patients (
   last_name VARCHAR(100) NOT NULL,
   email VARCHAR(255) UNIQUE,
   date_of_birth DATE,
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW()
+  createdAt TIMESTAMPTZ DEFAULT NOW(),
+  updatedAt TIMESTAMPTZ DEFAULT NOW()
 );
 ```
 
@@ -333,8 +333,8 @@ model Patient {
   lastName    String   @map("last_name")
   email       String?  @unique
   dateOfBirth DateTime? @map("date_of_birth")
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
+  createdAt   DateTime @default(now()) @map("createdAt")
+  updatedAt   DateTime @updatedAt @map("updatedAt")
   
   // Relations
   medications Medication[]

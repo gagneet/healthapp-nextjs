@@ -60,8 +60,8 @@ model DrugInteraction {
   evidence_level        EvidenceLevel @default(MODERATE)
   source                String?  @db.VarChar(255)
   last_updated          DateTime @default(now()) @db.Timestamp(6)
-  created_at            DateTime @default(now()) @db.Timestamp(6)
-  updated_at            DateTime @updatedAt @db.Timestamp(6)
+  createdAt            DateTime @default(now()) @db.Timestamp(6)
+  updatedAt            DateTime @updatedAt @db.Timestamp(6)
 
   @@map("drug_interactions")
 }
@@ -146,7 +146,7 @@ export async function POST(request: NextRequest) {
 ```prisma
 model PatientAllergy {
   id                    String      @id @default(uuid()) @db.Uuid
-  patient_id            String      @db.Uuid
+  patientId            String      @db.Uuid
   allergen_name         String      @db.VarChar(255)
   allergen_type         AllergenType
   allergen_rxnorm       String?     @db.VarChar(50)
@@ -156,14 +156,14 @@ model PatientAllergy {
   notes                 String?     @db.Text
   verified_by_doctor    Boolean     @default(false)
   verified_by           String?     @db.Uuid
-  is_active             Boolean     @default(true)
-  created_at            DateTime    @default(now()) @db.Timestamp(6)
-  updated_at            DateTime    @updatedAt @db.Timestamp(6)
+  isActive             Boolean     @default(true)
+  createdAt            DateTime    @default(now()) @db.Timestamp(6)
+  updatedAt            DateTime    @updatedAt @db.Timestamp(6)
 
-  patient               Patient     @relation(fields: [patient_id], references: [id], onDelete: Cascade)
+  patient               Patient     @relation(fields: [patientId], references: [id], onDelete: Cascade)
   verified_by_user      User?       @relation("PatientAllergyVerifier", fields: [verified_by], references: [id])
 
-  @@index([patient_id])
+  @@index([patientId])
   @@map("patient_allergies")
 }
 
@@ -207,7 +207,7 @@ export async function POST(request: NextRequest) {
 ```prisma
 model EmergencyAlert {
   id                    String           @id @default(uuid()) @db.Uuid
-  patient_id            String           @db.Uuid
+  patientId            String           @db.Uuid
   alert_type            AlertType
   severity_level        AlertSeverity
   alert_status          AlertStatus      @default(ACTIVE)
@@ -228,15 +228,15 @@ model EmergencyAlert {
   resolved_at           DateTime?        @db.Timestamp(6)
   resolution_notes      String?          @db.Text
   resolution_action     ResolutionAction?
-  created_at            DateTime         @default(now()) @db.Timestamp(6)
-  updated_at            DateTime         @updatedAt @db.Timestamp(6)
+  createdAt            DateTime         @default(now()) @db.Timestamp(6)
+  updatedAt            DateTime         @updatedAt @db.Timestamp(6)
 
-  patient               Patient          @relation(fields: [patient_id], references: [id], onDelete: Cascade)
+  patient               Patient          @relation(fields: [patientId], references: [id], onDelete: Cascade)
   vital_reading         VitalReading?    @relation(fields: [vital_reading_id], references: [id])
   acknowledged_by_user  User?            @relation("EmergencyAlertAcknowledger", fields: [acknowledged_by], references: [id])
   resolved_by_user      User?            @relation("EmergencyAlertResolver", fields: [resolved_by], references: [id])
 
-  @@index([patient_id, alert_status])
+  @@index([patientId, alert_status])
   @@index([severity_level, triggered_at])
   @@map("emergency_alerts")
 }
@@ -372,13 +372,13 @@ export async function createAuditLog(action: string, entityType: string, data: a
       action,
       entity_type: entityType,
       entity_id: data.entityId,
-      patient_id: data.patientId,
+      patientId: data.patientId,
       ip_address: data.ipAddress,
       user_agent: data.userAgent,
       request_data: data.requestData,
       response_data: data.responseData,
       severity: data.severity || 'INFO',
-      created_at: new Date()
+      createdAt: new Date()
     }
   })
 }

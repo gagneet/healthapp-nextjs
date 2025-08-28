@@ -199,7 +199,7 @@ export const POST = withErrorHandling(async (request: NextRequest, { params }: {
       assignment_id: assignment.id,
       patient: {
         id: patient.id,
-        patient_id: patient.patientId,
+        patientId: patient.patientId,
         name: `${patient.user.firstName} ${patient.user.lastName}`.trim(),
         email: patient.user.email,
         phone: patient.user.phone
@@ -218,9 +218,9 @@ export const POST = withErrorHandling(async (request: NextRequest, { params }: {
         organization: secondaryDoctor.organization?.name
       },
       assignment_details: {
-        assignment_type: assignmentType,
+        assignmentType: assignmentType,
         assignment_reason: assignmentReason,
-        specialty_focus: specialtyFocus,
+        specialtyFocus: specialtyFocus,
         permissions: finalPermissions,
         expires_at: assignment.expiresAt,
         notes: notes,
@@ -229,7 +229,7 @@ export const POST = withErrorHandling(async (request: NextRequest, { params }: {
       consent_info: {
         requires_consent: needsConsent,
         consent_status: assignment.consentStatus,
-        access_granted: assignment.accessGranted,
+        accessGranted: assignment.accessGranted,
         same_organization: sameOrganization,
         reason: sameOrganization 
           ? 'Same organization - automatic access granted'
@@ -365,12 +365,12 @@ export const GET = withErrorHandling(async (request: NextRequest, { params }: { 
       
       return {
         assignment_id: assignment.id,
-        assignment_type: assignment.assignmentType,
+        assignmentType: assignment.assignmentType,
         assignment_reason: assignment.assignmentReason,
-        specialty_focus: assignment.specialtyFocus || [],
-        created_at: assignment.createdAt,
+        specialtyFocus: assignment.specialtyFocus || [],
+        createdAt: assignment.createdAt,
         expires_at: assignment.expiresAt,
-        is_active: assignment.isActive,
+        isActive: assignment.isActive,
         notes: assignment.notes,
         primary_doctor: assignment.primaryDoctor ? {
           id: assignment.primaryDoctor.id,
@@ -389,7 +389,7 @@ export const GET = withErrorHandling(async (request: NextRequest, { params }: { 
         consent_details: {
           requires_consent: assignment.requiresConsent,
           consent_status: assignment.consentStatus,
-          access_granted: assignment.accessGranted,
+          accessGranted: assignment.accessGranted,
           consent_granted_at: assignment.consentGrantedAt,
           otp_info: consent ? {
             has_active_otp: !consent.isVerified && new Date() < new Date(consent.expiresAt),
@@ -404,22 +404,22 @@ export const GET = withErrorHandling(async (request: NextRequest, { params }: { 
     // Generate summary
     const summary = {
       total_assignments: formattedAssignments.length,
-      active_assignments: formattedAssignments.filter(a => a.is_active).length,
-      granted_access: formattedAssignments.filter(a => a.consent_details.access_granted).length,
+      active_assignments: formattedAssignments.filter(a => a.isActive).length,
+      granted_access: formattedAssignments.filter(a => a.consent_details.accessGranted).length,
       pending_consent: formattedAssignments.filter(a => 
-        a.consent_details.requires_consent && !a.consent_details.access_granted
+        a.consent_details.requires_consent && !a.consent_details.accessGranted
       ).length,
       by_assignment_type: {
-        specialist: formattedAssignments.filter(a => a.assignment_type === 'specialist').length,
-        substitute: formattedAssignments.filter(a => a.assignment_type === 'substitute').length,
-        transferred: formattedAssignments.filter(a => a.assignment_type === 'transferred').length
+        specialist: formattedAssignments.filter(a => a.assignmentType === 'specialist').length,
+        substitute: formattedAssignments.filter(a => a.assignmentType === 'substitute').length,
+        transferred: formattedAssignments.filter(a => a.assignmentType === 'transferred').length
       }
     }
 
     return createSuccessResponse({
       patient: {
         id: patient.id,
-        patient_id: patient.patientId,
+        patientId: patient.patientId,
         name: `${patient.user.firstName} ${patient.user.lastName}`.trim(),
         email: patient.user.email,
         phone: patient.user.phone

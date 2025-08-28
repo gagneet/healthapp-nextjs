@@ -11,7 +11,7 @@ export default (sequelize: any) => {
     },
     
     // Recipients
-    patient_id: {
+    patientId: {
       type: DataTypes.UUID,
       allowNull: true,
       references: {
@@ -21,7 +21,7 @@ export default (sequelize: any) => {
       onDelete: 'CASCADE'
     },
     
-    doctor_id: {
+    doctorId: {
       type: DataTypes.UUID,
       allowNull: true,
       references: {
@@ -250,12 +250,12 @@ export default (sequelize: any) => {
     },
     
     // Timestamps
-    created_at: {
+    createdAt: {
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW
     },
     
-    updated_at: {
+    updatedAt: {
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW
     },
@@ -272,10 +272,10 @@ export default (sequelize: any) => {
     
     indexes: [
       {
-        fields: ['patient_id']
+        fields: ['patientId']
       },
       {
-        fields: ['doctor_id']
+        fields: ['doctorId']
       },
       {
         fields: ['hsp_id']
@@ -310,7 +310,7 @@ export default (sequelize: any) => {
       },
       {
         // Index for user notifications
-        fields: ['patient_id', 'status', 'created_at']
+        fields: ['patientId', 'status', 'createdAt']
       }
     ],
     
@@ -368,23 +368,23 @@ export default (sequelize: any) => {
     };
     
     if (userType === 'patient') {
-      (whereCondition as any).patient_id = userId;
+      (whereCondition as any).patientId = userId;
     } else if (userType === 'doctor') {
-      (whereCondition as any).doctor_id = userId;
+      (whereCondition as any).doctorId = userId;
     } else if (userType === 'hsp') {
       (whereCondition as any).hsp_id = userId;
     }
     
     return await this.findAll({
       where: whereCondition,
-      order: [['created_at', 'DESC']],
+      order: [['createdAt', 'DESC']],
       limit
     });
   };
   
   Notification.createMedicationReminder = async function(patientId: any, medicationId: any, scheduledTime: any) {
     return await this.create({
-      patient_id: patientId,
+      patientId: patientId,
       related_medication_id: medicationId,
       type: 'medication_reminder',
       title: 'Medication Reminder',
@@ -397,7 +397,7 @@ export default (sequelize: any) => {
   
   Notification.createAppointmentReminder = async function(patientId: any, appointmentId: any, scheduledTime: any) {
     return await this.create({
-      patient_id: patientId,
+      patientId: patientId,
       related_appointment_id: appointmentId,
       type: 'appointment_reminder',
       title: 'Appointment Reminder',

@@ -56,8 +56,8 @@ export interface AppError extends Error {
 // Database model interfaces (basic structure)
 export interface BaseModel {
   id: string;
-  created_at: Date;
-  updated_at: Date;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 // Response formatter types

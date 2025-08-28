@@ -70,9 +70,9 @@ export class SecondaryDoctorService {
       // Check if this doctor is already assigned to this patient
       const existingAssignment = await PatientDoctorAssignment.findOne({
         where: {
-          patient_id: patientId,
-          doctor_id: doctorId,
-          is_active: true
+          patientId: patientId,
+          doctorId: doctorId,
+          isActive: true
         }
       });
       if (existingAssignment) {
@@ -89,10 +89,10 @@ export class SecondaryDoctorService {
 
       // Create assignment data
       const assignmentData = {
-        patient_id: patientId,
-        doctor_id: doctorId,
+        patientId: patientId,
+        doctorId: doctorId,
         assignment_type: assignmentType,
-        specialty_focus: specialtyFocus,
+        specialtyFocus: specialtyFocus,
         care_plan_ids: carePlanIds,
         assigned_by_doctor_id: assignedBy,
         assignment_reason: assignmentReason,
@@ -146,10 +146,10 @@ export class SecondaryDoctorService {
     // Check if assigning doctor has permission to assign doctors to this patient
     const primaryAssignment = await PatientDoctorAssignment.findOne({
       where: {
-        patient_id: patient.id,
-        doctor_id: assigningDoctor.id,
+        patientId: patient.id,
+        doctorId: assigningDoctor.id,
         assignment_type: 'primary',
-        is_active: true
+        isActive: true
       }
     });
 
@@ -187,9 +187,9 @@ export class SecondaryDoctorService {
    */
   static async getPatientDoctorAssignments(patientId: string, includeInactive: boolean = false) {
     try {
-      const whereClause = { patient_id: patientId };
+      const whereClause = { patientId: patientId };
       if (!includeInactive) {
-        (whereClause as any).is_active = true;
+        (whereClause as any).isActive = true;
       }
 
       const assignments = await PatientDoctorAssignment.findAll({
@@ -211,7 +211,7 @@ export class SecondaryDoctorService {
         ],
         order: [
           ['assignment_type', 'ASC'], // Primary first
-          ['created_at', 'DESC']
+          ['createdAt', 'DESC']
         ]
       });
 
@@ -227,20 +227,20 @@ export class SecondaryDoctorService {
           isVerified: assignment.doctor.is_verified
         },
         permissions: assignment.permissions,
-        specialtyFocus: assignment.specialty_focus,
+        specialtyFocus: assignment.specialtyFocus,
         carePlanIds: assignment.care_plan_ids,
         assignmentReason: assignment.assignment_reason,
         notes: assignment.notes,
         consentStatus: assignment.patient_consent_status,
         consentRequired: assignment.patient_consent_required,
-        isActive: assignment.is_active,
+        isActive: assignment.isActive,
         assignmentStartDate: assignment.assignment_start_date,
         assignmentEndDate: assignment.assignment_end_date,
         assignedBy: assignment.assignedByDoctor ? {
           name: assignment.assignedByDoctor.user.name,
           email: assignment.assignedByDoctor.user.email
         } : null,
-        createdAt: assignment.created_at
+        createdAt: assignment.createdAt
       }));
     } catch (error) {
       logger.error('Error fetching patient doctor assignments:', error);
@@ -320,10 +320,10 @@ export class SecondaryDoctorService {
       // Validate that updater is the primary doctor
       const primaryAssignment = await PatientDoctorAssignment.findOne({
         where: {
-          patient_id: assignment.patient_id,
-          doctor_id: updatedBy,
+          patientId: assignment.patientId,
+          doctorId: updatedBy,
           assignment_type: 'primary',
-          is_active: true
+          isActive: true
         }
       });
 
@@ -357,10 +357,10 @@ export class SecondaryDoctorService {
       // Only primary doctor can deactivate assignments
       const primaryAssignment = await PatientDoctorAssignment.findOne({
         where: {
-          patient_id: assignment.patient_id,
-          doctor_id: deactivatedBy,
+          patientId: assignment.patientId,
+          doctorId: deactivatedBy,
           assignment_type: 'primary',
-          is_active: true
+          isActive: true
         }
       });
 
@@ -369,7 +369,7 @@ export class SecondaryDoctorService {
       }
 
       // Deactivate assignment
-      assignment.is_active = false;
+      assignment.isActive = false;
       assignment.assignment_end_date = new Date();
       assignment.notes = assignment.notes 
         ? `${assignment.notes}\n\nDeactivated: ${reason}` 
@@ -438,13 +438,13 @@ export class SecondaryDoctorService {
           email: assignment.patient.user.email
         },
         permissions: assignment.permissions,
-        specialtyFocus: assignment.specialty_focus,
+        specialtyFocus: assignment.specialtyFocus,
         carePlanIds: assignment.care_plan_ids,
         assignmentReason: assignment.assignment_reason,
         notes: assignment.notes,
         consentStatus: assignment.patient_consent_status,
         consentRequired: assignment.patient_consent_required,
-        isActive: assignment.is_active,
+        isActive: assignment.isActive,
         assignmentStartDate: assignment.assignment_start_date,
         assignmentEndDate: assignment.assignment_end_date,
         assignedBy: assignment.assignedByDoctor ? {
@@ -452,8 +452,8 @@ export class SecondaryDoctorService {
           name: assignment.assignedByDoctor.user.name,
           email: assignment.assignedByDoctor.user.email
         } : null,
-        createdAt: assignment.created_at,
-        updatedAt: assignment.updated_at
+        createdAt: assignment.createdAt,
+        updatedAt: assignment.updatedAt
       };
     } catch (error) {
       logger.error('Error fetching assignment details:', error);
@@ -468,9 +468,9 @@ export class SecondaryDoctorService {
     try {
       const assignment = await PatientDoctorAssignment.findOne({
         where: {
-          doctor_id: doctorId,
-          patient_id: patientId,
-          is_active: true
+          doctorId: doctorId,
+          patientId: patientId,
+          isActive: true
         }
       });
 

@@ -17,7 +17,7 @@ export default {
         primaryKey: true,
         defaultValue: Sequelize.UUIDV4,
       },
-      patient_id: {
+      patientId: {
         type: Sequelize.UUID,
         allowNull: false,
         references: {
@@ -25,7 +25,7 @@ export default {
           key: 'id'
         },
       },
-      vital_type_id: {
+      vitalTypeId: {
         type: Sequelize.UUID,
         allowNull: false,
         references: {
@@ -53,7 +53,7 @@ export default {
       },
       
       // Context
-      reading_time: {
+      readingTime: {
         type: Sequelize.DATE,
         allowNull: false,
       },
@@ -91,12 +91,12 @@ export default {
       },
       
       // Timestamps
-      created_at: {
+      createdAt: {
         type: Sequelize.DATE,
         allowNull: false,
         defaultValue: Sequelize.NOW,
       },
-      updated_at: {
+      updatedAt: {
         type: Sequelize.DATE,
         allowNull: false,
         defaultValue: Sequelize.NOW,
@@ -105,12 +105,12 @@ export default {
 
     // Add indexes with error handling
     const indexes = [
-      { fields: ['patient_id'], name: 'idx_vital_readings_patient' },
-      { fields: ['vital_type_id'], name: 'idx_vital_readings_vital_type' },
-      { fields: ['reading_time'], name: 'idx_vital_readings_time' },
+      { fields: ['patientId'], name: 'idx_vital_readings_patient' },
+      { fields: ['vitalTypeId'], name: 'idx_vital_readings_vital_type' },
+      { fields: ['readingTime'], name: 'idx_vital_readings_time' },
       { fields: ['is_flagged'], name: 'idx_vital_readings_flagged' },
       { fields: ['is_validated'], name: 'idx_vital_readings_validated' },
-      { fields: ['patient_id', 'vital_type_id', 'reading_time'], name: 'idx_vital_readings_composite' }
+      { fields: ['patientId', 'vitalTypeId', 'readingTime'], name: 'idx_vital_readings_composite' }
     ];
 
     for (const index of indexes) {

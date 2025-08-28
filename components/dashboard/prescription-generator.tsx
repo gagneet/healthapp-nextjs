@@ -149,8 +149,8 @@ export default function PrescriptionGenerator({
     try {
       const formData = new FormData()
       formData.append('pdf', pdfBlob, `prescription-${prescriptionId}.pdf`)
-      formData.append('patient_id', patient.id)
-      formData.append('doctor_id', doctor.id)
+      formData.append('patientId', patient.id)
+      formData.append('doctorId', doctor.id)
       formData.append('prescription_id', prescriptionId)
 
       const response = await fetch('/api/prescriptions/upload', {

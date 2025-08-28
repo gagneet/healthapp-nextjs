@@ -304,20 +304,20 @@ async function performCustomValidation(
       // Validate care plan access through patient relationship
       const carePlan = await prisma.care_plans.findUnique({
         where: { id: resourceId },
-        select: { patient_id: true }
+        select: { patientId: true }
       });
       
       if (carePlan) {
         const patientValidation = await HealthcareRBAC.validatePatientAccess(
           user.id,
           user.role,
-          carePlan.patient_id
+          carePlan.patientId
         );
         
         return { 
           allowed: patientValidation.hasAccess,
           reason: patientValidation.hasAccess ? undefined : 'No access to patient care plans',
-          auditInfo: { carePlanId: resourceId, patientId: carePlan.patient_id }
+          auditInfo: { carePlanId: resourceId, patientId: carePlan.patientId }
         };
       }
     }
@@ -326,20 +326,20 @@ async function performCustomValidation(
     if (endpoint.includes('/medications/')) {
       const medication = await prisma.medications.findUnique({
         where: { id: resourceId },
-        include: { care_plan: { select: { patient_id: true } } }
+        include: { care_plan: { select: { patientId: true } } }
       });
       
       if (medication?.care_plan) {
         const patientValidation = await HealthcareRBAC.validatePatientAccess(
           user.id,
           user.role,
-          medication.care_plan.patient_id
+          medication.care_plan.patientId
         );
         
         return { 
           allowed: patientValidation.hasAccess,
           reason: patientValidation.hasAccess ? undefined : 'No access to patient medications',
-          auditInfo: { medicationId: resourceId, patientId: medication.care_plan.patient_id }
+          auditInfo: { medicationId: resourceId, patientId: medication.care_plan.patientId }
         };
       }
     }

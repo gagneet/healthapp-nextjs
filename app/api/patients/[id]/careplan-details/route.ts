@@ -102,6 +102,7 @@ async function verifyPatientAccess(patientId: string, doctorId: string | null, h
           some: {
             // hsp_id is not a valid field on PatientProviderAssignment. This seems to be a logic error.
             // providerId: hspId,
+            hspId: hspId,
             isActive: true
           }
         }
@@ -133,6 +134,7 @@ async function fetchCarePlanData(patientId: string) {
     where: {
       patientId: patientId,
       status: 'ACTIVE'
+      // isActive: true
     },
     include: {
       // 'medications' is a json field, the relation is 'prescribedMedications'

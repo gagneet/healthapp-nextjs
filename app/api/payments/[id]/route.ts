@@ -26,7 +26,7 @@ export async function GET(
         patients: {
           select: {
             id: true,
-            patient_id: true,
+            patientId: true,
             user: {
               select: {
                 name: true,
@@ -83,7 +83,7 @@ export async function GET(
       const patient = await prisma.patient.findFirst({
         where: { userId: session.user.id }
       });
-      if (!patient || payment.patient_id !== patient.id) {
+      if (!patient || payment.patientId !== patient.id) {
         return NextResponse.json({
           status: false,
           statusCode: 403,
@@ -104,7 +104,7 @@ export async function GET(
       }
       
       const patient = await prisma.patient.findUnique({
-        where: { id: payment.patient_id }
+        where: { id: payment.patientId }
       });
       
       if (!patient) {
@@ -197,7 +197,7 @@ export async function PUT(
         where: { userId: session.user.id }
       });
       const patient = await prisma.patient.findUnique({
-        where: { id: existingPayment.patient_id }
+        where: { id: existingPayment.patientId }
       });
       if (!doctor || !patient || patient.primaryCareDoctorId !== doctor.id) {
         return NextResponse.json({
@@ -210,7 +210,7 @@ export async function PUT(
 
     // Prepare update data
     const updateData: any = {
-      updated_at: new Date()
+      updatedAt: new Date()
     };
 
     if (status !== undefined) updateData.status = status;
@@ -234,7 +234,7 @@ export async function PUT(
             last_payment_date: new Date(),
             last_payment_amount: existingPayment.amount,
             failure_count: 0, // Reset failure count on successful payment
-            updated_at: new Date()
+            updatedAt: new Date()
           }
         });
       }
@@ -246,7 +246,7 @@ export async function PUT(
       include: {
         patients: {
           select: {
-            patient_id: true,
+            patientId: true,
             user: {
               select: {
                 name: true,
@@ -346,7 +346,7 @@ export async function DELETE(
         where: { userId: session.user.id }
       });
       const patient = await prisma.patient.findUnique({
-        where: { id: existingPayment.patient_id }
+        where: { id: existingPayment.patientId }
       });
       if (!doctor || !patient || patient.primaryCareDoctorId !== doctor.id) {
         return NextResponse.json({
@@ -377,7 +377,7 @@ export async function DELETE(
         refund_amount: currentRefunds + amount,
         refund_reason,
         status: currentRefunds + amount >= existingPayment.amount ? 'refunded' : 'partially_refunded',
-        updated_at: new Date()
+        updatedAt: new Date()
       }
     });
 

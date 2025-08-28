@@ -34,7 +34,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
 
   try {
     const { searchParams } = new URL(request.url)
-    const doctorIdParam = searchParams.get('doctor_id')
+    const doctorIdParam = searchParams.get('doctorId')
     
     // Determine target doctor (only self since role is already DOCTOR)
     const targetDoctorId = session.user.profileId!

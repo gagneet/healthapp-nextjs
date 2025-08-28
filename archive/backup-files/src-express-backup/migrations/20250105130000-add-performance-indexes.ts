@@ -26,12 +26,12 @@ export default {
     // 1. CRITICAL INDEXES for Patient Management (>10K patients per doctor)
     const patientIndexes = [
       {
-        fields: ['primaryCareDoctorId', 'created_at', 'is_active'],
+        fields: ['primaryCareDoctorId', 'createdAt', 'isActive'],
         name: 'idx_patients_doctor_created_active',
         concurrently: true
       },
       {
-        fields: ['patient_id', 'created_at'],
+        fields: ['patientId', 'createdAt'],
         name: 'idx_patients_id_created',
         concurrently: true
       },
@@ -49,12 +49,12 @@ export default {
     // 2. DOCTOR ASSIGNMENT INDEXES (Secondary Doctor Management)
     const assignmentIndexes = [
       {
-        fields: ['patient_id', 'assignment_type', 'is_active'],
+        fields: ['patientId', 'assignment_type', 'isActive'],
         name: 'idx_assignments_patient_type_active',
         concurrently: true
       },
       {
-        fields: ['doctor_id', 'is_active', 'created_at'],
+        fields: ['doctorId', 'isActive', 'createdAt'],
         name: 'idx_assignments_doctor_active_created',
         concurrently: true
       },
@@ -73,17 +73,17 @@ export default {
     // 3. VITAL READINGS PERFORMANCE INDEXES (High-frequency data)
     const vitalIndexes = [
       {
-        fields: ['patient_id', 'reading_time', 'vital_type_id'],
+        fields: ['patientId', 'readingTime', 'vital_type_id'],
         name: 'idx_vitals_patient_time_type',
         concurrently: true
       },
       {
-        fields: ['patient_id', 'vital_type_id', 'reading_time'],
+        fields: ['patientId', 'vital_type_id', 'readingTime'],
         name: 'idx_vitals_patient_type_time_desc',
         concurrently: true
       },
       {
-        fields: ['reading_time', 'patient_id'],
+        fields: ['readingTime', 'patientId'],
         name: 'idx_vitals_time_patient',
         concurrently: true
       }
@@ -96,7 +96,7 @@ export default {
     // 4. ADHERENCE RECORDS INDEXES (Medication adherence tracking)
     const adherenceIndexes = [
       {
-        fields: ['patient_id', 'due_at', 'is_completed'],
+        fields: ['patientId', 'due_at', 'is_completed'],
         name: 'idx_adherence_patient_due_status',
         concurrently: true
       },
@@ -125,15 +125,15 @@ export default {
         concurrently: true
       },
       {
-        fields: ['patient_id', 'start_time'],
+        fields: ['patientId', 'start_time'],
         name: 'idx_appointments_patient_time',
         concurrently: true
       },
       {
-        fields: ['doctor_id', 'start_time'],
+        fields: ['doctorId', 'start_time'],
         name: 'idx_appointments_doctor_time_enhanced',
         concurrently: true,
-        where: { doctor_id: { [Sequelize.Op.ne]: null } }
+        where: { doctorId: { [Sequelize.Op.ne]: null } }
       },
       {
         fields: ['organizer_type', 'organizer_id', 'start_time'],
@@ -149,12 +149,12 @@ export default {
     // 6. CARE PLANS INDEXES
     const carePlanIndexes = [
       {
-        fields: ['patient_id', 'status', 'start_date'],
+        fields: ['patientId', 'status', 'start_date'],
         name: 'idx_careplans_patient_status_start_fixed',
         concurrently: true
       },
       {
-        fields: ['created_by_doctor_id', 'created_at'],
+        fields: ['created_by_doctor_id', 'createdAt'],
         name: 'idx_careplans_doctor_created',
         concurrently: true,
         where: { created_by_doctor_id: { [Sequelize.Op.ne]: null } }
@@ -174,7 +174,7 @@ export default {
     // 7. SCHEDULED EVENTS INDEXES (High-volume operations)
     const eventIndexes = [
       {
-        fields: ['patient_id', 'scheduled_for', 'status'],
+        fields: ['patientId', 'scheduled_for', 'status'],
         name: 'idx_events_patient_time_status',
         concurrently: true
       },
@@ -198,7 +198,7 @@ export default {
     // 8. SYMPTOMS TRACKING INDEXES
     const symptomIndexes = [
       {
-        fields: ['patient_id', 'onset_time', 'severity'],
+        fields: ['patientId', 'onset_time', 'severity'],
         name: 'idx_symptoms_patient_onset_severity',
         concurrently: true
       },
@@ -254,15 +254,15 @@ export default {
     // 11. AUDIT LOGS INDEXES (Compliance and monitoring)
     const auditIndexes = [
       {
-        fields: ['userId', 'created_at', 'action'],
+        fields: ['userId', 'createdAt', 'action'],
         name: 'idx_audit_user_created_action',
         concurrently: true
       },
       {
-        fields: ['patient_id', 'action', 'created_at'],
+        fields: ['patientId', 'action', 'createdAt'],
         name: 'idx_audit_patient_action_created',
         concurrently: true,
-        where: { patient_id: { [Sequelize.Op.ne]: null } }
+        where: { patientId: { [Sequelize.Op.ne]: null } }
       }
     ];
 
@@ -273,13 +273,13 @@ export default {
     // 12. NOTIFICATIONS INDEXES
     const notificationIndexes = [
       {
-        fields: ['patient_id', 'created_at'],
+        fields: ['patientId', 'createdAt'],
         name: 'idx_notifications_patient_created',
         concurrently: true,
-        where: { patient_id: { [Sequelize.Op.ne]: null } }
+        where: { patientId: { [Sequelize.Op.ne]: null } }
       },
       {
-        fields: ['type', 'priority', 'created_at'],
+        fields: ['type', 'priority', 'createdAt'],
         name: 'idx_notifications_type_priority_created',
         concurrently: true
       }

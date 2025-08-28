@@ -78,16 +78,16 @@ class SubscriptionService {
   }
 
   async getServicePlans(providerId: string, options: any = {}) {
-    const { is_active = true, limit = 20, offset = 0 } = options;
+    const { isActive = true, limit = 20, offset = 0 } = options;
 
     const plans = await ServicePlan.findAll({
       where: {
         provider_id: providerId,
-        ...(is_active !== null && { is_active })
+        ...(isActive !== null && { isActive })
       },
       limit,
       offset,
-      order: [['created_at', 'DESC']]
+      order: [['createdAt', 'DESC']]
     });
 
     return plans;
@@ -96,7 +96,7 @@ class SubscriptionService {
   // Subscription Management
   async createSubscription(patientId: string, providerId: string, servicePlanId: string, paymentMethodId: string | null = null) {
     const servicePlan = await ServicePlan.findByPk(servicePlanId);
-    if (!servicePlan || !servicePlan.is_active) {
+    if (!servicePlan || !servicePlan.isActive) {
       throw new Error('Service plan not found or inactive');
     }
 
@@ -134,7 +134,7 @@ class SubscriptionService {
         // Attach payment method if provided
         if (paymentMethodId) {
           const paymentMethod = await PaymentMethod.findOne({
-            where: { id: paymentMethodId, patient_id: patientId }
+            where: { id: paymentMethodId, patientId: patientId }
           });
           
           if (paymentMethod) {
@@ -161,7 +161,7 @@ class SubscriptionService {
     }
 
     const subscription = await PatientSubscription.create({
-      patient_id: patientId,
+      patientId: patientId,
       provider_id: providerId,
       service_plan_id: servicePlanId,
       status,
@@ -272,12 +272,12 @@ class SubscriptionService {
     if (setAsDefault) {
       await PaymentMethod.update(
         { is_default: false },
-        { where: { patient_id: patientId, is_default: true } }
+        { where: { patientId: patientId, is_default: true } }
       );
     }
 
     const paymentMethod = await PaymentMethod.create({
-      patient_id: patientId,
+      patientId: patientId,
       stripe_payment_method_id: stripePaymentMethodId,
       type: paymentMethodData.type,
       card_brand: paymentMethodData.card?.brand,
@@ -326,7 +326,7 @@ class SubscriptionService {
     const paymentMethod = paymentMethodId 
       ? await PaymentMethod.findByPk(paymentMethodId)
       : await PaymentMethod.findOne({
-          where: { patient_id: subscription.patient_id, is_default: true }
+          where: { patientId: subscription.patientId, is_default: true }
         });
 
     if (!paymentMethod) {
@@ -336,7 +336,7 @@ class SubscriptionService {
     // Create payment record
     const payment = await Payment.create({
       subscription_id: subscriptionId,
-      patient_id: subscription.patient_id,
+      patientId: subscription.patientId,
       provider_id: subscription.provider_id,
       amount,
       payment_method: paymentMethod.type,
@@ -415,7 +415,7 @@ class SubscriptionService {
     // Try to find existing customer
     const existingSubscription = await PatientSubscription.findOne({
       where: { 
-        patient_id: patient.id,
+        patientId: patient.id,
         stripe_customer_id: { [Op.ne]: null }
       }
     });
@@ -434,7 +434,7 @@ class SubscriptionService {
       name: `${patient.first_name} ${patient.last_name}`,
       phone: patient.phone,
       metadata: {
-        patient_id: patient.id,
+        patientId: patient.id,
       },
     });
   }

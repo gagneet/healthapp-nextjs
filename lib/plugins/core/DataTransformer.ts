@@ -278,7 +278,7 @@ export class DataTransformer {
 
   private static extractTimestamp(rawData: any): Date {
     // Try common timestamp fields
-    const timestampFields = ['timestamp', 'time', 'date', 'measured_at', 'created_at'];
+    const timestampFields = ['timestamp', 'time', 'date', 'measured_at', 'createdAt'];
     
     for (const field of timestampFields) {
       const value = this.getNestedProperty(rawData, field);

@@ -9,7 +9,7 @@ export default (sequelize: any) => {
       primaryKey: true,
     },
     
-    patient_id: {
+    patientId: {
       type: DataTypes.UUID,
       allowNull: false,
       references: {
@@ -19,7 +19,7 @@ export default (sequelize: any) => {
       onDelete: 'CASCADE'
     },
     
-    doctor_id: {
+    doctorId: {
       type: DataTypes.UUID,
       allowNull: false,
       references: {
@@ -30,7 +30,7 @@ export default (sequelize: any) => {
     },
     
     // Assignment type determines permissions and responsibilities
-    assignment_type: {
+    assignmentType: {
       type: DataTypes.STRING(50),
       allowNull: false,
       validate: {
@@ -54,7 +54,7 @@ export default (sequelize: any) => {
     },
     
     // For specialist assignments - specific to care plans or conditions
-    specialty_focus: {
+    specialtyFocus: {
       type: DataTypes.ARRAY(DataTypes.TEXT),
       defaultValue: [],
       comment: 'Specific specialties/conditions this assignment covers'
@@ -138,7 +138,7 @@ export default (sequelize: any) => {
       comment: 'Optional end date for temporary assignments'
     },
     
-    is_active: {
+    isActive: {
       type: DataTypes.BOOLEAN,
       defaultValue: true
     },
@@ -162,12 +162,12 @@ export default (sequelize: any) => {
       comment: 'Whether this assignment requires doctors to be in same organization'
     },
     
-    created_at: {
+    createdAt: {
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW
     },
     
-    updated_at: {
+    updatedAt: {
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW
     }
@@ -178,26 +178,26 @@ export default (sequelize: any) => {
     
     indexes: [
       {
-        fields: ['patient_id']
+        fields: ['patientId']
       },
       {
-        fields: ['doctor_id']
+        fields: ['doctorId']
       },
       {
-        fields: ['assignment_type']
+        fields: ['assignmentType']
       },
       {
-        fields: ['is_active']
+        fields: ['isActive']
       },
       {
         fields: ['patient_consent_status']
       },
       {
         unique: true,
-        fields: ['patient_id', 'assignment_type'],
+        fields: ['patientId', 'assignmentType'],
         where: {
-          assignment_type: 'primary',
-          is_active: true
+          assignmentType: 'primary',
+          isActive: true
         },
         name: 'unique_primary_doctor_per_patient'
       }
@@ -205,7 +205,7 @@ export default (sequelize: any) => {
     
     validate: {
       validateConsentRequirements() {
-        if ((this as any).assignment_type === 'transferred' && !(this as any).patient_consent_required) {
+        if ((this as any).assignmentType === 'transferred' && !(this as any).patient_consent_required) {
           throw new Error('Transferred assignments must require patient consent');
         }
         
@@ -215,7 +215,7 @@ export default (sequelize: any) => {
       },
       
       validatePermissions() {
-        const type = (this as any).assignment_type;
+        const type = (this as any).assignmentType;
         const perms = (this as any).permissions;
         
         // Set default permissions based on assignment type
@@ -291,17 +291,17 @@ export default (sequelize: any) => {
   
   // Instance methods
   PatientDoctorAssignment.prototype.isPrimaryDoctor = function() {
-    return this.assignment_type === 'primary';
+    return this.assignmentType === 'primary';
   };
   
   PatientDoctorAssignment.prototype.canCreateCarePlans = function() {
-    return this.is_active && this.permissions.can_create_care_plans;
+    return this.isActive && this.permissions.can_create_care_plans;
   };
   
   PatientDoctorAssignment.prototype.canAccessPatient = function() {
-    if (!this.is_active) return false;
+    if (!this.isActive) return false;
     
-    if (this.assignment_type === 'transferred') {
+    if (this.assignmentType === 'transferred') {
       return this.patient_consent_status === 'granted';
     }
     

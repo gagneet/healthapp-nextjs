@@ -71,7 +71,7 @@ class PatientAccessService {
   async getPrimaryPatients(doctorRecord: any, options = {}) {
     const whereClause = {
       primaryCareDoctorId: doctorRecord.id,
-      is_active: true
+      isActive: true
     };
 
     // Add search filters if provided
@@ -94,13 +94,13 @@ class PatientAccessService {
       ],
       limit: (options as any).limit || 50,
       offset: (options as any).offset || 0,
-      order: [['created_at', 'DESC']]
+      order: [['createdAt', 'DESC']]
     });
 
     return patients.map((patient: any) => ({
       ...patient.toJSON(),
       access_type: 'primary',
-      access_granted: true,
+      accessGranted: true,
       requires_consent: false
     }));
   }
@@ -113,7 +113,7 @@ class PatientAccessService {
     const assignments = await SecondaryDoctorAssignment.findAll({
       where: {
         secondary_doctor_id: doctorRecord.id,
-        is_active: true
+        isActive: true
       },
       include: [
         {
@@ -159,12 +159,12 @@ class PatientAccessService {
         ...assignment.patient.toJSON(),
         assignment_id: assignment.id,
         access_type: 'secondary',
-        access_granted: assignment.access_granted,
+        accessGranted: assignment.accessGranted,
         requires_consent: requiresConsent,
         consent_status: assignment.consent_status,
         same_provider: isSameProvider,
         assignment_reason: assignment.assignment_reason,
-        specialty_focus: assignment.specialty_focus,
+        specialtyFocus: assignment.specialtyFocus,
         primary_doctor: assignment.primaryDoctor ? 
           `${assignment.primaryDoctor.user.first_name} ${assignment.primaryDoctor.user.last_name}` : 
           'Unknown',
@@ -209,17 +209,17 @@ class PatientAccessService {
 
       // Create the assignment
       const assignment = await SecondaryDoctorAssignment.create({
-        patient_id: patientId,
+        patientId: patientId,
         primary_doctor_id: primaryDoctorId,
         secondary_doctor_id: secondaryDoctorId,
         primary_doctor_provider_id: primaryProviderId,
         secondary_doctor_provider_id: secondaryProviderId,
         consent_required: !isSameProvider,
         consent_status: isSameProvider ? 'granted' : 'pending',
-        access_granted: isSameProvider,
+        accessGranted: isSameProvider,
         access_granted_at: isSameProvider ? new Date() : null,
         assignment_reason: (assignmentData as any).reason || 'Secondary care assignment',
-        specialty_focus: (assignmentData as any).specialty_focus || [],
+        specialtyFocus: (assignmentData as any).specialtyFocus || [],
         care_plan_ids: (assignmentData as any).care_plan_ids || []
       });
 
@@ -258,7 +258,7 @@ class PatientAccessService {
         where: {
           id: patientId,
           primaryCareDoctorId: doctorRecord.id,
-          is_active: true
+          isActive: true
         }
       });
 
@@ -273,9 +273,9 @@ class PatientAccessService {
       // Check secondary access
       const secondaryAssignment = await SecondaryDoctorAssignment.findOne({
         where: {
-          patient_id: patientId,
+          patientId: patientId,
           secondary_doctor_id: doctorRecord.id,
-          is_active: true
+          isActive: true
         }
       });
 
@@ -347,7 +347,7 @@ class PatientAccessService {
       // Generate new OTP
       const otp = await PatientConsentOtp.create({
         secondary_assignment_id: assignmentId,
-        patient_id: assignment.patient_id,
+        patientId: assignment.patientId,
         primary_doctor_id: assignment.primary_doctor_id,
         secondary_doctor_id: assignment.secondary_doctor_id,
         secondary_hsp_id: assignment.secondary_hsp_id,
@@ -439,7 +439,7 @@ class PatientAccessService {
 
         return {
           success: true,
-          access_granted: true,
+          accessGranted: true,
           verified_at: verificationResult.verified_at
         };
       }
@@ -463,7 +463,7 @@ class PatientAccessService {
       
       // TODO: Add actual patient_provider_consent_history record
       // await PatientProviderConsentHistory.create({
-      //   patient_id: assignment.patient_id,
+      //   patientId: assignment.patientId,
       //   provider_id: assignment.secondary_doctor_provider_id,
       //   consent_type: 'automatic_same_provider',
       //   consent_status: 'granted',
@@ -486,7 +486,7 @@ class PatientAccessService {
       
       // TODO: Add actual patient_provider_consent_history record
       // await PatientProviderConsentHistory.create({
-      //   patient_id: assignment.patient_id,
+      //   patientId: assignment.patientId,
       //   provider_id: assignment.secondary_doctor_provider_id,
       //   consent_type: 'otp_verification',
       //   consent_status: 'granted',
@@ -528,13 +528,13 @@ class PatientAccessService {
             [Op.lt]: new Date()
           },
           consent_status: 'granted',
-          is_active: true
+          isActive: true
         }
       });
 
       for (const assignment of expiredAssignments) {
         assignment.consent_status = 'expired';
-        assignment.access_granted = false;
+        assignment.accessGranted = false;
         await assignment.save();
       }
 

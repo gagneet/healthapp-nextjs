@@ -45,7 +45,7 @@ SELECT
     role, 
     password_hash IS NOT NULL as has_password,
     LENGTH(password_hash) as password_length,
-    created_at
+    createdAt
 FROM users 
 ORDER BY email;
 "
@@ -59,7 +59,7 @@ SELECT
     name, 
     role, 
     password_hash,
-    created_at
+    createdAt
 FROM users 
 WHERE email = 'doctor@healthapp.com';
 "

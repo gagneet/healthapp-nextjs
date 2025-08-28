@@ -45,7 +45,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
     const service = await prisma.services.findFirst({
       where: { 
         id: serviceId,
-        doctor_id: doctor.id // Only show services owned by this doctor
+        doctorId: doctor.id // Only show services owned by this doctor
       },
       include: {
         doctors: {
@@ -85,10 +85,10 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       amount: parseFloat(service.amount.toString()),
       currency: service.currency || 'USD',
       requiresSubscription: service.requires_subscription || false,
-      isActive: service.is_active,
+      isActive: service.isActive,
       tags: Array.isArray(service.tags) ? service.tags : [],
-      created_at: service.created_at,
-      updated_at: service.updated_at,
+      createdAt: service.createdAt,
+      updatedAt: service.updatedAt,
       usage_count: usageCount,
       revenue_generated: revenueGenerated,
       active_subscriptions: activeSubscriptions,
@@ -170,7 +170,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     const existingService = await prisma.services.findFirst({
       where: { 
         id: serviceId,
-        doctor_id: doctor.id
+        doctorId: doctor.id
       }
     });
 
@@ -194,8 +194,8 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
         currency: body.currency || 'USD',
         requires_subscription: body.requiresSubscription || false,
         tags: body.tags || [],
-        is_active: body.isActive !== undefined ? body.isActive : true,
-        updated_at: new Date()
+        isActive: body.isActive !== undefined ? body.isActive : true,
+        updatedAt: new Date()
       }
     });
 
@@ -261,7 +261,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
     const existingService = await prisma.services.findFirst({
       where: { 
         id: serviceId,
-        doctor_id: doctor.id
+        doctorId: doctor.id
       }
     });
 
@@ -277,7 +277,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
     await prisma.services.update({
       where: { id: serviceId },
       data: {
-        is_active: false,
+        isActive: false,
         deleted_at: new Date()
       }
     });

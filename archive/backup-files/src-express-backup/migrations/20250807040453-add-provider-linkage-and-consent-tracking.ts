@@ -65,7 +65,7 @@ export default {
         defaultValue: Sequelize.UUIDV4,
         primaryKey: true
       },
-      patient_id: {
+      patientId: {
         type: Sequelize.UUID,
         allowNull: false,
         references: {
@@ -94,7 +94,7 @@ export default {
         onDelete: 'CASCADE',
         comment: 'New provider organization'
       },
-      doctor_id: {
+      doctorId: {
         type: Sequelize.UUID,
         allowNull: true,
         references: {
@@ -189,11 +189,11 @@ export default {
         defaultValue: {},
         comment: 'Additional metadata for the consent process'
       },
-      created_at: {
+      createdAt: {
         type: Sequelize.DATE,
         defaultValue: Sequelize.NOW
       },
-      updated_at: {
+      updatedAt: {
         type: Sequelize.DATE,
         defaultValue: Sequelize.NOW
       }
@@ -274,11 +274,11 @@ export default {
         defaultValue: 'active',
         comment: 'Status of the provider change'
       },
-      created_at: {
+      createdAt: {
         type: Sequelize.DATE,
         defaultValue: Sequelize.NOW
       },
-      updated_at: {
+      updatedAt: {
         type: Sequelize.DATE,
         defaultValue: Sequelize.NOW
       }
@@ -298,10 +298,10 @@ export default {
       }
 
       if (!tables.length) {
-        await queryInterface.addIndex('patient_provider_consent_history', ['patient_id', 'status'], { concurrently: true });
+        await queryInterface.addIndex('patient_provider_consent_history', ['patientId', 'status'], { concurrently: true });
         await queryInterface.addIndex('patient_provider_consent_history', ['new_provider_id'], { concurrently: true });
         await queryInterface.addIndex('patient_provider_consent_history', ['consent_requested_at'], { concurrently: true });
-        await queryInterface.addIndex('patient_provider_consent_history', ['doctor_id'], { concurrently: true });
+        await queryInterface.addIndex('patient_provider_consent_history', ['doctorId'], { concurrently: true });
         await queryInterface.addIndex('patient_provider_consent_history', ['hsp_id'], { concurrently: true });
       }
 

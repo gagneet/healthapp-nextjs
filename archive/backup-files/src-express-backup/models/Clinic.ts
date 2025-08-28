@@ -17,7 +17,7 @@ const Clinic = (sequelize: any) => {
         len: [2, 255]
       }
     },
-    doctor_id: {
+    doctorId: {
       type: DataTypes.UUID,
       allowNull: false,
       references: {
@@ -139,7 +139,7 @@ const Clinic = (sequelize: any) => {
       defaultValue: false,
       allowNull: false
     },
-    is_active: {
+    isActive: {
       type: DataTypes.BOOLEAN,
       defaultValue: true,
       allowNull: false
@@ -171,24 +171,24 @@ const Clinic = (sequelize: any) => {
     underscored: true,
     paranoid: true, // Enable soft deletes
     timestamps: true,
-    createdAt: 'created_at',
-    updatedAt: 'updated_at',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt',
     deletedAt: 'deleted_at',
     indexes: [
       {
-        fields: ['doctor_id']
+        fields: ['doctorId']
       },
       {
         fields: ['organization_id']
       },
       {
-        fields: ['is_active']
+        fields: ['isActive']
       },
       {
         fields: ['is_primary']
       },
       {
-        fields: ['doctor_id', 'is_primary'],
+        fields: ['doctorId', 'is_primary'],
         unique: true,
         where: {
           is_primary: true,
@@ -205,7 +205,7 @@ const Clinic = (sequelize: any) => {
             { is_primary: false },
             { 
               where: { 
-                doctor_id: clinic.doctor_id,
+                doctorId: clinic.doctorId,
                 is_primary: true
               }
             }
@@ -219,7 +219,7 @@ const Clinic = (sequelize: any) => {
             { is_primary: false },
             { 
               where: { 
-                doctor_id: clinic.doctor_id,
+                doctorId: clinic.doctorId,
                 is_primary: true,
                 id: { [sequelize.Sequelize.Op.ne]: clinic.id }
               }

@@ -77,18 +77,18 @@ export default {
       },
       
       // Status
-      is_active: {
+      isActive: {
         type: Sequelize.BOOLEAN,
         defaultValue: true,
       },
       
       // Timestamps
-      created_at: {
+      createdAt: {
         type: Sequelize.DATE,
         allowNull: false,
         defaultValue: Sequelize.NOW,
       },
-      updated_at: {
+      updatedAt: {
         type: Sequelize.DATE,
         allowNull: false,
         defaultValue: Sequelize.NOW,
@@ -104,7 +104,7 @@ export default {
       { fields: ['provider_id'], name: 'idx_service_plans_provider' },
       { fields: ['name'], name: 'idx_service_plans_name' },
       { fields: ['service_type'], name: 'idx_service_plans_type' },
-      { fields: ['is_active'], name: 'idx_service_plans_active' },
+      { fields: ['isActive'], name: 'idx_service_plans_active' },
       { fields: ['price'], name: 'idx_service_plans_price' }
     ];
 

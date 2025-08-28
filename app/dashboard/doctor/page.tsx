@@ -326,7 +326,7 @@ export default function DoctorDashboard() {
                       </div>
                       <p className="text-sm text-red-800 mt-1">{alert.message}</p>
                       <p className="text-xs text-red-600 mt-1">
-                        {formatDate(alert.created_at)}
+                        {formatDate(alert.createdAt)}
                       </p>
                     </div>
                   </div>

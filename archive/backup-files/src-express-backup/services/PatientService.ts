@@ -26,7 +26,7 @@ class PatientService {
         address, // Frontend sends 'address', not separate street/city/state
         
         // Patient-specific fields
-        medical_record_number, // Frontend sends this, not 'patient_id'
+        medical_record_number, // Frontend sends this, not 'patientId'
         height_cm,
         weight_kg,
         allergies,
@@ -128,7 +128,7 @@ class PatientService {
         // Store clinical data for potential care plan creation
         notes: clinical_notes || '',
         // Additional metadata
-        created_at: new Date()
+        createdAt: new Date()
       }, { transaction });
 
       await transaction.commit();
@@ -213,7 +213,7 @@ class PatientService {
           as: 'patientProfile',
           required: true
         }],
-        order: [['created_at', 'DESC']] // Return most recent if multiple matches
+        order: [['createdAt', 'DESC']] // Return most recent if multiple matches
       });
 
       if (user && user.patientProfile) {
@@ -221,7 +221,7 @@ class PatientService {
           exists: true,
           patient: {
             id: user.patientProfile.id,
-            patient_id: user.patientProfile.patient_id,
+            patientId: user.patientProfile.patientId,
             userId: user.id,
             first_name: user.first_name,
             middle_name: user.middle_name,
@@ -241,8 +241,8 @@ class PatientService {
             weight_kg: user.patient.weight_kg,
             allergies: user.patient.allergies || [],
             chronic_conditions: user.patient.chronic_conditions || [],
-            created_at: user.created_at,
-            last_updated: user.updated_at
+            createdAt: user.createdAt,
+            last_updated: user.updatedAt
           }
         };
       }
@@ -302,16 +302,16 @@ class PatientService {
       // Find the last patient ID with the same prefix and year/month
       const lastPatient = await Patient.findOne({
         where: {
-          patient_id: {
+          patientId: {
             [Op.like]: `${namePrefix}/${yearMonth}/%`
           }
         },
-        order: [['patient_id', 'DESC']]
+        order: [['patientId', 'DESC']]
       });
 
       let sequenceNumber = 1;
-      if (lastPatient && lastPatient.patient_id) {
-        const lastSequence = lastPatient.patient_id.split('/')[2];
+      if (lastPatient && lastPatient.patientId) {
+        const lastSequence = lastPatient.patientId.split('/')[2];
         sequenceNumber = parseInt(lastSequence) + 1;
       }
 

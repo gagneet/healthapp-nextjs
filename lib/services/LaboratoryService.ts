@@ -189,8 +189,8 @@ export class LaboratoryService {
       const labOrder = await prisma.labOrder.create({
         data: {
           order_number: orderNumber,
-          doctor_id: data.doctorId,
-          patient_id: data.patientId,
+          doctorId: data.doctorId,
+          patientId: data.patientId,
           ordered_tests: data.testCodes,
           priority: data.priority,
           status: 'pending',
@@ -200,8 +200,8 @@ export class LaboratoryService {
           order_reason: data.orderReason,
           estimated_cost: totalCost,
           estimated_tat_hours: Math.max(...data.testCodes.map(() => 12)), // Mock calculation
-          created_at: new Date(),
-          updated_at: new Date(),
+          createdAt: new Date(),
+          updatedAt: new Date(),
         },
         include: {
           doctor: {
@@ -293,8 +293,8 @@ export class LaboratoryService {
               collected_at: resultsData.collectedAt,
               processed_at: resultsData.processedAt || new Date(),
               reviewed_by: resultsData.reviewedBy,
-              created_at: new Date(),
-              updated_at: new Date(),
+              createdAt: new Date(),
+              updatedAt: new Date(),
             }
           })
         )
@@ -312,7 +312,7 @@ export class LaboratoryService {
           abnormal_results: hasAbnormal,
           critical_results: hasCritical,
           completed_at: new Date(),
-          updated_at: new Date(),
+          updatedAt: new Date(),
         }
       });
 
@@ -346,8 +346,8 @@ export class LaboratoryService {
   async getLabOrders(userId: string, userRole: 'doctor' | 'patient', status?: string) {
     try {
       const whereClause = userRole === 'doctor' 
-        ? { doctor_id: userId }
-        : { patient_id: userId };
+        ? { doctorId: userId }
+        : { patientId: userId };
 
       if (status) {
         (whereClause as any).status = status;
@@ -384,12 +384,12 @@ export class LaboratoryService {
           },
           results: {
             orderBy: {
-              created_at: 'desc'
+              createdAt: 'desc'
             }
           }
         },
         orderBy: {
-          created_at: 'desc'
+          createdAt: 'desc'
         }
       });
 
@@ -423,7 +423,7 @@ export class LaboratoryService {
           results: {
             orderBy: [
               { test_code: 'asc' },
-              { created_at: 'desc' }
+              { createdAt: 'desc' }
             ]
           }
         }
@@ -438,8 +438,8 @@ export class LaboratoryService {
 
       // Check permissions
       const hasAccess = userRole === 'doctor' 
-        ? order.doctor_id === userId
-        : order.patient_id === userId;
+        ? order.doctorId === userId
+        : order.patientId === userId;
 
       if (!hasAccess) {
         return {
@@ -530,8 +530,8 @@ export class LaboratoryService {
         criticalResults.map(result => 
           prisma.medicalAlert.create({
             data: {
-              patient_id: order.patient_id,
-              doctor_id: order.doctor_id,
+              patientId: order.patientId,
+              doctorId: order.doctorId,
               alert_type: 'critical_lab_result',
               severity: 'critical',
               title: `Critical Lab Result: ${result.test_name}`,
@@ -543,8 +543,8 @@ export class LaboratoryService {
                 referenceRange: result.reference_range
               },
               requires_action: true,
-              created_at: new Date(),
-              updated_at: new Date(),
+              createdAt: new Date(),
+              updatedAt: new Date(),
             }
           })
         )
@@ -633,7 +633,7 @@ export class LaboratoryService {
       const results = await prisma.labResult.findMany({
         where: {
           lab_order: {
-            patient_id: patientId,
+            patientId: patientId,
           },
           test_code: testCode,
         },
@@ -678,7 +678,7 @@ export class LaboratoryService {
       }
 
       // Verify permissions (only ordering doctor can cancel)
-      if (order.doctor_id !== userId) {
+      if (order.doctorId !== userId) {
         return {
           success: false,
           error: 'Only the ordering physician can cancel this order'
@@ -700,7 +700,7 @@ export class LaboratoryService {
           status: 'cancelled',
           cancellation_reason: reason,
           cancelled_at: new Date(),
-          updated_at: new Date(),
+          updatedAt: new Date(),
         }
       });
 

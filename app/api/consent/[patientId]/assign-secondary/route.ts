@@ -227,16 +227,16 @@ export const POST = withErrorHandling(async (request: NextRequest, { params }: {
         })
       },
       assignment_details: {
-        assignment_type: assignment.assignmentType,
+        assignmentType: assignment.assignmentType,
         assignment_reason: assignmentReason,
-        specialty_focus: specialtyFocus,
+        specialtyFocus: specialtyFocus,
         expires_at: assignment.expiresAt,
         notes: notes
       },
       consent_info: {
         requires_consent: needsConsent,
         consent_status: assignment.consentStatus,
-        access_granted: assignment.accessGranted,
+        accessGranted: assignment.accessGranted,
         same_organization: sameOrganization,
         reason: sameOrganization 
           ? 'Same organization - automatic access granted'

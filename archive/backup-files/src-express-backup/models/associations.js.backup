@@ -171,20 +171,20 @@ export default (db) => {
   // Treatment Plan associations
   if (TreatmentPlan) {
     Doctor.hasMany(TreatmentPlan, {
-      foreignKey: 'doctor_id',
+      foreignKey: 'doctorId',
       as: 'treatmentPlans'
     });
     TreatmentPlan.belongsTo(Doctor, {
-      foreignKey: 'doctor_id',
+      foreignKey: 'doctorId',
       as: 'doctor'
     });
 
     Patient.hasMany(TreatmentPlan, {
-      foreignKey: 'patient_id',
+      foreignKey: 'patientId',
       as: 'treatmentPlans'
     });
     TreatmentPlan.belongsTo(Patient, {
-      foreignKey: 'patient_id',
+      foreignKey: 'patientId',
       as: 'patient'
     });
 
@@ -229,7 +229,7 @@ export default (db) => {
 
     // Legacy doctor association (keep for backward compatibility)
     CarePlan.belongsTo(Doctor, { 
-      foreignKey: 'doctor_id', 
+      foreignKey: 'doctorId',
       as: 'doctor' 
     });
   }
@@ -273,11 +273,11 @@ export default (db) => {
   if (Appointment) {
     // Doctor appointments
     Doctor.hasMany(Appointment, {
-      foreignKey: 'doctor_id',
+      foreignKey: 'doctorId',
       as: 'appointments'
     });
     Appointment.belongsTo(Doctor, {
-      foreignKey: 'doctor_id',
+      foreignKey: 'doctorId',
       as: 'doctor'
     });
 
@@ -293,11 +293,11 @@ export default (db) => {
 
     // Patient appointments
     Patient.hasMany(Appointment, {
-      foreignKey: 'patient_id',
+      foreignKey: 'patientId',
       as: 'appointments'
     });
     Appointment.belongsTo(Patient, {
-      foreignKey: 'patient_id',
+      foreignKey: 'patientId',
       as: 'patient'
     });
 
@@ -352,7 +352,7 @@ export default (db) => {
   if (PatientProviderAssignment) {
     Patient.belongsToMany(HealthcareProvider, {
       through: PatientProviderAssignment,
-      foreignKey: 'patient_id',
+      foreignKey: 'patientId',
       otherKey: 'provider_id',
       as: 'assignedProviders'
     });
@@ -360,12 +360,12 @@ export default (db) => {
     HealthcareProvider.belongsToMany(Patient, {
       through: PatientProviderAssignment,
       foreignKey: 'provider_id',
-      otherKey: 'patient_id',
+      otherKey: 'patientId',
       as: 'assignedPatients'
     });
 
     PatientProviderAssignment.belongsTo(Patient, {
-      foreignKey: 'patient_id',
+      foreignKey: 'patientId',
       as: 'patient'
     });
     
@@ -417,11 +417,11 @@ export default (db) => {
   // Updated CarePlan associations for PostgreSQL schema
   if (CarePlan) {
     CarePlan.belongsTo(Patient, {
-      foreignKey: 'patient_id',
+      foreignKey: 'patientId',
       as: 'patient'
     });
     Patient.hasMany(CarePlan, {
-      foreignKey: 'patient_id',
+      foreignKey: 'patientId',
       as: 'carePlans'
     });
 
@@ -449,12 +449,12 @@ export default (db) => {
   // VitalType associations
   if (VitalType) {
     VitalType.hasMany(VitalRequirement, {
-      foreignKey: 'vital_type_id',
+      foreignKey: 'vitalTypeId',
       as: 'requirements'
     });
     
     VitalType.hasMany(VitalReading, {
-      foreignKey: 'vital_type_id',
+      foreignKey: 'vitalTypeId',
       as: 'readings'
     });
   }
@@ -471,7 +471,7 @@ export default (db) => {
     });
 
     VitalRequirement.belongsTo(VitalType, {
-      foreignKey: 'vital_type_id',
+      foreignKey: 'vitalTypeId',
       as: 'vitalType'
     });
   }
@@ -479,16 +479,16 @@ export default (db) => {
   // VitalReading associations - only if model exists
   if (VitalReading && VitalType) {
     Patient.hasMany(VitalReading, {
-      foreignKey: 'patient_id',
+      foreignKey: 'patientId',
       as: 'vitalReadings'
     });
     VitalReading.belongsTo(Patient, {
-      foreignKey: 'patient_id',
+      foreignKey: 'patientId',
       as: 'patient'
     });
 
     VitalReading.belongsTo(VitalType, {
-      foreignKey: 'vital_type_id',
+      foreignKey: 'vitalTypeId',
       as: 'vitalType'
     });
 
@@ -508,11 +508,11 @@ export default (db) => {
   // ScheduledEvent associations - only if model exists
   if (ScheduledEvent && User) {
     Patient.hasMany(ScheduledEvent, {
-      foreignKey: 'patient_id',
+      foreignKey: 'patientId',
       as: 'scheduledEvents'
     });
     ScheduledEvent.belongsTo(Patient, {
-      foreignKey: 'patient_id',
+      foreignKey: 'patientId',
       as: 'patient'
     });
 
@@ -536,11 +536,11 @@ export default (db) => {
   // AdherenceRecord associations - only if model exists
   if (AdherenceRecord && ScheduledEvent) {
     Patient.hasMany(AdherenceRecord, {
-      foreignKey: 'patient_id',
+      foreignKey: 'patientId',
       as: 'adherenceRecords'
     });
     AdherenceRecord.belongsTo(Patient, {
-      foreignKey: 'patient_id',
+      foreignKey: 'patientId',
       as: 'patient'
     });
 
@@ -564,11 +564,11 @@ export default (db) => {
   // Symptom associations - only if model exists
   if (Symptom && CarePlan) {
     Patient.hasMany(Symptom, {
-      foreignKey: 'patient_id',
+      foreignKey: 'patientId',
       as: 'symptoms'
     });
     Symptom.belongsTo(Patient, {
-      foreignKey: 'patient_id',
+      foreignKey: 'patientId',
       as: 'patient'
     });
 
@@ -623,11 +623,11 @@ export default (db) => {
   // PatientSubscription associations
   if (PatientSubscription) {
     Patient.hasMany(PatientSubscription, {
-      foreignKey: 'patient_id',
+      foreignKey: 'patientId',
       as: 'subscriptions'
     });
     PatientSubscription.belongsTo(Patient, {
-      foreignKey: 'patient_id',
+      foreignKey: 'patientId',
       as: 'patient'
     });
 
@@ -668,21 +668,21 @@ export default (db) => {
   if (PatientDoctorAssignment) {
     // Patient to Doctor assignments
     Patient.hasMany(PatientDoctorAssignment, {
-      foreignKey: 'patient_id',
+      foreignKey: 'patientId',
       as: 'doctorAssignments'
     });
     PatientDoctorAssignment.belongsTo(Patient, {
-      foreignKey: 'patient_id',
+      foreignKey: 'patientId',
       as: 'patient'
     });
 
     // Doctor to Patient assignments
     Doctor.hasMany(PatientDoctorAssignment, {
-      foreignKey: 'doctor_id',
+      foreignKey: 'doctorId',
       as: 'patientAssignments'
     });
     PatientDoctorAssignment.belongsTo(Doctor, {
-      foreignKey: 'doctor_id',
+      foreignKey: 'doctorId',
       as: 'doctor'
     });
 
@@ -709,15 +709,15 @@ export default (db) => {
     // Many-to-many relationship through assignments
     Patient.belongsToMany(Doctor, {
       through: PatientDoctorAssignment,
-      foreignKey: 'patient_id',
-      otherKey: 'doctor_id',
+      foreignKey: 'patientId',
+      otherKey: 'doctorId',
       as: 'assignedDoctors'
     });
     
     Doctor.belongsToMany(Patient, {
       through: PatientDoctorAssignment,
-      foreignKey: 'doctor_id',
-      otherKey: 'patient_id',
+      foreignKey: 'doctorId',
+      otherKey: 'patientId',
       as: 'assignedPatients'
     });
   }
@@ -725,11 +725,11 @@ export default (db) => {
   // Doctor Availability associations
   if (DoctorAvailability && Doctor) {
     Doctor.hasMany(DoctorAvailability, {
-      foreignKey: 'doctor_id',
+      foreignKey: 'doctorId',
       as: 'availability'
     });
     DoctorAvailability.belongsTo(Doctor, {
-      foreignKey: 'doctor_id',
+      foreignKey: 'doctorId',
       as: 'doctor'
     });
   }
@@ -737,11 +737,11 @@ export default (db) => {
   // Appointment Slot associations
   if (AppointmentSlot && Doctor) {
     Doctor.hasMany(AppointmentSlot, {
-      foreignKey: 'doctor_id',
+      foreignKey: 'doctorId',
       as: 'slots'
     });
     AppointmentSlot.belongsTo(Doctor, {
-      foreignKey: 'doctor_id',
+      foreignKey: 'doctorId',
       as: 'doctor'
     });
   }
@@ -776,12 +776,12 @@ export default (db) => {
       // Skip duplicate association
       /*
       Patient.hasMany(PatientSubscription, {
-        foreignKey: 'patient_id',
+        foreignKey: 'patientId',
         as: 'subscriptions'
       });
       */
       PatientSubscription.belongsTo(Patient, {
-        foreignKey: 'patient_id',
+        foreignKey: 'patientId',
         as: 'patient'
       });
     }
@@ -824,11 +824,11 @@ export default (db) => {
 
     if (Patient) {
       Patient.hasMany(Payment, {
-        foreignKey: 'patient_id',
+        foreignKey: 'patientId',
         as: 'payments'
       });
       Payment.belongsTo(Patient, {
-        foreignKey: 'patient_id',
+        foreignKey: 'patientId',
         as: 'patient'
       });
     }
@@ -848,11 +848,11 @@ export default (db) => {
   // Payment Method associations
   if (PaymentMethod && Patient) {
     Patient.hasMany(PaymentMethod, {
-      foreignKey: 'patient_id',
+      foreignKey: 'patientId',
       as: 'paymentMethods'
     });
     PaymentMethod.belongsTo(Patient, {
-      foreignKey: 'patient_id',
+      foreignKey: 'patientId',
       as: 'patient'
     });
   }
@@ -861,11 +861,11 @@ export default (db) => {
   if (Clinic) {
     // Doctor has many clinics
     Doctor.hasMany(Clinic, {
-      foreignKey: 'doctor_id',
+      foreignKey: 'doctorId',
       as: 'clinics'
     });
     Clinic.belongsTo(Doctor, {
-      foreignKey: 'doctor_id',
+      foreignKey: 'doctorId',
       as: 'doctor'
     });
 

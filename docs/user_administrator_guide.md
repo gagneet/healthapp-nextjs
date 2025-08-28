@@ -178,7 +178,7 @@ CREATE TABLE administrators (
     super_admin BOOLEAN DEFAULT FALSE,
     permissions JSONB,
     last_login TIMESTAMP,
-    created_at TIMESTAMP DEFAULT NOW()
+    createdAt TIMESTAMP DEFAULT NOW()
 );
 
 CREATE TABLE audit_logs (
@@ -189,7 +189,7 @@ CREATE TABLE audit_logs (
     resource_id UUID,
     details JSONB,
     ip_address INET,
-    created_at TIMESTAMP DEFAULT NOW()
+    createdAt TIMESTAMP DEFAULT NOW()
 );
 
 CREATE TABLE system_settings (
@@ -197,7 +197,7 @@ CREATE TABLE system_settings (
     value JSONB,
     description TEXT,
     updated_by UUID REFERENCES administrators(id),
-    updated_at TIMESTAMP DEFAULT NOW()
+    updatedAt TIMESTAMP DEFAULT NOW()
 );
 ```
 

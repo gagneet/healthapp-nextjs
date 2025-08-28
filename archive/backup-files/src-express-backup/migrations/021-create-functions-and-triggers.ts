@@ -8,18 +8,18 @@ export default {
     await queryInterface.sequelize.query('CREATE EXTENSION IF NOT EXISTS "pgcrypto";');
     await queryInterface.sequelize.query('CREATE EXTENSION IF NOT EXISTS "pg_trgm";');
 
-    // Function to update updated_at timestamp (CREATE OR REPLACE is idempotent)
+    // Function to update updatedAt timestamp (CREATE OR REPLACE is idempotent)
     await queryInterface.sequelize.query(`
       CREATE OR REPLACE FUNCTION update_updated_at_column()
       RETURNS TRIGGER AS $$
       BEGIN
-          NEW.updated_at = NOW();
+          NEW.updatedAt = NOW();
           RETURN NEW;
       END;
       $$ language 'plpgsql';
     `);
 
-    // Apply updated_at trigger to relevant tables with error handling
+    // Apply updatedAt trigger to relevant tables with error handling
     const tables = [
       'users',
       'healthcare_providers', 

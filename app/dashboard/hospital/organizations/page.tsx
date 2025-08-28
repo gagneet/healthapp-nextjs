@@ -25,7 +25,7 @@ interface Department {
   staff_count: number
   patient_count: number
   status: 'active' | 'inactive'
-  created_at: string
+  createdAt: string
 }
 
 interface OrganizationSettings {
@@ -60,7 +60,7 @@ const mockDepartments: Department[] = [
     staff_count: 12,
     patient_count: 89,
     status: 'active',
-    created_at: '2023-01-15',
+    createdAt: '2023-01-15',
   },
   {
     id: '2',
@@ -73,7 +73,7 @@ const mockDepartments: Department[] = [
     staff_count: 8,
     patient_count: 67,
     status: 'active',
-    created_at: '2023-02-10',
+    createdAt: '2023-02-10',
   },
   {
     id: '3',
@@ -86,7 +86,7 @@ const mockDepartments: Department[] = [
     staff_count: 15,
     patient_count: 102,
     status: 'active',
-    created_at: '2023-01-01',
+    createdAt: '2023-01-01',
   },
   {
     id: '4',
@@ -99,7 +99,7 @@ const mockDepartments: Department[] = [
     staff_count: 6,
     patient_count: 34,
     status: 'active',
-    created_at: '2023-03-20',
+    createdAt: '2023-03-20',
   },
   {
     id: '5',
@@ -112,7 +112,7 @@ const mockDepartments: Department[] = [
     staff_count: 10,
     patient_count: 28,
     status: 'active',
-    created_at: '2023-04-05',
+    createdAt: '2023-04-05',
   },
 ]
 
@@ -341,7 +341,7 @@ export default function OrganizationsPage() {
         staff_count: 0,
         patient_count: 0,
         status: 'active',
-        created_at: new Date().toISOString(),
+        createdAt: new Date().toISOString(),
       }
       setDepartments(prev => [...prev, newDepartment])
     }

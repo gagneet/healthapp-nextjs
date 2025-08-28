@@ -27,8 +27,8 @@ export default {
           description: 'Systolic and diastolic blood pressure measurement',
           fields: ['systolic', 'diastolic', 'pulse']
         }),
-        created_at: new Date(),
-        updated_at: new Date(),
+        createdAt: new Date(),
+        updatedAt: new Date(),
       },
       {
         id: '550e8400-e29b-41d4-a716-446655440102',
@@ -39,8 +39,8 @@ export default {
           description: 'Blood glucose level measurement',
           fields: ['glucose_level', 'measurement_time']
         }),
-        created_at: new Date(),
-        updated_at: new Date(),
+        createdAt: new Date(),
+        updatedAt: new Date(),
       },
       {
         id: '550e8400-e29b-41d4-a716-446655440103',
@@ -51,8 +51,8 @@ export default {
           description: 'Body weight measurement',
           fields: ['weight']
         }),
-        created_at: new Date(),
-        updated_at: new Date(),
+        createdAt: new Date(),
+        updatedAt: new Date(),
       },
       {
         id: '550e8400-e29b-41d4-a716-446655440104',
@@ -63,8 +63,8 @@ export default {
           description: 'Body temperature measurement',
           fields: ['temperature']
         }),
-        created_at: new Date(),
-        updated_at: new Date(),
+        createdAt: new Date(),
+        updatedAt: new Date(),
       }
     ], { ignoreDuplicates: true });
     

@@ -10,7 +10,7 @@ export default (sequelize: any) => {
       primaryKey: true,
     },
     
-    patient_id: {
+    patientId: {
       type: DataTypes.UUID,
       allowNull: false,
       references: {
@@ -93,12 +93,12 @@ export default (sequelize: any) => {
     },
     
     // Timestamps
-    created_at: {
+    createdAt: {
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW
     },
     
-    updated_at: {
+    updatedAt: {
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW
     }
@@ -110,7 +110,7 @@ export default (sequelize: any) => {
     
     indexes: [
       {
-        fields: ['patient_id']
+        fields: ['patientId']
       },
       {
         fields: ['scheduled_event_id']
@@ -125,10 +125,10 @@ export default (sequelize: any) => {
         fields: ['is_completed', 'is_missed']
       },
       {
-        fields: ['patient_id', 'due_at']
+        fields: ['patientId', 'due_at']
       },
       {
-        fields: ['patient_id', 'adherence_type', 'due_at']
+        fields: ['patientId', 'adherence_type', 'due_at']
       }
     ],
     
@@ -195,7 +195,7 @@ export default (sequelize: any) => {
         
         const records = await (this as any).findAll({
           where: {
-            patient_id: patientId,
+            patientId: patientId,
             due_at: {
               [sequelize.Sequelize.Op.gte]: startDate
             }
@@ -233,7 +233,7 @@ export default (sequelize: any) => {
       findByTypeAndPatient(patientId: any, adherenceType: any) {
         return (this as any).findAll({
           where: {
-            patient_id: patientId,
+            patientId: patientId,
             adherence_type: adherenceType
           },
           order: [['due_at', 'DESC']]

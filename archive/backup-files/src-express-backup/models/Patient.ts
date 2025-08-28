@@ -40,7 +40,7 @@ export default (sequelize: any) => {
       comment: 'Organization-specific patient identifier'
     },
     
-    patient_id: {
+    patientId: {
       type: DataTypes.STRING(100),
       allowNull: true,
       unique: true,
@@ -259,7 +259,7 @@ export default (sequelize: any) => {
     },
     
     // Status flags
-    is_active: {
+    isActive: {
       type: DataTypes.BOOLEAN,
       defaultValue: true
     },
@@ -275,12 +275,12 @@ export default (sequelize: any) => {
     },
     
     // Timestamps
-    created_at: {
+    createdAt: {
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW
     },
     
-    updated_at: {
+    updatedAt: {
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW
     },
@@ -357,7 +357,7 @@ export default (sequelize: any) => {
         fields: ['risk_level']
       },
       {
-        fields: ['is_active']
+        fields: ['isActive']
       },
       {
         fields: ['allergies'],
@@ -541,7 +541,7 @@ export default (sequelize: any) => {
       findActive() {
         return (this as any).findAll({
           where: {
-            is_active: true,
+            isActive: true,
             deleted_at: null
           }
         });

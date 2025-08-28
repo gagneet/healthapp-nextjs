@@ -35,7 +35,7 @@
 model ConnectedDevice {
   id                    String              @id @default(uuid()) @db.Uuid
   device_id             String              @unique @db.VarChar(255)
-  patient_id            String              @db.Uuid
+  patientId            String              @db.Uuid
   device_type           DeviceType
   device_name           String              @db.VarChar(255)
   manufacturer          String?             @db.VarChar(255)
@@ -44,7 +44,7 @@ model ConnectedDevice {
   firmware_version      String?             @db.VarChar(50)
   connection_type       ConnectionType      @default(BLUETOOTH)
   pairing_code          String?             @db.VarChar(50)
-  is_active             Boolean             @default(true)
+  isActive             Boolean             @default(true)
   last_sync             DateTime?           @db.Timestamp(6)
   battery_level         Int?                @db.SmallInt
   signal_strength       Int?                @db.SmallInt
@@ -52,22 +52,22 @@ model ConnectedDevice {
   calibration_date      DateTime?           @db.Date
   next_calibration      DateTime?           @db.Date
   configuration         Json?               @db.JsonB
-  created_at            DateTime            @default(now()) @db.Timestamp(6)
-  updated_at            DateTime            @updatedAt @db.Timestamp(6)
+  createdAt            DateTime            @default(now()) @db.Timestamp(6)
+  updatedAt            DateTime            @updatedAt @db.Timestamp(6)
 
-  patient               Patient             @relation(fields: [patient_id], references: [id], onDelete: Cascade)
+  patient               Patient             @relation(fields: [patientId], references: [id], onDelete: Cascade)
   device_readings       DeviceReading[]
   device_alerts         DeviceAlert[]
 
-  @@index([patient_id, device_status])
-  @@index([device_type, is_active])
+  @@index([patientId, device_status])
+  @@index([device_type, isActive])
   @@map("connected_devices")
 }
 
 model DeviceReading {
   id                    String         @id @default(uuid()) @db.Uuid
   device_id             String         @db.Uuid
-  patient_id            String         @db.Uuid
+  patientId            String         @db.Uuid
   reading_type          ReadingType
   measurement_value     String         @db.VarChar(255)
   measurement_unit      String?        @db.VarChar(50)
@@ -79,13 +79,13 @@ model DeviceReading {
   validation_notes      String?        @db.Text
   alert_generated       Boolean        @default(false)
   metadata              Json?          @db.JsonB
-  created_at            DateTime       @default(now()) @db.Timestamp(6)
+  createdAt            DateTime       @default(now()) @db.Timestamp(6)
 
   device                ConnectedDevice @relation(fields: [device_id], references: [id], onDelete: Cascade)
-  patient               Patient         @relation(fields: [patient_id], references: [id], onDelete: Cascade)
+  patient               Patient         @relation(fields: [patientId], references: [id], onDelete: Cascade)
   emergency_alerts      EmergencyAlert[]
 
-  @@index([patient_id, reading_timestamp])
+  @@index([patientId, reading_timestamp])
   @@index([device_id, reading_type])
   @@index([reading_timestamp, alert_generated])
   @@map("device_readings")
@@ -143,7 +143,7 @@ export async function POST(request: NextRequest) {
   const device = await prisma.connectedDevice.create({
     data: {
       device_id: deviceData.deviceId,
-      patient_id: deviceData.patientId,
+      patientId: deviceData.patientId,
       device_type: deviceData.deviceType.toUpperCase(),
       device_name: deviceData.deviceName,
       manufacturer: deviceData.manufacturer,
@@ -166,7 +166,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
   const reading = await prisma.deviceReading.create({
     data: {
       device_id: params.id,
-      patient_id: readingData.patientId,
+      patientId: readingData.patientId,
       reading_type: readingData.readingType.toUpperCase(),
       measurement_value: readingData.value.toString(),
       measurement_unit: readingData.unit,
@@ -182,7 +182,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
   const alertCheck = await checkCriticalValues(reading)
   if (alertCheck.isCritical) {
     await createEmergencyAlert({
-      patientId: reading.patient_id,
+      patientId: reading.patientId,
       alertType: 'VITAL_SIGN_CRITICAL',
       severity: alertCheck.severity,
       alertMessage: alertCheck.message,
@@ -212,7 +212,7 @@ export class DeviceDataProcessingService {
       const reading = await prisma.deviceReading.create({
         data: {
           device_id: deviceId,
-          patient_id: readingData.patientId,
+          patientId: readingData.patientId,
           reading_type: readingData.type.toUpperCase(),
           measurement_value: validatedData.value.toString(),
           measurement_unit: validatedData.unit,
@@ -294,7 +294,7 @@ export class DeviceDataProcessingService {
   private async triggerEmergencyAlert(reading: DeviceReading, criticalCheck: any) {
     // Integration with Phase 1 Emergency Alert System
     await createEmergencyAlert({
-      patientId: reading.patient_id,
+      patientId: reading.patientId,
       alertType: 'VITAL_SIGN_CRITICAL',
       severity: criticalCheck.severity,
       alertMessage: criticalCheck.message,
@@ -309,7 +309,7 @@ export class DeviceDataProcessingService {
     // Integration with Phase 4 - Update active video consultations
     const activeConsultations = await prisma.videoConsultation.findMany({
       where: {
-        patient_id: reading.patient_id,
+        patientId: reading.patientId,
         status: 'IN_PROGRESS'
       }
     })
@@ -344,7 +344,7 @@ export class HealthPatternAnalysisService {
     
     const readings = await prisma.deviceReading.findMany({
       where: {
-        patient_id: patientId,
+        patientId: patientId,
         reading_timestamp: {
           gte: startDate,
           lte: endDate
@@ -626,14 +626,14 @@ describe('Phase 3: IoT Device Integration & Advanced Monitoring', () => {
 export async function createDeviceEmergencyAlert(reading: DeviceReading, criticalCheck: any) {
   // Get patient's current medications for safety check
   const patientMedications = await prisma.medication.findMany({
-    where: { patient_id: reading.patient_id, is_active: true }
+    where: { patientId: reading.patientId, isActive: true }
   })
   
   // Check if emergency medications might interact
   if (criticalCheck.severity === 'EMERGENCY') {
     const emergencyMeds = ['epinephrine', 'nitroglycerin', 'glucose_tablets']
     const interactionCheck = await checkPatientDrugInteractions({
-      patientId: reading.patient_id,
+      patientId: reading.patientId,
       medications: patientMedications.map(m => m.medicine_name),
       newMedication: emergencyMeds,
       requestedBy: 'SYSTEM'
@@ -641,7 +641,7 @@ export async function createDeviceEmergencyAlert(reading: DeviceReading, critica
     
     // Include interaction warnings in emergency alert
     const alert = await createEmergencyAlert({
-      patientId: reading.patient_id,
+      patientId: reading.patientId,
       alertType: 'VITAL_SIGN_CRITICAL',
       severity: criticalCheck.severity,
       alertMessage: criticalCheck.message,
@@ -670,7 +670,7 @@ export async function getDeviceDataForConsultation(consultationId: string) {
   // Get latest readings from patient's devices during consultation
   const latestReadings = await prisma.deviceReading.findMany({
     where: {
-      patient_id: consultation.patient_id,
+      patientId: consultation.patientId,
       reading_timestamp: {
         gte: new Date(Date.now() - 5 * 60 * 1000) // Last 5 minutes
       }

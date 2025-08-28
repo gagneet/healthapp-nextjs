@@ -107,8 +107,8 @@ export interface User extends LegacyUserFields {
   timezone: string
   locale: string
   preferences: Record<string, any>
-  created_at: string
-  updated_at: string
+  createdAt: string
+  updatedAt: string
 }
 
 export interface AuthState {

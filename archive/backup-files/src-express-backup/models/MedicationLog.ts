@@ -16,7 +16,7 @@ export default (sequelize: any) => {
         key: 'id',
       },
     },
-    patient_id: {
+    patientId: {
       type: DataTypes.UUID,
       allowNull: false,
       references: {
@@ -48,11 +48,11 @@ export default (sequelize: any) => {
       type: DataTypes.BOOLEAN,
       defaultValue: false,
     },
-    created_at: {
+    createdAt: {
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW,
     },
-    updated_at: {
+    updatedAt: {
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW,
     },
@@ -65,7 +65,7 @@ export default (sequelize: any) => {
         fields: ['medication_id', 'scheduled_at'],
       },
       {
-        fields: ['patient_id', 'scheduled_at'],
+        fields: ['patientId', 'scheduled_at'],
       },
       {
         fields: ['adherence_status', 'scheduled_at'],

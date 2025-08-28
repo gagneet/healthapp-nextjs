@@ -106,7 +106,7 @@ interface AlertType {
   title: string
   message: string
   action_required: boolean
-  created_at: string
+  createdAt: string
 }
 
 // Chart colors
@@ -324,7 +324,7 @@ export default function PatientDashboard() {
                     <div className="flex-1">
                       <h4 className="font-medium text-gray-900">{alert.title}</h4>
                       <p className="text-sm text-gray-700 mt-1">{alert.message}</p>
-                      <p className="text-xs text-gray-500 mt-2">{formatDateTime(alert.created_at)}</p>
+                      <p className="text-xs text-gray-500 mt-2">{formatDateTime(alert.createdAt)}</p>
                     </div>
                   </div>
                 </div>

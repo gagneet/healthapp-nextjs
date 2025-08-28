@@ -64,7 +64,7 @@ export default (sequelize: any) => {
     },
     
     // Status
-    is_active: {
+    isActive: {
       type: DataTypes.BOOLEAN,
       defaultValue: true
     },
@@ -76,12 +76,12 @@ export default (sequelize: any) => {
     },
     
     // Timestamps
-    created_at: {
+    createdAt: {
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW
     },
     
-    updated_at: {
+    updatedAt: {
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW
     }
@@ -100,7 +100,7 @@ export default (sequelize: any) => {
         fields: ['category']
       },
       {
-        fields: ['is_active']
+        fields: ['isActive']
       },
       {
         fields: ['symptoms'],
@@ -133,7 +133,7 @@ export default (sequelize: any) => {
     return this.findAll({
       where: {
         [`symptoms.${symptomName}`]: true,
-        is_active: true
+        isActive: true
       }
     });
   };
@@ -144,7 +144,7 @@ export default (sequelize: any) => {
         diagnosis_name: {
           [sequelize.Sequelize.Op.iLike]: `%${query}%`
         },
-        is_active: true
+        isActive: true
       },
       order: [['diagnosis_name', 'ASC']]
     });
@@ -152,7 +152,7 @@ export default (sequelize: any) => {
 
   SymptomsDatabase.getAllSymptoms = async function() {
     const diagnoses = await this.findAll({
-      where: { is_active: true },
+      where: { isActive: true },
       attributes: ['symptoms']
     });
 

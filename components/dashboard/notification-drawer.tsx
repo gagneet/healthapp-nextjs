@@ -26,8 +26,8 @@ interface Notification {
   title: string
   message: string
   patient_name?: string
-  patient_id?: string
-  created_at: string
+  patientId?: string
+  createdAt: string
   read: boolean
   action_required?: boolean
   category: 'medication' | 'vital' | 'appointment' | 'system' | 'alert'
@@ -41,8 +41,8 @@ const mockNotifications: Notification[] = [
     title: 'Critical Medication Alert',
     message: 'Patient Jane Smith has missed 3 consecutive blood pressure medications',
     patient_name: 'Jane Smith',
-    patient_id: '2',
-    created_at: '2025-01-22T10:30:00Z',
+    patientId: '2',
+    createdAt: '2025-01-22T10:30:00Z',
     read: false,
     action_required: true,
     category: 'medication'
@@ -53,8 +53,8 @@ const mockNotifications: Notification[] = [
     title: 'Vital Reading Alert',
     message: 'Blood pressure reading 165/95 mmHg exceeds normal range',
     patient_name: 'Michael Johnson',
-    patient_id: '3',
-    created_at: '2025-01-22T09:15:00Z',
+    patientId: '3',
+    createdAt: '2025-01-22T09:15:00Z',
     read: false,
     action_required: true,
     category: 'vital'
@@ -65,8 +65,8 @@ const mockNotifications: Notification[] = [
     title: 'Appointment Reminder',
     message: 'Upcoming appointment with John Doe tomorrow at 10:00 AM',
     patient_name: 'John Doe',
-    patient_id: '1',
-    created_at: '2025-01-22T08:00:00Z',
+    patientId: '1',
+    createdAt: '2025-01-22T08:00:00Z',
     read: true,
     action_required: false,
     category: 'appointment'
@@ -77,8 +77,8 @@ const mockNotifications: Notification[] = [
     title: 'Care Plan Completed',
     message: 'Sarah Wilson has successfully completed her 30-day medication adherence plan',
     patient_name: 'Sarah Wilson',
-    patient_id: '4',
-    created_at: '2025-01-21T16:45:00Z',
+    patientId: '4',
+    createdAt: '2025-01-21T16:45:00Z',
     read: true,
     action_required: false,
     category: 'medication'
@@ -89,8 +89,8 @@ const mockNotifications: Notification[] = [
     title: 'Missed Appointment',
     message: 'Patient Robert Brown missed scheduled appointment today',
     patient_name: 'Robert Brown',
-    patient_id: '5',
-    created_at: '2025-01-21T14:30:00Z',
+    patientId: '5',
+    createdAt: '2025-01-21T14:30:00Z',
     read: false,
     action_required: true,
     category: 'appointment'
@@ -100,7 +100,7 @@ const mockNotifications: Notification[] = [
     type: 'info',
     title: 'System Update',
     message: 'New features available in your Healthcare Application dashboard',
-    created_at: '2025-01-21T09:00:00Z',
+    createdAt: '2025-01-21T09:00:00Z',
     read: true,
     action_required: false,
     category: 'system'
@@ -111,8 +111,8 @@ const mockNotifications: Notification[] = [
     title: 'Emergency Alert',
     message: 'Patient Lisa Davis reported severe chest pain symptoms',
     patient_name: 'Lisa Davis',
-    patient_id: '6',
-    created_at: '2025-01-20T22:15:00Z',
+    patientId: '6',
+    createdAt: '2025-01-20T22:15:00Z',
     read: false,
     action_required: true,
     category: 'alert'
@@ -357,7 +357,7 @@ export default function NotificationDrawer({ isOpen, setIsOpen }: NotificationDr
 
                                     <div className="mt-2 flex items-center justify-between">
                                       <p className="text-xs text-gray-500">
-                                        {formatDateTime(notification.created_at)}
+                                        {formatDateTime(notification.createdAt)}
                                       </p>
 
                                       <div className="flex items-center space-x-2">
@@ -391,7 +391,7 @@ export default function NotificationDrawer({ isOpen, setIsOpen }: NotificationDr
                                     </div>
 
                                     {/* Quick Actions */}
-                                    {notification.patient_id && notification.action_required && (
+                                    {notification.patientId && notification.action_required && (
                                       <div className="mt-3 flex space-x-2">
                                         <button className="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded text-blue-700 bg-blue-100 hover:bg-blue-200">
                                           View Patient

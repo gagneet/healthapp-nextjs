@@ -30,7 +30,7 @@ router.post('/enhanced-sign-in', async (req, res, next) => {
       where: { 
         email: email.toLowerCase(),
         account_status: ACCOUNT_STATUS.ACTIVE,
-        is_active: true
+        isActive: true
       },
       include: [{
         model: UserRole,

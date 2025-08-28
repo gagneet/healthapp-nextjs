@@ -26,7 +26,7 @@ class CarePlanController {
 
       const carePlans = await CarePlan.findAll({
         where: { 
-          patient_id: patientId,
+          patientId: patientId,
           deleted_at: null 
         },
         include: [
@@ -40,7 +40,7 @@ class CarePlanController {
             as: 'patient'
           }
         ],
-        order: [['created_at', 'DESC']]
+        order: [['createdAt', 'DESC']]
       });
 
       if (!carePlans.length) {
@@ -83,8 +83,8 @@ class CarePlanController {
         (responseData as any).care_plans[carePlan.id] = {
           basic_info: {
             id: carePlan.id.toString(),
-            patient_id: carePlan.patient_id.toString(),
-            doctor_id: carePlan.doctor_id.toString(),
+            patientId: carePlan.patientId.toString(),
+            doctorId: carePlan.doctorId.toString(),
             treatment_id: carePlan.treatment_id?.toString(),
             condition_id: carePlan.details?.condition_id?.toString(),
             severity_id: carePlan.details?.severity_id?.toString(),
@@ -94,7 +94,7 @@ class CarePlanController {
           details: {
             clinical_notes: carePlan.details?.clinical_notes || '',
             follow_up_advise: carePlan.details?.follow_up_advise || '',
-            start_date: carePlan.start_date || carePlan.created_at,
+            start_date: carePlan.start_date || carePlan.createdAt,
             diagnosis: carePlan.diagnosis,
             priority: carePlan.priority
           },
@@ -103,8 +103,8 @@ class CarePlanController {
           vital_ids: vitals.map((v: any) => v.id),
           diet_ids: [], // Implement if diet table exists
           workout_ids: [], // Implement if workout table exists
-          created_at: carePlan.created_at,
-          updated_at: carePlan.updated_at
+          createdAt: carePlan.createdAt,
+          updatedAt: carePlan.updatedAt
         };
 
         // Add treatment and condition info if available
@@ -186,8 +186,8 @@ class CarePlanController {
       }
 
       const carePlan = await CarePlan.create({
-        doctor_id: doctor.id,
-        patient_id: patientId,
+        doctorId: doctor.id,
+        patientId: patientId,
         start_date,
         activated_on: new Date(),
         details: {

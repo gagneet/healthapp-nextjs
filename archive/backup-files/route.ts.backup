@@ -26,14 +26,14 @@ export async function GET(request: NextRequest) {
           payload: { error: { status: 'forbidden', message: 'Patient profile not found' } }
         }, { status: 403 });
       }
-      whereClause.patient_id = patient.id;
+      whereClause.patientId = patient.id;
 
     const { searchParams } = new URL(request.url);
-    const patientId = searchParams.get('patient_id');
+    const patientId = searchParams.get('patientId');
     const consentType = searchParams.get('consent_type');
 
     if (patientId && ['DOCTOR', 'HSP', 'ADMIN'].includes(user!.role)) {
-      whereClause.patient_id = patientId;
+      whereClause.patientId = patientId;
 
     if (consentType) {
       whereClause.consent_type = consentType;

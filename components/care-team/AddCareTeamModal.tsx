@@ -98,7 +98,7 @@ export default function AddCareTeamModal({
     setIsLoading(true)
     try {
       const response = await apiRequest.post(`/patients/${patientId}/consents/request`, {
-        doctor_id: selectedDoctor.id,
+        doctorId: selectedDoctor.id,
         doctor_email: selectedDoctor.email,
         doctor_name: selectedDoctor.name,
         patient_phone: patientPhone,
@@ -128,8 +128,8 @@ export default function AddCareTeamModal({
       const response = await apiRequest.post('/patients/consents/verify', {
         consent_id: consentId,
         otp: otpCode,
-        patient_id: patientId,
-        doctor_id: selectedDoctor.id
+        patientId: patientId,
+        doctorId: selectedDoctor.id
       })
 
       if ((response as any).status) {

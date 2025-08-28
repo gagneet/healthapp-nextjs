@@ -253,7 +253,7 @@ export default function DoctorCalendarPage() {
     const appointment = args.e.data
     // Navigate to patient appointment page - replace with actual routing
     console.log('Navigate to patient appointment:', appointment)
-    // Example: router.push(`/dashboard/doctor/patients/${appointment.patient_id}/appointments/${appointment.id}`)
+    // Example: router.push(`/dashboard/doctor/patients/${appointment.patientId}/appointments/${appointment.id}`)
     alert(`Clicked appointment: ${appointment.patient_name} - ${appointment.type}\\n\\nThis will navigate to the patient appointment page.`)
   }
 

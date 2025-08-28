@@ -67,7 +67,7 @@ router.get('/sessions', authenticate, (req, res) => {
           id: 'session_1',
           userId: req.user?.id,
           active: true,
-          created_at: new Date().toISOString()
+          createdAt: new Date().toISOString()
         }]
       },
       message: 'Sessions retrieved successfully'

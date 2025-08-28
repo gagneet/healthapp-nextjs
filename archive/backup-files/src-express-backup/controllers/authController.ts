@@ -100,8 +100,8 @@ class AuthController {
             },
             feedId: Buffer.from(`${user.role}_${user.id}`).toString('base64'),
             notificationToken: 'getstream_token', // Implement GetStream integration
-            created_at: user.created_at,
-            updated_at: user.updated_at
+            createdAt: user.createdAt,
+            updatedAt: user.updatedAt
           }
         }
       };
@@ -274,8 +274,8 @@ class AuthController {
             },
             feedId: Buffer.from(`${fullUser.role}_${fullUser.id}`).toString('base64'),
             notificationToken: 'getstream_token',
-            created_at: fullUser.created_at,
-            updated_at: fullUser.updated_at
+            createdAt: fullUser.createdAt,
+            updatedAt: fullUser.updatedAt
           }
         }
       };
@@ -408,7 +408,7 @@ class AuthController {
       // Update password
       await user.update({ 
         password_hash: hashedNewPassword,
-        updated_at: new Date()
+        updatedAt: new Date()
       });
 
       res.status(200).json({

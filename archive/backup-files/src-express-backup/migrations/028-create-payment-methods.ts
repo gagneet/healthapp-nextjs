@@ -19,7 +19,7 @@ export default {
         defaultValue: Sequelize.UUIDV4,
         primaryKey: true,
       },
-      patient_id: {
+      patientId: {
         type: Sequelize.UUID,
         allowNull: false,
         references: {
@@ -66,7 +66,7 @@ export default {
         type: Sequelize.BOOLEAN,
         defaultValue: false,
       },
-      is_active: {
+      isActive: {
         type: Sequelize.BOOLEAN,
         defaultValue: true,
       },
@@ -78,12 +78,12 @@ export default {
         type: Sequelize.JSON,
         defaultValue: {},
       },
-      created_at: {
+      createdAt: {
         type: Sequelize.DATE,
         allowNull: false,
         defaultValue: Sequelize.NOW,
       },
-      updated_at: {
+      updatedAt: {
         type: Sequelize.DATE,
         allowNull: false,
         defaultValue: Sequelize.NOW,
@@ -95,11 +95,11 @@ export default {
     });
 
     // Add indexes
-    await queryInterface.addIndex('payment_methods', ['patient_id']);
+    await queryInterface.addIndex('payment_methods', ['patientId']);
     await queryInterface.addIndex('payment_methods', ['stripe_payment_method_id']);
     await queryInterface.addIndex('payment_methods', ['type']);
     await queryInterface.addIndex('payment_methods', ['is_default']);
-    await queryInterface.addIndex('payment_methods', ['is_active']);
+    await queryInterface.addIndex('payment_methods', ['isActive']);
   },
 
   down: async (queryInterface: any, Sequelize: any) => {

@@ -40,7 +40,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
   const paginationResult = PaginationSchema.safeParse({
     page: parseInt(searchParams.get('page') || '1'),
     limit: parseInt(searchParams.get('limit') || '20'),
-    sortBy: searchParams.get('sortBy') || 'created_at',
+    sortBy: searchParams.get('sortBy') || 'createdAt',
     sortOrder: searchParams.get('sortOrder') || 'desc'
   })
 
@@ -64,7 +64,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
   switch (session.user.role) {
       case 'PATIENT':
         // Patients can only see their own symptoms
-        whereClause.patient_id = session.user.profileId
+        whereClause.patientId = session.user.profileId
         break
       case 'DOCTOR':
         // Doctors can see symptoms for their patients
@@ -91,7 +91,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
 
   // Apply patient filter (for healthcare providers)
   if (patientId && ['DOCTOR', 'HSP', 'SYSTEM_ADMIN'].includes(session.user.role)) {
-    whereClause.patient_id = patientId
+    whereClause.patientId = patientId
   }
 
   // Apply search filter on symptom names
@@ -130,7 +130,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
       skip,
       take: limit,
       orderBy: {
-        [sortBy === 'createdAt' ? 'created_at' : sortBy as string]: sortOrder as 'asc' | 'desc'
+        [sortBy === 'createdAt' ? 'createdAt' : sortBy as string]: sortOrder as 'asc' | 'desc'
       },
       include: {
         patient: {
@@ -153,7 +153,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
       id: record.id,
       patient: {
         id: record.patient.id,
-        patientId: record.patient.patient_id,
+        patientId: record.patient.patientId,
         name: `${record.patient.user.first_name} ${record.patient.user.last_name}`.trim(),
         email: record.patient.user.email
       },
@@ -165,8 +165,8 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
       triggers: record.triggers || [],
       relievingFactors: record.relieving_factors || [],
       associatedSymptoms: record.associated_symptoms || [],
-      createdAt: record.created_at,
-      updatedAt: record.updated_at
+      createdAt: record.createdAt,
+      updatedAt: record.updatedAt
     }))
 
     return createSuccessResponse(
@@ -242,7 +242,7 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
     // Create symptom record with 2D/3D body mapping support
     const symptomRecord = await prisma.symptom.create({
       data: {
-        patient_id: targetPatientId,
+        patientId: targetPatientId,
         symptom_name: symptomData.symptoms[0]?.name || 'General symptoms',
         severity: typeof symptomData.symptoms[0]?.severity === 'number' 
           ? symptomData.symptoms[0].severity 
@@ -253,8 +253,8 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
         onset_time: symptomData.onsetDate ? new Date(symptomData.onsetDate) : new Date(),
         recorded_at: new Date(),
         triggers: [],
-        created_at: new Date(),
-        updated_at: new Date()
+        createdAt: new Date(),
+        updatedAt: new Date()
       },
       include: {
         patient: {
@@ -276,7 +276,7 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
       id: symptomRecord.id,
       patient: {
         id: symptomRecord.patient.id,
-        patientId: symptomRecord.patient.patient_id,
+        patientId: symptomRecord.patient.patientId,
         name: `${symptomRecord.patient.user.first_name} ${symptomRecord.patient.user.last_name}`.trim(),
         email: symptomRecord.patient.user.email
       },
@@ -287,7 +287,7 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
       severity: symptomRecord.severity,
       triggers: symptomRecord.triggers,
       recordedAt: symptomRecord.recorded_at,
-      createdAt: symptomRecord.created_at
+      createdAt: symptomRecord.createdAt
     }
 
     // TODO: Send alerts for severe symptoms to healthcare providers

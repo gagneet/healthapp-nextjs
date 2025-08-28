@@ -126,8 +126,8 @@ CREATE TABLE users (
     status user_status DEFAULT 'pending_verification',
     two_factor_enabled BOOLEAN DEFAULT false,
     last_login_at TIMESTAMP,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE user_profiles (
@@ -140,8 +140,8 @@ CREATE TABLE user_profiles (
     gender VARCHAR(10),
     phone_number VARCHAR(20),
     profile_image_url TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Enhanced role-based access control
@@ -177,8 +177,8 @@ CREATE TABLE patients (
     insurance_details JSONB,
     consent_status VARCHAR(20) DEFAULT 'pending',
     hipaa_authorization BOOLEAN DEFAULT false,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Drug interaction database for safety
@@ -190,7 +190,7 @@ CREATE TABLE drug_interactions (
     clinical_significance TEXT,
     management_recommendation TEXT,
     evidence_level VARCHAR(5), -- A, B, C, D
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Enhanced medication safety system
@@ -205,13 +205,13 @@ CREATE TABLE medications (
     contraindications JSONB DEFAULT '[]',
     side_effects JSONB DEFAULT '[]',
     drug_interactions JSONB DEFAULT '[]',
-    is_active BOOLEAN DEFAULT true,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    isActive BOOLEAN DEFAULT true,
+    createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE patient_medications (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    patient_id UUID REFERENCES patients(id) ON DELETE CASCADE,
+    patientId UUID REFERENCES patients(id) ON DELETE CASCADE,
     medication_id UUID REFERENCES medications(id),
     prescribed_by UUID, -- doctor ID
     dosage VARCHAR(100) NOT NULL,
@@ -220,10 +220,10 @@ CREATE TABLE patient_medications (
     start_date DATE NOT NULL,
     end_date DATE,
     instructions TEXT,
-    is_active BOOLEAN DEFAULT true,
+    isActive BOOLEAN DEFAULT true,
     adherence_score DECIMAL(5,2) DEFAULT 0,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 ```
 
@@ -237,22 +237,22 @@ CREATE TYPE vital_sign_type AS ENUM (
 
 CREATE TABLE vital_sign_protocols (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    patient_id UUID REFERENCES patients(id) ON DELETE CASCADE,
+    patientId UUID REFERENCES patients(id) ON DELETE CASCADE,
     vital_type vital_sign_type NOT NULL,
-    normal_range_min DECIMAL(8,2),
-    normal_range_max DECIMAL(8,2),
+    normalRangeMin DECIMAL(8,2),
+    normalRangeMax DECIMAL(8,2),
     critical_low DECIMAL(8,2),
     critical_high DECIMAL(8,2),
     monitoring_frequency VARCHAR(50), -- daily, weekly, monthly, as_needed
     alert_enabled BOOLEAN DEFAULT true,
     protocol_notes TEXT,
     created_by UUID,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE vital_sign_readings (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    patient_id UUID REFERENCES patients(id) ON DELETE CASCADE,
+    patientId UUID REFERENCES patients(id) ON DELETE CASCADE,
     vital_type vital_sign_type NOT NULL,
     value_primary DECIMAL(8,2) NOT NULL, -- systolic BP, temperature, etc.
     value_secondary DECIMAL(8,2), -- diastolic BP
@@ -263,7 +263,7 @@ CREATE TABLE vital_sign_readings (
     notes TEXT,
     alert_triggered BOOLEAN DEFAULT false,
     verified_by UUID, -- healthcare provider verification
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 ```
 
@@ -282,8 +282,8 @@ CREATE TYPE appointment_type AS ENUM (
 
 CREATE TABLE appointments (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    patient_id UUID REFERENCES patients(id) ON DELETE CASCADE,
-    doctor_id UUID NOT NULL,
+    patientId UUID REFERENCES patients(id) ON DELETE CASCADE,
+    doctorId UUID NOT NULL,
     appointment_type appointment_type NOT NULL,
     scheduled_date DATE NOT NULL,
     scheduled_time TIME NOT NULL,
@@ -297,14 +297,14 @@ CREATE TABLE appointments (
     follow_up_required BOOLEAN DEFAULT false,
     follow_up_date DATE,
     reminder_sent BOOLEAN DEFAULT false,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Comprehensive care plans
 CREATE TABLE care_plans (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    patient_id UUID REFERENCES patients(id) ON DELETE CASCADE,
+    patientId UUID REFERENCES patients(id) ON DELETE CASCADE,
     primary_doctor_id UUID NOT NULL,
     plan_name VARCHAR(255) NOT NULL,
     primary_diagnosis VARCHAR(255),
@@ -314,8 +314,8 @@ CREATE TABLE care_plans (
     end_date DATE,
     status VARCHAR(20) DEFAULT 'active',
     plan_details JSONB,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 ```
 

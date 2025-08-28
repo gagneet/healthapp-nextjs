@@ -333,7 +333,7 @@ function isPascalCase(str) {
 
 function isSystemField(fieldName) {
   const systemFields = [
-    'id', 'created_at', 'updated_at', 'deleted_at', 
+    'id', 'createdAt', 'updatedAt', 'deleted_at', 
     'user', 'users', 'patient', 'patients', 'doctor', 'doctors',
     'length', 'size', 'count', 'map', 'filter', 'includes',
     'toString', 'valueOf', 'hasOwnProperty'

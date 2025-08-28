@@ -363,7 +363,7 @@ function isRelationField(fieldName) {
 }
 
 function isSystemColumn(columnName) {
-  const systemColumns = ['created_at', 'updated_at', 'deleted_at'];
+  const systemColumns = ['createdAt', 'updatedAt', 'deleted_at'];
   return systemColumns.includes(columnName);
 }
 

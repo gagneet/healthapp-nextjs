@@ -144,7 +144,7 @@ async function searchPatients(searchValue: string, filters: SearchFilters, user:
       { user: { firstName: { contains: searchValue, mode: 'insensitive' } } },
       { user: { lastName: { contains: searchValue, mode: 'insensitive' } } },
       { user: { email: { contains: searchValue, mode: 'insensitive' } } },
-      { patient_id: { contains: searchValue, mode: 'insensitive' } },
+      { patientId: { contains: searchValue, mode: 'insensitive' } },
       { medical_record_number: { contains: searchValue, mode: 'insensitive' } }
     ]
   };
@@ -165,7 +165,7 @@ async function searchPatients(searchValue: string, filters: SearchFilters, user:
     take: filters.limit,
     select: {
       id: true,
-      patient_id: true,
+      patientId: true,
       medical_record_number: true,
       user: {
         select: {
@@ -198,13 +198,13 @@ async function searchDoctors(searchValue: string, filters: SearchFilters) {
         { users_Doctor_userIdTousers: { firstName: { contains: searchValue, mode: 'insensitive' } } },
         { users_Doctor_userIdTousers: { lastName: { contains: searchValue, mode: 'insensitive' } } },
         { medical_license_number: { contains: searchValue, mode: 'insensitive' } },
-        { doctor_id: { contains: searchValue, mode: 'insensitive' } }
+        { doctorId: { contains: searchValue, mode: 'insensitive' } }
       ]
     },
     take: filters.limit,
     select: {
       id: true,
-      doctor_id: true,
+      doctorId: true,
       medical_license_number: true,
       years_of_experience: true,
       consultation_fee: true,
@@ -286,7 +286,7 @@ async function searchSymptoms(searchValue: string, filters: SearchFilters) {
   return await prisma.symptoms_database.findMany({
     where: {
       AND: [
-        { is_active: true },
+        { isActive: true },
         {
           OR: [
             { diagnosis_name: { contains: searchValue, mode: 'insensitive' } },
@@ -315,7 +315,7 @@ async function searchDiagnoses(searchValue: string, filters: SearchFilters) {
   return await prisma.symptoms_database.findMany({
     where: {
       AND: [
-        { is_active: true },
+        { isActive: true },
         { diagnosis_name: { contains: searchValue, mode: 'insensitive' } },
         ...(filters.category ? [{ category: { contains: filters.category, mode: 'insensitive' } }] : [])
       ]
@@ -337,7 +337,7 @@ async function searchTreatments(searchValue: string, filters: SearchFilters) {
   return await prisma.treatment_database.findMany({
     where: {
       AND: [
-        { is_active: true },
+        { isActive: true },
         {
           OR: [
             { treatment_name: { contains: searchValue, mode: 'insensitive' } },

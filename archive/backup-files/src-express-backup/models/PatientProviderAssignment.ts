@@ -9,7 +9,7 @@ export default (sequelize: any) => {
       primaryKey: true,
     },
     
-    patient_id: {
+    patientId: {
       type: DataTypes.UUID,
       allowNull: false,
       references: {
@@ -66,7 +66,7 @@ export default (sequelize: any) => {
     
     indexes: [
       {
-        fields: ['patient_id'],
+        fields: ['patientId'],
         where: { ended_at: null }
       },
       {
@@ -74,12 +74,12 @@ export default (sequelize: any) => {
         where: { ended_at: null }
       },
       {
-        fields: ['patient_id', 'provider_id'],
+        fields: ['patientId', 'provider_id'],
         where: { ended_at: null }
       },
       {
         name: 'patient_provider_role_unique',
-        fields: ['patient_id', 'provider_id', 'role', 'ended_at'],
+        fields: ['patientId', 'provider_id', 'role', 'ended_at'],
         unique: true
       }
     ],
@@ -104,7 +104,7 @@ export default (sequelize: any) => {
       findActiveForPatient(patientId: any) {
         return (this as any).findAll({
           where: {
-            patient_id: patientId,
+            patientId: patientId,
             ended_at: null
           }
         });

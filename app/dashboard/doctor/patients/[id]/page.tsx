@@ -53,8 +53,8 @@ interface PatientAPIResponse {
         name: string
         email: string
       } | null
-      created_at: string
-      updated_at: string
+      createdAt: string
+      updatedAt: string
     }
   }
 }
@@ -72,7 +72,7 @@ const mockVitalReadings: VitalReading[] = [
     type: 'Blood Pressure',
     value: 140,
     unit: 'mmHg',
-    reading_time: '2025-01-22T08:30:00Z',
+    readingTime: '2025-01-22T08:30:00Z',
     is_flagged: true,
     normal_range: { min: 90, max: 120 },
   },
@@ -81,7 +81,7 @@ const mockVitalReadings: VitalReading[] = [
     type: 'Blood Glucose',
     value: 125,
     unit: 'mg/dL',
-    reading_time: '2025-01-22T09:00:00Z',
+    readingTime: '2025-01-22T09:00:00Z',
     is_flagged: false,
     normal_range: { min: 70, max: 140 },
   },
@@ -275,7 +275,7 @@ export default function PatientDetailsPage() {
           adherence_rate: 85, // This will need to be calculated
           critical_alerts: 0, // This will need to be calculated
           status: 'active',
-          created_at: patientData.created_at,
+          createdAt: patientData.createdAt,
           profile_picture_url: ''
         }
         setPatient(transformedPatient)

@@ -51,7 +51,7 @@ export default (sequelize: any) => {
       comment: 'URL path of the accessed resource'
     },
     
-    patient_id: {
+    patientId: {
       type: DataTypes.UUID,
       allowNull: true,
       references: {
@@ -68,7 +68,7 @@ export default (sequelize: any) => {
     },
     
     // Access control
-    access_granted: {
+    accessGranted: {
       type: DataTypes.BOOLEAN,
       allowNull: false,
       comment: 'Whether access was granted or denied'
@@ -148,7 +148,7 @@ export default (sequelize: any) => {
       comment: 'When the audited action occurred'
     },
     
-    created_at: {
+    createdAt: {
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW
     }
@@ -164,7 +164,7 @@ export default (sequelize: any) => {
         fields: ['userId']
       },
       {
-        fields: ['patient_id']
+        fields: ['patientId']
       },
       {
         fields: ['organization_id']
@@ -176,7 +176,7 @@ export default (sequelize: any) => {
         fields: ['action']
       },
       {
-        fields: ['access_granted']
+        fields: ['accessGranted']
       },
       {
         fields: ['phi_accessed']
@@ -199,11 +199,11 @@ export default (sequelize: any) => {
       },
       {
         // Index for patient access audits
-        fields: ['patient_id', 'phi_accessed', 'timestamp']
+        fields: ['patientId', 'phi_accessed', 'timestamp']
       },
       {
         // Security monitoring index
-        fields: ['risk_level', 'access_granted', 'timestamp']
+        fields: ['risk_level', 'accessGranted', 'timestamp']
       }
     ],
     
@@ -226,7 +226,7 @@ export default (sequelize: any) => {
   AuditLog.findPatientAccess = async function(patientId: any, startDate: any, endDate: any) {
     return await this.findAll({
       where: {
-        patient_id: patientId,
+        patientId: patientId,
         timestamp: {
           [sequelize.Sequelize.Op.between]: [startDate, endDate]
         }
@@ -273,7 +273,7 @@ export default (sequelize: any) => {
   
   AuditLog.findFailedAccess = async function(organizationId = null) {
     const where = {
-      access_granted: false,
+      accessGranted: false,
       timestamp: {
         [sequelize.Sequelize.Op.gte]: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) // Last 7 days
       }
@@ -303,16 +303,16 @@ export default (sequelize: any) => {
     const [totalAccess, phiAccess, failedAccess, uniqueUsers, uniquePatients] = await Promise.all([
       this.count({ where }),
       this.count({ where: { ...where, phi_accessed: true } }),
-      this.count({ where: { ...where, access_granted: false } }),
+      this.count({ where: { ...where, accessGranted: false } }),
       this.count({
         where,
         distinct: true,
         col: 'userId'
       }),
       this.count({
-        where: { ...where, patient_id: { [sequelize.Sequelize.Op.ne]: null } },
+        where: { ...where, patientId: { [sequelize.Sequelize.Op.ne]: null } },
         distinct: true,
-        col: 'patient_id'
+        col: 'patientId'
       })
     ]);
     
