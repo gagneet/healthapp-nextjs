@@ -68,7 +68,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
         patientId: patient.id
       },
       include: {
-        vital_type: {
+        vitalType: {
           select: {
             id: true,
             name: true,
@@ -86,21 +86,21 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
     });
 
     // Transform to expected format
-    const formattedVitals = vitals.map(vital => ({
+    const formattedVitals = vitals.map((vital: any) => ({
       id: vital.id,
-      type: vital.vital_type?.name || 'Unknown Vital',
+      type: vital.vitalType?.name || 'Unknown Vital',
       value: vital.value?.toString() || '0',
-      unit: vital.vital_type?.unit || '',
+      unit: vital.vitalType?.unit || '',
       readingTime: vital.readingTime,
-      is_flagged: vital.is_flagged || false,
+      isFlagged: vital.isFlagged || false,
       normal_range: {
-        min: vital.vital_type?.normalRangeMin?.toString() || '0',
-        max: vital.vital_type?.normalRangeMax?.toString() || '100'
+        min: vital.vitalType?.normalRangeMin?.toString() || '0',
+        max: vital.vitalType?.normalRangeMax?.toString() || '100'
       },
       notes: vital.notes,
-      device_info: vital.device_info,
-      is_validated: vital.is_validated || false,
-      validated_by: vital.validated_by,
+      deviceInfo: vital.deviceInfo,
+      isValidated: vital.isValidated || false,
+      validatedBy: vital.validatedBy,
       recorded_by: 'Patient' // Patient adherence - patients record their own vitals
     }));
 
