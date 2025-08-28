@@ -63,12 +63,12 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
       prisma.hsp.count(),
       
       // Total providers
-      prisma.providers.count(),
+      prisma.healthcareProvider.count(),
       
       // Active appointments this week
       prisma.appointment.count({
         where: {
-          start_time: {
+          startTime: {
             gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
             lte: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
           },
@@ -82,8 +82,8 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
       // Critical vital alerts
       prisma.vitalReading.count({
         where: {
-          alert_level: 'critical',
-          created_at: {
+          alertLevel: 'CRITICAL',
+          createdAt: {
             gte: new Date(Date.now() - 24 * 60 * 60 * 1000) // Last 24 hours
           }
         }
@@ -92,7 +92,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
       // Recent registrations (last 7 days)
       prisma.user.count({
         where: {
-          created_at: {
+          createdAt: {
             gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
           }
         }
@@ -100,12 +100,12 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
       
       // Monthly registrations for trends
       prisma.user.groupBy({
-        by: ['created_at'],
+        by: ['createdAt'],
         _count: {
           id: true
         },
         where: {
-          created_at: {
+          createdAt: {
             gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
           }
         }
@@ -121,9 +121,9 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
         email: true,
         role: true,
         accountStatus: true,
-        created_at: true
+        createdAt: true
       },
-      orderBy: { created_at: 'desc' },
+      orderBy: { createdAt: 'desc' },
       take: 10
     });
 
@@ -165,7 +165,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
         inactive_users: await prisma.user.count({
           where: { 
             accountStatus: 'INACTIVE',
-            created_at: {
+            createdAt: {
               lte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
             }
           }

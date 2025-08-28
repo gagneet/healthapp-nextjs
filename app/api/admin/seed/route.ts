@@ -13,7 +13,7 @@ export async function POST(request: NextRequest) {
     const user = session.user;
 
     // Only admins can trigger seeding
-    if (user!.role !== 'ADMIN') {
+    if (user!.role !== 'SYSTEM_ADMIN') {
       return NextResponse.json({
         status: false,
         statusCode: 403,
@@ -55,7 +55,7 @@ export async function GET(request: NextRequest) {
     const user = session.user;
 
     // Only admins can check seeding status
-    if (user!.role !== 'ADMIN') {
+    if (user!.role !== 'SYSTEM_ADMIN') {
       return NextResponse.json({
         status: false,
         statusCode: 403,
@@ -75,7 +75,7 @@ export async function GET(request: NextRequest) {
 
     const testPatients = await prisma.patient.count({
       where: {
-        patient_id: {
+        patientId: {
           startsWith: 'PAT-2025-'
         }
       }

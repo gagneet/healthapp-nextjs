@@ -99,7 +99,7 @@ export async function GET(request: NextRequest) {
 
     const appointmentsByStatus = await prisma.appointment.groupBy({
       by: ['status'],
-      _count: { id: true }
+      _count: true
     });
 
     const carePlansByStatus = await prisma.carePlan.groupBy({
@@ -239,7 +239,7 @@ export async function GET(request: NextRequest) {
       },
       appointmentStatistics: {
         byStatus: appointmentsByStatus.reduce((acc, item) => {
-          if (item.status) acc[item.status] = item._count.id;
+          if (item.status) acc[item.status] = item._count || 0;
           return acc;
         }, {} as Record<string, number>)
       },

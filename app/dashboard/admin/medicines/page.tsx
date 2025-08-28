@@ -11,19 +11,15 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
 interface Medicine {
-  basic_info: {
-    id: string
-    name: string
-    type: string
-    strength: string
-    public_medicine: boolean
-    creator_id: string
-    creator_name: string
-  }
-  usage_statistics: {
-    total_prescriptions: number
-    active_prescriptions: number
-  }
+  id: string
+  name: string
+  type: string
+  description?: string
+  details?: Record<string, any>
+  publicMedicine: boolean
+  isActive: boolean
+  createdAt: string
+  updatedAt: string
 }
 
 export default function MedicinesManagement() {
@@ -36,10 +32,12 @@ export default function MedicinesManagement() {
   const [formData, setFormData] = useState({
     name: '',
     type: '',
-    strength: '',
-    generic_name: '',
+    strengthMg: '',
+    category: '',
+    manufacturer: '',
     description: '',
-    public_medicine: true
+    publicMedicine: true,
+    isActive: true
   })
 
   useEffect(() => {
@@ -63,8 +61,8 @@ export default function MedicinesManagement() {
       if (response.ok) {
         const result = await response.json()
         if (result.status && result.payload?.data?.medicines) {
-          const medicinesArray = Object.values(result.payload.data.medicines)
-          setMedicines(medicinesArray as Medicine[])
+          // New API returns array directly
+          setMedicines(result.payload.data.medicines as Medicine[])
         }
       }
     } catch (error) {
@@ -97,10 +95,12 @@ export default function MedicinesManagement() {
         setFormData({
           name: '',
           type: '',
-          strength: '',
-          generic_name: '',
+          strengthMg: '',
+          category: '',
+          manufacturer: '',
           description: '',
-          public_medicine: true
+          publicMedicine: true,
+          isActive: true
         })
         fetchMedicines()
       } else {
@@ -118,7 +118,7 @@ export default function MedicinesManagement() {
     if (!selectedMedicine) return
 
     try {
-      const response = await fetch(`/api/admin/medicines/${selectedMedicine.basic_info.id}`, {
+      const response = await fetch(`/api/admin/medicines/${selectedMedicine.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -143,12 +143,12 @@ export default function MedicinesManagement() {
   }
 
   const handleDelete = async (medicine: Medicine) => {
-    if (!confirm(`Are you sure you want to delete ${medicine.basic_info.name}?`)) {
+    if (!confirm(`Are you sure you want to delete ${medicine.name}?`)) {
       return
     }
 
     try {
-      const response = await fetch(`/api/admin/medicines/${medicine.basic_info.id}`, {
+      const response = await fetch(`/api/admin/medicines/${medicine.id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('authToken')}`
@@ -171,12 +171,14 @@ export default function MedicinesManagement() {
   const openEditModal = (medicine: Medicine) => {
     setSelectedMedicine(medicine)
     setFormData({
-      name: medicine.basic_info.name,
-      type: medicine.basic_info.type,
-      strength: medicine.basic_info.strength,
-      generic_name: '', // Not available in current data structure
-      description: '', // Not available in current data structure
-      public_medicine: medicine.basic_info.public_medicine
+      name: medicine.name,
+      type: medicine.type,
+      strengthMg: medicine.details?.strengthMg || '',
+      category: medicine.details?.category || '',
+      manufacturer: medicine.details?.manufacturer || '',
+      description: medicine.description || '',
+      publicMedicine: medicine.publicMedicine,
+      isActive: medicine.isActive
     })
     setShowEditModal(true)
   }
@@ -223,12 +225,12 @@ export default function MedicinesManagement() {
       {/* Medicines List */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {medicines.map((medicine) => (
-          <Card key={medicine.basic_info.id}>
+          <Card key={medicine.id}>
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-2">
                   <BeakerIcon className="h-5 w-5 text-blue-600" />
-                  <CardTitle className="text-lg">{medicine.basic_info.name}</CardTitle>
+                  <CardTitle className="text-lg">{medicine.name}</CardTitle>
                 </div>
                 <div className="flex space-x-2">
                   <button
@@ -250,28 +252,38 @@ export default function MedicinesManagement() {
               <div className="space-y-2">
                 <div className="flex justify-between">
                   <span className="text-sm text-gray-600">Type:</span>
-                  <span className="text-sm font-medium">{medicine.basic_info.type}</span>
+                  <span className="text-sm font-medium">{medicine.type}</span>
                 </div>
-                {medicine.basic_info.strength && (
+                {medicine.details?.strengthMg && (
                   <div className="flex justify-between">
                     <span className="text-sm text-gray-600">Strength:</span>
-                    <span className="text-sm font-medium">{medicine.basic_info.strength}</span>
+                    <span className="text-sm font-medium">{medicine.details.strengthMg}mg</span>
+                  </div>
+                )}
+                {medicine.details?.category && (
+                  <div className="flex justify-between">
+                    <span className="text-sm text-gray-600">Category:</span>
+                    <span className="text-sm font-medium">{medicine.details.category}</span>
                   </div>
                 )}
                 <div className="flex justify-between">
                   <span className="text-sm text-gray-600">Public:</span>
-                  <span className={`text-sm font-medium ${medicine.basic_info.public_medicine ? 'text-green-600' : 'text-red-600'}`}>
-                    {medicine.basic_info.public_medicine ? 'Yes' : 'No'}
+                  <span className={`text-sm font-medium ${medicine.publicMedicine ? 'text-green-600' : 'text-red-600'}`}>
+                    {medicine.publicMedicine ? 'Yes' : 'No'}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-sm text-gray-600">Total Prescriptions:</span>
-                  <span className="text-sm font-medium">{medicine.usage_statistics.total_prescriptions}</span>
+                  <span className="text-sm text-gray-600">Status:</span>
+                  <span className={`text-sm font-medium ${medicine.isActive ? 'text-green-600' : 'text-red-600'}`}>
+                    {medicine.isActive ? 'Active' : 'Inactive'}
+                  </span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-sm text-gray-600">Active Prescriptions:</span>
-                  <span className="text-sm font-medium">{medicine.usage_statistics.active_prescriptions}</span>
-                </div>
+                {medicine.description && (
+                  <div className="mt-2 p-2 bg-gray-50 rounded text-xs text-gray-600">
+                    {medicine.description.substring(0, 80)}
+                    {medicine.description.length > 80 ? '...' : ''}
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
@@ -314,20 +326,29 @@ export default function MedicinesManagement() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Strength</label>
+                  <label className="block text-sm font-medium text-gray-700">Strength (mg)</label>
                   <input
                     type="text"
-                    value={formData.strength}
-                    onChange={(e) => setFormData({ ...formData, strength: e.target.value })}
+                    value={formData.strengthMg}
+                    onChange={(e) => setFormData({ ...formData, strengthMg: e.target.value })}
                     className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Generic Name</label>
+                  <label className="block text-sm font-medium text-gray-700">Category</label>
                   <input
                     type="text"
-                    value={formData.generic_name}
-                    onChange={(e) => setFormData({ ...formData, generic_name: e.target.value })}
+                    value={formData.category}
+                    onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                    className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Manufacturer</label>
+                  <input
+                    type="text"
+                    value={formData.manufacturer}
+                    onChange={(e) => setFormData({ ...formData, manufacturer: e.target.value })}
                     className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>
@@ -340,14 +361,25 @@ export default function MedicinesManagement() {
                     rows={3}
                   />
                 </div>
-                <div className="flex items-center">
-                  <input
-                    type="checkbox"
-                    checked={formData.public_medicine}
-                    onChange={(e) => setFormData({ ...formData, public_medicine: e.target.checked })}
-                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                  />
-                  <label className="ml-2 block text-sm text-gray-900">Public Medicine</label>
+                <div className="flex items-center space-x-4">
+                  <div className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={formData.publicMedicine}
+                      onChange={(e) => setFormData({ ...formData, publicMedicine: e.target.checked })}
+                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                    />
+                    <label className="ml-2 block text-sm text-gray-900">Public Medicine</label>
+                  </div>
+                  <div className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={formData.isActive}
+                      onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
+                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                    />
+                    <label className="ml-2 block text-sm text-gray-900">Active Medicine</label>
+                  </div>
                 </div>
                 <div className="flex justify-end space-x-3">
                   <button
@@ -398,20 +430,29 @@ export default function MedicinesManagement() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Strength</label>
+                  <label className="block text-sm font-medium text-gray-700">Strength (mg)</label>
                   <input
                     type="text"
-                    value={formData.strength}
-                    onChange={(e) => setFormData({ ...formData, strength: e.target.value })}
+                    value={formData.strengthMg}
+                    onChange={(e) => setFormData({ ...formData, strengthMg: e.target.value })}
                     className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Generic Name</label>
+                  <label className="block text-sm font-medium text-gray-700">Category</label>
                   <input
                     type="text"
-                    value={formData.generic_name}
-                    onChange={(e) => setFormData({ ...formData, generic_name: e.target.value })}
+                    value={formData.category}
+                    onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                    className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Manufacturer</label>
+                  <input
+                    type="text"
+                    value={formData.manufacturer}
+                    onChange={(e) => setFormData({ ...formData, manufacturer: e.target.value })}
                     className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>
@@ -424,14 +465,25 @@ export default function MedicinesManagement() {
                     rows={3}
                   />
                 </div>
-                <div className="flex items-center">
-                  <input
-                    type="checkbox"
-                    checked={formData.public_medicine}
-                    onChange={(e) => setFormData({ ...formData, public_medicine: e.target.checked })}
-                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                  />
-                  <label className="ml-2 block text-sm text-gray-900">Public Medicine</label>
+                <div className="flex items-center space-x-4">
+                  <div className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={formData.publicMedicine}
+                      onChange={(e) => setFormData({ ...formData, publicMedicine: e.target.checked })}
+                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                    />
+                    <label className="ml-2 block text-sm text-gray-900">Public Medicine</label>
+                  </div>
+                  <div className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={formData.isActive}
+                      onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
+                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                    />
+                    <label className="ml-2 block text-sm text-gray-900">Active Medicine</label>
+                  </div>
                 </div>
                 <div className="flex justify-end space-x-3">
                   <button

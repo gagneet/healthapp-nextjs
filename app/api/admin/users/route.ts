@@ -61,20 +61,20 @@ export async function GET(request: NextRequest) {
           // Auth.js v5 fields
           name: true,
           image: true,
-          email_verified_at: true,
+          emailVerified: true,
           // Legacy fields
           firstName: true,
           lastName: true,
           fullName: true,
           phone: true,
-          date_of_birth: true,
+          dateOfBirth: true,
           gender: true,
           role: true,
           accountStatus: true,
           emailVerifiedLegacy: true,
           profilePictureUrl: true,
-          created_at: true,
-          updated_at: true,
+          createdAt: true,
+          updatedAt: true,
           lastLoginAt: true,
           // Relations
           doctors: {
@@ -104,7 +104,7 @@ export async function GET(request: NextRequest) {
         },
         skip: offset,
         take: limit,
-        orderBy: { created_at: 'desc' }
+        orderBy: { createdAt: 'desc' }
       }),
       prisma.user.count({ where: whereClause })
     ]);
@@ -116,7 +116,7 @@ export async function GET(request: NextRequest) {
     });
 
     const statusStats = await prisma.user.groupBy({
-      by: ['account_status'],
+      by: ['accountStatus'],
       _count: { id: true }
     });
 
@@ -138,7 +138,7 @@ export async function GET(request: NextRequest) {
               return acc;
             }, {} as Record<string, number>),
             byStatus: statusStats.reduce((acc, stat) => {
-              acc[stat.account_status] = stat._count.id;
+              if (stat.accountStatus) acc[stat.accountStatus] = stat._count?.id || 0;
               return acc;
             }, {} as Record<string, number>)
           }
@@ -232,20 +232,20 @@ export async function POST(request: NextRequest) {
         passwordHash: hashedPassword,
         // Auth.js v5 fields
         name: fullName,
-        email_verified_at: new Date(),
+        emailVerified: new Date(),
         image: null,
         // Legacy fields for backward compatibility
-        first_name,
-        last_name,
+        firstName: first_name,
+        lastName: last_name,
         fullName: fullName,
         phone,
-        date_of_birth: date_of_birth ? new Date(date_of_birth) : null,
+        dateOfBirth: date_of_birth ? new Date(date_of_birth) : null,
         gender,
         role,
-        account_status,
+        accountStatus: account_status,
         emailVerifiedLegacy: true,
-        created_at: new Date(),
-        updated_at: new Date()
+        createdAt: new Date(),
+        updatedAt: new Date()
       },
       select: {
         id: true,
@@ -256,7 +256,7 @@ export async function POST(request: NextRequest) {
         phone: true,
         role: true,
         accountStatus: true,
-        created_at: true
+        createdAt: true
       }
     });
 

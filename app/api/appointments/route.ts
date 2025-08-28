@@ -182,9 +182,9 @@ export async function POST(request: NextRequest) {
     // Use transaction to prevent race condition in slot booking
     const appointment = await prisma.$transaction(async (tx) => {
       // Check if slot is available within transaction
-      if (slot_id) {
+      if (slotId) {
         const slot = await tx.appointmentSlot.findUnique({
-          where: { id: slot_id }
+          where: { id: slotId }
         });
         
         if (!slot || slot.isAvailable === false || (slot.bookedAppointments || 0) >= (slot.maxAppointments || 1)) {
@@ -193,7 +193,7 @@ export async function POST(request: NextRequest) {
         
         // Mark slot as booked immediately to prevent race condition
         await tx.appointmentSlot.update({
-          where: { id: slot_id },
+          where: { id: slotId },
           data: { bookedAppointments: { increment: 1 } }
         });
       }
@@ -207,7 +207,9 @@ export async function POST(request: NextRequest) {
           endTime: new Date(endTime),
           description: description || 'Appointment',
           status: 'SCHEDULED',
-          slotId: slotId
+          slotId: slotId,
+          createdAt: new Date(),
+          updatedAt: new Date()
         },
         include: {
           patient: {

@@ -461,6 +461,7 @@ model Medicine {
   details         Json?        @db.Json
   creatorId       Int?
   publicMedicine  Boolean?     @default(true)
+  isActive        Boolean?     @default(true)
   algoliaObjectId String?      @db.VarChar(255)
   createdAt       DateTime
   updatedAt       DateTime     @updatedAt
@@ -514,6 +515,7 @@ model Appointment {
   endTime            DateTime?
   rrRule             String?                        @db.VarChar(1000)
   details            Json?                          @db.Json
+  status             ConsultationStatus?            @default(SCHEDULED)
   createdAt          DateTime
   updatedAt          DateTime                       @updatedAt
   deletedAt          DateTime?
@@ -887,6 +889,9 @@ model AuditLog {
   action         String        @db.VarChar(10)
   resource       String        @db.VarChar(500)
   patientId      String?       @db.Uuid
+  entityType     String?       @db.VarChar(50)
+  entityId       String?       @db.Uuid
+  changes        Json?         @default("{}")
   phiAccessed    Boolean?      @default(false)
   accessGranted  Boolean
   denialReason   String?
