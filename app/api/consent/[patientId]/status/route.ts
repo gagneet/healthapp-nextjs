@@ -208,7 +208,7 @@ export const GET = withErrorHandling(async (request: NextRequest, { params }: { 
           specialty_focus: assignment.specialtyFocus || [],
           created_at: assignment.createdAt,
           expires_at: assignment.expiresAt,
-          is_active: assignment.isActive,
+          isActive: assignment.isActive,
           notes: assignment.notes
         }
       }
@@ -251,7 +251,7 @@ export const GET = withErrorHandling(async (request: NextRequest, { params }: { 
     return createSuccessResponse({
       patient: {
         id: patient.id,
-        patient_id: patient.patientId,
+        patientId: patient.patientId,
         name: `${patient.user.firstName} ${patient.user.lastName}`.trim(),
         email: patient.user.email,
         phone: patient.user.phone

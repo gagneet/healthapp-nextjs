@@ -31,7 +31,7 @@ export interface UserCreationAttributes extends Optional<UserAttributes, 'id' | 
 // Patient model attributes
 export interface PatientAttributes extends BaseModelAttributes {
   userId: string;
-  patient_id: string;
+  patientId: string;
   emergency_contact?: string;
   emergency_phone?: string;
   address?: string;
@@ -48,7 +48,7 @@ export interface PatientAttributes extends BaseModelAttributes {
 // Doctor model attributes
 export interface DoctorAttributes extends BaseModelAttributes {
   userId: string;
-  doctor_id: string;
+  doctorId: string;
   license_number: string;
   speciality_id?: string;
   years_experience?: number;

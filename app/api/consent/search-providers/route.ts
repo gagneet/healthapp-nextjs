@@ -127,7 +127,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
         experience_years: doctor.yearsOfExperience,
         accepting_new_patients: doctor.isAcceptingNewPatients,
         consultation_fee: doctor.consultationFee,
-        is_active: doctor.isActive,
+        isActive: doctor.isActive,
         type: 'doctor',
         availability_info: {
           online_consultations: doctor.offersOnlineConsultations || false,
@@ -193,7 +193,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
         organization: hsp.organization?.name || 'Independent',
         organization_id: hsp.organizationId,
         experience_years: hsp.yearsOfExperience,
-        is_active: hsp.isActive,
+        isActive: hsp.isActive,
         type: 'hsp',
         specialization_areas: hsp.specializationAreas || []
       }))

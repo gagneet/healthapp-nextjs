@@ -24,12 +24,12 @@ export default (sequelize: any) => {
       allowNull: true,
     },
     
-    normal_range_min: {
+    normalRangeMin: {
       type: DataTypes.DECIMAL(10, 2),
       allowNull: true,
     },
     
-    normal_range_max: {
+    normalRangeMax: {
       type: DataTypes.DECIMAL(10, 2),
       allowNull: true,
     },
@@ -80,18 +80,18 @@ export default (sequelize: any) => {
     instanceMethods: {
       // Check if value is within normal range
       isNormalValue(value: any) {
-        if (!(this as any).normal_range_min && !(this as any).normal_range_max) {
+        if (!(this as any).normalRangeMin && !(this as any).normalRangeMax) {
           return true; // No range defined
         }
         
         const numValue = parseFloat(value);
         if (isNaN(numValue)) return false;
         
-        if ((this as any).normal_range_min && numValue < (this as any).normal_range_min) {
+        if ((this as any).normalRangeMin && numValue < (this as any).normalRangeMin) {
           return false;
         }
         
-        if ((this as any).normal_range_max && numValue > (this as any).normal_range_max) {
+        if ((this as any).normalRangeMax && numValue > (this as any).normalRangeMax) {
           return false;
         }
         

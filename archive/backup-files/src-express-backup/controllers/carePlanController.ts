@@ -26,7 +26,7 @@ class CarePlanController {
 
       const carePlans = await CarePlan.findAll({
         where: { 
-          patient_id: patientId,
+          patientId: patientId,
           deleted_at: null 
         },
         include: [
@@ -83,8 +83,8 @@ class CarePlanController {
         (responseData as any).care_plans[carePlan.id] = {
           basic_info: {
             id: carePlan.id.toString(),
-            patient_id: carePlan.patient_id.toString(),
-            doctor_id: carePlan.doctor_id.toString(),
+            patientId: carePlan.patientId.toString(),
+            doctorId: carePlan.doctorId.toString(),
             treatment_id: carePlan.treatment_id?.toString(),
             condition_id: carePlan.details?.condition_id?.toString(),
             severity_id: carePlan.details?.severity_id?.toString(),
@@ -186,8 +186,8 @@ class CarePlanController {
       }
 
       const carePlan = await CarePlan.create({
-        doctor_id: doctor.id,
-        patient_id: patientId,
+        doctorId: doctor.id,
+        patientId: patientId,
         start_date,
         activated_on: new Date(),
         details: {

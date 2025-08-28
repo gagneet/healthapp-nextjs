@@ -32,7 +32,7 @@ interface Service {
   price: number
   currency: string
   duration_days?: number
-  is_active: boolean
+  isActive: boolean
   created_at: string
   updated_at: string
   features: string[]
@@ -43,7 +43,7 @@ interface Subscription {
   id: string
   service_id: string
   service_name: string
-  patient_id: string
+  patientId: string
   patient_name: string
   status: 'ACTIVE' | 'PENDING' | 'CANCELLED' | 'EXPIRED' | 'PAUSED'
   start_date: string
@@ -63,7 +63,7 @@ const mockServices: Service[] = [
     price: 299.99,
     currency: 'USD',
     duration_days: 90,
-    is_active: true,
+    isActive: true,
     created_at: '2025-01-10T09:00:00Z',
     updated_at: '2025-01-20T14:30:00Z',
     features: [
@@ -84,7 +84,7 @@ const mockServices: Service[] = [
     price: 199.99,
     currency: 'USD',
     duration_days: 60,
-    is_active: true,
+    isActive: true,
     created_at: '2025-01-08T11:15:00Z',
     updated_at: '2025-01-22T10:45:00Z',
     features: [
@@ -104,7 +104,7 @@ const mockServices: Service[] = [
     pricing_model: 'ONE_TIME',
     price: 150.00,
     currency: 'USD',
-    is_active: true,
+    isActive: true,
     created_at: '2025-01-05T16:30:00Z',
     updated_at: '2025-01-18T09:20:00Z',
     features: [
@@ -124,7 +124,7 @@ const mockServices: Service[] = [
     price: 799.99,
     currency: 'USD',
     duration_days: 90,
-    is_active: true,
+    isActive: true,
     created_at: '2025-01-12T14:20:00Z',
     updated_at: '2025-01-25T11:10:00Z',
     features: [
@@ -145,7 +145,7 @@ const mockServices: Service[] = [
     price: 599.99,
     currency: 'USD',
     duration_days: 30,
-    is_active: false,
+    isActive: false,
     created_at: '2023-12-20T10:45:00Z',
     updated_at: '2025-01-15T13:25:00Z',
     features: [
@@ -163,7 +163,7 @@ const mockSubscriptions: Subscription[] = [
     id: '1',
     service_id: '1',
     service_name: 'Comprehensive Diabetes Management',
-    patient_id: 'p1',
+    patientId: 'p1',
     patient_name: 'John Doe',
     status: 'ACTIVE',
     start_date: '2025-01-15T00:00:00Z',
@@ -176,7 +176,7 @@ const mockSubscriptions: Subscription[] = [
     id: '2',
     service_id: '2',
     service_name: 'Hypertension Control Program',
-    patient_id: 'p2',
+    patientId: 'p2',
     patient_name: 'Jane Smith',
     status: 'ACTIVE',
     start_date: '2025-01-20T00:00:00Z',
@@ -189,7 +189,7 @@ const mockSubscriptions: Subscription[] = [
     id: '3',
     service_id: '3',
     service_name: 'Virtual Consultation Package',
-    patient_id: 'p3',
+    patientId: 'p3',
     patient_name: 'Michael Johnson',
     status: 'PENDING',
     start_date: '2025-01-25T00:00:00Z',
@@ -272,7 +272,7 @@ export default function ServicesPage() {
 
   const toggleServiceStatus = (serviceId: string) => {
     setServices(services.map(s => 
-      s.id === serviceId ? { ...s, is_active: !s.is_active } : s
+      s.id === serviceId ? { ...s, isActive: !s.isActive } : s
     ))
   }
 
@@ -345,7 +345,7 @@ export default function ServicesPage() {
               <div>
                 <p className="text-sm font-medium text-gray-600">Active Services</p>
                 <p className="text-3xl font-bold text-gray-900">
-                  {services.filter(s => s.is_active).length}
+                  {services.filter(s => s.isActive).length}
                 </p>
               </div>
               <CreditCardIcon className="h-8 w-8 text-purple-600" />
@@ -417,7 +417,7 @@ export default function ServicesPage() {
           {/* Services Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredServices.map((service) => (
-              <Card key={service.id} className={`relative ${!service.is_active ? 'opacity-60' : ''}`}>
+              <Card key={service.id} className={`relative ${!service.isActive ? 'opacity-60' : ''}`}>
                 <CardHeader className="pb-3">
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
@@ -428,7 +428,7 @@ export default function ServicesPage() {
                         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getServiceTypeColor(service.type)}`}>
                           {service.type.replace('_', ' ')}
                         </span>
-                        {!service.is_active && (
+                        {!service.isActive && (
                           <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
                             Inactive
                           </span>

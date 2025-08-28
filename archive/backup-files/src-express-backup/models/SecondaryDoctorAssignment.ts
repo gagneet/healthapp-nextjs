@@ -10,7 +10,7 @@ export default (sequelize: any) => {
     },
     
     // Core assignment relationships
-    patient_id: {
+    patientId: {
       type: DataTypes.UUID,
       allowNull: false,
       references: {
@@ -141,7 +141,7 @@ export default (sequelize: any) => {
     },
     
     // Assignment status
-    is_active: {
+    isActive: {
       type: DataTypes.BOOLEAN,
       defaultValue: true,
       comment: 'Whether this assignment is currently active'
@@ -174,13 +174,13 @@ export default (sequelize: any) => {
     underscored: true,
     
     indexes: [
-      { fields: ['patient_id'] },
+      { fields: ['patientId'] },
       { fields: ['primary_doctor_id'] },
       { fields: ['secondary_doctor_id'] },
       { fields: ['secondary_hsp_id'] },
       { fields: ['consent_status'] },
       { fields: ['access_granted'] },
-      { fields: ['is_active'] },
+      { fields: ['isActive'] },
       { fields: ['consent_expires_at'] }
     ],
     
@@ -243,7 +243,7 @@ export default (sequelize: any) => {
   };
   
   SecondaryDoctorAssignment.prototype.canAccess = function() {
-    if (!this.is_active) return false;
+    if (!this.isActive) return false;
     
     // Check if consent has expired
     if (this.consent_expires_at && new Date() > this.consent_expires_at) {

@@ -213,7 +213,7 @@ We have successfully analyzed and fixed the core issues with the patient detail 
 #### ✅ Appointments API Endpoint (500 → Fixed)
 
 - Issue: Complex participant logic without proper patient validation
-- Fix: Simplified to use patient_id field with proper validation
+- Fix: Simplified to use patientId field with proper validation
 
 #### ✅ Care Plan Details API Endpoint (404 → Fixed)
 
@@ -234,7 +234,7 @@ File: /src/controllers/patientController.ts
 File: /src/controllers/medicationController.ts
 
 - Added patient validation before querying medications
-- Maintained existing participant_id → patient_id mapping
+- Maintained existing participant_id → patientId mapping
 
 File: /src/controllers/appointmentController.ts
 
@@ -244,7 +244,7 @@ File: /src/controllers/appointmentController.ts
 File: /src/controllers/carePlanController.ts
 
 - Added patient validation before querying care plans
-- Maintained existing patient_id relationships
+- Maintained existing patientId relationships
 
 ### Testing Confirmation for Patient Details Page
 
@@ -917,7 +917,7 @@ The migration has successfully preserved all the healthcare functionality while 
 
 1. Fixed Prisma model names in all API routes - Updated inconsistent model references across 10+ API routes
 2. Tested the seeding system - Verified all 10 users are created correctly with proper business IDs
-3. Added doctor_id and hsp_id fields - Implemented comprehensive business ID generation system (DOC-2025-001, PAT-2025-001, HSP-2025-001)
+3. Added doctorId and hsp_id fields - Implemented comprehensive business ID generation system (DOC-2025-001, PAT-2025-001, HSP-2025-001)
 4. Verified specific dashboards - All dashboards (doctor, patient, HSP, admin) are working with proper data display
 5. Updated deployment scripts - Cleaned up and modernized all scripts to use Prisma migrations instead of Sequelize
 6. Updated env_files and docker folders - Removed redundant files and organized Docker configurations
@@ -1401,7 +1401,7 @@ CREATE TABLE drug_interactions (
 
 CREATE TABLE patient_allergies (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    patient_id UUID REFERENCES patients(id),
+    patientId UUID REFERENCES patients(id),
     allergen_type VARCHAR(50) NOT NULL,
     allergen_name VARCHAR(255) NOT NULL,
     reaction_severity VARCHAR(20) NOT NULL,

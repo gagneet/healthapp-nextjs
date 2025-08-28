@@ -16,7 +16,7 @@ export default (sequelize: any) => {
         key: 'id',
       },
     },
-    patient_id: {
+    patientId: {
       type: DataTypes.UUID,
       allowNull: false,
       references: {
@@ -65,7 +65,7 @@ export default (sequelize: any) => {
         fields: ['medication_id', 'scheduled_at'],
       },
       {
-        fields: ['patient_id', 'scheduled_at'],
+        fields: ['patientId', 'scheduled_at'],
       },
       {
         fields: ['adherence_status', 'scheduled_at'],

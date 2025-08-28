@@ -38,7 +38,7 @@ export default (sequelize: any) => {
     },
     
     // Settings
-    is_active: {
+    isActive: {
       type: DataTypes.BOOLEAN,
       defaultValue: true,
     },
@@ -91,7 +91,7 @@ export default (sequelize: any) => {
         fields: ['device_type']
       },
       {
-        fields: ['is_active']
+        fields: ['isActive']
       },
       {
         fields: ['push_token']

@@ -11,7 +11,7 @@ class CalendarService {
     // Get doctor availability for this day
     const availability = await DoctorAvailability.findOne({
       where: {
-        doctor_id: doctorId,
+        doctorId: doctorId,
         day_of_week: dayOfWeek,
         is_available: true
       }
@@ -44,7 +44,7 @@ class CalendarService {
       // Check if slot already exists
       const existingSlot = await AppointmentSlot.findOne({
         where: {
-          doctor_id: doctorId,
+          doctorId: doctorId,
           date: date,
           start_time: slotStartTime
         }
@@ -52,7 +52,7 @@ class CalendarService {
 
       if (!existingSlot) {
         slots.push({
-          doctor_id: doctorId,
+          doctorId: doctorId,
           date: date,
           start_time: slotStartTime,
           end_time: slotEndTime,
@@ -79,7 +79,7 @@ class CalendarService {
 
     const slots = await AppointmentSlot.findAll({
       where: {
-        doctor_id: doctorId,
+        doctorId: doctorId,
         date: date,
         is_available: true,
         [(Op as any).where]: db.sequelize.literal('booked_appointments < max_appointments')
@@ -152,12 +152,12 @@ class CalendarService {
     });
 
     const availability = await DoctorAvailability.findAll({
-      where: { doctor_id: doctorId }
+      where: { doctorId: doctorId }
     });
 
     const slots = await AppointmentSlot.findAll({
       where: {
-        doctor_id: doctorId,
+        doctorId: doctorId,
         date: {
           [Op.between]: [startDate, endDate]
         }
@@ -308,7 +308,7 @@ class CalendarService {
 
     const [availability, created] = await DoctorAvailability.findOrCreate({
       where: {
-        doctor_id: doctorId,
+        doctorId: doctorId,
         day_of_week: day_of_week
       },
       defaults: {

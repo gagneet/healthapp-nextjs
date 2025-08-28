@@ -249,7 +249,7 @@ export async function up(queryInterface: QueryInterface): Promise<void> {
       defaultValue: DataTypes.UUIDV4,
       primaryKey: true,
     },
-    patient_id: {
+    patientId: {
       type: DataTypes.UUID,
       allowNull: false,
       references: {
@@ -298,7 +298,7 @@ export async function up(queryInterface: QueryInterface): Promise<void> {
   });
   
   // Add proper indexes for performance
-  await queryInterface.addIndex('vital_readings', ['patient_id', 'created_at']);
+  await queryInterface.addIndex('vital_readings', ['patientId', 'created_at']);
   await queryInterface.addIndex('vital_readings', ['alert_level']);
 }
 

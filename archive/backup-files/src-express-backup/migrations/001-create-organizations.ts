@@ -41,7 +41,7 @@ export default {
         type: Sequelize.JSONB,
         defaultValue: {},
       },
-      is_active: {
+      isActive: {
         type: Sequelize.BOOLEAN,
         defaultValue: true,
       },
@@ -75,7 +75,7 @@ export default {
     }
     
     try {
-      await queryInterface.addIndex('organizations', ['is_active'], { name: 'idx_organizations_is_active' });
+      await queryInterface.addIndex('organizations', ['isActive'], { name: 'idx_organizations_is_active' });
     } catch (error) {
       if (!(error as any).message.includes('already exists')) throw (error as any);
     }

@@ -170,8 +170,8 @@ export const healthcareDb = {
       // Total patients assigned to this doctor
       prisma.patientDoctorAssignment.count({
         where: {
-          doctor_id: doctorId,
-          is_active: true,
+          doctorId: doctorId,
+          isActive: true,
         },
       }),
 
@@ -186,7 +186,7 @@ export const healthcareDb = {
       // Today's appointments
       prisma.appointment.count({
         where: {
-          doctor_id: doctorId,
+          doctorId: doctorId,
           start_date: {
             gte: new Date(new Date().setHours(0, 0, 0, 0)),
             lt: new Date(new Date().setHours(23, 59, 59, 999)),
@@ -200,13 +200,13 @@ export const healthcareDb = {
           patient: {
             patientDoctorAssignments: {
               some: {
-                doctor_id: doctorId,
-                is_active: true,
+                doctorId: doctorId,
+                isActive: true,
               },
             },
           },
           is_flagged: true,
-          reading_time: {
+          readingTime: {
             gte: new Date(Date.now() - 24 * 60 * 60 * 1000),
           },
         },
@@ -218,8 +218,8 @@ export const healthcareDb = {
           patient: {
             patientDoctorAssignments: {
               some: {
-                doctor_id: doctorId,
-                is_active: true,
+                doctorId: doctorId,
+                isActive: true,
               },
             },
           },
@@ -250,7 +250,7 @@ export const healthcareDb = {
 
     const adherenceRecords = await prisma.adherenceRecord.findMany({
       where: {
-        patient_id: patientId,
+        patientId: patientId,
         due_at: {
           gte: startDate,
         },

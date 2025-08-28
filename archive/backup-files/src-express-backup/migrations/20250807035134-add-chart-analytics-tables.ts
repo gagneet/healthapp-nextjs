@@ -44,7 +44,7 @@ export default {
           },
           onDelete: 'CASCADE'
         },
-        patient_id: {
+        patientId: {
           type: Sequelize.UUID,
           allowNull: false,
           references: {
@@ -99,7 +99,7 @@ export default {
           defaultValue: Sequelize.UUIDV4,
           primaryKey: true
         },
-        patient_id: {
+        patientId: {
           type: Sequelize.UUID,
           allowNull: false,
           references: {
@@ -217,9 +217,9 @@ export default {
     // Add indexes for performance (only if they don't exist)
     const indexes = [
       { table: 'medication_logs', name: 'medication_logs_medication_id_scheduled_at', columns: ['medication_id', 'scheduled_at'] },
-      { table: 'medication_logs', name: 'medication_logs_patient_id_scheduled_at', columns: ['patient_id', 'scheduled_at'] },
+      { table: 'medication_logs', name: 'medication_logs_patient_id_scheduled_at', columns: ['patientId', 'scheduled_at'] },
       { table: 'medication_logs', name: 'medication_logs_adherence_status_scheduled_at', columns: ['adherence_status', 'scheduled_at'] },
-      { table: 'patient_alerts', name: 'patient_alerts_patient_id_alert_type_severity', columns: ['patient_id', 'alert_type', 'severity'] },
+      { table: 'patient_alerts', name: 'patient_alerts_patient_id_alert_type_severity', columns: ['patientId', 'alert_type', 'severity'] },
       { table: 'patient_alerts', name: 'patient_alerts_acknowledged_resolved', columns: ['acknowledged', 'resolved'] },
       { table: 'patient_alerts', name: 'patient_alerts_created_at', columns: ['created_at'] },
       { table: 'dashboard_metrics', name: 'dashboard_metrics_entity_type_entity_id_metric_type', columns: ['entity_type', 'entity_id', 'metric_type'] },

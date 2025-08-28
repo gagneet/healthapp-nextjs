@@ -105,7 +105,7 @@ CREATE TABLE organizations (
     contact_info JSONB DEFAULT '{}',
     address JSONB DEFAULT '{}',
     settings JSONB DEFAULT '{}',
-    is_active BOOLEAN DEFAULT true,
+    isActive BOOLEAN DEFAULT true,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW(),
     deleted_at TIMESTAMPTZ
@@ -211,7 +211,7 @@ CREATE TABLE patients (
 -- Provider-Patient assignments
 CREATE TABLE patient_provider_assignments (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    patient_id UUID NOT NULL REFERENCES patients(id),
+    patientId UUID NOT NULL REFERENCES patients(id),
     provider_id UUID NOT NULL REFERENCES healthcare_providers(id),
     role VARCHAR(50) DEFAULT 'primary', -- primary, secondary, consultant
     assigned_at TIMESTAMPTZ DEFAULT NOW(),
@@ -219,7 +219,7 @@ CREATE TABLE patient_provider_assignments (
     ended_at TIMESTAMPTZ,
     notes TEXT,
     
-    UNIQUE(patient_id, provider_id, role, ended_at)
+    UNIQUE(patientId, provider_id, role, ended_at)
 );
 
 -- ====================================
@@ -263,7 +263,7 @@ CREATE TABLE care_plan_templates (
 -- Active Care Plans
 CREATE TABLE care_plans (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    patient_id UUID NOT NULL REFERENCES patients(id),
+    patientId UUID NOT NULL REFERENCES patients(id),
     provider_id UUID NOT NULL REFERENCES healthcare_providers(id),
     template_id UUID REFERENCES care_plan_templates(id),
     
@@ -326,8 +326,8 @@ CREATE TABLE vital_types (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     name VARCHAR(100) NOT NULL UNIQUE,
     unit VARCHAR(20),
-    normal_range_min DECIMAL(10,2),
-    normal_range_max DECIMAL(10,2),
+    normalRangeMin DECIMAL(10,2),
+    normalRangeMax DECIMAL(10,2),
     description TEXT,
     validation_rules JSONB DEFAULT '{}',
     
@@ -358,7 +358,7 @@ CREATE TABLE vital_requirements (
 -- Appointments
 CREATE TABLE appointments (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    patient_id UUID NOT NULL REFERENCES patients(id),
+    patientId UUID NOT NULL REFERENCES patients(id),
     provider_id UUID NOT NULL REFERENCES healthcare_providers(id),
     
     -- Appointment details
@@ -389,7 +389,7 @@ CREATE TABLE appointments (
 -- Scheduled Events (medications, vitals, etc.)
 CREATE TABLE scheduled_events (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    patient_id UUID NOT NULL REFERENCES patients(id),
+    patientId UUID NOT NULL REFERENCES patients(id),
     care_plan_id UUID REFERENCES care_plans(id),
     
     -- Event details
@@ -426,7 +426,7 @@ CREATE TABLE scheduled_events (
 -- Adherence Records
 CREATE TABLE adherence_records (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    patient_id UUID NOT NULL REFERENCES patients(id),
+    patientId UUID NOT NULL REFERENCES patients(id),
     scheduled_event_id UUID REFERENCES scheduled_events(id),
     
     -- Adherence details
@@ -454,7 +454,7 @@ CREATE TABLE adherence_records (
 -- Vital Readings
 CREATE TABLE vital_readings (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    patient_id UUID NOT NULL REFERENCES patients(id),
+    patientId UUID NOT NULL REFERENCES patients(id),
     vital_type_id UUID NOT NULL REFERENCES vital_types(id),
     adherence_record_id UUID REFERENCES adherence_records(id),
     
@@ -463,7 +463,7 @@ CREATE TABLE vital_readings (
     unit VARCHAR(20),
     
     -- Context
-    reading_time TIMESTAMPTZ NOT NULL,
+    readingTime TIMESTAMPTZ NOT NULL,
     device_info JSONB DEFAULT '{}',
     is_flagged BOOLEAN DEFAULT false,
     
@@ -483,7 +483,7 @@ CREATE TABLE vital_readings (
 -- Symptoms Log
 CREATE TABLE symptoms (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    patient_id UUID NOT NULL REFERENCES patients(id),
+    patientId UUID NOT NULL REFERENCES patients(id),
     care_plan_id UUID REFERENCES care_plans(id),
     
     -- Symptom details
@@ -558,7 +558,7 @@ CREATE TABLE user_devices (
     device_id VARCHAR(255),
     
     -- Settings
-    is_active BOOLEAN DEFAULT true,
+    isActive BOOLEAN DEFAULT true,
     notification_settings JSONB DEFAULT '{}',
     
     -- Timestamps
@@ -591,7 +591,7 @@ CREATE TABLE service_plans (
     patient_limit INTEGER,
     
     -- Status
-    is_active BOOLEAN DEFAULT true,
+    isActive BOOLEAN DEFAULT true,
     
     -- Timestamps
     created_at TIMESTAMPTZ DEFAULT NOW(),
@@ -602,7 +602,7 @@ CREATE TABLE service_plans (
 -- Patient Subscriptions
 CREATE TABLE patient_subscriptions (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    patient_id UUID NOT NULL REFERENCES patients(id),
+    patientId UUID NOT NULL REFERENCES patients(id),
     provider_id UUID NOT NULL REFERENCES healthcare_providers(id),
     service_plan_id UUID NOT NULL REFERENCES service_plans(id),
     
@@ -672,12 +672,12 @@ CREATE INDEX idx_patients_org ON patients(organization_id) WHERE deleted_at IS N
 CREATE INDEX idx_patients_mrn ON patients(medical_record_number) WHERE deleted_at IS NULL;
 
 -- Indexes for patient_provider_assignments
-CREATE INDEX idx_assignments_patient ON patient_provider_assignments(patient_id) WHERE ended_at IS NULL;
+CREATE INDEX idx_assignments_patient ON patient_provider_assignments(patientId) WHERE ended_at IS NULL;
 CREATE INDEX idx_assignments_provider ON patient_provider_assignments(provider_id) WHERE ended_at IS NULL;
-CREATE INDEX idx_assignments_active ON patient_provider_assignments(patient_id, provider_id) WHERE ended_at IS NULL;
+CREATE INDEX idx_assignments_active ON patient_provider_assignments(patientId, provider_id) WHERE ended_at IS NULL;
 
 -- Indexes for care_plans
-CREATE INDEX idx_care_plans_patient ON care_plans(patient_id) WHERE deleted_at IS NULL;
+CREATE INDEX idx_care_plans_patient ON care_plans(patientId) WHERE deleted_at IS NULL;
 CREATE INDEX idx_care_plans_provider ON care_plans(provider_id) WHERE deleted_at IS NULL;
 CREATE INDEX idx_care_plans_status ON care_plans(status) WHERE deleted_at IS NULL;
 CREATE INDEX idx_care_plans_dates ON care_plans(start_date, end_date) WHERE deleted_at IS NULL;
@@ -689,20 +689,20 @@ CREATE INDEX idx_medications_dates ON medications(start_date, end_date) WHERE de
 CREATE INDEX idx_medications_critical ON medications(is_critical) WHERE deleted_at IS NULL;
 
 -- Indexes for scheduled_events
-CREATE INDEX idx_events_patient ON scheduled_events(patient_id) WHERE deleted_at IS NULL;
+CREATE INDEX idx_events_patient ON scheduled_events(patientId) WHERE deleted_at IS NULL;
 CREATE INDEX idx_events_scheduled_for ON scheduled_events(scheduled_for) WHERE deleted_at IS NULL;
 CREATE INDEX idx_events_status ON scheduled_events(status) WHERE deleted_at IS NULL;
 CREATE INDEX idx_events_type ON scheduled_events(event_type) WHERE deleted_at IS NULL;
 CREATE INDEX idx_events_priority ON scheduled_events(priority) WHERE deleted_at IS NULL;
 
 -- Indexes for adherence_records
-CREATE INDEX idx_adherence_patient ON adherence_records(patient_id);
+CREATE INDEX idx_adherence_patient ON adherence_records(patientId);
 CREATE INDEX idx_adherence_due_at ON adherence_records(due_at);
 CREATE INDEX idx_adherence_type ON adherence_records(adherence_type);
 CREATE INDEX idx_adherence_status ON adherence_records(is_completed, is_missed);
 
 -- Indexes for appointments
-CREATE INDEX idx_appointments_patient ON appointments(patient_id) WHERE deleted_at IS NULL;
+CREATE INDEX idx_appointments_patient ON appointments(patientId) WHERE deleted_at IS NULL;
 CREATE INDEX idx_appointments_provider ON appointments(provider_id) WHERE deleted_at IS NULL;
 CREATE INDEX idx_appointments_time ON appointments(start_time) WHERE deleted_at IS NULL;
 CREATE INDEX idx_appointments_status ON appointments(status) WHERE deleted_at IS NULL;
@@ -755,7 +755,7 @@ SELECT
     cp.end_date,
     
     -- Patient info
-    p.id as patient_id,
+    p.id as patientId,
     u_patient.first_name as patient_first_name,
     u_patient.last_name as patient_last_name,
     u_patient.email as patient_email,
@@ -769,7 +769,7 @@ SELECT
     cp.created_at,
     cp.updated_at
 FROM care_plans cp
-JOIN patients p ON cp.patient_id = p.id
+JOIN patients p ON cp.patientId = p.id
 JOIN users u_patient ON p.userId = u_patient.id
 JOIN healthcare_providers hp ON cp.provider_id = hp.id
 JOIN users u_provider ON hp.userId = u_provider.id
@@ -783,7 +783,7 @@ WHERE cp.deleted_at IS NULL
 -- Patient adherence summary
 CREATE VIEW v_patient_adherence_summary AS
 SELECT 
-    p.id as patient_id,
+    p.id as patientId,
     u.first_name,
     u.last_name,
     u.email,
@@ -804,7 +804,7 @@ SELECT
     p.updated_at
 FROM patients p
 JOIN users u ON p.userId = u.id
-LEFT JOIN adherence_records ar ON p.id = ar.patient_id 
+LEFT JOIN adherence_records ar ON p.id = ar.patientId
     AND ar.due_at >= NOW() - INTERVAL '30 days'
 WHERE p.deleted_at IS NULL 
     AND u.deleted_at IS NULL
@@ -821,7 +821,7 @@ SELECT
     se.status,
     
     -- Patient info
-    p.id as patient_id,
+    p.id as patientId,
     u_patient.first_name as patient_first_name,
     u_patient.last_name as patient_last_name,
     
@@ -832,7 +832,7 @@ SELECT
     
     se.created_at
 FROM scheduled_events se
-JOIN patients p ON se.patient_id = p.id
+JOIN patients p ON se.patientId = p.id
 JOIN users u_patient ON p.userId = u_patient.id
 LEFT JOIN care_plans cp ON se.care_plan_id = cp.id
 LEFT JOIN healthcare_providers hp ON cp.provider_id = hp.id
@@ -849,7 +849,7 @@ ORDER BY se.scheduled_for ASC;
 -- ====================================
 
 -- Insert default vital types
-INSERT INTO vital_types (name, unit, normal_range_min, normal_range_max, description) VALUES
+INSERT INTO vital_types (name, unit, normalRangeMin, normalRangeMax, description) VALUES
 ('Blood Pressure Systolic', 'mmHg', 90, 140, 'Systolic blood pressure measurement'),
 ('Blood Pressure Diastolic', 'mmHg', 60, 90, 'Diastolic blood pressure measurement'),
 ('Heart Rate', 'bpm', 60, 100, 'Resting heart rate'),
@@ -870,7 +870,7 @@ INSERT INTO organizations (name, type, contact_info, address) VALUES
 
 -- Row Level Security policies would go here
 -- ALTER TABLE patients ENABLE ROW LEVEL SECURITY;
--- CREATE POLICY patient_access_policy ON patients FOR ALL TO authenticated_users USING (userId = auth.uid() OR EXISTS (SELECT 1 FROM patient_provider_assignments WHERE patient_id = patients.id AND provider_id IN (SELECT id FROM healthcare_providers WHERE userId = auth.uid())));
+-- CREATE POLICY patient_access_policy ON patients FOR ALL TO authenticated_users USING (userId = auth.uid() OR EXISTS (SELECT 1 FROM patient_provider_assignments WHERE patientId = patients.id AND provider_id IN (SELECT id FROM healthcare_providers WHERE userId = auth.uid())));
 
 -- Additional RLS policies for other tables...
 

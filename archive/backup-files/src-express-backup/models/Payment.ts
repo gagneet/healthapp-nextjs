@@ -14,7 +14,7 @@ export default (sequelize: any, DataTypes: any) => {
         key: 'id',
       },
     },
-    patient_id: {
+    patientId: {
       type: DataTypes.UUID,
       allowNull: false,
       references: {
@@ -105,7 +105,7 @@ export default (sequelize: any, DataTypes: any) => {
     tableName: 'payments',
     indexes: [
       { fields: ['subscription_id'] },
-      { fields: ['patient_id'] },
+      { fields: ['patientId'] },
       { fields: ['provider_id'] },
       { fields: ['status'] },
       { fields: ['stripe_payment_intent_id'] },

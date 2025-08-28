@@ -119,7 +119,7 @@ export default {
             medicationLogsData.push({
               id: uuidv4(),
               medication_id: medicationId,
-              patient_id: patient.id,
+              patientId: patient.id,
               scheduled_at: scheduledTime,
               taken_at: takenAt,
               dosage_taken: isTaken ? JSON.parse(medicationsData[medicationsData.length - 1].details).dosage : null,
@@ -224,7 +224,7 @@ export default {
           if (vitalTypeId.length > 0) {
             vitalReadingsData.push({
               id: uuidv4(),
-              patient_id: patient.id,
+              patientId: patient.id,
               vital_type_id: vitalTypeId[0].id,
               value: value,
               unit: vitalType.unit,
@@ -236,7 +236,7 @@ export default {
                 Math.floor(Math.random() * 8) + 14 : null, // 14-22 (occasionally measured)
               oxygen_saturation: vitalType.type === 'blood_pressure' && Math.random() < 0.15 ? 
                 Math.floor(Math.random() * 5) + 96 : null, // 96-100% (occasionally measured)
-              reading_time: readingDate,
+              readingTime: readingDate,
               device_info: JSON.stringify({
                 device_type: ['manual', 'smart_watch', 'home_monitor', 'hospital_grade'][Math.floor(Math.random() * 4)],
                 model: ['Omron BP652', 'Apple Watch Series 8', 'Manual Sphygmomanometer', 'Philips IntelliVue'][Math.floor(Math.random() * 4)]
@@ -266,7 +266,7 @@ export default {
 
         patientAlertsData.push({
           id: uuidv4(),
-          patient_id: patient.id,
+          patientId: patient.id,
           alert_type: alertType,
           severity: severity,
           title: `${alertType.charAt(0).toUpperCase() + alertType.slice(1)} Alert`,

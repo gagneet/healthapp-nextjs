@@ -17,7 +17,7 @@ export default {
         primaryKey: true,
       },
       
-      patient_id: {
+      patientId: {
         type: Sequelize.UUID,
         allowNull: false,
         references: {
@@ -27,7 +27,7 @@ export default {
         onDelete: 'CASCADE'
       },
       
-      doctor_id: {
+      doctorId: {
         type: Sequelize.UUID,
         allowNull: false,
         references: {
@@ -137,7 +137,7 @@ export default {
         comment: 'Optional end date for temporary assignments'
       },
       
-      is_active: {
+      isActive: {
         type: Sequelize.BOOLEAN,
         defaultValue: true
       },
@@ -174,10 +174,10 @@ export default {
 
     // Add indexes (with idempotent checks)
     const indexes = [
-      { fields: ['patient_id'], name: 'idx_patient_doctor_assignments_patient_id' },
-      { fields: ['doctor_id'], name: 'idx_patient_doctor_assignments_doctor_id' },
+      { fields: ['patientId'], name: 'idx_patient_doctor_assignments_patient_id' },
+      { fields: ['doctorId'], name: 'idx_patient_doctor_assignments_doctor_id' },
       { fields: ['assignment_type'], name: 'idx_patient_doctor_assignments_assignment_type' },
-      { fields: ['is_active'], name: 'idx_patient_doctor_assignments_is_active' },
+      { fields: ['isActive'], name: 'idx_patient_doctor_assignments_is_active' },
       { fields: ['patient_consent_status'], name: 'idx_patient_doctor_assignments_consent_status' }
     ];
 
@@ -192,11 +192,11 @@ export default {
     // Add unique constraint for primary doctor per patient (with idempotent check)
     try {
       await queryInterface.addIndex('patientDoctorAssignments', {
-        fields: ['patient_id', 'assignment_type'],
+        fields: ['patientId', 'assignment_type'],
         unique: true,
         where: {
           assignment_type: 'primary',
-          is_active: true
+          isActive: true
         },
         name: 'unique_primary_doctor_per_patient'
       });

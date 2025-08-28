@@ -9,7 +9,7 @@ export default (sequelize: any) => {
       primaryKey: true,
     },
     
-    patient_id: {
+    patientId: {
       type: DataTypes.UUID,
       allowNull: false,
       references: {
@@ -107,7 +107,7 @@ export default (sequelize: any) => {
     },
     
     // Context
-    reading_time: {
+    readingTime: {
       type: DataTypes.DATE,
       allowNull: false,
     },
@@ -202,13 +202,13 @@ export default (sequelize: any) => {
     
     indexes: [
       {
-        fields: ['patient_id']
+        fields: ['patientId']
       },
       {
         fields: ['vital_type_id']
       },
       {
-        fields: ['reading_time']
+        fields: ['readingTime']
       },
       {
         fields: ['is_flagged']
@@ -217,7 +217,7 @@ export default (sequelize: any) => {
         fields: ['is_validated']
       },
       {
-        fields: ['patient_id', 'vital_type_id', 'reading_time']
+        fields: ['patientId', 'vital_type_id', 'readingTime']
       }
     ],
     

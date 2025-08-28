@@ -65,7 +65,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
     // Get vital readings for this patient
     const vitals = await prisma.vitalReading.findMany({
       where: {
-        patient_id: patient.id
+        patientId: patient.id
       },
       include: {
         vital_type: {
@@ -73,14 +73,14 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
             id: true,
             name: true,
             unit: true,
-            normal_range_min: true,
-            normal_range_max: true,
+            normalRangeMin: true,
+            normalRangeMax: true,
             description: true
           }
         }
       },
       orderBy: {
-        reading_time: 'desc'
+        readingTime: 'desc'
       },
       take: 50 // Last 50 readings
     });
@@ -91,11 +91,11 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       type: vital.vital_type?.name || 'Unknown Vital',
       value: vital.value?.toString() || '0',
       unit: vital.vital_type?.unit || '',
-      reading_time: vital.reading_time,
+      readingTime: vital.readingTime,
       is_flagged: vital.is_flagged || false,
       normal_range: {
-        min: vital.vital_type?.normal_range_min?.toString() || '0',
-        max: vital.vital_type?.normal_range_max?.toString() || '100'
+        min: vital.vital_type?.normalRangeMin?.toString() || '0',
+        max: vital.vital_type?.normalRangeMax?.toString() || '100'
       },
       notes: vital.notes,
       device_info: vital.device_info,

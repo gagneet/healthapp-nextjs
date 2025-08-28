@@ -205,13 +205,13 @@ CREATE TABLE medications (
     contraindications JSONB DEFAULT '[]',
     side_effects JSONB DEFAULT '[]',
     drug_interactions JSONB DEFAULT '[]',
-    is_active BOOLEAN DEFAULT true,
+    isActive BOOLEAN DEFAULT true,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE patient_medications (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    patient_id UUID REFERENCES patients(id) ON DELETE CASCADE,
+    patientId UUID REFERENCES patients(id) ON DELETE CASCADE,
     medication_id UUID REFERENCES medications(id),
     prescribed_by UUID, -- doctor ID
     dosage VARCHAR(100) NOT NULL,
@@ -220,7 +220,7 @@ CREATE TABLE patient_medications (
     start_date DATE NOT NULL,
     end_date DATE,
     instructions TEXT,
-    is_active BOOLEAN DEFAULT true,
+    isActive BOOLEAN DEFAULT true,
     adherence_score DECIMAL(5,2) DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -237,10 +237,10 @@ CREATE TYPE vital_sign_type AS ENUM (
 
 CREATE TABLE vital_sign_protocols (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    patient_id UUID REFERENCES patients(id) ON DELETE CASCADE,
+    patientId UUID REFERENCES patients(id) ON DELETE CASCADE,
     vital_type vital_sign_type NOT NULL,
-    normal_range_min DECIMAL(8,2),
-    normal_range_max DECIMAL(8,2),
+    normalRangeMin DECIMAL(8,2),
+    normalRangeMax DECIMAL(8,2),
     critical_low DECIMAL(8,2),
     critical_high DECIMAL(8,2),
     monitoring_frequency VARCHAR(50), -- daily, weekly, monthly, as_needed
@@ -252,7 +252,7 @@ CREATE TABLE vital_sign_protocols (
 
 CREATE TABLE vital_sign_readings (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    patient_id UUID REFERENCES patients(id) ON DELETE CASCADE,
+    patientId UUID REFERENCES patients(id) ON DELETE CASCADE,
     vital_type vital_sign_type NOT NULL,
     value_primary DECIMAL(8,2) NOT NULL, -- systolic BP, temperature, etc.
     value_secondary DECIMAL(8,2), -- diastolic BP
@@ -282,8 +282,8 @@ CREATE TYPE appointment_type AS ENUM (
 
 CREATE TABLE appointments (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    patient_id UUID REFERENCES patients(id) ON DELETE CASCADE,
-    doctor_id UUID NOT NULL,
+    patientId UUID REFERENCES patients(id) ON DELETE CASCADE,
+    doctorId UUID NOT NULL,
     appointment_type appointment_type NOT NULL,
     scheduled_date DATE NOT NULL,
     scheduled_time TIME NOT NULL,
@@ -304,7 +304,7 @@ CREATE TABLE appointments (
 -- Comprehensive care plans
 CREATE TABLE care_plans (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    patient_id UUID REFERENCES patients(id) ON DELETE CASCADE,
+    patientId UUID REFERENCES patients(id) ON DELETE CASCADE,
     primary_doctor_id UUID NOT NULL,
     plan_name VARCHAR(255) NOT NULL,
     primary_diagnosis VARCHAR(255),

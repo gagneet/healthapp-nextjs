@@ -37,7 +37,7 @@ interface Clinic {
   operating_hours?: object
   services_offered?: string[]
   is_primary: boolean
-  is_active: boolean
+  isActive: boolean
   latitude?: number
   longitude?: number
   location_verified: boolean

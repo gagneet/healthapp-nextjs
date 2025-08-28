@@ -107,7 +107,7 @@ export async function POST(request: NextRequest) {
       },
       select: {
         id: true,
-        patient_id: true,
+        patientId: true,
         medical_record_number: true,
         user: {
           select: {
@@ -143,7 +143,7 @@ export async function POST(request: NextRequest) {
       formats: searchFormats,
       match: patient ? {
         id: patient.id,
-        patient_id: patient.patient_id,
+        patientId: patient.patientId,
         name: `${patient.user.first_name} ${patient.user.last_name}`.trim(),
         phone: patient.user.phone,
         email: patient.user.email,

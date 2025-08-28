@@ -6,7 +6,7 @@ export default (sequelize: any, DataTypes: any) => {
       defaultValue: DataTypes.UUIDV4,
       primaryKey: true,
     },
-    doctor_id: {
+    doctorId: {
       type: DataTypes.UUID,
       allowNull: false,
       references: {
@@ -59,8 +59,8 @@ export default (sequelize: any, DataTypes: any) => {
   }, {
     tableName: 'appointment_slots',
     indexes: [
-      { fields: ['doctor_id', 'date', 'start_time'] },
-      { fields: ['doctor_id', 'is_available'] },
+      { fields: ['doctorId', 'date', 'start_time'] },
+      { fields: ['doctorId', 'is_available'] },
       { fields: ['date', 'is_available'] },
     ],
   });

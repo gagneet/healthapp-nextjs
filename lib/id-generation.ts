@@ -32,7 +32,7 @@ export async function generateDoctorId(): Promise<GeneratedId> {
   return generateBusinessId({
     prefix: 'DOC',
     tableName: 'doctors',
-    fieldName: 'doctor_id'
+    fieldName: 'doctorId'
   });
 }
 
@@ -56,7 +56,7 @@ export async function generatePatientId(): Promise<GeneratedId> {
   return generateBusinessId({
     prefix: 'PAT',
     tableName: 'patients',
-    fieldName: 'patient_id'
+    fieldName: 'patientId'
   });
 }
 
@@ -80,15 +80,15 @@ async function generateBusinessId(config: {
       case 'doctors':
         const doctors = await prisma.doctor.findMany({
           where: {
-            doctor_id: {
+            doctorId: {
               startsWith: yearPrefix
             }
           },
           select: {
-            doctor_id: true
+            doctorId: true
           }
         });
-        existingIds = doctors.map(d => d.doctor_id);
+        existingIds = doctors.map(d => d.doctorId);
         break;
         
       case 'hsps':
@@ -108,15 +108,15 @@ async function generateBusinessId(config: {
       case 'patients':
         const patients = await prisma.patient.findMany({
           where: {
-            patient_id: {
+            patientId: {
               startsWith: yearPrefix
             }
           },
           select: {
-            patient_id: true
+            patientId: true
           }
         });
-        existingIds = patients.map(p => p.patient_id!).filter(Boolean);
+        existingIds = patients.map(p => p.patientId!).filter(Boolean);
         break;
     }
     

@@ -55,7 +55,7 @@ export default (sequelize: any, DataTypes: any) => {
       type: DataTypes.DECIMAL(10, 2),
       defaultValue: 0.00,
     },
-    is_active: {
+    isActive: {
       type: DataTypes.BOOLEAN,
       defaultValue: true,
     },
@@ -84,7 +84,7 @@ export default (sequelize: any, DataTypes: any) => {
       { fields: ['provider_id'] },
       { fields: ['name'] },
       { fields: ['service_type'] },
-      { fields: ['is_active'] },
+      { fields: ['isActive'] },
       { fields: ['price'] },
       { fields: ['billing_cycle'] },
     ],

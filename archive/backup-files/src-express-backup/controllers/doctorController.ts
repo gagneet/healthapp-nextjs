@@ -64,7 +64,7 @@ class DoctorController {
           {
             model: Clinic,
             as: 'clinics',
-            attributes: ['id', 'name', 'address', 'phone', 'email', 'website', 'operating_hours', 'services_offered', 'banner_image', 'is_primary', 'consultation_fee', 'is_active']
+            attributes: ['id', 'name', 'address', 'phone', 'email', 'website', 'operating_hours', 'services_offered', 'banner_image', 'is_primary', 'consultation_fee', 'isActive']
           }
         ]
       });
@@ -175,7 +175,7 @@ class DoctorController {
           banner_image: clinic.banner_image,
           is_primary: clinic.is_primary,
           consultation_fee: clinic.consultation_fee,
-          is_active: clinic.is_active
+          isActive: clinic.isActive
         })) : []
       };
 
@@ -416,7 +416,7 @@ class DoctorController {
           {
             model: Clinic,
             as: 'clinics',
-            where: { is_active: true },
+            where: { isActive: true },
             required: false
           }
         ]
@@ -636,7 +636,7 @@ class DoctorController {
       }
 
       const clinics = await Clinic.findAll({
-        where: { doctor_id: doctor.id, is_active: true },
+        where: { doctorId: doctor.id, isActive: true },
         order: [['is_primary', 'DESC'], ['created_at', 'ASC']]
       });
 
@@ -676,7 +676,7 @@ class DoctorController {
       // Prepare clinic data with geo-location
       const clinicCreateData = {
         ...clinicData,
-        doctor_id: doctor.id
+        doctorId: doctor.id
       };
 
       // If address is provided, attempt to geocode it
@@ -752,7 +752,7 @@ class DoctorController {
       }
 
       const clinic = await Clinic.findOne({
-        where: { id: clinicId, doctor_id: doctor.id }
+        where: { id: clinicId, doctorId: doctor.id }
       });
 
       if (!clinic) {
@@ -854,7 +854,7 @@ class DoctorController {
       }
 
       const clinic = await Clinic.findOne({
-        where: { id: clinicId, doctor_id: doctor.id }
+        where: { id: clinicId, doctorId: doctor.id }
       });
 
       if (!clinic) {
@@ -870,7 +870,7 @@ class DoctorController {
         });
       }
 
-      await clinic.update({ is_active: false });
+      await clinic.update({ isActive: false });
 
       res.status(200).json({
         status: true,
@@ -911,7 +911,7 @@ class DoctorController {
       const activePatients = await Patient.count({
         where: { 
           primaryCareDoctorId: doctor.id,
-          is_active: true
+          isActive: true
         }
       });
 
@@ -935,7 +935,7 @@ class DoctorController {
       const criticalPatients = await Patient.count({
         where: {
           primaryCareDoctorId: doctor.id,
-          is_active: true,
+          isActive: true,
           [Op.or]: [
             { risk_level: 'high' },
             { overall_adherence_score: { [Op.lt]: 70 } }
@@ -947,7 +947,7 @@ class DoctorController {
       const adherenceResult = await Patient.findOne({
         where: {
           primaryCareDoctorId: doctor.id,
-          is_active: true,
+          isActive: true,
           overall_adherence_score: { [Op.ne]: null }
         },
         attributes: [
@@ -962,7 +962,7 @@ class DoctorController {
       const vitalsPending = await Patient.count({
         where: {
           primaryCareDoctorId: doctor.id,
-          is_active: true,
+          isActive: true,
           [Op.or]: [
             { last_visit_date: null },
             { last_visit_date: { [Op.lt]: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) } }
@@ -1042,7 +1042,7 @@ class DoctorController {
         next_appointment: patient.next_appointment_date,
         adherence_rate: patient.overall_adherence_score || 85, // Use actual adherence score
         critical_alerts: patient.risk_level === 'high' ? 2 : (patient.risk_level === 'medium' ? 1 : 0),
-        status: patient.is_active ? 'active' : 'inactive',
+        status: patient.isActive ? 'active' : 'inactive',
         created_at: patient.created_at
       }));
 
@@ -1086,7 +1086,7 @@ class DoctorController {
       const lowAdherencePatients = await Patient.findAll({
         where: {
           primaryCareDoctorId: doctor.id,
-          is_active: true,
+          isActive: true,
           overall_adherence_score: { [Op.lt]: 70 }
         },
         include: [
@@ -1103,7 +1103,7 @@ class DoctorController {
       lowAdherencePatients.forEach((patient: any) => {
         criticalAlerts.push({
           id: `adherence_${patient.id}`,
-          patient_id: patient.id.toString(),
+          patientId: patient.id.toString(),
           patient_name: `${patient.user?.first_name || ''} ${patient.user?.middle_name || ''} ${patient.user?.last_name || ''}`.replace(/\s+/g, ' ').trim() || 'Unknown Patient',
           type: 'medication',
           severity: patient.overall_adherence_score < 50 ? 'critical' : 'high',
@@ -1117,7 +1117,7 @@ class DoctorController {
       const highRiskPatients = await Patient.findAll({
         where: {
           primaryCareDoctorId: doctor.id,
-          is_active: true,
+          isActive: true,
           risk_level: 'high'
         },
         include: [
@@ -1134,7 +1134,7 @@ class DoctorController {
       highRiskPatients.forEach((patient: any) => {
         criticalAlerts.push({
           id: `risk_${patient.id}`,
-          patient_id: patient.id.toString(),
+          patientId: patient.id.toString(),
           patient_name: `${patient.user?.first_name || ''} ${patient.user?.middle_name || ''} ${patient.user?.last_name || ''}`.replace(/\s+/g, ' ').trim() || 'Unknown Patient',
           type: 'vital',
           severity: 'critical',
@@ -1196,7 +1196,7 @@ class DoctorController {
       const medicationAdherence = await Patient.findOne({
         where: {
           primaryCareDoctorId: doctor.id,
-          is_active: true,
+          isActive: true,
           overall_adherence_score: { [Op.ne]: null }
         },
         attributes: [
@@ -1222,7 +1222,7 @@ class DoctorController {
       const activePatients = await Patient.count({
         where: {
           primaryCareDoctorId: doctor.id,
-          is_active: true,
+          isActive: true,
           last_visit_date: { [Op.gte]: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) }
         }
       });
@@ -1230,7 +1230,7 @@ class DoctorController {
       const totalActivePatients = await Patient.count({
         where: {
           primaryCareDoctorId: doctor.id,
-          is_active: true
+          isActive: true
         }
       });
 
@@ -1321,7 +1321,7 @@ class DoctorController {
       }
 
       const clinic = await Clinic.findOne({
-        where: { id: clinicId, doctor_id: doctor.id }
+        where: { id: clinicId, doctorId: doctor.id }
       });
 
       if (!clinic) {

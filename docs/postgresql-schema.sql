@@ -850,7 +850,7 @@ CREATE TABLE public._prisma_migrations (
 
 CREATE TABLE public.adherence_records (
     id uuid NOT NULL,
-    patient_id uuid NOT NULL,
+    patientId uuid NOT NULL,
     scheduled_event_id uuid,
     adherence_type public.enum_adherence_records_adherence_type NOT NULL,
     due_at timestamp(6) with time zone NOT NULL,
@@ -873,7 +873,7 @@ CREATE TABLE public.adherence_records (
 
 CREATE TABLE public.appointment_slots (
     id uuid NOT NULL,
-    doctor_id uuid NOT NULL,
+    doctorId uuid NOT NULL,
     date date NOT NULL,
     start_time time(6) without time zone NOT NULL,
     end_time time(6) without time zone NOT NULL,
@@ -912,8 +912,8 @@ CREATE TABLE public.appointments (
     created_at timestamp(6) with time zone NOT NULL,
     updated_at timestamp(6) with time zone NOT NULL,
     deleted_at timestamp(6) with time zone,
-    doctor_id uuid,
-    patient_id uuid,
+    doctorId uuid,
+    patientId uuid,
     slot_id uuid
 );
 
@@ -929,7 +929,7 @@ CREATE TABLE public.audit_logs (
     organization_id uuid,
     action character varying(10) NOT NULL,
     resource character varying(500) NOT NULL,
-    patient_id uuid,
+    patientId uuid,
     phi_accessed boolean DEFAULT false,
     access_granted boolean NOT NULL,
     denial_reason text,
@@ -979,7 +979,7 @@ CREATE TABLE public.care_plan_templates (
 
 CREATE TABLE public.care_plans (
     id uuid NOT NULL,
-    patient_id uuid NOT NULL,
+    patientId uuid NOT NULL,
     created_by_doctor_id uuid,
     created_by_hsp_id uuid,
     organization_id uuid,
@@ -1031,7 +1031,7 @@ CREATE TABLE public.care_plans (
 CREATE TABLE public.clinics (
     id uuid NOT NULL,
     name character varying(255) NOT NULL,
-    doctor_id uuid NOT NULL,
+    doctorId uuid NOT NULL,
     organization_id uuid,
     address jsonb DEFAULT '{}'::jsonb NOT NULL,
     latitude numeric(10,8),
@@ -1048,7 +1048,7 @@ CREATE TABLE public.clinics (
     description text,
     consultation_fee numeric(10,2),
     is_primary boolean DEFAULT false NOT NULL,
-    is_active boolean DEFAULT true NOT NULL,
+    isActive boolean DEFAULT true NOT NULL,
     registration_number character varying(100),
     established_year integer,
     facilities jsonb DEFAULT '[]'::jsonb,
@@ -1117,7 +1117,7 @@ CREATE TABLE public.dashboard_metrics (
 
 CREATE TABLE public.doctor_availability (
     id uuid NOT NULL,
-    doctor_id uuid NOT NULL,
+    doctorId uuid NOT NULL,
     day_of_week integer NOT NULL,
     start_time time(6) without time zone NOT NULL,
     end_time time(6) without time zone NOT NULL,
@@ -1139,7 +1139,7 @@ CREATE TABLE public.doctor_availability (
 CREATE TABLE public.doctors (
     id uuid NOT NULL,
     userId uuid NOT NULL,
-    doctor_id character varying(50) NOT NULL,
+    doctorId character varying(50) NOT NULL,
     organization_id uuid,
     medical_license_number character varying(100) NOT NULL,
     npi_number character varying(20),
@@ -1213,7 +1213,7 @@ CREATE TABLE public.drug_interactions (
 
 CREATE TABLE public.emergency_alerts (
     id uuid NOT NULL,
-    patient_id uuid NOT NULL,
+    patientId uuid NOT NULL,
     alert_type public."EmergencyAlertType" NOT NULL,
     priority_level public."EmergencyPriority" NOT NULL,
     vital_reading_id uuid,
@@ -1242,7 +1242,7 @@ CREATE TABLE public.emergency_alerts (
 
 CREATE TABLE public.emergency_contacts (
     id uuid NOT NULL,
-    patient_id uuid NOT NULL,
+    patientId uuid NOT NULL,
     name character varying(255) NOT NULL,
     relationship character varying(100) NOT NULL,
     phone character varying(20) NOT NULL,
@@ -1251,7 +1251,7 @@ CREATE TABLE public.emergency_contacts (
     priority_order integer DEFAULT 1 NOT NULL,
     can_receive_medical boolean DEFAULT false NOT NULL,
     preferred_contact character varying(20) DEFAULT 'phone'::character varying NOT NULL,
-    is_active boolean DEFAULT true NOT NULL,
+    isActive boolean DEFAULT true NOT NULL,
     hipaa_authorized boolean DEFAULT false NOT NULL,
     authorization_date timestamp(6) with time zone,
     authorization_expires timestamp(6) with time zone,
@@ -1266,7 +1266,7 @@ CREATE TABLE public.emergency_contacts (
 
 CREATE TABLE public.game_badge_awards (
     id uuid NOT NULL,
-    patient_id uuid NOT NULL,
+    patientId uuid NOT NULL,
     badge_type public."GameBadgeType" NOT NULL,
     badge_name character varying(255) NOT NULL,
     badge_description text,
@@ -1284,7 +1284,7 @@ CREATE TABLE public.game_badge_awards (
 
 CREATE TABLE public.game_challenge_progress (
     id uuid NOT NULL,
-    patient_id uuid NOT NULL,
+    patientId uuid NOT NULL,
     challenge_type public."GameChallengeType" NOT NULL,
     challenge_name character varying(255) NOT NULL,
     target_value integer NOT NULL,
@@ -1384,8 +1384,8 @@ CREATE TABLE public.hsps (
 CREATE TABLE public.lab_orders (
     id uuid NOT NULL,
     order_number character varying(100) NOT NULL,
-    patient_id uuid NOT NULL,
-    doctor_id uuid NOT NULL,
+    patientId uuid NOT NULL,
+    doctorId uuid NOT NULL,
     consultation_id uuid,
     order_date timestamp(6) with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
     priority character varying(50) DEFAULT 'routine'::character varying NOT NULL,
@@ -1440,7 +1440,7 @@ CREATE TABLE public.lab_results (
 CREATE TABLE public.medication_logs (
     id uuid NOT NULL,
     medication_id uuid NOT NULL,
-    patient_id uuid NOT NULL,
+    patientId uuid NOT NULL,
     scheduled_at timestamp(6) with time zone NOT NULL,
     taken_at timestamp(6) with time zone,
     dosage_taken character varying(100),
@@ -1458,7 +1458,7 @@ CREATE TABLE public.medication_logs (
 
 CREATE TABLE public.medication_safety_alerts (
     id uuid NOT NULL,
-    patient_id uuid NOT NULL,
+    patientId uuid NOT NULL,
     medication_id uuid,
     drug_interaction_id uuid,
     patient_allergy_id uuid,
@@ -1526,8 +1526,8 @@ CREATE TABLE public.medicines (
 
 CREATE TABLE public.notifications (
     id uuid NOT NULL,
-    patient_id uuid,
-    doctor_id uuid,
+    patientId uuid,
+    doctorId uuid,
     hsp_id uuid,
     organization_id uuid,
     type character varying(50) NOT NULL,
@@ -1575,7 +1575,7 @@ CREATE TABLE public.organizations (
     contact_info jsonb DEFAULT '{}'::jsonb,
     address jsonb DEFAULT '{}'::jsonb,
     settings jsonb DEFAULT '{"timezone": "UTC", "working_hours": {"friday": {"end": "17:00", "start": "09:00"}, "monday": {"end": "17:00", "start": "09:00"}, "sunday": {"closed": true}, "tuesday": {"end": "17:00", "start": "09:00"}, "saturday": {"end": "13:00", "start": "09:00"}, "thursday": {"end": "17:00", "start": "09:00"}, "wednesday": {"end": "17:00", "start": "09:00"}}, "notification_preferences": {"sms_enabled": false, "push_enabled": true, "email_enabled": true}}'::jsonb,
-    is_active boolean DEFAULT true,
+    isActive boolean DEFAULT true,
     hipaa_covered_entity boolean DEFAULT true,
     business_associate_agreement jsonb,
     created_at timestamp(6) with time zone,
@@ -1590,7 +1590,7 @@ CREATE TABLE public.organizations (
 
 CREATE TABLE public.patient_alerts (
     id uuid NOT NULL,
-    patient_id uuid NOT NULL,
+    patientId uuid NOT NULL,
     alert_type public.enum_patient_alerts_alert_type NOT NULL,
     severity public.enum_patient_alerts_severity DEFAULT 'medium'::public.enum_patient_alerts_severity,
     title character varying(200) NOT NULL,
@@ -1613,7 +1613,7 @@ CREATE TABLE public.patient_alerts (
 
 CREATE TABLE public.patient_allergies (
     id uuid NOT NULL,
-    patient_id uuid NOT NULL,
+    patientId uuid NOT NULL,
     allergen_type public."AllergenType" NOT NULL,
     allergen_name character varying(255) NOT NULL,
     allergen_rxnorm character varying(50),
@@ -1623,7 +1623,7 @@ CREATE TABLE public.patient_allergies (
     verified_by_doctor boolean DEFAULT false NOT NULL,
     verified_by uuid,
     notes text,
-    is_active boolean DEFAULT true NOT NULL,
+    isActive boolean DEFAULT true NOT NULL,
     created_at timestamp(6) with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
     updated_at timestamp(6) with time zone NOT NULL
 );
@@ -1636,7 +1636,7 @@ CREATE TABLE public.patient_allergies (
 CREATE TABLE public.patient_consent_otp (
     id uuid NOT NULL,
     secondary_assignment_id uuid NOT NULL,
-    patient_id uuid NOT NULL,
+    patientId uuid NOT NULL,
     primary_doctor_id uuid NOT NULL,
     secondary_doctor_id uuid,
     secondary_hsp_id uuid,
@@ -1674,8 +1674,8 @@ CREATE TABLE public.patient_consent_otp (
 
 CREATE TABLE public.patient_doctor_assignments (
     id uuid NOT NULL,
-    patient_id uuid NOT NULL,
-    doctor_id uuid NOT NULL,
+    patientId uuid NOT NULL,
+    doctorId uuid NOT NULL,
     assignment_type character varying(50) NOT NULL,
     permissions jsonb DEFAULT '{"can_prescribe": false, "can_order_tests": false, "can_view_patient": true, "can_create_care_plans": false, "can_modify_care_plans": false, "can_access_full_history": false}'::jsonb,
     specialty_focus text[] DEFAULT ARRAY[]::text[],
@@ -1690,7 +1690,7 @@ CREATE TABLE public.patient_doctor_assignments (
     consent_granted_at timestamp(6) with time zone,
     assignment_start_date timestamp(6) with time zone,
     assignment_end_date timestamp(6) with time zone,
-    is_active boolean DEFAULT true,
+    isActive boolean DEFAULT true,
     assignment_reason text,
     notes text,
     requires_same_organization boolean DEFAULT false,
@@ -1706,7 +1706,7 @@ CREATE TABLE public.patient_doctor_assignments (
 
 CREATE TABLE public.patient_game_profiles (
     id uuid NOT NULL,
-    patient_id uuid NOT NULL,
+    patientId uuid NOT NULL,
     total_points integer DEFAULT 0 NOT NULL,
     current_level integer DEFAULT 1 NOT NULL,
     experience_points integer DEFAULT 0 NOT NULL,
@@ -1733,7 +1733,7 @@ CREATE TABLE public.patient_game_profiles (
 
 CREATE TABLE public.patient_provider_assignments (
     id uuid NOT NULL,
-    patient_id uuid NOT NULL,
+    patientId uuid NOT NULL,
     provider_id uuid NOT NULL,
     role character varying(50) DEFAULT 'primary'::character varying,
     assigned_at timestamp(6) with time zone,
@@ -1749,10 +1749,10 @@ CREATE TABLE public.patient_provider_assignments (
 
 CREATE TABLE public.patient_provider_consent_history (
     id uuid NOT NULL,
-    patient_id uuid NOT NULL,
+    patientId uuid NOT NULL,
     previous_provider_id uuid,
     new_provider_id uuid NOT NULL,
-    doctor_id uuid,
+    doctorId uuid,
     hsp_id uuid,
     consent_required boolean DEFAULT false,
     consent_requested boolean DEFAULT false,
@@ -1780,7 +1780,7 @@ CREATE TABLE public.patient_provider_consent_history (
 
 CREATE TABLE public.patient_subscriptions (
     id uuid NOT NULL,
-    patient_id uuid NOT NULL,
+    patientId uuid NOT NULL,
     provider_id uuid NOT NULL,
     service_plan_id uuid NOT NULL,
     status public.enum_patient_subscriptions_status DEFAULT 'ACTIVE'::public.enum_patient_subscriptions_status,
@@ -1812,7 +1812,7 @@ CREATE TABLE public.patients (
     userId uuid NOT NULL,
     organization_id uuid,
     medical_record_number character varying(50),
-    patient_id character varying(100),
+    patientId character varying(100),
     emergency_contacts jsonb DEFAULT '[]'::jsonb,
     insurance_information jsonb DEFAULT '{}'::jsonb,
     medical_history jsonb DEFAULT '[]'::jsonb,
@@ -1836,7 +1836,7 @@ CREATE TABLE public.patients (
     missed_appointments integer DEFAULT 0,
     last_visit_date timestamp(6) with time zone,
     next_appointment_date timestamp(6) with time zone,
-    is_active boolean DEFAULT true,
+    isActive boolean DEFAULT true,
     requires_interpreter boolean DEFAULT false,
     has_mobility_issues boolean DEFAULT false,
     created_at timestamp(6) with time zone,
@@ -1856,7 +1856,7 @@ CREATE TABLE public.patients (
 
 CREATE TABLE public.payment_methods (
     id uuid NOT NULL,
-    patient_id uuid NOT NULL,
+    patientId uuid NOT NULL,
     stripe_payment_method_id character varying(255) NOT NULL,
     type public.enum_payment_methods_type NOT NULL,
     card_brand character varying(50),
@@ -1866,7 +1866,7 @@ CREATE TABLE public.payment_methods (
     bank_name character varying(100),
     bank_last4 character varying(4),
     is_default boolean DEFAULT false,
-    is_active boolean DEFAULT true,
+    isActive boolean DEFAULT true,
     billing_address json,
     metadata json DEFAULT '{}'::json,
     created_at timestamp(6) with time zone NOT NULL,
@@ -1882,7 +1882,7 @@ CREATE TABLE public.payment_methods (
 CREATE TABLE public.payments (
     id uuid NOT NULL,
     subscription_id uuid NOT NULL,
-    patient_id uuid NOT NULL,
+    patientId uuid NOT NULL,
     provider_id uuid NOT NULL,
     amount numeric(10,2) NOT NULL,
     currency character varying(3) DEFAULT 'USD'::character varying,
@@ -1971,7 +1971,7 @@ CREATE TABLE public.schedule_events (
 
 CREATE TABLE public.scheduled_events (
     id uuid NOT NULL,
-    patient_id uuid NOT NULL,
+    patientId uuid NOT NULL,
     care_plan_id uuid,
     event_type public.enum_scheduled_events_event_type NOT NULL,
     event_id uuid,
@@ -1996,7 +1996,7 @@ CREATE TABLE public.scheduled_events (
 
 CREATE TABLE public.secondary_doctor_assignments (
     id uuid NOT NULL,
-    patient_id uuid NOT NULL,
+    patientId uuid NOT NULL,
     primary_doctor_id uuid NOT NULL,
     secondary_doctor_id uuid,
     secondary_hsp_id uuid,
@@ -2012,7 +2012,7 @@ CREATE TABLE public.secondary_doctor_assignments (
     access_granted_at timestamp(6) with time zone,
     consent_expires_at timestamp(6) with time zone,
     consent_duration_months integer DEFAULT 6,
-    is_active boolean DEFAULT true,
+    isActive boolean DEFAULT true,
     assignment_start_date timestamp(6) with time zone,
     assignment_end_date timestamp(6) with time zone,
     created_at timestamp(6) with time zone,
@@ -2038,7 +2038,7 @@ CREATE TABLE public.service_plans (
     patient_limit integer,
     trial_period_days integer DEFAULT 0,
     setup_fee numeric(10,2) DEFAULT 0,
-    is_active boolean DEFAULT true,
+    isActive boolean DEFAULT true,
     stripe_price_id character varying(255),
     created_at timestamp(6) with time zone NOT NULL,
     updated_at timestamp(6) with time zone NOT NULL,
@@ -2087,7 +2087,7 @@ ALTER SEQUENCE public.specialities_id_seq OWNED BY public.specialities.id;
 
 CREATE TABLE public.symptoms (
     id uuid NOT NULL,
-    patient_id uuid NOT NULL,
+    patientId uuid NOT NULL,
     care_plan_id uuid,
     symptom_name character varying(255) NOT NULL,
     severity integer,
@@ -2117,7 +2117,7 @@ CREATE TABLE public.symptoms_database (
     severity_indicators jsonb DEFAULT '{}'::jsonb,
     common_age_groups jsonb DEFAULT '[]'::jsonb,
     gender_specific character varying(20),
-    is_active boolean DEFAULT true,
+    isActive boolean DEFAULT true,
     created_by uuid,
     created_at timestamp(6) with time zone,
     updated_at timestamp(6) with time zone,
@@ -2144,7 +2144,7 @@ CREATE TABLE public.treatment_database (
     contraindications jsonb DEFAULT '[]'::jsonb,
     side_effects jsonb DEFAULT '[]'::jsonb,
     monitoring_required jsonb DEFAULT '[]'::jsonb,
-    is_active boolean DEFAULT true,
+    isActive boolean DEFAULT true,
     requires_specialist boolean DEFAULT false,
     prescription_required boolean DEFAULT false,
     created_by uuid,
@@ -2160,8 +2160,8 @@ CREATE TABLE public.treatment_database (
 
 CREATE TABLE public.treatment_plans (
     id uuid NOT NULL,
-    patient_id uuid NOT NULL,
-    doctor_id uuid NOT NULL,
+    patientId uuid NOT NULL,
+    doctorId uuid NOT NULL,
     organization_id uuid,
     title character varying(255) NOT NULL,
     description text,
@@ -2205,7 +2205,7 @@ CREATE TABLE public.user_devices (
     device_type character varying(50) NOT NULL,
     push_token character varying(500) NOT NULL,
     device_id character varying(255),
-    is_active boolean DEFAULT true,
+    isActive boolean DEFAULT true,
     notification_settings jsonb DEFAULT '{"vitals": true, "symptoms": true, "emergency": true, "reminders": true, "medications": true, "appointments": true}'::jsonb,
     last_used_at timestamp(6) with time zone,
     created_at timestamp(6) with time zone,
@@ -2275,8 +2275,8 @@ CREATE TABLE public.users (
 CREATE TABLE public.video_consultations (
     id uuid NOT NULL,
     consultation_id character varying(255) NOT NULL,
-    doctor_id uuid NOT NULL,
-    patient_id uuid NOT NULL,
+    doctorId uuid NOT NULL,
+    patientId uuid NOT NULL,
     appointment_id uuid,
     consultation_type public."ConsultationType" DEFAULT 'VIDEO_CONSULTATION'::public."ConsultationType" NOT NULL,
     status public."ConsultationStatus" DEFAULT 'SCHEDULED'::public."ConsultationStatus" NOT NULL,
@@ -2318,7 +2318,7 @@ CREATE TABLE public.video_consultations (
 CREATE TABLE public.vital_alert_rules (
     id uuid NOT NULL,
     vital_type character varying(100) NOT NULL,
-    is_active boolean DEFAULT true NOT NULL,
+    isActive boolean DEFAULT true NOT NULL,
     created_by uuid,
     created_at timestamp(6) with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
     updated_at timestamp(6) with time zone NOT NULL,
@@ -2346,12 +2346,12 @@ CREATE TABLE public.vital_alert_rules (
 
 CREATE TABLE public.vital_readings (
     id uuid NOT NULL,
-    patient_id uuid NOT NULL,
+    patientId uuid NOT NULL,
     vital_type_id uuid NOT NULL,
     adherence_record_id uuid,
     value numeric(10,2),
     unit character varying(20),
-    reading_time timestamp(6) with time zone NOT NULL,
+    readingTime timestamp(6) with time zone NOT NULL,
     device_info jsonb DEFAULT '{}'::jsonb,
     is_flagged boolean DEFAULT false,
     notes text,
@@ -2412,8 +2412,8 @@ CREATE TABLE public.vital_types (
     id uuid NOT NULL,
     name character varying(100) NOT NULL,
     unit character varying(20),
-    normal_range_min numeric(10,2),
-    normal_range_max numeric(10,2),
+    normalRangeMin numeric(10,2),
+    normalRangeMax numeric(10,2),
     description text,
     validation_rules jsonb DEFAULT '{}'::jsonb,
     created_at timestamp(6) with time zone,
@@ -2960,21 +2960,21 @@ CREATE INDEX adherence_records_is_completed_is_missed ON public.adherence_record
 -- Name: adherence_records_patient_id; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX adherence_records_patient_id ON public.adherence_records USING btree (patient_id);
+CREATE INDEX adherence_records_patient_id ON public.adherence_records USING btree (patientId);
 
 
 --
 -- Name: adherence_records_patient_id_adherence_type_due_at; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX adherence_records_patient_id_adherence_type_due_at ON public.adherence_records USING btree (patient_id, adherence_type, due_at);
+CREATE INDEX adherence_records_patient_id_adherence_type_due_at ON public.adherence_records USING btree (patientId, adherence_type, due_at);
 
 
 --
 -- Name: adherence_records_patient_id_due_at; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX adherence_records_patient_id_due_at ON public.adherence_records USING btree (patient_id, due_at);
+CREATE INDEX adherence_records_patient_id_due_at ON public.adherence_records USING btree (patientId, due_at);
 
 
 --
@@ -2995,14 +2995,14 @@ CREATE INDEX appointment_slots_date_is_available ON public.appointment_slots USI
 -- Name: appointment_slots_doctor_id_date_start_time; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX appointment_slots_doctor_id_date_start_time ON public.appointment_slots USING btree (doctor_id, date, start_time);
+CREATE INDEX appointment_slots_doctor_id_date_start_time ON public.appointment_slots USING btree (doctorId, date, start_time);
 
 
 --
 -- Name: appointment_slots_doctor_id_is_available; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX appointment_slots_doctor_id_is_available ON public.appointment_slots USING btree (doctor_id, is_available);
+CREATE INDEX appointment_slots_doctor_id_is_available ON public.appointment_slots USING btree (doctorId, is_available);
 
 
 --
@@ -3072,14 +3072,14 @@ CREATE INDEX audit_logs_organization_id ON public.audit_logs USING btree (organi
 -- Name: audit_logs_patient_id; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX audit_logs_patient_id ON public.audit_logs USING btree (patient_id);
+CREATE INDEX audit_logs_patient_id ON public.audit_logs USING btree (patientId);
 
 
 --
 -- Name: audit_logs_patient_id_phi_accessed_timestamp; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX audit_logs_patient_id_phi_accessed_timestamp ON public.audit_logs USING btree (patient_id, phi_accessed, "timestamp");
+CREATE INDEX audit_logs_patient_id_phi_accessed_timestamp ON public.audit_logs USING btree (patientId, phi_accessed, "timestamp");
 
 
 --
@@ -3184,7 +3184,7 @@ CREATE INDEX care_plans_organization_id ON public.care_plans USING btree (organi
 -- Name: care_plans_patient_id; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX care_plans_patient_id ON public.care_plans USING btree (patient_id);
+CREATE INDEX care_plans_patient_id ON public.care_plans USING btree (patientId);
 
 
 --
@@ -3212,14 +3212,14 @@ CREATE INDEX care_plans_status ON public.care_plans USING btree (status);
 -- Name: clinics_doctor_id; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX clinics_doctor_id ON public.clinics USING btree (doctor_id);
+CREATE INDEX clinics_doctor_id ON public.clinics USING btree (doctorId);
 
 
 --
 -- Name: clinics_is_active; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX clinics_is_active ON public.clinics USING btree (is_active);
+CREATE INDEX clinics_is_active ON public.clinics USING btree (isActive);
 
 
 --
@@ -3268,14 +3268,14 @@ CREATE UNIQUE INDEX dashboard_metrics_entity_type_entity_id_metric_type ON publi
 -- Name: doctor_availability_doctor_id_day_of_week; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX doctor_availability_doctor_id_day_of_week ON public.doctor_availability USING btree (doctor_id, day_of_week);
+CREATE INDEX doctor_availability_doctor_id_day_of_week ON public.doctor_availability USING btree (doctorId, day_of_week);
 
 
 --
 -- Name: doctor_availability_doctor_id_is_available; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX doctor_availability_doctor_id_is_available ON public.doctor_availability USING btree (doctor_id, is_available);
+CREATE INDEX doctor_availability_doctor_id_is_available ON public.doctor_availability USING btree (doctorId, is_available);
 
 
 --
@@ -3289,7 +3289,7 @@ CREATE INDEX doctors_board_certifications ON public.doctors USING gin (board_cer
 -- Name: doctors_doctor_id; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE UNIQUE INDEX doctors_doctor_id ON public.doctors USING btree (doctor_id);
+CREATE UNIQUE INDEX doctors_doctor_id ON public.doctors USING btree (doctorId);
 
 
 --
@@ -3380,7 +3380,7 @@ CREATE INDEX emergency_alerts_alert_type_created_at_idx ON public.emergency_aler
 -- Name: emergency_alerts_patient_id_priority_level_acknowledged_res_idx; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX emergency_alerts_patient_id_priority_level_acknowledged_res_idx ON public.emergency_alerts USING btree (patient_id, priority_level, acknowledged, resolved);
+CREATE INDEX emergency_alerts_patient_id_priority_level_acknowledged_res_idx ON public.emergency_alerts USING btree (patientId, priority_level, acknowledged, resolved);
 
 
 --
@@ -3394,14 +3394,14 @@ CREATE INDEX emergency_alerts_resolved_created_at_idx ON public.emergency_alerts
 -- Name: emergency_contacts_patient_id_is_active_idx; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX emergency_contacts_patient_id_is_active_idx ON public.emergency_contacts USING btree (patient_id, is_active);
+CREATE INDEX emergency_contacts_patient_id_is_active_idx ON public.emergency_contacts USING btree (patientId, isActive);
 
 
 --
 -- Name: emergency_contacts_patient_id_priority_order_idx; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX emergency_contacts_patient_id_priority_order_idx ON public.emergency_contacts USING btree (patient_id, priority_order);
+CREATE INDEX emergency_contacts_patient_id_priority_order_idx ON public.emergency_contacts USING btree (patientId, priority_order);
 
 
 --
@@ -3415,7 +3415,7 @@ CREATE INDEX game_badge_awards_badge_type_idx ON public.game_badge_awards USING 
 -- Name: game_badge_awards_patient_id_awarded_date_idx; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX game_badge_awards_patient_id_awarded_date_idx ON public.game_badge_awards USING btree (patient_id, awarded_date);
+CREATE INDEX game_badge_awards_patient_id_awarded_date_idx ON public.game_badge_awards USING btree (patientId, awarded_date);
 
 
 --
@@ -3429,7 +3429,7 @@ CREATE INDEX game_challenge_progress_challenge_type_end_date_idx ON public.game_
 -- Name: game_challenge_progress_patient_id_is_completed_idx; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX game_challenge_progress_patient_id_is_completed_idx ON public.game_challenge_progress USING btree (patient_id, is_completed);
+CREATE INDEX game_challenge_progress_patient_id_is_completed_idx ON public.game_challenge_progress USING btree (patientId, is_completed);
 
 
 --
@@ -3548,7 +3548,7 @@ CREATE INDEX idx_adherence_event_status_completed ON public.adherence_records US
 -- Name: idx_adherence_patient_due_status; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX idx_adherence_patient_due_status ON public.adherence_records USING btree (patient_id, due_at, is_completed);
+CREATE INDEX idx_adherence_patient_due_status ON public.adherence_records USING btree (patientId, due_at, is_completed);
 
 
 --
@@ -3562,7 +3562,7 @@ CREATE INDEX idx_appointments_organizer_time ON public.appointments USING btree 
 -- Name: idx_appointments_patient_time; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX idx_appointments_patient_time ON public.appointments USING btree (patient_id, start_time);
+CREATE INDEX idx_appointments_patient_time ON public.appointments USING btree (patientId, start_time);
 
 
 --
@@ -3576,14 +3576,14 @@ CREATE INDEX idx_appointments_provider_time ON public.appointments USING btree (
 -- Name: idx_assignments_doctor_active_created; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX idx_assignments_doctor_active_created ON public.patient_doctor_assignments USING btree (doctor_id, is_active, created_at);
+CREATE INDEX idx_assignments_doctor_active_created ON public.patient_doctor_assignments USING btree (doctorId, isActive, created_at);
 
 
 --
 -- Name: idx_assignments_patient_type_active; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX idx_assignments_patient_type_active ON public.patient_doctor_assignments USING btree (patient_id, assignment_type, is_active);
+CREATE INDEX idx_assignments_patient_type_active ON public.patient_doctor_assignments USING btree (patientId, assignment_type, isActive);
 
 
 --
@@ -3597,7 +3597,7 @@ CREATE INDEX idx_audit_user_created_action ON public.audit_logs USING btree (use
 -- Name: idx_careplans_patient_status_start_fixed; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX idx_careplans_patient_status_start_fixed ON public.care_plans USING btree (patient_id, status, start_date);
+CREATE INDEX idx_careplans_patient_status_start_fixed ON public.care_plans USING btree (patientId, status, start_date);
 
 
 --
@@ -3625,7 +3625,7 @@ CREATE INDEX idx_events_careplan_time_type ON public.scheduled_events USING btre
 -- Name: idx_events_patient_time_status; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX idx_events_patient_time_status ON public.scheduled_events USING btree (patient_id, scheduled_for, status);
+CREATE INDEX idx_events_patient_time_status ON public.scheduled_events USING btree (patientId, scheduled_for, status);
 
 
 --
@@ -3639,14 +3639,14 @@ CREATE INDEX idx_notifications_type_priority_created ON public.notifications USI
 -- Name: idx_patients_doctor_created_active; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX idx_patients_doctor_created_active ON public.patients USING btree (primaryCareDoctorId, created_at, is_active);
+CREATE INDEX idx_patients_doctor_created_active ON public.patients USING btree (primaryCareDoctorId, created_at, isActive);
 
 
 --
 -- Name: idx_patients_id_created; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX idx_patients_id_created ON public.patients USING btree (patient_id, created_at);
+CREATE INDEX idx_patients_id_created ON public.patients USING btree (patientId, created_at);
 
 
 --
@@ -3667,7 +3667,7 @@ CREATE INDEX idx_providers_org_verified ON public.healthcare_providers USING btr
 -- Name: idx_symptoms_patient_onset_severity; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX idx_symptoms_patient_onset_severity ON public.symptoms USING btree (patient_id, onset_time, severity);
+CREATE INDEX idx_symptoms_patient_onset_severity ON public.symptoms USING btree (patientId, onset_time, severity);
 
 
 --
@@ -3751,28 +3751,28 @@ CREATE INDEX idx_users_role_status ON public.users USING btree (role, account_st
 -- Name: idx_vitals_patient_time_type; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX idx_vitals_patient_time_type ON public.vital_readings USING btree (patient_id, reading_time, vital_type_id);
+CREATE INDEX idx_vitals_patient_time_type ON public.vital_readings USING btree (patientId, readingTime, vital_type_id);
 
 
 --
 -- Name: idx_vitals_patient_type_time_desc; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX idx_vitals_patient_type_time_desc ON public.vital_readings USING btree (patient_id, vital_type_id, reading_time);
+CREATE INDEX idx_vitals_patient_type_time_desc ON public.vital_readings USING btree (patientId, vital_type_id, readingTime);
 
 
 --
 -- Name: idx_vitals_time_patient; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX idx_vitals_time_patient ON public.vital_readings USING btree (reading_time, patient_id);
+CREATE INDEX idx_vitals_time_patient ON public.vital_readings USING btree (readingTime, patientId);
 
 
 --
 -- Name: lab_orders_doctor_id_order_date_idx; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX lab_orders_doctor_id_order_date_idx ON public.lab_orders USING btree (doctor_id, order_date);
+CREATE INDEX lab_orders_doctor_id_order_date_idx ON public.lab_orders USING btree (doctorId, order_date);
 
 
 --
@@ -3786,7 +3786,7 @@ CREATE UNIQUE INDEX lab_orders_order_number_key ON public.lab_orders USING btree
 -- Name: lab_orders_patient_id_status_idx; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX lab_orders_patient_id_status_idx ON public.lab_orders USING btree (patient_id, status);
+CREATE INDEX lab_orders_patient_id_status_idx ON public.lab_orders USING btree (patientId, status);
 
 
 --
@@ -3835,7 +3835,7 @@ CREATE INDEX medication_logs_medication_id_scheduled_at ON public.medication_log
 -- Name: medication_logs_patient_id_scheduled_at; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX medication_logs_patient_id_scheduled_at ON public.medication_logs USING btree (patient_id, scheduled_at);
+CREATE INDEX medication_logs_patient_id_scheduled_at ON public.medication_logs USING btree (patientId, scheduled_at);
 
 
 --
@@ -3849,7 +3849,7 @@ CREATE INDEX medication_safety_alerts_alert_type_created_at_idx ON public.medica
 -- Name: medication_safety_alerts_patient_id_severity_resolved_idx; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX medication_safety_alerts_patient_id_severity_resolved_idx ON public.medication_safety_alerts USING btree (patient_id, severity, resolved);
+CREATE INDEX medication_safety_alerts_patient_id_severity_resolved_idx ON public.medication_safety_alerts USING btree (patientId, severity, resolved);
 
 
 --
@@ -3884,7 +3884,7 @@ CREATE INDEX medications_participant_id ON public.medications USING btree (parti
 -- Name: notifications_doctor_id; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX notifications_doctor_id ON public.notifications USING btree (doctor_id);
+CREATE INDEX notifications_doctor_id ON public.notifications USING btree (doctorId);
 
 
 --
@@ -3919,14 +3919,14 @@ CREATE INDEX notifications_organization_id ON public.notifications USING btree (
 -- Name: notifications_patient_id; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX notifications_patient_id ON public.notifications USING btree (patient_id);
+CREATE INDEX notifications_patient_id ON public.notifications USING btree (patientId);
 
 
 --
 -- Name: notifications_patient_id_status_created_at; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX notifications_patient_id_status_created_at ON public.notifications USING btree (patient_id, status, created_at);
+CREATE INDEX notifications_patient_id_status_created_at ON public.notifications USING btree (patientId, status, created_at);
 
 
 --
@@ -3975,7 +3975,7 @@ CREATE INDEX notifications_type ON public.notifications USING btree (type);
 -- Name: organizations_is_active; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX organizations_is_active ON public.organizations USING btree (is_active);
+CREATE INDEX organizations_is_active ON public.organizations USING btree (isActive);
 
 
 --
@@ -4017,7 +4017,7 @@ CREATE INDEX patient_alerts_created_at ON public.patient_alerts USING btree (cre
 -- Name: patient_alerts_patient_id_alert_type_severity; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX patient_alerts_patient_id_alert_type_severity ON public.patient_alerts USING btree (patient_id, alert_type, severity);
+CREATE INDEX patient_alerts_patient_id_alert_type_severity ON public.patient_alerts USING btree (patientId, alert_type, severity);
 
 
 --
@@ -4031,7 +4031,7 @@ CREATE INDEX patient_allergies_allergen_type_allergen_name_idx ON public.patient
 -- Name: patient_allergies_patient_id_is_active_idx; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX patient_allergies_patient_id_is_active_idx ON public.patient_allergies USING btree (patient_id, is_active);
+CREATE INDEX patient_allergies_patient_id_is_active_idx ON public.patient_allergies USING btree (patientId, isActive);
 
 
 --
@@ -4080,7 +4080,7 @@ CREATE INDEX patient_consent_otp_otp_code ON public.patient_consent_otp USING bt
 -- Name: patient_consent_otp_patient_id; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX patient_consent_otp_patient_id ON public.patient_consent_otp USING btree (patient_id);
+CREATE INDEX patient_consent_otp_patient_id ON public.patient_consent_otp USING btree (patientId);
 
 
 --
@@ -4108,14 +4108,14 @@ CREATE INDEX patient_doctor_assignments_assignment_type ON public.patient_doctor
 -- Name: patient_doctor_assignments_doctor_id; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX patient_doctor_assignments_doctor_id ON public.patient_doctor_assignments USING btree (doctor_id);
+CREATE INDEX patient_doctor_assignments_doctor_id ON public.patient_doctor_assignments USING btree (doctorId);
 
 
 --
 -- Name: patient_doctor_assignments_is_active; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX patient_doctor_assignments_is_active ON public.patient_doctor_assignments USING btree (is_active);
+CREATE INDEX patient_doctor_assignments_is_active ON public.patient_doctor_assignments USING btree (isActive);
 
 
 --
@@ -4129,21 +4129,21 @@ CREATE INDEX patient_doctor_assignments_patient_consent_status ON public.patient
 -- Name: patient_doctor_assignments_patient_id; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX patient_doctor_assignments_patient_id ON public.patient_doctor_assignments USING btree (patient_id);
+CREATE INDEX patient_doctor_assignments_patient_id ON public.patient_doctor_assignments USING btree (patientId);
 
 
 --
 -- Name: patient_game_profiles_patient_id_key; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE UNIQUE INDEX patient_game_profiles_patient_id_key ON public.patient_game_profiles USING btree (patient_id);
+CREATE UNIQUE INDEX patient_game_profiles_patient_id_key ON public.patient_game_profiles USING btree (patientId);
 
 
 --
 -- Name: patient_game_profiles_patient_id_last_activity_idx; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX patient_game_profiles_patient_id_last_activity_idx ON public.patient_game_profiles USING btree (patient_id, last_activity);
+CREATE INDEX patient_game_profiles_patient_id_last_activity_idx ON public.patient_game_profiles USING btree (patientId, last_activity);
 
 
 --
@@ -4164,7 +4164,7 @@ CREATE INDEX patient_provider_consent_history_consent_requested_at ON public.pat
 -- Name: patient_provider_consent_history_doctor_id; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX patient_provider_consent_history_doctor_id ON public.patient_provider_consent_history USING btree (doctor_id);
+CREATE INDEX patient_provider_consent_history_doctor_id ON public.patient_provider_consent_history USING btree (doctorId);
 
 
 --
@@ -4185,14 +4185,14 @@ CREATE INDEX patient_provider_consent_history_new_provider_id ON public.patient_
 -- Name: patient_provider_consent_history_patient_id_status; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX patient_provider_consent_history_patient_id_status ON public.patient_provider_consent_history USING btree (patient_id, status);
+CREATE INDEX patient_provider_consent_history_patient_id_status ON public.patient_provider_consent_history USING btree (patientId, status);
 
 
 --
 -- Name: patient_provider_role_unique; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE UNIQUE INDEX patient_provider_role_unique ON public.patient_provider_assignments USING btree (patient_id, provider_id, role, ended_at);
+CREATE UNIQUE INDEX patient_provider_role_unique ON public.patient_provider_assignments USING btree (patientId, provider_id, role, ended_at);
 
 
 --
@@ -4206,14 +4206,14 @@ CREATE INDEX patient_subscriptions_next_billing_date ON public.patient_subscript
 -- Name: patient_subscriptions_patient_id; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX patient_subscriptions_patient_id ON public.patient_subscriptions USING btree (patient_id);
+CREATE INDEX patient_subscriptions_patient_id ON public.patient_subscriptions USING btree (patientId);
 
 
 --
 -- Name: patient_subscriptions_patient_id_provider_id; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX patient_subscriptions_patient_id_provider_id ON public.patient_subscriptions USING btree (patient_id, provider_id);
+CREATE INDEX patient_subscriptions_patient_id_provider_id ON public.patient_subscriptions USING btree (patientId, provider_id);
 
 
 --
@@ -4269,7 +4269,7 @@ CREATE INDEX patients_allergies ON public.patients USING gin (allergies);
 -- Name: patients_is_active; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX patients_is_active ON public.patients USING btree (is_active);
+CREATE INDEX patients_is_active ON public.patients USING btree (isActive);
 
 
 --
@@ -4304,7 +4304,7 @@ CREATE INDEX patients_organization_id ON public.patients USING btree (organizati
 -- Name: patients_patient_id_key; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE UNIQUE INDEX patients_patient_id_key ON public.patients USING btree (patient_id);
+CREATE UNIQUE INDEX patients_patient_id_key ON public.patients USING btree (patientId);
 
 
 --
@@ -4353,7 +4353,7 @@ CREATE UNIQUE INDEX patients_user_id ON public.patients USING btree (userId);
 -- Name: payment_methods_is_active; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX payment_methods_is_active ON public.payment_methods USING btree (is_active);
+CREATE INDEX payment_methods_is_active ON public.payment_methods USING btree (isActive);
 
 
 --
@@ -4367,7 +4367,7 @@ CREATE INDEX payment_methods_is_default ON public.payment_methods USING btree (i
 -- Name: payment_methods_patient_id; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX payment_methods_patient_id ON public.payment_methods USING btree (patient_id);
+CREATE INDEX payment_methods_patient_id ON public.payment_methods USING btree (patientId);
 
 
 --
@@ -4409,7 +4409,7 @@ CREATE INDEX payments_created_at ON public.payments USING btree (created_at);
 -- Name: payments_patient_id; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX payments_patient_id ON public.payments USING btree (patient_id);
+CREATE INDEX payments_patient_id ON public.payments USING btree (patientId);
 
 
 --
@@ -4535,14 +4535,14 @@ CREATE INDEX secondary_doctor_assignments_consent_status ON public.secondary_doc
 -- Name: secondary_doctor_assignments_is_active; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX secondary_doctor_assignments_is_active ON public.secondary_doctor_assignments USING btree (is_active);
+CREATE INDEX secondary_doctor_assignments_is_active ON public.secondary_doctor_assignments USING btree (isActive);
 
 
 --
 -- Name: secondary_doctor_assignments_patient_id; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX secondary_doctor_assignments_patient_id ON public.secondary_doctor_assignments USING btree (patient_id);
+CREATE INDEX secondary_doctor_assignments_patient_id ON public.secondary_doctor_assignments USING btree (patientId);
 
 
 --
@@ -4577,7 +4577,7 @@ CREATE INDEX service_plans_billing_cycle ON public.service_plans USING btree (bi
 -- Name: service_plans_is_active; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX service_plans_is_active ON public.service_plans USING btree (is_active);
+CREATE INDEX service_plans_is_active ON public.service_plans USING btree (isActive);
 
 
 --
@@ -4633,7 +4633,7 @@ CREATE UNIQUE INDEX symptoms_database_diagnosis_name ON public.symptoms_database
 -- Name: symptoms_database_is_active; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX symptoms_database_is_active ON public.symptoms_database USING btree (is_active);
+CREATE INDEX symptoms_database_is_active ON public.symptoms_database USING btree (isActive);
 
 
 --
@@ -4654,14 +4654,14 @@ CREATE INDEX symptoms_onset_time ON public.symptoms USING btree (onset_time);
 -- Name: symptoms_patient_id; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX symptoms_patient_id ON public.symptoms USING btree (patient_id);
+CREATE INDEX symptoms_patient_id ON public.symptoms USING btree (patientId);
 
 
 --
 -- Name: symptoms_patient_id_recorded_at; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX symptoms_patient_id_recorded_at ON public.symptoms USING btree (patient_id, recorded_at);
+CREATE INDEX symptoms_patient_id_recorded_at ON public.symptoms USING btree (patientId, recorded_at);
 
 
 --
@@ -4703,7 +4703,7 @@ CREATE INDEX treatment_database_category ON public.treatment_database USING btre
 -- Name: treatment_database_is_active; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX treatment_database_is_active ON public.treatment_database USING btree (is_active);
+CREATE INDEX treatment_database_is_active ON public.treatment_database USING btree (isActive);
 
 
 --
@@ -4731,7 +4731,7 @@ CREATE INDEX treatment_database_treatment_type ON public.treatment_database USIN
 -- Name: treatment_plans_doctor_id; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX treatment_plans_doctor_id ON public.treatment_plans USING btree (doctor_id);
+CREATE INDEX treatment_plans_doctor_id ON public.treatment_plans USING btree (doctorId);
 
 
 --
@@ -4759,7 +4759,7 @@ CREATE INDEX treatment_plans_organization_id ON public.treatment_plans USING btr
 -- Name: treatment_plans_patient_id; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX treatment_plans_patient_id ON public.treatment_plans USING btree (patient_id);
+CREATE INDEX treatment_plans_patient_id ON public.treatment_plans USING btree (patientId);
 
 
 --
@@ -4815,7 +4815,7 @@ CREATE INDEX user_devices_device_type ON public.user_devices USING btree (device
 -- Name: user_devices_is_active; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX user_devices_is_active ON public.user_devices USING btree (is_active);
+CREATE INDEX user_devices_is_active ON public.user_devices USING btree (isActive);
 
 
 --
@@ -4913,14 +4913,14 @@ CREATE INDEX video_consultations_consultation_type_priority_idx ON public.video_
 -- Name: video_consultations_doctor_id_scheduled_start_idx; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX video_consultations_doctor_id_scheduled_start_idx ON public.video_consultations USING btree (doctor_id, scheduled_start);
+CREATE INDEX video_consultations_doctor_id_scheduled_start_idx ON public.video_consultations USING btree (doctorId, scheduled_start);
 
 
 --
 -- Name: video_consultations_patient_id_status_idx; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX video_consultations_patient_id_status_idx ON public.video_consultations USING btree (patient_id, status);
+CREATE INDEX video_consultations_patient_id_status_idx ON public.video_consultations USING btree (patientId, status);
 
 
 --
@@ -4948,7 +4948,7 @@ CREATE INDEX vital_alert_rules_alert_level_idx ON public.vital_alert_rules USING
 -- Name: vital_alert_rules_vital_type_is_active_idx; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX vital_alert_rules_vital_type_is_active_idx ON public.vital_alert_rules USING btree (vital_type, is_active);
+CREATE INDEX vital_alert_rules_vital_type_is_active_idx ON public.vital_alert_rules USING btree (vital_type, isActive);
 
 
 --
@@ -4983,21 +4983,21 @@ CREATE INDEX vital_readings_is_validated ON public.vital_readings USING btree (i
 -- Name: vital_readings_patient_id; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX vital_readings_patient_id ON public.vital_readings USING btree (patient_id);
+CREATE INDEX vital_readings_patient_id ON public.vital_readings USING btree (patientId);
 
 
 --
 -- Name: vital_readings_patient_id_vital_type_id_reading_time; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX vital_readings_patient_id_vital_type_id_reading_time ON public.vital_readings USING btree (patient_id, vital_type_id, reading_time);
+CREATE INDEX vital_readings_patient_id_vital_type_id_reading_time ON public.vital_readings USING btree (patientId, vital_type_id, readingTime);
 
 
 --
 -- Name: vital_readings_reading_time; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX vital_readings_reading_time ON public.vital_readings USING btree (reading_time);
+CREATE INDEX vital_readings_reading_time ON public.vital_readings USING btree (readingTime);
 
 
 --
@@ -5068,7 +5068,7 @@ CREATE INDEX vitals_vital_template_id ON public.vitals USING btree (vital_templa
 --
 
 ALTER TABLE ONLY public.adherence_records
-    ADD CONSTRAINT adherence_records_patient_id_fkey FOREIGN KEY (patient_id) REFERENCES public.patients(id);
+    ADD CONSTRAINT adherence_records_patient_id_fkey FOREIGN KEY (patientId) REFERENCES public.patients(id);
 
 
 --
@@ -5084,7 +5084,7 @@ ALTER TABLE ONLY public.adherence_records
 --
 
 ALTER TABLE ONLY public.appointment_slots
-    ADD CONSTRAINT appointment_slots_doctor_id_fkey FOREIGN KEY (doctor_id) REFERENCES public.users(id);
+    ADD CONSTRAINT appointment_slots_doctor_id_fkey FOREIGN KEY (doctorId) REFERENCES public.users(id);
 
 
 --
@@ -5092,7 +5092,7 @@ ALTER TABLE ONLY public.appointment_slots
 --
 
 ALTER TABLE ONLY public.appointments
-    ADD CONSTRAINT appointments_doctor_id_fkey FOREIGN KEY (doctor_id) REFERENCES public.doctors(id) ON UPDATE CASCADE ON DELETE SET NULL;
+    ADD CONSTRAINT appointments_doctor_id_fkey FOREIGN KEY (doctorId) REFERENCES public.doctors(id) ON UPDATE CASCADE ON DELETE SET NULL;
 
 
 --
@@ -5100,7 +5100,7 @@ ALTER TABLE ONLY public.appointments
 --
 
 ALTER TABLE ONLY public.appointments
-    ADD CONSTRAINT appointments_patient_id_fkey FOREIGN KEY (patient_id) REFERENCES public.patients(id) ON UPDATE CASCADE ON DELETE SET NULL;
+    ADD CONSTRAINT appointments_patient_id_fkey FOREIGN KEY (patientId) REFERENCES public.patients(id) ON UPDATE CASCADE ON DELETE SET NULL;
 
 
 --
@@ -5132,7 +5132,7 @@ ALTER TABLE ONLY public.audit_logs
 --
 
 ALTER TABLE ONLY public.audit_logs
-    ADD CONSTRAINT audit_logs_patient_id_fkey FOREIGN KEY (patient_id) REFERENCES public.patients(id);
+    ADD CONSTRAINT audit_logs_patient_id_fkey FOREIGN KEY (patientId) REFERENCES public.patients(id);
 
 
 --
@@ -5204,7 +5204,7 @@ ALTER TABLE ONLY public.care_plans
 --
 
 ALTER TABLE ONLY public.care_plans
-    ADD CONSTRAINT care_plans_patient_id_fkey FOREIGN KEY (patient_id) REFERENCES public.patients(id) ON UPDATE CASCADE ON DELETE CASCADE;
+    ADD CONSTRAINT care_plans_patient_id_fkey FOREIGN KEY (patientId) REFERENCES public.patients(id) ON UPDATE CASCADE ON DELETE CASCADE;
 
 
 --
@@ -5212,7 +5212,7 @@ ALTER TABLE ONLY public.care_plans
 --
 
 ALTER TABLE ONLY public.clinics
-    ADD CONSTRAINT clinics_doctor_id_fkey FOREIGN KEY (doctor_id) REFERENCES public.doctors(id) ON UPDATE CASCADE ON DELETE CASCADE;
+    ADD CONSTRAINT clinics_doctor_id_fkey FOREIGN KEY (doctorId) REFERENCES public.doctors(id) ON UPDATE CASCADE ON DELETE CASCADE;
 
 
 --
@@ -5252,7 +5252,7 @@ ALTER TABLE ONLY public.consultation_prescriptions
 --
 
 ALTER TABLE ONLY public.doctor_availability
-    ADD CONSTRAINT doctor_availability_doctor_id_fkey FOREIGN KEY (doctor_id) REFERENCES public.users(id);
+    ADD CONSTRAINT doctor_availability_doctor_id_fkey FOREIGN KEY (doctorId) REFERENCES public.users(id);
 
 
 --
@@ -5300,7 +5300,7 @@ ALTER TABLE ONLY public.emergency_alerts
 --
 
 ALTER TABLE ONLY public.emergency_alerts
-    ADD CONSTRAINT emergency_alerts_patient_id_fkey FOREIGN KEY (patient_id) REFERENCES public.patients(id) ON UPDATE CASCADE ON DELETE CASCADE;
+    ADD CONSTRAINT emergency_alerts_patient_id_fkey FOREIGN KEY (patientId) REFERENCES public.patients(id) ON UPDATE CASCADE ON DELETE CASCADE;
 
 
 --
@@ -5324,7 +5324,7 @@ ALTER TABLE ONLY public.emergency_alerts
 --
 
 ALTER TABLE ONLY public.emergency_contacts
-    ADD CONSTRAINT emergency_contacts_patient_id_fkey FOREIGN KEY (patient_id) REFERENCES public.patients(id) ON UPDATE CASCADE ON DELETE CASCADE;
+    ADD CONSTRAINT emergency_contacts_patient_id_fkey FOREIGN KEY (patientId) REFERENCES public.patients(id) ON UPDATE CASCADE ON DELETE CASCADE;
 
 
 --
@@ -5332,7 +5332,7 @@ ALTER TABLE ONLY public.emergency_contacts
 --
 
 ALTER TABLE ONLY public.game_badge_awards
-    ADD CONSTRAINT game_badge_awards_patient_id_fkey FOREIGN KEY (patient_id) REFERENCES public.patient_game_profiles(patient_id) ON UPDATE CASCADE ON DELETE CASCADE;
+    ADD CONSTRAINT game_badge_awards_patient_id_fkey FOREIGN KEY (patientId) REFERENCES public.patient_game_profiles(patientId) ON UPDATE CASCADE ON DELETE CASCADE;
 
 
 --
@@ -5340,7 +5340,7 @@ ALTER TABLE ONLY public.game_badge_awards
 --
 
 ALTER TABLE ONLY public.game_challenge_progress
-    ADD CONSTRAINT game_challenge_progress_patient_id_fkey FOREIGN KEY (patient_id) REFERENCES public.patient_game_profiles(patient_id) ON UPDATE CASCADE ON DELETE CASCADE;
+    ADD CONSTRAINT game_challenge_progress_patient_id_fkey FOREIGN KEY (patientId) REFERENCES public.patient_game_profiles(patientId) ON UPDATE CASCADE ON DELETE CASCADE;
 
 
 --
@@ -5412,7 +5412,7 @@ ALTER TABLE ONLY public.lab_orders
 --
 
 ALTER TABLE ONLY public.lab_orders
-    ADD CONSTRAINT lab_orders_doctor_id_fkey FOREIGN KEY (doctor_id) REFERENCES public.doctors(id) ON UPDATE CASCADE ON DELETE RESTRICT;
+    ADD CONSTRAINT lab_orders_doctor_id_fkey FOREIGN KEY (doctorId) REFERENCES public.doctors(id) ON UPDATE CASCADE ON DELETE RESTRICT;
 
 
 --
@@ -5420,7 +5420,7 @@ ALTER TABLE ONLY public.lab_orders
 --
 
 ALTER TABLE ONLY public.lab_orders
-    ADD CONSTRAINT lab_orders_patient_id_fkey FOREIGN KEY (patient_id) REFERENCES public.patients(id) ON UPDATE CASCADE ON DELETE CASCADE;
+    ADD CONSTRAINT lab_orders_patient_id_fkey FOREIGN KEY (patientId) REFERENCES public.patients(id) ON UPDATE CASCADE ON DELETE CASCADE;
 
 
 --
@@ -5444,7 +5444,7 @@ ALTER TABLE ONLY public.medication_logs
 --
 
 ALTER TABLE ONLY public.medication_logs
-    ADD CONSTRAINT medication_logs_patient_id_fkey FOREIGN KEY (patient_id) REFERENCES public.patients(id) ON UPDATE CASCADE;
+    ADD CONSTRAINT medication_logs_patient_id_fkey FOREIGN KEY (patientId) REFERENCES public.patients(id) ON UPDATE CASCADE;
 
 
 --
@@ -5484,7 +5484,7 @@ ALTER TABLE ONLY public.medication_safety_alerts
 --
 
 ALTER TABLE ONLY public.medication_safety_alerts
-    ADD CONSTRAINT medication_safety_alerts_patient_id_fkey FOREIGN KEY (patient_id) REFERENCES public.patients(id) ON UPDATE CASCADE ON DELETE CASCADE;
+    ADD CONSTRAINT medication_safety_alerts_patient_id_fkey FOREIGN KEY (patientId) REFERENCES public.patients(id) ON UPDATE CASCADE ON DELETE CASCADE;
 
 
 --
@@ -5516,7 +5516,7 @@ ALTER TABLE ONLY public.medications
 --
 
 ALTER TABLE ONLY public.notifications
-    ADD CONSTRAINT notifications_doctor_id_fkey FOREIGN KEY (doctor_id) REFERENCES public.doctors(id);
+    ADD CONSTRAINT notifications_doctor_id_fkey FOREIGN KEY (doctorId) REFERENCES public.doctors(id);
 
 
 --
@@ -5540,7 +5540,7 @@ ALTER TABLE ONLY public.notifications
 --
 
 ALTER TABLE ONLY public.notifications
-    ADD CONSTRAINT notifications_patient_id_fkey FOREIGN KEY (patient_id) REFERENCES public.patients(id) ON DELETE CASCADE;
+    ADD CONSTRAINT notifications_patient_id_fkey FOREIGN KEY (patientId) REFERENCES public.patients(id) ON DELETE CASCADE;
 
 
 --
@@ -5588,7 +5588,7 @@ ALTER TABLE ONLY public.notifications
 --
 
 ALTER TABLE ONLY public.patient_alerts
-    ADD CONSTRAINT patient_alerts_patient_id_fkey FOREIGN KEY (patient_id) REFERENCES public.patients(id) ON UPDATE CASCADE;
+    ADD CONSTRAINT patient_alerts_patient_id_fkey FOREIGN KEY (patientId) REFERENCES public.patients(id) ON UPDATE CASCADE;
 
 
 --
@@ -5596,7 +5596,7 @@ ALTER TABLE ONLY public.patient_alerts
 --
 
 ALTER TABLE ONLY public.patient_allergies
-    ADD CONSTRAINT patient_allergies_patient_id_fkey FOREIGN KEY (patient_id) REFERENCES public.patients(id) ON UPDATE CASCADE ON DELETE CASCADE;
+    ADD CONSTRAINT patient_allergies_patient_id_fkey FOREIGN KEY (patientId) REFERENCES public.patients(id) ON UPDATE CASCADE ON DELETE CASCADE;
 
 
 --
@@ -5612,7 +5612,7 @@ ALTER TABLE ONLY public.patient_allergies
 --
 
 ALTER TABLE ONLY public.patient_consent_otp
-    ADD CONSTRAINT patient_consent_otp_patient_id_fkey FOREIGN KEY (patient_id) REFERENCES public.patients(id) ON UPDATE CASCADE ON DELETE CASCADE;
+    ADD CONSTRAINT patient_consent_otp_patient_id_fkey FOREIGN KEY (patientId) REFERENCES public.patients(id) ON UPDATE CASCADE ON DELETE CASCADE;
 
 
 --
@@ -5676,7 +5676,7 @@ ALTER TABLE ONLY public.patient_doctor_assignments
 --
 
 ALTER TABLE ONLY public.patient_doctor_assignments
-    ADD CONSTRAINT patient_doctor_assignments_doctor_id_fkey FOREIGN KEY (doctor_id) REFERENCES public.doctors(id) ON DELETE CASCADE;
+    ADD CONSTRAINT patient_doctor_assignments_doctor_id_fkey FOREIGN KEY (doctorId) REFERENCES public.doctors(id) ON DELETE CASCADE;
 
 
 --
@@ -5684,7 +5684,7 @@ ALTER TABLE ONLY public.patient_doctor_assignments
 --
 
 ALTER TABLE ONLY public.patient_doctor_assignments
-    ADD CONSTRAINT patient_doctor_assignments_patient_id_fkey FOREIGN KEY (patient_id) REFERENCES public.patients(id) ON DELETE CASCADE;
+    ADD CONSTRAINT patient_doctor_assignments_patient_id_fkey FOREIGN KEY (patientId) REFERENCES public.patients(id) ON DELETE CASCADE;
 
 
 --
@@ -5692,7 +5692,7 @@ ALTER TABLE ONLY public.patient_doctor_assignments
 --
 
 ALTER TABLE ONLY public.patient_game_profiles
-    ADD CONSTRAINT patient_game_profiles_patient_id_fkey FOREIGN KEY (patient_id) REFERENCES public.patients(id) ON UPDATE CASCADE ON DELETE CASCADE;
+    ADD CONSTRAINT patient_game_profiles_patient_id_fkey FOREIGN KEY (patientId) REFERENCES public.patients(id) ON UPDATE CASCADE ON DELETE CASCADE;
 
 
 --
@@ -5708,7 +5708,7 @@ ALTER TABLE ONLY public.patient_provider_assignments
 --
 
 ALTER TABLE ONLY public.patient_provider_assignments
-    ADD CONSTRAINT patient_provider_assignments_patient_id_fkey FOREIGN KEY (patient_id) REFERENCES public.patients(id);
+    ADD CONSTRAINT patient_provider_assignments_patient_id_fkey FOREIGN KEY (patientId) REFERENCES public.patients(id);
 
 
 --
@@ -5724,7 +5724,7 @@ ALTER TABLE ONLY public.patient_provider_assignments
 --
 
 ALTER TABLE ONLY public.patient_provider_consent_history
-    ADD CONSTRAINT patient_provider_consent_history_doctor_id_fkey FOREIGN KEY (doctor_id) REFERENCES public.doctors(id) ON DELETE SET NULL;
+    ADD CONSTRAINT patient_provider_consent_history_doctor_id_fkey FOREIGN KEY (doctorId) REFERENCES public.doctors(id) ON DELETE SET NULL;
 
 
 --
@@ -5748,7 +5748,7 @@ ALTER TABLE ONLY public.patient_provider_consent_history
 --
 
 ALTER TABLE ONLY public.patient_provider_consent_history
-    ADD CONSTRAINT patient_provider_consent_history_patient_id_fkey FOREIGN KEY (patient_id) REFERENCES public.patients(id) ON DELETE CASCADE;
+    ADD CONSTRAINT patient_provider_consent_history_patient_id_fkey FOREIGN KEY (patientId) REFERENCES public.patients(id) ON DELETE CASCADE;
 
 
 --
@@ -5764,7 +5764,7 @@ ALTER TABLE ONLY public.patient_provider_consent_history
 --
 
 ALTER TABLE ONLY public.patient_subscriptions
-    ADD CONSTRAINT patient_subscriptions_patient_id_fkey FOREIGN KEY (patient_id) REFERENCES public.patients(id) ON UPDATE CASCADE ON DELETE CASCADE;
+    ADD CONSTRAINT patient_subscriptions_patient_id_fkey FOREIGN KEY (patientId) REFERENCES public.patients(id) ON UPDATE CASCADE ON DELETE CASCADE;
 
 
 --
@@ -5828,7 +5828,7 @@ ALTER TABLE ONLY public.patients
 --
 
 ALTER TABLE ONLY public.payment_methods
-    ADD CONSTRAINT payment_methods_patient_id_fkey FOREIGN KEY (patient_id) REFERENCES public.patients(id);
+    ADD CONSTRAINT payment_methods_patient_id_fkey FOREIGN KEY (patientId) REFERENCES public.patients(id);
 
 
 --
@@ -5836,7 +5836,7 @@ ALTER TABLE ONLY public.payment_methods
 --
 
 ALTER TABLE ONLY public.payments
-    ADD CONSTRAINT payments_patient_id_fkey FOREIGN KEY (patient_id) REFERENCES public.patients(id);
+    ADD CONSTRAINT payments_patient_id_fkey FOREIGN KEY (patientId) REFERENCES public.patients(id);
 
 
 --
@@ -5900,7 +5900,7 @@ ALTER TABLE ONLY public.scheduled_events
 --
 
 ALTER TABLE ONLY public.scheduled_events
-    ADD CONSTRAINT scheduled_events_patient_id_fkey FOREIGN KEY (patient_id) REFERENCES public.patients(id);
+    ADD CONSTRAINT scheduled_events_patient_id_fkey FOREIGN KEY (patientId) REFERENCES public.patients(id);
 
 
 --
@@ -5908,7 +5908,7 @@ ALTER TABLE ONLY public.scheduled_events
 --
 
 ALTER TABLE ONLY public.secondary_doctor_assignments
-    ADD CONSTRAINT secondary_doctor_assignments_patient_id_fkey FOREIGN KEY (patient_id) REFERENCES public.patients(id) ON UPDATE CASCADE ON DELETE CASCADE;
+    ADD CONSTRAINT secondary_doctor_assignments_patient_id_fkey FOREIGN KEY (patientId) REFERENCES public.patients(id) ON UPDATE CASCADE ON DELETE CASCADE;
 
 
 --
@@ -5972,7 +5972,7 @@ ALTER TABLE ONLY public.symptoms
 --
 
 ALTER TABLE ONLY public.symptoms
-    ADD CONSTRAINT symptoms_patient_id_fkey FOREIGN KEY (patient_id) REFERENCES public.patients(id);
+    ADD CONSTRAINT symptoms_patient_id_fkey FOREIGN KEY (patientId) REFERENCES public.patients(id);
 
 
 --
@@ -5980,7 +5980,7 @@ ALTER TABLE ONLY public.symptoms
 --
 
 ALTER TABLE ONLY public.treatment_plans
-    ADD CONSTRAINT treatment_plans_doctor_id_fkey FOREIGN KEY (doctor_id) REFERENCES public.doctors(id) ON UPDATE CASCADE;
+    ADD CONSTRAINT treatment_plans_doctor_id_fkey FOREIGN KEY (doctorId) REFERENCES public.doctors(id) ON UPDATE CASCADE;
 
 
 --
@@ -5996,7 +5996,7 @@ ALTER TABLE ONLY public.treatment_plans
 --
 
 ALTER TABLE ONLY public.treatment_plans
-    ADD CONSTRAINT treatment_plans_patient_id_fkey FOREIGN KEY (patient_id) REFERENCES public.patients(id) ON UPDATE CASCADE ON DELETE CASCADE;
+    ADD CONSTRAINT treatment_plans_patient_id_fkey FOREIGN KEY (patientId) REFERENCES public.patients(id) ON UPDATE CASCADE ON DELETE CASCADE;
 
 
 --
@@ -6036,7 +6036,7 @@ ALTER TABLE ONLY public.video_consultations
 --
 
 ALTER TABLE ONLY public.video_consultations
-    ADD CONSTRAINT video_consultations_doctor_id_fkey FOREIGN KEY (doctor_id) REFERENCES public.doctors(id) ON UPDATE CASCADE ON DELETE CASCADE;
+    ADD CONSTRAINT video_consultations_doctor_id_fkey FOREIGN KEY (doctorId) REFERENCES public.doctors(id) ON UPDATE CASCADE ON DELETE CASCADE;
 
 
 --
@@ -6044,7 +6044,7 @@ ALTER TABLE ONLY public.video_consultations
 --
 
 ALTER TABLE ONLY public.video_consultations
-    ADD CONSTRAINT video_consultations_patient_id_fkey FOREIGN KEY (patient_id) REFERENCES public.patients(id) ON UPDATE CASCADE ON DELETE CASCADE;
+    ADD CONSTRAINT video_consultations_patient_id_fkey FOREIGN KEY (patientId) REFERENCES public.patients(id) ON UPDATE CASCADE ON DELETE CASCADE;
 
 
 --
@@ -6068,7 +6068,7 @@ ALTER TABLE ONLY public.vital_readings
 --
 
 ALTER TABLE ONLY public.vital_readings
-    ADD CONSTRAINT vital_readings_patient_id_fkey FOREIGN KEY (patient_id) REFERENCES public.patients(id) ON UPDATE CASCADE;
+    ADD CONSTRAINT vital_readings_patient_id_fkey FOREIGN KEY (patientId) REFERENCES public.patients(id) ON UPDATE CASCADE;
 
 
 --

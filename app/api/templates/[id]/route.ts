@@ -65,7 +65,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       content: template.template_content,
       category: template.category,
       tags: Array.isArray(template.tags) ? template.tags : [],
-      isActive: template.is_active,
+      isActive: template.isActive,
       created_at: template.created_at,
       updated_at: template.updated_at,
       usage_count: template.usage_count || 0,
@@ -156,7 +156,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
         template_content: body.template_content,
         category: body.category,
         tags: body.tags || [],
-        is_active: body.is_active !== undefined ? body.is_active : true,
+        isActive: body.isActive !== undefined ? body.isActive : true,
         updated_at: new Date()
       }
     });
@@ -223,7 +223,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
     await prisma.care_plan_templates.update({
       where: { id: templateId },
       data: {
-        is_active: false,
+        isActive: false,
         deleted_at: new Date()
       }
     });

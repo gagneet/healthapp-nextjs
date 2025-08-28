@@ -199,7 +199,7 @@ export const POST = withErrorHandling(async (request: NextRequest, { params }: {
       assignment_id: assignment.id,
       patient: {
         id: patient.id,
-        patient_id: patient.patientId,
+        patientId: patient.patientId,
         name: `${patient.user.firstName} ${patient.user.lastName}`.trim(),
         email: patient.user.email,
         phone: patient.user.phone
@@ -370,7 +370,7 @@ export const GET = withErrorHandling(async (request: NextRequest, { params }: { 
         specialty_focus: assignment.specialtyFocus || [],
         created_at: assignment.createdAt,
         expires_at: assignment.expiresAt,
-        is_active: assignment.isActive,
+        isActive: assignment.isActive,
         notes: assignment.notes,
         primary_doctor: assignment.primaryDoctor ? {
           id: assignment.primaryDoctor.id,
@@ -404,7 +404,7 @@ export const GET = withErrorHandling(async (request: NextRequest, { params }: { 
     // Generate summary
     const summary = {
       total_assignments: formattedAssignments.length,
-      active_assignments: formattedAssignments.filter(a => a.is_active).length,
+      active_assignments: formattedAssignments.filter(a => a.isActive).length,
       granted_access: formattedAssignments.filter(a => a.consent_details.access_granted).length,
       pending_consent: formattedAssignments.filter(a => 
         a.consent_details.requires_consent && !a.consent_details.access_granted
@@ -419,7 +419,7 @@ export const GET = withErrorHandling(async (request: NextRequest, { params }: { 
     return createSuccessResponse({
       patient: {
         id: patient.id,
-        patient_id: patient.patientId,
+        patientId: patient.patientId,
         name: `${patient.user.firstName} ${patient.user.lastName}`.trim(),
         email: patient.user.email,
         phone: patient.user.phone

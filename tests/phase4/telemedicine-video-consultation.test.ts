@@ -64,7 +64,7 @@ describe('VideoConsultationService', () => {
 
   describe('toggleRecording', () => {
     it('should start a recording', async () => {
-      const mockConsultation = { id: 'consultation-id', room_id: 'test-room-id', doctor_id: 'doctor-id' };
+      const mockConsultation = { id: 'consultation-id', room_id: 'test-room-id', doctorId: 'doctor-id' };
       mockPrisma.videoConsultation.findUnique.mockResolvedValueOnce(mockConsultation);
       (fetch as jest.Mock).mockResolvedValueOnce({
         ok: true,
@@ -80,7 +80,7 @@ describe('VideoConsultationService', () => {
     });
 
     it('should stop a recording and save the URL', async () => {
-      const mockConsultation = { id: 'consultation-id', room_id: 'test-room-id', doctor_id: 'doctor-id' };
+      const mockConsultation = { id: 'consultation-id', room_id: 'test-room-id', doctorId: 'doctor-id' };
       const mockRecordingData = { url: 'https://recorder.daily.co/test-recording.mp4' };
       mockPrisma.videoConsultation.findUnique.mockResolvedValueOnce(mockConsultation);
       (fetch as jest.Mock).mockResolvedValueOnce({

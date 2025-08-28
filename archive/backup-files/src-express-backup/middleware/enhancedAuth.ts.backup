@@ -134,7 +134,7 @@ export const enhancedAuthenticate = async (req: any, res: any, next: any) => {
     if (!user) {
       // Fetch user with roles
       user = await User.findByPk((decoded as any).userId, {
-        attributes: ['id', 'email', 'first_name', 'last_name', 'role', 'account_status', 'is_active'],
+        attributes: ['id', 'email', 'first_name', 'last_name', 'role', 'account_status', 'isActive'],
         include: [{
           model: UserRole,
           as: 'roles',
@@ -151,7 +151,7 @@ export const enhancedAuthenticate = async (req: any, res: any, next: any) => {
       }
     }
 
-    if (!user || user.account_status !== ACCOUNT_STATUS.ACTIVE || !user.is_active) {
+    if (!user || user.account_status !== ACCOUNT_STATUS.ACTIVE || !user.isActive) {
       return res.status(401).json(ResponseFormatter.error('Account is inactive or not found', 401));
     }
 

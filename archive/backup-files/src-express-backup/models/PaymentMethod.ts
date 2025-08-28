@@ -6,7 +6,7 @@ export default (sequelize: any, DataTypes: any) => {
       defaultValue: DataTypes.UUIDV4,
       primaryKey: true,
     },
-    patient_id: {
+    patientId: {
       type: DataTypes.UUID,
       allowNull: false,
       references: {
@@ -53,7 +53,7 @@ export default (sequelize: any, DataTypes: any) => {
       type: DataTypes.BOOLEAN,
       defaultValue: false,
     },
-    is_active: {
+    isActive: {
       type: DataTypes.BOOLEAN,
       defaultValue: true,
     },
@@ -83,11 +83,11 @@ export default (sequelize: any, DataTypes: any) => {
     tableName: 'payment_methods',
     paranoid: true,
     indexes: [
-      { fields: ['patient_id'] },
+      { fields: ['patientId'] },
       { fields: ['stripe_payment_method_id'] },
       { fields: ['type'] },
       { fields: ['is_default'] },
-      { fields: ['is_active'] },
+      { fields: ['isActive'] },
     ],
   });
 

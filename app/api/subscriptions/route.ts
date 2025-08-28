@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
     }
 
     const { searchParams } = new URL(request.url);
-    const patientId = searchParams.get('patient_id');
+    const patientId = searchParams.get('patientId');
     const status = searchParams.get('status');
     const providerId = searchParams.get('provider_id');
     const page = parseInt(searchParams.get('page') || '1');
@@ -37,7 +37,7 @@ export async function GET(request: NextRequest) {
           payload: { error: { status: 'forbidden', message: 'Patient profile not found' } }
         }, { status: 403 });
       }
-      whereClause.patient_id = patient.id;
+      whereClause.patientId = patient.id;
     } else if (session.user.role === 'DOCTOR') {
       const doctor = await prisma.doctor.findFirst({
         where: { userId: session.user.id }
@@ -48,13 +48,13 @@ export async function GET(request: NextRequest) {
           where: { primaryCareDoctorId: doctor.id },
           select: { id: true }
         });
-        whereClause.patient_id = { in: doctorPatients.map(p => p.id) };
+        whereClause.patientId = { in: doctorPatients.map(p => p.id) };
       }
     }
 
     // Additional filters
     if (patientId && ['DOCTOR', 'HSP', 'SYSTEM_ADMIN', 'HOSPITAL_ADMIN'].includes(session.user.role)) {
-      whereClause.patient_id = patientId;
+      whereClause.patientId = patientId;
     }
 
     if (providerId && ['SYSTEM_ADMIN', 'HOSPITAL_ADMIN'].includes(session.user.role)) {
@@ -72,7 +72,7 @@ export async function GET(request: NextRequest) {
           patient: {
             select: {
               id: true,
-              patient_id: true,
+              patientId: true,
               user: {
                 select: {
                   firstName: true,
@@ -155,7 +155,7 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
     const {
-      patient_id,
+      patientId,
       service_plan_id,
       start_date,
       billing_cycle,
@@ -199,7 +199,7 @@ export async function POST(request: NextRequest) {
 
     const subscription = await prisma.patientSubscription.create({
       data: {
-        patient_id,
+        patientId,
         provider_id: 'placeholder-provider-id', // This needs to be determined from business logic
         service_plan_id,
         current_period_start: startDate,
@@ -213,7 +213,7 @@ export async function POST(request: NextRequest) {
       include: {
         patient: {
           select: {
-            patient_id: true,
+            patientId: true,
             user: {
               select: {
                 firstName: true,
@@ -304,7 +304,7 @@ export async function PUT(request: NextRequest) {
       include: {
         patient: {
           select: {
-            patient_id: true,
+            patientId: true,
             user: {
               select: {
                 firstName: true,
@@ -353,7 +353,7 @@ async function getAvailablePlans(request: NextRequest) {
 
     const plans = await prisma.servicePlan.findMany({
       where: {
-        is_active: true
+        isActive: true
       },
       include: {
         healthcare_providers: {

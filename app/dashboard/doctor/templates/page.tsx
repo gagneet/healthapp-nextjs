@@ -25,7 +25,7 @@ interface CareplanTemplate {
   description: string
   category: 'CHRONIC_DISEASE' | 'PREVENTIVE' | 'ACUTE' | 'REHABILITATION' | 'WELLNESS'
   duration_days: number
-  is_active: boolean
+  isActive: boolean
   created_by: string
   created_at: string
   updated_at: string
@@ -46,7 +46,7 @@ const mockTemplates: CareplanTemplate[] = [
     description: 'Comprehensive care plan for managing high blood pressure with medication adherence, lifestyle modifications, and regular monitoring.',
     category: 'CHRONIC_DISEASE',
     duration_days: 90,
-    is_active: true,
+    isActive: true,
     created_by: 'Dr. Sarah Johnson',
     created_at: '2025-01-15T10:00:00Z',
     updated_at: '2025-01-20T14:30:00Z',
@@ -65,7 +65,7 @@ const mockTemplates: CareplanTemplate[] = [
     description: 'Evidence-based diabetes management including glucose monitoring, medication schedules, and nutritional guidance.',
     category: 'CHRONIC_DISEASE',
     duration_days: 180,
-    is_active: true,
+    isActive: true,
     created_by: 'Dr. Michael Chen',
     created_at: '2025-01-10T09:15:00Z',
     updated_at: '2025-01-22T11:45:00Z',
@@ -84,7 +84,7 @@ const mockTemplates: CareplanTemplate[] = [
     description: 'Standard post-surgical care plan with pain management, wound care, and progressive rehabilitation.',
     category: 'REHABILITATION',
     duration_days: 30,
-    is_active: true,
+    isActive: true,
     created_by: 'Dr. Emily Rodriguez',
     created_at: '2025-01-08T16:20:00Z',
     updated_at: '2025-01-18T09:10:00Z',
@@ -103,7 +103,7 @@ const mockTemplates: CareplanTemplate[] = [
     description: 'Preventive care template for routine health screenings and wellness assessments.',
     category: 'PREVENTIVE',
     duration_days: 365,
-    is_active: true,
+    isActive: true,
     created_by: 'Dr. Sarah Johnson',
     created_at: '2025-01-05T13:45:00Z',
     updated_at: '2025-01-15T10:20:00Z',
@@ -122,7 +122,7 @@ const mockTemplates: CareplanTemplate[] = [
     description: 'Comprehensive cardiac recovery program with exercise therapy, medication management, and lifestyle counseling.',
     category: 'REHABILITATION',
     duration_days: 120,
-    is_active: false,
+    isActive: false,
     created_by: 'Dr. David Williams',
     created_at: '2023-12-20T11:30:00Z',
     updated_at: '2025-01-12T15:15:00Z',
@@ -202,7 +202,7 @@ export default function CareplanTemplatesPage() {
 
   const toggleTemplateStatus = (templateId: string) => {
     setTemplates(templates.map(t => 
-      t.id === templateId ? { ...t, is_active: !t.is_active } : t
+      t.id === templateId ? { ...t, isActive: !t.isActive } : t
     ))
   }
 
@@ -260,7 +260,7 @@ export default function CareplanTemplatesPage() {
               <div>
                 <p className="text-sm font-medium text-gray-600">Active Templates</p>
                 <p className="text-3xl font-bold text-gray-900">
-                  {templates.filter(t => t.is_active).length}
+                  {templates.filter(t => t.isActive).length}
                 </p>
               </div>
               <DocumentTextIcon className="h-8 w-8 text-green-600" />
@@ -334,7 +334,7 @@ export default function CareplanTemplatesPage() {
       {/* Templates Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredTemplates.map((template) => (
-          <Card key={template.id} className={`relative ${!template.is_active ? 'opacity-60' : ''}`}>
+          <Card key={template.id} className={`relative ${!template.isActive ? 'opacity-60' : ''}`}>
             <CardHeader className="pb-3">
               <div className="flex items-start justify-between">
                 <div className="flex-1">
@@ -346,7 +346,7 @@ export default function CareplanTemplatesPage() {
                   </span>
                 </div>
                 <div className="flex items-center space-x-1">
-                  {!template.is_active && (
+                  {!template.isActive && (
                     <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
                       Inactive
                     </span>

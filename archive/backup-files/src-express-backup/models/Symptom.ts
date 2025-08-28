@@ -9,7 +9,7 @@ export default (sequelize: any) => {
       primaryKey: true,
     },
     
-    patient_id: {
+    patientId: {
       type: DataTypes.UUID,
       allowNull: false,
       references: {
@@ -142,7 +142,7 @@ export default (sequelize: any) => {
     
     indexes: [
       {
-        fields: ['patient_id']
+        fields: ['patientId']
       },
       {
         fields: ['care_plan_id']
@@ -160,7 +160,7 @@ export default (sequelize: any) => {
         fields: ['onset_time']
       },
       {
-        fields: ['patient_id', 'recorded_at']
+        fields: ['patientId', 'recorded_at']
       }
     ],
     
@@ -216,7 +216,7 @@ export default (sequelize: any) => {
       findForPatient(patientId: any, limit = 20) {
         return (this as any).findAll({
           where: {
-            patient_id: patientId
+            patientId: patientId
           },
           order: [['recorded_at', 'DESC']],
           limit
@@ -242,7 +242,7 @@ export default (sequelize: any) => {
         
         const symptoms = await (this as any).findAll({
           where: {
-            patient_id: patientId,
+            patientId: patientId,
             recorded_at: {
               [sequelize.Sequelize.Op.gte]: startDate
             }

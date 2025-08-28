@@ -17,7 +17,7 @@ export default {
         primaryKey: true,
         defaultValue: Sequelize.UUIDV4,
       },
-      patient_id: {
+      patientId: {
         type: Sequelize.UUID,
         allowNull: false,
         references: {
@@ -62,7 +62,7 @@ export default {
     // Add unique constraint with error handling
     try {
       await queryInterface.addConstraint('patient_provider_assignments', {
-        fields: ['patient_id', 'provider_id', 'role', 'ended_at'],
+        fields: ['patientId', 'provider_id', 'role', 'ended_at'],
         type: 'unique',
         name: 'unique_patient_provider_role_assignment'
       });
@@ -75,7 +75,7 @@ export default {
 
     // Add indexes with error handling
     try {
-      await queryInterface.addIndex('patient_provider_assignments', ['patient_id'], { 
+      await queryInterface.addIndex('patient_provider_assignments', ['patientId'], { 
         where: { ended_at: null },
         name: 'idx_assignments_patient'
       });
@@ -99,7 +99,7 @@ export default {
     }
 
     try {
-      await queryInterface.addIndex('patient_provider_assignments', ['patient_id', 'provider_id'], { 
+      await queryInterface.addIndex('patient_provider_assignments', ['patientId', 'provider_id'], { 
         where: { ended_at: null },
         name: 'idx_assignments_active'
       });

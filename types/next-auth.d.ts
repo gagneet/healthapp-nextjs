@@ -16,7 +16,7 @@ type AccountStatus = "ACTIVE" | "INACTIVE" | "SUSPENDED" | "PENDING_VERIFICATION
 // Healthcare profile data types
 interface DoctorProfile {
   id: string
-  doctor_id: string
+  doctorId: string
   medical_license_number: string
   speciality_id: string | null
   years_of_experience: number | null
@@ -27,7 +27,7 @@ interface DoctorProfile {
 
 interface PatientProfile {
   id: string
-  patient_id: string | null
+  patientId: string | null
   medical_record_number: string | null
   primary_doctor_id: string | null
   height: number | null

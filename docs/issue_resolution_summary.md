@@ -1623,7 +1623,7 @@ But since there's no model Vital in the current schema, and the code is trying t
 Let me check if the relationships make sense by looking at what the API is trying to do:
 
 The API is trying to:
-1. Filter by care_plans.patient_id
+1. Filter by care_plans.patientId
 2. Include vital_templates with name, unit, details
 3. Include care_plans.patient info
 

@@ -51,7 +51,7 @@ export default {
           'Renal function',
           'Vitamin B12 levels annually'
         ]),
-        is_active: true,
+        isActive: true,
         requires_specialist: false,
         prescription_required: true,
         created_at: new Date(),
@@ -91,7 +91,7 @@ export default {
           'Renal function',
           'Serum potassium'
         ]),
-        is_active: true,
+        isActive: true,
         requires_specialist: false,
         prescription_required: true,
         created_at: new Date(),
@@ -127,7 +127,7 @@ export default {
           'Hydration status',
           'Symptom progression'
         ]),
-        is_active: true,
+        isActive: true,
         requires_specialist: false,
         prescription_required: false,
         created_at: new Date(),
@@ -170,7 +170,7 @@ export default {
           'Blood pressure',
           'Cardiovascular risk factors'
         ]),
-        is_active: true,
+        isActive: true,
         requires_specialist: true,
         prescription_required: true,
         created_at: new Date(),
@@ -209,7 +209,7 @@ export default {
           'Functional improvement',
           'Treatment adherence'
         ]),
-        is_active: true,
+        isActive: true,
         requires_specialist: true,
         prescription_required: false,
         created_at: new Date(),

@@ -136,7 +136,7 @@ const schemas = {
   }),
   
   appointmentCreate: Joi.object({
-    patient_id: Joi.string().required(),
+    patientId: Joi.string().required(),
     description: Joi.string().required(),
     start_date: Joi.date().required(),
     end_date: Joi.date().required(),
@@ -193,7 +193,7 @@ const schemas = {
     patient_limit: Joi.number().integer().min(1).optional(),
     trial_period_days: Joi.number().integer().min(0).max(365).optional(),
     setup_fee: Joi.number().min(0).optional(),
-    is_active: Joi.boolean().optional()
+    isActive: Joi.boolean().optional()
   }),
 
   subscriptionCreate: Joi.object({

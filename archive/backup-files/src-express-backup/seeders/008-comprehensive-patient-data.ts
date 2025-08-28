@@ -78,7 +78,7 @@ export default {
         {
           id: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', // Deterministic UUID for patient profile 1
           userId: testUsers[0].id,
-          patient_id: 'PAT-2025-001',
+          patientId: 'PAT-2025-001',
           height_cm: 165.0,
           weight_kg: 68.5,
           blood_type: 'A+',
@@ -109,14 +109,14 @@ export default {
           missed_appointments: 1,
           last_visit_date: new Date('2025-01-15'),
           next_appointment_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-          is_active: true,
+          isActive: true,
           created_at: new Date('2025-01-01'),
           updated_at: new Date()
         },
         {
           id: 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', // Deterministic UUID for patient profile 2
           userId: testUsers[1].id,
-          patient_id: 'PAT-2025-002',
+          patientId: 'PAT-2025-002',
           height_cm: 178.0,
           weight_kg: 82.3,
           blood_type: 'O-',
@@ -143,7 +143,7 @@ export default {
           missed_appointments: 0,
           last_visit_date: new Date('2025-01-10'),
           next_appointment_date: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000),
-          is_active: true,
+          isActive: true,
           created_at: new Date('2025-01-02'),
           updated_at: new Date()
         }
@@ -262,7 +262,7 @@ export default {
         // Morning medication (Metformin)
         scheduledEvents.push({
           id: uuidv4(),
-          patient_id: patient1Id,
+          patientId: patient1Id,
           event_type: 'MEDICATION',
           event_id: medications[0]?.id,
           title: 'Take Metformin',
@@ -285,7 +285,7 @@ export default {
         // Evening medication (Lisinopril)
         scheduledEvents.push({
           id: uuidv4(),
-          patient_id: patient1Id,
+          patientId: patient1Id,
           event_type: 'MEDICATION',
           event_id: medications[1]?.id,
           title: 'Take Lisinopril',
@@ -309,7 +309,7 @@ export default {
         if (i % 3 === 0) { // Every 3 days
           scheduledEvents.push({
             id: uuidv4(),
-            patient_id: patient1Id,
+            patientId: patient1Id,
             event_type: 'VITAL_CHECK',
             event_id: null,
             title: 'Check Blood Pressure',
@@ -333,7 +333,7 @@ export default {
         if (i % 2 === 1) { // Every other day
           scheduledEvents.push({
             id: uuidv4(),
-            patient_id: patient1Id,
+            patientId: patient1Id,
             event_type: 'EXERCISE',
             event_id: null,
             title: '30-minute Walk',
@@ -363,7 +363,7 @@ export default {
         if (medications[2]) {
           scheduledEvents.push({
             id: uuidv4(),
-            patient_id: patient2Id,
+            patientId: patient2Id,
             event_type: 'MEDICATION',
             event_id: medications[2].id,
             title: 'Take Allergy Medicine',
@@ -399,7 +399,7 @@ export default {
         const sarahCompliance = Math.random() > 0.15; // 85% compliance
         adherenceRecords.push({
           id: uuidv4(),
-          patient_id: patient1Id,
+          patientId: patient1Id,
           scheduled_event_id: null,
           adherence_type: 'MEDICATION',
           due_at: new Date(recordDate.getFullYear(), recordDate.getMonth(), recordDate.getDate(), 8, 0),
@@ -416,7 +416,7 @@ export default {
         const michaelCompliance = Math.random() > 0.08; // 92% compliance
         adherenceRecords.push({
           id: uuidv4(),
-          patient_id: patient2Id,
+          patientId: patient2Id,
           scheduled_event_id: null,
           adherence_type: 'MEDICATION',
           due_at: new Date(recordDate.getFullYear(), recordDate.getMonth(), recordDate.getDate(), 20, 0),
@@ -438,8 +438,8 @@ export default {
           id: '550e8400-e29b-41d4-a716-446655440201',
           name: 'Systolic Blood Pressure',
           unit: 'mmHg',
-          normal_range_min: 90,
-          normal_range_max: 140,
+          normalRangeMin: 90,
+          normalRangeMax: 140,
           description: 'Systolic blood pressure measurement',
           validation_rules: JSON.stringify({ min: 60, max: 200 }),
           created_at: new Date(),
@@ -449,8 +449,8 @@ export default {
           id: '550e8400-e29b-41d4-a716-446655440202',
           name: 'Diastolic Blood Pressure',
           unit: 'mmHg',
-          normal_range_min: 60,
-          normal_range_max: 90,
+          normalRangeMin: 60,
+          normalRangeMax: 90,
           description: 'Diastolic blood pressure measurement',
           validation_rules: JSON.stringify({ min: 40, max: 120 }),
           created_at: new Date(),
@@ -460,8 +460,8 @@ export default {
           id: '550e8400-e29b-41d4-a716-446655440203',
           name: 'Blood Glucose',
           unit: 'mg/dL',
-          normal_range_min: 70,
-          normal_range_max: 140,
+          normalRangeMin: 70,
+          normalRangeMax: 140,
           description: 'Blood glucose level measurement',
           validation_rules: JSON.stringify({ min: 30, max: 400 }),
           created_at: new Date(),
@@ -471,8 +471,8 @@ export default {
           id: '550e8400-e29b-41d4-a716-446655440204',
           name: 'Weight',
           unit: 'kg',
-          normal_range_min: 30,
-          normal_range_max: 200,
+          normalRangeMin: 30,
+          normalRangeMax: 200,
           description: 'Body weight measurement',
           validation_rules: JSON.stringify({ min: 10, max: 500 }),
           created_at: new Date(),
@@ -506,11 +506,11 @@ export default {
           // Systolic blood pressure reading
           {
             id: uuidv4(),
-            patient_id: patient1Id,
+            patientId: patient1Id,
             vital_type_id: vitalTypeIds.systolic,
             value: 125 + Math.floor(Math.random() * 20), // 125-145
             unit: 'mmHg',
-            reading_time: new Date(readingDate.getFullYear(), readingDate.getMonth(), readingDate.getDate(), 9, 0),
+            readingTime: new Date(readingDate.getFullYear(), readingDate.getMonth(), readingDate.getDate(), 9, 0),
             notes: 'Morning systolic BP reading',
             created_at: readingDate,
             updated_at: readingDate
@@ -518,11 +518,11 @@ export default {
           // Diastolic blood pressure reading
           {
             id: uuidv4(),
-            patient_id: patient1Id,
+            patientId: patient1Id,
             vital_type_id: vitalTypeIds.diastolic,
             value: 80 + Math.floor(Math.random() * 15), // 80-95
             unit: 'mmHg',
-            reading_time: new Date(readingDate.getFullYear(), readingDate.getMonth(), readingDate.getDate(), 9, 0),
+            readingTime: new Date(readingDate.getFullYear(), readingDate.getMonth(), readingDate.getDate(), 9, 0),
             notes: 'Morning diastolic BP reading',
             created_at: readingDate,
             updated_at: readingDate
@@ -530,11 +530,11 @@ export default {
           // Blood glucose reading
           {
             id: uuidv4(),
-            patient_id: patient1Id,
+            patientId: patient1Id,
             vital_type_id: vitalTypeIds.glucose,
             value: 95 + Math.floor(Math.random() * 30), // 95-125 mg/dL
             unit: 'mg/dL',
-            reading_time: new Date(readingDate.getFullYear(), readingDate.getMonth(), readingDate.getDate(), 12, 0),
+            readingTime: new Date(readingDate.getFullYear(), readingDate.getMonth(), readingDate.getDate(), 12, 0),
             notes: 'Before lunch glucose reading',
             created_at: readingDate,
             updated_at: readingDate
@@ -542,11 +542,11 @@ export default {
           // Weight reading
           {
             id: uuidv4(),
-            patient_id: patient1Id,
+            patientId: patient1Id,
             vital_type_id: vitalTypeIds.weight,
             value: 68.5 + (Math.random() - 0.5) * 2, // +/- 1kg variation
             unit: 'kg',
-            reading_time: new Date(readingDate.getFullYear(), readingDate.getMonth(), readingDate.getDate(), 7, 30),
+            readingTime: new Date(readingDate.getFullYear(), readingDate.getMonth(), readingDate.getDate(), 7, 30),
             notes: 'Morning weight reading',
             created_at: readingDate,
             updated_at: readingDate
@@ -557,11 +557,11 @@ export default {
         if (i % 3 === 0) { // Less frequent for healthy patient
           vitalReadings.push({
             id: uuidv4(),
-            patient_id: patient2Id,
+            patientId: patient2Id,
             vital_type_id: vitalTypeIds.weight,
             value: 82.3 + (Math.random() - 0.5) * 1, // +/- 0.5kg variation
             unit: 'kg',
-            reading_time: new Date(readingDate.getFullYear(), readingDate.getMonth(), readingDate.getDate(), 7, 0),
+            readingTime: new Date(readingDate.getFullYear(), readingDate.getMonth(), readingDate.getDate(), 7, 0),
             notes: 'Weekly weigh-in',
             created_at: readingDate,
             updated_at: readingDate
@@ -575,7 +575,7 @@ export default {
       const symptoms = [
         {
           id: uuidv4(),
-          patient_id: patient1Id,
+          patientId: patient1Id,
           symptom_name: 'Mild Headache',
           description: 'Dull headache, especially in the morning',
           severity: 4,
@@ -590,7 +590,7 @@ export default {
         },
         {
           id: uuidv4(),
-          patient_id: patient1Id,
+          patientId: patient1Id,
           symptom_name: 'Foot Numbness',
           description: 'Tingling sensation in toes, possibly diabetes-related',
           severity: 6,
@@ -620,8 +620,8 @@ export default {
           participant_two_id: doctors[0].id,
           organizer_type: 'doctor',
           organizer_id: doctors[0].id,
-          doctor_id: doctors[0].id,
-          patient_id: patient1Id,
+          doctorId: doctors[0].id,
+          patientId: patient1Id,
           start_date: futureDate1,
           end_date: futureDate1,
           start_time: new Date(futureDate1.getFullYear(), futureDate1.getMonth(), futureDate1.getDate(), 10, 0),
@@ -638,8 +638,8 @@ export default {
           participant_two_id: doctors[0].id,
           organizer_type: 'doctor',
           organizer_id: doctors[0].id,
-          doctor_id: doctors[0].id,
-          patient_id: patient2Id,
+          doctorId: doctors[0].id,
+          patientId: patient2Id,
           start_date: futureDate2,
           end_date: futureDate2,
           start_time: new Date(futureDate2.getFullYear(), futureDate2.getMonth(), futureDate2.getDate(), 14, 0),
@@ -668,8 +668,8 @@ export default {
     try {
       // Clean up in reverse order of creation
       await queryInterface.bulkDelete('appointments', { 
-        patient_id: { [Sequelize.Op.in]: await queryInterface.sequelize.query(
-          'SELECT id FROM patients WHERE patient_id IN (?, ?)',
+        patientId: { [Sequelize.Op.in]: await queryInterface.sequelize.query(
+          'SELECT id FROM patients WHERE patientId IN (?, ?)',
           { 
             replacements: ['PAT-2025-001', 'PAT-2025-002'],
             type: Sequelize.QueryTypes.SELECT 
@@ -678,8 +678,8 @@ export default {
       }, { transaction, ignoreDuplicates: true });
 
       await queryInterface.bulkDelete('symptoms', {
-        patient_id: { [Sequelize.Op.in]: await queryInterface.sequelize.query(
-          'SELECT id FROM patients WHERE patient_id IN (?, ?)',
+        patientId: { [Sequelize.Op.in]: await queryInterface.sequelize.query(
+          'SELECT id FROM patients WHERE patientId IN (?, ?)',
           { 
             replacements: ['PAT-2025-001', 'PAT-2025-002'],
             type: Sequelize.QueryTypes.SELECT 
@@ -688,8 +688,8 @@ export default {
       }, { transaction, ignoreDuplicates: true });
 
       await queryInterface.bulkDelete('vital_readings', {
-        patient_id: { [Sequelize.Op.in]: await queryInterface.sequelize.query(
-          'SELECT id FROM patients WHERE patient_id IN (?, ?)',
+        patientId: { [Sequelize.Op.in]: await queryInterface.sequelize.query(
+          'SELECT id FROM patients WHERE patientId IN (?, ?)',
           { 
             replacements: ['PAT-2025-001', 'PAT-2025-002'],
             type: Sequelize.QueryTypes.SELECT 
@@ -698,8 +698,8 @@ export default {
       }, { transaction, ignoreDuplicates: true });
 
       await queryInterface.bulkDelete('adherence_records', {
-        patient_id: { [Sequelize.Op.in]: await queryInterface.sequelize.query(
-          'SELECT id FROM patients WHERE patient_id IN (?, ?)',
+        patientId: { [Sequelize.Op.in]: await queryInterface.sequelize.query(
+          'SELECT id FROM patients WHERE patientId IN (?, ?)',
           { 
             replacements: ['PAT-2025-001', 'PAT-2025-002'],
             type: Sequelize.QueryTypes.SELECT 
@@ -708,8 +708,8 @@ export default {
       }, { transaction, ignoreDuplicates: true });
 
       await queryInterface.bulkDelete('scheduled_events', {
-        patient_id: { [Sequelize.Op.in]: await queryInterface.sequelize.query(
-          'SELECT id FROM patients WHERE patient_id IN (?, ?)',
+        patientId: { [Sequelize.Op.in]: await queryInterface.sequelize.query(
+          'SELECT id FROM patients WHERE patientId IN (?, ?)',
           { 
             replacements: ['PAT-2025-001', 'PAT-2025-002'],
             type: Sequelize.QueryTypes.SELECT 
@@ -719,7 +719,7 @@ export default {
 
       await queryInterface.bulkDelete('medications', {
         participant_id: { [Sequelize.Op.in]: await queryInterface.sequelize.query(
-          'SELECT id FROM patients WHERE patient_id IN (?, ?)',
+          'SELECT id FROM patients WHERE patientId IN (?, ?)',
           { 
             replacements: ['PAT-2025-001', 'PAT-2025-002'],
             type: Sequelize.QueryTypes.SELECT 
@@ -738,7 +738,7 @@ export default {
       }, { transaction, ignoreDuplicates: true });
 
       await queryInterface.bulkDelete('patients', { 
-        patient_id: { [Sequelize.Op.in]: ['PAT-2025-001', 'PAT-2025-002'] }
+        patientId: { [Sequelize.Op.in]: ['PAT-2025-001', 'PAT-2025-002'] }
       }, { transaction, ignoreDuplicates: true });
 
       await queryInterface.bulkDelete('user_roles', {

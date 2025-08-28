@@ -40,7 +40,7 @@ export async function GET(request: NextRequest) {
     const symptomsFromDb = await prisma.symptoms_database.findMany({
       where: {
         AND: [
-          { is_active: true },
+          { isActive: true },
           {
             OR: [
               { diagnosis_name: { contains: query, mode: 'insensitive' } },

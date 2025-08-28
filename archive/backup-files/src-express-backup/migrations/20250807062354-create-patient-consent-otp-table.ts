@@ -29,7 +29,7 @@ export default {
         comment: 'Secondary doctor assignment this OTP is for'
       },
       
-      patient_id: {
+      patientId: {
         type: Sequelize.UUID,
         allowNull: false,
         references: {
@@ -231,7 +231,7 @@ export default {
     // Add indexes for performance and security
     const indexes = [
       { fields: ['secondary_assignment_id'], name: 'idx_patient_consent_otp_secondary_assignment_id' },
-      { fields: ['patient_id'], name: 'idx_patient_consent_otp_patient_id' },
+      { fields: ['patientId'], name: 'idx_patient_consent_otp_patient_id' },
       { fields: ['otp_code'], name: 'idx_patient_consent_otp_otp_code' },
       { fields: ['expires_at'], name: 'idx_patient_consent_otp_expires_at' },
       { fields: ['is_verified'], name: 'idx_patient_consent_otp_is_verified' },

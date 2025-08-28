@@ -150,7 +150,7 @@ export default {
           overall_adherence_score: 92.00,
           last_visit_date: '2025-01-15',
           next_appointment_date: '2025-02-01',
-          is_active: true,
+          isActive: true,
           created_at: new Date(),
           updated_at: new Date()
         },
@@ -179,7 +179,7 @@ export default {
           overall_adherence_score: 65.00,
           last_visit_date: '2025-01-18',
           next_appointment_date: '2025-01-25',
-          is_active: true,
+          isActive: true,
           created_at: new Date(),
           updated_at: new Date()
         },
@@ -208,7 +208,7 @@ export default {
           overall_adherence_score: 78.00,
           last_visit_date: '2025-01-20',
           next_appointment_date: '2025-01-30',
-          is_active: true,
+          isActive: true,
           created_at: new Date(),
           updated_at: new Date()
         },
@@ -237,7 +237,7 @@ export default {
           overall_adherence_score: 95.00,
           last_visit_date: '2025-01-12',
           next_appointment_date: '2025-02-05',
-          is_active: true,
+          isActive: true,
           created_at: new Date(),
           updated_at: new Date()
         },
@@ -266,7 +266,7 @@ export default {
           overall_adherence_score: 88.00,
           last_visit_date: '2025-01-08',
           next_appointment_date: '2025-01-28',
-          is_active: true,
+          isActive: true,
           created_at: new Date(),
           updated_at: new Date()
         }

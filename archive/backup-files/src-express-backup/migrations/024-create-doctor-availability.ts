@@ -19,7 +19,7 @@ export default {
         defaultValue: Sequelize.UUIDV4,
         primaryKey: true,
       },
-      doctor_id: {
+      doctorId: {
         type: Sequelize.UUID,
         allowNull: false,
         references: {
@@ -78,8 +78,8 @@ export default {
     });
 
     // Add indexes
-    await queryInterface.addIndex('doctor_availability', ['doctor_id', 'day_of_week']);
-    await queryInterface.addIndex('doctor_availability', ['doctor_id', 'is_available']);
+    await queryInterface.addIndex('doctor_availability', ['doctorId', 'day_of_week']);
+    await queryInterface.addIndex('doctor_availability', ['doctorId', 'is_available']);
   },
 
   down: async (queryInterface: any, Sequelize: any) => {

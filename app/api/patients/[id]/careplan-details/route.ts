@@ -88,8 +88,8 @@ async function verifyPatientAccess(patientId: string, doctorId: string | null, h
       {
         patientDoctorAssignments: {
           some: { 
-            doctor_id: doctorId, 
-            is_active: true 
+            doctorId: doctorId, 
+            isActive: true 
           }
         }
       }
@@ -101,7 +101,7 @@ async function verifyPatientAccess(patientId: string, doctorId: string | null, h
         patient_provider_assignments: {
           some: {
             hsp_id: hspId,
-            is_active: true
+            isActive: true
           }
         }
       }
@@ -130,8 +130,8 @@ async function fetchCarePlanData(patientId: string) {
   // Get all care plans for the patient with comprehensive data
   const carePlans = await prisma.carePlan.findMany({
     where: {
-      patient_id: patientId,
-      is_active: true
+      patientId: patientId,
+      isActive: true
     },
     include: {
       medications: {
@@ -151,7 +151,7 @@ async function fetchCarePlanData(patientId: string) {
       patient: {
         select: {
           id: true,
-          patient_id: true,
+          patientId: true,
           overall_adherence_score: true
         }
       }
@@ -161,15 +161,15 @@ async function fetchCarePlanData(patientId: string) {
 
   // Get vital requirements and readings
   const vitalRequirements = await prisma.vital_requirements.findMany({
-    where: { patient_id: patientId },
+    where: { patientId: patientId },
     include: {
       vital_templates: {
         select: {
           id: true,
           name: true,
           unit: true,
-          normal_range_min: true,
-          normal_range_max: true
+          normalRangeMin: true,
+          normalRangeMax: true
         }
       }
     }
@@ -181,7 +181,7 @@ async function fetchCarePlanData(patientId: string) {
 
   const vitalReadings = await prisma.vitals.findMany({
     where: {
-      patient_id: patientId,
+      patientId: patientId,
       recorded_at: {
         gte: thirtyDaysAgo
       }
@@ -290,7 +290,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
           vitalReadings: formattedVitalReadings,
           patient: {
             id: patient.id,
-            patient_id: patient.patient_id,
+            patientId: patient.patientId,
             adherence_score: patient.overall_adherence_score
           }
         },

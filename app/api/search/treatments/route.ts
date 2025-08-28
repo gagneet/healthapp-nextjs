@@ -50,7 +50,7 @@ export async function GET(request: NextRequest) {
 
     let whereClause: any = {
       AND: [
-        { is_active: true },
+        { isActive: true },
         {
           OR: [
             { treatment_name: { contains: query, mode: 'insensitive' } },

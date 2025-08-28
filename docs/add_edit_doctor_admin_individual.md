@@ -125,7 +125,7 @@ The Add Doctor and Edit Doctor functionality now have complete feature parity wi
 
 - Fixed patient seeder to match actual database schema (patients table structure)
 - Populated database with realistic patient data (5 patients with proper medical records, emergency contacts, insurance info)
-- Updated field mappings to use correct column names (overall_adherence_score, is_active, last_visit_date, etc.)
+- Updated field mappings to use correct column names (overall_adherence_score, isActive, last_visit_date, etc.)
 
 ### 🔧 Backend API Implementation
 

@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
     const providerId = searchParams.get('provider_id');
     const serviceType = searchParams.get('service_type');
     const billingCycle = searchParams.get('billing_cycle');
-    const isActive = searchParams.get('is_active');
+    const isActive = searchParams.get('isActive');
     const minPrice = searchParams.get('min_price');
     const maxPrice = searchParams.get('max_price');
     const page = parseInt(searchParams.get('page') || '1');
@@ -59,11 +59,11 @@ export async function GET(request: NextRequest) {
     }
 
     if (isActive !== null && isActive !== undefined) {
-      whereClause.is_active = isActive === 'true';
+      whereClause.isActive = isActive === 'true';
     } else {
       // Default to showing only active plans for non-admins
       if (!['SYSTEM_ADMIN', 'HOSPITAL_ADMIN'].includes(session.user.role)) {
-        whereClause.is_active = true;
+        whereClause.isActive = true;
       }
     }
 
@@ -107,7 +107,7 @@ export async function GET(request: NextRequest) {
         skip: offset,
         take: limit,
         orderBy: [
-          { is_active: 'desc' },
+          { isActive: 'desc' },
           { price: 'asc' }
         ]
       }),
@@ -262,7 +262,7 @@ export async function POST(request: NextRequest) {
         trial_period_days: parseInt(trial_period_days),
         setup_fee: parseFloat(setup_fee),
         stripe_price_id,
-        is_active: true,
+        isActive: true,
         created_at: new Date(),
         updated_at: new Date()
       },

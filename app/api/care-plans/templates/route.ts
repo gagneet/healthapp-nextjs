@@ -59,7 +59,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
   const skip = (page - 1) * limit
 
   let whereClause: any = {
-      is_active: true // Only show active templates
+      isActive: true // Only show active templates
     }
 
     // Business Logic: Role-based access to templates

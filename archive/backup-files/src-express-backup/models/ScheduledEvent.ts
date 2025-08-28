@@ -10,7 +10,7 @@ export default (sequelize: any) => {
       primaryKey: true,
     },
     
-    patient_id: {
+    patientId: {
       type: DataTypes.UUID,
       allowNull: false,
       references: {
@@ -122,7 +122,7 @@ export default (sequelize: any) => {
     
     indexes: [
       {
-        fields: ['patient_id'],
+        fields: ['patientId'],
         where: { deleted_at: null }
       },
       {
@@ -145,7 +145,7 @@ export default (sequelize: any) => {
         where: { deleted_at: null }
       },
       {
-        fields: ['patient_id', 'scheduled_for'],
+        fields: ['patientId', 'scheduled_for'],
         where: { deleted_at: null }
       }
     ],
@@ -200,7 +200,7 @@ export default (sequelize: any) => {
         
         return (this as any).findAll({
           where: {
-            patient_id: patientId,
+            patientId: patientId,
             scheduled_for: {
               [sequelize.Sequelize.Op.between]: [now, endTime]
             },

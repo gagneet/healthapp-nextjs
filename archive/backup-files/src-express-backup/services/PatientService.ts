@@ -26,7 +26,7 @@ class PatientService {
         address, // Frontend sends 'address', not separate street/city/state
         
         // Patient-specific fields
-        medical_record_number, // Frontend sends this, not 'patient_id'
+        medical_record_number, // Frontend sends this, not 'patientId'
         height_cm,
         weight_kg,
         allergies,
@@ -221,7 +221,7 @@ class PatientService {
           exists: true,
           patient: {
             id: user.patientProfile.id,
-            patient_id: user.patientProfile.patient_id,
+            patientId: user.patientProfile.patientId,
             userId: user.id,
             first_name: user.first_name,
             middle_name: user.middle_name,
@@ -302,16 +302,16 @@ class PatientService {
       // Find the last patient ID with the same prefix and year/month
       const lastPatient = await Patient.findOne({
         where: {
-          patient_id: {
+          patientId: {
             [Op.like]: `${namePrefix}/${yearMonth}/%`
           }
         },
-        order: [['patient_id', 'DESC']]
+        order: [['patientId', 'DESC']]
       });
 
       let sequenceNumber = 1;
-      if (lastPatient && lastPatient.patient_id) {
-        const lastSequence = lastPatient.patient_id.split('/')[2];
+      if (lastPatient && lastPatient.patientId) {
+        const lastSequence = lastPatient.patientId.split('/')[2];
         sequenceNumber = parseInt(lastSequence) + 1;
       }
 

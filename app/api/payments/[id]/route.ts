@@ -26,7 +26,7 @@ export async function GET(
         patients: {
           select: {
             id: true,
-            patient_id: true,
+            patientId: true,
             user: {
               select: {
                 name: true,
@@ -83,7 +83,7 @@ export async function GET(
       const patient = await prisma.patient.findFirst({
         where: { userId: session.user.id }
       });
-      if (!patient || payment.patient_id !== patient.id) {
+      if (!patient || payment.patientId !== patient.id) {
         return NextResponse.json({
           status: false,
           statusCode: 403,
@@ -104,7 +104,7 @@ export async function GET(
       }
       
       const patient = await prisma.patient.findUnique({
-        where: { id: payment.patient_id }
+        where: { id: payment.patientId }
       });
       
       if (!patient) {
@@ -197,7 +197,7 @@ export async function PUT(
         where: { userId: session.user.id }
       });
       const patient = await prisma.patient.findUnique({
-        where: { id: existingPayment.patient_id }
+        where: { id: existingPayment.patientId }
       });
       if (!doctor || !patient || patient.primaryCareDoctorId !== doctor.id) {
         return NextResponse.json({
@@ -246,7 +246,7 @@ export async function PUT(
       include: {
         patients: {
           select: {
-            patient_id: true,
+            patientId: true,
             user: {
               select: {
                 name: true,
@@ -346,7 +346,7 @@ export async function DELETE(
         where: { userId: session.user.id }
       });
       const patient = await prisma.patient.findUnique({
-        where: { id: existingPayment.patient_id }
+        where: { id: existingPayment.patientId }
       });
       if (!doctor || !patient || patient.primaryCareDoctorId !== doctor.id) {
         return NextResponse.json({

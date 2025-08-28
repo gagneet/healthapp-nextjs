@@ -50,7 +50,7 @@ class SubscriptionController {
   async getServicePlans(req: Request, res: Response, next: NextFunction): Promise<void | Response> {
     try {
       const { providerId } = req.params;
-      const { is_active, limit, offset } = req.query;
+      const { isActive, limit, offset } = req.query;
       const limitNum = parseInt(String(limit)) || 10;
       const offsetNum = parseInt(String(offset)) || 0;
 
@@ -70,7 +70,7 @@ class SubscriptionController {
       }
 
       const plans = await SubscriptionService.getServicePlans(targetProviderId, {
-        is_active: is_active !== undefined ? is_active === 'true' : null,
+        isActive: isActive !== undefined ? isActive === 'true' : null,
         limit: parseQueryParamAsInt(limit, 20) || 20,
         offset: parseQueryParamAsInt(offset, 0) || 0
       });
@@ -243,7 +243,7 @@ class SubscriptionController {
         });
       }
 
-      const whereClause = { patient_id: targetPatientId };
+      const whereClause = { patientId: targetPatientId };
       if (status) {
         (whereClause as any).status = (status as any).toUpperCase();
       }
@@ -473,8 +473,8 @@ class SubscriptionController {
 
       const paymentMethods = await PaymentMethod.findAll({
         where: { 
-          patient_id: targetPatientId,
-          is_active: true
+          patientId: targetPatientId,
+          isActive: true
         },
         order: [['is_default', 'DESC'], ['created_at', 'DESC']]
       });
@@ -588,7 +588,7 @@ class SubscriptionController {
         });
       }
 
-      const whereClause = { patient_id: targetPatientId };
+      const whereClause = { patientId: targetPatientId };
       if (status) {
         (whereClause as any).status = status;
       }
