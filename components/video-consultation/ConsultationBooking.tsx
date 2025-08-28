@@ -17,8 +17,8 @@ import {
 interface Doctor {
   id: string;
   user: {
-    first_name: string;
-    last_name: string;
+    firstName: string;
+    lastName: string;
   };
   speciality?: {
     name: string;
@@ -79,8 +79,8 @@ export default function ConsultationBooking({
       const mockDoctor: Doctor = {
         id: id,
         user: {
-          first_name: 'Dr. Emily',
-          last_name: 'Rodriguez'
+          firstName: 'Dr. Emily',
+          lastName: 'Rodriguez'
         },
         speciality: {
           name: 'Internal Medicine'
@@ -99,13 +99,13 @@ export default function ConsultationBooking({
       const mockDoctors: Doctor[] = [
         {
           id: 'doc1',
-          user: { first_name: 'Dr. Emily', last_name: 'Rodriguez' },
+          user: { firstName: 'Dr. Emily', lastName: 'Rodriguez' },
           speciality: { name: 'Internal Medicine' },
           consultation_fee: 200
         },
         {
           id: 'doc2',
-          user: { first_name: 'Dr. Robert', last_name: 'Smith' },
+          user: { firstName: 'Dr. Robert', lastName: 'Smith' },
           speciality: { name: 'Cardiology' },
           consultation_fee: 250
         }
@@ -243,7 +243,7 @@ export default function ConsultationBooking({
                 <div className="flex items-center justify-between">
                   <div>
                     <h3 className="font-semibold">
-                      {doctor.user.first_name} {doctor.user.last_name}
+                      {doctor.user.firstName} {doctor.user.lastName}
                     </h3>
                     <p className="text-gray-600 text-sm">{doctor.speciality?.name}</p>
                   </div>
@@ -266,12 +266,12 @@ export default function ConsultationBooking({
               <div className="flex items-center space-x-4">
                 <div className="w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center">
                   <span className="text-white font-semibold text-xl">
-                    {selectedDoctor.user.first_name[0]}{selectedDoctor.user.last_name[0]}
+                    {selectedDoctor.user.firstName[0]}{selectedDoctor.user.lastName[0]}
                   </span>
                 </div>
                 <div>
                   <h3 className="text-xl font-semibold">
-                    {selectedDoctor.user.first_name} {selectedDoctor.user.last_name}
+                    {selectedDoctor.user.firstName} {selectedDoctor.user.lastName}
                   </h3>
                   <p className="text-blue-600">{selectedDoctor.speciality?.name}</p>
                 </div>
@@ -472,7 +472,7 @@ export default function ConsultationBooking({
               
               <div className="grid md:grid-cols-2 gap-6 mb-6">
                 <div className="space-y-2">
-                  <p><strong>Doctor:</strong> {selectedDoctor.user.first_name} {selectedDoctor.user.last_name}</p>
+                  <p><strong>Doctor:</strong> {selectedDoctor.user.firstName} {selectedDoctor.user.lastName}</p>
                   <p><strong>Speciality:</strong> {selectedDoctor.speciality?.name}</p>
                   <p><strong>Date:</strong> {selectedDate.toLocaleDateString('en-US', { 
                     weekday: 'long', 

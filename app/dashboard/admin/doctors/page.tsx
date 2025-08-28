@@ -20,10 +20,10 @@ import {
 
 interface Doctor {
   id: string
-  user_id: string
-  first_name: string
+  userId: string
+  firstName: string
   middle_name?: string
-  last_name: string
+  lastName: string
   full_name: string
   email: string
   mobile_number?: string
@@ -103,8 +103,8 @@ export default function AdminDoctorsPage() {
           
           return {
             id: basicInfo.id || doctor.id || '',
-            user_id: basicInfo.user_id || basicInfo.id || doctor.user_id || '',
-            first_name: basicInfo.first_name || '',
+            userId: basicInfo.userId || basicInfo.id || doctor.userId || '',
+            firstName: basicInfo.firstName || '',
             last_name: basicInfo.last_name || '',
             full_name: `${basicInfo.first_name || ''} ${basicInfo.last_name || ''}`.trim() || 'Incomplete Profile',
             email: basicInfo.email || doctor.email || '',

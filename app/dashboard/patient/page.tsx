@@ -41,54 +41,54 @@ const SymptomReporter = dynamicImport(() => import('@/components/patient/symptom
 })
 
 interface PatientDashboardData {
-  adherence_summary: {
+  adherenceSummary: {
     today: {
-      medications_due: number
-      medications_taken: number
-      vitals_due: number
-      vitals_recorded: number
-      exercises_due: number
-      exercises_completed: number
+      medicationsDue: number
+      medicationsTaken: number
+      vitalsDue: number
+      vitalsRecorded: number
+      exercisesDue: number
+      exercisesCompleted: number
     }
     weekly: {
-      adherence_rate: number
-      missed_medications: number
-      completed_activities: number
+      adherenceRate: number
+      missedMedications: number
+      completedActivities: number
     }
     monthly: {
-      overall_score: number
+      overallScore: number
       trend: 'improving' | 'declining' | 'stable'
     }
   }
-  upcoming_events: ScheduledEventType[]
-  overdue_items: OverdueItem[]
-  recent_activities: ActivityRecord[]
-  health_metrics: {
+  upcomingEvents: ScheduledEventType[]
+  overdueItems: OverdueItem[]
+  recentActivities: ActivityRecord[]
+  healthMetrics: {
     weight: { value: number; date: string; trend: 'up' | 'down' | 'stable' }
-    blood_pressure: { systolic: number; diastolic: number; date: string }
-    heart_rate: { value: number; date: string }
-    blood_sugar: { value: number; date: string }
+    bloodPressure: { systolic: number; diastolic: number; date: string }
+    heartRate: { value: number; date: string }
+    bloodSugar: { value: number; date: string }
   }
   alerts: AlertType[]
 }
 
 interface ScheduledEventType {
   id: string
-  event_type: 'MEDICATION' | 'VITAL_CHECK' | 'EXERCISE' | 'DIET_LOG' | 'APPOINTMENT'
+  eventType: 'MEDICATION' | 'VITAL_CHECK' | 'EXERCISE' | 'DIET_LOG' | 'APPOINTMENT'
   title: string
   description?: string
-  scheduled_for: string
+  scheduledFor: string
   priority: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL'
   status: 'SCHEDULED' | 'PENDING' | 'COMPLETED' | 'MISSED'
-  event_data: any
+  eventData: any
 }
 
 interface OverdueItem {
   id: string
   type: string
   title: string
-  due_date: string
-  hours_overdue: number
+  dueDate: string
+  hoursOverdue: number
   priority: string
 }
 
@@ -96,7 +96,7 @@ interface ActivityRecord {
   id: string
   type: string
   title: string
-  completed_at: string
+  completedAt: string
   result: any
 }
 
@@ -240,7 +240,7 @@ export default function PatientDashboard() {
   }
 
   // Prepare chart data with null safety
-  const adherenceToday = dashboardData?.adherence_summary?.today || {}
+  const adherenceToday = dashboardData?.adherenceSummary?.today || {}
   const medicationsTaken = adherenceToday.medications_taken || 0
   const medicationsDue = adherenceToday.medications_due || 0
   
@@ -391,7 +391,7 @@ export default function PatientDashboard() {
                   <div className="ml-4">
                     <p className="text-sm font-medium text-gray-600">Score</p>
                     <p className="text-2xl font-bold text-gray-900">
-                      {dashboardData?.adherence_summary?.monthly?.overall_score || 0}%
+                      {dashboardData?.adherenceSummary?.monthly?.overallScore || 0}%
                     </p>
                   </div>
                 </div>
@@ -441,18 +441,18 @@ export default function PatientDashboard() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {dashboardData.upcoming_events.slice(0, 5).map((event) => (
+                {dashboardData.upcomingEvents.slice(0, 5).map((event) => (
                   <div key={event.id} className={`p-4 rounded-lg border ${getPriorityColor(event.priority)}`}>
                     <div className="flex items-start justify-between">
                       <div className="flex items-start space-x-3">
-                        {getEventIcon(event.event_type)}
+                        {getEventIcon(event.eventType)}
                         <div className="flex-1">
                           <h4 className="font-medium text-gray-900">{event.title}</h4>
                           {event.description && (
                             <p className="text-sm text-gray-600 mt-1">{event.description}</p>
                           )}
                           <p className="text-xs text-gray-500 mt-2">
-                            Due: {formatDateTime(event.scheduled_for)}
+                            Due: {formatDateTime(event.scheduledFor)}
                           </p>
                         </div>
                       </div>
@@ -475,7 +475,7 @@ export default function PatientDashboard() {
                     </div>
                   </div>
                 ))}
-                {dashboardData.upcoming_events.length === 0 && (
+                {dashboardData.upcomingEvents.length === 0 && (
                   <p className="text-center text-gray-500 py-8">
                     No upcoming tasks. Great job staying on track! 🎉
                   </p>
@@ -485,7 +485,7 @@ export default function PatientDashboard() {
           </Card>
 
           {/* Overdue Items */}
-          {dashboardData.overdue_items.length > 0 && (
+          {dashboardData.overdueItems.length > 0 && (
             <Card className="border-red-200">
               <CardHeader>
                 <CardTitle className="flex items-center text-red-600">
@@ -495,16 +495,16 @@ export default function PatientDashboard() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {dashboardData.overdue_items.map((item) => (
+                  {dashboardData.overdueItems.map((item) => (
                     <div key={item.id} className="p-4 rounded-lg border border-red-200 bg-red-50">
                       <div className="flex items-start justify-between">
                         <div>
                           <h4 className="font-medium text-red-900">{item.title}</h4>
                           <p className="text-sm text-red-700 mt-1">
-                            Overdue by {item.hours_overdue} hour{item.hours_overdue !== 1 ? 's' : ''}
+                            Overdue by {item.hoursOverdue} hour{item.hoursOverdue !== 1 ? 's' : ''}
                           </p>
                           <p className="text-xs text-red-600 mt-2">
-                            Was due: {formatDateTime(item.due_date)}
+                            Was due: {formatDateTime(item.dueDate)}
                           </p>
                         </div>
                         <span className={`px-2 py-1 text-xs rounded-full ${getPriorityColor(item.priority)}`}>
@@ -528,19 +528,19 @@ export default function PatientDashboard() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {dashboardData.recent_activities.slice(0, 5).map((activity) => (
+                {dashboardData.recentActivities.slice(0, 5).map((activity) => (
                   <div key={activity.id} className="flex items-center space-x-3 p-3 bg-green-50 rounded-lg">
                     <div className="p-2 bg-green-100 rounded-full">
                       {getEventIcon(activity.type)}
                     </div>
                     <div className="flex-1">
                       <h4 className="font-medium text-gray-900">{activity.title}</h4>
-                      <p className="text-sm text-gray-600">{formatDateTime(activity.completed_at)}</p>
+                      <p className="text-sm text-gray-600">{formatDateTime(activity.completedAt)}</p>
                     </div>
                     <CheckIcon className="h-5 w-5 text-green-600" />
                   </div>
                 ))}
-                {dashboardData.recent_activities.length === 0 && (
+                {dashboardData.recentActivities.length === 0 && (
                   <p className="text-center text-gray-500 py-8">
                     No recent activities to show.
                   </p>

@@ -198,15 +198,15 @@ export default function PatientQuickView({ isOpen, setIsOpen, patient }: Patient
                         <div className="flex items-center space-x-3">
                           <div className="h-10 w-10 rounded-full bg-white bg-opacity-20 flex items-center justify-center">
                             <span className="text-sm font-medium text-white">
-                              {getInitials(patient.first_name, patient.last_name)}
+                              {getInitials(patient.firstName, patient.lastName)}
                             </span>
                           </div>
                           <div>
                             <Dialog.Title className="text-lg font-medium text-white">
-                              {patient.first_name} {patient.last_name}
+                              {patient.firstName} {patient.lastName}
                             </Dialog.Title>
                             <p className="text-sm text-blue-100">
-                              {patient.medical_record_number}
+                              {patient.medicalRecordNumber}
                             </p>
                           </div>
                         </div>
@@ -228,15 +228,15 @@ export default function PatientQuickView({ isOpen, setIsOpen, patient }: Patient
                           <div className="bg-gray-50 rounded-lg p-3">
                             <p className="text-xs font-medium text-gray-500">Adherence Rate</p>
                             <p className={`text-lg font-bold ${
-                              (patient.adherence_rate ?? 0) >= 85 ? 'text-green-600' : 
-                              (patient.adherence_rate ?? 0) >= 70 ? 'text-yellow-600' : 'text-red-600'
+                              (patient.adherenceRate ?? 0) >= 85 ? 'text-green-600' : 
+                              (patient.adherenceRate ?? 0) >= 70 ? 'text-yellow-600' : 'text-red-600'
                             }`}>
-                              {patient.adherence_rate ?? 0}%
+                              {patient.adherenceRate ?? 0}%
                             </p>
                           </div>
                           <div className="bg-gray-50 rounded-lg p-3">
                             <p className="text-xs font-medium text-gray-500">Critical Alerts</p>
-                            <p className="text-lg font-bold text-red-600">{patient.critical_alerts}</p>
+                            <p className="text-lg font-bold text-red-600">{patient.criticalAlerts}</p>
                           </div>
                         </div>
                       </div>

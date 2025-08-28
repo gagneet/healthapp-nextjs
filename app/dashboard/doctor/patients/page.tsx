@@ -57,13 +57,13 @@ const displayAdherenceRate = (rate: number | null | undefined) => {
 
 // Helper function to get patient type badge
 const getPatientTypeBadge = (patient: Patient) => {
-  if (patient.patient_type === 'M' || patient.access_type === 'primary') {
+  if (patient.patientType === 'M' || patient.accessType === 'primary') {
     return (
       <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-blue-100 text-blue-800">
         <span className="font-bold mr-1">M</span> Primary
       </span>
     )
-  } else if (patient.patient_type === 'R' || patient.access_type === 'secondary') {
+  } else if (patient.patientType === 'R' || patient.accessType === 'secondary') {
     return (
       <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-purple-100 text-purple-800">
         <span className="font-bold mr-1">R</span> Referred
@@ -75,7 +75,7 @@ const getPatientTypeBadge = (patient: Patient) => {
 
 // Helper function to get consent status badge
 const getConsentStatusBadge = (patient: Patient) => {
-  if (!patient.requires_consent) {
+  if (!patient.requiresConsent) {
     return (
       <div className="flex items-center text-xs text-green-600">
         <CheckCircleIcon className="h-4 w-4 mr-1" />
@@ -84,7 +84,7 @@ const getConsentStatusBadge = (patient: Patient) => {
     )
   }
 
-  switch (patient.consent_status) {
+  switch (patient.consentStatus) {
     case 'granted':
       return (
         <div className="flex items-center text-xs text-green-600">
@@ -209,20 +209,20 @@ function PatientDrawer({ patient, isOpen, onClose }: PatientDrawerProps) {
               <div className="text-center">
                 <div className="mx-auto h-20 w-20 rounded-full bg-gray-200 flex items-center justify-center mb-4">
                   <span className="text-xl font-medium text-gray-600">
-                    {getInitials(patient.first_name, patient.last_name)}
+                    {getInitials(patient.firstName, patient.lastName)}
                   </span>
                 </div>
                 <h3 className="text-xl font-bold text-gray-900">
-                  {patient.first_name} {patient.last_name}
+                  {patient.firstName} {patient.lastName}
                 </h3>
-                <p className="text-sm text-gray-500">{patient.medical_record_number}</p>
+                <p className="text-sm text-gray-500">{patient.medicalRecordNumber}</p>
               </div>
 
               {/* Critical & Non-Critical Boxes */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-center">
                   <div className="text-2xl font-bold text-red-600">
-                    {patient.critical_alerts ?? 'N/A'}
+                    {patient.criticalAlerts ?? 'N/A'}
                   </div>
                   <div className="text-sm text-red-800">Critical Alerts</div>
                 </div>
@@ -237,13 +237,13 @@ function PatientDrawer({ patient, isOpen, onClose }: PatientDrawerProps) {
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-sm font-medium text-gray-700">Overall Adherence</span>
                   <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                    {patient.adherence_rate}%
+                    {patient.adherenceRate}%
                   </span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-2">
                   <div
                     className="bg-blue-600 h-2 rounded-full"
-                    style={{ width: `${patient.adherence_rate}%` }}
+                    style={{ width: `${patient.adherenceRate}%` }}
                   />
                 </div>
               </div>
@@ -267,8 +267,8 @@ function PatientDrawer({ patient, isOpen, onClose }: PatientDrawerProps) {
               <div className="space-y-3">
                 <h4 className="text-sm font-medium text-gray-900">Recent Activity</h4>
                 <div className="space-y-2 text-sm text-gray-600">
-                  <div>Last visit: {patient.last_visit ? formatDate(patient.last_visit) : "No previous visits"}</div>
-                  <div>Next appointment: {patient.next_appointment ? formatDate(patient.next_appointment) : "No upcoming appointments"}</div>
+                  <div>Last visit: {patient.lastVisit ? formatDate(patient.lastVisit) : "No previous visits"}</div>
+                  <div>Next appointment: {patient.nextAppointment ? formatDate(patient.nextAppointment) : "No upcoming appointments"}</div>
                 </div>
               </div>
 
@@ -526,13 +526,13 @@ export default function PatientsPage() {
                           <div className="flex-shrink-0 h-10 w-10">
                             <div className="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center">
                               <span className="text-sm font-medium text-gray-600">
-                                {getInitials(patient.first_name, patient.last_name)}
+                                {getInitials(patient.firstName, patient.lastName)}
                               </span>
                             </div>
                           </div>
                           <div className="ml-4">
                             <div className="text-sm font-medium text-gray-900">
-                              {patient.first_name} {patient.last_name}
+                              {patient.firstName} {patient.lastName}
                             </div>
                             <div className="text-sm text-gray-500">
                               {patient.medical_record_number}
@@ -555,17 +555,17 @@ export default function PatientsPage() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                          {patient.adherence_rate}%
+                          {patient.adherenceRate}%
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        {patient.critical_alerts === null || patient.critical_alerts === undefined ? (
+                        {patient.criticalAlerts === null || patient.criticalAlerts === undefined ? (
                           <span className="text-gray-400 italic text-sm">No alert data</span>
-                        ) : patient.critical_alerts > 0 ? (
+                        ) : patient.criticalAlerts > 0 ? (
                           <div className="flex items-center">
                             <ExclamationTriangleIcon className="h-4 w-4 text-red-500 mr-1" />
                             <span className="text-sm text-red-600">
-                              {patient.critical_alerts}
+                              {patient.criticalAlerts}
                             </span>
                           </div>
                         ) : (

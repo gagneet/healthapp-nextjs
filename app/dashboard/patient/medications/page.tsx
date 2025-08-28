@@ -20,8 +20,8 @@ interface Medication {
   dosage: string
   frequency: string
   instructions: string
-  prescribed_date: string
-  end_date?: string
+  prescribedDate: string
+  endDate?: string
   status: 'active' | 'completed' | 'discontinued'
   next_dose?: string
   taken_today: boolean
@@ -221,11 +221,11 @@ export default function MedicationsPage() {
                   <div className="flex items-center justify-between text-sm text-gray-500">
                     <div className="flex items-center">
                       <CalendarIcon className="w-4 h-4 mr-1" />
-                      Prescribed: {new Date(medication.prescribed_date).toLocaleDateString()}
+                      Prescribed: {new Date(medication.prescribedDate).toLocaleDateString()}
                     </div>
-                    {medication.end_date && (
+                    {medication.endDate && (
                       <div>
-                        End Date: {new Date(medication.end_date).toLocaleDateString()}
+                        End Date: {new Date(medication.endDate).toLocaleDateString()}
                       </div>
                     )}
                   </div>

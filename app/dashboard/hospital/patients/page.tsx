@@ -20,100 +20,100 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 const mockPatients: Patient[] = [
   {
     id: '1',
-    user_id: 'user1',
-    first_name: 'John',
-    last_name: 'Doe',
+    userId: 'user1',
+    firstName: 'John',
+    lastName: 'Doe',
     email: 'john.doe@email.com',
     phone: '+1-555-0123',
-    date_of_birth: '1980-05-15',
+    dateOfBirth: '1980-05-15',
     gender: 'MALE',
-    medical_record_number: 'MRN001',
-    last_visit: '2025-01-15',
-    next_appointment: '2025-02-01',
-    adherence_rate: 92,
-    critical_alerts: 0,
+    medicalRecordNumber: 'MRN001',
+    lastVisit: '2025-01-15',
+    nextAppointment: '2025-02-01',
+    adherenceRate: 92,
+    criticalAlerts: 0,
     status: 'active',
-    created_at: '2025-01-01',
-    assigned_doctor: 'Dr. Sarah Johnson',
-    assigned_hsp: 'Emma Davis, RN',
+    createdAt: '2025-01-01',
+    assignedDoctor: 'Dr. Sarah Johnson',
+    assignedHsp: 'Emma Davis, RN',
     department: 'Cardiology',
   },
   {
     id: '2',
-    user_id: 'user2',
-    first_name: 'Jane',
-    last_name: 'Smith',
+    userId: 'user2',
+    firstName: 'Jane',
+    lastName: 'Smith',
     email: 'jane.smith@email.com',
     phone: '+1-555-0124',
-    date_of_birth: '1975-09-22',
+    dateOfBirth: '1975-09-22',
     gender: 'FEMALE',
-    medical_record_number: 'MRN002',
-    last_visit: '2025-01-18',
-    next_appointment: '2025-01-25',
-    adherence_rate: 65,
-    critical_alerts: 2,
+    medicalRecordNumber: 'MRN002',
+    lastVisit: '2025-01-18',
+    nextAppointment: '2025-01-25',
+    adherenceRate: 65,
+    criticalAlerts: 2,
     status: 'active',
-    created_at: '2025-01-01',
-    assigned_doctor: 'Dr. Sarah Johnson',
-    assigned_hsp: 'Emma Davis, RN',
+    createdAt: '2025-01-01',
+    assignedDoctor: 'Dr. Sarah Johnson',
+    assignedHsp: 'Emma Davis, RN',
     department: 'Cardiology',
   },
   {
     id: '3',
-    user_id: 'user3',
-    first_name: 'Michael',
-    last_name: 'Johnson',
+    userId: 'user3',
+    firstName: 'Michael',
+    lastName: 'Johnson',
     email: 'michael.j@email.com',
     phone: '+1-555-0125',
-    date_of_birth: '1988-12-10',
+    dateOfBirth: '1988-12-10',
     gender: 'MALE',
-    medical_record_number: 'MRN003',
-    last_visit: '2025-01-20',
-    next_appointment: '2025-01-30',
-    adherence_rate: 78,
-    critical_alerts: 1,
+    medicalRecordNumber: 'MRN003',
+    lastVisit: '2025-01-20',
+    nextAppointment: '2025-01-30',
+    adherenceRate: 78,
+    criticalAlerts: 1,
     status: 'active',
-    created_at: '2025-01-01',
-    assigned_doctor: 'Dr. Michael Chen',
-    assigned_hsp: 'James Wilson, PharmD',
+    createdAt: '2025-01-01',
+    assignedDoctor: 'Dr. Michael Chen',
+    assignedHsp: 'James Wilson, PharmD',
     department: 'Endocrinology',
   },
   {
     id: '4',
-    user_id: 'user4',
-    first_name: 'Sarah',
-    last_name: 'Williams',
+    userId: 'user4',
+    firstName: 'Sarah',
+    lastName: 'Williams',
     email: 'sarah.w@email.com',
     phone: '+1-555-0126',
-    date_of_birth: '1990-03-14',
+    dateOfBirth: '1990-03-14',
     gender: 'FEMALE',
-    medical_record_number: 'MRN004',
-    last_visit: '2025-01-12',
-    next_appointment: '2025-02-05',
-    adherence_rate: 95,
-    critical_alerts: 0,
+    medicalRecordNumber: 'MRN004',
+    lastVisit: '2025-01-12',
+    nextAppointment: '2025-02-05',
+    adherenceRate: 95,
+    criticalAlerts: 0,
     status: 'active',
-    created_at: '2025-01-01',
-    assigned_doctor: 'Dr. Michael Chen',
+    createdAt: '2025-01-01',
+    assignedDoctor: 'Dr. Michael Chen',
     department: 'Endocrinology',
   },
   {
     id: '5',
-    user_id: 'user5',
-    first_name: 'Robert',
-    last_name: 'Davis',
+    userId: 'user5',
+    firstName: 'Robert',
+    lastName: 'Davis',
     email: 'robert.d@email.com',
     phone: '+1-555-0127',
-    date_of_birth: '1965-11-28',
+    dateOfBirth: '1965-11-28',
     gender: 'MALE',
-    medical_record_number: 'MRN005',
-    last_visit: '2025-01-10',
-    next_appointment: '2025-01-28',
-    adherence_rate: 58,
-    critical_alerts: 3,
+    medicalRecordNumber: 'MRN005',
+    lastVisit: '2025-01-10',
+    nextAppointment: '2025-01-28',
+    adherenceRate: 58,
+    criticalAlerts: 3,
     status: 'active',
-    created_at: '2025-01-01',
-    assigned_doctor: 'Dr. David Williams',
+    createdAt: '2025-01-01',
+    assignedDoctor: 'Dr. David Williams',
     department: 'Internal Medicine',
   },
 ]
@@ -124,33 +124,33 @@ const departmentData = [
     patients: mockPatients.filter(p => p.department === 'Cardiology').length,
     avgAdherence: Math.round(
       mockPatients.filter(p => p.department === 'Cardiology')
-        .reduce((acc, p) => acc + (p.adherence_rate ?? 0), 0) /
+        .reduce((acc, p) => acc + (p.adherenceRate ?? 0), 0) /
       mockPatients.filter(p => p.department === 'Cardiology').length
     ),
     criticalAlerts: mockPatients.filter(p => p.department === 'Cardiology')
-      .reduce((acc, p) => acc + (p.critical_alerts ?? 0), 0),
+      .reduce((acc, p) => acc + (p.criticalAlerts ?? 0), 0),
   },
   {
     department: 'Endocrinology',
     patients: mockPatients.filter(p => p.department === 'Endocrinology').length,
     avgAdherence: Math.round(
       mockPatients.filter(p => p.department === 'Endocrinology')
-        .reduce((acc, p) => acc + (p.adherence_rate ?? 0), 0) /
+        .reduce((acc, p) => acc + (p.adherenceRate ?? 0), 0) /
       mockPatients.filter(p => p.department === 'Endocrinology').length
     ),
     criticalAlerts: mockPatients.filter(p => p.department === 'Endocrinology')
-      .reduce((acc, p) => acc + (p.critical_alerts ?? 0), 0),
+      .reduce((acc, p) => acc + (p.criticalAlerts ?? 0), 0),
   },
   {
     department: 'Internal Medicine',
     patients: mockPatients.filter(p => p.department === 'Internal Medicine').length,
     avgAdherence: Math.round(
       mockPatients.filter(p => p.department === 'Internal Medicine')
-        .reduce((acc, p) => acc + (p.adherence_rate ?? 0), 0) /
+        .reduce((acc, p) => acc + (p.adherenceRate ?? 0), 0) /
       mockPatients.filter(p => p.department === 'Internal Medicine').length
     ),
     criticalAlerts: mockPatients.filter(p => p.department === 'Internal Medicine')
-      .reduce((acc, p) => acc + (p.critical_alerts ?? 0), 0),
+      .reduce((acc, p) => acc + (p.criticalAlerts ?? 0), 0),
   },
 ]
 
@@ -168,11 +168,11 @@ export default function HospitalPatientsPage() {
 
   const filteredPatients = patients.filter(patient => {
     const matchesSearch = 
-      (patient.first_name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (patient.last_name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (patient.firstName || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (patient.lastName || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
       (patient.email || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-      patient.medical_record_number?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      patient.assigned_doctor?.toLowerCase().includes(searchTerm.toLowerCase())
+      patient.medicalRecordNumber?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      patient.assignedDoctor?.toLowerCase().includes(searchTerm.toLowerCase())
     
     const matchesDepartment = departmentFilter === 'all' || patient.department === departmentFilter
     const matchesStatus = statusFilter === 'all' || patient.status === statusFilter
@@ -268,7 +268,7 @@ export default function HospitalPatientsPage() {
             <ExclamationTriangleIcon className="h-8 w-8 text-red-600 mr-3" />
             <div>
               <div className="text-2xl font-bold text-red-600">
-                {patients.filter(p => (p.critical_alerts ?? 0) > 0).length}
+                {patients.filter(p => (p.criticalAlerts ?? 0) > 0).length}
               </div>
               <div className="text-sm text-gray-600">With Alerts</div>
             </div>
@@ -279,7 +279,7 @@ export default function HospitalPatientsPage() {
             <ChartBarIcon className="h-8 w-8 text-green-600 mr-3" />
             <div>
               <div className="text-2xl font-bold text-green-600">
-                {Math.round(patients.reduce((sum, p) => sum + (p.adherence_rate ?? 0), 0) / patients.length)}%
+                {Math.round(patients.reduce((sum, p) => sum + (p.adherenceRate ?? 0), 0) / patients.length)}%
               </div>
               <div className="text-sm text-gray-600">Avg Adherence</div>
             </div>
@@ -291,8 +291,8 @@ export default function HospitalPatientsPage() {
             <div>
               <div className="text-2xl font-bold text-purple-600">
                 {patients.filter(p => {
-                  if (!p.next_appointment) return false
-                  const nextAppt = new Date(p.next_appointment)
+                  if (!p.nextAppointment) return false
+                  const nextAppt = new Date(p.nextAppointment)
                   const today = new Date()
                   const diffTime = nextAppt.getTime() - today.getTime()
                   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
@@ -372,16 +372,16 @@ export default function HospitalPatientsPage() {
                         <div className="flex-shrink-0 h-10 w-10">
                           <div className="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center">
                             <span className="text-sm font-medium text-gray-600">
-                              {getInitials(patient.first_name, patient.last_name)}
+                              {getInitials(patient.firstName, patient.lastName)}
                             </span>
                           </div>
                         </div>
                         <div className="ml-4">
                           <div className="text-sm font-medium text-gray-900">
-                            {patient.first_name} {patient.last_name}
+                            {patient.firstName} {patient.lastName}
                           </div>
                           <div className="text-sm text-gray-500">
-                            {patient.medical_record_number}
+                            {patient.medicalRecordNumber}
                           </div>
                         </div>
                       </div>
@@ -390,27 +390,27 @@ export default function HospitalPatientsPage() {
                       <div className="text-sm text-gray-900">{patient.department}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">{patient.assigned_doctor}</div>
+                      <div className="text-sm text-gray-900">{patient.assignedDoctor}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-900">
-                        {patient.assigned_hsp || 'Not assigned'}
+                        {patient.assignedHsp || 'Not assigned'}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {patient.last_visit ? formatDate(patient.last_visit) : 'No visits'}
+                      {patient.lastVisit ? formatDate(patient.lastVisit) : 'No visits'}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                        {patient.adherence_rate}%
+                        {patient.adherenceRate}%
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      {(patient.critical_alerts ?? 0) > 0 ? (
+                      {(patient.criticalAlerts ?? 0) > 0 ? (
                         <div className="flex items-center">
                           <ExclamationTriangleIcon className="h-4 w-4 text-red-500 mr-1" />
                           <span className="text-sm text-red-600">
-                            {patient.critical_alerts}
+                            {patient.criticalAlerts}
                           </span>
                         </div>
                       ) : (

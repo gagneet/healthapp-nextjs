@@ -191,7 +191,7 @@ export default function DoctorDashboard() {
           },
           {
             title: 'Critical Alerts',
-            value: dashboardStats?.critical_alerts || 0,
+            value: dashboardStats?.criticalAlerts || 0,
             icon: ExclamationTriangleIcon,
             color: 'text-red-600',
             bgColor: 'bg-red-100',
@@ -319,7 +319,7 @@ export default function DoctorDashboard() {
                     <ExclamationTriangleIcon className="h-5 w-5 text-red-500 mt-0.5 mr-3 flex-shrink-0" />
                     <div className="flex-1">
                       <div className="flex items-center justify-between">
-                        <p className="font-medium text-red-900">{alert.patient_name}</p>
+                        <p className="font-medium text-red-900">{alert.patientName}</p>
                         <span className="text-xs text-red-600 bg-red-100 px-2 py-1 rounded capitalize">
                           {alert.severity}
                         </span>
@@ -359,12 +359,12 @@ export default function DoctorDashboard() {
                       <img
                         className="h-10 w-10 rounded-full object-cover"
                         src={(patient as any).profile_picture_url}
-                        alt={`${patient.first_name} ${patient.last_name}`}
+                        alt={`${patient.firstName} ${patient.lastName}`}
                       />
                     ) : (
                       <div className="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center">
                         <span className="text-sm font-medium text-gray-600">
-                          {getInitials(patient.first_name, patient.last_name)}
+                          {getInitials(patient.firstName, patient.lastName)}
                         </span>
                       </div>
                     )}
@@ -372,21 +372,21 @@ export default function DoctorDashboard() {
                   <div className="ml-3 flex-1">
                     <div className="flex items-center justify-between">
                       <p className="text-sm font-medium text-gray-900">
-                        {patient.first_name} {patient.last_name}
+                        {patient.firstName} {patient.lastName}
                       </p>
                       <div className="flex items-center space-x-2">
-                        {((patient as any).critical_alerts || 0) > 0 && (
+                        {((patient as any).criticalAlerts || 0) > 0 && (
                           <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                            {(patient as any).critical_alerts} alert{((patient as any).critical_alerts || 0) > 1 ? 's' : ''}
+                            {(patient as any).criticalAlerts} alert{((patient as any).criticalAlerts || 0) > 1 ? 's' : ''}
                           </span>
                         )}
-                        <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getAdherenceColor((patient as any).adherence_rate || 0)}`}>
-                          {(patient as any).adherence_rate || 0}%
+                        <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getAdherenceColor((patient as any).adherenceRate || 0)}`}>
+                          {(patient as any).adherenceRate || 0}%
                         </span>
                       </div>
                     </div>
                     <p className="text-xs text-gray-500">
-                      Last visit: {patient.last_visit ? formatDate(patient.last_visit) : 'No visits yet'}
+                      Last visit: {patient.lastVisit ? formatDate(patient.lastVisit) : 'No visits yet'}
                     </p>
                   </div>
                   <div className="ml-3 flex items-center space-x-2">
