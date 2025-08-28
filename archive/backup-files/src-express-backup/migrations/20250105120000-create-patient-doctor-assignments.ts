@@ -1,16 +1,16 @@
-// Migration: Create patient_doctor_assignments table
+// Migration: Create patientDoctorAssignments table
 'use strict';
 
 export default {
   up: async (queryInterface: any, Sequelize: any) => {
-    // Check if patient_doctor_assignments table already exists
-    const tableExists = await queryInterface.tableExists('patient_doctor_assignments');
+    // Check if patientDoctorAssignments table already exists
+    const tableExists = await queryInterface.tableExists('patientDoctorAssignments');
     if (tableExists) {
-      console.log('ℹ️ Table "patient_doctor_assignments" already exists, skipping creation');
+      console.log('ℹ️ Table "patientDoctorAssignments" already exists, skipping creation');
       return;
     }
 
-    await queryInterface.createTable('patient_doctor_assignments', {
+    await queryInterface.createTable('patientDoctorAssignments', {
       id: {
         type: Sequelize.UUID,
         defaultValue: Sequelize.UUIDV4,
@@ -183,7 +183,7 @@ export default {
 
     for (const index of indexes) {
       try {
-        await queryInterface.addIndex('patient_doctor_assignments', index.fields, { name: index.name });
+        await queryInterface.addIndex('patientDoctorAssignments', index.fields, { name: index.name });
       } catch (error) {
         if (!(error as any).message.includes('already exists')) throw (error as any);
       }
@@ -191,7 +191,7 @@ export default {
     
     // Add unique constraint for primary doctor per patient (with idempotent check)
     try {
-      await queryInterface.addIndex('patient_doctor_assignments', {
+      await queryInterface.addIndex('patientDoctorAssignments', {
         fields: ['patient_id', 'assignment_type'],
         unique: true,
         where: {
@@ -206,7 +206,7 @@ export default {
 
     // Add check constraints (with idempotent checks)
     try {
-      await queryInterface.addConstraint('patient_doctor_assignments', {
+      await queryInterface.addConstraint('patientDoctorAssignments', {
         fields: ['assignment_type'],
         type: 'check',
         where: {
@@ -221,7 +221,7 @@ export default {
     }
 
     try {
-      await queryInterface.addConstraint('patient_doctor_assignments', {
+      await queryInterface.addConstraint('patientDoctorAssignments', {
         fields: ['patient_consent_status'],
         type: 'check',
         where: {
@@ -236,7 +236,7 @@ export default {
     }
 
     try {
-      await queryInterface.addConstraint('patient_doctor_assignments', {
+      await queryInterface.addConstraint('patientDoctorAssignments', {
         fields: ['consent_method'],
         type: 'check',
         where: {
@@ -257,6 +257,6 @@ export default {
   },
 
   down: async (queryInterface: any, Sequelize: any) => {
-    await queryInterface.dropTable('patient_doctor_assignments');
+    await queryInterface.dropTable('patientDoctorAssignments');
   }
 };

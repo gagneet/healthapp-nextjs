@@ -173,7 +173,7 @@ export default (sequelize: any) => {
     }
     
   }, {
-    tableName: 'patient_doctor_assignments',
+    tableName: 'patientDoctorAssignments',
     underscored: true,
     
     indexes: [

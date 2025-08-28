@@ -67,7 +67,7 @@ export default {
     ];
 
     for (const index of assignmentIndexes) {
-      await addIndexSafely('patient_doctor_assignments', index);
+      await addIndexSafely('patientDoctorAssignments', index);
     }
 
     // 3. VITAL READINGS PERFORMANCE INDEXES (High-frequency data)
@@ -351,9 +351,9 @@ export default {
       { table: 'vital_readings', name: 'idx_vitals_time_patient' },
       { table: 'vital_readings', name: 'idx_vitals_patient_type_time_desc' },
       { table: 'vital_readings', name: 'idx_vitals_patient_time_type' },
-      { table: 'patient_doctor_assignments', name: 'idx_assignments_consent_status_expires' },
-      { table: 'patient_doctor_assignments', name: 'idx_assignments_doctor_active_created' },
-      { table: 'patient_doctor_assignments', name: 'idx_assignments_patient_type_active' },
+      { table: 'patientDoctorAssignments', name: 'idx_assignments_consent_status_expires' },
+      { table: 'patientDoctorAssignments', name: 'idx_assignments_doctor_active_created' },
+      { table: 'patientDoctorAssignments', name: 'idx_assignments_patient_type_active' },
       { table: 'patients', name: 'idx_patients_user_doctor' },
       { table: 'patients', name: 'idx_patients_id_created' },
       { table: 'patients', name: 'idx_patients_doctor_created_active' }

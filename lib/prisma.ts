@@ -130,7 +130,7 @@ export const healthcareDb = {
       where: { id: patientId },
       include: {
         user: true,
-        patient_doctor_assignments: {
+        patientDoctorAssignments: {
           include: {
             doctor: {
               include: {
@@ -198,7 +198,7 @@ export const healthcareDb = {
       prisma.vitalReading.count({
         where: {
           patient: {
-            patient_doctor_assignments: {
+            patientDoctorAssignments: {
               some: {
                 doctor_id: doctorId,
                 is_active: true,
@@ -216,7 +216,7 @@ export const healthcareDb = {
       prisma.adherenceRecord.count({
         where: {
           patient: {
-            patient_doctor_assignments: {
+            patientDoctorAssignments: {
               some: {
                 doctor_id: doctorId,
                 is_active: true,
