@@ -38,6 +38,9 @@ model Organization {
   primaryDoctorAssignments   SecondaryDoctorAssignment[]   @relation("PrimaryDoctorProviderAssignments")
   secondaryDoctorAssignments SecondaryDoctorAssignment[]   @relation("SecondaryDoctorProviderAssignments")
   treatmentPlans             TreatmentPlan[]
+  prescriptions              Prescription[]
+  adherenceLogs              AdherenceLog[]
+  medicalDevices             MedicalDevice[]
 
   @@index([isActive], map: "organizations_is_active")
   @@index([name], map: "organizations_name")
@@ -114,6 +117,7 @@ model User {
   addedDevices             ConnectedDevice[]
   createdConsultations     VideoConsultation[]  @relation("ConsultationCreatedBy")
   consultationNotesCreated ConsultationNote[]   @relation("ConsultationNoteCreatedBy")
+  adherenceLogsRecorded    AdherenceLog[]
 
   @@index([email, accountStatus], map: "idx_users_email_status")
   @@index([role, accountStatus], map: "idx_users_role_status")
@@ -269,6 +273,9 @@ model Patient {
   videoConsultations        VideoConsultation[]
   labOrders                 LabOrder[]
   gameProfile               PatientGameProfile?
+  prescriptions             Prescription[]
+  medicalDevices            MedicalDevice[]
+  adherenceLogs             AdherenceLog[]
 
   @@index([primaryCareDoctorId, createdAt, isActive], map: "idx_patients_doctor_created_active")
   @@index([patientId, createdAt], map: "idx_patients_id_created")
@@ -438,6 +445,7 @@ model CarePlan {
   symptoms                  Symptom[]
   vitalRequirements         VitalRequirement[]
   vitals                    Vital[]
+  adherenceLogs             AdherenceLog[]
 
   @@index([chronicConditions], type: Gin)
   @@index([createdByDoctorId])
@@ -491,6 +499,7 @@ model Medication {
   medicine       Medicine                 @relation(fields: [medicineId], references: [id], onDelete: NoAction)
   notifications  Notification[]
   safetyAlerts   MedicationSafetyAlert[]
+  adherenceLogs  AdherenceLog[]
 
   @@index([medicineId])
   @@index([organizerType, organizerId])
@@ -528,6 +537,7 @@ model Appointment {
   appointmentSlot    AppointmentSlot?              @relation(fields: [slotId], references: [id])
   notifications      Notification[]
   videoConsultations VideoConsultation[]
+  adherenceLogs      AdherenceLog[]
 
   @@index([organizerId, organizerType])
   @@index([participantOneId, participantOneType])
@@ -1072,6 +1082,7 @@ model Doctor {
   patients                Patient[]
   primarySecondaryDoctorAssignments SecondaryDoctorAssignment[] @relation("PrimaryDoctorSecondaryDoctorAssignments")
   secondarySecondaryDoctorAssignments SecondaryDoctorAssignment[] @relation("SecondaryDoctorSecondaryDoctorAssignments")
+  prescriptions           Prescription[]
   treatmentPlans          TreatmentPlan[]
   videoConsultations      VideoConsultation[]
   labOrders               LabOrder[]
@@ -1130,6 +1141,7 @@ model Hsp {
   patientProviderConsentHistories PatientProviderConsentHistory[]
   patients                Patient[]
   secondaryDoctorAssignments SecondaryDoctorAssignment[]
+  prescriptions           Prescription[]
 
   @@index([departments], type: Gin)
   @@index([hspType])
@@ -1582,6 +1594,7 @@ model TreatmentPlan {
   doctor               Doctor       @relation(fields: [doctorId], references: [id], onDelete: NoAction)
   organization         Organization?@relation(fields: [organizationId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   patient              Patient      @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  adherenceLogs        AdherenceLog[]
 
   @@index([doctorId])
   @@index([endDate])
@@ -2532,6 +2545,7 @@ model DeviceReading {
   deviceId              String            @db.Uuid
   patientId             String            @db.Uuid
   pluginId              String            @db.VarChar(100)
+  medicalDeviceId       String?           @db.Uuid
   vitalReadingId        String?           @db.Uuid
   readingType           String            @db.VarChar(100)
   measurementTimestamp  DateTime
@@ -2556,6 +2570,7 @@ model DeviceReading {
   device                ConnectedDevice   @relation(fields: [deviceId], references: [id], onDelete: Cascade)
   patient               Patient           @relation(fields: [patientId], references: [id], onDelete: Cascade)
   vitalReading          VitalReading?     @relation(fields: [vitalReadingId], references: [id], onDelete: SetNull)
+  medicalDevice         MedicalDevice?    @relation(fields: [medicalDeviceId], references: [id], onDelete: SetNull)
   emergencyAlerts       EmergencyAlert[]  @relation("DeviceReadingToEmergencyAlert")
   
   @@index([patientId, readingType, measurementTimestamp])
@@ -2584,4 +2599,244 @@ model DevicePlugin {
   usageCount         Int               @default(0)
   
   @@map("DevicePlugins")
+}
+
+// Medical Device Integration Model
+model MedicalDevice {
+  id                    String       @id @default(uuid()) @db.Uuid
+  organizationId        String?      @db.Uuid
+  patientId             String?      @db.Uuid
+  deviceName            String       @db.VarChar(255)
+  deviceType            String       @db.VarChar(100)
+  manufacturer          String       @db.VarChar(100)
+  modelNumber           String?      @db.VarChar(100)
+  serialNumber          String?      @db.VarChar(100)
+  firmwareVersion       String?      @db.VarChar(50)
+  macAddress            String?      @db.VarChar(20)
+  ipAddress             String?      @db.VarChar(20)
+  bluetoothId           String?      @db.VarChar(50)
+  status                String       @default("inactive") @db.VarChar(20) // active, inactive, maintenance, error
+  lastConnected         DateTime?
+  lastDataSync          DateTime?
+  batteryLevel          Int?         // 0-100 percentage
+  connectionType        String       @db.VarChar(30) // bluetooth, wifi, cellular, usb, serial
+  dataFrequency         String?      @db.VarChar(50) // continuous, daily, weekly, on-demand
+  calibrationDate       DateTime?
+  nextCalibrationDue    DateTime?
+  isActive              Boolean      @default(true)
+  configuration         Json         @default("{}")
+  metadata              Json         @default("{}")
+  createdAt             DateTime     @default(now())
+  updatedAt             DateTime     @updatedAt
+  deletedAt             DateTime?
+  
+  // Relations
+  organization          Organization? @relation(fields: [organizationId], references: [id])
+  patient               Patient?      @relation(fields: [patientId], references: [id])
+  deviceReadings        DeviceReading[]
+  
+  @@index([patientId])
+  @@index([deviceType])
+  @@index([status])
+  @@index([organizationId])
+  @@map("MedicalDevices")
+}
+
+// Electronic Prescription Management Model
+model Prescription {
+  id                      String    @id @default(uuid()) @db.Uuid
+  patientId               String    @db.Uuid
+  prescribingDoctorId     String?   @db.Uuid
+  prescribingHspId        String?   @db.Uuid
+  organizationId          String?   @db.Uuid
+  prescriptionNumber      String    @unique @db.VarChar(100)
+  externalPrescriptionId  String?   @db.VarChar(100)
+  
+  // Medication Information
+  medicationName          String    @db.VarChar(255)
+  genericName             String?   @db.VarChar(255)
+  ndcNumber               String?   @db.VarChar(20)
+  rxnormCode              String?   @db.VarChar(20)
+  
+  // Dosage and Administration
+  strength                String    @db.VarChar(50)
+  dosageForm              String    @db.VarChar(50) // tablet, capsule, liquid, injection, etc.
+  routeOfAdministration   String    @db.VarChar(30) // oral, topical, injection, etc.
+  doseAmount              Decimal   @db.Decimal(10, 3)
+  doseUnit                String    @db.VarChar(20)
+  frequency               String    @db.VarChar(50)
+  frequencyPerDay         Int?
+  dosingSchedule          Json      @default("[]")
+  
+  // Instructions
+  sigInstructions         String    @db.Text
+  patientInstructions     String?   @db.Text
+  foodInstructions        String?   @db.VarChar(100) // with_food, without_food, etc.
+  
+  // Quantity and Refills
+  quantityPrescribed      Int
+  quantityUnit            String    @db.VarChar(20)
+  daysSupply              Int?
+  refillsAllowed          Int       @default(0)
+  refillsUsed             Int       @default(0)
+  
+  // Clinical Information
+  indication              String?   @db.VarChar(255)
+  diagnosisCodes          String[]  @default([])
+  
+  // Controlled Substance Information
+  isControlledSubstance   Boolean   @default(false)
+  deaSchedule             String?   @db.VarChar(5)
+  
+  // Dates
+  prescribedDate          DateTime  @default(now())
+  startDate               DateTime?
+  endDate                 DateTime?
+  expirationDate          DateTime?
+  
+  // Status
+  status                  String    @default("active") @db.VarChar(20) // draft, pending, active, filled, discontinued, expired, cancelled
+  discontinuationReason   String?   @db.VarChar(100)
+  
+  // Pharmacy Information
+  pharmacyId              String?   @db.Uuid
+  pharmacyName            String?   @db.VarChar(255)
+  pharmacyPhone           String?   @db.VarChar(20)
+  
+  // Electronic Prescribing
+  ePrescribingId          String?   @db.VarChar(100)
+  transmittedToPharmacy   Boolean   @default(false)
+  transmissionDate        DateTime?
+  
+  // Cost and Insurance
+  estimatedCost           Decimal?  @db.Decimal(10, 2)
+  insuranceCoverage       Json      @default("{}")
+  
+  // Safety and Interactions
+  drugInteractions        Json      @default("[]")
+  allergyAlerts           Json      @default("[]")
+  warnings                Json      @default("[]")
+  
+  // Provider Information
+  prescriberNpi           String?   @db.VarChar(20)
+  prescriberDea           String?   @db.VarChar(20)
+  electronicSignature    String?   @db.Text
+  
+  // Monitoring
+  requiresMonitoring      Boolean   @default(false)
+  monitoringParameters    Json      @default("[]")
+  
+  // Metadata
+  metadata                Json      @default("{}")
+  createdAt               DateTime  @default(now())
+  updatedAt               DateTime  @updatedAt
+  deletedAt               DateTime?
+  
+  // Relations
+  patient                 Patient       @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  prescribingDoctor       Doctor?       @relation(fields: [prescribingDoctorId], references: [id])
+  prescribingHsp          Hsp?          @relation(fields: [prescribingHspId], references: [id])
+  organization            Organization? @relation(fields: [organizationId], references: [id])
+  adherenceLogs           AdherenceLog[]
+  
+  @@index([patientId])
+  @@index([prescribingDoctorId])
+  @@index([prescribingHspId])
+  @@index([organizationId])
+  @@index([status])
+  @@index([prescribedDate])
+  @@index([expirationDate])
+  @@index([isControlledSubstance])
+  @@index([medicationName])
+  @@index([ndcNumber])
+  @@index([patientId, status, prescribedDate])
+  @@map("Prescriptions")
+}
+
+// Comprehensive Medication Adherence Tracking Model  
+model AdherenceLog {
+  id                      String    @id @default(uuid()) @db.Uuid
+  patientId               String    @db.Uuid
+  organizationId          String?   @db.Uuid
+  
+  // Type of adherence being tracked
+  adherenceType           String    @db.VarChar(30) // medication, appointment, vital_check, care_plan_task, etc.
+  
+  // Related Records
+  relatedMedicationId     String?   @db.Uuid
+  relatedPrescriptionId   String?   @db.Uuid
+  relatedAppointmentId    String?   @db.Uuid
+  relatedCarePlanId       String?   @db.Uuid
+  relatedTreatmentPlanId  String?   @db.Uuid
+  
+  // Timing Information
+  scheduledDatetime       DateTime
+  actualDatetime          DateTime?
+  
+  // Adherence Status
+  status                  String    @db.VarChar(20) // completed, missed, partial, delayed, rescheduled, cancelled
+  completionPercentage    Int       @default(0) // 0-100
+  delayMinutes            Int?      // negative for early, positive for late
+  
+  // Medication-Specific Fields
+  prescribedDose          Decimal?  @db.Decimal(10, 3)
+  actualDose              Decimal?  @db.Decimal(10, 3)
+  doseUnit                String?   @db.VarChar(20)
+  
+  // Patient-Reported Information
+  patientNotes            String?   @db.Text
+  sideEffectsReported     Json      @default("[]")
+  symptomsBefore          Json      @default("{}")
+  symptomsAfter           Json      @default("{}")
+  
+  // Reason for Non-Adherence
+  missedReason            String?   @db.VarChar(50) // forgot, side_effects, cost_concerns, etc.
+  missedReasonDetails     String?   @db.Text
+  
+  // Data Source
+  recordedBy              String    @default("patient") @db.VarChar(20) // patient, caregiver, provider, system, device
+  recordedByUserId        String?   @db.Uuid
+  
+  // Device/Technology Integration
+  deviceId                String?   @db.Uuid
+  verificationMethod      String?   @db.VarChar(30) // self_report, caregiver_report, pill_count, smart_bottle, etc.
+  
+  // Mood and Context
+  moodBefore              Int?      // 1-10 scale
+  moodAfter               Int?      // 1-10 scale
+  location                String?   @db.VarChar(100)
+  
+  // Reminders and Interventions
+  reminderSent            Boolean   @default(false)
+  reminderAcknowledged    Boolean   @default(false)
+  interventionTriggered   Boolean   @default(false)
+  
+  // Metadata
+  metadata                Json      @default("{}")
+  createdAt               DateTime  @default(now())
+  updatedAt               DateTime  @updatedAt
+  deletedAt               DateTime?
+  
+  // Relations
+  patient                 Patient       @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  organization            Organization? @relation(fields: [organizationId], references: [id])
+  relatedMedication       Medication?   @relation(fields: [relatedMedicationId], references: [id])
+  relatedPrescription     Prescription? @relation(fields: [relatedPrescriptionId], references: [id])
+  relatedAppointment      Appointment?  @relation(fields: [relatedAppointmentId], references: [id])
+  relatedCarePlan         CarePlan?     @relation(fields: [relatedCarePlanId], references: [id])
+  relatedTreatmentPlan    TreatmentPlan? @relation(fields: [relatedTreatmentPlanId], references: [id])
+  recordedByUser          User?         @relation(fields: [recordedByUserId], references: [id])
+  
+  @@index([patientId])
+  @@index([organizationId])
+  @@index([adherenceType])
+  @@index([status])
+  @@index([scheduledDatetime])
+  @@index([actualDatetime])
+  @@index([relatedMedicationId])
+  @@index([relatedCarePlanId])
+  @@index([patientId, adherenceType, scheduledDatetime])
+  @@index([relatedMedicationId, status, scheduledDatetime])
+  @@index([patientId, status, createdAt])
+  @@map("AdherenceLogs")
 }
