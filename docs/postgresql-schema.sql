@@ -118,7 +118,7 @@ CREATE TABLE users (
 -- Auth.js Accounts table (OAuth providers)
 CREATE TABLE accounts (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    userId UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     type VARCHAR(255) NOT NULL,
     provider VARCHAR(255) NOT NULL,
     provider_account_id VARCHAR(255) NOT NULL,
@@ -138,7 +138,7 @@ CREATE TABLE accounts (
 CREATE TABLE sessions (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     session_token VARCHAR(255) UNIQUE NOT NULL,
-    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    userId UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     expires TIMESTAMPTZ NOT NULL,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
@@ -924,7 +924,7 @@ CREATE TABLE public.appointments (
 
 CREATE TABLE public.audit_logs (
     id uuid NOT NULL,
-    user_id uuid,
+    userId uuid,
     user_role character varying(50),
     organization_id uuid,
     action character varying(10) NOT NULL,
@@ -1138,7 +1138,7 @@ CREATE TABLE public.doctor_availability (
 
 CREATE TABLE public.doctors (
     id uuid NOT NULL,
-    user_id uuid NOT NULL,
+    userId uuid NOT NULL,
     doctor_id character varying(50) NOT NULL,
     organization_id uuid,
     medical_license_number character varying(100) NOT NULL,
@@ -1307,7 +1307,7 @@ CREATE TABLE public.game_challenge_progress (
 
 CREATE TABLE public.healthcare_providers (
     id uuid NOT NULL,
-    user_id uuid NOT NULL,
+    userId uuid NOT NULL,
     organization_id uuid,
     license_number character varying(100),
     specialties text[] DEFAULT ARRAY[]::text[],
@@ -1341,7 +1341,7 @@ CREATE TABLE public.healthcare_providers (
 
 CREATE TABLE public.hsps (
     id uuid NOT NULL,
-    user_id uuid NOT NULL,
+    userId uuid NOT NULL,
     hsp_id character varying(50) NOT NULL,
     organization_id uuid,
     hsp_type character varying(50) NOT NULL,
@@ -1809,7 +1809,7 @@ CREATE TABLE public.patient_subscriptions (
 
 CREATE TABLE public.patients (
     id uuid NOT NULL,
-    user_id uuid NOT NULL,
+    userId uuid NOT NULL,
     organization_id uuid,
     medical_record_number character varying(50),
     patient_id character varying(100),
@@ -1826,7 +1826,7 @@ CREATE TABLE public.patients (
     risk_factors jsonb DEFAULT '[]'::jsonb,
     communication_preferences jsonb DEFAULT '{"language": "en", "time_zone": "UTC", "health_tips": false, "medication_reminders": true, "appointment_reminders": true, "research_participation": false, "preferred_contact_method": "email"}'::jsonb,
     privacy_settings jsonb DEFAULT '{"share_with_family": false, "share_for_research": false, "data_sharing_consent": false, "marketing_communications": false, "provider_directory_listing": true}'::jsonb,
-    primary_care_doctor_id uuid,
+    primaryCareDoctorId uuid,
     primary_care_hsp_id uuid,
     care_coordinator_id uuid,
     care_coordinator_type character varying(10),
@@ -1932,7 +1932,7 @@ CREATE TABLE public.provider_change_history (
 
 CREATE TABLE public.providers (
     id uuid NOT NULL,
-    user_id uuid NOT NULL,
+    userId uuid NOT NULL,
     name character varying(100) NOT NULL,
     address character varying(255),
     city character varying(255),
@@ -2201,7 +2201,7 @@ CREATE TABLE public.treatment_plans (
 
 CREATE TABLE public.user_devices (
     id uuid NOT NULL,
-    user_id uuid NOT NULL,
+    userId uuid NOT NULL,
     device_type character varying(50) NOT NULL,
     push_token character varying(500) NOT NULL,
     device_id character varying(255),
@@ -3128,14 +3128,14 @@ CREATE INDEX audit_logs_timestamp ON public.audit_logs USING btree ("timestamp")
 -- Name: audit_logs_user_id; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX audit_logs_user_id ON public.audit_logs USING btree (user_id);
+CREATE INDEX audit_logs_user_id ON public.audit_logs USING btree (userId);
 
 
 --
 -- Name: audit_logs_user_id_timestamp; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX audit_logs_user_id_timestamp ON public.audit_logs USING btree (user_id, "timestamp");
+CREATE INDEX audit_logs_user_id_timestamp ON public.audit_logs USING btree (userId, "timestamp");
 
 
 --
@@ -3345,7 +3345,7 @@ CREATE INDEX doctors_specialties ON public.doctors USING gin (specialties);
 -- Name: doctors_user_id; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE UNIQUE INDEX doctors_user_id ON public.doctors USING btree (user_id);
+CREATE UNIQUE INDEX doctors_user_id ON public.doctors USING btree (userId);
 
 
 --
@@ -3464,7 +3464,7 @@ CREATE INDEX healthcare_providers_specialties ON public.healthcare_providers USI
 -- Name: healthcare_providers_user_id; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE UNIQUE INDEX healthcare_providers_user_id ON public.healthcare_providers USING btree (user_id);
+CREATE UNIQUE INDEX healthcare_providers_user_id ON public.healthcare_providers USING btree (userId);
 
 
 --
@@ -3534,7 +3534,7 @@ CREATE INDEX hsps_supervising_doctor_id ON public.hsps USING btree (supervising_
 -- Name: hsps_user_id; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE UNIQUE INDEX hsps_user_id ON public.hsps USING btree (user_id);
+CREATE UNIQUE INDEX hsps_user_id ON public.hsps USING btree (userId);
 
 
 --
@@ -3590,7 +3590,7 @@ CREATE INDEX idx_assignments_patient_type_active ON public.patient_doctor_assign
 -- Name: idx_audit_user_created_action; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX idx_audit_user_created_action ON public.audit_logs USING btree (user_id, created_at, action);
+CREATE INDEX idx_audit_user_created_action ON public.audit_logs USING btree (userId, created_at, action);
 
 
 --
@@ -3639,7 +3639,7 @@ CREATE INDEX idx_notifications_type_priority_created ON public.notifications USI
 -- Name: idx_patients_doctor_created_active; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX idx_patients_doctor_created_active ON public.patients USING btree (primary_care_doctor_id, created_at, is_active);
+CREATE INDEX idx_patients_doctor_created_active ON public.patients USING btree (primaryCareDoctorId, created_at, is_active);
 
 
 --
@@ -3653,7 +3653,7 @@ CREATE INDEX idx_patients_id_created ON public.patients USING btree (patient_id,
 -- Name: idx_patients_user_doctor; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX idx_patients_user_doctor ON public.patients USING btree (user_id, primary_care_doctor_id);
+CREATE INDEX idx_patients_user_doctor ON public.patients USING btree (userId, primaryCareDoctorId);
 
 
 --
@@ -4308,10 +4308,10 @@ CREATE UNIQUE INDEX patients_patient_id_key ON public.patients USING btree (pati
 
 
 --
--- Name: patients_primary_care_doctor_id; Type: INDEX; Schema: public; Owner: -
+-- Name: patients_primaryCareDoctorId; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX patients_primary_care_doctor_id ON public.patients USING btree (primary_care_doctor_id);
+CREATE INDEX patients_primaryCareDoctorId ON public.patients USING btree (primaryCareDoctorId);
 
 
 --
@@ -4346,7 +4346,7 @@ CREATE INDEX patients_risk_level ON public.patients USING btree (risk_level);
 -- Name: patients_user_id; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE UNIQUE INDEX patients_user_id ON public.patients USING btree (user_id);
+CREATE UNIQUE INDEX patients_user_id ON public.patients USING btree (userId);
 
 
 --
@@ -4479,7 +4479,7 @@ CREATE INDEX provider_change_history_status ON public.provider_change_history US
 -- Name: providers_user_id; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX providers_user_id ON public.providers USING btree (user_id);
+CREATE INDEX providers_user_id ON public.providers USING btree (userId);
 
 
 --
@@ -4836,14 +4836,14 @@ CREATE INDEX user_devices_push_token ON public.user_devices USING btree (push_to
 -- Name: user_devices_user_id; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX user_devices_user_id ON public.user_devices USING btree (user_id);
+CREATE INDEX user_devices_user_id ON public.user_devices USING btree (userId);
 
 
 --
 -- Name: user_devices_user_id_push_token; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE UNIQUE INDEX user_devices_user_id_push_token ON public.user_devices USING btree (user_id, push_token);
+CREATE UNIQUE INDEX user_devices_user_id_push_token ON public.user_devices USING btree (userId, push_token);
 
 
 --
@@ -5140,7 +5140,7 @@ ALTER TABLE ONLY public.audit_logs
 --
 
 ALTER TABLE ONLY public.audit_logs
-    ADD CONSTRAINT audit_logs_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON UPDATE CASCADE ON DELETE SET NULL;
+    ADD CONSTRAINT audit_logs_user_id_fkey FOREIGN KEY (userId) REFERENCES public.users(id) ON UPDATE CASCADE ON DELETE SET NULL;
 
 
 --
@@ -5276,7 +5276,7 @@ ALTER TABLE ONLY public.doctors
 --
 
 ALTER TABLE ONLY public.doctors
-    ADD CONSTRAINT doctors_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON UPDATE CASCADE ON DELETE CASCADE;
+    ADD CONSTRAINT doctors_user_id_fkey FOREIGN KEY (userId) REFERENCES public.users(id) ON UPDATE CASCADE ON DELETE CASCADE;
 
 
 --
@@ -5356,7 +5356,7 @@ ALTER TABLE ONLY public.healthcare_providers
 --
 
 ALTER TABLE ONLY public.healthcare_providers
-    ADD CONSTRAINT healthcare_providers_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
+    ADD CONSTRAINT healthcare_providers_user_id_fkey FOREIGN KEY (userId) REFERENCES public.users(id) ON DELETE CASCADE;
 
 
 --
@@ -5388,7 +5388,7 @@ ALTER TABLE ONLY public.hsps
 --
 
 ALTER TABLE ONLY public.hsps
-    ADD CONSTRAINT hsps_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
+    ADD CONSTRAINT hsps_user_id_fkey FOREIGN KEY (userId) REFERENCES public.users(id) ON DELETE CASCADE;
 
 
 --
@@ -5800,11 +5800,11 @@ ALTER TABLE ONLY public.patients
 
 
 --
--- Name: patients patients_primary_care_doctor_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: patients patients_primaryCareDoctorId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.patients
-    ADD CONSTRAINT patients_primary_care_doctor_id_fkey FOREIGN KEY (primary_care_doctor_id) REFERENCES public.doctors(id) ON UPDATE CASCADE ON DELETE SET NULL;
+    ADD CONSTRAINT patients_primaryCareDoctorId_fkey FOREIGN KEY (primaryCareDoctorId) REFERENCES public.doctors(id) ON UPDATE CASCADE ON DELETE SET NULL;
 
 
 --
@@ -5820,7 +5820,7 @@ ALTER TABLE ONLY public.patients
 --
 
 ALTER TABLE ONLY public.patients
-    ADD CONSTRAINT patients_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON UPDATE CASCADE ON DELETE CASCADE;
+    ADD CONSTRAINT patients_user_id_fkey FOREIGN KEY (userId) REFERENCES public.users(id) ON UPDATE CASCADE ON DELETE CASCADE;
 
 
 --
@@ -5876,7 +5876,7 @@ ALTER TABLE ONLY public.provider_change_history
 --
 
 ALTER TABLE ONLY public.providers
-    ADD CONSTRAINT providers_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id);
+    ADD CONSTRAINT providers_user_id_fkey FOREIGN KEY (userId) REFERENCES public.users(id);
 
 
 --
@@ -6004,7 +6004,7 @@ ALTER TABLE ONLY public.treatment_plans
 --
 
 ALTER TABLE ONLY public.user_devices
-    ADD CONSTRAINT user_devices_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id);
+    ADD CONSTRAINT user_devices_user_id_fkey FOREIGN KEY (userId) REFERENCES public.users(id);
 
 
 --

@@ -241,7 +241,7 @@ export default {
           userId: patientUser.id,
           medical_record_number: 'MRN-2025-001',
           patient_id: 'JMD/202501/000001', // Doctor initials/Year-Month/Sequence
-          primary_care_doctor_id: doctorRecord.length > 0 ? doctorRecord[0].id : null,
+          primaryCareDoctorId: doctorRecord.length > 0 ? doctorRecord[0].id : null,
           emergency_contacts: JSON.stringify([
             {
               name: 'John Patient',

@@ -153,7 +153,7 @@ CREATE TABLE users (
 -- Healthcare Providers (Doctors, HSPs, Nurses)
 CREATE TABLE healthcare_providers (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    userId UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     organization_id UUID REFERENCES organizations(id),
     
     -- Professional information
@@ -183,7 +183,7 @@ CREATE TABLE healthcare_providers (
 -- Patients table
 CREATE TABLE patients (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    userId UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     organization_id UUID REFERENCES organizations(id),
     
     -- Medical information
@@ -550,7 +550,7 @@ CREATE TABLE notifications (
 -- User Devices for push notifications
 CREATE TABLE user_devices (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id UUID NOT NULL REFERENCES users(id),
+    userId UUID NOT NULL REFERENCES users(id),
     
     -- Device information
     device_type VARCHAR(50) NOT NULL, -- ios, android, web
@@ -630,7 +630,7 @@ CREATE TABLE patient_subscriptions (
 -- Audit Log
 CREATE TABLE audit_logs (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id UUID REFERENCES users(id),
+    userId UUID REFERENCES users(id),
     
     -- Action details
     action VARCHAR(100) NOT NULL,
@@ -661,13 +661,13 @@ CREATE INDEX idx_users_status ON users(account_status) WHERE deleted_at IS NULL;
 CREATE INDEX idx_users_phone ON users(phone) WHERE deleted_at IS NULL;
 
 -- Indexes for healthcare_providers
-CREATE INDEX idx_providers_user_id ON healthcare_providers(user_id);
+CREATE INDEX idx_providers_user_id ON healthcare_providers(userId);
 CREATE INDEX idx_providers_org ON healthcare_providers(organization_id) WHERE deleted_at IS NULL;
 CREATE INDEX idx_providers_specialties ON healthcare_providers USING GIN(specialties);
 CREATE INDEX idx_providers_verified ON healthcare_providers(is_verified) WHERE deleted_at IS NULL;
 
 -- Indexes for patients
-CREATE INDEX idx_patients_user_id ON patients(user_id);
+CREATE INDEX idx_patients_user_id ON patients(userId);
 CREATE INDEX idx_patients_org ON patients(organization_id) WHERE deleted_at IS NULL;
 CREATE INDEX idx_patients_mrn ON patients(medical_record_number) WHERE deleted_at IS NULL;
 
@@ -770,9 +770,9 @@ SELECT
     cp.updated_at
 FROM care_plans cp
 JOIN patients p ON cp.patient_id = p.id
-JOIN users u_patient ON p.user_id = u_patient.id
+JOIN users u_patient ON p.userId = u_patient.id
 JOIN healthcare_providers hp ON cp.provider_id = hp.id
-JOIN users u_provider ON hp.user_id = u_provider.id
+JOIN users u_provider ON hp.userId = u_provider.id
 WHERE cp.deleted_at IS NULL 
     AND p.deleted_at IS NULL 
     AND u_patient.deleted_at IS NULL
@@ -803,7 +803,7 @@ SELECT
     p.created_at,
     p.updated_at
 FROM patients p
-JOIN users u ON p.user_id = u.id
+JOIN users u ON p.userId = u.id
 LEFT JOIN adherence_records ar ON p.id = ar.patient_id 
     AND ar.due_at >= NOW() - INTERVAL '30 days'
 WHERE p.deleted_at IS NULL 
@@ -833,10 +833,10 @@ SELECT
     se.created_at
 FROM scheduled_events se
 JOIN patients p ON se.patient_id = p.id
-JOIN users u_patient ON p.user_id = u_patient.id
+JOIN users u_patient ON p.userId = u_patient.id
 LEFT JOIN care_plans cp ON se.care_plan_id = cp.id
 LEFT JOIN healthcare_providers hp ON cp.provider_id = hp.id
-LEFT JOIN users u_provider ON hp.user_id = u_provider.id
+LEFT JOIN users u_provider ON hp.userId = u_provider.id
 WHERE se.deleted_at IS NULL 
     AND p.deleted_at IS NULL 
     AND u_patient.deleted_at IS NULL
@@ -870,7 +870,7 @@ INSERT INTO organizations (name, type, contact_info, address) VALUES
 
 -- Row Level Security policies would go here
 -- ALTER TABLE patients ENABLE ROW LEVEL SECURITY;
--- CREATE POLICY patient_access_policy ON patients FOR ALL TO authenticated_users USING (user_id = auth.uid() OR EXISTS (SELECT 1 FROM patient_provider_assignments WHERE patient_id = patients.id AND provider_id IN (SELECT id FROM healthcare_providers WHERE user_id = auth.uid())));
+-- CREATE POLICY patient_access_policy ON patients FOR ALL TO authenticated_users USING (userId = auth.uid() OR EXISTS (SELECT 1 FROM patient_provider_assignments WHERE patient_id = patients.id AND provider_id IN (SELECT id FROM healthcare_providers WHERE userId = auth.uid())));
 
 -- Additional RLS policies for other tables...
 

@@ -357,7 +357,7 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
           userId: user.id,
           patient_id: patientBusinessId,
           medical_record_number: `MRN${Date.now()}`, // Generate unique MRN
-          primary_care_doctor_id: patientData.primaryDoctorId,
+          primaryCareDoctorId: patientData.primaryDoctorId,
           height_cm: patientData.height,
           weight_kg: patientData.weight,
           blood_type: patientData.bloodType,

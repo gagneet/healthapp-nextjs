@@ -168,7 +168,7 @@ export default (sequelize: any) => {
     },
     
     // Care Coordination - Updated to support both doctors and HSPs
-    primary_care_doctor_id: {
+    primaryCareDoctorId: {
       type: DataTypes.UUID,
       allowNull: true,
       references: {
@@ -348,7 +348,7 @@ export default (sequelize: any) => {
         }
       },
       {
-        fields: ['primary_care_doctor_id']
+        fields: ['primaryCareDoctorId']
       },
       {
         fields: ['primary_care_hsp_id']
@@ -491,9 +491,9 @@ export default (sequelize: any) => {
       
       // Get primary care provider (doctor or HSP)
       async getPrimaryCareProvider() {
-        if ((this as any).primary_care_doctor_id) {
+        if ((this as any).primaryCareDoctorId) {
           const Doctor = sequelize.models.Doctor;
-          return await Doctor.findByPk((this as any).primary_care_doctor_id);
+          return await Doctor.findByPk((this as any).primaryCareDoctorId);
         } else if ((this as any).primary_care_hsp_id) {
           const HSP = sequelize.models.HSP;
           return await HSP.findByPk((this as any).primary_care_hsp_id);
@@ -518,11 +518,11 @@ export default (sequelize: any) => {
       // Set primary care provider
       setPrimaryCareProvider(providerId: any, providerType: any) {
         if (providerType === 'doctor') {
-          (this as any).primary_care_doctor_id = providerId;
+          (this as any).primaryCareDoctorId = providerId;
           (this as any).primary_care_hsp_id = null;
         } else if (providerType === 'hsp') {
           (this as any).primary_care_hsp_id = providerId;
-          (this as any).primary_care_doctor_id = null;
+          (this as any).primaryCareDoctorId = null;
         }
         return (this as any).save();
       },
@@ -562,7 +562,7 @@ export default (sequelize: any) => {
         return (this as any).findAll({
           where: {
             [sequelize.Sequelize.Op.or]: [
-              { primary_care_doctor_id: doctorId },
+              { primaryCareDoctorId: doctorId },
               { 
                 care_coordinator_id: doctorId,
                 care_coordinator_type: 'doctor'

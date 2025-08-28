@@ -124,7 +124,7 @@ class PatientService {
         medical_history: comorbidities ? (typeof comorbidities === 'string' ? [comorbidities] : comorbidities) : [],
         emergency_contacts: emergency_contacts || [],
         insurance_information: insurance_information || {},
-        primary_care_doctor_id: primaryCareDoctorId, // Use doctor record ID, not user ID
+        primaryCareDoctorId: primaryCareDoctorId, // Use doctor record ID, not user ID
         // Store clinical data for potential care plan creation
         notes: clinical_notes || '',
         // Additional metadata

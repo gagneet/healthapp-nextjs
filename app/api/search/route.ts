@@ -156,7 +156,7 @@ async function searchPatients(searchValue: string, filters: SearchFilters, user:
       where: { userId: user.id }
     });
     if (doctor) {
-      whereClause.primary_care_doctor_id = doctor.id;
+      whereClause.primaryCareDoctorId = doctor.id;
     }
   }
 

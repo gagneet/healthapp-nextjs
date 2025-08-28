@@ -201,7 +201,7 @@ export const requirePatientAccess = (patientIdParam = 'patientId') => {
       
       if (providerType === 'doctor') {
         hasAccess = (
-          patient.primary_care_doctor_id === provider.id ||
+          patient.primaryCareDoctorId === provider.id ||
           (patient.care_coordinator_id === provider.id && patient.care_coordinator_type === 'doctor')
         );
       } else if (providerType === 'hsp') {

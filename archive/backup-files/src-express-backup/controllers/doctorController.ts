@@ -84,7 +84,7 @@ class DoctorController {
 
       // Get doctor's patients count
       const patientsCount = await Patient.count({
-        where: { primary_care_doctor_id: doctor.id }
+        where: { primaryCareDoctorId: doctor.id }
       });
 
       const responseData = {
@@ -436,7 +436,7 @@ class DoctorController {
       }
 
       const patientsCount = await Patient.count({
-        where: { primary_care_doctor_id: doctor.id }
+        where: { primaryCareDoctorId: doctor.id }
       });
 
       const responseData = {
@@ -504,7 +504,7 @@ class DoctorController {
       const limitNum = parseInt(String(limit)) || 20;
       const offset = (pageNum - 1) * limitNum;
       const { count, rows: patients } = await Patient.findAndCountAll({
-        where: { primary_care_doctor_id: doctor.id },
+        where: { primaryCareDoctorId: doctor.id },
         include: [
           {
             model: User,
@@ -905,12 +905,12 @@ class DoctorController {
 
       // Get dashboard statistics
       const totalPatients = await Patient.count({
-        where: { primary_care_doctor_id: doctor.id }
+        where: { primaryCareDoctorId: doctor.id }
       });
 
       const activePatients = await Patient.count({
         where: { 
-          primary_care_doctor_id: doctor.id,
+          primaryCareDoctorId: doctor.id,
           is_active: true
         }
       });
@@ -934,7 +934,7 @@ class DoctorController {
       // Get critical alerts count (patients with high risk level or low adherence)
       const criticalPatients = await Patient.count({
         where: {
-          primary_care_doctor_id: doctor.id,
+          primaryCareDoctorId: doctor.id,
           is_active: true,
           [Op.or]: [
             { risk_level: 'high' },
@@ -946,7 +946,7 @@ class DoctorController {
       // Calculate average medication adherence from actual data
       const adherenceResult = await Patient.findOne({
         where: {
-          primary_care_doctor_id: doctor.id,
+          primaryCareDoctorId: doctor.id,
           is_active: true,
           overall_adherence_score: { [Op.ne]: null }
         },
@@ -961,7 +961,7 @@ class DoctorController {
       // Count patients who haven't visited in the last 7 days (proxy for vitals pending)
       const vitalsPending = await Patient.count({
         where: {
-          primary_care_doctor_id: doctor.id,
+          primaryCareDoctorId: doctor.id,
           is_active: true,
           [Op.or]: [
             { last_visit_date: null },
@@ -1015,7 +1015,7 @@ class DoctorController {
       }
 
       const patients = await Patient.findAll({
-        where: { primary_care_doctor_id: doctor.id },
+        where: { primaryCareDoctorId: doctor.id },
         include: [
           {
             model: User,
@@ -1085,7 +1085,7 @@ class DoctorController {
       // 1. Get patients with low adherence scores (< 70%)
       const lowAdherencePatients = await Patient.findAll({
         where: {
-          primary_care_doctor_id: doctor.id,
+          primaryCareDoctorId: doctor.id,
           is_active: true,
           overall_adherence_score: { [Op.lt]: 70 }
         },
@@ -1116,7 +1116,7 @@ class DoctorController {
       // 2. Get patients with high risk levels
       const highRiskPatients = await Patient.findAll({
         where: {
-          primary_care_doctor_id: doctor.id,
+          primaryCareDoctorId: doctor.id,
           is_active: true,
           risk_level: 'high'
         },
@@ -1195,7 +1195,7 @@ class DoctorController {
       // Get medication adherence (average from all patients)
       const medicationAdherence = await Patient.findOne({
         where: {
-          primary_care_doctor_id: doctor.id,
+          primaryCareDoctorId: doctor.id,
           is_active: true,
           overall_adherence_score: { [Op.ne]: null }
         },
@@ -1221,7 +1221,7 @@ class DoctorController {
       // For vitals, we'll use a simplified calculation based on patient activity
       const activePatients = await Patient.count({
         where: {
-          primary_care_doctor_id: doctor.id,
+          primaryCareDoctorId: doctor.id,
           is_active: true,
           last_visit_date: { [Op.gte]: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) }
         }
@@ -1229,7 +1229,7 @@ class DoctorController {
 
       const totalActivePatients = await Patient.count({
         where: {
-          primary_care_doctor_id: doctor.id,
+          primaryCareDoctorId: doctor.id,
           is_active: true
         }
       });

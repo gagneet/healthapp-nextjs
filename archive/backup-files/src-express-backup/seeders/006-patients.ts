@@ -129,7 +129,7 @@ export default {
           id: '550e8400-e29b-41d4-a716-446655440030',
           userId: '550e8400-e29b-41d4-a716-446655440010',
           medical_record_number: 'MRN001',
-          primary_care_doctor_id: doctorId,
+          primaryCareDoctorId: doctorId,
           emergency_contacts: JSON.stringify([{
             name: 'Jane Doe',
             relationship: 'spouse',
@@ -158,7 +158,7 @@ export default {
           id: '550e8400-e29b-41d4-a716-446655440031',
           userId: '550e8400-e29b-41d4-a716-446655440011',
           medical_record_number: 'MRN002',
-          primary_care_doctor_id: doctorId,
+          primaryCareDoctorId: doctorId,
           emergency_contacts: JSON.stringify([{
             name: 'Robert Smith',
             relationship: 'spouse',
@@ -187,7 +187,7 @@ export default {
           id: '550e8400-e29b-41d4-a716-446655440032',
           userId: '550e8400-e29b-41d4-a716-446655440012',
           medical_record_number: 'MRN003',
-          primary_care_doctor_id: doctorId,
+          primaryCareDoctorId: doctorId,
           emergency_contacts: JSON.stringify([{
             name: 'Lisa Johnson',
             relationship: 'mother',
@@ -216,7 +216,7 @@ export default {
           id: '550e8400-e29b-41d4-a716-446655440033',
           userId: '550e8400-e29b-41d4-a716-446655440013',
           medical_record_number: 'MRN004',
-          primary_care_doctor_id: doctorId,
+          primaryCareDoctorId: doctorId,
           emergency_contacts: JSON.stringify([{
             name: 'Mark Brown',
             relationship: 'father',
@@ -245,7 +245,7 @@ export default {
           id: '550e8400-e29b-41d4-a716-446655440034',
           userId: '550e8400-e29b-41d4-a716-446655440014',
           medical_record_number: 'MRN005',
-          primary_care_doctor_id: doctorId,
+          primaryCareDoctorId: doctorId,
           emergency_contacts: JSON.stringify([{
             name: 'Mary Wilson',
             relationship: 'spouse',

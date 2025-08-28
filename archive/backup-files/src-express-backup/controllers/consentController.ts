@@ -84,7 +84,7 @@ class ConsentController {
       const patient = await Patient.findOne({
         where: {
           id: patientId,
-          primary_care_doctor_id: primaryDoctor.id
+          primaryCareDoctorId: primaryDoctor.id
         }
       });
 

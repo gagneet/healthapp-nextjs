@@ -1017,10 +1017,10 @@ class PatientController {
       });
       
       if (doctorRecord) {
-        (clause as any)['$patient.primary_care_doctor_id$'] = doctorRecord.id;
+        (clause as any)['$patient.primaryCareDoctorId$'] = doctorRecord.id;
       } else {
         // If no doctor record exists, return empty results
-        (clause as any)['$patient.primary_care_doctor_id$'] = null;
+        (clause as any)['$patient.primaryCareDoctorId$'] = null;
       }
     }
 

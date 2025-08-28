@@ -179,7 +179,7 @@ CREATE TABLE users (
 -- OAuth Accounts (Auth.js v5)
 CREATE TABLE accounts (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    userId UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     type VARCHAR(255) NOT NULL,
     provider VARCHAR(255) NOT NULL,
     provider_account_id VARCHAR(255) NOT NULL,
@@ -199,7 +199,7 @@ CREATE TABLE accounts (
 CREATE TABLE sessions (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     session_token VARCHAR(255) UNIQUE NOT NULL,
-    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    userId UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     expires TIMESTAMPTZ NOT NULL,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
@@ -216,13 +216,13 @@ CREATE TABLE verification_tokens (
 -- User Roles (Many-to-many for multiple roles)
 CREATE TABLE user_roles (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    userId UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     role enum_users_role NOT NULL,
     granted_by UUID REFERENCES users(id),
     granted_at TIMESTAMPTZ DEFAULT NOW(),
     revoked_at TIMESTAMPTZ,
     is_active BOOLEAN DEFAULT TRUE,
-    UNIQUE(user_id, role)
+    UNIQUE(userId, role)
 );
 
 -- =============================================
@@ -260,7 +260,7 @@ CREATE TABLE specialities (
 -- Healthcare Providers (Generic)
 CREATE TABLE healthcare_providers (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    userId UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     provider_type VARCHAR(100) NOT NULL,
     license_number VARCHAR(100) UNIQUE,
     organization_id UUID REFERENCES organizations(id),
@@ -274,7 +274,7 @@ CREATE TABLE healthcare_providers (
 -- Doctors (Medical Physicians)
 CREATE TABLE doctors (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    userId UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     doctor_id VARCHAR(50) UNIQUE NOT NULL,
     medical_license_number VARCHAR(100) UNIQUE,
     speciality_id UUID REFERENCES specialities(id),
@@ -296,7 +296,7 @@ CREATE TABLE doctors (
 -- Health Service Providers (Nurses, Therapists, etc.)
 CREATE TABLE hsps (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    userId UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     hsp_id VARCHAR(50) UNIQUE NOT NULL,
     hsp_type VARCHAR(100) DEFAULT 'nurse',
     license_number VARCHAR(100),
@@ -314,10 +314,10 @@ CREATE TABLE hsps (
 -- Patients
 CREATE TABLE patients (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    userId UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     patient_id VARCHAR(50) UNIQUE NOT NULL,
     medical_record_number VARCHAR(100) UNIQUE,
-    primary_care_doctor_id UUID REFERENCES doctors(id),
+    primaryCareDoctorId UUID REFERENCES doctors(id),
     linked_provider_id UUID REFERENCES organizations(id),
     blood_type VARCHAR(5),
     height_cm DECIMAL(5,2),
@@ -605,7 +605,7 @@ CREATE TABLE patient_subscriptions (
 -- User Devices (Mobile/Web)
 CREATE TABLE user_devices (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    userId UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     device_id VARCHAR(255) NOT NULL,
     device_type VARCHAR(50) NOT NULL,
     device_name VARCHAR(255),
@@ -617,7 +617,7 @@ CREATE TABLE user_devices (
     last_used_at TIMESTAMPTZ DEFAULT NOW(),
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW(),
-    UNIQUE(user_id, device_id)
+    UNIQUE(userId, device_id)
 );
 
 -- IoT Medical Devices
@@ -782,7 +782,7 @@ CREATE TABLE patient_allergies (
 -- Audit Logs (HIPAA Compliance)
 CREATE TABLE audit_logs (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id UUID REFERENCES users(id),
+    userId UUID REFERENCES users(id),
     action VARCHAR(100) NOT NULL,
     resource VARCHAR(100) NOT NULL,
     resource_id UUID,
@@ -801,7 +801,7 @@ CREATE TABLE audit_logs (
 -- Notifications
 CREATE TABLE notifications (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    userId UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     type enum_notification_type NOT NULL,
     title VARCHAR(255) NOT NULL,
     message TEXT NOT NULL,
@@ -852,7 +852,7 @@ CREATE TABLE chart_analytics (
 CREATE TABLE scheduled_events (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     event_type VARCHAR(100) NOT NULL,
-    user_id UUID REFERENCES users(id),
+    userId UUID REFERENCES users(id),
     patient_id UUID REFERENCES patients(id),
     scheduled_for TIMESTAMPTZ NOT NULL,
     executed_at TIMESTAMPTZ,
@@ -879,9 +879,9 @@ CREATE INDEX idx_users_deleted_at ON users(deleted_at) WHERE deleted_at IS NOT N
 CREATE INDEX idx_users_email_verified ON users(email_verified);
 
 -- Auth tables indexes
-CREATE INDEX idx_accounts_user_id ON accounts(user_id);
+CREATE INDEX idx_accounts_user_id ON accounts(userId);
 CREATE INDEX idx_accounts_provider ON accounts(provider, provider_account_id);
-CREATE INDEX idx_sessions_user_id ON sessions(user_id);
+CREATE INDEX idx_sessions_user_id ON sessions(userId);
 CREATE INDEX idx_sessions_expires ON sessions(expires);
 CREATE INDEX idx_sessions_session_token ON sessions(session_token);
 
@@ -890,18 +890,18 @@ CREATE INDEX idx_organizations_name ON organizations(name);
 CREATE INDEX idx_organizations_type ON organizations(type);
 CREATE INDEX idx_organizations_is_active ON organizations(is_active);
 
-CREATE INDEX idx_doctors_user_id ON doctors(user_id);
+CREATE INDEX idx_doctors_user_id ON doctors(userId);
 CREATE INDEX idx_doctors_doctor_id ON doctors(doctor_id);
 CREATE INDEX idx_doctors_speciality_id ON doctors(speciality_id);
 CREATE INDEX idx_doctors_organization_id ON doctors(organization_id);
 CREATE INDEX idx_doctors_is_accepting ON doctors(is_accepting_patients);
 
-CREATE INDEX idx_patients_user_id ON patients(user_id);
+CREATE INDEX idx_patients_user_id ON patients(userId);
 CREATE INDEX idx_patients_patient_id ON patients(patient_id);
-CREATE INDEX idx_patients_primary_care_doctor_id ON patients(primary_care_doctor_id);
+CREATE INDEX idx_patients_primaryCareDoctorId ON patients(primaryCareDoctorId);
 CREATE INDEX idx_patients_medical_record_number ON patients(medical_record_number);
 
-CREATE INDEX idx_hsps_user_id ON hsps(user_id);
+CREATE INDEX idx_hsps_user_id ON hsps(userId);
 CREATE INDEX idx_hsps_hsp_id ON hsps(hsp_id);
 CREATE INDEX idx_hsps_organization_id ON hsps(organization_id);
 
@@ -949,13 +949,13 @@ CREATE INDEX idx_emergency_alerts_is_active ON emergency_alerts(is_active);
 CREATE INDEX idx_emergency_alerts_created_at ON emergency_alerts(created_at);
 
 -- Audit and compliance indexes
-CREATE INDEX idx_audit_logs_user_id ON audit_logs(user_id);
+CREATE INDEX idx_audit_logs_user_id ON audit_logs(userId);
 CREATE INDEX idx_audit_logs_patient_id ON audit_logs(patient_id);
 CREATE INDEX idx_audit_logs_timestamp ON audit_logs(timestamp);
 CREATE INDEX idx_audit_logs_action ON audit_logs(action);
 CREATE INDEX idx_audit_logs_phi_accessed ON audit_logs(phi_accessed) WHERE phi_accessed = true;
 
-CREATE INDEX idx_notifications_user_id ON notifications(user_id);
+CREATE INDEX idx_notifications_user_id ON notifications(userId);
 CREATE INDEX idx_notifications_type ON notifications(type);
 CREATE INDEX idx_notifications_is_read ON notifications(is_read);
 CREATE INDEX idx_notifications_created_at ON notifications(created_at);
@@ -1042,7 +1042,7 @@ INSERT INTO lab_tests (id, name, code, category, description, specimen_type, tur
 -- Active Healthcare Providers
 CREATE VIEW v_active_healthcare_providers AS
 SELECT 
-    u.id as user_id,
+    u.id as userId,
     u.email,
     u.first_name,
     u.last_name,
@@ -1064,8 +1064,8 @@ SELECT
     END as organization_id,
     o.name as organization_name
 FROM users u
-LEFT JOIN doctors d ON u.id = d.user_id AND u.role = 'DOCTOR'
-LEFT JOIN hsps h ON u.id = h.user_id AND u.role = 'HSP'
+LEFT JOIN doctors d ON u.id = d.userId AND u.role = 'DOCTOR'
+LEFT JOIN hsps h ON u.id = h.userId AND u.role = 'HSP'
 LEFT JOIN specialities s ON d.speciality_id = s.id
 LEFT JOIN organizations o ON COALESCE(d.organization_id, h.organization_id) = o.id
 WHERE u.role IN ('DOCTOR', 'HSP') 
@@ -1087,7 +1087,7 @@ SELECT
     p.height_cm,
     p.weight_kg,
     p.bmi,
-    p.primary_care_doctor_id,
+    p.primaryCareDoctorId,
     d.doctor_id as primary_doctor_business_id,
     du.first_name as primary_doctor_first_name,
     du.last_name as primary_doctor_last_name,
@@ -1095,16 +1095,16 @@ SELECT
     MAX(v.recorded_at) as last_vital_recorded,
     COUNT(CASE WHEN a.status = 'SCHEDULED' AND a.scheduled_start_time > NOW() THEN 1 END) as upcoming_appointments
 FROM patients p
-JOIN users u ON p.user_id = u.id
-LEFT JOIN doctors d ON p.primary_care_doctor_id = d.id
-LEFT JOIN users du ON d.user_id = du.id
+JOIN users u ON p.userId = u.id
+LEFT JOIN doctors d ON p.primaryCareDoctorId = d.id
+LEFT JOIN users du ON d.userId = du.id
 LEFT JOIN medications m ON p.id = m.patient_id AND m.is_active = true
 LEFT JOIN vitals v ON p.id = v.patient_id
 LEFT JOIN appointments a ON p.id = a.patient_id
 WHERE u.account_status = 'ACTIVE' AND u.deleted_at IS NULL
 GROUP BY p.id, p.patient_id, u.first_name, u.last_name, u.email, u.phone, 
          u.date_of_birth, p.blood_type, p.height_cm, p.weight_kg, p.bmi,
-         p.primary_care_doctor_id, d.doctor_id, du.first_name, du.last_name;
+         p.primaryCareDoctorId, d.doctor_id, du.first_name, du.last_name;
 
 -- Critical Alerts Summary
 CREATE VIEW v_critical_alerts AS
@@ -1123,7 +1123,7 @@ SELECT
     ea.created_at
 FROM emergency_alerts ea
 JOIN patients p ON ea.patient_id = p.id
-JOIN users u ON p.user_id = u.id
+JOIN users u ON p.userId = u.id
 WHERE ea.is_active = true
 ORDER BY 
     CASE ea.severity 

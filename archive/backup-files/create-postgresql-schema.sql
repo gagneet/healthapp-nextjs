@@ -165,7 +165,7 @@ CREATE TABLE users (
 -- Doctors table (licensed physicians)
 CREATE TABLE doctors (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id UUID UNIQUE NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    userId UUID UNIQUE NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     organization_id UUID REFERENCES organizations(id),
     
     -- Professional Information
@@ -217,7 +217,7 @@ CREATE TABLE doctors (
 -- HSPs table (Healthcare Support Personnel)
 CREATE TABLE hsps (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id UUID UNIQUE NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    userId UUID UNIQUE NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     organization_id UUID REFERENCES organizations(id),
     
     -- HSP Type and Qualifications
@@ -270,7 +270,7 @@ CREATE TABLE hsps (
 -- Patients table (enhanced with JSONB fields)
 CREATE TABLE patients (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id UUID UNIQUE NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    userId UUID UNIQUE NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     organization_id UUID REFERENCES organizations(id),
     
     -- Medical Information
@@ -296,7 +296,7 @@ CREATE TABLE patients (
     privacy_settings JSONB DEFAULT '{}',
     
     -- Care Coordination (updated to support both doctors and HSPs)
-    primary_care_doctor_id UUID REFERENCES doctors(id),
+    primaryCareDoctorId UUID REFERENCES doctors(id),
     primary_care_hsp_id UUID REFERENCES hsps(id),
     care_coordinator_id UUID,
     care_coordinator_type VARCHAR(10),
@@ -857,7 +857,7 @@ CREATE TABLE medical_devices (
 -- HIPAA Audit Logs table (no soft delete for compliance)
 CREATE TABLE audit_logs (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id UUID REFERENCES users(id),
+    userId UUID REFERENCES users(id),
     organization_id UUID REFERENCES organizations(id),
     patient_id UUID REFERENCES patients(id),
     
@@ -946,22 +946,22 @@ CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_users_deleted_at ON users(deleted_at
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_organizations_type ON organizations(type);
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_organizations_active ON organizations(is_active);
 
-CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_doctors_user_id ON doctors(user_id);
+CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_doctors_user_id ON doctors(userId);
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_doctors_organization ON doctors(organization_id);
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_doctors_license ON doctors(medical_license_number);
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_doctors_verified ON doctors(is_verified);
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_doctors_specialties ON doctors USING GIN(specialties);
 
-CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_hsps_user_id ON hsps(user_id);
+CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_hsps_user_id ON hsps(userId);
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_hsps_organization ON hsps(organization_id);
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_hsps_type ON hsps(hsp_type);
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_hsps_supervisor ON hsps(supervising_doctor_id);
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_hsps_verified ON hsps(is_verified);
 
-CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_patients_user_id ON patients(user_id);
+CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_patients_user_id ON patients(userId);
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_patients_organization ON patients(organization_id);
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_patients_mrn ON patients(medical_record_number);
-CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_patients_primary_doctor ON patients(primary_care_doctor_id);
+CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_patients_primary_doctor ON patients(primaryCareDoctorId);
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_patients_primary_hsp ON patients(primary_care_hsp_id);
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_patients_active ON patients(is_active);
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_patients_allergies ON patients USING GIN(allergies);
@@ -1003,7 +1003,7 @@ CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_medical_devices_type ON medical_devi
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_medical_devices_status ON medical_devices(status);
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_medical_devices_connected ON medical_devices(is_connected);
 
-CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_audit_logs_user ON audit_logs(user_id);
+CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_audit_logs_user ON audit_logs(userId);
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_audit_logs_patient ON audit_logs(patient_id);
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_audit_logs_timestamp ON audit_logs(timestamp);
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_audit_logs_action ON audit_logs(action);
@@ -1075,18 +1075,18 @@ GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO healthcare_admin;
 CREATE VIEW active_patients AS
 SELECT p.*, u.first_name, u.last_name, u.email, u.phone
 FROM patients p
-JOIN users u ON p.user_id = u.id
+JOIN users u ON p.userId = u.id
 WHERE p.is_active = TRUE AND p.deleted_at IS NULL AND u.deleted_at IS NULL;
 
 CREATE VIEW verified_providers AS
-SELECT 'doctor' as provider_type, d.id, d.user_id, d.organization_id, u.first_name, u.last_name, d.specialties
+SELECT 'doctor' as provider_type, d.id, d.userId, d.organization_id, u.first_name, u.last_name, d.specialties
 FROM doctors d
-JOIN users u ON d.user_id = u.id
+JOIN users u ON d.userId = u.id
 WHERE d.is_verified = TRUE AND d.deleted_at IS NULL
 UNION ALL
-SELECT 'hsp' as provider_type, h.id, h.user_id, h.organization_id, u.first_name, u.last_name, h.specializations as specialties
+SELECT 'hsp' as provider_type, h.id, h.userId, h.organization_id, u.first_name, u.last_name, h.specializations as specialties
 FROM hsps h
-JOIN users u ON h.user_id = u.id
+JOIN users u ON h.userId = u.id
 WHERE h.is_verified = TRUE AND h.deleted_at IS NULL;
 
 -- Insert initial data for testing/migration

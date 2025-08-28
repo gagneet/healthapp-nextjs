@@ -115,7 +115,7 @@ export async function GET(
         }, { status: 404 });
       }
       
-      if (patient.primary_care_doctor_id !== doctor.id) {
+      if (patient.primaryCareDoctorId !== doctor.id) {
         return NextResponse.json({
           status: false,
           statusCode: 403,
@@ -199,7 +199,7 @@ export async function PUT(
       const patient = await prisma.patient.findUnique({
         where: { id: existingPayment.patient_id }
       });
-      if (!doctor || !patient || patient.primary_care_doctor_id !== doctor.id) {
+      if (!doctor || !patient || patient.primaryCareDoctorId !== doctor.id) {
         return NextResponse.json({
           status: false,
           statusCode: 403,
@@ -348,7 +348,7 @@ export async function DELETE(
       const patient = await prisma.patient.findUnique({
         where: { id: existingPayment.patient_id }
       });
-      if (!doctor || !patient || patient.primary_care_doctor_id !== doctor.id) {
+      if (!doctor || !patient || patient.primaryCareDoctorId !== doctor.id) {
         return NextResponse.json({
           status: false,
           statusCode: 403,

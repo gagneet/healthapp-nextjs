@@ -230,7 +230,7 @@ export class HealthcareRBAC {
       const primaryRelationship = await prisma.patient.findFirst({
         where: { 
           id: patientId, 
-          primary_care_doctor_id: doctor.id 
+          primaryCareDoctorId: doctor.id 
         }
       });
 
@@ -348,7 +348,7 @@ export class HealthcareRBAC {
         });
 
         whereClause.OR = [
-          { primary_care_doctor_id: doctor.id },
+          { primaryCareDoctorId: doctor.id },
           { id: { in: secondaryPatients.map(sp => sp.patient_id) } }
         ];
       }

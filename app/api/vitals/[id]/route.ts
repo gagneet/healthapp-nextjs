@@ -50,7 +50,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
     const patient = await prisma.patient.findFirst({
       where: { 
         id: patientId,
-        ...(doctorId ? { primary_care_doctor_id: doctorId } : {})
+        ...(doctorId ? { primaryCareDoctorId: doctorId } : {})
       }
     });
 

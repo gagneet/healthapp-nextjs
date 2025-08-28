@@ -48,7 +48,7 @@ export async function GET(request: NextRequest) {
       if (doctor && !patientId) {
         // Show payments for doctor's patients
         const doctorPatients = await prisma.patient.findMany({
-          where: { primary_care_doctor_id: doctor.id },
+          where: { primaryCareDoctorId: doctor.id },
           select: { id: true }
         });
         whereClause.patient_id = { in: doctorPatients.map(p => p.id) };
@@ -261,7 +261,7 @@ export async function POST(request: NextRequest) {
         where: { id: patient_id }
       });
       
-      if (!doctor || !patient || patient.primary_care_doctor_id !== doctor.id) {
+      if (!doctor || !patient || patient.primaryCareDoctorId !== doctor.id) {
         return NextResponse.json({
           status: false,
           statusCode: 403,

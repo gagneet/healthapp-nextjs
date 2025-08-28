@@ -126,7 +126,7 @@ export async function POST(request: NextRequest) {
             name: true
           }
         },
-        primary_care_doctor_id: true,
+        primaryCareDoctorId: true,
         height_cm: true,
         weight_kg: true,
         blood_type: true,

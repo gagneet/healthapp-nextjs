@@ -662,7 +662,7 @@ class AdminController {
 
       // Get patient count
       const patientCount = await Patient.count({
-        where: { primary_care_doctor_id: doctor.id }
+        where: { primaryCareDoctorId: doctor.id }
       });
 
       const responseData = {
@@ -790,7 +790,7 @@ class AdminController {
 
       // Check if doctor has active patients
       const activePatients = await Patient.count({
-        where: { primary_care_doctor_id: doctor.id },
+        where: { primaryCareDoctorId: doctor.id },
         transaction
       });
 

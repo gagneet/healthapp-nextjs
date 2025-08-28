@@ -70,7 +70,7 @@ class PatientAccessService {
    */
   async getPrimaryPatients(doctorRecord: any, options = {}) {
     const whereClause = {
-      primary_care_doctor_id: doctorRecord.id,
+      primaryCareDoctorId: doctorRecord.id,
       is_active: true
     };
 
@@ -257,7 +257,7 @@ class PatientAccessService {
       const isPrimaryDoctor = await Patient.findOne({
         where: {
           id: patientId,
-          primary_care_doctor_id: doctorRecord.id,
+          primaryCareDoctorId: doctorRecord.id,
           is_active: true
         }
       });

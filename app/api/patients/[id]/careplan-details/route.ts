@@ -84,7 +84,7 @@ async function verifyPatientAccess(patientId: string, doctorId: string | null, h
   
   if (doctorId) {
     whereClause.OR = [
-      { primary_care_doctor_id: doctorId },
+      { primaryCareDoctorId: doctorId },
       {
         patient_doctor_assignments: {
           some: { 

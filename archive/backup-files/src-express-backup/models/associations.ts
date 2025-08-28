@@ -91,11 +91,11 @@ export default function defineAssociations(models: any) {
 
   if (Doctor && Patient) {
     Doctor.hasMany(Patient, {
-      foreignKey: 'primary_care_doctor_id',
+      foreignKey: 'primaryCareDoctorId',
       as: 'primaryCarePatients'
     });
     Patient.belongsTo(Doctor, {
-      foreignKey: 'primary_care_doctor_id',
+      foreignKey: 'primaryCareDoctorId',
       as: 'primaryCareDoctor'
     });
   }

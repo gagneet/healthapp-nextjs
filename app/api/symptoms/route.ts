@@ -215,7 +215,7 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
         where: {
           id: symptomData.patientId,
           OR: [
-            { primary_care_doctor_id: session.user.profileId },
+            { primaryCareDoctorId: session.user.profileId },
             { primary_care_hsp_id: session.user.profileId }
           ]
         }

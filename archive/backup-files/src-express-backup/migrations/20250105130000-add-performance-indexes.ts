@@ -26,7 +26,7 @@ export default {
     // 1. CRITICAL INDEXES for Patient Management (>10K patients per doctor)
     const patientIndexes = [
       {
-        fields: ['primary_care_doctor_id', 'created_at', 'is_active'],
+        fields: ['primaryCareDoctorId', 'created_at', 'is_active'],
         name: 'idx_patients_doctor_created_active',
         concurrently: true
       },
@@ -36,7 +36,7 @@ export default {
         concurrently: true
       },
       {
-        fields: ['userId', 'primary_care_doctor_id'],
+        fields: ['userId', 'primaryCareDoctorId'],
         name: 'idx_patients_user_doctor',
         concurrently: true
       }
