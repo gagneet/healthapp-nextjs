@@ -1,65 +1,99 @@
-# Multi-stage build for production NextJS Frontend
-FROM node:22.18.0-alpine AS deps
-RUN apk add --no-cache libc6-compat build-base
+# Dockerfile - Development Next.js deployment for specified domain
+FROM node:22-alpine AS base
+
+# Install system dependencies required for Prisma and healthcare apps
+RUN apk add --no-cache \
+    libc6-compat \
+    postgresql-client \
+    curl \
+    bash \
+    vim \
+    openssl \
+    ca-certificates \
+    netcat-openbsd
+
 WORKDIR /app
 
-# Copy package files
-COPY package.json package-lock.json ./
+# Dependencies stage
+FROM base AS deps
+COPY package*.json ./
 RUN npm ci --only=production && npm cache clean --force
 
 # Build stage
-FROM node:22.18.0-alpine AS builder
+FROM base AS builder
 WORKDIR /app
-RUN apk add --no-cache build-base
 
-# Copy package files and install all dependencies
-COPY package.json package-lock.json ./
+# Copy package files
+COPY package*.json ./
+
+# Install dependencies
 RUN npm ci
 
-# Copy source code
+# Copy prisma directory BEFORE generating
+COPY prisma ./prisma/
+
+# Set DATABASE_URL for build time (placeholder)
+# ENV DATABASE_URL="postgresql://build:build@localhost:5432/healthapp_build"
+# Accept database URL as build argument
+ARG DATABASE_URL=postgresql://dummy:dummy@localhost:5432/dummy
+
+# Copy all source files
 COPY . .
 
-# Disable telemetry during build
+# Set build environment variables for dynamic healthcare app
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
+ENV DATABASE_URL=$DATABASE_URL
+# Force dynamic rendering - skip static generation
+ENV NEXT_BUILD_OUTPUT_TYPE=standalone
+ENV NEXT_FORCE_DYNAMIC=1
 
-# Build the application
+# Generate Prisma client with build-time dummy database URL
+RUN npx prisma generate
+
+# Build Next.js standalone application
 RUN npm run build
 
-# Production runtime
-FROM node:22.18.0-alpine AS runner
+# Runtime stage
+FROM base AS runner
 WORKDIR /app
 
-# Install production utilities only
-RUN apk add --no-cache \
-    curl \
-    bash \
-    vim
-
+# Set build environment variables for dynamic healthcare app
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
-# Create non-root user
+# Create user and group for security
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
-# Copy from build stage
-COPY --from=deps /app/node_modules ./node_modules
+# Copy built application (Next.js standalone generates server.js automatically)
 COPY --from=builder /app/public ./public
+COPY --from=builder /app/.next/standalone ./
+COPY --from=builder /app/.next/static ./.next/static
 
-# Copy built application
-COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+# Copy Prisma client, lib directory, and FULL node_modules for seeding
+COPY --from=builder /app/lib ./lib
+COPY --from=builder /app/prisma ./prisma
+COPY --from=builder /app/node_modules ./node_modules
+
+# Copy package.json for runtime
+COPY --from=builder /app/package.json ./package.json
+
+# Set correct permissions - change ownership
+RUN chown -R nextjs:nodejs /app
+
+# Switch to non-root user
+USER nextjs
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
-  CMD curl -f http://localhost:3000/ || exit 1
+  CMD curl -f http://localhost:3002/api/health || exit 1
 
-USER nextjs
+# Expose port
+EXPOSE 3002
 
-EXPOSE 3000
-
-ENV PORT=3000
+ENV PORT=3002
 ENV HOSTNAME="0.0.0.0"
 
+# Start the application
 CMD ["node", "server.js"]
