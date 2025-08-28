@@ -38,7 +38,7 @@ export default {
       },
       
       // Assignment type determines permissions and responsibilities
-      assignment_type: {
+      assignmentType: {
         type: Sequelize.STRING(50),
         allowNull: false,
         comment: 'Primary: Original doctor, Specialist: For specific care plans, Substitute: Same provider coverage, Transferred: Full transfer with consent'
@@ -59,7 +59,7 @@ export default {
       },
       
       // For specialist assignments - specific to care plans or conditions
-      specialty_focus: {
+      specialtyFocus: {
         type: Sequelize.ARRAY(Sequelize.TEXT),
         defaultValue: [],
         comment: 'Specific specialties/conditions this assignment covers'
@@ -161,12 +161,12 @@ export default {
         comment: 'Whether this assignment requires doctors to be in same organization'
       },
       
-      created_at: {
+      createdAt: {
         type: Sequelize.DATE,
         defaultValue: Sequelize.literal('CURRENT_TIMESTAMP')
       },
       
-      updated_at: {
+      updatedAt: {
         type: Sequelize.DATE,
         defaultValue: Sequelize.literal('CURRENT_TIMESTAMP')
       }
@@ -176,7 +176,7 @@ export default {
     const indexes = [
       { fields: ['patientId'], name: 'idx_patient_doctor_assignments_patient_id' },
       { fields: ['doctorId'], name: 'idx_patient_doctor_assignments_doctor_id' },
-      { fields: ['assignment_type'], name: 'idx_patient_doctor_assignments_assignment_type' },
+      { fields: ['assignmentType'], name: 'idx_patient_doctor_assignments_assignment_type' },
       { fields: ['isActive'], name: 'idx_patient_doctor_assignments_is_active' },
       { fields: ['patient_consent_status'], name: 'idx_patient_doctor_assignments_consent_status' }
     ];
@@ -192,10 +192,10 @@ export default {
     // Add unique constraint for primary doctor per patient (with idempotent check)
     try {
       await queryInterface.addIndex('patientDoctorAssignments', {
-        fields: ['patientId', 'assignment_type'],
+        fields: ['patientId', 'assignmentType'],
         unique: true,
         where: {
-          assignment_type: 'primary',
+          assignmentType: 'primary',
           isActive: true
         },
         name: 'unique_primary_doctor_per_patient'
@@ -207,10 +207,10 @@ export default {
     // Add check constraints (with idempotent checks)
     try {
       await queryInterface.addConstraint('patientDoctorAssignments', {
-        fields: ['assignment_type'],
+        fields: ['assignmentType'],
         type: 'check',
         where: {
-          assignment_type: {
+          assignmentType: {
             [Sequelize.Op.in]: ['primary', 'specialist', 'substitute', 'transferred']
           }
         },

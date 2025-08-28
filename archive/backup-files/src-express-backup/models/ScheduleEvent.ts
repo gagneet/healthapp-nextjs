@@ -45,11 +45,11 @@ export default (sequelize: any, DataTypes: any) => {
         return (this as any).details?.priority || null;
       },
     },
-    created_at: {
+    createdAt: {
       type: DataTypes.DATE,
       allowNull: true,
     },
-    updated_at: {
+    updatedAt: {
       type: DataTypes.DATE,
       allowNull: true,
     },

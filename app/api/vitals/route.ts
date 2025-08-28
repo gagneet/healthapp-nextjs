@@ -77,7 +77,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
       },
       skip: offset,
       take: limit,
-      orderBy: { created_at: 'desc' }
+      orderBy: { createdAt: 'desc' }
     });
 
     const totalCount = await prisma.vital.count({
@@ -144,8 +144,8 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
           repeat_days,
           patientId
         },
-        created_at: new Date(),
-        updated_at: new Date()
+        createdAt: new Date(),
+        updatedAt: new Date()
       },
       include: {
         vital_templates: {

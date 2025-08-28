@@ -52,8 +52,8 @@ export default {
           role: 'PATIENT',
           account_status: 'ACTIVE',
           email_verified: true,
-          created_at: new Date(),
-          updated_at: new Date()
+          createdAt: new Date(),
+          updatedAt: new Date()
         },
         {
           id: '550e8400-e29b-41d4-a716-446655440011',
@@ -68,8 +68,8 @@ export default {
           role: 'PATIENT',
           account_status: 'ACTIVE',
           email_verified: true,
-          created_at: new Date(),
-          updated_at: new Date()
+          createdAt: new Date(),
+          updatedAt: new Date()
         },
         {
           id: '550e8400-e29b-41d4-a716-446655440012',
@@ -84,8 +84,8 @@ export default {
           role: 'PATIENT',
           account_status: 'ACTIVE',
           email_verified: true,
-          created_at: new Date(),
-          updated_at: new Date()
+          createdAt: new Date(),
+          updatedAt: new Date()
         },
         {
           id: '550e8400-e29b-41d4-a716-446655440013',
@@ -100,8 +100,8 @@ export default {
           role: 'PATIENT',
           account_status: 'ACTIVE',
           email_verified: true,
-          created_at: new Date(),
-          updated_at: new Date()
+          createdAt: new Date(),
+          updatedAt: new Date()
         },
         {
           id: '550e8400-e29b-41d4-a716-446655440014',
@@ -116,8 +116,8 @@ export default {
           role: 'PATIENT',
           account_status: 'ACTIVE',
           email_verified: true,
-          created_at: new Date(),
-          updated_at: new Date()
+          createdAt: new Date(),
+          updatedAt: new Date()
         }
       ], { transaction, returning: true, ignoreDuplicates: true });
 
@@ -151,8 +151,8 @@ export default {
           last_visit_date: '2025-01-15',
           next_appointment_date: '2025-02-01',
           isActive: true,
-          created_at: new Date(),
-          updated_at: new Date()
+          createdAt: new Date(),
+          updatedAt: new Date()
         },
         {
           id: '550e8400-e29b-41d4-a716-446655440031',
@@ -180,8 +180,8 @@ export default {
           last_visit_date: '2025-01-18',
           next_appointment_date: '2025-01-25',
           isActive: true,
-          created_at: new Date(),
-          updated_at: new Date()
+          createdAt: new Date(),
+          updatedAt: new Date()
         },
         {
           id: '550e8400-e29b-41d4-a716-446655440032',
@@ -209,8 +209,8 @@ export default {
           last_visit_date: '2025-01-20',
           next_appointment_date: '2025-01-30',
           isActive: true,
-          created_at: new Date(),
-          updated_at: new Date()
+          createdAt: new Date(),
+          updatedAt: new Date()
         },
         {
           id: '550e8400-e29b-41d4-a716-446655440033',
@@ -238,8 +238,8 @@ export default {
           last_visit_date: '2025-01-12',
           next_appointment_date: '2025-02-05',
           isActive: true,
-          created_at: new Date(),
-          updated_at: new Date()
+          createdAt: new Date(),
+          updatedAt: new Date()
         },
         {
           id: '550e8400-e29b-41d4-a716-446655440034',
@@ -267,8 +267,8 @@ export default {
           last_visit_date: '2025-01-08',
           next_appointment_date: '2025-01-28',
           isActive: true,
-          created_at: new Date(),
-          updated_at: new Date()
+          createdAt: new Date(),
+          updatedAt: new Date()
         }
       ], { transaction, ignoreDuplicates: true });
 

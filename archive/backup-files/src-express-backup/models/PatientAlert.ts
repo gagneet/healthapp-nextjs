@@ -60,11 +60,11 @@ export default (sequelize: any) => {
       type: DataTypes.JSONB,
       defaultValue: {},
     },
-    created_at: {
+    createdAt: {
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW,
     },
-    updated_at: {
+    updatedAt: {
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW,
     },
@@ -80,7 +80,7 @@ export default (sequelize: any) => {
         fields: ['acknowledged', 'resolved'],
       },
       {
-        fields: ['created_at'],
+        fields: ['createdAt'],
       },
     ],
   });

@@ -31,8 +31,8 @@ export default {
           COALESCE(u_provider.last_name, u_doctor.last_name) as provider_last_name,
           COALESCE(u_provider.email, u_doctor.email) as provider_email,
           
-          cp.created_at,
-          cp.updated_at
+          cp.createdAt,
+          cp.updatedAt
       FROM care_plans cp
       JOIN patients p ON cp.patientId = p.id
       JOIN users u_patient ON p.userId = u_patient.id
@@ -69,15 +69,15 @@ export default {
           -- Recent activity
           MAX(ar.recorded_at) as last_activity,
           
-          p.created_at,
-          p.updated_at
+          p.createdAt,
+          p.updatedAt
       FROM patients p
       JOIN users u ON p.userId = u.id
       LEFT JOIN adherence_records ar ON p.id = ar.patientId 
           AND ar.due_at >= NOW() - INTERVAL '30 days'
       WHERE p.deleted_at IS NULL 
           AND u.deleted_at IS NULL
-      GROUP BY p.id, u.first_name, u.last_name, u.email, p.created_at, p.updated_at;
+      GROUP BY p.id, u.first_name, u.last_name, u.email, p.createdAt, p.updatedAt;
       `);
 
     // Upcoming scheduled events
@@ -101,7 +101,7 @@ export default {
           COALESCE(u_provider.first_name, u_doctor2.first_name) as provider_first_name,
           COALESCE(u_provider.last_name, u_doctor2.last_name) as provider_last_name,
           
-          se.created_at
+          se.createdAt
       FROM scheduled_events se
       JOIN patients p ON se.patientId = p.id
       JOIN users u_patient ON p.userId = u_patient.id

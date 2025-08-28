@@ -54,7 +54,7 @@ class DoctorController {
           {
             model: User,
             as: 'user',
-            attributes: ['id', 'email', 'phone', 'first_name', 'middle_name', 'last_name', 'gender', 'profile_picture_url', 'email_verified', 'created_at']
+            attributes: ['id', 'email', 'phone', 'first_name', 'middle_name', 'last_name', 'gender', 'profile_picture_url', 'email_verified', 'createdAt']
           },
           {
             model: Speciality,
@@ -158,8 +158,8 @@ class DoctorController {
           is_available_online: doctor.is_available_online,
           
           // Timestamps
-          created_at: doctor.created_at,
-          updated_at: doctor.updated_at
+          createdAt: doctor.createdAt,
+          updatedAt: doctor.updatedAt
         },
         
         // Clinics
@@ -464,7 +464,7 @@ class DoctorController {
         average_rating: doctor.average_rating,
         total_reviews: doctor.total_reviews,
         clinics: doctor.clinics,
-        created_at: doctor.created_at
+        createdAt: doctor.createdAt
       };
 
       res.status(200).json({
@@ -521,7 +521,7 @@ class DoctorController {
           {
             model: CarePlan,
             as: 'carePlans',
-            attributes: ['id', 'status', 'created_at'],
+            attributes: ['id', 'status', 'createdAt'],
             include: [
               {
                 model: Medication,
@@ -533,7 +533,7 @@ class DoctorController {
         ],
         offset,
         limit: limitNum,
-        order: [['created_at', 'DESC']]
+        order: [['createdAt', 'DESC']]
       });
 
       const responseData = { patients: {} };
@@ -581,7 +581,7 @@ class DoctorController {
             mobile_number: patient.user?.phone || null,
             email: patient.user?.email || null,
             status: patient.status || 'active',
-            created_at: patient.created_at || new Date().toISOString()
+            createdAt: patient.createdAt || new Date().toISOString()
           },
           medical_info: {
             last_visit: lastVisit,
@@ -637,7 +637,7 @@ class DoctorController {
 
       const clinics = await Clinic.findAll({
         where: { doctorId: doctor.id, isActive: true },
-        order: [['is_primary', 'DESC'], ['created_at', 'ASC']]
+        order: [['is_primary', 'DESC'], ['createdAt', 'ASC']]
       });
 
       res.status(200).json({
@@ -1023,7 +1023,7 @@ class DoctorController {
             attributes: ['email', 'phone', 'first_name', 'middle_name', 'last_name', 'profile_picture_url']
           }
         ],
-        order: [['updated_at', 'DESC']],
+        order: [['updatedAt', 'DESC']],
         limit: parseInt(String(limit)) || 5
       });
 
@@ -1043,7 +1043,7 @@ class DoctorController {
         adherence_rate: patient.overall_adherence_score || 85, // Use actual adherence score
         critical_alerts: patient.risk_level === 'high' ? 2 : (patient.risk_level === 'medium' ? 1 : 0),
         status: patient.isActive ? 'active' : 'inactive',
-        created_at: patient.created_at
+        createdAt: patient.createdAt
       }));
 
       res.status(200).json({
@@ -1108,7 +1108,7 @@ class DoctorController {
           type: 'medication',
           severity: patient.overall_adherence_score < 50 ? 'critical' : 'high',
           message: `Low medication adherence: ${patient.overall_adherence_score}%`,
-          created_at: patient.updated_at,
+          createdAt: patient.updatedAt,
           acknowledged: false
         });
       });
@@ -1127,7 +1127,7 @@ class DoctorController {
             attributes: ['first_name', 'middle_name', 'last_name']
           }
         ],
-        order: [['updated_at', 'DESC']],
+        order: [['updatedAt', 'DESC']],
         limit: 3
       });
 
@@ -1139,7 +1139,7 @@ class DoctorController {
           type: 'vital',
           severity: 'critical',
           message: 'Patient marked as high risk - requires immediate attention',
-          created_at: patient.updated_at,
+          createdAt: patient.updatedAt,
           acknowledged: false
         });
       });
@@ -1152,7 +1152,7 @@ class DoctorController {
         const severityOrder = { critical: 3, high: 2, medium: 1 };
         const severityDiff = severityOrder[b.severity as keyof typeof severityOrder] - severityOrder[a.severity as keyof typeof severityOrder];
         if (severityDiff !== 0) return severityDiff;
-        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
       });
 
       // Limit results

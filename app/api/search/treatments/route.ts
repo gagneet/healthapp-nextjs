@@ -109,8 +109,8 @@ export async function GET(request: NextRequest) {
         recovery_time: true,
         prerequisites: true,
         follow_up_required: true,
-        created_at: true,
-        updated_at: true
+        createdAt: true,
+        updatedAt: true
       },
       orderBy: [
         { effectiveness_rating: 'desc' },
@@ -159,7 +159,7 @@ export async function GET(request: NextRequest) {
             recovery_time: treatment.recovery_time,
             prerequisites: treatment.prerequisites || [],
             follow_up_required: treatment.follow_up_required || false,
-            last_updated: treatment.updated_at
+            last_updated: treatment.updatedAt
           })),
           metadata: {
             query,

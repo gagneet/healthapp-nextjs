@@ -46,7 +46,7 @@ class AdminController {
         ],
         offset,
         limit: limitNum,
-        order: [['created_at', 'DESC']]
+        order: [['createdAt', 'DESC']]
       });
 
       const responseData: { doctors: Record<string, any> } = { doctors: {} };
@@ -115,7 +115,7 @@ class AdminController {
         where: whereClause,
         offset,
         limit: limitNum,
-        order: [['created_at', 'DESC']]
+        order: [['createdAt', 'DESC']]
       });
 
       const responseData: { medicines: Record<string, any> } = { medicines: {} };
@@ -180,7 +180,7 @@ class AdminController {
       // Get recent activity
       const recentDoctors = await Doctor.count({
         where: {
-          created_at: {
+          createdAt: {
             [Op.gte]: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) // Last 30 days
           }
         }
@@ -188,7 +188,7 @@ class AdminController {
 
       const recentPatients = await Patient.count({
         where: {
-          created_at: {
+          createdAt: {
             [Op.gte]: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
           }
         }
@@ -379,7 +379,7 @@ class AdminController {
           {
             model: User,
             as: 'user',
-            attributes: ['id', 'email', 'phone', 'first_name', 'middle_name', 'last_name', 'gender', 'email_verified', 'created_at']
+            attributes: ['id', 'email', 'phone', 'first_name', 'middle_name', 'last_name', 'gender', 'email_verified', 'createdAt']
           },
           {
             model: Speciality,
@@ -632,7 +632,7 @@ class AdminController {
           {
             model: User,
             as: 'user',
-            attributes: ['id', 'email', 'phone', 'first_name', 'middle_name', 'last_name', 'gender', 'email_verified', 'account_status', 'created_at']
+            attributes: ['id', 'email', 'phone', 'first_name', 'middle_name', 'last_name', 'gender', 'email_verified', 'account_status', 'createdAt']
           },
           {
             model: Speciality,
@@ -727,8 +727,8 @@ class AdminController {
           is_available_online: doctor.is_available_online,
           
           // Timestamps
-          created_at: doctor.created_at,
-          updated_at: doctor.updated_at
+          createdAt: doctor.createdAt,
+          updatedAt: doctor.updatedAt
         },
         
         // Clinics
@@ -991,7 +991,7 @@ class AdminController {
         where: whereClause,
         offset,
         limit: limitNum,
-        order: [['created_at', 'DESC']]
+        order: [['createdAt', 'DESC']]
       });
 
       const responseData: { conditions: Record<string, any> } = { conditions: {} };
@@ -1010,8 +1010,8 @@ class AdminController {
           },
           metadata: {
             created_by: condition.created_by?.toString(),
-            created_at: condition.created_at,
-            updated_at: condition.updated_at
+            createdAt: condition.createdAt,
+            updatedAt: condition.updatedAt
           }
         };
       }
@@ -1178,7 +1178,7 @@ class AdminController {
         where: whereClause,
         offset,
         limit: limitNum,
-        order: [['created_at', 'DESC']]
+        order: [['createdAt', 'DESC']]
       });
 
       const responseData: { treatments: Record<string, any> } = { treatments: {} };
@@ -1208,8 +1208,8 @@ class AdminController {
           },
           metadata: {
             created_by: treatment.created_by?.toString(),
-            created_at: treatment.created_at,
-            updated_at: treatment.updated_at
+            createdAt: treatment.createdAt,
+            updatedAt: treatment.updatedAt
           }
         };
       }

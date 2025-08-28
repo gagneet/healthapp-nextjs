@@ -105,7 +105,7 @@ export async function GET(request: NextRequest) {
         },
         skip: offset,
         take: limit,
-        orderBy: { created_at: 'desc' }
+        orderBy: { createdAt: 'desc' }
       }),
       prisma.patientSubscription.count({ where: whereClause })
     ]);
@@ -207,8 +207,8 @@ export async function POST(request: NextRequest) {
         status: 'ACTIVE',
         payment_method_id,
         last_payment_amount: servicePlan.price,
-        created_at: new Date(),
-        updated_at: new Date()
+        createdAt: new Date(),
+        updatedAt: new Date()
       },
       include: {
         patient: {
@@ -299,7 +299,7 @@ export async function PUT(request: NextRequest) {
         ...(status && { status }),
         ...(payment_method_id && { payment_method_id }),
         ...(notes && { metadata: { notes } }),
-        updated_at: new Date()
+        updatedAt: new Date()
       },
       include: {
         patient: {

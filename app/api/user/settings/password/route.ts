@@ -72,7 +72,7 @@ export async function POST(request: NextRequest) {
       where: { id: session.user.id },
       data: {
         passwordHash: newPasswordHash,
-        updated_at: new Date()
+        updatedAt: new Date()
       }
     });
 

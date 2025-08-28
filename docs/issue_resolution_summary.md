@@ -945,7 +945,7 @@ All new APIs follow the established healthcare business rules:
 
 - Role-Based Access: Templates and Services restricted to doctors only (HSPs can't manage these per business rules)
 - Ownership Validation: Services linked to specific doctors, templates owned by creators
-- Audit Trail: Proper created_at/updated_at tracking
+- Audit Trail: Proper createdAt/updatedAt tracking
 - Soft Deletes: Never hard delete healthcare data
 - Session Security: Auth.js v5 session validation throughout
 
@@ -1578,7 +1578,7 @@ Issues Fixed:
     - Removed invalid overall_score field
     - Added required adherence_type enum field (MEDICATION, VITAL_CHECK, APPOINTMENT)
     - Added required due_at timestamp field
-    - Added proper created_at and updated_at fields
+    - Added proper createdAt and updatedAt fields
 
 4. Main Execution Block: Added proper script execution when run directly with error handling and database disconnection.
 
@@ -1816,7 +1816,7 @@ Here's a comprehensive set of validated rules for using Prisma with Next.js:
 
 #### Database Level
 - **Tables**: Common practice is plural snake_case (e.g., `users`, `posts`)
-- **Columns**: Snake_case is the general database convention (e.g., `created_at`, `user_id`)
+- **Columns**: Snake_case is the general database convention (e.g., `createdAt`, `user_id`)
 
 #### Client Level
 - **The Prisma Client ALWAYS generates camelCase property names** - this is not configurable
@@ -1830,7 +1830,7 @@ Use `@@map` and `@map` to bridge the naming convention gap:
 model User {
 id        Int      @id @default(autoincrement())
 firstName String   @map("first_name")
-createdAt DateTime @default(now()) @map("created_at")
+createdAt DateTime @default(now()) @map("createdAt")
 posts     Post[]
 
 @@map("users")
@@ -2117,7 +2117,7 @@ I have successfully completed the analysis and updates based on your validated P
 1. Added Rules to CLAUDE.md: Incorporated your comprehensive validated Prisma + Next.js best practices as section 10
 2. Updated Seed Script: Fixed field names to match each model's actual schema definition:
 - User model: camelCase (createdAt, updatedAt) - uses @map directives
-- Other models: snake_case (created_at, updated_at) - use direct field names
+- Other models: snake_case (createdAt, updatedAt) - use direct field names
 3. Fixed ES Module Issues: Corrected module detection for modern Node.js
 
 🔍 Key Discovery:
@@ -2141,11 +2141,11 @@ snake_case field names." If so, can you verify and correct this?
 
 ● Perfect! Now I understand the correct pattern. Let me also check a few models that showed errors:
 
-● Bash(grep -A 8 -B 2 "created_at.*DateTime.*@db\|updated_at.*DateTime.*@db" /home/gagneet/healthapp-nextjs/prisma/schema.prisma | head -20)
+● Bash(grep -A 8 -B 2 "createdAt.*DateTime.*@db\|updatedAt.*DateTime.*@db" /home/gagneet/healthapp-nextjs/prisma/schema.prisma | head -20)
 ⎿ 
     hipaa_covered_entity                                                                                  Boolean?                           @default(true)    
     business_associate_agreement                                                                          Json?
-    created_at                                                                                            DateTime?                          @db.Timestamptz(6)
+    createdAt                                                                                            DateTime?                          @db.Timestamptz(6)
     … +18 lines (ctrl+r to expand)
 
 ● Now I have the complete picture! Here's what I found:
@@ -2154,8 +2154,8 @@ The Schema is Actually CORRECT and Consistent!
 
 After careful analysis, I discovered that:
 
-1. User Model: Uses createdAt @map("created_at"), updatedAt @map("updated_at") - CORRECT per validated rules
-2. Other Models: Use direct created_at, updated_at fields - but this is also CORRECT because they don't have other camelCase fields that need @map directives
+1. User Model: Uses createdAt @map("createdAt"), updatedAt @map("updatedAt") - CORRECT per validated rules
+2. Other Models: Use direct createdAt, updatedAt fields - but this is also CORRECT because they don't have other camelCase fields that need @map directives
 
 The schema is NOT mixed - it's actually following a consistent pattern:
 - Models with complex camelCase fields (like User with passwordHash, emailVerified, etc.) use @map directives for all fields including timestamps
@@ -2195,8 +2195,8 @@ After thorough verification, I found that:
 
 The Schema Follows Correct Best Practices:
 
-1. User Model: Uses createdAt @map("created_at"), updatedAt @map("updated_at") + camelCase fields with @map directives
-2. Other Models: Use direct created_at, updated_at fields + consistent snake_case naming throughout
+1. User Model: Uses createdAt @map("createdAt"), updatedAt @map("updatedAt") + camelCase fields with @map directives
+2. Other Models: Use direct createdAt, updatedAt fields + consistent snake_case naming throughout
 
 This is Architecturally Sound because:
 

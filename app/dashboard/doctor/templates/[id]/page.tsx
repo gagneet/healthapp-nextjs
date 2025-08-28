@@ -22,8 +22,8 @@ interface Template {
   category: string
   tags: string[]
   isActive: boolean
-  created_at: string
-  updated_at: string
+  createdAt: string
+  updatedAt: string
   usage_count: number
 }
 
@@ -82,8 +82,8 @@ Date: {{date}}`,
         category: 'Endocrinology',
         tags: ['diabetes', 'chronic-care', 'management'],
         isActive: true,
-        created_at: '2025-01-15T10:30:00Z',
-        updated_at: '2025-01-20T14:22:00Z',
+        createdAt: '2025-01-15T10:30:00Z',
+        updatedAt: '2025-01-20T14:22:00Z',
         usage_count: 15
       }
       
@@ -154,7 +154,7 @@ Date: {{date}}`,
           <div>
             <h1 className="text-3xl font-bold text-gray-900">{template.name}</h1>
             <p className="text-gray-600 mt-1">
-              {template.type.replace('_', ' ').toUpperCase()} • Created {formatDate(template.created_at)}
+              {template.type.replace('_', ' ').toUpperCase()} • Created {formatDate(template.createdAt)}
             </p>
           </div>
         </div>
@@ -268,12 +268,12 @@ Date: {{date}}`,
               
               <div>
                 <label className="text-sm font-medium text-gray-700">Last Updated</label>
-                <p className="text-sm text-gray-600 mt-1">{formatDate(template.updated_at)}</p>
+                <p className="text-sm text-gray-600 mt-1">{formatDate(template.updatedAt)}</p>
               </div>
               
               <div>
                 <label className="text-sm font-medium text-gray-700">Created</label>
-                <p className="text-sm text-gray-600 mt-1">{formatDate(template.created_at)}</p>
+                <p className="text-sm text-gray-600 mt-1">{formatDate(template.createdAt)}</p>
               </div>
             </CardContent>
           </Card>

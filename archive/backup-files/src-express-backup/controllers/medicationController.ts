@@ -35,7 +35,7 @@ class MedicationController {
             as: 'medicine'
           }
         ],
-        order: [['created_at', 'DESC']]
+        order: [['createdAt', 'DESC']]
       });
 
       const responseData = {
@@ -59,8 +59,8 @@ class MedicationController {
             },
             start_date: medication.start_date,
             end_date: medication.end_date,
-            updated_at: medication.updated_at,
-            created_at: medication.created_at
+            updatedAt: medication.updatedAt,
+            createdAt: medication.createdAt
           },
           organizer: {
             id: medication.organizer_id.toString(),
@@ -85,8 +85,8 @@ class MedicationController {
               creator_id: medication.medicine.creator_id?.toString(),
               public_medicine: medication.medicine.public_medicine
             },
-            updated_at: medication.medicine.updated_at,
-            created_at: medication.medicine.created_at
+            updatedAt: medication.medicine.updatedAt,
+            createdAt: medication.medicine.createdAt
           };
         }
       });
@@ -186,7 +186,7 @@ class MedicationController {
         event_id: `evt_${event.id}`,
         scheduled_time: event.start_time,
         status: event.status,
-        completed_at: event.status === 'completed' ? event.updated_at : null,
+        completed_at: event.status === 'completed' ? event.updatedAt : null,
         notes: event.details?.notes || null
       }));
 

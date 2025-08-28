@@ -770,8 +770,8 @@ CREATE TABLE public.adherence_records (
     response_data jsonb DEFAULT '{}'::jsonb,
     notes text,
     attachments jsonb DEFAULT '[]'::jsonb,
-    created_at timestamp(6) with time zone,
-    updated_at timestamp(6) with time zone,
+    createdAt timestamp(6) with time zone,
+    updatedAt timestamp(6) with time zone,
     deleted_at timestamp(6) with time zone
 );
 
@@ -791,8 +791,8 @@ CREATE TABLE public.appointment_slots (
     is_available boolean DEFAULT true,
     slot_type public.enum_appointment_slots_slot_type DEFAULT 'regular'::public.enum_appointment_slots_slot_type,
     notes text,
-    created_at timestamp(6) with time zone NOT NULL,
-    updated_at timestamp(6) with time zone NOT NULL,
+    createdAt timestamp(6) with time zone NOT NULL,
+    updatedAt timestamp(6) with time zone NOT NULL,
     deleted_at timestamp(6) with time zone
 );
 
@@ -818,8 +818,8 @@ CREATE TABLE public.appointments (
     end_time timestamp(6) with time zone,
     rr_rule character varying(1000),
     details json,
-    created_at timestamp(6) with time zone NOT NULL,
-    updated_at timestamp(6) with time zone NOT NULL,
+    createdAt timestamp(6) with time zone NOT NULL,
+    updatedAt timestamp(6) with time zone NOT NULL,
     deleted_at timestamp(6) with time zone,
     doctorId uuid,
     patientId uuid,
@@ -840,7 +840,7 @@ CREATE TABLE public.audit_logs (
     resource character varying(500) NOT NULL,
     patientId uuid,
     phi_accessed boolean DEFAULT false,
-    access_granted boolean NOT NULL,
+    accessGranted boolean NOT NULL,
     denial_reason text,
     ip_address inet,
     user_agent text,
@@ -852,7 +852,7 @@ CREATE TABLE public.audit_logs (
     security_alerts jsonb DEFAULT '[]'::jsonb,
     retention_date timestamp(6) with time zone,
     "timestamp" timestamp(6) with time zone NOT NULL,
-    created_at timestamp(6) with time zone
+    createdAt timestamp(6) with time zone
 );
 
 
@@ -876,8 +876,8 @@ CREATE TABLE public.care_plan_templates (
     version character varying(20) DEFAULT '1.0'::character varying,
     parent_template_id uuid,
     usage_count integer DEFAULT 0,
-    created_at timestamp(6) with time zone NOT NULL,
-    updated_at timestamp(6) with time zone NOT NULL,
+    createdAt timestamp(6) with time zone NOT NULL,
+    updatedAt timestamp(6) with time zone NOT NULL,
     deleted_at timestamp(6) with time zone
 );
 
@@ -927,8 +927,8 @@ CREATE TABLE public.care_plans (
     emergency_contacts jsonb DEFAULT '[]'::jsonb,
     details jsonb,
     channel_id character varying(255),
-    created_at timestamp(6) with time zone,
-    updated_at timestamp(6) with time zone,
+    createdAt timestamp(6) with time zone,
+    updatedAt timestamp(6) with time zone,
     deleted_at timestamp(6) with time zone
 );
 
@@ -962,8 +962,8 @@ CREATE TABLE public.clinics (
     established_year integer,
     facilities jsonb DEFAULT '[]'::jsonb,
     insurance_accepted text[] DEFAULT ARRAY[]::text[],
-    created_at timestamp(6) with time zone NOT NULL,
-    updated_at timestamp(6) with time zone NOT NULL,
+    createdAt timestamp(6) with time zone NOT NULL,
+    updatedAt timestamp(6) with time zone NOT NULL,
     deleted_at timestamp(6) with time zone
 );
 
@@ -994,8 +994,8 @@ CREATE TABLE public.connected_devices (
     isActive boolean DEFAULT true NOT NULL,
     added_by uuid NOT NULL,
     notes text,
-    created_at timestamp(6) with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    updated_at timestamp(6) with time zone NOT NULL
+    createdAt timestamp(6) with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    updatedAt timestamp(6) with time zone NOT NULL
 );
 
 
@@ -1030,7 +1030,7 @@ CREATE TABLE public.consultation_prescriptions (
     ndc_code character varying(50),
     generic_substitution boolean DEFAULT true NOT NULL,
     pharmacy_instructions text,
-    created_at timestamp(6) with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
+    createdAt timestamp(6) with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 
 
@@ -1046,8 +1046,8 @@ CREATE TABLE public.dashboard_metrics (
     metric_data jsonb DEFAULT '{}'::jsonb NOT NULL,
     calculated_at timestamp(6) with time zone NOT NULL,
     valid_until timestamp(6) with time zone,
-    created_at timestamp(6) with time zone,
-    updated_at timestamp(6) with time zone
+    createdAt timestamp(6) with time zone,
+    updatedAt timestamp(6) with time zone
 );
 
 
@@ -1104,7 +1104,7 @@ CREATE TABLE public.device_readings (
     triggered_alerts boolean DEFAULT false NOT NULL,
     alert_reasons text[] DEFAULT ARRAY[]::text[],
     sync_batch_id uuid,
-    created_at timestamp(6) with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
+    createdAt timestamp(6) with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 
 
@@ -1123,8 +1123,8 @@ CREATE TABLE public.doctor_availability (
     max_appointments_per_slot integer DEFAULT 1,
     break_start_time time(6) without time zone,
     break_end_time time(6) without time zone,
-    created_at timestamp(6) with time zone NOT NULL,
-    updated_at timestamp(6) with time zone NOT NULL,
+    createdAt timestamp(6) with time zone NOT NULL,
+    updatedAt timestamp(6) with time zone NOT NULL,
     deleted_at timestamp(6) with time zone
 );
 
@@ -1166,8 +1166,8 @@ CREATE TABLE public.doctors (
     average_rating numeric(3,2),
     total_reviews integer DEFAULT 0,
     is_available_online boolean DEFAULT true,
-    created_at timestamp(6) with time zone,
-    updated_at timestamp(6) with time zone,
+    createdAt timestamp(6) with time zone,
+    updatedAt timestamp(6) with time zone,
     deleted_at timestamp(6) with time zone,
     speciality_id integer,
     profile_picture_url text,
@@ -1200,7 +1200,7 @@ CREATE TABLE public.drug_interactions (
     evidence_level character varying(10) NOT NULL,
     source character varying(50) DEFAULT 'RxNorm'::character varying NOT NULL,
     last_updated timestamp(6) with time zone NOT NULL,
-    created_at timestamp(6) with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
+    createdAt timestamp(6) with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 
 
@@ -1228,8 +1228,8 @@ CREATE TABLE public.emergency_alerts (
     notifications_sent jsonb DEFAULT '[]'::jsonb NOT NULL,
     escalation_level integer DEFAULT 0 NOT NULL,
     max_escalations integer DEFAULT 3 NOT NULL,
-    created_at timestamp(6) with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    updated_at timestamp(6) with time zone NOT NULL
+    createdAt timestamp(6) with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    updatedAt timestamp(6) with time zone NOT NULL
 );
 
 
@@ -1252,8 +1252,8 @@ CREATE TABLE public.emergency_contacts (
     hipaa_authorized boolean DEFAULT false NOT NULL,
     authorization_date timestamp(6) with time zone,
     authorization_expires timestamp(6) with time zone,
-    created_at timestamp(6) with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    updated_at timestamp(6) with time zone NOT NULL
+    createdAt timestamp(6) with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    updatedAt timestamp(6) with time zone NOT NULL
 );
 
 
@@ -1293,8 +1293,8 @@ CREATE TABLE public.game_challenge_progress (
     points_earned integer DEFAULT 0 NOT NULL,
     challenge_rules jsonb DEFAULT '{}'::jsonb,
     progress_data jsonb DEFAULT '{}'::jsonb,
-    created_at timestamp(6) with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    updated_at timestamp(6) with time zone NOT NULL
+    createdAt timestamp(6) with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    updatedAt timestamp(6) with time zone NOT NULL
 );
 
 
@@ -1326,8 +1326,8 @@ CREATE TABLE public.healthcare_providers (
     active_care_plans integer DEFAULT 0,
     average_rating numeric(3,2),
     total_reviews integer DEFAULT 0,
-    created_at timestamp(6) with time zone,
-    updated_at timestamp(6) with time zone,
+    createdAt timestamp(6) with time zone,
+    updatedAt timestamp(6) with time zone,
     deleted_at timestamp(6) with time zone
 );
 
@@ -1343,7 +1343,7 @@ CREATE TABLE public.healthcare_sessions (
     expires_at timestamp(6) with time zone NOT NULL,
     ip_address character varying(45),
     user_agent text,
-    created_at timestamp(6) with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    createdAt timestamp(6) with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
     last_accessed_at timestamp(6) with time zone
 );
 
@@ -1384,8 +1384,8 @@ CREATE TABLE public.hsps (
     average_rating numeric(3,2),
     total_reviews integer DEFAULT 0,
     is_available boolean DEFAULT true,
-    created_at timestamp(6) with time zone,
-    updated_at timestamp(6) with time zone,
+    createdAt timestamp(6) with time zone,
+    updatedAt timestamp(6) with time zone,
     deleted_at timestamp(6) with time zone
 );
 
@@ -1415,8 +1415,8 @@ CREATE TABLE public.lab_orders (
     results_data jsonb DEFAULT '{}'::jsonb,
     results_pdf_url text,
     critical_values boolean DEFAULT false NOT NULL,
-    created_at timestamp(6) with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    updated_at timestamp(6) with time zone NOT NULL
+    createdAt timestamp(6) with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    updatedAt timestamp(6) with time zone NOT NULL
 );
 
 
@@ -1442,7 +1442,7 @@ CREATE TABLE public.lab_results (
     method character varying(255),
     specimen_type character varying(100),
     comments text,
-    created_at timestamp(6) with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
+    createdAt timestamp(6) with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 
 
@@ -1460,8 +1460,8 @@ CREATE TABLE public.medication_logs (
     notes text,
     adherence_status public.enum_medication_logs_adherence_status DEFAULT 'missed'::public.enum_medication_logs_adherence_status,
     reminder_sent boolean DEFAULT false,
-    created_at timestamp(6) with time zone,
-    updated_at timestamp(6) with time zone
+    createdAt timestamp(6) with time zone,
+    updatedAt timestamp(6) with time zone
 );
 
 
@@ -1487,8 +1487,8 @@ CREATE TABLE public.medication_safety_alerts (
     resolution_notes text,
     override_reason text,
     created_by uuid,
-    created_at timestamp(6) with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    updated_at timestamp(6) with time zone NOT NULL
+    createdAt timestamp(6) with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    updatedAt timestamp(6) with time zone NOT NULL
 );
 
 
@@ -1507,8 +1507,8 @@ CREATE TABLE public.medications (
     end_date timestamp(6) with time zone,
     rr_rule character varying(1000),
     details json,
-    created_at timestamp(6) with time zone NOT NULL,
-    updated_at timestamp(6) with time zone NOT NULL,
+    createdAt timestamp(6) with time zone NOT NULL,
+    updatedAt timestamp(6) with time zone NOT NULL,
     deleted_at timestamp(6) with time zone,
     care_plan_id uuid
 );
@@ -1527,8 +1527,8 @@ CREATE TABLE public.medicines (
     creator_id integer,
     public_medicine boolean DEFAULT true,
     algolia_object_id character varying(255),
-    created_at timestamp(6) with time zone NOT NULL,
-    updated_at timestamp(6) with time zone NOT NULL,
+    createdAt timestamp(6) with time zone NOT NULL,
+    updatedAt timestamp(6) with time zone NOT NULL,
     deleted_at timestamp(6) with time zone
 );
 
@@ -1569,8 +1569,8 @@ CREATE TABLE public.notifications (
     action_taken_at timestamp(6) with time zone,
     template_id character varying(100),
     personalization_data jsonb DEFAULT '{}'::jsonb,
-    created_at timestamp(6) with time zone,
-    updated_at timestamp(6) with time zone,
+    createdAt timestamp(6) with time zone,
+    updatedAt timestamp(6) with time zone,
     deleted_at timestamp(6) with time zone,
     recipient_id uuid
 );
@@ -1591,8 +1591,8 @@ CREATE TABLE public.organizations (
     isActive boolean DEFAULT true,
     hipaa_covered_entity boolean DEFAULT true,
     business_associate_agreement jsonb,
-    created_at timestamp(6) with time zone,
-    updated_at timestamp(6) with time zone,
+    createdAt timestamp(6) with time zone,
+    updatedAt timestamp(6) with time zone,
     deleted_at timestamp(6) with time zone
 );
 
@@ -1615,8 +1615,8 @@ CREATE TABLE public.patient_alerts (
     resolved boolean DEFAULT false,
     resolved_at timestamp(6) with time zone,
     metadata jsonb DEFAULT '{}'::jsonb,
-    created_at timestamp(6) with time zone,
-    updated_at timestamp(6) with time zone
+    createdAt timestamp(6) with time zone,
+    updatedAt timestamp(6) with time zone
 );
 
 
@@ -1637,8 +1637,8 @@ CREATE TABLE public.patient_allergies (
     verified_by uuid,
     notes text,
     isActive boolean DEFAULT true NOT NULL,
-    created_at timestamp(6) with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    updated_at timestamp(6) with time zone NOT NULL
+    createdAt timestamp(6) with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    updatedAt timestamp(6) with time zone NOT NULL
 );
 
 
@@ -1675,8 +1675,8 @@ CREATE TABLE public.patient_consent_otp (
     email_sent boolean DEFAULT false,
     email_sent_at timestamp(6) with time zone,
     email_error text,
-    created_at timestamp(6) with time zone,
-    updated_at timestamp(6) with time zone,
+    createdAt timestamp(6) with time zone,
+    updatedAt timestamp(6) with time zone,
     deleted_at timestamp(6) with time zone
 );
 
@@ -1691,7 +1691,7 @@ CREATE TABLE public.patient_doctor_assignments (
     doctorId uuid NOT NULL,
     assignment_type character varying(50) NOT NULL,
     permissions jsonb DEFAULT '{"can_prescribe": false, "can_order_tests": false, "can_view_patient": true, "can_create_care_plans": false, "can_modify_care_plans": false, "can_access_full_history": false}'::jsonb,
-    specialty_focus text[] DEFAULT ARRAY[]::text[],
+    specialtyFocus text[] DEFAULT ARRAY[]::text[],
     care_plan_ids uuid[] DEFAULT ARRAY[]::uuid[],
     assigned_by_doctor_id uuid,
     assigned_by_admin_id uuid,
@@ -1707,8 +1707,8 @@ CREATE TABLE public.patient_doctor_assignments (
     assignment_reason text,
     notes text,
     requires_same_organization boolean DEFAULT false,
-    created_at timestamp(6) with time zone,
-    updated_at timestamp(6) with time zone,
+    createdAt timestamp(6) with time zone,
+    updatedAt timestamp(6) with time zone,
     deleted_at timestamp(6) with time zone
 );
 
@@ -1735,8 +1735,8 @@ CREATE TABLE public.patient_game_profiles (
     gamification_enabled boolean DEFAULT true NOT NULL,
     notifications_enabled boolean DEFAULT true NOT NULL,
     public_profile boolean DEFAULT false NOT NULL,
-    created_at timestamp(6) with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    updated_at timestamp(6) with time zone NOT NULL
+    createdAt timestamp(6) with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    updatedAt timestamp(6) with time zone NOT NULL
 );
 
 
@@ -1782,8 +1782,8 @@ CREATE TABLE public.patient_provider_consent_history (
     initiated_by uuid,
     status public.enum_patient_provider_consent_history_status DEFAULT 'pending'::public.enum_patient_provider_consent_history_status,
     metadata jsonb DEFAULT '{}'::jsonb,
-    created_at timestamp(6) with time zone,
-    updated_at timestamp(6) with time zone
+    createdAt timestamp(6) with time zone,
+    updatedAt timestamp(6) with time zone
 );
 
 
@@ -1809,8 +1809,8 @@ CREATE TABLE public.patient_subscriptions (
     last_payment_amount numeric(10,2),
     failure_count integer DEFAULT 0,
     metadata json DEFAULT '{}'::json,
-    created_at timestamp(6) with time zone NOT NULL,
-    updated_at timestamp(6) with time zone NOT NULL,
+    createdAt timestamp(6) with time zone NOT NULL,
+    updatedAt timestamp(6) with time zone NOT NULL,
     cancelled_at timestamp(6) with time zone,
     deleted_at timestamp(6) with time zone
 );
@@ -1852,8 +1852,8 @@ CREATE TABLE public.patients (
     isActive boolean DEFAULT true,
     requires_interpreter boolean DEFAULT false,
     has_mobility_issues boolean DEFAULT false,
-    created_at timestamp(6) with time zone,
-    updated_at timestamp(6) with time zone,
+    createdAt timestamp(6) with time zone,
+    updatedAt timestamp(6) with time zone,
     deleted_at timestamp(6) with time zone,
     linked_provider_id uuid,
     provider_linked_at timestamp(6) with time zone,
@@ -1882,8 +1882,8 @@ CREATE TABLE public.payment_methods (
     isActive boolean DEFAULT true,
     billing_address json,
     metadata json DEFAULT '{}'::json,
-    created_at timestamp(6) with time zone NOT NULL,
-    updated_at timestamp(6) with time zone NOT NULL,
+    createdAt timestamp(6) with time zone NOT NULL,
+    updatedAt timestamp(6) with time zone NOT NULL,
     deleted_at timestamp(6) with time zone
 );
 
@@ -1911,8 +1911,8 @@ CREATE TABLE public.payments (
     billing_period_start date,
     billing_period_end date,
     metadata json DEFAULT '{}'::json,
-    created_at timestamp(6) with time zone NOT NULL,
-    updated_at timestamp(6) with time zone NOT NULL,
+    createdAt timestamp(6) with time zone NOT NULL,
+    updatedAt timestamp(6) with time zone NOT NULL,
     processed_at timestamp(6) with time zone,
     deleted_at timestamp(6) with time zone
 );
@@ -1934,8 +1934,8 @@ CREATE TABLE public.provider_change_history (
     consent_obtained_count integer DEFAULT 0,
     reason text,
     status public.enum_provider_change_history_status DEFAULT 'active'::public.enum_provider_change_history_status,
-    created_at timestamp(6) with time zone,
-    updated_at timestamp(6) with time zone
+    createdAt timestamp(6) with time zone,
+    updatedAt timestamp(6) with time zone
 );
 
 
@@ -1952,8 +1952,8 @@ CREATE TABLE public.providers (
     state character varying(255),
     activated_on timestamp(6) with time zone,
     details json,
-    created_at timestamp(6) with time zone NOT NULL,
-    updated_at timestamp(6) with time zone NOT NULL,
+    createdAt timestamp(6) with time zone NOT NULL,
+    updatedAt timestamp(6) with time zone NOT NULL,
     deleted_at timestamp(6) with time zone
 );
 
@@ -1972,8 +1972,8 @@ CREATE TABLE public.schedule_events (
     date date,
     start_time timestamp(6) with time zone,
     end_time timestamp(6) with time zone,
-    created_at timestamp(6) with time zone,
-    updated_at timestamp(6) with time zone,
+    createdAt timestamp(6) with time zone,
+    updatedAt timestamp(6) with time zone,
     deleted_at timestamp(6) with time zone
 );
 
@@ -1997,8 +1997,8 @@ CREATE TABLE public.scheduled_events (
     event_data jsonb DEFAULT '{}'::jsonb,
     completed_at timestamp(6) with time zone,
     completed_by uuid,
-    created_at timestamp(6) with time zone,
-    updated_at timestamp(6) with time zone,
+    createdAt timestamp(6) with time zone,
+    updatedAt timestamp(6) with time zone,
     deleted_at timestamp(6) with time zone
 );
 
@@ -2014,13 +2014,13 @@ CREATE TABLE public.secondary_doctor_assignments (
     secondary_doctor_id uuid,
     secondary_hsp_id uuid,
     assignment_reason text,
-    specialty_focus text[] DEFAULT ARRAY[]::text[],
+    specialtyFocus text[] DEFAULT ARRAY[]::text[],
     care_plan_ids uuid[] DEFAULT ARRAY[]::uuid[],
     primary_doctor_provider_id uuid,
     secondary_doctor_provider_id uuid,
     consent_required boolean DEFAULT true,
     consent_status public.enum_secondary_doctor_assignments_consent_status DEFAULT 'pending'::public.enum_secondary_doctor_assignments_consent_status,
-    access_granted boolean DEFAULT false,
+    accessGranted boolean DEFAULT false,
     first_access_attempt_at timestamp(6) with time zone,
     access_granted_at timestamp(6) with time zone,
     consent_expires_at timestamp(6) with time zone,
@@ -2028,8 +2028,8 @@ CREATE TABLE public.secondary_doctor_assignments (
     isActive boolean DEFAULT true,
     assignment_start_date timestamp(6) with time zone,
     assignment_end_date timestamp(6) with time zone,
-    created_at timestamp(6) with time zone,
-    updated_at timestamp(6) with time zone,
+    createdAt timestamp(6) with time zone,
+    updatedAt timestamp(6) with time zone,
     deleted_at timestamp(6) with time zone
 );
 
@@ -2053,8 +2053,8 @@ CREATE TABLE public.service_plans (
     setup_fee numeric(10,2) DEFAULT 0,
     isActive boolean DEFAULT true,
     stripe_price_id character varying(255),
-    created_at timestamp(6) with time zone NOT NULL,
-    updated_at timestamp(6) with time zone NOT NULL,
+    createdAt timestamp(6) with time zone NOT NULL,
+    updatedAt timestamp(6) with time zone NOT NULL,
     deleted_at timestamp(6) with time zone
 );
 
@@ -2080,8 +2080,8 @@ CREATE TABLE public.specialities (
     name character varying(255) NOT NULL,
     description character varying(1000),
     user_created integer,
-    created_at timestamp(6) with time zone NOT NULL,
-    updated_at timestamp(6) with time zone NOT NULL,
+    createdAt timestamp(6) with time zone NOT NULL,
+    updatedAt timestamp(6) with time zone NOT NULL,
     deleted_at timestamp(6) with time zone
 );
 
@@ -2124,8 +2124,8 @@ CREATE TABLE public.symptoms (
     relieving_factors jsonb DEFAULT '[]'::jsonb,
     associated_symptoms jsonb DEFAULT '[]'::jsonb,
     attachments jsonb DEFAULT '[]'::jsonb,
-    created_at timestamp(6) with time zone,
-    updated_at timestamp(6) with time zone,
+    createdAt timestamp(6) with time zone,
+    updatedAt timestamp(6) with time zone,
     deleted_at timestamp(6) with time zone
 );
 
@@ -2144,8 +2144,8 @@ CREATE TABLE public.symptoms_database (
     gender_specific character varying(20),
     isActive boolean DEFAULT true,
     created_by uuid,
-    created_at timestamp(6) with time zone,
-    updated_at timestamp(6) with time zone,
+    createdAt timestamp(6) with time zone,
+    updatedAt timestamp(6) with time zone,
     deleted_at timestamp(6) with time zone
 );
 
@@ -2173,8 +2173,8 @@ CREATE TABLE public.treatment_database (
     requires_specialist boolean DEFAULT false,
     prescription_required boolean DEFAULT false,
     created_by uuid,
-    created_at timestamp(6) with time zone,
-    updated_at timestamp(6) with time zone,
+    createdAt timestamp(6) with time zone,
+    updatedAt timestamp(6) with time zone,
     deleted_at timestamp(6) with time zone
 );
 
@@ -2214,8 +2214,8 @@ CREATE TABLE public.treatment_plans (
     warning_signs text[] DEFAULT ARRAY[]::text[],
     assigned_hsps uuid[] DEFAULT ARRAY[]::uuid[],
     care_team_notes jsonb DEFAULT '[]'::jsonb,
-    created_at timestamp(6) with time zone,
-    updated_at timestamp(6) with time zone,
+    createdAt timestamp(6) with time zone,
+    updatedAt timestamp(6) with time zone,
     deleted_at timestamp(6) with time zone
 );
 
@@ -2233,8 +2233,8 @@ CREATE TABLE public.user_devices (
     isActive boolean DEFAULT true,
     notification_settings jsonb DEFAULT '{"vitals": true, "symptoms": true, "emergency": true, "reminders": true, "medications": true, "appointments": true}'::jsonb,
     last_used_at timestamp(6) with time zone,
-    created_at timestamp(6) with time zone,
-    updated_at timestamp(6) with time zone,
+    createdAt timestamp(6) with time zone,
+    updatedAt timestamp(6) with time zone,
     deleted_at timestamp(6) with time zone
 );
 
@@ -2248,8 +2248,8 @@ CREATE TABLE public.user_roles (
     user_identity uuid NOT NULL,
     linked_with public.enum_user_roles_linked_with,
     linked_id uuid,
-    created_at timestamp(6) with time zone NOT NULL,
-    updated_at timestamp(6) with time zone NOT NULL,
+    createdAt timestamp(6) with time zone NOT NULL,
+    updatedAt timestamp(6) with time zone NOT NULL,
     deleted_at timestamp(6) with time zone
 );
 
@@ -2286,8 +2286,8 @@ CREATE TABLE public.users (
     terms_accepted_at timestamp(6) with time zone,
     privacy_policy_accepted_at timestamp(6) with time zone,
     hipaa_consent_date timestamp(6) with time zone,
-    created_at timestamp(6) with time zone,
-    updated_at timestamp(6) with time zone,
+    createdAt timestamp(6) with time zone,
+    updatedAt timestamp(6) with time zone,
     deleted_at timestamp(6) with time zone,
     full_name character varying(255)
 );
@@ -2342,8 +2342,8 @@ CREATE TABLE public.video_consultations (
     insurance_covered boolean DEFAULT false NOT NULL,
     payment_status character varying(50) DEFAULT 'pending'::character varying,
     created_by uuid NOT NULL,
-    created_at timestamp(6) with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    updated_at timestamp(6) with time zone NOT NULL
+    createdAt timestamp(6) with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    updatedAt timestamp(6) with time zone NOT NULL
 );
 
 
@@ -2356,8 +2356,8 @@ CREATE TABLE public.vital_alert_rules (
     vital_type character varying(100) NOT NULL,
     isActive boolean DEFAULT true NOT NULL,
     created_by uuid,
-    created_at timestamp(6) with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    updated_at timestamp(6) with time zone NOT NULL,
+    createdAt timestamp(6) with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    updatedAt timestamp(6) with time zone NOT NULL,
     alert_level public."AlertSeverity" NOT NULL,
     alert_message text NOT NULL,
     applies_to_all boolean DEFAULT true NOT NULL,
@@ -2394,8 +2394,8 @@ CREATE TABLE public.vital_readings (
     attachments jsonb DEFAULT '[]'::jsonb,
     is_validated boolean DEFAULT false,
     validated_by uuid,
-    created_at timestamp(6) with time zone,
-    updated_at timestamp(6) with time zone,
+    createdAt timestamp(6) with time zone,
+    updatedAt timestamp(6) with time zone,
     deleted_at timestamp(6) with time zone,
     systolic_value numeric(5,2),
     diastolic_value numeric(5,2),
@@ -2419,8 +2419,8 @@ CREATE TABLE public.vital_requirements (
     preferred_time time(6) without time zone,
     is_critical boolean DEFAULT false,
     monitoring_notes text,
-    created_at timestamp(6) with time zone,
-    updated_at timestamp(6) with time zone,
+    createdAt timestamp(6) with time zone,
+    updatedAt timestamp(6) with time zone,
     deleted_at timestamp(6) with time zone
 );
 
@@ -2434,8 +2434,8 @@ CREATE TABLE public.vital_templates (
     name character varying(255) NOT NULL,
     unit character varying(255),
     details json,
-    created_at timestamp(6) with time zone NOT NULL,
-    updated_at timestamp(6) with time zone NOT NULL,
+    createdAt timestamp(6) with time zone NOT NULL,
+    updatedAt timestamp(6) with time zone NOT NULL,
     deleted_at timestamp(6) with time zone
 );
 
@@ -2452,8 +2452,8 @@ CREATE TABLE public.vital_types (
     normalRangeMax numeric(10,2),
     description text,
     validation_rules jsonb DEFAULT '{}'::jsonb,
-    created_at timestamp(6) with time zone,
-    updated_at timestamp(6) with time zone,
+    createdAt timestamp(6) with time zone,
+    updatedAt timestamp(6) with time zone,
     deleted_at timestamp(6) with time zone
 );
 
@@ -2470,8 +2470,8 @@ CREATE TABLE public.vitals (
     description character varying(1000),
     start_date timestamp(6) with time zone,
     end_date timestamp(6) with time zone,
-    created_at timestamp(6) with time zone NOT NULL,
-    updated_at timestamp(6) with time zone NOT NULL,
+    createdAt timestamp(6) with time zone NOT NULL,
+    updatedAt timestamp(6) with time zone NOT NULL,
     deleted_at timestamp(6) with time zone
 );
 
@@ -3186,7 +3186,7 @@ CREATE INDEX appointments_start_date ON public.appointments USING btree (start_d
 -- Name: audit_logs_access_granted; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX audit_logs_access_granted ON public.audit_logs USING btree (access_granted);
+CREATE INDEX audit_logs_access_granted ON public.audit_logs USING btree (accessGranted);
 
 
 --
@@ -3249,7 +3249,7 @@ CREATE INDEX audit_logs_risk_level ON public.audit_logs USING btree (risk_level)
 -- Name: audit_logs_risk_level_access_granted_timestamp; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX audit_logs_risk_level_access_granted_timestamp ON public.audit_logs USING btree (risk_level, access_granted, "timestamp");
+CREATE INDEX audit_logs_risk_level_access_granted_timestamp ON public.audit_logs USING btree (risk_level, accessGranted, "timestamp");
 
 
 --
@@ -3564,7 +3564,7 @@ CREATE INDEX drug_interactions_severity_level_idx ON public.drug_interactions US
 -- Name: emergency_alerts_alert_type_created_at_idx; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX emergency_alerts_alert_type_created_at_idx ON public.emergency_alerts USING btree (alert_type, created_at);
+CREATE INDEX emergency_alerts_alert_type_created_at_idx ON public.emergency_alerts USING btree (alert_type, createdAt);
 
 
 --
@@ -3578,7 +3578,7 @@ CREATE INDEX emergency_alerts_patient_id_priority_level_acknowledged_res_idx ON 
 -- Name: emergency_alerts_resolved_created_at_idx; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX emergency_alerts_resolved_created_at_idx ON public.emergency_alerts USING btree (resolved, created_at);
+CREATE INDEX emergency_alerts_resolved_created_at_idx ON public.emergency_alerts USING btree (resolved, createdAt);
 
 
 --
@@ -3795,7 +3795,7 @@ CREATE INDEX idx_appointments_provider_time ON public.appointments USING btree (
 -- Name: idx_assignments_doctor_active_created; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX idx_assignments_doctor_active_created ON public.patient_doctor_assignments USING btree (doctorId, isActive, created_at);
+CREATE INDEX idx_assignments_doctor_active_created ON public.patient_doctor_assignments USING btree (doctorId, isActive, createdAt);
 
 
 --
@@ -3809,7 +3809,7 @@ CREATE INDEX idx_assignments_patient_type_active ON public.patient_doctor_assign
 -- Name: idx_audit_user_created_action; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX idx_audit_user_created_action ON public.audit_logs USING btree (userId, created_at, action);
+CREATE INDEX idx_audit_user_created_action ON public.audit_logs USING btree (userId, createdAt, action);
 
 
 --
@@ -3851,21 +3851,21 @@ CREATE INDEX idx_events_patient_time_status ON public.scheduled_events USING btr
 -- Name: idx_notifications_type_priority_created; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX idx_notifications_type_priority_created ON public.notifications USING btree (type, priority, created_at);
+CREATE INDEX idx_notifications_type_priority_created ON public.notifications USING btree (type, priority, createdAt);
 
 
 --
 -- Name: idx_patients_doctor_created_active; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX idx_patients_doctor_created_active ON public.patients USING btree (primaryCareDoctorId, created_at, isActive);
+CREATE INDEX idx_patients_doctor_created_active ON public.patients USING btree (primaryCareDoctorId, createdAt, isActive);
 
 
 --
 -- Name: idx_patients_id_created; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX idx_patients_id_created ON public.patients USING btree (patientId, created_at);
+CREATE INDEX idx_patients_id_created ON public.patients USING btree (patientId, createdAt);
 
 
 --
@@ -4061,7 +4061,7 @@ CREATE INDEX medication_logs_patient_id_scheduled_at ON public.medication_logs U
 -- Name: medication_safety_alerts_alert_type_created_at_idx; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX medication_safety_alerts_alert_type_created_at_idx ON public.medication_safety_alerts USING btree (alert_type, created_at);
+CREATE INDEX medication_safety_alerts_alert_type_created_at_idx ON public.medication_safety_alerts USING btree (alert_type, createdAt);
 
 
 --
@@ -4075,7 +4075,7 @@ CREATE INDEX medication_safety_alerts_patient_id_severity_resolved_idx ON public
 -- Name: medication_safety_alerts_resolved_created_at_idx; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX medication_safety_alerts_resolved_created_at_idx ON public.medication_safety_alerts USING btree (resolved, created_at);
+CREATE INDEX medication_safety_alerts_resolved_created_at_idx ON public.medication_safety_alerts USING btree (resolved, createdAt);
 
 
 --
@@ -4145,7 +4145,7 @@ CREATE INDEX notifications_patient_id ON public.notifications USING btree (patie
 -- Name: notifications_patient_id_status_created_at; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX notifications_patient_id_status_created_at ON public.notifications USING btree (patientId, status, created_at);
+CREATE INDEX notifications_patient_id_status_created_at ON public.notifications USING btree (patientId, status, createdAt);
 
 
 --
@@ -4229,7 +4229,7 @@ CREATE INDEX patient_alerts_acknowledged_resolved ON public.patient_alerts USING
 -- Name: patient_alerts_created_at; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX patient_alerts_created_at ON public.patient_alerts USING btree (created_at);
+CREATE INDEX patient_alerts_created_at ON public.patient_alerts USING btree (createdAt);
 
 
 --
@@ -4621,7 +4621,7 @@ CREATE INDEX payments_billing_period_start_billing_period_end ON public.payments
 -- Name: payments_created_at; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX payments_created_at ON public.payments USING btree (created_at);
+CREATE INDEX payments_created_at ON public.payments USING btree (createdAt);
 
 
 --
@@ -4733,7 +4733,7 @@ CREATE INDEX scheduled_events_care_plan_id ON public.scheduled_events USING btre
 -- Name: secondary_doctor_assignments_access_granted; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX secondary_doctor_assignments_access_granted ON public.secondary_doctor_assignments USING btree (access_granted);
+CREATE INDEX secondary_doctor_assignments_access_granted ON public.secondary_doctor_assignments USING btree (accessGranted);
 
 
 --

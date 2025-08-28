@@ -449,12 +449,12 @@ export default (db) => {
   // VitalType associations
   if (VitalType) {
     VitalType.hasMany(VitalRequirement, {
-      foreignKey: 'vital_type_id',
+      foreignKey: 'vitalTypeId',
       as: 'requirements'
     });
     
     VitalType.hasMany(VitalReading, {
-      foreignKey: 'vital_type_id',
+      foreignKey: 'vitalTypeId',
       as: 'readings'
     });
   }
@@ -471,7 +471,7 @@ export default (db) => {
     });
 
     VitalRequirement.belongsTo(VitalType, {
-      foreignKey: 'vital_type_id',
+      foreignKey: 'vitalTypeId',
       as: 'vitalType'
     });
   }
@@ -488,7 +488,7 @@ export default (db) => {
     });
 
     VitalReading.belongsTo(VitalType, {
-      foreignKey: 'vital_type_id',
+      foreignKey: 'vitalTypeId',
       as: 'vitalType'
     });
 

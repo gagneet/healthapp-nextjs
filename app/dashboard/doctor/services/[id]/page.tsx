@@ -27,8 +27,8 @@ interface Service {
   requiresSubscription: boolean
   isActive: boolean
   tags: string[]
-  created_at: string
-  updated_at: string
+  createdAt: string
+  updatedAt: string
   usage_count: number
   revenue_generated: number
   active_subscriptions: number
@@ -61,8 +61,8 @@ export default function ServiceDetailsPage() {
         requiresSubscription: false,
         isActive: true,
         tags: ['general-medicine', 'consultation', 'preventive-care'],
-        created_at: '2025-01-10T09:15:00Z',
-        updated_at: '2025-02-05T11:30:00Z',
+        createdAt: '2025-01-10T09:15:00Z',
+        updatedAt: '2025-02-05T11:30:00Z',
         usage_count: 45,
         revenue_generated: 6750.00,
         active_subscriptions: 0
@@ -145,7 +145,7 @@ export default function ServiceDetailsPage() {
           <div>
             <h1 className="text-3xl font-bold text-gray-900">{service.name}</h1>
             <p className="text-gray-600 mt-1">
-              {service.category.replace('_', ' ').toUpperCase()} • Created {formatDate(service.created_at)}
+              {service.category.replace('_', ' ').toUpperCase()} • Created {formatDate(service.createdAt)}
             </p>
           </div>
         </div>
@@ -367,12 +367,12 @@ export default function ServiceDetailsPage() {
               
               <div>
                 <label className="text-sm font-medium text-gray-700">Last Updated</label>
-                <p className="text-sm text-gray-600 mt-1">{formatDate(service.updated_at)}</p>
+                <p className="text-sm text-gray-600 mt-1">{formatDate(service.updatedAt)}</p>
               </div>
               
               <div>
                 <label className="text-sm font-medium text-gray-700">Created</label>
-                <p className="text-sm text-gray-600 mt-1">{formatDate(service.created_at)}</p>
+                <p className="text-sm text-gray-600 mt-1">{formatDate(service.createdAt)}</p>
               </div>
             </CardContent>
           </Card>

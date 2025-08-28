@@ -105,8 +105,8 @@ export class VideoConsultationService {
           consultation_notes: data.notes,
           created_by: data.doctorId,
           recording_enabled: this.shouldEnableRecording(data.consultationType),
-          created_at: new Date(),
-          updated_at: new Date(),
+          createdAt: new Date(),
+          updatedAt: new Date(),
         },
         include: {
           doctor: {
@@ -169,7 +169,7 @@ export class VideoConsultationService {
       if (consultation.status === 'SCHEDULED') {
         await prisma.videoConsultation.update({
           where: { id: consultation.id },
-          data: { status: 'IN_PROGRESS', actual_start: new Date(), updated_at: new Date() }
+          data: { status: 'IN_PROGRESS', actual_start: new Date(), updatedAt: new Date() }
         });
       }
 
@@ -221,7 +221,7 @@ export class VideoConsultationService {
           actual_end: new Date(),
           // The 'summary' parameter is stored in 'consultation_notes' as per the database schema.
           consultation_notes: summary,
-          updated_at: new Date(),
+          updatedAt: new Date(),
         }
       });
 
@@ -254,7 +254,7 @@ export class VideoConsultationService {
           patient: { select: { id: true, user: { select: { first_name: true, last_name: true, } }, } },
           appointment: { select: { id: true, appointment_date: true, } }
         },
-        orderBy: { created_at: 'desc' },
+        orderBy: { createdAt: 'desc' },
         skip: (page - 1) * limit,
         take: limit,
       });

@@ -115,7 +115,7 @@ export class HealthcareAuditLogger {
           before_values: entry.before_values,
           after_values: entry.after_values,
           timestamp: entry.timestamp || new Date(),
-          created_at: new Date()
+          createdAt: new Date()
         }
       });
 
@@ -142,7 +142,7 @@ export class HealthcareAuditLogger {
               error: error instanceof Error ? error.message : 'Unknown error'
             },
             timestamp: new Date(),
-            created_at: new Date()
+            createdAt: new Date()
           }
         });
       } catch (secondaryError) {
@@ -485,7 +485,7 @@ export class HealthcareAuditLogger {
           description: entry.description,
           details: entry.details,
           status: 'OPEN',
-          created_at: new Date()
+          createdAt: new Date()
         }
       });
     } catch (error) {

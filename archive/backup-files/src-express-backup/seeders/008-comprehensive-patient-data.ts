@@ -36,8 +36,8 @@ export default {
           gender: 'FEMALE',
           account_status: 'ACTIVE',
           email_verified: true,
-          created_at: new Date('2025-01-01'),
-          updated_at: new Date()
+          createdAt: new Date('2025-01-01'),
+          updatedAt: new Date()
         },
         {
           id: '88888888-8888-8888-8888-888888888888', // Deterministic UUID for patient2
@@ -51,8 +51,8 @@ export default {
           gender: 'MALE',
           account_status: 'ACTIVE',
           email_verified: true,
-          created_at: new Date('2025-01-02'),
-          updated_at: new Date()
+          createdAt: new Date('2025-01-02'),
+          updatedAt: new Date()
         },
         {
           id: '99999999-9999-9999-9999-999999999999', // Deterministic UUID for doctor1
@@ -66,8 +66,8 @@ export default {
           gender: 'FEMALE',
           account_status: 'ACTIVE',
           email_verified: true,
-          created_at: new Date('2025-01-01'),
-          updated_at: new Date()
+          createdAt: new Date('2025-01-01'),
+          updatedAt: new Date()
         }
       ];
 
@@ -110,8 +110,8 @@ export default {
           last_visit_date: new Date('2025-01-15'),
           next_appointment_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
           isActive: true,
-          created_at: new Date('2025-01-01'),
-          updated_at: new Date()
+          createdAt: new Date('2025-01-01'),
+          updatedAt: new Date()
         },
         {
           id: 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', // Deterministic UUID for patient profile 2
@@ -144,8 +144,8 @@ export default {
           last_visit_date: new Date('2025-01-10'),
           next_appointment_date: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000),
           isActive: true,
-          created_at: new Date('2025-01-02'),
-          updated_at: new Date()
+          createdAt: new Date('2025-01-02'),
+          updatedAt: new Date()
         }
       ];
 
@@ -164,8 +164,8 @@ export default {
         ]),
         medical_school: 'Harvard Medical School',
         specialties: ['internal_medicine', 'diabetes_care'],
-        created_at: new Date('2025-01-01'),
-        updated_at: new Date()
+        createdAt: new Date('2025-01-01'),
+        updatedAt: new Date()
       }];
 
       await queryInterface.bulkInsert('doctors', doctors, { transaction, ignoreDuplicates: true });
@@ -200,8 +200,8 @@ export default {
               instructions: 'Take with food',
               duration_days: null
             }),
-            created_at: new Date('2025-01-01'),
-            updated_at: new Date()
+            createdAt: new Date('2025-01-01'),
+            updatedAt: new Date()
           },
           {
             id: uuidv4(),
@@ -219,8 +219,8 @@ export default {
               instructions: 'Take at same time daily',
               duration_days: null
             }),
-            created_at: new Date('2025-01-01'),
-            updated_at: new Date()
+            createdAt: new Date('2025-01-01'),
+            updatedAt: new Date()
           }
         );
 
@@ -242,8 +242,8 @@ export default {
               instructions: 'Take before bedtime',
               duration_days: 120
             }),
-            created_at: new Date('2025-01-01'),
-            updated_at: new Date()
+            createdAt: new Date('2025-01-01'),
+            updatedAt: new Date()
           });
         }
       }
@@ -278,8 +278,8 @@ export default {
           }),
           completed_at: i < 1 ? new Date() : null,
           completed_by: i < 1 ? testUsers[0].id : null,
-          created_at: new Date(),
-          updated_at: new Date()
+          createdAt: new Date(),
+          updatedAt: new Date()
         });
 
         // Evening medication (Lisinopril)
@@ -301,8 +301,8 @@ export default {
           }),
           completed_at: i < 1 ? new Date() : null,
           completed_by: i < 1 ? testUsers[0].id : null,
-          created_at: new Date(),
-          updated_at: new Date()
+          createdAt: new Date(),
+          updatedAt: new Date()
         });
 
         // Vital checks
@@ -324,8 +324,8 @@ export default {
             }),
             completed_at: i < 1 ? new Date() : null,
             completed_by: i < 1 ? testUsers[0].id : null,
-            created_at: new Date(),
-            updated_at: new Date()
+            createdAt: new Date(),
+            updatedAt: new Date()
           });
         }
 
@@ -349,8 +349,8 @@ export default {
             }),
             completed_at: i < 2 ? new Date() : null,
             completed_by: i < 2 ? testUsers[0].id : null,
-            created_at: new Date(),
-            updated_at: new Date()
+            createdAt: new Date(),
+            updatedAt: new Date()
           });
         }
       }
@@ -379,8 +379,8 @@ export default {
             }),
             completed_at: i < 2 ? new Date() : null,
             completed_by: i < 2 ? testUsers[1].id : null,
-            created_at: new Date(),
-            updated_at: new Date()
+            createdAt: new Date(),
+            updatedAt: new Date()
           });
         }
       }
@@ -408,8 +408,8 @@ export default {
           is_partial: false,
           is_missed: !sarahCompliance,
           response_data: sarahCompliance ? JSON.stringify({ taken: true, notes: 'Taken with breakfast' }) : JSON.stringify({}),
-          created_at: recordDate,
-          updated_at: recordDate
+          createdAt: recordDate,
+          updatedAt: recordDate
         });
 
         // Michael's adherence (92% rate)
@@ -425,8 +425,8 @@ export default {
           is_partial: false,
           is_missed: !michaelCompliance,
           response_data: michaelCompliance ? JSON.stringify({ taken: true }) : JSON.stringify({}),
-          created_at: recordDate,
-          updated_at: recordDate
+          createdAt: recordDate,
+          updatedAt: recordDate
         });
       }
 
@@ -442,8 +442,8 @@ export default {
           normalRangeMax: 140,
           description: 'Systolic blood pressure measurement',
           validation_rules: JSON.stringify({ min: 60, max: 200 }),
-          created_at: new Date(),
-          updated_at: new Date()
+          createdAt: new Date(),
+          updatedAt: new Date()
         },
         {
           id: '550e8400-e29b-41d4-a716-446655440202',
@@ -453,8 +453,8 @@ export default {
           normalRangeMax: 90,
           description: 'Diastolic blood pressure measurement',
           validation_rules: JSON.stringify({ min: 40, max: 120 }),
-          created_at: new Date(),
-          updated_at: new Date()
+          createdAt: new Date(),
+          updatedAt: new Date()
         },
         {
           id: '550e8400-e29b-41d4-a716-446655440203',
@@ -464,8 +464,8 @@ export default {
           normalRangeMax: 140,
           description: 'Blood glucose level measurement',
           validation_rules: JSON.stringify({ min: 30, max: 400 }),
-          created_at: new Date(),
-          updated_at: new Date()
+          createdAt: new Date(),
+          updatedAt: new Date()
         },
         {
           id: '550e8400-e29b-41d4-a716-446655440204',
@@ -475,8 +475,8 @@ export default {
           normalRangeMax: 200,
           description: 'Body weight measurement',
           validation_rules: JSON.stringify({ min: 10, max: 500 }),
-          created_at: new Date(),
-          updated_at: new Date()
+          createdAt: new Date(),
+          updatedAt: new Date()
         }
       ];
 
@@ -507,49 +507,49 @@ export default {
           {
             id: uuidv4(),
             patientId: patient1Id,
-            vital_type_id: vitalTypeIds.systolic,
+            vitalTypeId: vitalTypeIds.systolic,
             value: 125 + Math.floor(Math.random() * 20), // 125-145
             unit: 'mmHg',
             readingTime: new Date(readingDate.getFullYear(), readingDate.getMonth(), readingDate.getDate(), 9, 0),
             notes: 'Morning systolic BP reading',
-            created_at: readingDate,
-            updated_at: readingDate
+            createdAt: readingDate,
+            updatedAt: readingDate
           },
           // Diastolic blood pressure reading
           {
             id: uuidv4(),
             patientId: patient1Id,
-            vital_type_id: vitalTypeIds.diastolic,
+            vitalTypeId: vitalTypeIds.diastolic,
             value: 80 + Math.floor(Math.random() * 15), // 80-95
             unit: 'mmHg',
             readingTime: new Date(readingDate.getFullYear(), readingDate.getMonth(), readingDate.getDate(), 9, 0),
             notes: 'Morning diastolic BP reading',
-            created_at: readingDate,
-            updated_at: readingDate
+            createdAt: readingDate,
+            updatedAt: readingDate
           },
           // Blood glucose reading
           {
             id: uuidv4(),
             patientId: patient1Id,
-            vital_type_id: vitalTypeIds.glucose,
+            vitalTypeId: vitalTypeIds.glucose,
             value: 95 + Math.floor(Math.random() * 30), // 95-125 mg/dL
             unit: 'mg/dL',
             readingTime: new Date(readingDate.getFullYear(), readingDate.getMonth(), readingDate.getDate(), 12, 0),
             notes: 'Before lunch glucose reading',
-            created_at: readingDate,
-            updated_at: readingDate
+            createdAt: readingDate,
+            updatedAt: readingDate
           },
           // Weight reading
           {
             id: uuidv4(),
             patientId: patient1Id,
-            vital_type_id: vitalTypeIds.weight,
+            vitalTypeId: vitalTypeIds.weight,
             value: 68.5 + (Math.random() - 0.5) * 2, // +/- 1kg variation
             unit: 'kg',
             readingTime: new Date(readingDate.getFullYear(), readingDate.getMonth(), readingDate.getDate(), 7, 30),
             notes: 'Morning weight reading',
-            created_at: readingDate,
-            updated_at: readingDate
+            createdAt: readingDate,
+            updatedAt: readingDate
           }
         );
 
@@ -558,13 +558,13 @@ export default {
           vitalReadings.push({
             id: uuidv4(),
             patientId: patient2Id,
-            vital_type_id: vitalTypeIds.weight,
+            vitalTypeId: vitalTypeIds.weight,
             value: 82.3 + (Math.random() - 0.5) * 1, // +/- 0.5kg variation
             unit: 'kg',
             readingTime: new Date(readingDate.getFullYear(), readingDate.getMonth(), readingDate.getDate(), 7, 0),
             notes: 'Weekly weigh-in',
-            created_at: readingDate,
-            updated_at: readingDate
+            createdAt: readingDate,
+            updatedAt: readingDate
           });
         }
       }
@@ -585,8 +585,8 @@ export default {
           triggers: JSON.stringify(['stress', 'lack of sleep']),
           relieving_factors: JSON.stringify(['rest', 'hydration']),
           associated_symptoms: JSON.stringify([]),
-          created_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
-          updated_at: new Date()
+          createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
+          updatedAt: new Date()
         },
         {
           id: uuidv4(),
@@ -600,8 +600,8 @@ export default {
           triggers: JSON.stringify(['prolonged standing', 'tight shoes']),
           relieving_factors: JSON.stringify(['elevation', 'massage']),
           associated_symptoms: JSON.stringify(['tingling']),
-          created_at: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
-          updated_at: new Date()
+          createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
+          updatedAt: new Date()
         }
       ];
 
@@ -627,8 +627,8 @@ export default {
           start_time: new Date(futureDate1.getFullYear(), futureDate1.getMonth(), futureDate1.getDate(), 10, 0),
           end_time: new Date(futureDate1.getFullYear(), futureDate1.getMonth(), futureDate1.getDate(), 10, 30),
           description: 'Quarterly diabetes checkup and medication review',
-          created_at: new Date(),
-          updated_at: new Date()
+          createdAt: new Date(),
+          updatedAt: new Date()
         },
         {
           id: uuidv4(),
@@ -645,8 +645,8 @@ export default {
           start_time: new Date(futureDate2.getFullYear(), futureDate2.getMonth(), futureDate2.getDate(), 14, 0),
           end_time: new Date(futureDate2.getFullYear(), futureDate2.getMonth(), futureDate2.getDate(), 14, 30),
           description: 'Annual physical examination and health assessment',
-          created_at: new Date(),
-          updated_at: new Date()
+          createdAt: new Date(),
+          updatedAt: new Date()
         }
       ];
 

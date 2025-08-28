@@ -43,12 +43,12 @@ export default {
         defaultValue: {},
       },
       
-      created_at: {
+      createdAt: {
         type: Sequelize.DATE,
         allowNull: false,
         defaultValue: Sequelize.NOW,
       },
-      updated_at: {
+      updatedAt: {
         type: Sequelize.DATE,
         allowNull: false,
         defaultValue: Sequelize.NOW,
@@ -93,8 +93,8 @@ export default {
         normalRangeMin: 90,
         normalRangeMax: 140,
         description: 'Systolic blood pressure measurement',
-        created_at: new Date(),
-        updated_at: new Date(),
+        createdAt: new Date(),
+        updatedAt: new Date(),
       },
       {
         id: Sequelize.literal('uuid_generate_v4()'),
@@ -103,8 +103,8 @@ export default {
         normalRangeMin: 60,
         normalRangeMax: 90,
         description: 'Diastolic blood pressure measurement',
-        created_at: new Date(),
-        updated_at: new Date(),
+        createdAt: new Date(),
+        updatedAt: new Date(),
       },
       {
         id: Sequelize.literal('uuid_generate_v4()'),
@@ -113,8 +113,8 @@ export default {
         normalRangeMin: 60,
         normalRangeMax: 100,
         description: 'Resting heart rate',
-        created_at: new Date(),
-        updated_at: new Date(),
+        createdAt: new Date(),
+        updatedAt: new Date(),
       },
       {
         id: Sequelize.literal('uuid_generate_v4()'),
@@ -123,8 +123,8 @@ export default {
         normalRangeMin: 97.0,
         normalRangeMax: 99.5,
         description: 'Body temperature in Fahrenheit',
-        created_at: new Date(),
-        updated_at: new Date(),
+        createdAt: new Date(),
+        updatedAt: new Date(),
       },
       {
         id: Sequelize.literal('uuid_generate_v4()'),
@@ -133,8 +133,8 @@ export default {
         normalRangeMin: null,
         normalRangeMax: null,
         description: 'Body weight in pounds',
-        created_at: new Date(),
-        updated_at: new Date(),
+        createdAt: new Date(),
+        updatedAt: new Date(),
       },
       {
         id: Sequelize.literal('uuid_generate_v4()'),
@@ -143,8 +143,8 @@ export default {
         normalRangeMin: 70,
         normalRangeMax: 140,
         description: 'Blood glucose level',
-        created_at: new Date(),
-        updated_at: new Date(),
+        createdAt: new Date(),
+        updatedAt: new Date(),
       },
       {
         id: Sequelize.literal('uuid_generate_v4()'),
@@ -153,8 +153,8 @@ export default {
         normalRangeMin: 95,
         normalRangeMax: 100,
         description: 'Blood oxygen saturation level',
-        created_at: new Date(),
-        updated_at: new Date(),
+        createdAt: new Date(),
+        updatedAt: new Date(),
       },
     ]);
   },

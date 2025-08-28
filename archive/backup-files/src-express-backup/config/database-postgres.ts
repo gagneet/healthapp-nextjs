@@ -40,8 +40,8 @@ const databaseConfig: Options = {
     timestamps: true,
     underscored: true, // Use snake_case for database columns
     freezeTableName: true,
-    createdAt: 'created_at',
-    updatedAt: 'updated_at',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt',
     deletedAt: 'deleted_at',
     paranoid: true, // Enable soft deletes
   },

@@ -19,7 +19,7 @@ export default (sequelize: any) => {
     },
     
     // Device information
-    device_type: {
+    deviceType: {
       type: DataTypes.STRING(50),
       allowNull: false, // ios, android, web
       validate: {
@@ -68,12 +68,12 @@ export default (sequelize: any) => {
       defaultValue: DataTypes.NOW,
     },
     
-    created_at: {
+    createdAt: {
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW
     },
     
-    updated_at: {
+    updatedAt: {
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW
     }
@@ -88,7 +88,7 @@ export default (sequelize: any) => {
         fields: ['userId']
       },
       {
-        fields: ['device_type']
+        fields: ['deviceType']
       },
       {
         fields: ['isActive']
@@ -107,7 +107,7 @@ export default (sequelize: any) => {
     
     hooks: {
       beforeUpdate: (device: any) => {
-        device.updated_at = new Date();
+        device.updatedAt = new Date();
       }
     }
   });

@@ -26,12 +26,12 @@ export default {
     // 1. CRITICAL INDEXES for Patient Management (>10K patients per doctor)
     const patientIndexes = [
       {
-        fields: ['primaryCareDoctorId', 'created_at', 'isActive'],
+        fields: ['primaryCareDoctorId', 'createdAt', 'isActive'],
         name: 'idx_patients_doctor_created_active',
         concurrently: true
       },
       {
-        fields: ['patientId', 'created_at'],
+        fields: ['patientId', 'createdAt'],
         name: 'idx_patients_id_created',
         concurrently: true
       },
@@ -54,7 +54,7 @@ export default {
         concurrently: true
       },
       {
-        fields: ['doctorId', 'isActive', 'created_at'],
+        fields: ['doctorId', 'isActive', 'createdAt'],
         name: 'idx_assignments_doctor_active_created',
         concurrently: true
       },
@@ -154,7 +154,7 @@ export default {
         concurrently: true
       },
       {
-        fields: ['created_by_doctor_id', 'created_at'],
+        fields: ['created_by_doctor_id', 'createdAt'],
         name: 'idx_careplans_doctor_created',
         concurrently: true,
         where: { created_by_doctor_id: { [Sequelize.Op.ne]: null } }
@@ -254,12 +254,12 @@ export default {
     // 11. AUDIT LOGS INDEXES (Compliance and monitoring)
     const auditIndexes = [
       {
-        fields: ['userId', 'created_at', 'action'],
+        fields: ['userId', 'createdAt', 'action'],
         name: 'idx_audit_user_created_action',
         concurrently: true
       },
       {
-        fields: ['patientId', 'action', 'created_at'],
+        fields: ['patientId', 'action', 'createdAt'],
         name: 'idx_audit_patient_action_created',
         concurrently: true,
         where: { patientId: { [Sequelize.Op.ne]: null } }
@@ -273,13 +273,13 @@ export default {
     // 12. NOTIFICATIONS INDEXES
     const notificationIndexes = [
       {
-        fields: ['patientId', 'created_at'],
+        fields: ['patientId', 'createdAt'],
         name: 'idx_notifications_patient_created',
         concurrently: true,
         where: { patientId: { [Sequelize.Op.ne]: null } }
       },
       {
-        fields: ['type', 'priority', 'created_at'],
+        fields: ['type', 'priority', 'createdAt'],
         name: 'idx_notifications_type_priority_created',
         concurrently: true
       }

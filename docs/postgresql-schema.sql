@@ -931,7 +931,7 @@ CREATE TABLE public.audit_logs (
     resource character varying(500) NOT NULL,
     patientId uuid,
     phi_accessed boolean DEFAULT false,
-    access_granted boolean NOT NULL,
+    accessGranted boolean NOT NULL,
     denial_reason text,
     ip_address inet,
     user_agent text,
@@ -1678,7 +1678,7 @@ CREATE TABLE public.patient_doctor_assignments (
     doctorId uuid NOT NULL,
     assignment_type character varying(50) NOT NULL,
     permissions jsonb DEFAULT '{"can_prescribe": false, "can_order_tests": false, "can_view_patient": true, "can_create_care_plans": false, "can_modify_care_plans": false, "can_access_full_history": false}'::jsonb,
-    specialty_focus text[] DEFAULT ARRAY[]::text[],
+    specialtyFocus text[] DEFAULT ARRAY[]::text[],
     care_plan_ids uuid[] DEFAULT ARRAY[]::uuid[],
     assigned_by_doctor_id uuid,
     assigned_by_admin_id uuid,
@@ -2001,13 +2001,13 @@ CREATE TABLE public.secondary_doctor_assignments (
     secondary_doctor_id uuid,
     secondary_hsp_id uuid,
     assignment_reason text,
-    specialty_focus text[] DEFAULT ARRAY[]::text[],
+    specialtyFocus text[] DEFAULT ARRAY[]::text[],
     care_plan_ids uuid[] DEFAULT ARRAY[]::uuid[],
     primary_doctor_provider_id uuid,
     secondary_doctor_provider_id uuid,
     consent_required boolean DEFAULT true,
     consent_status public.enum_secondary_doctor_assignments_consent_status DEFAULT 'pending'::public.enum_secondary_doctor_assignments_consent_status,
-    access_granted boolean DEFAULT false,
+    accessGranted boolean DEFAULT false,
     first_access_attempt_at timestamp(6) with time zone,
     access_granted_at timestamp(6) with time zone,
     consent_expires_at timestamp(6) with time zone,
@@ -3044,7 +3044,7 @@ CREATE INDEX appointments_start_date ON public.appointments USING btree (start_d
 -- Name: audit_logs_access_granted; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX audit_logs_access_granted ON public.audit_logs USING btree (access_granted);
+CREATE INDEX audit_logs_access_granted ON public.audit_logs USING btree (accessGranted);
 
 
 --
@@ -3107,7 +3107,7 @@ CREATE INDEX audit_logs_risk_level ON public.audit_logs USING btree (risk_level)
 -- Name: audit_logs_risk_level_access_granted_timestamp; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX audit_logs_risk_level_access_granted_timestamp ON public.audit_logs USING btree (risk_level, access_granted, "timestamp");
+CREATE INDEX audit_logs_risk_level_access_granted_timestamp ON public.audit_logs USING btree (risk_level, accessGranted, "timestamp");
 
 
 --
@@ -4514,7 +4514,7 @@ CREATE INDEX scheduled_events_care_plan_id ON public.scheduled_events USING btre
 -- Name: secondary_doctor_assignments_access_granted; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX secondary_doctor_assignments_access_granted ON public.secondary_doctor_assignments USING btree (access_granted);
+CREATE INDEX secondary_doctor_assignments_access_granted ON public.secondary_doctor_assignments USING btree (accessGranted);
 
 
 --

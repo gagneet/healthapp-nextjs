@@ -87,12 +87,12 @@ export default (sequelize: any, DataTypes: any) => {
       type: DataTypes.JSON,
       defaultValue: {},
     },
-    created_at: {
+    createdAt: {
       type: DataTypes.DATE,
       allowNull: false,
       defaultValue: DataTypes.NOW,
     },
-    updated_at: {
+    updatedAt: {
       type: DataTypes.DATE,
       allowNull: false,
       defaultValue: DataTypes.NOW,
@@ -109,7 +109,7 @@ export default (sequelize: any, DataTypes: any) => {
       { fields: ['provider_id'] },
       { fields: ['status'] },
       { fields: ['stripe_payment_intent_id'] },
-      { fields: ['created_at'] },
+      { fields: ['createdAt'] },
       { fields: ['billing_period_start', 'billing_period_end'] },
     ],
   });

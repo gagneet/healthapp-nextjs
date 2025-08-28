@@ -46,7 +46,7 @@ CREATE TABLE drug_interactions (
     clinical_significance TEXT,
     management_recommendation TEXT,
     evidence_level VARCHAR(5),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE patient_allergies (
@@ -57,7 +57,7 @@ CREATE TABLE patient_allergies (
     reaction_severity VARCHAR(20) NOT NULL,
     reaction_symptoms TEXT,
     verified_by_doctor BOOLEAN DEFAULT FALSE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 ```
 
@@ -439,7 +439,7 @@ CREATE TABLE drug_interactions (
     clinical_significance TEXT,
     management_recommendation TEXT,
     evidence_level VARCHAR(5),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE patient_allergies (
@@ -451,7 +451,7 @@ CREATE TABLE patient_allergies (
     reaction_symptoms TEXT,
     onset_date DATE,
     verified_by_doctor BOOLEAN DEFAULT FALSE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 ```
 

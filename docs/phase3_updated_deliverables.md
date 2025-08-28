@@ -52,8 +52,8 @@ model ConnectedDevice {
   calibration_date      DateTime?           @db.Date
   next_calibration      DateTime?           @db.Date
   configuration         Json?               @db.JsonB
-  created_at            DateTime            @default(now()) @db.Timestamp(6)
-  updated_at            DateTime            @updatedAt @db.Timestamp(6)
+  createdAt            DateTime            @default(now()) @db.Timestamp(6)
+  updatedAt            DateTime            @updatedAt @db.Timestamp(6)
 
   patient               Patient             @relation(fields: [patientId], references: [id], onDelete: Cascade)
   device_readings       DeviceReading[]
@@ -79,7 +79,7 @@ model DeviceReading {
   validation_notes      String?        @db.Text
   alert_generated       Boolean        @default(false)
   metadata              Json?          @db.JsonB
-  created_at            DateTime       @default(now()) @db.Timestamp(6)
+  createdAt            DateTime       @default(now()) @db.Timestamp(6)
 
   device                ConnectedDevice @relation(fields: [device_id], references: [id], onDelete: Cascade)
   patient               Patient         @relation(fields: [patientId], references: [id], onDelete: Cascade)

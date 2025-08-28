@@ -89,11 +89,11 @@ export class DeviceManagementService extends EventEmitter {
         data: {
           device_id: registration.deviceIdentifier,
           patientId: registration.patientId,
-          device_type: registration.deviceType as any,
+          deviceType: registration.deviceType as any,
           device_name: registration.deviceName,
           manufacturer: 'Unknown',
           connection_type: registration.connectionType as any,
-          device_status: 'OFFLINE',
+          deviceStatus: 'OFFLINE',
           isActive: registration.isActive,
           configuration: registration.connectionConfig,
         },
@@ -137,7 +137,7 @@ export class DeviceManagementService extends EventEmitter {
         throw new Error(`Device ${deviceId} not found`);
       }
 
-      const pluginId = this.determinePluginId(deviceRecord.device_type);
+      const pluginId = this.determinePluginId(deviceRecord.deviceType);
       const deviceInfo = {
         id: deviceRecord.id,
         pluginId,
@@ -166,7 +166,7 @@ export class DeviceManagementService extends EventEmitter {
       await this.prisma.connectedDevice.update({
         where: { id: deviceId },
         data: {
-          device_status: 'ONLINE',
+          deviceStatus: 'ONLINE',
           last_sync: new Date(),
         },
       });

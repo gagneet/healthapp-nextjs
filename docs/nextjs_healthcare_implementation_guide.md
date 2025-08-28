@@ -126,8 +126,8 @@ CREATE TABLE users (
     status user_status DEFAULT 'pending_verification',
     two_factor_enabled BOOLEAN DEFAULT false,
     last_login_at TIMESTAMP,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE user_profiles (
@@ -140,8 +140,8 @@ CREATE TABLE user_profiles (
     gender VARCHAR(10),
     phone_number VARCHAR(20),
     profile_image_url TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Enhanced role-based access control
@@ -177,8 +177,8 @@ CREATE TABLE patients (
     insurance_details JSONB,
     consent_status VARCHAR(20) DEFAULT 'pending',
     hipaa_authorization BOOLEAN DEFAULT false,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Drug interaction database for safety
@@ -190,7 +190,7 @@ CREATE TABLE drug_interactions (
     clinical_significance TEXT,
     management_recommendation TEXT,
     evidence_level VARCHAR(5), -- A, B, C, D
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Enhanced medication safety system
@@ -206,7 +206,7 @@ CREATE TABLE medications (
     side_effects JSONB DEFAULT '[]',
     drug_interactions JSONB DEFAULT '[]',
     isActive BOOLEAN DEFAULT true,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE patient_medications (
@@ -222,8 +222,8 @@ CREATE TABLE patient_medications (
     instructions TEXT,
     isActive BOOLEAN DEFAULT true,
     adherence_score DECIMAL(5,2) DEFAULT 0,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 ```
 
@@ -247,7 +247,7 @@ CREATE TABLE vital_sign_protocols (
     alert_enabled BOOLEAN DEFAULT true,
     protocol_notes TEXT,
     created_by UUID,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE vital_sign_readings (
@@ -263,7 +263,7 @@ CREATE TABLE vital_sign_readings (
     notes TEXT,
     alert_triggered BOOLEAN DEFAULT false,
     verified_by UUID, -- healthcare provider verification
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 ```
 
@@ -297,8 +297,8 @@ CREATE TABLE appointments (
     follow_up_required BOOLEAN DEFAULT false,
     follow_up_date DATE,
     reminder_sent BOOLEAN DEFAULT false,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Comprehensive care plans
@@ -314,8 +314,8 @@ CREATE TABLE care_plans (
     end_date DATE,
     status VARCHAR(20) DEFAULT 'active',
     plan_details JSONB,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 ```
 

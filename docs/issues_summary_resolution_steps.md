@@ -1396,7 +1396,7 @@ CREATE TABLE drug_interactions (
     clinical_significance TEXT,
     management_recommendation TEXT,
     evidence_level VARCHAR(5),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE patient_allergies (
@@ -1407,7 +1407,7 @@ CREATE TABLE patient_allergies (
     reaction_severity VARCHAR(20) NOT NULL,
     reaction_symptoms TEXT,
     verified_by_doctor BOOLEAN DEFAULT FALSE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 ```
 
@@ -2376,7 +2376,7 @@ Let me quickly verify the NextAuth authentication is working correctly by checki
 - ✅ Prisma Integration: All routes properly use Prisma with healthcare models
 - ✅ Relationship Queries: Complex medical data relationships working
 - ✅ Transaction Support: Atomic operations for appointment booking
-- ✅ Audit Trail: Proper created_at/updated_at tracking
+- ✅ Audit Trail: Proper createdAt/updatedAt tracking
 
 The NextAuth.js migration is complete and the core healthcare management APIs are fully functional with proper authentication, authorization, and healthcare compliance. The application now has a solid foundation for secure healthcare data management.
 
@@ -3059,7 +3059,7 @@ session_token: crypto.randomUUID(),
 expires_at: new Date(Date.now() + 8 * 60 * 60 * 1000), // 8 hours
 ip_address: req.ip,
 user_agent: req.headers.get('user-agent'),
-created_at: new Date()
+createdAt: new Date()
 }
 })
 
@@ -3737,7 +3737,7 @@ Issue 1: Database Session Strategy with Incompatible Schema - ✅ FIXED
   // Healthcare-specific session tracking fields
   ip_address            String?   @db.VarChar(45)
   user_agent            String?   @db.Text
-  created_at            DateTime  @default(now()) @db.Timestamptz(6)
+  createdAt            DateTime  @default(now()) @db.Timestamptz(6)
   last_accessed_at      DateTime? @updatedAt @db.Timestamptz(6)
   healthcare_context    Json?     @default("{}")
   }
@@ -4634,7 +4634,7 @@ The healthapp.gagneet.com:3002 deployment should now be fully functional for tes
 2. Patient Pagination API Errors:
 - ✅ Fixed incorrect query using patient_doctor_assignments table
 - ✅ Updated to use primary_care_doctor_id relationship (correct approach)
-- ✅ Fixed Prisma field name mismatch (createdAt → created_at)
+- ✅ Fixed Prisma field name mismatch (createdAt → createdAt)
 
 3. Missing Dashboard API Endpoints:
 - ✅ Created /api/doctors/recent-patients
@@ -4795,7 +4795,7 @@ Let me check the final status and test the application:
 ● Required Steps to ensure the build is stable
 ⎿  
 ☒ Investigate and fix Prisma client initialization issues causing 'Cannot read properties of undefined (reading 'findMany')' errors
-☒ Fix database schema field naming mismatch (createdAt vs created_at) in API routes
+☒ Fix database schema field naming mismatch (createdAt vs createdAt) in API routes
 ☒ Investigate PostgreSQL connection reset errors and stabilize database connectivity
 ☒ Fix authentication issues preventing doctor1@healthapp.com login
 ☒ Fix patient dashboard redirect issues after successful login
@@ -4812,7 +4812,7 @@ I have successfully diagnosed and fixed all the major issues in your Next.js hea
 ✅ Completed Fixes:
 
 1. Prisma Client Import Issue - Fixed incorrect import path from ./prisma-client to @prisma/client
-2. Database Schema Field Naming - Fixed all createdAt vs created_at mismatches in API routes
+2. Database Schema Field Naming - Fixed all createdAt vs createdAt mismatches in API routes
 3. Auth.js v5 Migration - Updated 32 API routes to use new auth() function instead of deprecated getServerSession
 4. Prisma Client Generation - Successfully regenerated client with proper configuration
 5. Next.js Configuration - Fixed invalid config options causing build warnings
@@ -4945,7 +4945,7 @@ Before (Lines 326-329):
 orderBy:
 pagination.sortBy === 'name'
 ? { user: { first_name: pagination.sortOrder || 'asc' } }
-: { [pagination.sortBy === 'createdAt' ? 'created_at' : pagination.sortBy || 'created_at']: pagination.sortOrder || 'desc' },
+: { [pagination.sortBy === 'createdAt' ? 'createdAt' : pagination.sortBy || 'createdAt']: pagination.sortOrder || 'desc' },
 
 After (Improved):
 orderBy: (() => {
@@ -4955,7 +4955,7 @@ return { user: { first_name: pagination.sortOrder || 'asc' } };
 }
 
     // Handle field name mapping and default sorting
-    const sortField = pagination.sortBy === 'createdAt' ? 'created_at' : (pagination.sortBy || 'created_at');
+    const sortField = pagination.sortBy === 'createdAt' ? 'createdAt' : (pagination.sortBy || 'createdAt');
     const sortOrder = pagination.sortOrder || 'desc';
 
     return { [sortField]: sortOrder };
@@ -4993,15 +4993,15 @@ Potential Further Improvements:
    return { user: { first_name: sortOrder || 'asc' } };
    }
 
-    const sortField = sortBy === 'createdAt' ? 'created_at' : (sortBy || 'created_at');
+    const sortField = sortBy === 'createdAt' ? 'createdAt' : (sortBy || 'createdAt');
     return { [sortField]: sortOrder || 'desc' };
 }
 
 2. Standardize Field Name Mapping:
    // lib/utils/field-mapping.ts
    const FIELD_MAPPINGS = {
-   createdAt: 'created_at',
-   updatedAt: 'updated_at',
+   createdAt: 'createdAt',
+   updatedAt: 'updatedAt',
    // Add more mappings as needed
    };
 
@@ -5010,7 +5010,7 @@ return FIELD_MAPPINGS[fieldName] || fieldName;
 }
 
 3. Add Type Safety for Sort Parameters:
-   type SortableFields = 'name' | 'createdAt' | 'created_at' | 'updated_at';
+   type SortableFields = 'name' | 'createdAt' | 'createdAt' | 'updatedAt';
    type SortOrder = 'asc' | 'desc';
 
 interface PaginationParams {
@@ -5048,10 +5048,10 @@ Issues Fixed:
 
 1. Line 95 - Vital Readings Access:
    // ❌ BEFORE: Could fail if vital_readings is undefined/null
-   lastActivity: patient.last_visit_date || patient.vital_readings[0]?.created_at || patient.updated_at,
+   lastActivity: patient.last_visit_date || patient.vital_readings[0]?.createdAt || patient.updatedAt,
 
 // ✅ AFTER: Safe optional chaining
-lastActivity: patient.last_visit_date || patient.vital_readings?.[0]?.created_at || patient.updated_at,
+lastActivity: patient.last_visit_date || patient.vital_readings?.[0]?.createdAt || patient.updatedAt,
 2. Line 96-97 - Appointments Access:
    // ❌ BEFORE: Could fail if appointments is undefined/null
    lastAppointment: patient.appointments[0]?.appointment_date,

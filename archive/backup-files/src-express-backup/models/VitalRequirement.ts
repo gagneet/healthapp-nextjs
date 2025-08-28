@@ -18,7 +18,7 @@ export default (sequelize: any) => {
       }
     },
     
-    vital_type_id: {
+    vitalTypeId: {
       type: DataTypes.UUID,
       allowNull: false,
       references: {
@@ -51,12 +51,12 @@ export default (sequelize: any) => {
       allowNull: true,
     },
     
-    created_at: {
+    createdAt: {
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW
     },
     
-    updated_at: {
+    updatedAt: {
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW
     },
@@ -76,7 +76,7 @@ export default (sequelize: any) => {
         fields: ['care_plan_id']
       },
       {
-        fields: ['vital_type_id']
+        fields: ['vitalTypeId']
       },
       {
         fields: ['frequency']
@@ -85,7 +85,7 @@ export default (sequelize: any) => {
         fields: ['is_critical']
       },
       {
-        fields: ['care_plan_id', 'vital_type_id'],
+        fields: ['care_plan_id', 'vitalTypeId'],
         unique: true,
         where: { deleted_at: null }
       }

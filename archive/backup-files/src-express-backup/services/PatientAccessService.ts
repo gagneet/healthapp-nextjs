@@ -94,13 +94,13 @@ class PatientAccessService {
       ],
       limit: (options as any).limit || 50,
       offset: (options as any).offset || 0,
-      order: [['created_at', 'DESC']]
+      order: [['createdAt', 'DESC']]
     });
 
     return patients.map((patient: any) => ({
       ...patient.toJSON(),
       access_type: 'primary',
-      access_granted: true,
+      accessGranted: true,
       requires_consent: false
     }));
   }
@@ -159,12 +159,12 @@ class PatientAccessService {
         ...assignment.patient.toJSON(),
         assignment_id: assignment.id,
         access_type: 'secondary',
-        access_granted: assignment.access_granted,
+        accessGranted: assignment.accessGranted,
         requires_consent: requiresConsent,
         consent_status: assignment.consent_status,
         same_provider: isSameProvider,
         assignment_reason: assignment.assignment_reason,
-        specialty_focus: assignment.specialty_focus,
+        specialtyFocus: assignment.specialtyFocus,
         primary_doctor: assignment.primaryDoctor ? 
           `${assignment.primaryDoctor.user.first_name} ${assignment.primaryDoctor.user.last_name}` : 
           'Unknown',
@@ -216,10 +216,10 @@ class PatientAccessService {
         secondary_doctor_provider_id: secondaryProviderId,
         consent_required: !isSameProvider,
         consent_status: isSameProvider ? 'granted' : 'pending',
-        access_granted: isSameProvider,
+        accessGranted: isSameProvider,
         access_granted_at: isSameProvider ? new Date() : null,
         assignment_reason: (assignmentData as any).reason || 'Secondary care assignment',
-        specialty_focus: (assignmentData as any).specialty_focus || [],
+        specialtyFocus: (assignmentData as any).specialtyFocus || [],
         care_plan_ids: (assignmentData as any).care_plan_ids || []
       });
 
@@ -439,7 +439,7 @@ class PatientAccessService {
 
         return {
           success: true,
-          access_granted: true,
+          accessGranted: true,
           verified_at: verificationResult.verified_at
         };
       }
@@ -534,7 +534,7 @@ class PatientAccessService {
 
       for (const assignment of expiredAssignments) {
         assignment.consent_status = 'expired';
-        assignment.access_granted = false;
+        assignment.accessGranted = false;
         await assignment.save();
       }
 

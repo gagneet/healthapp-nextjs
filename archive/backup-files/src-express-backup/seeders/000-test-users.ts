@@ -33,8 +33,8 @@ export default {
         first_name: 'System',
         last_name: 'Administrator',
         email_verified: true,
-        created_at: new Date(),
-        updated_at: new Date(),
+        createdAt: new Date(),
+        updatedAt: new Date(),
       },
       {
         id: uuidv4(),
@@ -45,8 +45,8 @@ export default {
         first_name: 'Dr. John',
         last_name: 'Doe',
         email_verified: true,
-        created_at: new Date(),
-        updated_at: new Date(),
+        createdAt: new Date(),
+        updatedAt: new Date(),
       },
       {
         id: uuidv4(),
@@ -57,8 +57,8 @@ export default {
         first_name: 'Healthcare',
         last_name: 'Provider',
         email_verified: true,
-        created_at: new Date(),
-        updated_at: new Date(),        
+        createdAt: new Date(),
+        updatedAt: new Date(),        
       },
       {
         id: uuidv4(),
@@ -69,8 +69,8 @@ export default {
         first_name: 'Hospital',
         last_name: 'Admin',
         email_verified: true,
-        created_at: new Date(),
-        updated_at: new Date(),
+        createdAt: new Date(),
+        updatedAt: new Date(),
       },
       {
         id: uuidv4(),
@@ -81,8 +81,8 @@ export default {
         first_name: 'Jane',
         last_name: 'Patient',
         email_verified: true,
-        created_at: new Date(),
-        updated_at: new Date(),
+        createdAt: new Date(),
+        updatedAt: new Date(),
       }
     ];
 
@@ -102,7 +102,7 @@ export default {
     if (existingDoctorUsers.length > 0) {
       // Ensure General Medicine specialty exists (idempotent)
       await queryInterface.sequelize.query(
-        `INSERT INTO specialities (id, name, description, created_at, updated_at) 
+        `INSERT INTO specialities (id, name, description, createdAt, updatedAt) 
          VALUES (3, 'General Medicine', 'General medical practice', NOW(), NOW())
          ON CONFLICT (id) DO NOTHING`,
         { type: Sequelize.QueryTypes.INSERT }
@@ -120,8 +120,8 @@ export default {
         practice_name: user.email === 'doctor@healthapp.com' ? 'Dr. John Doe Family Practice' : 'Medical Practice',
         medical_school: 'University of Medicine',
         board_certifications: ['internal medicine'],
-        created_at: new Date(),
-        updated_at: new Date(),
+        createdAt: new Date(),
+        updatedAt: new Date(),
       }));
 
       await queryInterface.bulkInsert('doctors', doctorRecords, { ignoreDuplicates: true });
@@ -143,7 +143,7 @@ export default {
     if (existingDoctorsToUpdate.length > 0) {
       // Ensure General Medicine specialty exists (idempotent)
       await queryInterface.sequelize.query(
-        `INSERT INTO specialities (id, name, description, created_at, updated_at) 
+        `INSERT INTO specialities (id, name, description, createdAt, updatedAt) 
          VALUES (3, 'General Medicine', 'General medical practice', NOW(), NOW())
          ON CONFLICT (id) DO NOTHING`,
         { type: Sequelize.QueryTypes.INSERT }
@@ -163,7 +163,7 @@ export default {
            END,
            medical_school = 'University of Medicine',
            board_certifications = ARRAY['internal medicine'],
-           updated_at = NOW()
+           updatedAt = NOW()
            WHERE id = :doctorId`,
           {
             replacements: { 
@@ -195,8 +195,8 @@ export default {
         id: uuidv4(),
         userId: user.id,
         medical_record_number: user.email === 'patient@healthapp.com' ? 'MRN-TEST-001' : `MRN-TEST-${String(index + 2).padStart(3, '0')}`,
-        created_at: new Date(),
-        updated_at: new Date(),
+        createdAt: new Date(),
+        updatedAt: new Date(),
       }));
 
       await queryInterface.bulkInsert('patients', patientRecords, { ignoreDuplicates: true });

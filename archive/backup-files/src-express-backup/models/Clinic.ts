@@ -171,8 +171,8 @@ const Clinic = (sequelize: any) => {
     underscored: true,
     paranoid: true, // Enable soft deletes
     timestamps: true,
-    createdAt: 'created_at',
-    updatedAt: 'updated_at',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt',
     deletedAt: 'deleted_at',
     indexes: [
       {

@@ -22,7 +22,7 @@ interface Notification {
   is_urgent: boolean
   patient_name?: string
   patientId?: string
-  created_at: string
+  createdAt: string
 }
 
 export default function NotificationsPage() {
@@ -57,7 +57,7 @@ export default function NotificationsPage() {
             is_urgent: alert.severity === 'high',
             patient_name: alert.patientName,
             patientId: alert.patientId,
-            created_at: alert.timestamp || alert.created_at
+            createdAt: alert.timestamp || alert.createdAt
           }))
           setNotifications(transformedNotifications)
         }
@@ -75,7 +75,7 @@ export default function NotificationsPage() {
           is_urgent: true,
           patient_name: 'John Doe',
           patientId: 'patient-1',
-          created_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString()
+          createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString()
         },
         {
           id: '2', 
@@ -86,7 +86,7 @@ export default function NotificationsPage() {
           is_urgent: false,
           patient_name: 'Jane Smith',
           patientId: 'patient-2',
-          created_at: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString()
+          createdAt: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString()
         },
         {
           id: '3',
@@ -95,7 +95,7 @@ export default function NotificationsPage() {
           type: 'info',
           is_read: true,
           is_urgent: false,
-          created_at: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
+          createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
         }
       ])
     } finally {
@@ -332,7 +332,7 @@ export default function NotificationsPage() {
                           {notification.message}
                         </p>
                         <div className="mt-2 flex items-center space-x-4 text-xs text-gray-500">
-                          <span>{formatDateTime(notification.created_at)}</span>
+                          <span>{formatDateTime(notification.createdAt)}</span>
                           {notification.patient_name && (
                             <span>Patient: {notification.patient_name}</span>
                           )}

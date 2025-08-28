@@ -263,8 +263,8 @@ export async function POST(request: NextRequest) {
         setup_fee: parseFloat(setup_fee),
         stripe_price_id,
         isActive: true,
-        created_at: new Date(),
-        updated_at: new Date()
+        createdAt: new Date(),
+        updatedAt: new Date()
       },
       include: {
         healthcare_providers: {

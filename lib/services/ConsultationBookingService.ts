@@ -61,8 +61,8 @@ export class ConsultationBookingService {
             notes: data.notes,
             duration: data.duration
           },
-          created_at: new Date(),
-          updated_at: new Date(),
+          createdAt: new Date(),
+          updatedAt: new Date(),
         }
       });
 
@@ -269,7 +269,7 @@ export class ConsultationBookingService {
         data: {
           start_time: newDateTime,
           status: 'scheduled',
-          updated_at: new Date()
+          updatedAt: new Date()
         }
       });
 
@@ -280,7 +280,7 @@ export class ConsultationBookingService {
           data: {
             scheduled_start: newDateTime,
             status: 'SCHEDULED',
-            updated_at: new Date()
+            updatedAt: new Date()
           }
         });
       }
@@ -335,7 +335,7 @@ export class ConsultationBookingService {
         data: {
           status: 'cancelled',
           notes: reason ? `${appointment.notes || ''}\n\nCancellation reason: ${reason}` : appointment.notes,
-          updated_at: new Date()
+          updatedAt: new Date()
         }
       });
 
@@ -345,7 +345,7 @@ export class ConsultationBookingService {
           where: { id: appointment.VideoConsultation[0].id },
           data: {
             status: 'cancelled',
-            updated_at: new Date()
+            updatedAt: new Date()
           }
         });
       }

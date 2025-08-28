@@ -27,7 +27,7 @@ export default {
       },
       
       // Device information
-      device_type: {
+      deviceType: {
         type: Sequelize.STRING(50),
         allowNull: false, // ios, android, web
       },
@@ -55,12 +55,12 @@ export default {
         type: Sequelize.DATE,
         defaultValue: Sequelize.NOW,
       },
-      created_at: {
+      createdAt: {
         type: Sequelize.DATE,
         allowNull: false,
         defaultValue: Sequelize.NOW,
       },
-      updated_at: {
+      updatedAt: {
         type: Sequelize.DATE,
         allowNull: false,
         defaultValue: Sequelize.NOW,
@@ -70,7 +70,7 @@ export default {
     // Add indexes with error handling
     const indexes = [
       { fields: ['userId'], name: 'idx_user_devices_user' },
-      { fields: ['device_type'], name: 'idx_user_devices_type' },
+      { fields: ['deviceType'], name: 'idx_user_devices_type' },
       { fields: ['isActive'], name: 'idx_user_devices_active' },
       { fields: ['push_token'], name: 'idx_user_devices_push_token' },
       { fields: ['last_used_at'], name: 'idx_user_devices_last_used' }

@@ -4,8 +4,8 @@ import { Model, Optional, CreationOptional, InferAttributes, InferCreationAttrib
 // Base model attributes that all models should have
 export interface BaseModelAttributes {
   id: CreationOptional<string>;
-  created_at?: CreationOptional<Date>;
-  updated_at?: CreationOptional<Date>;
+  createdAt?: CreationOptional<Date>;
+  updatedAt?: CreationOptional<Date>;
   deleted_at?: Date | null;
 }
 
@@ -26,7 +26,7 @@ export interface UserAttributes extends BaseModelAttributes {
   role?: string;
 }
 
-export interface UserCreationAttributes extends Optional<UserAttributes, 'id' | 'created_at' | 'updated_at'> {}
+export interface UserCreationAttributes extends Optional<UserAttributes, 'id' | 'createdAt' | 'updatedAt'> {}
 
 // Patient model attributes
 export interface PatientAttributes extends BaseModelAttributes {

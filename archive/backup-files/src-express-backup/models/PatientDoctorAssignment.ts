@@ -30,7 +30,7 @@ export default (sequelize: any) => {
     },
     
     // Assignment type determines permissions and responsibilities
-    assignment_type: {
+    assignmentType: {
       type: DataTypes.STRING(50),
       allowNull: false,
       validate: {
@@ -54,7 +54,7 @@ export default (sequelize: any) => {
     },
     
     // For specialist assignments - specific to care plans or conditions
-    specialty_focus: {
+    specialtyFocus: {
       type: DataTypes.ARRAY(DataTypes.TEXT),
       defaultValue: [],
       comment: 'Specific specialties/conditions this assignment covers'
@@ -162,12 +162,12 @@ export default (sequelize: any) => {
       comment: 'Whether this assignment requires doctors to be in same organization'
     },
     
-    created_at: {
+    createdAt: {
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW
     },
     
-    updated_at: {
+    updatedAt: {
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW
     }
@@ -184,7 +184,7 @@ export default (sequelize: any) => {
         fields: ['doctorId']
       },
       {
-        fields: ['assignment_type']
+        fields: ['assignmentType']
       },
       {
         fields: ['isActive']
@@ -194,9 +194,9 @@ export default (sequelize: any) => {
       },
       {
         unique: true,
-        fields: ['patientId', 'assignment_type'],
+        fields: ['patientId', 'assignmentType'],
         where: {
-          assignment_type: 'primary',
+          assignmentType: 'primary',
           isActive: true
         },
         name: 'unique_primary_doctor_per_patient'
@@ -205,7 +205,7 @@ export default (sequelize: any) => {
     
     validate: {
       validateConsentRequirements() {
-        if ((this as any).assignment_type === 'transferred' && !(this as any).patient_consent_required) {
+        if ((this as any).assignmentType === 'transferred' && !(this as any).patient_consent_required) {
           throw new Error('Transferred assignments must require patient consent');
         }
         
@@ -215,7 +215,7 @@ export default (sequelize: any) => {
       },
       
       validatePermissions() {
-        const type = (this as any).assignment_type;
+        const type = (this as any).assignmentType;
         const perms = (this as any).permissions;
         
         // Set default permissions based on assignment type
@@ -291,7 +291,7 @@ export default (sequelize: any) => {
   
   // Instance methods
   PatientDoctorAssignment.prototype.isPrimaryDoctor = function() {
-    return this.assignment_type === 'primary';
+    return this.assignmentType === 'primary';
   };
   
   PatientDoctorAssignment.prototype.canCreateCarePlans = function() {
@@ -301,7 +301,7 @@ export default (sequelize: any) => {
   PatientDoctorAssignment.prototype.canAccessPatient = function() {
     if (!this.isActive) return false;
     
-    if (this.assignment_type === 'transferred') {
+    if (this.assignmentType === 'transferred') {
       return this.patient_consent_status === 'granted';
     }
     

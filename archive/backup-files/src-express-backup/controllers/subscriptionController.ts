@@ -262,7 +262,7 @@ class SubscriptionController {
         ],
         limit: parseQueryParamAsInt(limit, 20) || 20,
         offset: parseQueryParamAsInt(offset, 0) || 0,
-        order: [['created_at', 'DESC']]
+        order: [['createdAt', 'DESC']]
       });
 
       res.status(200).json({
@@ -317,7 +317,7 @@ class SubscriptionController {
         ],
         limit: parseQueryParamAsInt(limit, 20) || 20,
         offset: parseQueryParamAsInt(offset, 0) || 0,
-        order: [['created_at', 'DESC']]
+        order: [['createdAt', 'DESC']]
       });
 
       res.status(200).json({
@@ -476,7 +476,7 @@ class SubscriptionController {
           patientId: targetPatientId,
           isActive: true
         },
-        order: [['is_default', 'DESC'], ['created_at', 'DESC']]
+        order: [['is_default', 'DESC'], ['createdAt', 'DESC']]
       });
 
       res.status(200).json({
@@ -609,7 +609,7 @@ class SubscriptionController {
         ],
         limit: parseQueryParamAsInt(limit, 20) || 20,
         offset: parseQueryParamAsInt(offset, 0) || 0,
-        order: [['created_at', 'DESC']]
+        order: [['createdAt', 'DESC']]
       });
 
       res.status(200).json({

@@ -244,7 +244,7 @@ export class HealthcareRBAC {
           patientId: patientId,
           secondary_doctor_id: doctor.id,
           isActive: true,
-          access_granted: true
+          accessGranted: true
         }
       });
 
@@ -269,7 +269,7 @@ export class HealthcareRBAC {
           patientId: patientId,
           secondary_hsp_id: hsp.id,
           isActive: true,
-          access_granted: true
+          accessGranted: true
         }
       });
 
@@ -342,7 +342,7 @@ export class HealthcareRBAC {
           where: {
             secondary_doctor_id: doctor.id,
             isActive: true,
-            access_granted: true
+            accessGranted: true
           },
           select: { patientId: true }
         });
@@ -362,7 +362,7 @@ export class HealthcareRBAC {
           where: {
             secondary_hsp_id: hsp.id,
             isActive: true,
-            access_granted: true
+            accessGranted: true
           },
           select: { patientId: true }
         });

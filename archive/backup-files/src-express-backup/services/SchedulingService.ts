@@ -71,7 +71,7 @@ class SchedulingService {
       const eventData = {
         event_id: `evt_${event.id}`,
         scheduled_time: event.start_time,
-        missed_at: event.updated_at
+        missed_at: event.updatedAt
       };
 
       switch (event.event_type) {

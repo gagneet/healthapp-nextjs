@@ -133,8 +133,8 @@ model Organization {
   license_number String?
   
   // Timestamps
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relations
   patients           Patient[]
@@ -176,8 +176,8 @@ model User {
   two_factor_secret  String?
 
   // Timestamps
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relations - One-to-one with specialized profiles
   patient             Patient?
@@ -232,8 +232,8 @@ model Patient {
   cultural_preferences Json?
 
   // Timestamps
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relations
   user                    User                     @relation(fields: [user_id], references: [id], onDelete: Cascade)
@@ -298,8 +298,8 @@ model HealthcareProvider {
   practice_status      String  @default("active")
 
   // Timestamps
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relations
   user         User          @relation(fields: [user_id], references: [id], onDelete: Cascade)
@@ -339,8 +339,8 @@ model Speciality {
   requires_referral Boolean @default(false)
   
   // Timestamps
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relations
   healthcare_providers HealthcareProvider[]
@@ -371,8 +371,8 @@ model Clinic {
   doctorId       String?
   
   // Timestamps
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relations
   organization Organization?       @relation(fields: [organization_id], references: [id])
@@ -411,8 +411,8 @@ model CarePlan {
   notes       String?
 
   // Timestamps
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relations
   patient Patient            @relation(fields: [patientId], references: [id])
@@ -456,8 +456,8 @@ model Medicine {
   isActive Boolean @default(true)
 
   // Timestamps
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relations
   medications Medication[]
@@ -495,8 +495,8 @@ model Medication {
   monitoring_notes   String?
 
   // Timestamps
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relations
   patient      Patient            @relation(fields: [patientId], references: [id], onDelete: Cascade)
@@ -546,8 +546,8 @@ model Appointment {
   reminder_sent Boolean @default(false)
 
   // Timestamps
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relations
   patient Patient            @relation(fields: [patientId], references: [id], onDelete: Cascade)
@@ -576,8 +576,8 @@ model DoctorAvailability {
   is_recurring     Boolean   @default(true)
 
   // Timestamps
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relations
   doctor HealthcareProvider @relation(fields: [doctorId], references: [id], onDelete: Cascade)
@@ -605,8 +605,8 @@ model VitalType {
   measurement_instructions String?
 
   // Timestamps
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relations
   vital_readings VitalReading[]
@@ -617,7 +617,7 @@ model VitalType {
 model VitalReading {
   id           String @id @default(uuid())
   patientId   String
-  vital_type_id String
+  vitalTypeId String
 
   // Reading Values
   value_primary   Float  // Main value (e.g., systolic BP, temperature)
@@ -639,12 +639,12 @@ model VitalReading {
   patient_condition String? // fasting, post-exercise, etc.
 
   // Timestamps
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relations
   patient    Patient   @relation(fields: [patientId], references: [id], onDelete: Cascade)
-  vital_type VitalType @relation(fields: [vital_type_id], references: [id])
+  vital_type VitalType @relation(fields: [vitalTypeId], references: [id])
 
   @@map("vital_readings")
 }
@@ -679,8 +679,8 @@ model Symptom {
   clinical_notes String?
 
   // Timestamps
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relations
   patient Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
@@ -711,8 +711,8 @@ model AdherenceRecord {
   verification_method String? // self-report, device, observation
 
   // Timestamps
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relations
   patient    Patient    @relation(fields: [patientId], references: [id], onDelete: Cascade)
@@ -747,8 +747,8 @@ model ServicePlan {
   isActive Boolean @default(true)
 
   // Timestamps
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relations
   doctor           HealthcareProvider    @relation(fields: [doctorId], references: [id])
@@ -770,8 +770,8 @@ model Subscription {
   isActive Boolean @default(true)
 
   // Timestamps
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relations
   services              SubscriptionService[]
@@ -786,7 +786,7 @@ model SubscriptionService {
   service_plan_id String
 
   // Timestamps
-  created_at DateTime @default(now())
+  createdAt DateTime @default(now())
 
   // Relations
   subscription Subscription @relation(fields: [subscription_id], references: [id], onDelete: Cascade)
@@ -814,8 +814,8 @@ model PatientService {
   payment_date DateTime?
 
   // Timestamps
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relations
   patient      Patient     @relation(fields: [patientId], references: [id], onDelete: Cascade)
@@ -844,8 +844,8 @@ model PatientSubscription {
   last_payment   DateTime?
 
   // Timestamps
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relations
   patient      Patient      @relation(fields: [patientId], references: [id], onDelete: Cascade)
@@ -864,7 +864,7 @@ model PatientDoctorAssignment {
   doctorId  String
 
   // Assignment Details
-  assignment_type String // primary, secondary, consultant, specialist, emergency
+  assignmentType String // primary, secondary, consultant, specialist, emergency
   isActive      Boolean @default(true)
   
   // Timeline
@@ -881,14 +881,14 @@ model PatientDoctorAssignment {
   emergency_contact Boolean @default(false)
 
   // Timestamps
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relations
   patient Patient            @relation(fields: [patientId], references: [id], onDelete: Cascade)
   doctor  HealthcareProvider @relation(fields: [doctorId], references: [id])
 
-  @@unique([patientId, doctorId, assignment_type])
+  @@unique([patientId, doctorId, assignmentType])
   @@map("patient_doctor_assignments")
 }
 
@@ -902,7 +902,7 @@ model UserDevice {
 
   // Device Information
   device_token String @unique
-  device_type  String // ios, android, web
+  deviceType  String // ios, android, web
   device_name  String?
   
   // Notification Preferences
@@ -914,8 +914,8 @@ model UserDevice {
   last_used_at  DateTime?
 
   // Timestamps
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relations
   user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
@@ -949,8 +949,8 @@ model Notification {
   priority       PriorityLevel @default(MEDIUM)
 
   // Timestamps
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relations
   user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
@@ -993,7 +993,7 @@ model AuditLog {
   access_reason String?
 
   // Timestamp
-  created_at DateTime @default(now())
+  createdAt DateTime @default(now())
 
   @@map("audit_logs")
 }

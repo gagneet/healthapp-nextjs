@@ -174,7 +174,7 @@ export const POST = withErrorHandling(async (request: NextRequest, { params }: {
         phone: assignment.patient.user.phone
       },
       assignment_info: {
-        assignment_type: assignment.assignmentType,
+        assignmentType: assignment.assignmentType,
         assignment_reason: assignment.assignmentReason,
         primary_doctor: assignment.assignedByDoctor ? 
           `${assignment.assignedByDoctor.user.firstName} ${assignment.assignedByDoctor.user.lastName}`.trim() : null,

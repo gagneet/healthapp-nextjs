@@ -54,8 +54,8 @@ export default {
         isActive: true,
         requires_specialist: false,
         prescription_required: true,
-        created_at: new Date(),
-        updated_at: new Date(),
+        createdAt: new Date(),
+        updatedAt: new Date(),
       },
       {
         id: '550e8400-e29b-41d4-a716-446655440022',
@@ -94,8 +94,8 @@ export default {
         isActive: true,
         requires_specialist: false,
         prescription_required: true,
-        created_at: new Date(),
-        updated_at: new Date(),
+        createdAt: new Date(),
+        updatedAt: new Date(),
       },
       {
         id: '550e8400-e29b-41d4-a716-446655440023',
@@ -130,8 +130,8 @@ export default {
         isActive: true,
         requires_specialist: false,
         prescription_required: false,
-        created_at: new Date(),
-        updated_at: new Date(),
+        createdAt: new Date(),
+        updatedAt: new Date(),
       },
       {
         id: '550e8400-e29b-41d4-a716-446655440024',
@@ -173,8 +173,8 @@ export default {
         isActive: true,
         requires_specialist: true,
         prescription_required: true,
-        created_at: new Date(),
-        updated_at: new Date(),
+        createdAt: new Date(),
+        updatedAt: new Date(),
       },
       {
         id: '550e8400-e29b-41d4-a716-446655440025',
@@ -212,8 +212,8 @@ export default {
         isActive: true,
         requires_specialist: true,
         prescription_required: false,
-        created_at: new Date(),
-        updated_at: new Date(),
+        createdAt: new Date(),
+        updatedAt: new Date(),
       }
     ], { ignoreDuplicates: true });
     

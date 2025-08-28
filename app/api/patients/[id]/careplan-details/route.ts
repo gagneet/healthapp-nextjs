@@ -156,7 +156,7 @@ async function fetchCarePlanData(patientId: string) {
         }
       }
     },
-    orderBy: { created_at: 'desc' }
+    orderBy: { createdAt: 'desc' }
   });
 
   // Get vital requirements and readings
@@ -243,8 +243,8 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       title: carePlan.title || 'Care Plan',
       description: carePlan.description,
       status: carePlan.status,
-      created_at: carePlan.created_at,
-      updated_at: carePlan.updated_at,
+      createdAt: carePlan.createdAt,
+      updatedAt: carePlan.updatedAt,
       medications: carePlan.medications.map(med => ({
         id: med.id,
         medicine: med.medicine,

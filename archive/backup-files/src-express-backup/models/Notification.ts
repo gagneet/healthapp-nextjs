@@ -250,12 +250,12 @@ export default (sequelize: any) => {
     },
     
     // Timestamps
-    created_at: {
+    createdAt: {
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW
     },
     
-    updated_at: {
+    updatedAt: {
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW
     },
@@ -310,7 +310,7 @@ export default (sequelize: any) => {
       },
       {
         // Index for user notifications
-        fields: ['patientId', 'status', 'created_at']
+        fields: ['patientId', 'status', 'createdAt']
       }
     ],
     
@@ -377,7 +377,7 @@ export default (sequelize: any) => {
     
     return await this.findAll({
       where: whereCondition,
-      order: [['created_at', 'DESC']],
+      order: [['createdAt', 'DESC']],
       limit
     });
   };

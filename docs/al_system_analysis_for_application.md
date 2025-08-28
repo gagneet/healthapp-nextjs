@@ -749,7 +749,7 @@ CREATE TABLE vital_protocols (
     critical_high DECIMAL(8,2),
     monitoring_frequency VARCHAR(50),
     alert_enabled BOOLEAN DEFAULT TRUE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Drug Interaction Management
@@ -761,7 +761,7 @@ CREATE TABLE drug_interactions (
     clinical_significance TEXT,
     management_recommendation TEXT,
     evidence_level ENUM('A', 'B', 'C'),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Patient Allergy Management  
@@ -774,7 +774,7 @@ CREATE TABLE patient_allergies (
     reaction_symptoms TEXT,
     onset_date DATE,
     verified_by_doctor BOOLEAN DEFAULT FALSE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Gamification System
@@ -786,7 +786,7 @@ CREATE TABLE patient_achievements (
     points_earned INT DEFAULT 0,
     unlock_date TIMESTAMP,
     description TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 ```
 

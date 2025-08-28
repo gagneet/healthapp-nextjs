@@ -69,7 +69,7 @@ export default {
         comment: 'Reason for assigning secondary doctor (specialist referral, etc.)'
       },
       
-      specialty_focus: {
+      specialtyFocus: {
         type: Sequelize.ARRAY(Sequelize.TEXT),
         defaultValue: [],
         comment: 'Specific conditions or specialties this assignment covers'
@@ -117,7 +117,7 @@ export default {
         comment: 'Current consent status'
       },
       
-      access_granted: {
+      accessGranted: {
         type: Sequelize.BOOLEAN,
         defaultValue: false,
         comment: 'Whether secondary doctor can access patient details'
@@ -168,12 +168,12 @@ export default {
       },
       
       // Audit fields
-      created_at: {
+      createdAt: {
         type: Sequelize.DATE,
         defaultValue: Sequelize.literal('CURRENT_TIMESTAMP')
       },
       
-      updated_at: {
+      updatedAt: {
         type: Sequelize.DATE,
         defaultValue: Sequelize.literal('CURRENT_TIMESTAMP')
       }
@@ -186,7 +186,7 @@ export default {
       { fields: ['secondary_doctor_id'], name: 'idx_secondary_doctor_assignments_secondary_doctor_id' },
       { fields: ['secondary_hsp_id'], name: 'idx_secondary_doctor_assignments_secondary_hsp_id' },
       { fields: ['consent_status'], name: 'idx_secondary_doctor_assignments_consent_status' },
-      { fields: ['access_granted'], name: 'idx_secondary_doctor_assignments_access_granted' },
+      { fields: ['accessGranted'], name: 'idx_secondary_doctor_assignments_access_granted' },
       { fields: ['isActive'], name: 'idx_secondary_doctor_assignments_is_active' },
       { fields: ['consent_expires_at'], name: 'idx_secondary_doctor_assignments_consent_expires_at' }
     ];

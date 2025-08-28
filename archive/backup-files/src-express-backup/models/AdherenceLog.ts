@@ -283,12 +283,12 @@ export default (sequelize: any) => {
     },
     
     // Timestamps
-    created_at: {
+    createdAt: {
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW
     },
     
-    updated_at: {
+    updatedAt: {
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW
     },
@@ -338,7 +338,7 @@ export default (sequelize: any) => {
       },
       {
         // Index for adherence rate calculations
-        fields: ['patientId', 'status', 'created_at']
+        fields: ['patientId', 'status', 'createdAt']
       }
     ],
     

@@ -77,11 +77,11 @@ export default {
           type: Sequelize.BOOLEAN,
           defaultValue: false
         },
-        created_at: {
+        createdAt: {
           type: Sequelize.DATE,
           defaultValue: Sequelize.NOW
         },
-        updated_at: {
+        updatedAt: {
           type: Sequelize.DATE,
           defaultValue: Sequelize.NOW
         }
@@ -152,11 +152,11 @@ export default {
           type: Sequelize.JSONB,
           defaultValue: {}
         },
-        created_at: {
+        createdAt: {
           type: Sequelize.DATE,
           defaultValue: Sequelize.NOW
         },
-        updated_at: {
+        updatedAt: {
           type: Sequelize.DATE,
           defaultValue: Sequelize.NOW
         }
@@ -200,11 +200,11 @@ export default {
           type: Sequelize.DATE,
           allowNull: true
         },
-        created_at: {
+        createdAt: {
           type: Sequelize.DATE,
           defaultValue: Sequelize.NOW
         },
-        updated_at: {
+        updatedAt: {
           type: Sequelize.DATE,
           defaultValue: Sequelize.NOW
         }
@@ -221,7 +221,7 @@ export default {
       { table: 'medication_logs', name: 'medication_logs_adherence_status_scheduled_at', columns: ['adherence_status', 'scheduled_at'] },
       { table: 'patient_alerts', name: 'patient_alerts_patient_id_alert_type_severity', columns: ['patientId', 'alert_type', 'severity'] },
       { table: 'patient_alerts', name: 'patient_alerts_acknowledged_resolved', columns: ['acknowledged', 'resolved'] },
-      { table: 'patient_alerts', name: 'patient_alerts_created_at', columns: ['created_at'] },
+      { table: 'patient_alerts', name: 'patient_alerts_created_at', columns: ['createdAt'] },
       { table: 'dashboard_metrics', name: 'dashboard_metrics_entity_type_entity_id_metric_type', columns: ['entity_type', 'entity_id', 'metric_type'] },
       { table: 'dashboard_metrics', name: 'dashboard_metrics_calculated_at_valid_until', columns: ['calculated_at', 'valid_until'] }
     ];

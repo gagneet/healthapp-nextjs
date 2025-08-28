@@ -44,8 +44,8 @@ beforeAll(async () => {
     create: {
       name: 'General Medicine',
       description: 'General medical practice for testing',
-      created_at: new Date(),
-      updated_at: new Date()
+      createdAt: new Date(),
+      updatedAt: new Date()
     }
   })
   

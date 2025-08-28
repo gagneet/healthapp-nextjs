@@ -104,7 +104,7 @@ function generateSmartMappings() {
       mappings['phone_number'] = 'phone';
     }
     
-    if (userFields.has('created_at') && !userFields.has('last_login_at') && !userFields.has('last_used_at')) {
+    if (userFields.has('createdAt') && !userFields.has('last_login_at') && !userFields.has('last_used_at')) {
       // If neither field exists, remove the reference entirely
       mappings['last_used_at'] = null; // Mark for removal
       mappings['last_login_at'] = null;

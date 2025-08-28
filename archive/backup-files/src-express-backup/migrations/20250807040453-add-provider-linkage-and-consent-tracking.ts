@@ -189,11 +189,11 @@ export default {
         defaultValue: {},
         comment: 'Additional metadata for the consent process'
       },
-      created_at: {
+      createdAt: {
         type: Sequelize.DATE,
         defaultValue: Sequelize.NOW
       },
-      updated_at: {
+      updatedAt: {
         type: Sequelize.DATE,
         defaultValue: Sequelize.NOW
       }
@@ -274,11 +274,11 @@ export default {
         defaultValue: 'active',
         comment: 'Status of the provider change'
       },
-      created_at: {
+      createdAt: {
         type: Sequelize.DATE,
         defaultValue: Sequelize.NOW
       },
-      updated_at: {
+      updatedAt: {
         type: Sequelize.DATE,
         defaultValue: Sequelize.NOW
       }

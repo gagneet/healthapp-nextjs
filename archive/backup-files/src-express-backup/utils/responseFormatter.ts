@@ -65,7 +65,7 @@ class ResponseFormatter {
           allergies: patient.details?.allergies || null
         },
         dob: patient.dob,
-        created_at: patient.created_at,
+        createdAt: patient.createdAt,
         care_plan_id: null,
         user_role_id: null,
         feedId: Buffer.from(`patient_${patient.id}`).toString('base64'),

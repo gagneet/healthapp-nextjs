@@ -19,7 +19,7 @@ export default (sequelize: any) => {
       comment: 'Name of the medical device'
     },
     
-    device_type: {
+    deviceType: {
       type: DataTypes.STRING(50),
       allowNull: false,
       validate: {
@@ -349,12 +349,12 @@ export default (sequelize: any) => {
       comment: 'When device was activated'
     },
     
-    created_at: {
+    createdAt: {
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW
     },
     
-    updated_at: {
+    updatedAt: {
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW
     },
@@ -377,7 +377,7 @@ export default (sequelize: any) => {
         fields: ['organization_id']
       },
       {
-        fields: ['device_type']
+        fields: ['deviceType']
       },
       {
         fields: ['status']
@@ -402,7 +402,7 @@ export default (sequelize: any) => {
       },
       {
         // Composite index for patient devices
-        fields: ['patientId', 'status', 'device_type']
+        fields: ['patientId', 'status', 'deviceType']
       },
       {
         // Index for maintenance scheduling
@@ -447,7 +447,7 @@ export default (sequelize: any) => {
     };
     
     if (deviceType) {
-      (where as any).device_type = deviceType;
+      (where as any).deviceType = deviceType;
     }
     
     return await this.findAll({

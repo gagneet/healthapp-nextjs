@@ -20,8 +20,8 @@ const FIELD_MAPPINGS = {
   'last_login_at': 'last_used_at',      // Use existing field
   
   // Common field fixes
-  'created_at': 'created_at',
-  'updated_at': 'updated_at',
+  'createdAt': 'createdAt',
+  'updatedAt': 'updatedAt',
   'deleted_at': 'deleted_at',
   
   // Healthcare specific

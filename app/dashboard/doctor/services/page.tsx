@@ -33,8 +33,8 @@ interface Service {
   currency: string
   duration_days?: number
   isActive: boolean
-  created_at: string
-  updated_at: string
+  createdAt: string
+  updatedAt: string
   features: string[]
   target_conditions?: string[]
 }
@@ -50,7 +50,7 @@ interface Subscription {
   end_date?: string
   next_billing_date?: string
   total_paid: number
-  created_at: string
+  createdAt: string
 }
 
 const mockServices: Service[] = [
@@ -64,8 +64,8 @@ const mockServices: Service[] = [
     currency: 'USD',
     duration_days: 90,
     isActive: true,
-    created_at: '2025-01-10T09:00:00Z',
-    updated_at: '2025-01-20T14:30:00Z',
+    createdAt: '2025-01-10T09:00:00Z',
+    updatedAt: '2025-01-20T14:30:00Z',
     features: [
       '24/7 Glucose monitoring alerts',
       'Weekly virtual consultations',
@@ -85,8 +85,8 @@ const mockServices: Service[] = [
     currency: 'USD',
     duration_days: 60,
     isActive: true,
-    created_at: '2025-01-08T11:15:00Z',
-    updated_at: '2025-01-22T10:45:00Z',
+    createdAt: '2025-01-08T11:15:00Z',
+    updatedAt: '2025-01-22T10:45:00Z',
     features: [
       'Daily BP monitoring reminders',
       'Bi-weekly check-ins',
@@ -105,8 +105,8 @@ const mockServices: Service[] = [
     price: 150.00,
     currency: 'USD',
     isActive: true,
-    created_at: '2025-01-05T16:30:00Z',
-    updated_at: '2025-01-18T09:20:00Z',
+    createdAt: '2025-01-05T16:30:00Z',
+    updatedAt: '2025-01-18T09:20:00Z',
     features: [
       '45-minute consultation',
       'Digital prescription',
@@ -125,8 +125,8 @@ const mockServices: Service[] = [
     currency: 'USD',
     duration_days: 90,
     isActive: true,
-    created_at: '2025-01-12T14:20:00Z',
-    updated_at: '2025-01-25T11:10:00Z',
+    createdAt: '2025-01-12T14:20:00Z',
+    updatedAt: '2025-01-25T11:10:00Z',
     features: [
       'Comprehensive health assessment',
       'Personalized wellness plan',
@@ -146,8 +146,8 @@ const mockServices: Service[] = [
     currency: 'USD',
     duration_days: 30,
     isActive: false,
-    created_at: '2023-12-20T10:45:00Z',
-    updated_at: '2025-01-15T13:25:00Z',
+    createdAt: '2023-12-20T10:45:00Z',
+    updatedAt: '2025-01-15T13:25:00Z',
     features: [
       'Daily recovery check-ins',
       'Pain management support',
@@ -170,7 +170,7 @@ const mockSubscriptions: Subscription[] = [
     end_date: '2025-04-15T00:00:00Z',
     next_billing_date: '2025-02-15T00:00:00Z',
     total_paid: 599.97,
-    created_at: '2025-01-15T09:30:00Z'
+    createdAt: '2025-01-15T09:30:00Z'
   },
   {
     id: '2',
@@ -183,7 +183,7 @@ const mockSubscriptions: Subscription[] = [
     end_date: '2025-03-20T00:00:00Z',
     next_billing_date: '2025-02-20T00:00:00Z',
     total_paid: 399.98,
-    created_at: '2025-01-20T14:15:00Z'
+    createdAt: '2025-01-20T14:15:00Z'
   },
   {
     id: '3',
@@ -194,7 +194,7 @@ const mockSubscriptions: Subscription[] = [
     status: 'PENDING',
     start_date: '2025-01-25T00:00:00Z',
     total_paid: 0,
-    created_at: '2025-01-25T11:45:00Z'
+    createdAt: '2025-01-25T11:45:00Z'
   }
 ]
 

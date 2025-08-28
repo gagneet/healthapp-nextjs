@@ -23,7 +23,7 @@ export class HIPAAAuditLog {
         user_agent: req.get('User-Agent'),
         patientId: req.params.patientId || req.body.patientId,
         phi_accessed: HIPAAAuditLog.containsPHI(req),
-        access_granted: true, // Will be updated if access is denied
+        accessGranted: true, // Will be updated if access is denied
         session_id: req.sessionID,
         request_id: req.id || crypto.randomUUID()
       };
@@ -56,7 +56,7 @@ export class HIPAAAuditLog {
         user_agent: req.get('User-Agent'),
         patientId: req.params.patientId || req.body.patientId,
         phi_accessed: false,
-        access_granted: false,
+        accessGranted: false,
         denial_reason: reason,
         session_id: req.sessionID,
         request_id: req.id || crypto.randomUUID()
@@ -261,7 +261,7 @@ function minimizeData(data: any, allowedFields: any, userRole: any): any {
     const minimized = {};
     
     // Always allow certain fields
-    const alwaysAllowed = ['id', 'created_at', 'updated_at', 'status'];
+    const alwaysAllowed = ['id', 'createdAt', 'updatedAt', 'status'];
     
     // Role-based field access
     const roleBasedFields = {

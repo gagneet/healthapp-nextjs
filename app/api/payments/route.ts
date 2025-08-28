@@ -74,12 +74,12 @@ export async function GET(request: NextRequest) {
 
     // Date range filter
     if (startDate || endDate) {
-      whereClause.created_at = {};
+      whereClause.createdAt = {};
       if (startDate) {
-        whereClause.created_at.gte = new Date(startDate);
+        whereClause.createdAt.gte = new Date(startDate);
       }
       if (endDate) {
-        whereClause.created_at.lte = new Date(endDate);
+        whereClause.createdAt.lte = new Date(endDate);
       }
     }
 
@@ -129,7 +129,7 @@ export async function GET(request: NextRequest) {
         },
         skip: offset,
         take: limit,
-        orderBy: { created_at: 'desc' }
+        orderBy: { createdAt: 'desc' }
       }),
       prisma.payments.count({ where: whereClause })
     ]);
@@ -285,8 +285,8 @@ export async function POST(request: NextRequest) {
         billing_period_end: billing_period_end ? new Date(billing_period_end) : null,
         invoice_id,
         metadata,
-        created_at: new Date(),
-        updated_at: new Date()
+        createdAt: new Date(),
+        updatedAt: new Date()
       },
       include: {
         patients: {

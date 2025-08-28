@@ -60,8 +60,8 @@ model DrugInteraction {
   evidence_level        EvidenceLevel @default(MODERATE)
   source                String?  @db.VarChar(255)
   last_updated          DateTime @default(now()) @db.Timestamp(6)
-  created_at            DateTime @default(now()) @db.Timestamp(6)
-  updated_at            DateTime @updatedAt @db.Timestamp(6)
+  createdAt            DateTime @default(now()) @db.Timestamp(6)
+  updatedAt            DateTime @updatedAt @db.Timestamp(6)
 
   @@map("drug_interactions")
 }
@@ -157,8 +157,8 @@ model PatientAllergy {
   verified_by_doctor    Boolean     @default(false)
   verified_by           String?     @db.Uuid
   isActive             Boolean     @default(true)
-  created_at            DateTime    @default(now()) @db.Timestamp(6)
-  updated_at            DateTime    @updatedAt @db.Timestamp(6)
+  createdAt            DateTime    @default(now()) @db.Timestamp(6)
+  updatedAt            DateTime    @updatedAt @db.Timestamp(6)
 
   patient               Patient     @relation(fields: [patientId], references: [id], onDelete: Cascade)
   verified_by_user      User?       @relation("PatientAllergyVerifier", fields: [verified_by], references: [id])
@@ -228,8 +228,8 @@ model EmergencyAlert {
   resolved_at           DateTime?        @db.Timestamp(6)
   resolution_notes      String?          @db.Text
   resolution_action     ResolutionAction?
-  created_at            DateTime         @default(now()) @db.Timestamp(6)
-  updated_at            DateTime         @updatedAt @db.Timestamp(6)
+  createdAt            DateTime         @default(now()) @db.Timestamp(6)
+  updatedAt            DateTime         @updatedAt @db.Timestamp(6)
 
   patient               Patient          @relation(fields: [patientId], references: [id], onDelete: Cascade)
   vital_reading         VitalReading?    @relation(fields: [vital_reading_id], references: [id])
@@ -378,7 +378,7 @@ export async function createAuditLog(action: string, entityType: string, data: a
       request_data: data.requestData,
       response_data: data.responseData,
       severity: data.severity || 'INFO',
-      created_at: new Date()
+      createdAt: new Date()
     }
   })
 }

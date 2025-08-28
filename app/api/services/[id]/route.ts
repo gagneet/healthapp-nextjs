@@ -87,8 +87,8 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       requiresSubscription: service.requires_subscription || false,
       isActive: service.isActive,
       tags: Array.isArray(service.tags) ? service.tags : [],
-      created_at: service.created_at,
-      updated_at: service.updated_at,
+      createdAt: service.createdAt,
+      updatedAt: service.updatedAt,
       usage_count: usageCount,
       revenue_generated: revenueGenerated,
       active_subscriptions: activeSubscriptions,
@@ -195,7 +195,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
         requires_subscription: body.requiresSubscription || false,
         tags: body.tags || [],
         isActive: body.isActive !== undefined ? body.isActive : true,
-        updated_at: new Date()
+        updatedAt: new Date()
       }
     });
 

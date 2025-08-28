@@ -92,7 +92,7 @@ export class SecondaryDoctorService {
         patientId: patientId,
         doctorId: doctorId,
         assignment_type: assignmentType,
-        specialty_focus: specialtyFocus,
+        specialtyFocus: specialtyFocus,
         care_plan_ids: carePlanIds,
         assigned_by_doctor_id: assignedBy,
         assignment_reason: assignmentReason,
@@ -211,7 +211,7 @@ export class SecondaryDoctorService {
         ],
         order: [
           ['assignment_type', 'ASC'], // Primary first
-          ['created_at', 'DESC']
+          ['createdAt', 'DESC']
         ]
       });
 
@@ -227,7 +227,7 @@ export class SecondaryDoctorService {
           isVerified: assignment.doctor.is_verified
         },
         permissions: assignment.permissions,
-        specialtyFocus: assignment.specialty_focus,
+        specialtyFocus: assignment.specialtyFocus,
         carePlanIds: assignment.care_plan_ids,
         assignmentReason: assignment.assignment_reason,
         notes: assignment.notes,
@@ -240,7 +240,7 @@ export class SecondaryDoctorService {
           name: assignment.assignedByDoctor.user.name,
           email: assignment.assignedByDoctor.user.email
         } : null,
-        createdAt: assignment.created_at
+        createdAt: assignment.createdAt
       }));
     } catch (error) {
       logger.error('Error fetching patient doctor assignments:', error);
@@ -438,7 +438,7 @@ export class SecondaryDoctorService {
           email: assignment.patient.user.email
         },
         permissions: assignment.permissions,
-        specialtyFocus: assignment.specialty_focus,
+        specialtyFocus: assignment.specialtyFocus,
         carePlanIds: assignment.care_plan_ids,
         assignmentReason: assignment.assignment_reason,
         notes: assignment.notes,
@@ -452,8 +452,8 @@ export class SecondaryDoctorService {
           name: assignment.assignedByDoctor.user.name,
           email: assignment.assignedByDoctor.user.email
         } : null,
-        createdAt: assignment.created_at,
-        updatedAt: assignment.updated_at
+        createdAt: assignment.createdAt,
+        updatedAt: assignment.updatedAt
       };
     } catch (error) {
       logger.error('Error fetching assignment details:', error);

@@ -177,11 +177,11 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
           email: primaryDoctor.user.email
         } : null,
         assignment_details: {
-          assignment_type: assignment.assignmentType,
+          assignmentType: assignment.assignmentType,
           assignment_reason: assignment.assignmentReason,
-          specialty_focus: assignment.specialtyFocus || [],
-          access_granted: assignment.accessGranted,
-          created_at: assignment.createdAt,
+          specialtyFocus: assignment.specialtyFocus || [],
+          accessGranted: assignment.accessGranted,
+          createdAt: assignment.createdAt,
           expires_at: assignment.expiresAt
         },
         consent_status: {
@@ -212,7 +212,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
     const summary = {
       total_assignments: secondaryPatients.length,
       pending_consent: secondaryPatients.filter(p => p.consent_status.status === 'pending').length,
-      granted_access: secondaryPatients.filter(p => p.assignment_details.access_granted).length,
+      granted_access: secondaryPatients.filter(p => p.assignment_details.accessGranted).length,
       blocked_otps: secondaryPatients.filter(p => p.consent_status.is_blocked).length,
       expired_assignments: secondaryPatients.filter(p => 
         p.assignment_details.expires_at && new Date(p.assignment_details.expires_at) < new Date()

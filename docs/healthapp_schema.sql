@@ -106,8 +106,8 @@ CREATE TABLE organizations (
     address JSONB DEFAULT '{}',
     settings JSONB DEFAULT '{}',
     isActive BOOLEAN DEFAULT true,
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW(),
+    createdAt TIMESTAMPTZ DEFAULT NOW(),
+    updatedAt TIMESTAMPTZ DEFAULT NOW(),
     deleted_at TIMESTAMPTZ
 );
 
@@ -145,8 +145,8 @@ CREATE TABLE users (
     preferences JSONB DEFAULT '{}',
     
     -- Timestamps
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW(),
+    createdAt TIMESTAMPTZ DEFAULT NOW(),
+    updatedAt TIMESTAMPTZ DEFAULT NOW(),
     deleted_at TIMESTAMPTZ
 );
 
@@ -175,8 +175,8 @@ CREATE TABLE healthcare_providers (
     notification_preferences JSONB DEFAULT '{}',
     
     -- Timestamps
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW(),
+    createdAt TIMESTAMPTZ DEFAULT NOW(),
+    updatedAt TIMESTAMPTZ DEFAULT NOW(),
     deleted_at TIMESTAMPTZ
 );
 
@@ -203,8 +203,8 @@ CREATE TABLE patients (
     privacy_settings JSONB DEFAULT '{}',
     
     -- Timestamps
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW(),
+    createdAt TIMESTAMPTZ DEFAULT NOW(),
+    updatedAt TIMESTAMPTZ DEFAULT NOW(),
     deleted_at TIMESTAMPTZ
 );
 
@@ -255,8 +255,8 @@ CREATE TABLE care_plan_templates (
     usage_count INTEGER DEFAULT 0,
     
     -- Timestamps
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW(),
+    createdAt TIMESTAMPTZ DEFAULT NOW(),
+    updatedAt TIMESTAMPTZ DEFAULT NOW(),
     deleted_at TIMESTAMPTZ
 );
 
@@ -286,8 +286,8 @@ CREATE TABLE care_plans (
     secondary_providers UUID[] DEFAULT '{}',
     
     -- Timestamps
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW(),
+    createdAt TIMESTAMPTZ DEFAULT NOW(),
+    updatedAt TIMESTAMPTZ DEFAULT NOW(),
     deleted_at TIMESTAMPTZ
 );
 
@@ -316,8 +316,8 @@ CREATE TABLE medications (
     drug_interactions JSONB DEFAULT '[]',
     
     -- Timestamps
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW(),
+    createdAt TIMESTAMPTZ DEFAULT NOW(),
+    updatedAt TIMESTAMPTZ DEFAULT NOW(),
     deleted_at TIMESTAMPTZ
 );
 
@@ -331,23 +331,23 @@ CREATE TABLE vital_types (
     description TEXT,
     validation_rules JSONB DEFAULT '{}',
     
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW()
+    createdAt TIMESTAMPTZ DEFAULT NOW(),
+    updatedAt TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- Vital Requirements in care plans
 CREATE TABLE vital_requirements (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     care_plan_id UUID NOT NULL REFERENCES care_plans(id),
-    vital_type_id UUID NOT NULL REFERENCES vital_types(id),
+    vitalTypeId UUID NOT NULL REFERENCES vital_types(id),
     
     frequency VARCHAR(100) NOT NULL, -- daily, twice_daily, weekly, etc.
     preferred_time TIME,
     is_critical BOOLEAN DEFAULT false,
     monitoring_notes TEXT,
     
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW(),
+    createdAt TIMESTAMPTZ DEFAULT NOW(),
+    updatedAt TIMESTAMPTZ DEFAULT NOW(),
     deleted_at TIMESTAMPTZ
 );
 
@@ -381,8 +381,8 @@ CREATE TABLE appointments (
     reminder_preferences JSONB DEFAULT '{}',
     
     -- Timestamps
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW(),
+    createdAt TIMESTAMPTZ DEFAULT NOW(),
+    updatedAt TIMESTAMPTZ DEFAULT NOW(),
     deleted_at TIMESTAMPTZ
 );
 
@@ -414,8 +414,8 @@ CREATE TABLE scheduled_events (
     completed_by UUID REFERENCES users(id),
     
     -- Timestamps
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW(),
+    createdAt TIMESTAMPTZ DEFAULT NOW(),
+    updatedAt TIMESTAMPTZ DEFAULT NOW(),
     deleted_at TIMESTAMPTZ
 );
 
@@ -447,15 +447,15 @@ CREATE TABLE adherence_records (
     attachments JSONB DEFAULT '[]',
     
     -- Timestamps
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW()
+    createdAt TIMESTAMPTZ DEFAULT NOW(),
+    updatedAt TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- Vital Readings
 CREATE TABLE vital_readings (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     patientId UUID NOT NULL REFERENCES patients(id),
-    vital_type_id UUID NOT NULL REFERENCES vital_types(id),
+    vitalTypeId UUID NOT NULL REFERENCES vital_types(id),
     adherence_record_id UUID REFERENCES adherence_records(id),
     
     -- Reading data
@@ -476,8 +476,8 @@ CREATE TABLE vital_readings (
     validated_by UUID REFERENCES healthcare_providers(id),
     
     -- Timestamps
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW()
+    createdAt TIMESTAMPTZ DEFAULT NOW(),
+    updatedAt TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- Symptoms Log
@@ -505,8 +505,8 @@ CREATE TABLE symptoms (
     attachments JSONB DEFAULT '[]',
     
     -- Timestamps
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW()
+    createdAt TIMESTAMPTZ DEFAULT NOW(),
+    updatedAt TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- ====================================
@@ -542,8 +542,8 @@ CREATE TABLE notifications (
     metadata JSONB DEFAULT '{}',
     
     -- Timestamps
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW(),
+    createdAt TIMESTAMPTZ DEFAULT NOW(),
+    updatedAt TIMESTAMPTZ DEFAULT NOW(),
     deleted_at TIMESTAMPTZ
 );
 
@@ -553,7 +553,7 @@ CREATE TABLE user_devices (
     userId UUID NOT NULL REFERENCES users(id),
     
     -- Device information
-    device_type VARCHAR(50) NOT NULL, -- ios, android, web
+    deviceType VARCHAR(50) NOT NULL, -- ios, android, web
     push_token VARCHAR(500) NOT NULL,
     device_id VARCHAR(255),
     
@@ -563,8 +563,8 @@ CREATE TABLE user_devices (
     
     -- Timestamps
     last_used_at TIMESTAMPTZ DEFAULT NOW(),
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW()
+    createdAt TIMESTAMPTZ DEFAULT NOW(),
+    updatedAt TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- ====================================
@@ -594,8 +594,8 @@ CREATE TABLE service_plans (
     isActive BOOLEAN DEFAULT true,
     
     -- Timestamps
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW(),
+    createdAt TIMESTAMPTZ DEFAULT NOW(),
+    updatedAt TIMESTAMPTZ DEFAULT NOW(),
     deleted_at TIMESTAMPTZ
 );
 
@@ -618,8 +618,8 @@ CREATE TABLE patient_subscriptions (
     payment_method_id VARCHAR(255),
     
     -- Timestamps
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW(),
+    createdAt TIMESTAMPTZ DEFAULT NOW(),
+    updatedAt TIMESTAMPTZ DEFAULT NOW(),
     cancelled_at TIMESTAMPTZ
 );
 
@@ -647,7 +647,7 @@ CREATE TABLE audit_logs (
     session_id VARCHAR(255),
     
     -- Timestamps
-    created_at TIMESTAMPTZ DEFAULT NOW()
+    createdAt TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- ====================================
@@ -721,16 +721,16 @@ CREATE INDEX idx_medications_name_search ON medications USING GIN(to_tsvector('e
 -- TRIGGERS AND FUNCTIONS
 -- ====================================
 
--- Function to update updated_at timestamp
+-- Function to update updatedAt timestamp
 CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS TRIGGER AS $$
 BEGIN
-    NEW.updated_at = NOW();
+    NEW.updatedAt = NOW();
     RETURN NEW;
 END;
 $$ language 'plpgsql';
 
--- Apply updated_at trigger to relevant tables
+-- Apply updatedAt trigger to relevant tables
 CREATE TRIGGER update_users_updated_at BEFORE UPDATE ON users FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 CREATE TRIGGER update_healthcare_providers_updated_at BEFORE UPDATE ON healthcare_providers FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 CREATE TRIGGER update_patients_updated_at BEFORE UPDATE ON patients FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
@@ -766,8 +766,8 @@ SELECT
     u_provider.last_name as provider_last_name,
     u_provider.email as provider_email,
     
-    cp.created_at,
-    cp.updated_at
+    cp.createdAt,
+    cp.updatedAt
 FROM care_plans cp
 JOIN patients p ON cp.patientId = p.id
 JOIN users u_patient ON p.userId = u_patient.id
@@ -800,15 +800,15 @@ SELECT
     -- Recent activity
     MAX(ar.recorded_at) as last_activity,
     
-    p.created_at,
-    p.updated_at
+    p.createdAt,
+    p.updatedAt
 FROM patients p
 JOIN users u ON p.userId = u.id
 LEFT JOIN adherence_records ar ON p.id = ar.patientId
     AND ar.due_at >= NOW() - INTERVAL '30 days'
 WHERE p.deleted_at IS NULL 
     AND u.deleted_at IS NULL
-GROUP BY p.id, u.first_name, u.last_name, u.email, p.created_at, p.updated_at;
+GROUP BY p.id, u.first_name, u.last_name, u.email, p.createdAt, p.updatedAt;
 
 -- Upcoming scheduled events
 CREATE VIEW v_upcoming_events AS
@@ -830,7 +830,7 @@ SELECT
     u_provider.first_name as provider_first_name,
     u_provider.last_name as provider_last_name,
     
-    se.created_at
+    se.createdAt
 FROM scheduled_events se
 JOIN patients p ON se.patientId = p.id
 JOIN users u_patient ON p.userId = u_patient.id

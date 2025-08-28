@@ -53,8 +53,8 @@ interface PatientAPIResponse {
         name: string
         email: string
       } | null
-      created_at: string
-      updated_at: string
+      createdAt: string
+      updatedAt: string
     }
   }
 }
@@ -275,7 +275,7 @@ export default function PatientDetailsPage() {
           adherence_rate: 85, // This will need to be calculated
           critical_alerts: 0, // This will need to be calculated
           status: 'active',
-          created_at: patientData.created_at,
+          createdAt: patientData.createdAt,
           profile_picture_url: ''
         }
         setPatient(transformedPatient)

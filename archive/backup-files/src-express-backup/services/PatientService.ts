@@ -128,7 +128,7 @@ class PatientService {
         // Store clinical data for potential care plan creation
         notes: clinical_notes || '',
         // Additional metadata
-        created_at: new Date()
+        createdAt: new Date()
       }, { transaction });
 
       await transaction.commit();
@@ -213,7 +213,7 @@ class PatientService {
           as: 'patientProfile',
           required: true
         }],
-        order: [['created_at', 'DESC']] // Return most recent if multiple matches
+        order: [['createdAt', 'DESC']] // Return most recent if multiple matches
       });
 
       if (user && user.patientProfile) {
@@ -241,8 +241,8 @@ class PatientService {
             weight_kg: user.patient.weight_kg,
             allergies: user.patient.allergies || [],
             chronic_conditions: user.patient.chronic_conditions || [],
-            created_at: user.created_at,
-            last_updated: user.updated_at
+            createdAt: user.createdAt,
+            last_updated: user.updatedAt
           }
         };
       }

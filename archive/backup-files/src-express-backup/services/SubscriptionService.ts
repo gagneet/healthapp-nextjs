@@ -87,7 +87,7 @@ class SubscriptionService {
       },
       limit,
       offset,
-      order: [['created_at', 'DESC']]
+      order: [['createdAt', 'DESC']]
     });
 
     return plans;

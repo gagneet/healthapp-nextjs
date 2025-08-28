@@ -93,7 +93,7 @@
         "where"
       ],
       "possibleMatches": [
-        "access_granted"
+        "accessGranted"
       ]
     },
     {
@@ -434,7 +434,7 @@
         "property_access"
       ],
       "possibleMatches": [
-        "specialty_focus",
+        "specialtyFocus",
         "specialties"
       ]
     },

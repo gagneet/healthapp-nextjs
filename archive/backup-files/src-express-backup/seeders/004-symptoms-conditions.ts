@@ -37,8 +37,8 @@ export default {
         common_age_groups: JSON.stringify(['adults', 'elderly']),
         gender_specific: 'both',
         isActive: true,
-        created_at: new Date(),
-        updated_at: new Date(),
+        createdAt: new Date(),
+        updatedAt: new Date(),
       },
       {
         id: '550e8400-e29b-41d4-a716-446655440012',
@@ -60,8 +60,8 @@ export default {
         common_age_groups: JSON.stringify(['adults', 'elderly']),
         gender_specific: 'both',
         isActive: true,
-        created_at: new Date(),
-        updated_at: new Date(),
+        createdAt: new Date(),
+        updatedAt: new Date(),
       },
       {
         id: '550e8400-e29b-41d4-a716-446655440013',
@@ -84,8 +84,8 @@ export default {
         common_age_groups: JSON.stringify(['children', 'adults', 'elderly']),
         gender_specific: 'both',
         isActive: true,
-        created_at: new Date(),
-        updated_at: new Date(),
+        createdAt: new Date(),
+        updatedAt: new Date(),
       },
       {
         id: '550e8400-e29b-41d4-a716-446655440014',
@@ -107,8 +107,8 @@ export default {
         common_age_groups: JSON.stringify(['adolescents', 'adults']),
         gender_specific: 'female_predominant',
         isActive: true,
-        created_at: new Date(),
-        updated_at: new Date(),
+        createdAt: new Date(),
+        updatedAt: new Date(),
       },
       {
         id: '550e8400-e29b-41d4-a716-446655440015',
@@ -130,8 +130,8 @@ export default {
         common_age_groups: JSON.stringify(['adolescents', 'adults']),
         gender_specific: 'both',
         isActive: true,
-        created_at: new Date(),
-        updated_at: new Date(),
+        createdAt: new Date(),
+        updatedAt: new Date(),
       }
     ], { ignoreDuplicates: true });
     

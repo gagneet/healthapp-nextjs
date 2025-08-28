@@ -166,7 +166,7 @@ export const GET = withErrorHandling(async (request: NextRequest, { params }: { 
 
       return {
         assignment_id: assignment.id,
-        assignment_type: assignment.assignmentType,
+        assignmentType: assignment.assignmentType,
         is_current_user: isCurrentUserAssignment,
         providers: {
           primary_doctor: assignment.primaryDoctor ? {
@@ -189,14 +189,14 @@ export const GET = withErrorHandling(async (request: NextRequest, { params }: { 
         consent_details: {
           requires_consent: assignment.requiresConsent,
           consent_status: assignment.consentStatus,
-          access_granted: assignment.accessGranted,
+          accessGranted: assignment.accessGranted,
           otp_info: consent ? {
             otp_generated: true,
             is_verified: consent.isVerified,
             is_expired: new Date() > new Date(consent.expiresAt),
             is_blocked: consent.isBlocked,
             verification_attempts: consent.verificationAttempts,
-            created_at: consent.createdAt,
+            createdAt: consent.createdAt,
             expires_at: consent.expiresAt,
             verified_at: consent.verifiedAt
           } : {
@@ -205,8 +205,8 @@ export const GET = withErrorHandling(async (request: NextRequest, { params }: { 
         },
         assignment_info: {
           assignment_reason: assignment.assignmentReason,
-          specialty_focus: assignment.specialtyFocus || [],
-          created_at: assignment.createdAt,
+          specialtyFocus: assignment.specialtyFocus || [],
+          createdAt: assignment.createdAt,
           expires_at: assignment.expiresAt,
           isActive: assignment.isActive,
           notes: assignment.notes
@@ -216,8 +216,8 @@ export const GET = withErrorHandling(async (request: NextRequest, { params }: { 
 
     // Determine overall access status for current user
     const currentUserAssignments = formattedAssignments.filter(a => a.is_current_user)
-    const canAccess = currentUserAssignments.some(a => a.consent_details.access_granted)
-    const requiresConsent = currentUserAssignments.some(a => a.consent_details.requires_consent && !a.consent_details.access_granted)
+    const canAccess = currentUserAssignments.some(a => a.consent_details.accessGranted)
+    const requiresConsent = currentUserAssignments.some(a => a.consent_details.requires_consent && !a.consent_details.accessGranted)
     const hasActiveOtp = currentUserAssignments.some(a => 
       a.consent_details.otp_info.otp_generated && 
       !a.consent_details.otp_info.is_expired && 

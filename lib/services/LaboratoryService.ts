@@ -200,8 +200,8 @@ export class LaboratoryService {
           order_reason: data.orderReason,
           estimated_cost: totalCost,
           estimated_tat_hours: Math.max(...data.testCodes.map(() => 12)), // Mock calculation
-          created_at: new Date(),
-          updated_at: new Date(),
+          createdAt: new Date(),
+          updatedAt: new Date(),
         },
         include: {
           doctor: {
@@ -293,8 +293,8 @@ export class LaboratoryService {
               collected_at: resultsData.collectedAt,
               processed_at: resultsData.processedAt || new Date(),
               reviewed_by: resultsData.reviewedBy,
-              created_at: new Date(),
-              updated_at: new Date(),
+              createdAt: new Date(),
+              updatedAt: new Date(),
             }
           })
         )
@@ -312,7 +312,7 @@ export class LaboratoryService {
           abnormal_results: hasAbnormal,
           critical_results: hasCritical,
           completed_at: new Date(),
-          updated_at: new Date(),
+          updatedAt: new Date(),
         }
       });
 
@@ -384,12 +384,12 @@ export class LaboratoryService {
           },
           results: {
             orderBy: {
-              created_at: 'desc'
+              createdAt: 'desc'
             }
           }
         },
         orderBy: {
-          created_at: 'desc'
+          createdAt: 'desc'
         }
       });
 
@@ -423,7 +423,7 @@ export class LaboratoryService {
           results: {
             orderBy: [
               { test_code: 'asc' },
-              { created_at: 'desc' }
+              { createdAt: 'desc' }
             ]
           }
         }
@@ -543,8 +543,8 @@ export class LaboratoryService {
                 referenceRange: result.reference_range
               },
               requires_action: true,
-              created_at: new Date(),
-              updated_at: new Date(),
+              createdAt: new Date(),
+              updatedAt: new Date(),
             }
           })
         )
@@ -700,7 +700,7 @@ export class LaboratoryService {
           status: 'cancelled',
           cancellation_reason: reason,
           cancelled_at: new Date(),
-          updated_at: new Date(),
+          updatedAt: new Date(),
         }
       });
 

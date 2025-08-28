@@ -40,7 +40,7 @@ class CarePlanController {
             as: 'patient'
           }
         ],
-        order: [['created_at', 'DESC']]
+        order: [['createdAt', 'DESC']]
       });
 
       if (!carePlans.length) {
@@ -94,7 +94,7 @@ class CarePlanController {
           details: {
             clinical_notes: carePlan.details?.clinical_notes || '',
             follow_up_advise: carePlan.details?.follow_up_advise || '',
-            start_date: carePlan.start_date || carePlan.created_at,
+            start_date: carePlan.start_date || carePlan.createdAt,
             diagnosis: carePlan.diagnosis,
             priority: carePlan.priority
           },
@@ -103,8 +103,8 @@ class CarePlanController {
           vital_ids: vitals.map((v: any) => v.id),
           diet_ids: [], // Implement if diet table exists
           workout_ids: [], // Implement if workout table exists
-          created_at: carePlan.created_at,
-          updated_at: carePlan.updated_at
+          createdAt: carePlan.createdAt,
+          updatedAt: carePlan.updatedAt
         };
 
         // Add treatment and condition info if available

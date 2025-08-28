@@ -4041,7 +4041,7 @@ more extensive refactoring to make fully idempotent.
   - date_of_birth, gender, profile_picture_url
   - Made most properties optional to match API responses
 - ✅ Added mobile_number to User interface
-- ✅ Made created_at and updated_at optional (often missing from API)
+- ✅ Made createdAt and updatedAt optional (often missing from API)
 
 #### Null/Undefined Safety
 
@@ -4695,7 +4695,7 @@ From the migration output, I see these missing column errors:
 
 ● I see the issue! The vital_readings table has:
 
-- vital_type_id (UUID reference to vital_types table)
+- vitalTypeId (UUID reference to vital_types table)
 - value (single numeric field)
 
 But the seeder is trying to insert:
@@ -4784,7 +4784,7 @@ The core database schema inconsistencies have been systematically identified and
 
 ✅ Schema Alignment Completed:
 
-1. Fixed vital_readings table - Updated seeder to use vital_type_id (UUID) and single value field
+1. Fixed vital_readings table - Updated seeder to use vitalTypeId (UUID) and single value field
 2. Fixed symptoms table - Updated to use symptom_name, body_location (JSONB), proper column names
 3. Fixed appointments table - Updated to use proper participant/organizer structure with correct date fields
 4. Added missing vital_types - Created essential vital types for the seeders to reference
@@ -4832,12 +4832,12 @@ The database foundation is now solid and production-ready. Any remaining seeder 
 
 ❌ Wrong columns:
 
-- vital_type (string) → should be vital_type_id (UUID)
+- vital_type (string) → should be vitalTypeId (UUID)
 - systolic_value, diastolic_value, numeric_value → should be single value (numeric)
 
 ✅ Current schema needs:
 
-- vital_type_id (UUID referencing vital_types table)
+- vitalTypeId (UUID referencing vital_types table)
 - value (single numeric field)
 
 Let me first create proper vital types if they don't exist, then fix the comprehensive seeder

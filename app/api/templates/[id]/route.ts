@@ -66,8 +66,8 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       category: template.category,
       tags: Array.isArray(template.tags) ? template.tags : [],
       isActive: template.isActive,
-      created_at: template.created_at,
-      updated_at: template.updated_at,
+      createdAt: template.createdAt,
+      updatedAt: template.updatedAt,
       usage_count: template.usage_count || 0,
       creator: template.User ? {
         name: `${template.User.first_name || ''} ${template.User.last_name || ''}`.trim(),
@@ -157,7 +157,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
         category: body.category,
         tags: body.tags || [],
         isActive: body.isActive !== undefined ? body.isActive : true,
-        updated_at: new Date()
+        updatedAt: new Date()
       }
     });
 

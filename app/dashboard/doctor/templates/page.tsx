@@ -27,8 +27,8 @@ interface CareplanTemplate {
   duration_days: number
   isActive: boolean
   created_by: string
-  created_at: string
-  updated_at: string
+  createdAt: string
+  updatedAt: string
   usage_count: number
   components: {
     care_plans: number
@@ -48,8 +48,8 @@ const mockTemplates: CareplanTemplate[] = [
     duration_days: 90,
     isActive: true,
     created_by: 'Dr. Sarah Johnson',
-    created_at: '2025-01-15T10:00:00Z',
-    updated_at: '2025-01-20T14:30:00Z',
+    createdAt: '2025-01-15T10:00:00Z',
+    updatedAt: '2025-01-20T14:30:00Z',
     usage_count: 45,
     components: {
       care_plans: 3,
@@ -67,8 +67,8 @@ const mockTemplates: CareplanTemplate[] = [
     duration_days: 180,
     isActive: true,
     created_by: 'Dr. Michael Chen',
-    created_at: '2025-01-10T09:15:00Z',
-    updated_at: '2025-01-22T11:45:00Z',
+    createdAt: '2025-01-10T09:15:00Z',
+    updatedAt: '2025-01-22T11:45:00Z',
     usage_count: 32,
     components: {
       care_plans: 2,
@@ -86,8 +86,8 @@ const mockTemplates: CareplanTemplate[] = [
     duration_days: 30,
     isActive: true,
     created_by: 'Dr. Emily Rodriguez',
-    created_at: '2025-01-08T16:20:00Z',
-    updated_at: '2025-01-18T09:10:00Z',
+    createdAt: '2025-01-08T16:20:00Z',
+    updatedAt: '2025-01-18T09:10:00Z',
     usage_count: 28,
     components: {
       care_plans: 4,
@@ -105,8 +105,8 @@ const mockTemplates: CareplanTemplate[] = [
     duration_days: 365,
     isActive: true,
     created_by: 'Dr. Sarah Johnson',
-    created_at: '2025-01-05T13:45:00Z',
-    updated_at: '2025-01-15T10:20:00Z',
+    createdAt: '2025-01-05T13:45:00Z',
+    updatedAt: '2025-01-15T10:20:00Z',
     usage_count: 67,
     components: {
       care_plans: 0,
@@ -124,8 +124,8 @@ const mockTemplates: CareplanTemplate[] = [
     duration_days: 120,
     isActive: false,
     created_by: 'Dr. David Williams',
-    created_at: '2023-12-20T11:30:00Z',
-    updated_at: '2025-01-12T15:15:00Z',
+    createdAt: '2023-12-20T11:30:00Z',
+    updatedAt: '2025-01-12T15:15:00Z',
     usage_count: 15,
     components: {
       care_plans: 5,
@@ -192,8 +192,8 @@ export default function CareplanTemplatesPage() {
         ...template,
         id: `${Date.now()}`,
         name: `${template.name} (Copy)`,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
         usage_count: 0
       }
       setTemplates([newTemplate, ...templates])
@@ -392,7 +392,7 @@ export default function CareplanTemplatesPage() {
               </div>
 
               <div className="flex items-center justify-between text-xs text-gray-500 mb-4">
-                <span>Created: {formatDate(template.created_at)}</span>
+                <span>Created: {formatDate(template.createdAt)}</span>
                 <span>By: {template.created_by}</span>
               </div>
 

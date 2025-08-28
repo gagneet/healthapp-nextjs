@@ -112,8 +112,8 @@ CREATE TABLE organizations (
     isActive BOOLEAN DEFAULT TRUE,
     hipaa_covered_entity BOOLEAN DEFAULT TRUE,
     business_associate_agreement JSONB,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    createdAt TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updatedAt TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     deleted_at TIMESTAMP WITH TIME ZONE
 );
 
@@ -157,8 +157,8 @@ CREATE TABLE users (
     hipaa_consent_date TIMESTAMP WITH TIME ZONE,
     
     -- Audit fields
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    createdAt TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updatedAt TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     deleted_at TIMESTAMP WITH TIME ZONE
 );
 
@@ -209,8 +209,8 @@ CREATE TABLE doctors (
     is_available_online BOOLEAN DEFAULT TRUE,
     
     -- Timestamps
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    createdAt TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updatedAt TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     deleted_at TIMESTAMP WITH TIME ZONE
 );
 
@@ -262,8 +262,8 @@ CREATE TABLE hsps (
     is_available BOOLEAN DEFAULT TRUE,
     
     -- Timestamps
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    createdAt TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updatedAt TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     deleted_at TIMESTAMP WITH TIME ZONE
 );
 
@@ -315,8 +315,8 @@ CREATE TABLE patients (
     has_mobility_issues BOOLEAN DEFAULT FALSE,
     
     -- Timestamps
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    createdAt TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updatedAt TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     deleted_at TIMESTAMP WITH TIME ZONE
 );
 
@@ -372,8 +372,8 @@ CREATE TABLE treatment_plans (
     care_team_notes JSONB DEFAULT '[]',
     
     -- Timestamps
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    createdAt TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updatedAt TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     deleted_at TIMESTAMP WITH TIME ZONE
 );
 
@@ -445,8 +445,8 @@ CREATE TABLE care_plans (
     channel_id VARCHAR(255),
     
     -- Timestamps
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    createdAt TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updatedAt TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     deleted_at TIMESTAMP WITH TIME ZONE,
     
     -- Ensure either doctor or HSP created the plan
@@ -546,8 +546,8 @@ CREATE TABLE prescriptions (
     metadata JSONB DEFAULT '{}',
     
     -- Timestamps
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    createdAt TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updatedAt TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     deleted_at TIMESTAMP WITH TIME ZONE,
     
     -- Ensure either doctor or HSP prescribed
@@ -608,8 +608,8 @@ CREATE TABLE notifications (
     personalization_data JSONB DEFAULT '{}',
     
     -- Timestamps
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    createdAt TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updatedAt TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     deleted_at TIMESTAMP WITH TIME ZONE
 );
 
@@ -672,8 +672,8 @@ CREATE TABLE adherence_logs (
     metadata JSONB DEFAULT '{}',
     
     -- Timestamps
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    createdAt TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updatedAt TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     deleted_at TIMESTAMP WITH TIME ZONE
 );
 
@@ -756,8 +756,8 @@ CREATE TABLE lab_results (
     metadata JSONB DEFAULT '{}',
     
     -- Timestamps
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    createdAt TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updatedAt TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     deleted_at TIMESTAMP WITH TIME ZONE,
     
     -- Ensure either doctor or HSP ordered the test
@@ -777,7 +777,7 @@ CREATE TABLE medical_devices (
     
     -- Device Identification
     device_name VARCHAR(255) NOT NULL,
-    device_type VARCHAR(50) NOT NULL,
+    deviceType VARCHAR(50) NOT NULL,
     manufacturer VARCHAR(255) NOT NULL,
     model_number VARCHAR(100) NOT NULL,
     serial_number VARCHAR(100),
@@ -849,8 +849,8 @@ CREATE TABLE medical_devices (
     -- Timestamps
     assigned_date TIMESTAMP WITH TIME ZONE,
     activation_date TIMESTAMP WITH TIME ZONE,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    createdAt TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updatedAt TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     deleted_at TIMESTAMP WITH TIME ZONE
 );
 
@@ -866,7 +866,7 @@ CREATE TABLE audit_logs (
     resource VARCHAR(500) NOT NULL,
     user_role VARCHAR(50),
     phi_accessed BOOLEAN DEFAULT FALSE,
-    access_granted BOOLEAN NOT NULL,
+    accessGranted BOOLEAN NOT NULL,
     denial_reason TEXT,
     
     -- Technical Details
@@ -888,7 +888,7 @@ CREATE TABLE audit_logs (
     
     -- Timestamps (no soft delete)
     timestamp TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    createdAt TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
 -- Legacy tables (keep for backward compatibility during migration)
@@ -902,8 +902,8 @@ CREATE TABLE medications (
     start_date TIMESTAMP WITH TIME ZONE,
     end_date TIMESTAMP WITH TIME ZONE,
     isActive BOOLEAN DEFAULT TRUE,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    createdAt TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updatedAt TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     deleted_at TIMESTAMP WITH TIME ZONE
 );
 
@@ -916,8 +916,8 @@ CREATE TABLE appointments (
     duration_minutes INTEGER DEFAULT 30,
     status appointment_status DEFAULT 'SCHEDULED',
     notes TEXT,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    createdAt TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updatedAt TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     deleted_at TIMESTAMP WITH TIME ZONE
 );
 
@@ -932,8 +932,8 @@ CREATE TABLE vitals (
     recorded_by UUID REFERENCES users(id),
     device_id UUID REFERENCES medical_devices(id),
     notes TEXT,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    createdAt TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updatedAt TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     deleted_at TIMESTAMP WITH TIME ZONE
 );
 
@@ -999,7 +999,7 @@ CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_lab_results_status ON lab_results(st
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_lab_results_critical ON lab_results(has_critical_values);
 
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_medical_devices_patient ON medical_devices(patientId);
-CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_medical_devices_type ON medical_devices(device_type);
+CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_medical_devices_type ON medical_devices(deviceType);
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_medical_devices_status ON medical_devices(status);
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_medical_devices_connected ON medical_devices(is_connected);
 
@@ -1010,16 +1010,16 @@ CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_audit_logs_action ON audit_logs(acti
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_audit_logs_phi ON audit_logs(phi_accessed);
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_audit_logs_retention ON audit_logs(retention_date);
 
--- Create triggers for updated_at timestamps
+-- Create triggers for updatedAt timestamps
 CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS TRIGGER AS $$
 BEGIN
-    NEW.updated_at = NOW();
+    NEW.updatedAt = NOW();
     RETURN NEW;
 END;
 $$ language 'plpgsql';
 
--- Apply triggers to all tables with updated_at
+-- Apply triggers to all tables with updatedAt
 CREATE TRIGGER update_organizations_updated_at BEFORE UPDATE ON organizations FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 CREATE TRIGGER update_users_updated_at BEFORE UPDATE ON users FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 CREATE TRIGGER update_doctors_updated_at BEFORE UPDATE ON doctors FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();

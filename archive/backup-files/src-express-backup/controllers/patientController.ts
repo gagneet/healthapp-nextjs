@@ -104,8 +104,8 @@ class PatientController {
             consent_given: patient.provider_consent_given,
             data_sharing_consent: patient.privacy_settings?.data_sharing_consent || false,
             activated_on: patient.user.activated_on,
-            created_at: patient.created_at,
-            updated_at: patient.updated_at,
+            createdAt: patient.createdAt,
+            updatedAt: patient.updatedAt,
             
             // Relationships
             primary_doctor: patient.primaryCareDoctor ? {
@@ -243,7 +243,7 @@ class PatientController {
    */
   async getPatients(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { search, filter = {}, sortBy = 'created_at', sortOrder = 'desc' } = req.query;
+      const { search, filter = {}, sortBy = 'createdAt', sortOrder = 'desc' } = req.query;
 
       // Use PatientAccessService for provider-aware patient access
       if (req.userCategory === USER_CATEGORIES.DOCTOR || req.userCategory === USER_CATEGORIES.HSP) {
@@ -270,7 +270,7 @@ class PatientController {
             patient_type_label: 'Primary Patient',
             requires_consent: false,
             consent_status: 'not_required',
-            access_granted: true,
+            accessGranted: true,
             can_view: true
           });
         });
@@ -281,7 +281,7 @@ class PatientController {
             ...patient,
             patient_type: 'R', // Referred/Secondary
             patient_type_label: 'Secondary Patient',
-            can_view: patient.access_granted
+            can_view: patient.accessGranted
           });
         });
 
@@ -314,12 +314,12 @@ class PatientController {
               access_type: patient.access_type,
               requires_consent: patient.requires_consent,
               consent_status: patient.consent_status || 'not_required',
-              access_granted: patient.access_granted,
+              accessGranted: patient.accessGranted,
               can_view: patient.can_view,
               same_provider: patient.same_provider || false,
               assignment_id: patient.assignment_id || null,
               assignment_reason: patient.assignment_reason || null,
-              specialty_focus: patient.specialty_focus || [],
+              specialtyFocus: patient.specialtyFocus || [],
               // Provider information
               primary_doctor_provider: patient.primary_doctor_provider || null,
               secondary_doctor_provider: patient.secondary_doctor_provider || null
@@ -408,7 +408,7 @@ class PatientController {
                 `${user.patientProfile.primaryCareDoctor.user.first_name || ''} ${user.patientProfile.primaryCareDoctor.user.last_name || ''}`.trim() : null
             },
             patient_type: 'M',
-            access_granted: true,
+            accessGranted: true,
             can_view: true
           };
           return acc;
@@ -600,7 +600,7 @@ class PatientController {
       const whereClause: any = { patientId: patient.id };
       
       if (startDate && endDate) {
-        whereClause.created_at = {
+        whereClause.createdAt = {
           [Op.between]: [new Date(startDate as string), new Date(endDate as string)]
         };
       }
@@ -619,7 +619,7 @@ class PatientController {
             attributes: ['medication_name', 'dosage']
           }
         ],
-        order: [['created_at', 'DESC']],
+        order: [['createdAt', 'DESC']],
         limit: parseInt(limit as string)
       }) || [];
 
@@ -632,7 +632,7 @@ class PatientController {
         actual_time: event.actual_time,
         status: event.status,
         notes: event.notes,
-        created_at: event.created_at
+        createdAt: event.createdAt
       }));
 
       res.status(200).json(ResponseFormatter.success(
@@ -749,7 +749,7 @@ class PatientController {
         secondary_doctor_id, 
         secondary_hsp_id, 
         assignment_reason, 
-        specialty_focus,
+        specialtyFocus,
         consent_method = 'sms'
       } = req.body;
 
@@ -792,7 +792,7 @@ class PatientController {
         secondary_doctor_id: secondary_doctor_id || null,
         secondary_hsp_id: secondary_hsp_id || null,
         assignment_reason: assignment_reason || 'Care coordination',
-        specialty_focus: specialty_focus || [],
+        specialtyFocus: specialtyFocus || [],
         otp_code: otp,
         consent_method,
         expires_at: expiresAt,
@@ -881,7 +881,7 @@ class PatientController {
         secondary_doctor_id: consentRequest.secondary_doctor_id,
         secondary_hsp_id: consentRequest.secondary_hsp_id,
         assignment_reason: consentRequest.assignment_reason,
-        specialty_focus: consentRequest.specialty_focus,
+        specialtyFocus: consentRequest.specialtyFocus,
         assignment_status: 'active',
         consent_given: true,
         consent_given_at: new Date(),
@@ -978,7 +978,7 @@ class PatientController {
             secondary_doctor: assignment.secondaryDoctor ? 
               `${assignment.secondaryDoctor.user.first_name} ${assignment.secondaryDoctor.user.last_name}` : null,
             assignment_reason: assignment.assignment_reason,
-            specialty_focus: assignment.specialty_focus,
+            specialtyFocus: assignment.specialtyFocus,
             consent_given_at: assignment.consent_given_at
           })),
           pending_requests: pendingRequests.length,

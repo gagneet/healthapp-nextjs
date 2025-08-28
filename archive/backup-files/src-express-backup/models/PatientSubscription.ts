@@ -83,12 +83,12 @@ export default (sequelize: any, DataTypes: any) => {
       type: DataTypes.JSON,
       defaultValue: {},
     },
-    created_at: {
+    createdAt: {
       type: DataTypes.DATE,
       allowNull: false,
       defaultValue: DataTypes.NOW,
     },
-    updated_at: {
+    updatedAt: {
       type: DataTypes.DATE,
       allowNull: false,
       defaultValue: DataTypes.NOW,

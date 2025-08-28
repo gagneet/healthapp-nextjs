@@ -210,7 +210,7 @@ export async function PUT(
 
     // Prepare update data
     const updateData: any = {
-      updated_at: new Date()
+      updatedAt: new Date()
     };
 
     if (status !== undefined) updateData.status = status;
@@ -234,7 +234,7 @@ export async function PUT(
             last_payment_date: new Date(),
             last_payment_amount: existingPayment.amount,
             failure_count: 0, // Reset failure count on successful payment
-            updated_at: new Date()
+            updatedAt: new Date()
           }
         });
       }
@@ -377,7 +377,7 @@ export async function DELETE(
         refund_amount: currentRefunds + amount,
         refund_reason,
         status: currentRefunds + amount >= existingPayment.amount ? 'refunded' : 'partially_refunded',
-        updated_at: new Date()
+        updatedAt: new Date()
       }
     });
 

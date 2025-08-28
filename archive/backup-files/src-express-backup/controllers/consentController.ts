@@ -58,7 +58,7 @@ class ConsentController {
         secondary_doctor_id, 
         secondary_hsp_id,
         assignment_reason,
-        specialty_focus = [],
+        specialtyFocus = [],
         care_plan_ids = []
       } = req.body;
 
@@ -109,7 +109,7 @@ class ConsentController {
 
       const assignmentData = {
         reason: assignment_reason || 'Secondary care referral',
-        specialty_focus,
+        specialtyFocus,
         care_plan_ids
       };
 
@@ -126,7 +126,7 @@ class ConsentController {
           requires_consent: result.requires_consent,
           same_provider: result.same_provider,
           consent_status: result.assignment.consent_status,
-          access_granted: result.assignment.access_granted
+          accessGranted: result.assignment.accessGranted
         },
         result.same_provider ? 
           'Secondary doctor assigned successfully with automatic access' :
@@ -227,7 +227,7 @@ class ConsentController {
       if (result.success) {
         res.status(200).json(ResponseFormatter.success(
           {
-            access_granted: result.access_granted,
+            accessGranted: result.accessGranted,
             verified_at: result.verified_at,
             assignment_id: accessCheck.assignment_id
           },

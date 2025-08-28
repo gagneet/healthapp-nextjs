@@ -37,7 +37,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
     specialityId: z.string().optional(),
     searchQuery: z.string().optional(),
     diagnosisCategory: z.string().optional(),
-    sortBy: z.string().default('created_at'),
+    sortBy: z.string().default('createdAt'),
     sortOrder: z.enum(['asc', 'desc']).default('desc')
   })
 
@@ -47,7 +47,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
     specialityId: searchParams.get('speciality_id') || undefined,
     searchQuery: searchParams.get('search') || undefined,
     diagnosisCategory: searchParams.get('diagnosis_category') || undefined,
-    sortBy: searchParams.get('sortBy') || 'created_at',
+    sortBy: searchParams.get('sortBy') || 'createdAt',
     sortOrder: searchParams.get('sortOrder') || 'desc'
   })
 

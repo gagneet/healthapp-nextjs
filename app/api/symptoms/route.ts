@@ -40,7 +40,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
   const paginationResult = PaginationSchema.safeParse({
     page: parseInt(searchParams.get('page') || '1'),
     limit: parseInt(searchParams.get('limit') || '20'),
-    sortBy: searchParams.get('sortBy') || 'created_at',
+    sortBy: searchParams.get('sortBy') || 'createdAt',
     sortOrder: searchParams.get('sortOrder') || 'desc'
   })
 
@@ -130,7 +130,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
       skip,
       take: limit,
       orderBy: {
-        [sortBy === 'createdAt' ? 'created_at' : sortBy as string]: sortOrder as 'asc' | 'desc'
+        [sortBy === 'createdAt' ? 'createdAt' : sortBy as string]: sortOrder as 'asc' | 'desc'
       },
       include: {
         patient: {
@@ -165,8 +165,8 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
       triggers: record.triggers || [],
       relievingFactors: record.relieving_factors || [],
       associatedSymptoms: record.associated_symptoms || [],
-      createdAt: record.created_at,
-      updatedAt: record.updated_at
+      createdAt: record.createdAt,
+      updatedAt: record.updatedAt
     }))
 
     return createSuccessResponse(
@@ -253,8 +253,8 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
         onset_time: symptomData.onsetDate ? new Date(symptomData.onsetDate) : new Date(),
         recorded_at: new Date(),
         triggers: [],
-        created_at: new Date(),
-        updated_at: new Date()
+        createdAt: new Date(),
+        updatedAt: new Date()
       },
       include: {
         patient: {
@@ -287,7 +287,7 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
       severity: symptomRecord.severity,
       triggers: symptomRecord.triggers,
       recordedAt: symptomRecord.recorded_at,
-      createdAt: symptomRecord.created_at
+      createdAt: symptomRecord.createdAt
     }
 
     // TODO: Send alerts for severe symptoms to healthcare providers
