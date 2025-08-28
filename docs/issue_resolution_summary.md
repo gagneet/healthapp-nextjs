@@ -84,7 +84,7 @@ I have successfully completed the comprehensive testing and fixes for the schema
 1. AdherenceRecord Model Issues:
     - Fixed Patient: → patient: relationship field references
     - Fixed User: → user: relationship field references
-    - Fixed invalid adherence_score field usage (replaced with proper completion logic)
+    - Fixed invalid adherenceScore field usage (replaced with proper completion logic)
 2. Appointment Model Issues:
     - Fixed appointment_date → start_date field references
     - Removed non-existent status field from queries
@@ -808,7 +808,7 @@ points to the properly compiled lib/seed.cjs file.
 - ✅ CarePlan Components properly structured:
     - Medication Reminders (via prescribed_medications relationship)
     - Appointments (via scheduled_events)
-    - Vital Requirements (via vital_requirements)
+    - Vital Requirements (via vitalRequirements)
     - Patient-Reported Symptoms
     - Care Provider info (Doctor or HSP)
 

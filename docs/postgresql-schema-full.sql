@@ -525,7 +525,7 @@ CREATE TABLE vitals (
     systolic_value DECIMAL(5,2),
     diastolic_value DECIMAL(5,2),
     recorded_by UUID REFERENCES users(id),
-    recorded_at TIMESTAMPTZ NOT NULL,
+    recordedAt TIMESTAMPTZ NOT NULL,
     device_info JSON,
     measurement_context JSON DEFAULT '{}',
     is_critical BOOLEAN DEFAULT FALSE,
@@ -920,7 +920,7 @@ CREATE INDEX idx_appointments_date ON appointments(scheduled_start_time::date);
 
 CREATE INDEX idx_vitals_patient_id ON vitals(patientId);
 CREATE INDEX idx_vitals_vital_template_id ON vitals(vital_template_id);
-CREATE INDEX idx_vitals_recorded_at ON vitals(recorded_at);
+CREATE INDEX idx_vitals_recorded_at ON vitals(recordedAt);
 CREATE INDEX idx_vitals_is_critical ON vitals(is_critical);
 
 CREATE INDEX idx_care_plans_patient_id ON care_plans(patientId);
@@ -1092,7 +1092,7 @@ SELECT
     du.first_name as primary_doctor_first_name,
     du.last_name as primary_doctor_last_name,
     COUNT(m.id) as active_medications,
-    MAX(v.recorded_at) as last_vital_recorded,
+    MAX(v.recordedAt) as last_vital_recorded,
     COUNT(CASE WHEN a.status = 'SCHEDULED' AND a.scheduled_start_time > NOW() THEN 1 END) as upcoming_appointments
 FROM patients p
 JOIN users u ON p.userId = u.id

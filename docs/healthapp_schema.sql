@@ -336,7 +336,7 @@ CREATE TABLE vital_types (
 );
 
 -- Vital Requirements in care plans
-CREATE TABLE vital_requirements (
+CREATE TABLE vitalRequirements (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     care_plan_id UUID NOT NULL REFERENCES care_plans(id),
     vitalTypeId UUID NOT NULL REFERENCES vital_types(id),
@@ -432,7 +432,7 @@ CREATE TABLE adherence_records (
     -- Adherence details
     adherence_type event_type NOT NULL,
     due_at TIMESTAMPTZ NOT NULL,
-    recorded_at TIMESTAMPTZ,
+    recordedAt TIMESTAMPTZ,
     
     -- Adherence status
     is_completed BOOLEAN DEFAULT false,
@@ -465,7 +465,7 @@ CREATE TABLE vital_readings (
     -- Context
     readingTime TIMESTAMPTZ NOT NULL,
     device_info JSONB DEFAULT '{}',
-    is_flagged BOOLEAN DEFAULT false,
+    isFlagged BOOLEAN DEFAULT false,
     
     -- Notes and attachments
     notes TEXT,
@@ -494,7 +494,7 @@ CREATE TABLE symptoms (
     
     -- Timing
     onset_time TIMESTAMPTZ,
-    recorded_at TIMESTAMPTZ DEFAULT NOW(),
+    recordedAt TIMESTAMPTZ DEFAULT NOW(),
     
     -- Additional data
     triggers JSONB DEFAULT '[]',
@@ -798,7 +798,7 @@ SELECT
     ) as adherence_percentage,
     
     -- Recent activity
-    MAX(ar.recorded_at) as last_activity,
+    MAX(ar.recordedAt) as last_activity,
     
     p.createdAt,
     p.updatedAt

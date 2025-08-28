@@ -11,7 +11,7 @@ interface Symptom {
   y: number
   description?: string
   onset_time: string
-  recorded_at: string
+  recordedAt: string
   body_part?: string
   status?: 'active' | 'resolved' | 'improving' | 'worsening'
 }

@@ -334,7 +334,7 @@ CREATE TABLE medication_adherence_analytics (
     id INT PRIMARY KEY AUTO_INCREMENT,
     patientId INT,
     medication_id INT,
-    adherence_score DECIMAL(5,2), -- 0-100%
+    adherenceScore DECIMAL(5,2), -- 0-100%
     mmas_score DECIMAL(3,1), -- 0-8 scale
     risk_level ENUM('LOW', 'MEDIUM', 'HIGH', 'CRITICAL'),
     prediction_confidence DECIMAL(5,2),
@@ -425,7 +425,7 @@ CREATE TABLE food_intake_logs (
     -- Adherence tracking
     within_eating_window BOOLEAN,
     meets_plan_requirements BOOLEAN,
-    adherence_score DECIMAL(5,2),
+    adherenceScore DECIMAL(5,2),
     
     -- Patient feedback
     satisfaction_rating INT, -- 1-5 scale
@@ -562,7 +562,7 @@ CREATE TABLE exercise_sessions (
     -- Compliance tracking
     completed_as_prescribed BOOLEAN,
     modifications_made TEXT,
-    adherence_score DECIMAL(5,2),
+    adherenceScore DECIMAL(5,2),
     
     -- Patient feedback
     effort_level INT, -- 1-5 scale
@@ -1090,7 +1090,7 @@ CREATE TABLE care_plan_outcomes (
     measurement_date DATE NOT NULL,
     
     -- Overall adherence scores
-    overall_adherence_score DECIMAL(5,2),
+    overallAdherenceScore DECIMAL(5,2),
     medication_adherence_score DECIMAL(5,2),
     appointment_adherence_score DECIMAL(5,2),
     diet_adherence_score DECIMAL(5,2),
@@ -1935,13 +1935,13 @@ SELECT
     AVG(pa.appointment_adherence_score) as avg_appointment_adherence,
     AVG(pa.diet_adherence_score) as avg_diet_adherence,
     AVG(pa.exercise_adherence_score) as avg_exercise_adherence,
-    AVG(pa.overall_adherence_score) as avg_overall_adherence,
+    AVG(pa.overallAdherenceScore) as avg_overall_adherence,
     
     -- Risk stratification
     CASE 
-        WHEN AVG(pa.overall_adherence_score) >= 85 THEN 'LOW_RISK'
-        WHEN AVG(pa.overall_adherence_score) >= 70 THEN 'MEDIUM_RISK'
-        WHEN AVG(pa.overall_adherence_score) >= 50 THEN 'HIGH_RISK'
+        WHEN AVG(pa.overallAdherenceScore) >= 85 THEN 'LOW_RISK'
+        WHEN AVG(pa.overallAdherenceScore) >= 70 THEN 'MEDIUM_RISK'
+        WHEN AVG(pa.overallAdherenceScore) >= 50 THEN 'HIGH_RISK'
         ELSE 'CRITICAL_RISK'
     END as risk_level,
     

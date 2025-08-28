@@ -811,7 +811,7 @@
     "treatment_database",
     "treatment_plans",
     "user_roles",
-    "vital_requirements",
+    "vitalRequirements",
     "vital_templates",
     "vitals"
   ],

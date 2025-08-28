@@ -591,7 +591,7 @@ vital_protocols: {
 // Emergency Response System
 vital_alerts: {
   patientId: int,
-  vital_type: enum,              // BP, glucose, temperature, etc.
+  vitalType: enum,              // BP, glucose, temperature, etc.
   critical_value: decimal,
   alert_level: enum,             // WARNING, CRITICAL, EMERGENCY
   response_protocol: json,        // Automated response steps
@@ -742,7 +742,7 @@ CREATE TABLE vital_protocols (
     id INT PRIMARY KEY AUTO_INCREMENT,
     patientId INT,
     condition_id INT,
-    vital_type ENUM('BP', 'GLUCOSE', 'TEMPERATURE', 'WEIGHT', 'HEART_RATE'),
+    vitalType ENUM('BP', 'GLUCOSE', 'TEMPERATURE', 'WEIGHT', 'HEART_RATE'),
     normalRangeMin DECIMAL(8,2),
     normalRangeMax DECIMAL(8,2),
     critical_low DECIMAL(8,2),
@@ -900,7 +900,7 @@ const PatientSchema = {
   current_medications: { type: Array, default: [] },
   
   // Adherence Tracking
-  adherence_score: { type: Number, default: 0 },
+  adherenceScore: { type: Number, default: 0 },
   last_activity: { type: Date },
   
   // Privacy and Consent
@@ -951,7 +951,7 @@ class VitalSignsService {
   async recordVital(patientId, vitalType, value, recordedAt) {
     // Get patient's vital protocols
     const protocols = await VitalProtocol.findAll({
-      where: { patientId: patientId, vital_type: vitalType }
+      where: { patientId: patientId, vitalType: vitalType }
     });
     
     // Check against normal ranges
@@ -965,7 +965,7 @@ class VitalSignsService {
     }).filter(Boolean);
     
     // Save vital and trigger alerts if needed
-    const vital = await Vital.create({ patientId: patientId, type: vitalType, value, recorded_at: recordedAt });
+    const vital = await Vital.create({ patientId: patientId, type: vitalType, value, recordedAt: recordedAt });
     
     if (alerts.length > 0) {
       await this.triggerVitalAlerts(patientId, alerts);

@@ -82,7 +82,7 @@ Current: Basic vital templatesSchema: Clinical vital signs system
 Missing:
 
 - vital_types with normal/critical ranges
-- vital_requirements as part of care plans
+- vitalRequirements as part of care plans
 - vital_readings with trend analysis
 - Critical alert thresholds
 - Device integration support

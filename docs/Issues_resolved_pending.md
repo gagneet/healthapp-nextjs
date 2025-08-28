@@ -4700,7 +4700,7 @@ From the migration output, I see these missing column errors:
 
 But the seeder is trying to insert:
 
-- vital_type (string field that doesn't exist)
+- vitalType (string field that doesn't exist)
 - systolic_value, diastolic_value, numeric_value (fields that don't exist)
 
 The seeder needs to be fixed to match the actual table schema. This is a more complex issue where the seeder data structure doesn't match the database schema.
@@ -4832,7 +4832,7 @@ The database foundation is now solid and production-ready. Any remaining seeder 
 
 ❌ Wrong columns:
 
-- vital_type (string) → should be vitalTypeId (UUID)
+- vitalType (string) → should be vitalTypeId (UUID)
 - systolic_value, diastolic_value, numeric_value → should be single value (numeric)
 
 ✅ Current schema needs:

@@ -73,7 +73,7 @@ const mockVitalReadings: VitalReading[] = [
     value: 140,
     unit: 'mmHg',
     readingTime: '2025-01-22T08:30:00Z',
-    is_flagged: true,
+    isFlagged: true,
     normal_range: { min: 90, max: 120 },
   },
   {
@@ -82,7 +82,7 @@ const mockVitalReadings: VitalReading[] = [
     value: 125,
     unit: 'mg/dL',
     readingTime: '2025-01-22T09:00:00Z',
-    is_flagged: false,
+    isFlagged: false,
     normal_range: { min: 70, max: 140 },
   },
 ]
@@ -117,7 +117,7 @@ const symptoms = [
     severity: 6,
     description: 'Persistent headache, especially in the morning',
     onset_time: '2025-01-20T06:00:00Z',
-    recorded_at: '2025-01-20T08:00:00Z',
+    recordedAt: '2025-01-20T08:00:00Z',
     x: 50, // Head position (2D)
     y: 8,
     z: 0, // Front of head (3D)
@@ -130,7 +130,7 @@ const symptoms = [
     severity: 8,
     description: 'Sharp chest pain, worse with deep breathing',
     onset_time: '2025-01-19T14:30:00Z',
-    recorded_at: '2025-01-19T15:00:00Z',
+    recordedAt: '2025-01-19T15:00:00Z',
     x: 50, // Chest position (2D)
     y: 25,
     z: 0.2, // Front of chest (3D)
@@ -143,7 +143,7 @@ const symptoms = [
     severity: 5,
     description: 'Lower back pain, aching sensation',
     onset_time: '2025-01-18T10:00:00Z',
-    recorded_at: '2025-01-18T10:15:00Z',
+    recordedAt: '2025-01-18T10:15:00Z',
     x: 50, // Back position (2D)
     y: 40,
     z: -0.3, // Back of torso (3D)
@@ -156,7 +156,7 @@ const symptoms = [
     severity: 4,
     description: 'Right knee pain when walking',
     onset_time: '2025-01-17T16:20:00Z',
-    recorded_at: '2025-01-17T18:00:00Z',
+    recordedAt: '2025-01-17T18:00:00Z',
     x: 60, // Right knee position (2D)
     y: 80,
     z: 0.1, // Right side (3D)
@@ -169,7 +169,7 @@ const symptoms = [
     severity: 3,
     description: 'Left shoulder stiffness and mild pain',
     onset_time: '2025-01-16T09:15:00Z',
-    recorded_at: '2025-01-16T11:30:00Z',
+    recordedAt: '2025-01-16T11:30:00Z',
     x: 35, // Left shoulder position (2D)
     y: 22,
     z: 0.1, // Left side (3D)
@@ -182,7 +182,7 @@ const symptoms = [
     severity: 7,
     description: 'Sharp abdominal pain in upper right quadrant',
     onset_time: '2025-01-15T12:45:00Z',
-    recorded_at: '2025-01-15T13:00:00Z',
+    recordedAt: '2025-01-15T13:00:00Z',
     x: 55, // Abdomen position (2D)
     y: 45,
     z: 0.2, // Front of abdomen (3D)

@@ -31,7 +31,7 @@ const FIELD_MAPPINGS = {
   'medication_id': 'medication_id',
   'vital_template_id': 'vital_template_id',
   'reading_date': 'readingTime',       // Actual field name in schema
-  'recorded_by': 'recorded_at',         // Use timestamp instead
+  'recorded_by': 'recordedAt',         // Use timestamp instead
   
   // Relationship corrections
   'primary_doctor': 'doctors',          // Actual relationship name

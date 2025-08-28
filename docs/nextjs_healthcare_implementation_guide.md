@@ -221,7 +221,7 @@ CREATE TABLE patient_medications (
     end_date DATE,
     instructions TEXT,
     isActive BOOLEAN DEFAULT true,
-    adherence_score DECIMAL(5,2) DEFAULT 0,
+    adherenceScore DECIMAL(5,2) DEFAULT 0,
     createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -238,7 +238,7 @@ CREATE TYPE vital_sign_type AS ENUM (
 CREATE TABLE vital_sign_protocols (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     patientId UUID REFERENCES patients(id) ON DELETE CASCADE,
-    vital_type vital_sign_type NOT NULL,
+    vitalType vital_sign_type NOT NULL,
     normalRangeMin DECIMAL(8,2),
     normalRangeMax DECIMAL(8,2),
     critical_low DECIMAL(8,2),
@@ -253,7 +253,7 @@ CREATE TABLE vital_sign_protocols (
 CREATE TABLE vital_sign_readings (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     patientId UUID REFERENCES patients(id) ON DELETE CASCADE,
-    vital_type vital_sign_type NOT NULL,
+    vitalType vital_sign_type NOT NULL,
     value_primary DECIMAL(8,2) NOT NULL, -- systolic BP, temperature, etc.
     value_secondary DECIMAL(8,2), -- diastolic BP
     unit VARCHAR(20) NOT NULL,

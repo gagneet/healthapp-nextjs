@@ -763,7 +763,7 @@ CREATE TABLE public.adherence_records (
     scheduled_event_id uuid,
     adherence_type public.enum_adherence_records_adherence_type NOT NULL,
     due_at timestamp(6) with time zone NOT NULL,
-    recorded_at timestamp(6) with time zone,
+    recordedAt timestamp(6) with time zone,
     is_completed boolean DEFAULT false,
     is_partial boolean DEFAULT false,
     is_missed boolean DEFAULT false,
@@ -1843,7 +1843,7 @@ CREATE TABLE public.patients (
     primary_care_hsp_id uuid,
     care_coordinator_id uuid,
     care_coordinator_type character varying(10),
-    overall_adherence_score numeric(5,2),
+    overallAdherenceScore numeric(5,2),
     last_adherence_calculation timestamp(6) with time zone,
     total_appointments integer DEFAULT 0,
     missed_appointments integer DEFAULT 0,
@@ -2119,7 +2119,7 @@ CREATE TABLE public.symptoms (
     description text,
     body_location jsonb DEFAULT '{}'::jsonb,
     onset_time timestamp(6) with time zone,
-    recorded_at timestamp(6) with time zone,
+    recordedAt timestamp(6) with time zone,
     triggers jsonb DEFAULT '[]'::jsonb,
     relieving_factors jsonb DEFAULT '[]'::jsonb,
     associated_symptoms jsonb DEFAULT '[]'::jsonb,
@@ -2353,7 +2353,7 @@ CREATE TABLE public.video_consultations (
 
 CREATE TABLE public.vital_alert_rules (
     id uuid NOT NULL,
-    vital_type character varying(100) NOT NULL,
+    vitalType character varying(100) NOT NULL,
     isActive boolean DEFAULT true NOT NULL,
     created_by uuid,
     createdAt timestamp(6) with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
@@ -2389,7 +2389,7 @@ CREATE TABLE public.vital_readings (
     unit character varying(20),
     readingTime timestamp(6) with time zone NOT NULL,
     device_info jsonb DEFAULT '{}'::jsonb,
-    is_flagged boolean DEFAULT false,
+    isFlagged boolean DEFAULT false,
     notes text,
     attachments jsonb DEFAULT '[]'::jsonb,
     is_validated boolean DEFAULT false,
@@ -2408,10 +2408,10 @@ CREATE TABLE public.vital_readings (
 
 
 --
--- Name: vital_requirements; Type: TABLE; Schema: public; Owner: -
+-- Name: vitalRequirements; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE public.vital_requirements (
+CREATE TABLE public.vitalRequirements (
     id uuid NOT NULL,
     care_plan_id uuid NOT NULL,
     vital_type_id uuid NOT NULL,
@@ -3004,10 +3004,10 @@ ALTER TABLE ONLY public.vital_readings
 
 
 --
--- Name: vital_requirements vital_requirements_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+-- Name: vitalRequirements vital_requirements_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY public.vital_requirements
+ALTER TABLE ONLY public.vitalRequirements
     ADD CONSTRAINT vital_requirements_pkey PRIMARY KEY (id);
 
 
@@ -3760,7 +3760,7 @@ CREATE UNIQUE INDEX hsps_user_id ON public.hsps USING btree (userId);
 -- Name: idx_adherence_event_status_completed; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX idx_adherence_event_status_completed ON public.adherence_records USING btree (scheduled_event_id, is_completed, recorded_at);
+CREATE INDEX idx_adherence_event_status_completed ON public.adherence_records USING btree (scheduled_event_id, is_completed, recordedAt);
 
 
 --
@@ -4887,14 +4887,14 @@ CREATE INDEX symptoms_patient_id ON public.symptoms USING btree (patientId);
 -- Name: symptoms_patient_id_recorded_at; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX symptoms_patient_id_recorded_at ON public.symptoms USING btree (patientId, recorded_at);
+CREATE INDEX symptoms_patient_id_recorded_at ON public.symptoms USING btree (patientId, recordedAt);
 
 
 --
 -- Name: symptoms_recorded_at; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX symptoms_recorded_at ON public.symptoms USING btree (recorded_at);
+CREATE INDEX symptoms_recorded_at ON public.symptoms USING btree (recordedAt);
 
 
 --
@@ -5188,7 +5188,7 @@ CREATE INDEX vital_alert_rules_alert_level_idx ON public.vital_alert_rules USING
 -- Name: vital_alert_rules_vital_type_is_active_idx; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX vital_alert_rules_vital_type_is_active_idx ON public.vital_alert_rules USING btree (vital_type, isActive);
+CREATE INDEX vital_alert_rules_vital_type_is_active_idx ON public.vital_alert_rules USING btree (vitalType, isActive);
 
 
 --
@@ -5209,7 +5209,7 @@ CREATE INDEX vital_readings_blood_pressure_idx ON public.vital_readings USING bt
 -- Name: vital_readings_is_flagged; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX vital_readings_is_flagged ON public.vital_readings USING btree (is_flagged);
+CREATE INDEX vital_readings_is_flagged ON public.vital_readings USING btree (isFlagged);
 
 
 --
@@ -5251,28 +5251,28 @@ CREATE INDEX vital_readings_vital_type_id ON public.vital_readings USING btree (
 -- Name: vital_requirements_care_plan_id; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX vital_requirements_care_plan_id ON public.vital_requirements USING btree (care_plan_id);
+CREATE INDEX vital_requirements_care_plan_id ON public.vitalRequirements USING btree (care_plan_id);
 
 
 --
 -- Name: vital_requirements_frequency; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX vital_requirements_frequency ON public.vital_requirements USING btree (frequency);
+CREATE INDEX vital_requirements_frequency ON public.vitalRequirements USING btree (frequency);
 
 
 --
 -- Name: vital_requirements_is_critical; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX vital_requirements_is_critical ON public.vital_requirements USING btree (is_critical);
+CREATE INDEX vital_requirements_is_critical ON public.vitalRequirements USING btree (is_critical);
 
 
 --
 -- Name: vital_requirements_vital_type_id; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX vital_requirements_vital_type_id ON public.vital_requirements USING btree (vital_type_id);
+CREATE INDEX vital_requirements_vital_type_id ON public.vitalRequirements USING btree (vital_type_id);
 
 
 --
@@ -6416,18 +6416,18 @@ ALTER TABLE ONLY public.vital_readings
 
 
 --
--- Name: vital_requirements vital_requirements_care_plan_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: vitalRequirements vital_requirements_care_plan_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY public.vital_requirements
+ALTER TABLE ONLY public.vitalRequirements
     ADD CONSTRAINT vital_requirements_care_plan_id_fkey FOREIGN KEY (care_plan_id) REFERENCES public.care_plans(id);
 
 
 --
--- Name: vital_requirements vital_requirements_vital_type_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: vitalRequirements vital_requirements_vital_type_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY public.vital_requirements
+ALTER TABLE ONLY public.vitalRequirements
     ADD CONSTRAINT vital_requirements_vital_type_id_fkey FOREIGN KEY (vital_type_id) REFERENCES public.vital_types(id);
 
 

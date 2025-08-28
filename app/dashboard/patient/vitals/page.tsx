@@ -17,10 +17,10 @@ import {
 
 interface VitalReading {
   id: string
-  vital_type: string
+  vitalType: string
   value: number
   unit: string
-  recorded_at: string
+  recordedAt: string
   status: 'normal' | 'warning' | 'critical'
   notes?: string
   systolic?: number
@@ -28,7 +28,7 @@ interface VitalReading {
 }
 
 interface VitalTrend {
-  vital_type: string
+  vitalType: string
   current: number
   previous: number
   change: number
@@ -127,7 +127,7 @@ export default function VitalsPage() {
   }
 
   const formatVitalValue = (vital: VitalReading) => {
-    if (vital.vital_type === 'blood_pressure' && vital.systolic && vital.diastolic) {
+    if (vital.vitalType === 'blood_pressure' && vital.systolic && vital.diastolic) {
       return `${vital.systolic}/${vital.diastolic} ${vital.unit}`
     }
     return `${vital.value} ${vital.unit}`
@@ -173,11 +173,11 @@ export default function VitalsPage() {
           <h2 className="text-lg font-semibold text-gray-900 mb-4">Recent Trends</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {trends.slice(0, 3).map((trend) => (
-              <div key={trend.vital_type} className="bg-white rounded-lg border border-gray-200 p-4">
+              <div key={trend.vitalType} className="bg-white rounded-lg border border-gray-200 p-4">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-gray-900 capitalize">
-                      {trend.vital_type.replace('_', ' ')}
+                      {trend.vitalType.replace('_', ' ')}
                     </p>
                     <p className="text-2xl font-bold text-gray-900">{trend.current}</p>
                     <p className="text-xs text-gray-500">vs previous: {trend.previous}</p>
@@ -225,7 +225,7 @@ export default function VitalsPage() {
                     <div className="flex-1">
                       <div className="flex items-center">
                         <h4 className="text-sm font-medium text-gray-900 capitalize">
-                          {vital.vital_type.replace('_', ' ')}
+                          {vital.vitalType.replace('_', ' ')}
                         </h4>
                         <span className={`ml-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(vital.status)}`}>
                           {getStatusIcon(vital.status)}
@@ -238,10 +238,10 @@ export default function VitalsPage() {
                         </span>
                         <span className="mr-4">•</span>
                         <CalendarIcon className="w-4 h-4 mr-1" />
-                        {new Date(vital.recorded_at).toLocaleDateString()}
+                        {new Date(vital.recordedAt).toLocaleDateString()}
                         <span className="mx-2">•</span>
                         <ClockIcon className="w-4 h-4 mr-1" />
-                        {new Date(vital.recorded_at).toLocaleTimeString()}
+                        {new Date(vital.recordedAt).toLocaleTimeString()}
                       </div>
                       {vital.notes && (
                         <p className="mt-2 text-sm text-gray-600">{vital.notes}</p>

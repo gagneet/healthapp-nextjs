@@ -37,7 +37,7 @@ ALTER TABLE "audit_logs" RENAME TO "AuditLogs";
 -- Vital and monitoring tables
 ALTER TABLE "vital_types" RENAME TO "VitalTypes";
 ALTER TABLE "vital_readings" RENAME TO "VitalReadings";
-ALTER TABLE "vital_requirements" RENAME TO "VitalRequirements";
+ALTER TABLE "vitalRequirements" RENAME TO "VitalRequirements";
 ALTER TABLE "vital_templates" RENAME TO "VitalTemplates";
 ALTER TABLE "vitals" RENAME TO "Vitals";
 ALTER TABLE "symptoms" RENAME TO "Symptoms";

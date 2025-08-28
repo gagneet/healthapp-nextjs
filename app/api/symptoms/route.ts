@@ -251,7 +251,7 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
         description: symptomData.additionalNotes || symptomData.symptoms[0]?.description,
         body_location: symptomData.bodyMapping || {},
         onset_time: symptomData.onsetDate ? new Date(symptomData.onsetDate) : new Date(),
-        recorded_at: new Date(),
+        recordedAt: new Date(),
         triggers: [],
         createdAt: new Date(),
         updatedAt: new Date()
@@ -286,7 +286,7 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
       bodyLocation: symptomRecord.body_location,
       severity: symptomRecord.severity,
       triggers: symptomRecord.triggers,
-      recordedAt: symptomRecord.recorded_at,
+      recordedAt: symptomRecord.recordedAt,
       createdAt: symptomRecord.createdAt
     }
 

@@ -27,7 +27,7 @@ Have successfully completed the comprehensive migration from MySQL to PostgreSQL
 - healthcare_providers - Unified provider model
 - patient_provider_assignments - Care team management
 - care_plan_templates - Reusable care plan templates
-- vital_types & vital_requirements - Standardized vital signs
+- vital_types & vitalRequirements - Standardized vital signs
 - vital_readings - Patient vital sign data with device integration
 - scheduled_events - Comprehensive event scheduling
 - adherence_records - Detailed medication/care adherence tracking

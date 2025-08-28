@@ -167,7 +167,7 @@ export const generateVitalReadingData = () => {
   return {
     reading_value: '120',
     unit: 'mmHg',
-    recorded_at: new Date(),
+    recordedAt: new Date(),
     notes: 'Normal reading',
   }
 }
