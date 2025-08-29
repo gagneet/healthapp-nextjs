@@ -1475,69 +1475,14 @@ run_seeds() {
             return 1
         fi
 
-        # Run seeds in the app container using a script for better error handling
-        log_info "Running database seeds..."
+        # Run seeds in the app container
+        log_info "Running database seeds using 'npx prisma db seed'..."
 
-        docker exec "$container_id" sh -c 'cat > /tmp/seed.sh << "EOF"
-#!/bin/sh
-set -e
-
-echo "Starting seed process..."
-
-# Try Prisma seed first
-if npx prisma db seed 2>&1; then
-    echo "Prisma seeds completed successfully"
-    exit 0
-fi
-
-# Check if error is due to existing data
-if npx prisma db seed 2>&1 | grep -q "Unique constraint\|already exists"; then
-    echo "Some seed data already exists, continuing..."
-    exit 0
-fi
-
-# Try manual seed files as fallback
-echo "Trying manual seed execution..."
-
-# Check for CommonJS seed file
-if [ -f lib/seed.cjs ]; then
-    echo "Running CommonJS seed file..."
-    if node lib/seed.cjs; then
-        echo "Manual seeds (CommonJS) completed"
-        exit 0
-    fi
-fi
-
-# Check for regular JS seed file
-if [ -f lib/seed.js ]; then
-    echo "Running JavaScript seed file..."
-    if node lib/seed.js; then
-        echo "Manual seeds (JS) completed"
-        exit 0
-    fi
-fi
-
-# Check for TypeScript compiled seed
-if [ -f prisma/seed.js ]; then
-    echo "Running compiled seed file..."
-    if node prisma/seed.js; then
-        echo "Compiled seeds completed"
-        exit 0
-    fi
-fi
-
-echo "Warning: No seed files found or seeding failed"
-echo "This may be expected if data already exists"
-exit 0
-EOF
-chmod +x /tmp/seed.sh
-/tmp/seed.sh
-'
-
-        if [ $? -eq 0 ]; then
-            log_success "Database seeding process completed"
+        if docker exec "$container_id" npx prisma db seed; then
+            log_success "Database seeding process completed successfully"
         else
-            log_warning "Seeding encountered issues - this may be expected if data already exists"
+            log_warning "Seeding command failed. This may be expected if data already exists or if there are other issues."
+            log_info "Check the service logs for more details."
         fi
     fi
 }

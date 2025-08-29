@@ -1,146 +1,124 @@
-"use strict";
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || (function () {
-    var ownKeys = function(o) {
-        ownKeys = Object.getOwnPropertyNames || function (o) {
-            var ar = [];
-            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
-            return ar;
-        };
-        return ownKeys(o);
-    };
-    return function (mod) {
-        if (mod && mod.__esModule) return mod;
-        var result = {};
-        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
-        __setModuleDefault(result, mod);
-        return result;
-    };
-})();
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.seedComprehensiveHealthcareData = seedComprehensiveHealthcareData;
 // lib/seed.ts - Comprehensive Healthcare Test Data Seeding with Updated Schema
-const client_1 = require("@prisma/client");
-const bcrypt = __importStar(require("bcryptjs"));
-const prisma = new client_1.PrismaClient();
+import { PrismaClient, AdherenceType, UserRole, UserAccountStatus, UserGender, MedicationOrganizerType, MedicationLogAdherenceStatus } from '@prisma/client';
+import * as bcrypt from 'bcryptjs';
+
+const prisma = new PrismaClient();
+
 // 🛠️ Helpers
-const getRandomPastDate = (minDaysAgo = 7, maxDaysAgo = 90) => {
-    const now = new Date();
-    const minDate = new Date(now.getTime() - maxDaysAgo * 86400000);
-    const maxDate = new Date(now.getTime() - minDaysAgo * 86400000);
-    return new Date(minDate.getTime() + Math.random() * (maxDate.getTime() - minDate.getTime()));
+const getRandomPastDate = (minDaysAgo = 7, maxDaysAgo = 90): Date => {
+  const now = new Date();
+  const minDate = new Date(now.getTime() - maxDaysAgo * 86400000);
+  const maxDate = new Date(now.getTime() - minDaysAgo * 86400000);
+  return new Date(minDate.getTime() + Math.random() * (maxDate.getTime() - minDate.getTime()));
 };
-const getRecentDate = () => getRandomPastDate(1, 7);
-const getFutureDate = (daysAhead = 1) => new Date(Date.now() + daysAhead * 86400000);
-const getTodayDate = () => new Date();
+
+const getRecentDate = (): Date => getRandomPastDate(1, 7);
+const getFutureDate = (daysAhead = 1): Date => new Date(Date.now() + daysAhead * 86400000);
+const getTodayDate = (): Date => new Date();
+
 // Database cleanup function to remove all existing data
 async function cleanDatabase() {
-    console.log('🧹 Cleaning database - removing all existing data...');
-    try {
-        // Delete in reverse dependency order to avoid foreign key constraints
-        // Use error handling for each operation to continue even if tables don't exist
-        const cleanupOperations = [
-            () => prisma.adherenceRecord.deleteMany({}),
-            () => prisma.medication.deleteMany({}),
-            () => prisma.vital.deleteMany({}),
-            () => prisma.symptom.deleteMany({}),
-            () => prisma.carePlan.deleteMany({}),
-            () => prisma.appointment.deleteMany({}),
-            () => prisma.clinic.deleteMany({}),
-            () => prisma.patient.deleteMany({}),
-            () => prisma.doctor.deleteMany({}),
-            () => prisma.hsp.deleteMany({}),
-            () => prisma.provider.deleteMany({}),
-            () => prisma.medicine.deleteMany({}),
-            () => prisma.vitalTemplate.deleteMany({}),
-            () => prisma.symptomDatabase.deleteMany({}),
-            () => prisma.treatmentDatabase.deleteMany({}),
-            () => prisma.specialty.deleteMany({}),
-            () => prisma.organization.deleteMany({}),
-            () => prisma.user.deleteMany({})
-        ];
-        for (const operation of cleanupOperations) {
-            try {
-                await operation();
-            }
-            catch (error) {
-                // Continue with next operation even if current fails
-                console.log(`⚠️ Cleanup operation failed (continuing): ${error.message}`);
-            }
-        }
-        console.log('✅ Database cleaned successfully');
+  console.log('🧹 Cleaning database - removing all existing data...');
+  
+  try {
+    // Delete in reverse dependency order to avoid foreign key constraints
+    // Use error handling for each operation to continue even if tables don't exist
+    
+    const cleanupOperations = [
+      () => prisma.adherenceRecord.deleteMany({}),
+      () => prisma.medication.deleteMany({}),
+      () => prisma.vital.deleteMany({}),
+      () => prisma.symptom.deleteMany({}),
+      () => prisma.carePlan.deleteMany({}),
+      () => prisma.appointment.deleteMany({}),
+      () => prisma.clinic.deleteMany({}),
+      () => prisma.patient.deleteMany({}),
+      () => prisma.doctor.deleteMany({}),
+      () => prisma.hsp.deleteMany({}),
+      () => prisma.provider.deleteMany({}),
+      () => prisma.medicine.deleteMany({}),
+      () => prisma.vitalTemplate.deleteMany({}),
+      () => prisma.symptomDatabase.deleteMany({}),
+      () => prisma.treatmentDatabase.deleteMany({}),
+      () => prisma.specialty.deleteMany({}),
+      () => prisma.organization.deleteMany({}),
+      () => prisma.user.deleteMany({})
+    ];
+    
+    for (const operation of cleanupOperations) {
+      try {
+        await operation();
+      } catch (error: any) {
+        // Continue with next operation even if current fails
+        console.log(`⚠️ Cleanup operation failed (continuing): ${error.message}`);
+      }
     }
-    catch (error) {
-        console.error('❌ Error cleaning database:', error.message);
-        throw error;
-    }
+    
+    console.log('✅ Database cleaned successfully');
+  } catch (error: any) {
+    console.error('❌ Error cleaning database:', error.message);
+    throw error;
+  }
 }
+
 // Add retry logic and table verification
-async function waitForTables(maxRetries = 10, delay = 1000) {
+async function waitForTables(maxRetries = 10, delay = 1000): Promise<boolean> {
     for (let i = 0; i < maxRetries; i++) {
         try {
             await prisma.user.count();
             console.log('✅ Database tables are ready');
             return true;
-        }
-        catch (error) {
-            if (error.code === 'P2021') { // Correctly type error
+        } catch (error: any) {
+            if ((error as any).code === 'P2021') { // Correctly type error
                 console.log(`⏳ Waiting for database tables... (attempt ${i + 1}/${maxRetries})`);
                 await new Promise(resolve => setTimeout(resolve, delay));
-            }
-            else {
+            } else {
                 throw error;
             }
         }
     }
     throw new Error('Database tables not ready after maximum retries');
 }
+
 // Generate secure password hash
-async function generateSecurePasswordHash(password) {
+async function generateSecurePasswordHash(password: string): Promise<string> {
     const saltRounds = 12;
     return await bcrypt.hash(password, saltRounds);
 }
-const sanitize = (input) => {
-    if (typeof input === 'string') {
-        return input.replace(/(\r\n|\n|\r)/gm, "");
-    }
-    return input;
-};
-async function seedComprehensiveHealthcareData() {
+
+const sanitize = (input: any) => {
+  if (typeof input === 'string') {
+    return input.replace(/(\r\n|\n|\r)/gm, "");
+  }
+  return input;
+}
+
+export async function seedComprehensiveHealthcareData() {
     console.log('📊 Seeding comprehensive healthcare test data with updated schema...');
+
     try {
         await waitForTables();
+
         // Always start with a clean database
         await cleanDatabase();
+
         const { users, provider } = await prisma.$transaction(async (tx) => {
             // Password setup
             const defaultPassword = process.env.SEED_DEFAULT_PASSWORD || 'TempPassword123!';
             const hashedPassword = await bcrypt.hash(defaultPassword, 12);
             const basicDoctorPassword = await bcrypt.hash('TempPassword123!', 12);
+
             // Helper function to create user with Auth.js v5 fields and updated schema
-            const createUserData = (userData) => ({
+            const createUserData = (userData: any) => ({
                 ...userData,
                 name: `${userData.firstName} ${userData.lastName}`.trim(),
                 emailVerified: userData.emailVerifiedLegacy ? userData.createdAt : null,
                 image: null,
             });
+
             // Create specific users per your requirements
             console.log('👥 Creating users with exact structure per requirements...');
+
             const testUsers = await tx.user.createMany({
                 skipDuplicates: true,
                 data: [
@@ -149,13 +127,13 @@ async function seedComprehensiveHealthcareData() {
                         id: '00000000-0000-0000-0000-000000000001',
                         email: 'doctor@healthapp.com',
                         passwordHash: basicDoctorPassword,
-                        role: 'DOCTOR',
+                        role: 'DOCTOR' as UserRole,
                         firstName: 'Dr. John',
                         lastName: 'Smith',
                         phone: '+1-555-0001',
                         dateOfBirth: new Date('1975-01-15'),
-                        gender: 'MALE',
-                        accountStatus: 'ACTIVE',
+                        gender: 'MALE' as UserGender,
+                        accountStatus: 'ACTIVE' as UserAccountStatus,
                         emailVerifiedLegacy: true,
                         createdAt: getRandomPastDate(30, 90),
                         updatedAt: getRecentDate(),
@@ -164,13 +142,13 @@ async function seedComprehensiveHealthcareData() {
                         id: '00000000-0000-0000-0000-000000000002',
                         email: 'doctor1@healthapp.com',
                         passwordHash: basicDoctorPassword,
-                        role: 'DOCTOR',
+                        role: 'DOCTOR' as UserRole,
                         firstName: 'Dr. Jane',
                         lastName: 'Doe',
                         phone: '+1-555-0002',
                         dateOfBirth: new Date('1978-05-20'),
-                        gender: 'FEMALE',
-                        accountStatus: 'ACTIVE',
+                        gender: 'FEMALE' as UserGender,
+                        accountStatus: 'ACTIVE' as UserAccountStatus,
                         emailVerifiedLegacy: true,
                         createdAt: getRandomPastDate(28, 88),
                         updatedAt: getRecentDate(),
@@ -179,29 +157,30 @@ async function seedComprehensiveHealthcareData() {
                         id: '00000000-0000-0000-0000-000000000003',
                         email: 'doctor2@healthapp.com',
                         passwordHash: hashedPassword,
-                        role: 'DOCTOR',
+                        role: 'DOCTOR' as UserRole,
                         firstName: 'Dr. Emily',
                         lastName: 'Rodriguez',
                         phone: '+1-555-0003',
                         dateOfBirth: new Date('1980-11-08'),
-                        gender: 'FEMALE',
-                        accountStatus: 'ACTIVE',
+                        gender: 'FEMALE' as UserGender,
+                        accountStatus: 'ACTIVE' as UserAccountStatus,
                         emailVerifiedLegacy: true,
                         createdAt: getRandomPastDate(25, 85),
                         updatedAt: getRecentDate(),
                     }),
+
                     // 5 Patients
                     createUserData({
                         id: '77777777-7777-7777-7777-777777777777',
                         email: 'patient1@healthapp.com',
                         passwordHash: hashedPassword,
-                        role: 'PATIENT',
+                        role: 'PATIENT' as UserRole,
                         firstName: 'Sarah',
                         lastName: 'Johnson',
                         phone: '+1-555-0101',
                         dateOfBirth: new Date('1985-06-15'),
-                        gender: 'FEMALE',
-                        accountStatus: 'ACTIVE',
+                        gender: 'FEMALE' as UserGender,
+                        accountStatus: 'ACTIVE' as UserAccountStatus,
                         emailVerifiedLegacy: true,
                         createdAt: getRandomPastDate(20, 80),
                         updatedAt: getRecentDate(),
@@ -210,13 +189,13 @@ async function seedComprehensiveHealthcareData() {
                         id: '88888888-8888-8888-8888-888888888888',
                         email: 'patient2@healthapp.com',
                         passwordHash: hashedPassword,
-                        role: 'PATIENT',
+                        role: 'PATIENT' as UserRole,
                         firstName: 'Michael',
                         lastName: 'Chen',
                         phone: '+1-555-0102',
                         dateOfBirth: new Date('1978-03-22'),
-                        gender: 'MALE',
-                        accountStatus: 'ACTIVE',
+                        gender: 'MALE' as UserGender,
+                        accountStatus: 'ACTIVE' as UserAccountStatus,
                         emailVerifiedLegacy: true,
                         createdAt: getRandomPastDate(18, 78),
                         updatedAt: getRecentDate(),
@@ -225,13 +204,13 @@ async function seedComprehensiveHealthcareData() {
                         id: '11111111-1111-1111-1111-111111111111',
                         email: 'patient3@healthapp.com',
                         passwordHash: hashedPassword,
-                        role: 'PATIENT',
+                        role: 'PATIENT' as UserRole,
                         firstName: 'Emma',
                         lastName: 'Williams',
                         phone: '+1-555-0103',
                         dateOfBirth: new Date('1990-09-10'),
-                        gender: 'FEMALE',
-                        accountStatus: 'ACTIVE',
+                        gender: 'FEMALE' as UserGender,
+                        accountStatus: 'ACTIVE' as UserAccountStatus,
                         emailVerifiedLegacy: true,
                         createdAt: getRandomPastDate(16, 76),
                         updatedAt: getRecentDate(),
@@ -240,13 +219,13 @@ async function seedComprehensiveHealthcareData() {
                         id: '22222222-2222-2222-2222-222222222222',
                         email: 'patient4@healthapp.com',
                         passwordHash: hashedPassword,
-                        role: 'PATIENT',
+                        role: 'PATIENT' as UserRole,
                         firstName: 'James',
                         lastName: 'Brown',
                         phone: '+1-555-0104',
                         dateOfBirth: new Date('1965-12-05'),
-                        gender: 'MALE',
-                        accountStatus: 'ACTIVE',
+                        gender: 'MALE' as UserGender,
+                        accountStatus: 'ACTIVE' as UserAccountStatus,
                         emailVerifiedLegacy: true,
                         createdAt: getRandomPastDate(14, 74),
                         updatedAt: getRecentDate(),
@@ -255,68 +234,73 @@ async function seedComprehensiveHealthcareData() {
                         id: '33333333-3333-3333-3333-333333333333',
                         email: 'patient5@healthapp.com',
                         passwordHash: hashedPassword,
-                        role: 'PATIENT',
+                        role: 'PATIENT' as UserRole,
                         firstName: 'Olivia',
                         lastName: 'Davis',
                         phone: '+1-555-0105',
                         dateOfBirth: new Date('1995-04-20'),
-                        gender: 'FEMALE',
-                        accountStatus: 'ACTIVE',
+                        gender: 'FEMALE' as UserGender,
+                        accountStatus: 'ACTIVE' as UserAccountStatus,
                         emailVerifiedLegacy: true,
                         createdAt: getRandomPastDate(12, 72),
                         updatedAt: getRecentDate(),
                     }),
+
                     // 1 HSP
                     createUserData({
                         id: '55555555-5555-5555-5555-555555555555',
                         email: 'hsp@healthapp.com',
                         passwordHash: hashedPassword,
-                        role: 'HSP',
+                        role: 'HSP' as UserRole,
                         firstName: 'Maria',
                         lastName: 'Garcia',
                         phone: '+1-555-0301',
                         dateOfBirth: new Date('1980-03-25'),
-                        gender: 'FEMALE',
-                        accountStatus: 'ACTIVE',
+                        gender: 'FEMALE' as UserGender,
+                        accountStatus: 'ACTIVE' as UserAccountStatus,
                         emailVerifiedLegacy: true,
                         createdAt: getRandomPastDate(35, 85),
                         updatedAt: getRecentDate(),
                     }),
+
                     // 1 System Admin
                     createUserData({
                         id: '66666666-6666-6666-6666-666666666666',
                         email: 'admin@healthapp.com',
                         passwordHash: hashedPassword,
-                        role: 'SYSTEM_ADMIN',
+                        role: 'SYSTEM_ADMIN' as UserRole,
                         firstName: 'Admin',
                         lastName: 'User',
                         phone: '+1-555-0401',
                         dateOfBirth: new Date('1985-01-01'),
-                        gender: 'OTHER',
-                        accountStatus: 'ACTIVE',
+                        gender: 'OTHER' as UserGender,
+                        accountStatus: 'ACTIVE' as UserAccountStatus,
                         emailVerifiedLegacy: true,
                         createdAt: getRandomPastDate(40, 90),
                         updatedAt: getRecentDate(),
                     }),
+
                     // 1 Provider Admin
                     createUserData({
                         id: '10101010-1010-1010-1010-101010101010',
                         email: 'provider@healthapp.com',
                         passwordHash: hashedPassword,
-                        role: 'HOSPITAL_ADMIN',
+                        role: 'HOSPITAL_ADMIN' as UserRole,
                         firstName: 'Provider',
                         lastName: 'Administrator',
                         phone: '+1-555-0501',
                         dateOfBirth: new Date('1982-05-15'),
-                        gender: 'MALE',
-                        accountStatus: 'ACTIVE',
+                        gender: 'MALE' as UserGender,
+                        accountStatus: 'ACTIVE' as UserAccountStatus,
                         emailVerifiedLegacy: true,
                         createdAt: getRandomPastDate(45, 90),
                         updatedAt: getRecentDate(),
                     })
                 ]
             });
+
             console.log(`✅ Created ${testUsers.count} users`);
+
             // Create One Organization
             console.log('🏥 Creating organization...');
             const organization = await tx.organization.upsert({
@@ -344,7 +328,9 @@ async function seedComprehensiveHealthcareData() {
                     updatedAt: getRecentDate()
                 }
             });
+
             console.log(`✅ Created organization: ${organization.name}`);
+
             // Create Eleven Medical Specialties
             console.log('🩺 Creating 11 medical specialties...');
             const specialties = [
@@ -360,6 +346,7 @@ async function seedComprehensiveHealthcareData() {
                 { name: 'Ophthalmology', description: 'Eye and vision specialist' },
                 { name: 'Emergency Medicine', description: 'Emergency and acute care specialist' }
             ];
+
             for (const spec of specialties) {
                 await tx.specialty.upsert({
                     where: { name: spec.name },
@@ -372,11 +359,14 @@ async function seedComprehensiveHealthcareData() {
                     }
                 });
             }
+
             console.log(`✅ Created ${specialties.length} medical specialties`);
+
             // Get the created specialties for doctor profiles
             const cardiologySpec = await tx.specialty.findFirst({ where: { name: 'Cardiology' } });
             const endocrinologySpec = await tx.specialty.findFirst({ where: { name: 'Endocrinology' } });
             const generalMedSpec = await tx.specialty.findFirst({ where: { name: 'General Medicine' } });
+
             // Create Three Doctor profiles
             console.log('👨‍⚕️ Creating 3 doctor profiles...');
             await tx.doctor.createMany({
@@ -426,7 +416,9 @@ async function seedComprehensiveHealthcareData() {
                     }
                 ]
             });
+
             console.log(`✅ Created doctor profiles`);
+
             // Create HSP profile
             console.log('🩺 Creating HSP profile...');
             await tx.hsp.upsert({
@@ -444,7 +436,9 @@ async function seedComprehensiveHealthcareData() {
                     createdAt: getRandomPastDate(35, 75)
                 }
             });
+
             console.log(`✅ Created HSP profile`);
+
             // Create Provider
             console.log('🏢 Creating provider...');
             let provider;
@@ -470,11 +464,11 @@ async function seedComprehensiveHealthcareData() {
                     }
                 });
                 console.log(`✅ Created provider`);
-            }
-            catch (error) {
+            } catch (error: any) {
                 console.log(`⚠️ Skipping provider creation - schema mismatch: ${error.message}`);
                 provider = null;
             }
+
             // Create five patient profiles
             console.log('👥 Creating patient profiles with specific doctor assignments...');
             await tx.patient.createMany({
@@ -595,7 +589,9 @@ async function seedComprehensiveHealthcareData() {
                     }
                 ]
             });
+
             console.log(`✅ Created patient profiles`);
+
             // Create clinic for Doctor 1
             console.log('🏥 Creating clinic for Dr. Smith...');
             await tx.clinic.upsert({
@@ -637,7 +633,9 @@ async function seedComprehensiveHealthcareData() {
                     updatedAt: getRecentDate()
                 }
             });
+
             console.log(`✅ Created clinic for Dr. Smith`);
+
             // Create 10 comprehensive medicines
             console.log('💊 Creating 10 comprehensive medicines...');
             const medicines = [
@@ -652,6 +650,7 @@ async function seedComprehensiveHealthcareData() {
                 { id: '550e8400-e29b-41d4-a716-446655440009', name: 'Sertraline', type: 'tablet', description: 'SSRI antidepressant for depression and anxiety', details: { generic_name: 'Sertraline Hydrochloride', brand_names: ['Zoloft', 'Lustral'], drug_class: 'SSRI', common_dosages: ['25mg', '50mg', '100mg'], side_effects: ['Nausea', 'Sexual dysfunction'], contraindications: ['MAO inhibitor use'] } },
                 { id: '550e8400-e29b-41d4-a716-446655440010', name: 'Ibuprofen', type: 'tablet', description: 'Anti-inflammatory pain and fever reducer', details: { generic_name: 'Ibuprofen', brand_names: ['Advil', 'Motrin', 'Nuprin'], drug_class: 'NSAID', common_dosages: ['200mg', '400mg', '600mg'], side_effects: ['Stomach upset', 'Kidney problems'], contraindications: ['Heart disease', 'Active ulcers'] } }
             ];
+
             for (const med of medicines) {
                 await tx.medicine.upsert({
                     where: { id: med.id },
@@ -664,13 +663,16 @@ async function seedComprehensiveHealthcareData() {
                     }
                 });
             }
+
             console.log(`✅ Created ${medicines.length} medicines`);
+
             // Create comprehensive care plans for all patients
             console.log('🩺 Creating comprehensive care plans for all patients...');
             const createdPatients = await tx.patient.findMany({
                 select: { id: true, userId: true },
                 orderBy: { createdAt: 'asc' }
             });
+
             const carePlanData = [
                 { patientId: createdPatients[0]?.id, createdByDoctorId: '00000000-0000-0000-0000-000000000011', organizationId: organization.id, title: 'Diabetes & Hypertension Management Plan', description: 'Comprehensive care plan for managing Type 2 diabetes and hypertension with lifestyle modifications and medication adherence.', chronicConditions: ['Type 2 Diabetes', 'Hypertension'], conditionSeverity: { 'Type 2 Diabetes': 'moderate', 'Hypertension': 'mild' }, longTermGoals: ['Maintain HbA1c below 7.0%', 'Keep blood pressure under 130/80 mmHg', 'Achieve weight loss of 10-15 pounds', 'Improve cardiovascular fitness'], lifestyleModifications: [{ type: 'diet', details: { calories_per_day: 1800, carbohydrate_grams: 180, protein_grams: 120, fat_grams: 60, meal_plan: { breakfast: 'Oatmeal with berries, Greek yogurt', lunch: 'Grilled chicken salad with olive oil dressing', dinner: 'Baked salmon, steamed vegetables, quinoa', snacks: 'Apple with almonds, carrot sticks' }, restrictions: ['Low sodium', 'Limited refined sugars', 'Complex carbohydrates only'] } }, { type: 'exercise', details: { frequency: '5 days per week', duration: '45 minutes', activities: { cardio: 'Brisk walking 30 min, 4x/week', strength: 'Light weights 2x/week', flexibility: 'Yoga 15 min daily' }, target_heart_rate: '120-140 bpm', progression: 'Increase walking duration by 5 min every 2 weeks' } }], startDate: getRandomPastDate(30, 60), endDate: getFutureDate(180), status: 'ACTIVE', priority: 'HIGH' },
                 { patientId: createdPatients[1]?.id, createdByDoctorId: '00000000-0000-0000-0000-000000000011', organizationId: organization.id, title: 'Hypertension & Cholesterol Control Plan', description: 'Cardiovascular health management focusing on blood pressure control and cholesterol reduction.', chronicConditions: ['Hypertension', 'High Cholesterol'], conditionSeverity: { 'Hypertension': 'moderate', 'High Cholesterol': 'mild' }, longTermGoals: ['Reduce blood pressure to <130/80 mmHg', 'Lower LDL cholesterol below 100 mg/dL', 'Maintain healthy weight', 'Increase physical activity'], lifestyleModifications: [{ type: 'diet', details: { calories_per_day: 2000, sodium_mg: 1500, fiber_grams: 35, meal_plan: { breakfast: 'Whole grain cereal with low-fat milk', lunch: 'Turkey and avocado wrap with vegetables', dinner: 'Lean beef, sweet potato, green beans', snacks: 'Mixed nuts, fresh fruit' }, restrictions: ['Low sodium', 'Low saturated fat', 'Heart-healthy fats'] } }, { type: 'exercise', details: { frequency: '4 days per week', duration: '40 minutes', activities: { cardio: 'Cycling or swimming 30 min, 3x/week', strength: 'Resistance bands 2x/week', flexibility: 'Stretching routine daily' }, target_heart_rate: '125-145 bpm' } }], startDate: getRandomPastDate(25, 55), endDate: getFutureDate(120), status: 'ACTIVE', priority: 'MEDIUM' },
@@ -678,6 +680,7 @@ async function seedComprehensiveHealthcareData() {
                 { patientId: createdPatients[3]?.id, createdByDoctorId: '00000000-0000-0000-0000-000000000022', organizationId: organization.id, title: 'Diabetes & Neuropathy Care Plan', description: 'Comprehensive diabetes management with focus on neuropathy prevention and pain management.', chronicConditions: ['Type 2 Diabetes', 'Diabetic Neuropathy'], conditionSeverity: { 'Type 2 Diabetes': 'moderate', 'Diabetic Neuropathy': 'mild' }, longTermGoals: ['Maintain stable blood glucose levels', 'Prevent neuropathy progression', 'Manage neuropathic pain', 'Improve quality of life'], lifestyleModifications: [{ type: 'diet', details: { calories_per_day: 2200, carbohydrate_grams: 200, protein_grams: 140, meal_plan: { breakfast: 'Scrambled eggs with whole wheat toast', lunch: 'Chicken and vegetable soup with crackers', dinner: 'Grilled pork tenderloin with roasted vegetables', snacks: 'Cheese and whole grain crackers' }, restrictions: ['Consistent carbohydrate timing', 'Limited simple sugars'] } }, { type: 'exercise', details: { frequency: '3 days per week', duration: '30 minutes', activities: { cardio: 'Low-impact water aerobics 2x/week', strength: 'Chair exercises 2x/week', flexibility: 'Foot and ankle exercises daily' }, special_considerations: ['Foot care routine', 'Check feet daily for injuries'] } }], startDate: getRandomPastDate(18, 48), endDate: getFutureDate(180), status: 'ACTIVE', priority: 'MEDIUM' },
                 { patientId: createdPatients[4]?.id, createdByDoctorId: '00000000-0000-0000-0000-000000000022', organizationId: organization.id, title: 'Thyroid & Pre-diabetes Management', description: 'Hormone optimization and diabetes prevention through lifestyle intervention.', chronicConditions: ['Hypothyroidism', 'Prediabetes'], conditionSeverity: { 'Hypothyroidism': 'mild', 'Prediabetes': 'mild' }, longTermGoals: ['Normalize thyroid hormone levels', 'Prevent progression to Type 2 diabetes', 'Maintain healthy weight', 'Optimize energy levels'], lifestyleModifications: [{ type: 'diet', details: { calories_per_day: 1500, iodine_mcg: 150, fiber_grams: 30, meal_plan: { breakfast: 'Greek yogurt with granola and fruit', lunch: 'Lentil soup with whole grain roll', dinner: 'Baked chicken breast with brown rice', snacks: 'Apple with peanut butter' }, restrictions: ['Thyroid-supporting foods', 'Low glycemic index'] } }, { type: 'exercise', details: { frequency: '5 days per week', duration: '35 minutes', activities: { cardio: 'Dance fitness 3x/week', strength: 'Bodyweight exercises 2x/week', flexibility: 'Pilates 2x/week' }, target_heart_rate: '130-150 bpm' } }], startDate: getRandomPastDate(15, 45), endDate: getFutureDate(270), status: 'ACTIVE', priority: 'MEDIUM' }
             ];
+
             // Create care plans
             for (const planData of carePlanData) {
                 if (planData.patientId) {
@@ -690,6 +693,7 @@ async function seedComprehensiveHealthcareData() {
                     });
                 }
             }
+
             // Create symptoms for each patient
             console.log('🩺 Creating patient symptoms...');
             const symptomData = [
@@ -705,7 +709,9 @@ async function seedComprehensiveHealthcareData() {
                 { patientId: createdPatients[4]?.id, name: 'Feeling cold', severity: 'mild', frequency: 'daily', duration: 'most of the day' },
                 { patientId: createdPatients[4]?.id, name: 'Dry skin and hair', severity: 'mild', frequency: 'constant', duration: 'ongoing' }
             ];
-            const severityMap = { mild: 1, moderate: 2, severe: 3 };
+
+            const severityMap: { [key: string]: number } = { mild: 1, moderate: 2, severe: 3 };
+
             for (const symptom of symptomData) {
                 if (symptom.patientId) {
                     await tx.symptom.create({
@@ -721,7 +727,9 @@ async function seedComprehensiveHealthcareData() {
                     });
                 }
             }
+
             console.log(`✅ Created comprehensive care plans and symptoms for all patients`);
+
             // Create 4 vital templates
             console.log('📊 Creating 4 vital templates...');
             const vitalTemplates = [
@@ -730,6 +738,7 @@ async function seedComprehensiveHealthcareData() {
                 { id: '550e8400-e29b-41d4-a716-446655440022', name: 'Weight', unit: 'kg' },
                 { id: '550e8400-e29b-41d4-a716-446655440023', name: 'Blood Glucose', unit: 'mg/dL' }
             ];
+
             for (const template of vitalTemplates) {
                 await tx.vitalTemplate.upsert({
                     where: { id: template.id },
@@ -741,31 +750,34 @@ async function seedComprehensiveHealthcareData() {
                     }
                 });
             }
+
             console.log(`✅ Created ${vitalTemplates.length} vital templates`);
+
             // Create 3 medication reminders for each patient (15 total)
             console.log('💊 Creating 3 medication reminders per patient...');
             const medicationReminderData = [
                 // Patient 1
-                { participantId: createdPatients[0]?.id, medicineId: '550e8400-e29b-41d4-a716-446655440001', organizerType: 'DOCTOR', organizerId: '00000000-0000-0000-0000-000000000011', details: { dosage: '500mg', frequency: 'Twice daily with meals', duration_days: 90, instructions: 'Take with breakfast and dinner to reduce stomach upset. Monitor blood sugar levels.' }, startDate: getRandomPastDate(20, 40), endDate: getFutureDate(70) },
-                { participantId: createdPatients[0]?.id, medicineId: '550e8400-e29b-41d4-a716-446655440002', organizerType: 'DOCTOR', organizerId: '00000000-0000-0000-0000-000000000011', details: { dosage: '10mg', frequency: 'Once daily in the morning', duration_days: 90, instructions: 'Take at same time each morning. Monitor blood pressure regularly.' }, startDate: getRandomPastDate(18, 38), endDate: getFutureDate(72) },
-                { participantId: createdPatients[0]?.id, medicineId: '550e8400-e29b-41d4-a716-446655440003', organizerType: 'DOCTOR', organizerId: '00000000-0000-0000-0000-000000000011', details: { dosage: '81mg', frequency: 'Once daily with food', duration_days: 90, instructions: 'Low-dose aspirin for cardiovascular protection. Take with food to prevent stomach irritation.' }, startDate: getRandomPastDate(16, 36), endDate: getFutureDate(74) },
+                { participantId: createdPatients[0]?.id, medicineId: '550e8400-e29b-41d4-a716-446655440001', organizerType: 'DOCTOR' as MedicationOrganizerType, organizerId: '00000000-0000-0000-0000-000000000011', details: { dosage: '500mg', frequency: 'Twice daily with meals', duration_days: 90, instructions: 'Take with breakfast and dinner to reduce stomach upset. Monitor blood sugar levels.' }, startDate: getRandomPastDate(20, 40), endDate: getFutureDate(70) },
+                { participantId: createdPatients[0]?.id, medicineId: '550e8400-e29b-41d4-a716-446655440002', organizerType: 'DOCTOR' as MedicationOrganizerType, organizerId: '00000000-0000-0000-0000-000000000011', details: { dosage: '10mg', frequency: 'Once daily in the morning', duration_days: 90, instructions: 'Take at same time each morning. Monitor blood pressure regularly.' }, startDate: getRandomPastDate(18, 38), endDate: getFutureDate(72) },
+                { participantId: createdPatients[0]?.id, medicineId: '550e8400-e29b-41d4-a716-446655440003', organizerType: 'DOCTOR' as MedicationOrganizerType, organizerId: '00000000-0000-0000-0000-000000000011', details: { dosage: '81mg', frequency: 'Once daily with food', duration_days: 90, instructions: 'Low-dose aspirin for cardiovascular protection. Take with food to prevent stomach irritation.' }, startDate: getRandomPastDate(16, 36), endDate: getFutureDate(74) },
                 // Patient 2
-                { participantId: createdPatients[1]?.id, medicineId: '550e8400-e29b-41d4-a716-446655440004', organizerType: 'DOCTOR', organizerId: '00000000-0000-0000-0000-000000000011', details: { dosage: '5mg', frequency: 'Once daily', duration_days: 90, instructions: 'Take at the same time each day. May cause ankle swelling - report if persistent.' }, startDate: getRandomPastDate(22, 42), endDate: getFutureDate(68) },
-                { participantId: createdPatients[1]?.id, medicineId: '550e8400-e29b-41d4-a716-446655440005', organizerType: 'DOCTOR', organizerId: '00000000-0000-0000-0000-000000000011', details: { dosage: '20mg', frequency: 'Once daily in the evening', duration_days: 90, instructions: 'Take in the evening with or without food. Report any unexplained muscle pain.' }, startDate: getRandomPastDate(24, 44), endDate: getFutureDate(66) },
-                { participantId: createdPatients[1]?.id, medicineId: '550e8400-e29b-41d4-a716-446655440003', organizerType: 'DOCTOR', organizerId: '00000000-0000-0000-0000-000000000011', details: { dosage: '81mg', frequency: 'Once daily with breakfast', duration_days: 90, instructions: 'Cardioprotective dose. Take with food to minimize stomach irritation.' }, startDate: getRandomPastDate(20, 40), endDate: getFutureDate(70) },
+                { participantId: createdPatients[1]?.id, medicineId: '550e8400-e29b-41d4-a716-446655440004', organizerType: 'DOCTOR' as MedicationOrganizerType, organizerId: '00000000-0000-0000-0000-000000000011', details: { dosage: '5mg', frequency: 'Once daily', duration_days: 90, instructions: 'Take at the same time each day. May cause ankle swelling - report if persistent.' }, startDate: getRandomPastDate(22, 42), endDate: getFutureDate(68) },
+                { participantId: createdPatients[1]?.id, medicineId: '550e8400-e29b-41d4-a716-446655440005', organizerType: 'DOCTOR' as MedicationOrganizerType, organizerId: '00000000-0000-0000-0000-000000000011', details: { dosage: '20mg', frequency: 'Once daily in the evening', duration_days: 90, instructions: 'Take in the evening with or without food. Report any unexplained muscle pain.' }, startDate: getRandomPastDate(24, 44), endDate: getFutureDate(66) },
+                { participantId: createdPatients[1]?.id, medicineId: '550e8400-e29b-41d4-a716-446655440003', organizerType: 'DOCTOR' as MedicationOrganizerType, organizerId: '00000000-0000-0000-0000-000000000011', details: { dosage: '81mg', frequency: 'Once daily with breakfast', duration_days: 90, instructions: 'Cardioprotective dose. Take with food to minimize stomach irritation.' }, startDate: getRandomPastDate(20, 40), endDate: getFutureDate(70) },
                 // Patient 3
-                { participantId: createdPatients[2]?.id, medicineId: '550e8400-e29b-41d4-a716-446655440002', organizerType: 'DOCTOR', organizerId: '00000000-0000-0000-0000-000000000011', details: { dosage: '5mg', frequency: 'Once daily', duration_days: 90, instructions: 'For heart protection and blood pressure control. Take consistently at same time.' }, startDate: getRandomPastDate(26, 46), endDate: getFutureDate(64) },
-                { participantId: createdPatients[2]?.id, medicineId: '550e8400-e29b-41d4-a716-446655440005', organizerType: 'DOCTOR', organizerId: '00000000-0000-0000-0000-000000000011', details: { dosage: '40mg', frequency: 'Once daily in the evening', duration_days: 90, instructions: 'High-intensity statin for coronary disease. Monitor for muscle symptoms.' }, startDate: getRandomPastDate(24, 44), endDate: getFutureDate(66) },
-                { participantId: createdPatients[2]?.id, medicineId: '550e8400-e29b-41d4-a716-446655440003', organizerType: 'DOCTOR', organizerId: '00000000-0000-0000-0000-000000000011', details: { dosage: '81mg', frequency: 'Once daily with dinner', duration_days: 90, instructions: 'Essential for coronary disease management. Take with food consistently.' }, startDate: getRandomPastDate(22, 42), endDate: getFutureDate(68) },
+                { participantId: createdPatients[2]?.id, medicineId: '550e8400-e29b-41d4-a716-446655440002', organizerType: 'DOCTOR' as MedicationOrganizerType, organizerId: '00000000-0000-0000-0000-000000000011', details: { dosage: '5mg', frequency: 'Once daily', duration_days: 90, instructions: 'For heart protection and blood pressure control. Take consistently at same time.' }, startDate: getRandomPastDate(26, 46), endDate: getFutureDate(64) },
+                { participantId: createdPatients[2]?.id, medicineId: '550e8400-e29b-41d4-a716-446655440005', organizerType: 'DOCTOR' as MedicationOrganizerType, organizerId: '00000000-0000-0000-0000-000000000011', details: { dosage: '40mg', frequency: 'Once daily in the evening', duration_days: 90, instructions: 'High-intensity statin for coronary disease. Monitor for muscle symptoms.' }, startDate: getRandomPastDate(24, 44), endDate: getFutureDate(66) },
+                { participantId: createdPatients[2]?.id, medicineId: '550e8400-e29b-41d4-a716-446655440003', organizerType: 'DOCTOR' as MedicationOrganizerType, organizerId: '00000000-0000-0000-0000-000000000011', details: { dosage: '81mg', frequency: 'Once daily with dinner', duration_days: 90, instructions: 'Essential for coronary disease management. Take with food consistently.' }, startDate: getRandomPastDate(22, 42), endDate: getFutureDate(68) },
                 // Patient 4
-                { participantId: createdPatients[3]?.id, medicineId: '550e8400-e29b-41d4-a716-446655440001', organizerType: 'DOCTOR', organizerId: '00000000-0000-0000-0000-000000000022', details: { dosage: '1000mg', frequency: 'Twice daily with meals', duration_days: 90, instructions: 'Extended-release formula. Take with breakfast and dinner.' }, startDate: getRandomPastDate(28, 48), endDate: getFutureDate(62) },
-                { participantId: createdPatients[3]?.id, medicineId: '550e8400-e29b-41d4-a716-446655440008', organizerType: 'DOCTOR', organizerId: '00000000-0000-0000-0000-000000000022', details: { dosage: '300mg', frequency: 'Three times daily', duration_days: 90, instructions: 'For diabetic neuropathy pain. Start with bedtime dose, gradually increase as tolerated.' }, startDate: getRandomPastDate(26, 46), endDate: getFutureDate(64) }, // Using Levothyroxine as Gabapentin substitute
-                { participantId: createdPatients[3]?.id, medicineId: '550e8400-e29b-41d4-a716-446655440010', organizerType: 'DOCTOR', organizerId: '00000000-0000-0000-0000-000000000022', details: { dosage: '400mg', frequency: 'As needed, up to 3 times daily', duration_days: 30, instructions: 'For pain relief. Take with food. Do not exceed 1200mg per day.' }, startDate: getRandomPastDate(15, 30), endDate: getFutureDate(15) },
+                { participantId: createdPatients[3]?.id, medicineId: '550e8400-e29b-41d4-a716-446655440001', organizerType: 'DOCTOR' as MedicationOrganizerType, organizerId: '00000000-0000-0000-0000-000000000022', details: { dosage: '1000mg', frequency: 'Twice daily with meals', duration_days: 90, instructions: 'Extended-release formula. Take with breakfast and dinner.' }, startDate: getRandomPastDate(28, 48), endDate: getFutureDate(62) },
+                { participantId: createdPatients[3]?.id, medicineId: '550e8400-e29b-41d4-a716-446655440008', organizerType: 'DOCTOR' as MedicationOrganizerType, organizerId: '00000000-0000-0000-0000-000000000022', details: { dosage: '300mg', frequency: 'Three times daily', duration_days: 90, instructions: 'For diabetic neuropathy pain. Start with bedtime dose, gradually increase as tolerated.' }, startDate: getRandomPastDate(26, 46), endDate: getFutureDate(64) }, // Using Levothyroxine as Gabapentin substitute
+                { participantId: createdPatients[3]?.id, medicineId: '550e8400-e29b-41d4-a716-446655440010', organizerType: 'DOCTOR' as MedicationOrganizerType, organizerId: '00000000-0000-0000-0000-000000000022', details: { dosage: '400mg', frequency: 'As needed, up to 3 times daily', duration_days: 30, instructions: 'For pain relief. Take with food. Do not exceed 1200mg per day.' }, startDate: getRandomPastDate(15, 30), endDate: getFutureDate(15) },
                 // Patient 5
-                { participantId: createdPatients[4]?.id, medicineId: '550e8400-e29b-41d4-a716-446655440008', organizerType: 'DOCTOR', organizerId: '00000000-0000-0000-0000-000000000022', details: { dosage: '75mcg', frequency: 'Once daily in the morning', duration_days: 90, instructions: 'Take on empty stomach, 30-60 minutes before breakfast. Avoid calcium/iron supplements.' }, startDate: getRandomPastDate(30, 50), endDate: getFutureDate(60) },
-                { participantId: createdPatients[4]?.id, medicineId: '550e8400-e29b-41d4-a716-446655440001', organizerType: 'DOCTOR', organizerId: '00000000-0000-0000-0000-000000000022', details: { dosage: '500mg', frequency: 'Once daily with dinner', duration_days: 90, instructions: 'For prediabetes management. Start low dose to minimize GI side effects.' }, startDate: getRandomPastDate(20, 35), endDate: getFutureDate(75) },
-                { participantId: createdPatients[4]?.id, medicineId: '550e8400-e29b-41d4-a716-446655440006', organizerType: 'DOCTOR', organizerId: '00000000-0000-0000-0000-000000000022', details: { dosage: '20mg', frequency: 'Once daily before breakfast', duration_days: 60, instructions: 'For acid reflux related to thyroid medication. Take 30 minutes before eating.' }, startDate: getRandomPastDate(25, 40), endDate: getFutureDate(35) }
+                { participantId: createdPatients[4]?.id, medicineId: '550e8400-e29b-41d4-a716-446655440008', organizerType: 'DOCTOR' as MedicationOrganizerType, organizerId: '00000000-0000-0000-0000-000000000022', details: { dosage: '75mcg', frequency: 'Once daily in the morning', duration_days: 90, instructions: 'Take on empty stomach, 30-60 minutes before breakfast. Avoid calcium/iron supplements.' }, startDate: getRandomPastDate(30, 50), endDate: getFutureDate(60) },
+                { participantId: createdPatients[4]?.id, medicineId: '550e8400-e29b-41d4-a716-446655440001', organizerType: 'DOCTOR' as MedicationOrganizerType, organizerId: '00000000-0000-0000-0000-000000000022', details: { dosage: '500mg', frequency: 'Once daily with dinner', duration_days: 90, instructions: 'For prediabetes management. Start low dose to minimize GI side effects.' }, startDate: getRandomPastDate(20, 35), endDate: getFutureDate(75) },
+                { participantId: createdPatients[4]?.id, medicineId: '550e8400-e29b-41d4-a716-446655440006', organizerType: 'DOCTOR' as MedicationOrganizerType, organizerId: '00000000-0000-0000-0000-000000000022', details: { dosage: '20mg', frequency: 'Once daily before breakfast', duration_days: 60, instructions: 'For acid reflux related to thyroid medication. Take 30 minutes before eating.' }, startDate: getRandomPastDate(25, 40), endDate: getFutureDate(35) }
             ];
+
             for (const medData of medicationReminderData) {
                 if (medData.participantId) {
                     await tx.medication.create({
@@ -777,7 +789,9 @@ async function seedComprehensiveHealthcareData() {
                     });
                 }
             }
+
             console.log(`✅ Created 3 medication reminders for each patient (15 total)`);
+
             // Create 5 symptoms/conditions
             console.log('🩺 Creating 5 symptoms/conditions...');
             try {
@@ -788,6 +802,7 @@ async function seedComprehensiveHealthcareData() {
                     { id: '550e8400-e29b-41d4-a716-446655440033', diagnosisName: 'Depression', symptoms: ['Persistent sadness', 'Loss of interest', 'Fatigue', 'Sleep disturbances', 'Appetite changes'], category: 'Mental Health', severityIndicators: { mild: ['Occasional sadness'], moderate: ['Regular mood changes'], severe: ['Persistent hopelessness', 'Thoughts of self-harm'] }, commonAgeGroups: ['adolescents', 'adults', 'elderly'], genderSpecific: 'both', isActive: true },
                     { id: '550e8400-e29b-41d4-a716-446655440034', diagnosisName: 'Anxiety Disorder', symptoms: ['Excessive worry', 'Restlessness', 'Fatigue', 'Difficulty concentrating', 'Irritability', 'Muscle tension'], category: 'Mental Health', severityIndicators: { mild: ['Occasional worry'], moderate: ['Regular anxiety'], severe: ['Panic attacks', 'Unable to perform daily activities'] }, commonAgeGroups: ['adolescents', 'adults'], genderSpecific: 'both', isActive: true }
                 ];
+
                 for (const symptom of symptomsData) {
                     await tx.symptomDatabase.upsert({
                         where: { id: symptom.id },
@@ -799,11 +814,12 @@ async function seedComprehensiveHealthcareData() {
                         }
                     });
                 }
+
                 console.log(`✅ Created ${symptomsData.length} symptoms/conditions`);
-            }
-            catch (error) {
+            } catch (error: any) {
                 console.log(`⚠️ Skipping symptoms database creation - table issue: ${error.message}`);
             }
+
             // Link Provider Admin to 2 doctors
             console.log('🔗 Creating provider relationships...');
             try {
@@ -812,10 +828,10 @@ async function seedComprehensiveHealthcareData() {
                     await tx.doctor.update({ where: { id: '00000000-0000-0000-0000-000000000033' }, data: { organizationId: organization.id, updatedAt: getRecentDate() } });
                     console.log(`✅ Linked Provider Admin to 2 doctors (1 with patients, 1 without)`);
                 }
-            }
-            catch (error) {
+            } catch (error: any) {
                 console.log(`⚠️ Could not create provider relationships: ${error.message}`);
             }
+
             // Create 5 treatments
             console.log('💉 Creating 5 treatments...');
             try {
@@ -826,6 +842,7 @@ async function seedComprehensiveHealthcareData() {
                     { id: '550e8400-e29b-41d4-a716-446655440043', treatmentName: 'Cognitive Behavioral Therapy', treatmentType: 'therapy', description: 'Evidence-based psychotherapy for depression and anxiety', applicableConditions: ['Depression', 'Anxiety Disorder', 'PTSD'], duration: '12-20 sessions over 3-6 months', frequency: 'Weekly sessions initially', dosageInfo: { initial_dose: '45-50 minute sessions weekly', titration: 'Adjust frequency based on progress' }, category: 'Mental Health', severityLevel: 'mild_to_severe', isActive: true },
                     { id: '550e8400-e29b-41d4-a716-446655440044', treatmentName: 'Lifestyle Modification Program', treatmentType: 'lifestyle', description: 'Comprehensive diet and exercise program', applicableConditions: ['Type 2 Diabetes', 'Hypertension', 'Obesity'], duration: 'Ongoing lifestyle changes', frequency: 'Daily adherence', dosageInfo: { initial_dose: '30 minutes moderate exercise, 5 days/week', maximum_dose: '60+ minutes daily as tolerated' }, category: 'Lifestyle', severityLevel: 'all_levels', isActive: true }
                 ];
+
                 for (const treatment of treatmentsData) {
                     await tx.treatmentDatabase.upsert({
                         where: { id: treatment.id },
@@ -837,11 +854,12 @@ async function seedComprehensiveHealthcareData() {
                         }
                     });
                 }
+
                 console.log(`✅ Created ${treatmentsData.length} treatments`);
-            }
-            catch (error) {
+            } catch (error: any) {
                 console.log(`⚠️ Skipping treatments database creation - table issue: ${error.message}`);
             }
+
             // Create 3 appointments
             console.log('📅 Creating 3 appointments...');
             const patientsForAppointments = await tx.patient.findMany({
@@ -849,12 +867,14 @@ async function seedComprehensiveHealthcareData() {
                 take: 3,
                 orderBy: { createdAt: 'asc' }
             });
+
             if (patientsForAppointments.length >= 3) {
                 const appointmentsData = [
                     { id: '00000000-0000-0000-0000-000000000301', doctorId: '00000000-0000-0000-0000-000000000011', patientId: patientsForAppointments[0].id, startDate: getTodayDate(), startTime: new Date(new Date().setHours(9, 0, 0, 0)), endTime: new Date(new Date().setHours(9, 30, 0, 0)), description: 'Routine checkup and medication review', createdAt: getRecentDate() },
                     { id: '00000000-0000-0000-0000-000000000302', doctorId: '00000000-0000-0000-0000-000000000011', patientId: patientsForAppointments[1].id, startDate: getTodayDate(), startTime: new Date(new Date().setHours(14, 0, 0, 0)), endTime: new Date(new Date().setHours(14, 30, 0, 0)), description: 'Follow-up for hypertension management', createdAt: getRecentDate() },
                     { id: '00000000-0000-0000-0000-000000000303', doctorId: '00000000-0000-0000-0000-000000000022', patientId: patientsForAppointments[2].id, startDate: getFutureDate(1), startTime: new Date(getFutureDate(1).setHours(10, 0, 0, 0)), endTime: new Date(getFutureDate(1).setHours(10, 30, 0, 0)), description: 'Diabetes management consultation', createdAt: getRecentDate() }
                 ];
+
                 for (const apt of appointmentsData) {
                     await tx.appointment.upsert({
                         where: { id: apt.id },
@@ -862,16 +882,19 @@ async function seedComprehensiveHealthcareData() {
                         create: apt
                     });
                 }
+
                 console.log('✅ Created 3 appointments');
             }
+
             // Create 3 adherence records
             console.log('📋 Creating 3 adherence records...');
             if (createdPatients.length >= 2) {
                 const adherenceData = [
-                    { id: '00000000-0000-0000-0000-000000000401', patientId: createdPatients[0].id, adherenceType: 'MEDICATION', dueAt: getRandomPastDate(1, 7), recordedAt: getRandomPastDate(1, 7), isCompleted: true, isMissed: false, createdAt: getRandomPastDate(1, 7), updatedAt: getRecentDate() },
-                    { id: '00000000-0000-0000-0000-000000000402', patientId: createdPatients[1].id, adherenceType: 'VITAL_CHECK', dueAt: getRandomPastDate(2, 8), recordedAt: getRandomPastDate(2, 8), isCompleted: true, isMissed: false, createdAt: getRandomPastDate(2, 8), updatedAt: getRecentDate() },
-                    { id: '00000000-0000-0000-0000-000000000403', patientId: createdPatients.length >= 3 ? createdPatients[2].id : createdPatients[0].id, adherenceType: 'APPOINTMENT', dueAt: getRandomPastDate(3, 9), recordedAt: null, isCompleted: false, isMissed: true, createdAt: getRandomPastDate(3, 9), updatedAt: getRecentDate() }
+                    { id: '00000000-0000-0000-0000-000000000401', patientId: createdPatients[0].id, adherenceType: 'MEDICATION' as AdherenceType, dueAt: getRandomPastDate(1, 7), recordedAt: getRandomPastDate(1, 7), isCompleted: true, isMissed: false, createdAt: getRandomPastDate(1, 7), updatedAt: getRecentDate() },
+                    { id: '00000000-0000-0000-0000-000000000402', patientId: createdPatients[1].id, adherenceType: 'VITAL_CHECK' as AdherenceType, dueAt: getRandomPastDate(2, 8), recordedAt: getRandomPastDate(2, 8), isCompleted: true, isMissed: false, createdAt: getRandomPastDate(2, 8), updatedAt: getRecentDate() },
+                    { id: '00000000-0000-0000-0000-000000000403', patientId: createdPatients.length >= 3 ? createdPatients[2].id : createdPatients[0].id, adherenceType: 'APPOINTMENT' as AdherenceType, dueAt: getRandomPastDate(3, 9), recordedAt: null, isCompleted: false, isMissed: true, createdAt: getRandomPastDate(3, 9), updatedAt: getRecentDate() }
                 ];
+
                 for (const record of adherenceData) {
                     await tx.adherenceRecord.upsert({
                         where: { id: record.id },
@@ -879,12 +902,16 @@ async function seedComprehensiveHealthcareData() {
                         create: record
                     });
                 }
+
                 console.log('✅ Created 3 adherence records');
             }
+
             return { users: testUsers, provider };
         });
+
         const testUsers = { count: users.count };
         const defaultPassword = process.env.SEED_DEFAULT_PASSWORD || 'TempPassword123!';
+
         console.log(`\n🎉 Successfully seeded comprehensive healthcare test data!`);
         console.log(`📊 Summary:`);
         console.log(`   - Users: ${testUsers.count} (5 patients, 3 doctors, 1 HSP, 1 system admin, 1 provider admin) ✅`);
@@ -913,6 +940,7 @@ async function seedComprehensiveHealthcareData() {
         console.log(`\n📈 Dashboard Data Ready:`);
         console.log(`   - Doctor Dashboards: Patient lists, appointments, medication tracking ✅`);
         console.log(`   - Patient Dashboards: Care plans, medications, symptoms, vitals ✅`);
+
         return {
             success: true,
             message: 'Comprehensive healthcare test data seeded successfully with exact structure requested',
@@ -940,48 +968,44 @@ async function seedComprehensiveHealthcareData() {
                 providerDoctorLinks: 2
             }
         };
-    }
-    catch (error) {
+
+    } catch (error: any) {
         console.error('❌ Error seeding healthcare data:', error);
+
         if (error.code === 'P2002') {
             console.error('🔍 Unique constraint violation - data may already exist or IDs conflict');
-        }
-        else if (error.code === 'P2003') {
+        } else if (error.code === 'P2003') {
             console.error('🔍 Foreign key constraint failed - relationship data missing or invalid');
-        }
-        else if (error.code === 'P2021') {
+        } else if (error.code === 'P2021') {
             console.error('🔍 Database table does not exist - run migrations first');
-        }
-        else if (error.code === 'P2025') {
+        } else if (error.code === 'P2025') {
             console.error('🔍 Record not found - dependency data missing');
-        }
-        else if (error.message.includes('Unknown field')) {
+        } else if (error.message.includes('Unknown field')) {
             console.error('🔍 Schema field mismatch - check Prisma schema against database');
-        }
-        else {
+        } else {
             console.error('🔍 Unexpected error during seeding process');
         }
+
         console.error('\n💡 Troubleshooting suggestions:');
         console.error('   1. Run: npx prisma migrate dev');
         console.error('   2. Run: npx prisma generate');
         console.error('   3. Check database connection');
         console.error('   4. Verify Prisma schema matches database structure');
+
         throw error;
-    }
-    finally {
+    } finally {
         await prisma.$disconnect();
     }
 }
-// Main execution when run directly
-if (require.main === module) {
-    console.log('🚀 Starting healthcare data seeding...');
-    seedComprehensiveHealthcareData()
-        .then((result) => {
+
+// Main execution block
+console.log('🚀 Starting healthcare data seeding...');
+seedComprehensiveHealthcareData()
+    .then((result) => {
         console.log('🎉 Seeding completed successfully:', result);
         process.exit(0);
     })
-        .catch((error) => {
+    .catch((error) => {
         console.error('❌ Seeding failed:', error);
         process.exit(1);
     });
-}
