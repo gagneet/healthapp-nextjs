@@ -1,6 +1,43 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from "@/lib/auth";
 import { prisma } from '@/lib/prisma';
+import { Prisma } from '@prisma/client';
+
+type AdherenceRecordWithPatient = Prisma.AdherenceRecordGetPayload<{
+  include: {
+    patient: {
+      select: {
+        id: true,
+        patientId: true,
+        overallAdherenceScore: true,
+        user: {
+          select: {
+            firstName: true,
+            lastName: true,
+            name: true
+          }
+        }
+      }
+    }
+  }
+}>;
+
+type PatientStats = Prisma.PatientGetPayload<{
+  select: {
+    id: true,
+    patientId: true,
+    overallAdherenceScore: true,
+    user: {
+      select: {
+        firstName: true,
+        lastName: true,
+        name: true
+      }
+    }
+  }
+}>;
+
+type DayRecord = Prisma.AdherenceRecordGetPayload<{}>;
 
 /**
  * GET /api/doctors/adherence-analytics
@@ -94,21 +131,21 @@ export async function GET(request: NextRequest) {
 
     const totalPatients = patientsStats.length;
     const patientsWithRecords = adherenceRecords.length > 0 ? 
-      [...new Set(adherenceRecords.map(r => r.patientId))].length : 0;
+      [...new Set(adherenceRecords.map((r: AdherenceRecordWithPatient) => r.patientId))].length : 0;
     
     const adherenceScores = patientsStats
-      .filter(p => p.overallAdherenceScore !== null)
-      .map(p => p.overallAdherenceScore as number);
+      .filter((p: PatientStats): p is PatientStats & { overallAdherenceScore: NonNullable<PatientStats['overallAdherenceScore']> } => p.overallAdherenceScore !== null)
+      .map((p) => p.overallAdherenceScore.toNumber());
     
     const averageAdherence = adherenceScores.length > 0 
-      ? adherenceScores.reduce((sum, score) => sum + score, 0) / adherenceScores.length
+      ? adherenceScores.reduce((sum: number, score: number) => sum + score, 0) / adherenceScores.length
       : 0;
 
     const adherenceCategories = {
-      excellent: adherenceScores.filter(score => score >= 90).length,
-      good: adherenceScores.filter(score => score >= 75 && score < 90).length,
-      fair: adherenceScores.filter(score => score >= 60 && score < 75).length,
-      poor: adherenceScores.filter(score => score < 60).length
+      excellent: adherenceScores.filter((score: number) => score >= 90).length,
+      good: adherenceScores.filter((score: number) => score >= 75 && score < 90).length,
+      fair: adherenceScores.filter((score: number) => score >= 60 && score < 75).length,
+      poor: adherenceScores.filter((score: number) => score < 60).length
     };
 
     const last7Days = Array.from({length: 7}, (_, i) => {
@@ -135,11 +172,11 @@ export async function GET(request: NextRequest) {
           }
         });
 
-        const dayScores = dayRecords.filter(r => r.isCompleted).map(r => 100).concat(
-          dayRecords.filter(r => r.isMissed).map(r => 0)
+        const dayScores = dayRecords.filter((r: DayRecord) => r.isCompleted).map(() => 100).concat(
+          dayRecords.filter((r: DayRecord) => r.isMissed).map(() => 0)
         );
         const dayAverage = dayScores.length > 0 
-          ? dayScores.reduce((sum, score) => sum + score, 0) / dayScores.length
+          ? dayScores.reduce((sum: number, score: number) => sum + score, 0) / dayScores.length
           : null;
 
         return {
@@ -151,24 +188,24 @@ export async function GET(request: NextRequest) {
     );
 
     const topPatients = patientsStats
-      .filter(p => p.overallAdherenceScore !== null)
-      .sort((a, b) => (b.overallAdherenceScore as number) - (a.overallAdherenceScore as number))
+      .filter((p: PatientStats): p is PatientStats & { overallAdherenceScore: NonNullable<PatientStats['overallAdherenceScore']> } => p.overallAdherenceScore !== null)
+      .sort((a, b) => b.overallAdherenceScore.toNumber() - a.overallAdherenceScore.toNumber())
       .slice(0, 5)
-      .map(p => ({
+      .map((p) => ({
         patientId: p.patientId,
         name: p.user?.name || `${p.user?.firstName || ''} ${p.user?.lastName || ''}`.trim(),
         adherenceScore: p.overallAdherenceScore
       }));
 
     const patientsNeedingAttention = patientsStats
-      .filter(p => p.overallAdherenceScore !== null && (p.overallAdherenceScore as number) < 75)
-      .sort((a, b) => (a.overallAdherenceScore as number) - (b.overallAdherenceScore as number))
+      .filter((p: PatientStats): p is PatientStats & { overallAdherenceScore: NonNullable<PatientStats['overallAdherenceScore']> } => p.overallAdherenceScore !== null && p.overallAdherenceScore.toNumber() < 75)
+      .sort((a, b) => a.overallAdherenceScore.toNumber() - b.overallAdherenceScore.toNumber())
       .slice(0, 5)
-      .map(p => ({
+      .map((p) => ({
         patientId: p.patientId,
         name: p.user?.name || `${p.user?.firstName || ''} ${p.user?.lastName || ''}`.trim(),
         adherenceScore: p.overallAdherenceScore,
-        riskLevel: (p.overallAdherenceScore as number) < 60 ? 'high' : 'medium'
+        riskLevel: p.overallAdherenceScore.toNumber() < 60 ? 'high' : 'medium'
       }));
 
     const adherenceOverview = [
@@ -181,7 +218,7 @@ export async function GET(request: NextRequest) {
     const monthlyTrends = Array.from({length: 6}, (_, i) => {
       const date = new Date();
       date.setMonth(date.getMonth() - i);
-      const monthName = date.toLocaleDateString('en-US', { month: 'short' });
+      const monthName = date.toLocaleString('en-US', { month: 'short' });
       
       return {
         month: monthName,
