@@ -181,11 +181,7 @@ export interface CarePlan {
   medicationsCount: number
   vitalsCount: number
   appointmentsCount: number
-  adherenceOverview?: {
-    medicationsCount?: number;
-    vitalsCount?: number;
-    appointmentsCount?: number;
-  };
+  // adherenceOverview property removed to avoid duplication.
 }
 
 export interface Medicine {
