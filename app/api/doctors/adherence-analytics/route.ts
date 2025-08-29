@@ -177,7 +177,7 @@ export async function GET(request: NextRequest) {
         patientId: p.patientId,
         name: p.user?.name || `${p.user?.firstName || ''} ${p.user?.lastName || ''}`.trim(),
         adherenceScore: p.overallAdherenceScore,
-        riskLevel: p.overallAdherenceScore < 60 ? 'high' : 'medium'
+        riskLevel: p.overallAdherenceScore.toNumber() < 60 ? 'high' : 'medium'
       }));
 
     const adherenceOverview = [
