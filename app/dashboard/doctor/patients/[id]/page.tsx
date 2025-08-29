@@ -220,7 +220,6 @@ export default function PatientDetailsPage() {
     carePlans: false,
     vitals: false,
     appointments: false,
-    carePlans: false,
     symptoms: false
   })
   
