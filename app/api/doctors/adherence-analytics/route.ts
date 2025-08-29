@@ -131,11 +131,11 @@ export async function GET(request: NextRequest) {
 
     const totalPatients = patientsStats.length;
     const patientsWithRecords = adherenceRecords.length > 0 ? 
-      [...new Set(adherenceRecords.map((r: AdherenceRecordWithPatient) => r.patientId))].length : 0;
+      [...new Set(adherenceRecords.map((record: AdherenceRecordWithPatient) => record.patientId))].length : 0;
     
     const adherenceScores = patientsStats
-      .filter((p: PatientStats): p is PatientStats & { overallAdherenceScore: NonNullable<PatientStats['overallAdherenceScore']> } => p.overallAdherenceScore !== null)
-      .map((p) => p.overallAdherenceScore.toNumber());
+      .filter((patient: PatientStats): patient is PatientStats & { overallAdherenceScore: NonNullable<PatientStats['overallAdherenceScore']> } => patient.overallAdherenceScore !== null)
+      .map((patient) => patient.overallAdherenceScore.toNumber());
     
     const averageAdherence = adherenceScores.length > 0 
       ? adherenceScores.reduce((sum: number, score: number) => sum + score, 0) / adherenceScores.length
@@ -172,8 +172,8 @@ export async function GET(request: NextRequest) {
           }
         });
 
-        const dayScores = dayRecords.filter((r: DayRecord) => r.isCompleted).map(() => 100).concat(
-          dayRecords.filter((r: DayRecord) => r.isMissed).map(() => 0)
+        const dayScores = dayRecords.filter((record: DayRecord) => record.isCompleted).map((record) => 100).concat(
+          dayRecords.filter((record: DayRecord) => record.isMissed).map((record) => 0)
         );
         const dayAverage = dayScores.length > 0 
           ? dayScores.reduce((sum: number, score: number) => sum + score, 0) / dayScores.length
@@ -188,24 +188,24 @@ export async function GET(request: NextRequest) {
     );
 
     const topPatients = patientsStats
-      .filter((p: PatientStats): p is PatientStats & { overallAdherenceScore: NonNullable<PatientStats['overallAdherenceScore']> } => p.overallAdherenceScore !== null)
+      .filter((patient: PatientStats): patient is PatientStats & { overallAdherenceScore: NonNullable<PatientStats['overallAdherenceScore']> } => patient.overallAdherenceScore !== null)
       .sort((a, b) => b.overallAdherenceScore.toNumber() - a.overallAdherenceScore.toNumber())
       .slice(0, 5)
-      .map((p) => ({
-        patientId: p.patientId,
-        name: p.user?.name || `${p.user?.firstName || ''} ${p.user?.lastName || ''}`.trim(),
-        adherenceScore: p.overallAdherenceScore
+      .map((patient) => ({
+        patientId: patient.patientId,
+        name: patient.user?.name || `${patient.user?.firstName || ''} ${patient.user?.lastName || ''}`.trim(),
+        adherenceScore: patient.overallAdherenceScore
       }));
 
     const patientsNeedingAttention = patientsStats
-      .filter((p: PatientStats): p is PatientStats & { overallAdherenceScore: NonNullable<PatientStats['overallAdherenceScore']> } => p.overallAdherenceScore !== null && p.overallAdherenceScore.toNumber() < 75)
+      .filter((patient: PatientStats): patient is PatientStats & { overallAdherenceScore: NonNullable<PatientStats['overallAdherenceScore']> } => patient.overallAdherenceScore !== null && patient.overallAdherenceScore.toNumber() < 75)
       .sort((a, b) => a.overallAdherenceScore.toNumber() - b.overallAdherenceScore.toNumber())
       .slice(0, 5)
-      .map((p) => ({
-        patientId: p.patientId,
-        name: p.user?.name || `${p.user?.firstName || ''} ${p.user?.lastName || ''}`.trim(),
-        adherenceScore: p.overallAdherenceScore,
-        riskLevel: p.overallAdherenceScore.toNumber() < 60 ? 'high' : 'medium'
+      .map((patient) => ({
+        patientId: patient.patientId,
+        name: patient.user?.name || `${patient.user?.firstName || ''} ${patient.user?.lastName || ''}`.trim(),
+        adherenceScore: patient.overallAdherenceScore,
+        riskLevel: patient.overallAdherenceScore.toNumber() < 60 ? 'high' : 'medium'
       }));
 
     const adherenceOverview = [
@@ -218,7 +218,7 @@ export async function GET(request: NextRequest) {
     const monthlyTrends = Array.from({length: 6}, (_, i) => {
       const date = new Date();
       date.setMonth(date.getMonth() - i);
-      const monthName = date.toLocaleString('en-US', { month: 'short' });
+      const monthName = date.toLocaleDateString('en-US', { month: 'short' });
       
       return {
         month: monthName,
