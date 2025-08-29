@@ -123,9 +123,9 @@ class ConsentController {
       res.status(201).json(ResponseFormatter.success(
         {
           assignment_id: result.assignment.id,
-          requires_consent: result.requires_consent,
+          requiresConsent: result.requiresConsent,
           same_provider: result.same_provider,
-          consent_status: result.assignment.consent_status,
+          consentStatus: result.assignment.consentStatus,
           accessGranted: result.assignment.accessGranted
         },
         result.same_provider ? 
@@ -163,7 +163,7 @@ class ConsentController {
         throw new ValidationError('No secondary assignment found for this patient');
       }
 
-      if (!accessCheck.requires_consent) {
+      if (!accessCheck.requiresConsent) {
         throw new ValidationError('Consent not required for this patient');
       }
 
@@ -258,7 +258,7 @@ class ConsentController {
         throw new ValidationError('No assignment found for OTP resend');
       }
 
-      if (!accessCheck.requires_consent) {
+      if (!accessCheck.requiresConsent) {
         throw new ValidationError('Consent not required for this patient');
       }
 
@@ -305,8 +305,8 @@ class ConsentController {
         {
           can_access: accessCheck.can_access,
           access_type: accessCheck.access_type || 'none',
-          requires_consent: accessCheck.requires_consent || false,
-          consent_status: accessCheck.consent_status || 'none',
+          requiresConsent: accessCheck.requiresConsent || false,
+          consentStatus: accessCheck.consentStatus || 'none',
           assignment_id: accessCheck.assignment_id || null,
           reason: accessCheck.reason || null
         },

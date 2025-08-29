@@ -227,8 +227,8 @@ export const POST = withErrorHandling(async (request: NextRequest, { params }: {
         linked_care_plans: carePlanIds.length
       },
       consent_info: {
-        requires_consent: needsConsent,
-        consent_status: assignment.consentStatus,
+        requiresConsent: needsConsent,
+        consentStatus: assignment.consentStatus,
         accessGranted: assignment.accessGranted,
         same_organization: sameOrganization,
         reason: sameOrganization 
@@ -387,8 +387,8 @@ export const GET = withErrorHandling(async (request: NextRequest, { params }: { 
         } : null,
         permissions: assignment.permissions || {},
         consent_details: {
-          requires_consent: assignment.requiresConsent,
-          consent_status: assignment.consentStatus,
+          requiresConsent: assignment.requiresConsent,
+          consentStatus: assignment.consentStatus,
           accessGranted: assignment.accessGranted,
           consent_granted_at: assignment.consentGrantedAt,
           otp_info: consent ? {
@@ -407,7 +407,7 @@ export const GET = withErrorHandling(async (request: NextRequest, { params }: { 
       active_assignments: formattedAssignments.filter(a => a.isActive).length,
       granted_access: formattedAssignments.filter(a => a.consent_details.accessGranted).length,
       pending_consent: formattedAssignments.filter(a => 
-        a.consent_details.requires_consent && !a.consent_details.accessGranted
+        a.consent_details.requiresConsent && !a.consent_details.accessGranted
       ).length,
       by_assignment_type: {
         specialist: formattedAssignments.filter(a => a.assignmentType === 'specialist').length,

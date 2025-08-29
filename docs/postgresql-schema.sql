@@ -2006,7 +2006,7 @@ CREATE TABLE public.secondary_doctor_assignments (
     primary_doctor_provider_id uuid,
     secondary_doctor_provider_id uuid,
     consent_required boolean DEFAULT true,
-    consent_status public.enum_secondary_doctor_assignments_consent_status DEFAULT 'pending'::public.enum_secondary_doctor_assignments_consent_status,
+    consentStatus public.enum_secondary_doctor_assignments_consent_status DEFAULT 'pending'::public.enum_secondary_doctor_assignments_consent_status,
     accessGranted boolean DEFAULT false,
     first_access_attempt_at timestamp(6) with time zone,
     access_granted_at timestamp(6) with time zone,
@@ -4528,7 +4528,7 @@ CREATE INDEX secondary_doctor_assignments_consent_expires_at ON public.secondary
 -- Name: secondary_doctor_assignments_consent_status; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX secondary_doctor_assignments_consent_status ON public.secondary_doctor_assignments USING btree (consent_status);
+CREATE INDEX secondary_doctor_assignments_consent_status ON public.secondary_doctor_assignments USING btree (consentStatus);
 
 
 --

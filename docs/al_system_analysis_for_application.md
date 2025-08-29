@@ -904,7 +904,7 @@ const PatientSchema = {
   last_activity: { type: Date },
   
   // Privacy and Consent
-  consent_status: { type: String, enum: ['PENDING', 'GIVEN', 'WITHDRAWN'] },
+  consentStatus: { type: String, enum: ['PENDING', 'GIVEN', 'WITHDRAWN'] },
   privacy_settings: { type: Object, default: {} }
 };
 ```
