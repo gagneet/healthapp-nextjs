@@ -97,9 +97,9 @@ export async function GET(request: NextRequest) {
       [...new Set(adherenceRecords.map(r => r.patientId))].length : 0;
     
     const patientsWithScores = patientsStats
-      .filter((p): p is typeof p & { overallAdherenceScore: number } => p.overallAdherenceScore !== null);
+      .filter((p): p is typeof p & { overallAdherenceScore: import('@prisma/client').Prisma.Decimal } => p.overallAdherenceScore !== null);
 
-    const adherenceScores = patientsWithScores.map(p => p.overallAdherenceScore);
+    const adherenceScores = patientsWithScores.map(p => p.overallAdherenceScore.toNumber());
     
     const averageAdherence = adherenceScores.length > 0 
       ? adherenceScores.reduce((sum, score) => sum + score, 0) / adherenceScores.length
