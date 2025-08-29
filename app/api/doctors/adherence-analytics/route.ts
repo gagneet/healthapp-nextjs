@@ -4,9 +4,9 @@ import { prisma } from '@/lib/prisma';
 import { Prisma } from '@prisma/client';
 
 // Helper function to safely convert Decimal to number
-function safeToNumber(value: any): number {
-  if (typeof value === 'object' && value !== null && typeof value.toNumber === 'function') {
-    return value.toNumber();
+function safeToNumber(value: Prisma.Decimal | number | null | undefined): number {
+  if (typeof value === 'object' && value !== null && typeof (value as any).toNumber === 'function') {
+    return (value as any).toNumber();
   }
   return Number(value);
 }
@@ -44,6 +44,8 @@ type PatientStats = Prisma.PatientGetPayload<{
     }
   }
 }>;
+
+type PatientWithAdherenceScore = PatientStats & { overallAdherenceScore: NonNullable<PatientStats['overallAdherenceScore']> };
 
 const dayRecordSelect = {
   select: {
@@ -149,7 +151,7 @@ export async function GET(request: NextRequest) {
       [...new Set(adherenceRecords.map((record: AdherenceRecordWithPatient) => record.patientId))].length : 0;
     
     const adherenceScores = patientsStats
-      .filter((patient: PatientStats): patient is PatientStats & { overallAdherenceScore: NonNullable<PatientStats['overallAdherenceScore']> } => patient.overallAdherenceScore !== null)
+      .filter((patient: PatientStats): patient is PatientWithAdherenceScore => patient.overallAdherenceScore !== null)
       .map((patient) => safeToNumber(patient.overallAdherenceScore));
     
     const averageAdherence = adherenceScores.length > 0 
@@ -207,7 +209,7 @@ export async function GET(request: NextRequest) {
     );
 
     const topPatients = patientsStats
-      .filter((patient: PatientStats): patient is PatientStats & { overallAdherenceScore: NonNullable<PatientStats['overallAdherenceScore']> } => patient.overallAdherenceScore !== null)
+      .filter((patient: PatientStats): patient is PatientWithAdherenceScore => patient.overallAdherenceScore !== null)
       .sort((a, b) => safeToNumber(b.overallAdherenceScore) - safeToNumber(a.overallAdherenceScore))
       .slice(0, 5)
       .map((patient) => ({
@@ -217,7 +219,7 @@ export async function GET(request: NextRequest) {
       }));
 
     const patientsNeedingAttention = patientsStats
-      .filter((patient: PatientStats): patient is PatientStats & { overallAdherenceScore: NonNullable<PatientStats['overallAdherenceScore']> } => patient.overallAdherenceScore !== null && safeToNumber(patient.overallAdherenceScore) < 75)
+      .filter((patient: PatientStats): patient is PatientWithAdherenceScore => patient.overallAdherenceScore !== null && safeToNumber(patient.overallAdherenceScore) < 75)
       .sort((a, b) => safeToNumber(a.overallAdherenceScore) - safeToNumber(b.overallAdherenceScore))
       .slice(0, 5)
       .map((patient) => ({
