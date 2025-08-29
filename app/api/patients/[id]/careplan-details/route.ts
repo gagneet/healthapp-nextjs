@@ -287,8 +287,6 @@ export async function GET(request: NextRequest, { params }: { params: { id:strin
           }
         });
 
-        });
-
         return {
           id: carePlan.id,
           name: carePlan.title || 'Unnamed Care Plan',

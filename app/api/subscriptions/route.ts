@@ -182,8 +182,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Calculate end date based on billing cycle
-    const startDate = new Date(startDate);
-    const endDate = new Date(startDate);
+    const startDateObj = new Date(startDate);
+    const endDate = new Date(startDateObj);
     
     // Add duration based on billing cycle
     if (servicePlan.billing_cycle === 'monthly') {
@@ -202,7 +202,7 @@ export async function POST(request: NextRequest) {
         patientId,
         provider_id: 'placeholder-provider-id', // This needs to be determined from business logic
         service_plan_id,
-        current_period_start: startDate,
+        current_period_start: startDateObj,
         current_period_end: endDate,
         status: 'ACTIVE',
         payment_method_id,
