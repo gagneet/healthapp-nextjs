@@ -3,6 +3,14 @@ import { auth } from "@/lib/auth";
 import { prisma } from '@/lib/prisma';
 import { Prisma } from '@prisma/client';
 
+// Helper function to safely convert Decimal to number
+function safeToNumber(value: any): number {
+  if (typeof value === 'object' && value !== null && typeof value.toNumber === 'function') {
+    return value.toNumber();
+  }
+  return Number(value);
+}
+
 type AdherenceRecordWithPatient = Prisma.AdherenceRecordGetPayload<{
   include: {
     patient: {
@@ -45,7 +53,6 @@ const dayRecordSelect = {
 };
 
 type DayRecord = Prisma.AdherenceRecordGetPayload<typeof dayRecordSelect>;
-
 
 /**
  * GET /api/doctors/adherence-analytics
@@ -143,7 +150,7 @@ export async function GET(request: NextRequest) {
     
     const adherenceScores = patientsStats
       .filter((patient: PatientStats): patient is PatientStats & { overallAdherenceScore: NonNullable<PatientStats['overallAdherenceScore']> } => patient.overallAdherenceScore !== null)
-      .map((patient) => patient.overallAdherenceScore.toNumber());
+      .map((patient) => safeToNumber(patient.overallAdherenceScore));
     
     const averageAdherence = adherenceScores.length > 0 
       ? adherenceScores.reduce((sum: number, score: number) => sum + score, 0) / adherenceScores.length
@@ -184,8 +191,8 @@ export async function GET(request: NextRequest) {
           }
         });
 
-        const dayScores = dayRecords.filter((record: DayRecord) => record.isCompleted).map((record) => 100).concat(
-          dayRecords.filter((record: DayRecord) => record.isMissed).map((record) => 0)
+        const dayScores = dayRecords.filter((record: DayRecord) => record.isCompleted).map(() => 100).concat(
+          dayRecords.filter((record: DayRecord) => record.isMissed).map(() => 0)
         );
         const dayAverage = dayScores.length > 0 
           ? dayScores.reduce((sum: number, score: number) => sum + score, 0) / dayScores.length
@@ -201,7 +208,7 @@ export async function GET(request: NextRequest) {
 
     const topPatients = patientsStats
       .filter((patient: PatientStats): patient is PatientStats & { overallAdherenceScore: NonNullable<PatientStats['overallAdherenceScore']> } => patient.overallAdherenceScore !== null)
-      .sort((a, b) => b.overallAdherenceScore.toNumber() - a.overallAdherenceScore.toNumber())
+      .sort((a, b) => safeToNumber(b.overallAdherenceScore) - safeToNumber(a.overallAdherenceScore))
       .slice(0, 5)
       .map((patient) => ({
         patientId: patient.patientId,
@@ -210,14 +217,14 @@ export async function GET(request: NextRequest) {
       }));
 
     const patientsNeedingAttention = patientsStats
-      .filter((patient: PatientStats): patient is PatientStats & { overallAdherenceScore: NonNullable<PatientStats['overallAdherenceScore']> } => patient.overallAdherenceScore !== null && patient.overallAdherenceScore.toNumber() < 75)
-      .sort((a, b) => a.overallAdherenceScore.toNumber() - b.overallAdherenceScore.toNumber())
+      .filter((patient: PatientStats): patient is PatientStats & { overallAdherenceScore: NonNullable<PatientStats['overallAdherenceScore']> } => patient.overallAdherenceScore !== null && safeToNumber(patient.overallAdherenceScore) < 75)
+      .sort((a, b) => safeToNumber(a.overallAdherenceScore) - safeToNumber(b.overallAdherenceScore))
       .slice(0, 5)
       .map((patient) => ({
         patientId: patient.patientId,
         name: patient.user?.name || `${patient.user?.firstName || ''} ${patient.user?.lastName || ''}`.trim(),
         adherenceScore: patient.overallAdherenceScore,
-        riskLevel: patient.overallAdherenceScore.toNumber() < 60 ? 'high' : 'medium'
+        riskLevel: safeToNumber(patient.overallAdherenceScore) < 60 ? 'high' : 'medium'
       }));
 
     const adherenceOverview = [
