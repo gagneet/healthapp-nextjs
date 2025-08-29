@@ -5,8 +5,8 @@ import { Prisma } from '@prisma/client';
 
 // Helper function to safely convert Decimal to number
 function safeToNumber(value: Prisma.Decimal | number | null | undefined): number {
-  if (typeof value === 'object' && value !== null && typeof (value as any).toNumber === 'function') {
-    return (value as any).toNumber();
+  if (value instanceof Prisma.Decimal) {
+    return value.toNumber();
   }
   return Number(value);
 }
@@ -193,9 +193,12 @@ export async function GET(request: NextRequest) {
           }
         });
 
-        const dayScores = dayRecords.filter((record: DayRecord) => record.isCompleted).map(() => 100).concat(
-          dayRecords.filter((record: DayRecord) => record.isMissed).map(() => 0)
-        );
+        const dayScores = dayRecords.reduce((scores: number[], record: DayRecord) => {
+          if (record.isCompleted) scores.push(100);
+          else if (record.isMissed) scores.push(0);
+          return scores;
+        }, []);
+
         const dayAverage = dayScores.length > 0 
           ? dayScores.reduce((sum: number, score: number) => sum + score, 0) / dayScores.length
           : null;
