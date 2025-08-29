@@ -26,7 +26,7 @@ services:
 
   # Redis Cache
   redis:
-    image: redis:7.4-alpine
+    image: redis:8.2-alpine
     container_name: healthapp-redis-dev
     environment:
       REDIS_PASSWORD: redis_password
