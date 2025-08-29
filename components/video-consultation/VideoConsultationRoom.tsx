@@ -1,3 +1,5 @@
+import { Prisma } from "@prisma/client";
+
 'use client'
 
 import { useState, useEffect, useCallback } from 'react';
@@ -27,6 +29,22 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 
 // ParticipantTile component to display each participant's video
+type EmergencyAlertWithRelations = Prisma.EmergencyAlertGetPayload<{
+  include: { patient: true; user: true }
+}>;
+
+type MedicationSafetyAlertWithRelations = Prisma.MedicationSafetyAlertGetPayload<{
+  include: { patient: true; user: true }
+}>;
+
+type NotificationWithRelations = Prisma.NotificationGetPayload<{
+  include: { patient: true; user: true }
+}>;
+
+type AdherenceRecordWithRelations = Prisma.AdherenceRecordGetPayload<{
+  include: { patient: true; user: true }
+}>;
+
 const ParticipantTile = ({ sessionId }: { sessionId: string }) => {
   const participant = useParticipant(sessionId);
   const { isPlayable, cam, isScreen } = useVideo(sessionId);
@@ -71,7 +89,7 @@ const VideoConsultationRoomContent = ({ consultationId, roomUrl, userRole, onEnd
   const [showChat, setShowChat] = useState(false);
 
   const sendAppMessage = useAppMessage({
-    onAppMessage: useCallback((ev) => {
+    onAppMessage: useCallback((ev: any) => {
       setChatMessages((prev) => [...prev, { sender: ev.from, msg: ev.data.msg }]);
     }, []),
   });

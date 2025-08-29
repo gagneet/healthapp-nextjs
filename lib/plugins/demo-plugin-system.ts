@@ -1,3 +1,5 @@
+import { Prisma } from "@prisma/client";
+
 /**
  * Plugin System Demonstration
  * 
@@ -96,6 +98,22 @@ class MockBloodPressurePlugin {
     if (!this.isInitialized) throw new Error('Plugin not initialized');
     
     console.log('🔍 Discovering blood pressure devices...');
+type EmergencyAlertWithRelations = Prisma.EmergencyAlertGetPayload<{
+  include: { patient: true; user: true }
+}>;
+
+type MedicationSafetyAlertWithRelations = Prisma.MedicationSafetyAlertGetPayload<{
+  include: { patient: true; user: true }
+}>;
+
+type NotificationWithRelations = Prisma.NotificationGetPayload<{
+  include: { patient: true; user: true }
+}>;
+
+type AdherenceRecordWithRelations = Prisma.AdherenceRecordGetPayload<{
+  include: { patient: true; user: true }
+}>;
+
     const devices = [
       {
         deviceId: 'mock-bp-001',
@@ -122,7 +140,7 @@ class MockBloodPressurePlugin {
     return devices;
   }
 
-  async connect(config) {
+  async connect(config: any) {
     console.log(`🔗 Connecting to device ${config.deviceId}...`);
     await this.simulateDelay(1000, 2000);
     

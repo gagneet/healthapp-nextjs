@@ -1,7 +1,25 @@
+import { Prisma } from "@prisma/client";
+
 // src/config/database-postgres.ts
 import { Sequelize, Options } from 'sequelize';
 import { config } from 'dotenv';
 import { createLogger } from '../middleware/logger.js';
+
+type EmergencyAlertWithRelations = Prisma.EmergencyAlertGetPayload<{
+  include: { patient: true; user: true }
+}>;
+
+type MedicationSafetyAlertWithRelations = Prisma.MedicationSafetyAlertGetPayload<{
+  include: { patient: true; user: true }
+}>;
+
+type NotificationWithRelations = Prisma.NotificationGetPayload<{
+  include: { patient: true; user: true }
+}>;
+
+type AdherenceRecordWithRelations = Prisma.AdherenceRecordGetPayload<{
+  include: { patient: true; user: true }
+}>;
 
 const logger = createLogger(import.meta.url);
 
@@ -25,7 +43,7 @@ const databaseConfig: Options = {
   
   timezone: 'UTC',
   
-  logging: process.env.NODE_ENV === 'development' ? (msg) => logger.debug(msg) : false,
+  logging: process.env.NODE_ENV === 'development' ? (msg: any) => logger.debug(msg: any) : false,
   
   pool: {
     max: parseInt(process.env.DB_POOL_MAX || '150'),     // Increased for 500+ concurrent doctors
