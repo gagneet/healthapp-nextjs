@@ -190,5 +190,4 @@ stages:
               resourceGroup: '$(AKS_RESOURCE_GROUP)'
               kubernetesCluster: '$(AKS_CLUSTER_NAME)'
               command: 'apply'
-              useConfigurationFile: true
-              configuration: '$(System.ArtifactsDirectory)/manifests/'
+              configuration: '$(System.ArtifactsDirectory)/manifests/*.yml'
