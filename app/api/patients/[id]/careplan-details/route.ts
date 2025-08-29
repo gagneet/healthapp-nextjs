@@ -244,23 +244,47 @@ export async function GET(request: NextRequest, { params }: { params: { id:strin
     const { carePlans, vitalRequirements, vitalReadings } = await fetchCarePlanData(patientId);
 
     // Format the care plans data
-    const formattedCarePlans = carePlans.map((carePlan: any) => ({
-      id: carePlan.id,
-      title: carePlan.title || 'Care Plan',
-      description: carePlan.description,
-      status: carePlan.status,
-      createdAt: carePlan.createdAt,
-      updatedAt: carePlan.updatedAt,
-      medications: (carePlan.prescribedMedications || []).map((med: any) => ({
-        id: med.id,
-        medicine: med.medicine,
-        dosage: med.dosage,
-        frequency: med.frequency,
-        duration: med.duration,
-        instructions: med.instructions,
-        adherenceScore: med.adherenceScore
-      }))
-    }));
+    const formattedCarePlans = await Promise.all(
+      carePlans.map(async (carePlan: any) => {
+        const medicationsCount = carePlan.prescribedMedications?.length || 0;
+const vitalsCount = await prisma.vitalRequirement.groupBy({
+  by: ['carePlanId'],
+  _count: true,
+  where: {
+    carePlanId: {
+      in: carePlans.map(cp => cp.id)
+    }
+  }
+});
+
+const appointmentsCount = await prisma.appointment.groupBy({
+  by: ['carePlanId'],
+  _count: true,
+  where: {
+    carePlanId: {
+      in: carePlans.map(cp => cp.id)
+    },
+    startDate: {
+      gte: carePlan.startDate,
+      ...(carePlan.endDate && { lte: carePlan.endDate })
+    }
+  }
+});
+        });
+
+        return {
+          id: carePlan.id,
+          name: carePlan.title || 'Unnamed Care Plan',
+          status: carePlan.status,
+          priority: carePlan.priority || 'medium',
+          startDate: carePlan.startDate,
+          endDate: carePlan.endDate,
+          medicationsCount,
+          vitalsCount,
+          appointmentsCount,
+        };
+      })
+    );
 
     // Format vital requirements
     const formattedVitalRequirements = vitalRequirements.map((req: any) => ({
