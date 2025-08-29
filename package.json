@@ -88,7 +88,7 @@
     "dotenv": "^17.0.0",
     "framer-motion": "^11.2.0",
     "glob": "^11.0.3",
-    "joi": "^17.12.1",
+    "joi": "^18.0.0",
     "jsonwebtoken": "^9.0.2",
     "lucide-react": "^0.542.0",
     "moment": "^2.30.1",
