@@ -119,6 +119,7 @@ stages:
               resourceGroup: '$(AKS_RESOURCE_GROUP)'
               kubernetesCluster: '$(AKS_CLUSTER_NAME)'
               command: 'apply'
+              useConfigurationFile: true
               inline: |
                 apiVersion: v1
                 kind: Secret
@@ -160,22 +161,24 @@ stages:
             inputs:
               targetType: 'inline'
               script: |
-                # Wait for up to 5 minutes for the job to complete, but do not fail if the job does not exist yet.
-                kubectl wait --for=condition=complete job/healthapp-migration-job --timeout=300s || true
-                
-                # Check if the job exists
-                if ! kubectl get job/healthapp-migration-job > /dev/null 2>&1; then
-                  echo "Migration job does not exist. Exiting with error."
+                # Wait for up to 5 minutes for the job to complete.
+                if ! kubectl wait --for=condition=complete job/healthapp-migration-job --timeout=300s; then
+                  echo "Migration job failed or timed out. Checking logs..."
+                  # Get the pod name(s) for the job using its selector.
+                  PODS=$(kubectl get pods --selector=job-name=healthapp-migration-job --output=jsonpath='{.items[*].metadata.name}')
+                  if [ -z "$PODS" ]; then
+                    echo "No pods found for the migration job. Cannot fetch logs."
+                  else
+                    for POD in $PODS; do
+                      echo "Logs for pod $POD:"
+                      # Fetch logs for each pod associated with the job.
+                      kubectl logs "$POD"
+                    done
+                  fi
+                  # Explicitly fail the pipeline step.
                   exit 1
                 fi
-                
-                # Check if the job succeeded
-                JOB_STATUS=$(kubectl get job/healthapp-migration-job -o jsonpath='{.status.succeeded}')
-                if [ "$JOB_STATUS" != "1" ]; then
-                  echo "Migration job did not complete successfully. Checking logs..."
-                  kubectl logs job/healthapp-migration-job
-                  exit 1
-                fi
+
                 echo "Migration job completed successfully."
 
           # 7. Deploy the application (Deployment, Service, Ingress).
