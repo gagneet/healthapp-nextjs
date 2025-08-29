@@ -96,8 +96,10 @@ export async function GET(request: NextRequest) {
     const patientsWithRecords = adherenceRecords.length > 0 ? 
       [...new Set(adherenceRecords.map(r => r.patientId))].length : 0;
     
-    const adherenceScores = patientsStats
-      .map(p => p.overallAdherenceScore!);
+    const patientsWithScores = patientsStats
+      .filter((p): p is typeof p & { overallAdherenceScore: number } => p.overallAdherenceScore !== null);
+
+    const adherenceScores = patientsWithScores.map(p => p.overallAdherenceScore);
     
     const averageAdherence = adherenceScores.length > 0 
       ? adherenceScores.reduce((sum, score) => sum + score, 0) / adherenceScores.length
@@ -134,9 +136,11 @@ export async function GET(request: NextRequest) {
           }
         });
 
-        const dayScores = dayRecords.filter(r => r.isCompleted).map(r => 100).concat(
-          dayRecords.filter(r => r.isMissed).map(r => 0)
-        );
+        const dayScores = dayRecords.reduce((scores: number[], r) => {
+          if (r.isCompleted) scores.push(100);
+          else if (r.isMissed) scores.push(0);
+          return scores;
+        }, []);
         const dayAverage = dayScores.length > 0 
           ? dayScores.reduce((sum, score) => sum + score, 0) / dayScores.length
           : null;
@@ -149,9 +153,8 @@ export async function GET(request: NextRequest) {
       })
     );
 
-    const topPatients = patientsStats
-      .filter(p => p.overallAdherenceScore !== null)
-      .sort((a, b) => (b.overallAdherenceScore as number) - (a.overallAdherenceScore as number))
+    const topPatients = patientsWithScores
+      .sort((a, b) => b.overallAdherenceScore - a.overallAdherenceScore)
       .slice(0, 5)
       .map(p => ({
         patientId: p.patientId,
@@ -159,15 +162,15 @@ export async function GET(request: NextRequest) {
         adherenceScore: p.overallAdherenceScore
       }));
 
-    const patientsNeedingAttention = patientsStats
-      .filter(p => p.overallAdherenceScore !== null && (p.overallAdherenceScore as number) < 75)
-      .sort((a, b) => (a.overallAdherenceScore as number) - (b.overallAdherenceScore as number))
+    const patientsNeedingAttention = patientsWithScores
+      .filter(p => p.overallAdherenceScore < 75)
+      .sort((a, b) => a.overallAdherenceScore - b.overallAdherenceScore)
       .slice(0, 5)
       .map(p => ({
         patientId: p.patientId,
         name: p.user?.name || `${p.user?.firstName || ''} ${p.user?.lastName || ''}`.trim(),
         adherenceScore: p.overallAdherenceScore,
-        riskLevel: (p.overallAdherenceScore as number) < 60 ? 'high' : 'medium'
+        riskLevel: p.overallAdherenceScore < 60 ? 'high' : 'medium'
       }));
 
     const adherenceOverview = [

@@ -1,6 +1,6 @@
 {
   "name": "healthapp-template",
-  "version": "0.8.5",
+  "version": "0.8.1",
   "description": "HealthApp Healthcare Management Platform using Next.js, Node.js, Prisma, and Postgres",
   "type": "module",
   "repository": {
@@ -29,8 +29,8 @@
     "start": "next start -p 3002",
     "lint": "next lint",
     "type-check": "tsc --noEmit",
-    "clean": "find lib -name '*.js' -not -name 'seed.js' -not -name 'seed.cjs' -delete && find app -name '*.js' -delete && find scripts -name '*.js' -delete",
-    "clean:all": "find . -name '*.js' -not -path './node_modules/*' -not -name 'seed.js' -not -name 'seed.cjs' -not -path './.next/*' -delete",
+    "clean": "find lib -name '*.js' -not -name 'seed.js' -delete && find app -name '*.js' -delete && find scripts -name '*.js' -delete",
+    "clean:all": "find . -name '*.js' -not -path './node_modules/*' -not -name 'seed.js' -not -path './.next/*' -delete",
     "test": "jest --detectOpenHandles",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
@@ -45,7 +45,7 @@
     "db:setup": "npm run db:generate && npm run migrate && npm run seed"
   },
   "prisma": {
-    "seed": "tsx prisma/seed.ts"
+    "seed": "tsx --require dotenv/config prisma/seed.ts"
   },
   "devDependencies": {
     "@babel/preset-env": "^7.28.3",
