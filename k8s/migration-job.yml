@@ -1,0 +1,28 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: healthapp-migration-job
+spec:
+  template:
+    metadata:
+      labels:
+        job-name: healthapp-migration-job
+    spec:
+      containers:
+      - name: healthapp-migration
+        # The image will be dynamically set by the Azure Pipeline.
+        image: __ACR_NAME__.azurecr.io/healthapp:__IMAGE_TAG__
+        # The command to run the Prisma database migration.
+        command: ["npx", "prisma", "migrate", "deploy"]
+        env:
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              # This assumes you have a Kubernetes secret named 'healthapp-secrets'
+              # with a key 'DATABASE_URL'.
+              name: healthapp-secrets
+              key: DATABASE_URL
+      # Do not restart the job if it fails; the pipeline should handle the failure.
+      restartPolicy: Never
+  # The number of times to retry the job before marking it as failed.
+  backoffLimit: 2
