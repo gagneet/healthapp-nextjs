@@ -119,7 +119,6 @@ stages:
               resourceGroup: '$(AKS_RESOURCE_GROUP)'
               kubernetesCluster: '$(AKS_CLUSTER_NAME)'
               command: 'apply'
-              useConfigurationFile: true
               inline: |
                 apiVersion: v1
                 kind: Secret
