@@ -213,12 +213,12 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
     if (currentOrgId) {
       results.doctors.forEach((doctor: any) => {
         doctor.same_organization = doctor.organization_id === currentOrgId
-        doctor.requires_consent = doctor.organization_id !== currentOrgId
+        doctor.requiresConsent = doctor.organization_id !== currentOrgId
       })
 
       results.hsps.forEach((hsp: any) => {
         hsp.same_organization = hsp.organization_id === currentOrgId
-        hsp.requires_consent = hsp.organization_id !== currentOrgId
+        hsp.requiresConsent = hsp.organization_id !== currentOrgId
       })
     }
 

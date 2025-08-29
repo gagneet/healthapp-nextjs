@@ -234,8 +234,8 @@ export const POST = withErrorHandling(async (request: NextRequest, { params }: {
         notes: notes
       },
       consent_info: {
-        requires_consent: needsConsent,
-        consent_status: assignment.consentStatus,
+        requiresConsent: needsConsent,
+        consentStatus: assignment.consentStatus,
         accessGranted: assignment.accessGranted,
         same_organization: sameOrganization,
         reason: sameOrganization 

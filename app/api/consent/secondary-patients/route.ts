@@ -184,9 +184,9 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
           createdAt: assignment.createdAt,
           expires_at: assignment.expiresAt
         },
-        consent_status: {
+        consentStatus: {
           status: assignment.consentStatus || 'pending',
-          requires_consent: assignment.requiresConsent,
+          requiresConsent: assignment.requiresConsent,
           otp_generated: !!consent,
           otp_verified: consent?.isVerified || false,
           otp_expires_at: consent?.expiresAt || null,
@@ -211,9 +211,9 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
     // Generate summary statistics
     const summary = {
       total_assignments: secondaryPatients.length,
-      pending_consent: secondaryPatients.filter(p => p.consent_status.status === 'pending').length,
+      pending_consent: secondaryPatients.filter(p => p.consentStatus.status === 'pending').length,
       granted_access: secondaryPatients.filter(p => p.assignment_details.accessGranted).length,
-      blocked_otps: secondaryPatients.filter(p => p.consent_status.is_blocked).length,
+      blocked_otps: secondaryPatients.filter(p => p.consentStatus.is_blocked).length,
       expired_assignments: secondaryPatients.filter(p => 
         p.assignment_details.expires_at && new Date(p.assignment_details.expires_at) < new Date()
       ).length

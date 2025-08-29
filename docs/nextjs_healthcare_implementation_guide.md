@@ -175,7 +175,7 @@ CREATE TABLE patients (
     allergies JSONB DEFAULT '[]',
     emergency_contact JSONB,
     insurance_details JSONB,
-    consent_status VARCHAR(20) DEFAULT 'pending',
+    consentStatus VARCHAR(20) DEFAULT 'pending',
     hipaa_authorization BOOLEAN DEFAULT false,
     createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP

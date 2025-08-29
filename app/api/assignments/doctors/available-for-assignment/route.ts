@@ -193,7 +193,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
           currency: 'USD' // Could be configurable
         },
         assignment_suitability: {
-          requires_consent: !sameOrganization,
+          requiresConsent: !sameOrganization,
           consent_reason: sameOrganization 
             ? 'Same organization - automatic access'
             : 'Different organization - patient consent required',

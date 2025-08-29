@@ -268,8 +268,8 @@ class PatientController {
             ...patient,
             patient_type: 'M', // Main/Primary
             patient_type_label: 'Primary Patient',
-            requires_consent: false,
-            consent_status: 'not_required',
+            requiresConsent: false,
+            consentStatus: 'not_required',
             accessGranted: true,
             can_view: true
           });
@@ -312,8 +312,8 @@ class PatientController {
               patient_type: patient.patient_type,
               patient_type_label: patient.patient_type_label,
               access_type: patient.access_type,
-              requires_consent: patient.requires_consent,
-              consent_status: patient.consent_status || 'not_required',
+              requiresConsent: patient.requiresConsent,
+              consentStatus: patient.consentStatus || 'not_required',
               accessGranted: patient.accessGranted,
               can_view: patient.can_view,
               same_provider: patient.same_provider || false,

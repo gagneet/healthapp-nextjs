@@ -132,8 +132,8 @@ export const GET = withErrorHandling(async (request: NextRequest, { params }: { 
       return createSuccessResponse({
         can_access: false,
         access_type: 'none',
-        requires_consent: false,
-        consent_status: 'no_assignment',
+        requiresConsent: false,
+        consentStatus: 'no_assignment',
         assignments: [],
         reason: 'No assignments found for this patient'
       })
@@ -187,8 +187,8 @@ export const GET = withErrorHandling(async (request: NextRequest, { params }: { 
           } : null
         },
         consent_details: {
-          requires_consent: assignment.requiresConsent,
-          consent_status: assignment.consentStatus,
+          requiresConsent: assignment.requiresConsent,
+          consentStatus: assignment.consentStatus,
           accessGranted: assignment.accessGranted,
           otp_info: consent ? {
             otp_generated: true,
@@ -217,7 +217,7 @@ export const GET = withErrorHandling(async (request: NextRequest, { params }: { 
     // Determine overall access status for current user
     const currentUserAssignments = formattedAssignments.filter(a => a.is_current_user)
     const canAccess = currentUserAssignments.some(a => a.consent_details.accessGranted)
-    const requiresConsent = currentUserAssignments.some(a => a.consent_details.requires_consent && !a.consent_details.accessGranted)
+    const requiresConsent = currentUserAssignments.some(a => a.consent_details.requiresConsent && !a.consent_details.accessGranted)
     const hasActiveOtp = currentUserAssignments.some(a => 
       a.consent_details.otp_info.otp_generated && 
       !a.consent_details.otp_info.is_expired && 
@@ -259,8 +259,8 @@ export const GET = withErrorHandling(async (request: NextRequest, { params }: { 
       access_summary: {
         can_access: canAccess,
         access_type: accessType,
-        requires_consent: requiresConsent,
-        consent_status: overallConsentStatus,
+        requiresConsent: requiresConsent,
+        consentStatus: overallConsentStatus,
         has_active_otp: hasActiveOtp,
         total_assignments: assignments.length,
         user_assignments: currentUserAssignments.length

@@ -134,7 +134,7 @@ export const requireHIPAAConsent = async (req: any, res: any, next: any) => {
         return res.status(403).json({
           success: false,
           message: 'HIPAA authorization required',
-          requires_consent: true
+          requiresConsent: true
         });
       }
 

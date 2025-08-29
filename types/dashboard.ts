@@ -186,6 +186,7 @@ export interface CarePlan {
     vitalsCount?: number;
     appointmentsCount?: number;
   };
+  // adherenceOverview property removed to avoid duplication.
 }
 
 export interface Medicine {

@@ -257,7 +257,7 @@ export const POST = withErrorHandling(async (request: NextRequest, { params }: {
         type: providerType
       } : null,
       consent_details: {
-        consent_status: 'granted',
+        consentStatus: 'granted',
         consent_method: otpRecord.consentMethod,
         verified_by_role: session.user.role,
         verified_by_name: `${session.user.firstName} ${session.user.lastName}`.trim(),

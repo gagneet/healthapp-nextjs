@@ -103,7 +103,7 @@ export default (sequelize: any) => {
       comment: 'Whether patient consent is required (false for same provider)'
     },
     
-    consent_status: {
+    consentStatus: {
       type: DataTypes.ENUM('pending', 'requested', 'granted', 'denied', 'expired'),
       defaultValue: 'pending',
       comment: 'Current consent status'
@@ -178,7 +178,7 @@ export default (sequelize: any) => {
       { fields: ['primary_doctor_id'] },
       { fields: ['secondary_doctor_id'] },
       { fields: ['secondary_hsp_id'] },
-      { fields: ['consent_status'] },
+      { fields: ['consentStatus'] },
       { fields: ['accessGranted'] },
       { fields: ['isActive'] },
       { fields: ['consent_expires_at'] }
@@ -197,7 +197,7 @@ export default (sequelize: any) => {
             (this as any).secondary_doctor_provider_id &&
             (this as any).primary_doctor_provider_id === (this as any).secondary_doctor_provider_id) {
           (this as any).consent_required = false;
-          (this as any).consent_status = 'granted';
+          (this as any).consentStatus = 'granted';
           (this as any).accessGranted = true;
           
           if (!(this as any).access_granted_at) {
@@ -206,7 +206,7 @@ export default (sequelize: any) => {
         } else if (!(this as any).primary_doctor_provider_id || !(this as any).secondary_doctor_provider_id) {
           // Different or no provider = consent required
           (this as any).consent_required = true;
-          if ((this as any).consent_status === 'pending' && (this as any).accessGranted) {
+          if ((this as any).consentStatus === 'pending' && (this as any).accessGranted) {
             throw new Error('Cannot grant access without consent for different providers');
           }
         }
@@ -216,7 +216,7 @@ export default (sequelize: any) => {
     hooks: {
       beforeValidate: (assignment: any) => {
         // Set consent expiry if not already set
-        if (assignment.consent_status === 'granted' && !assignment.consent_expires_at) {
+        if (assignment.consentStatus === 'granted' && !assignment.consent_expires_at) {
           const expiryDate = new Date();
           expiryDate.setMonth(expiryDate.getMonth() + assignment.consent_duration_months);
           assignment.consent_expires_at = expiryDate;
@@ -247,7 +247,7 @@ export default (sequelize: any) => {
     
     // Check if consent has expired
     if (this.consent_expires_at && new Date() > this.consent_expires_at) {
-      this.consent_status = 'expired';
+      this.consentStatus = 'expired';
       this.accessGranted = false;
       return false;
     }
@@ -256,13 +256,13 @@ export default (sequelize: any) => {
   };
   
   SecondaryDoctorAssignment.prototype.requiresConsent = function() {
-    return this.consent_required && this.consent_status !== 'granted';
+    return this.consent_required && this.consentStatus !== 'granted';
   };
   
   SecondaryDoctorAssignment.prototype.grantAccess = function() {
     this.accessGranted = true;
     this.access_granted_at = new Date();
-    this.consent_status = 'granted';
+    this.consentStatus = 'granted';
     
     // Set expiry date
     if (!this.consent_expires_at) {

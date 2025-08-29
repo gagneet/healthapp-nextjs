@@ -111,7 +111,7 @@ export default {
         comment: 'Whether patient consent is required (false for same provider)'
       },
       
-      consent_status: {
+      consentStatus: {
         type: Sequelize.ENUM('pending', 'requested', 'granted', 'denied', 'expired'),
         defaultValue: 'pending',
         comment: 'Current consent status'
@@ -185,7 +185,7 @@ export default {
       { fields: ['primary_doctor_id'], name: 'idx_secondary_doctor_assignments_primary_doctor_id' },
       { fields: ['secondary_doctor_id'], name: 'idx_secondary_doctor_assignments_secondary_doctor_id' },
       { fields: ['secondary_hsp_id'], name: 'idx_secondary_doctor_assignments_secondary_hsp_id' },
-      { fields: ['consent_status'], name: 'idx_secondary_doctor_assignments_consent_status' },
+      { fields: ['consentStatus'], name: 'idx_secondary_doctor_assignments_consent_status' },
       { fields: ['accessGranted'], name: 'idx_secondary_doctor_assignments_access_granted' },
       { fields: ['isActive'], name: 'idx_secondary_doctor_assignments_is_active' },
       { fields: ['consent_expires_at'], name: 'idx_secondary_doctor_assignments_consent_expires_at' }
@@ -216,10 +216,10 @@ export default {
     // Add check constraints
     try {
       await queryInterface.addConstraint('secondary_doctor_assignments', {
-        fields: ['consent_status'],
+        fields: ['consentStatus'],
         type: 'check',
         where: {
-          consent_status: {
+          consentStatus: {
             [Sequelize.Op.in]: ['pending', 'requested', 'granted', 'denied', 'expired']
           }
         },

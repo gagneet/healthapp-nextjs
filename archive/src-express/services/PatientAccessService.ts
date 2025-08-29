@@ -101,7 +101,7 @@ class PatientAccessService {
       ...patient.toJSON(),
       access_type: 'primary',
       accessGranted: true,
-      requires_consent: false
+      requiresConsent: false
     }));
   }
 
@@ -160,8 +160,8 @@ class PatientAccessService {
         assignment_id: assignment.id,
         access_type: 'secondary',
         accessGranted: assignment.accessGranted,
-        requires_consent: requiresConsent,
-        consent_status: assignment.consent_status,
+        requiresConsent: requiresConsent,
+        consentStatus: assignment.consentStatus,
         same_provider: isSameProvider,
         assignment_reason: assignment.assignment_reason,
         specialtyFocus: assignment.specialtyFocus,
@@ -215,7 +215,7 @@ class PatientAccessService {
         primary_doctor_provider_id: primaryProviderId,
         secondary_doctor_provider_id: secondaryProviderId,
         consent_required: !isSameProvider,
-        consent_status: isSameProvider ? 'granted' : 'pending',
+        consentStatus: isSameProvider ? 'granted' : 'pending',
         accessGranted: isSameProvider,
         access_granted_at: isSameProvider ? new Date() : null,
         assignment_reason: (assignmentData as any).reason || 'Secondary care assignment',
@@ -230,7 +230,7 @@ class PatientAccessService {
 
       return {
         assignment,
-        requires_consent: !isSameProvider,
+        requiresConsent: !isSameProvider,
         same_provider: isSameProvider
       };
 
@@ -266,7 +266,7 @@ class PatientAccessService {
         return {
           can_access: true,
           access_type: 'primary',
-          requires_consent: false
+          requiresConsent: false
         };
       }
 
@@ -286,8 +286,8 @@ class PatientAccessService {
         return {
           can_access: canAccess,
           access_type: 'secondary',
-          requires_consent: requiresConsent,
-          consent_status: secondaryAssignment.consent_status,
+          requiresConsent: requiresConsent,
+          consentStatus: secondaryAssignment.consentStatus,
           assignment_id: secondaryAssignment.id
         };
       }
@@ -295,7 +295,7 @@ class PatientAccessService {
       return { 
         can_access: false, 
         reason: 'NO_ASSIGNMENT',
-        requires_consent: false
+        requiresConsent: false
       };
 
     } catch (error) {
@@ -390,7 +390,7 @@ class PatientAccessService {
       await otp.markAsSent('email', deliveryResult.email.success, deliveryResult.email.error);
 
       // Update assignment status
-      assignment.consent_status = 'requested';
+      assignment.consentStatus = 'requested';
       assignment.recordAccessAttempt();
       await assignment.save();
 
@@ -466,7 +466,7 @@ class PatientAccessService {
       //   patientId: assignment.patientId,
       //   provider_id: assignment.secondary_doctor_provider_id,
       //   consent_type: 'automatic_same_provider',
-      //   consent_status: 'granted',
+      //   consentStatus: 'granted',
       //   granted_at: new Date(),
       //   granted_by: 'system'
       // });
@@ -489,7 +489,7 @@ class PatientAccessService {
       //   patientId: assignment.patientId,
       //   provider_id: assignment.secondary_doctor_provider_id,
       //   consent_type: 'otp_verification',
-      //   consent_status: 'granted',
+      //   consentStatus: 'granted',
       //   granted_at: otp.verified_at,
       //   granted_by: verifiedByUserId,
       //   otp_reference: otp.id
@@ -527,13 +527,13 @@ class PatientAccessService {
           consent_expires_at: {
             [Op.lt]: new Date()
           },
-          consent_status: 'granted',
+          consentStatus: 'granted',
           isActive: true
         }
       });
 
       for (const assignment of expiredAssignments) {
-        assignment.consent_status = 'expired';
+        assignment.consentStatus = 'expired';
         assignment.accessGranted = false;
         await assignment.save();
       }

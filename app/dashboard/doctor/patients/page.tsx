@@ -132,7 +132,7 @@ const getConsentStatusBadge = (patient: Patient) => {
 
 // Helper function to get action buttons for consent workflow
 const getConsentActionButtons = (patient: Patient, onRequestConsent: (patient: Patient) => void) => {
-  if (!patient.requires_consent || patient.consent_status === 'granted') {
+  if (!patient.requiresConsent || patient.consentStatus === 'granted') {
     return (
       <Link
         href={`/dashboard/doctor/patients/${patient.id}`}
@@ -144,7 +144,7 @@ const getConsentActionButtons = (patient: Patient, onRequestConsent: (patient: P
     )
   }
 
-  if (patient.consent_status === 'pending' || patient.consent_status === 'expired') {
+  if (patient.consentStatus === 'pending' || patient.consentStatus === 'expired') {
     return (
       <button
         onClick={() => onRequestConsent(patient)}
@@ -156,7 +156,7 @@ const getConsentActionButtons = (patient: Patient, onRequestConsent: (patient: P
     )
   }
 
-  if (patient.consent_status === 'requested') {
+  if (patient.consentStatus === 'requested') {
     return (
       <button
         onClick={() => onRequestConsent(patient)}
@@ -347,8 +347,8 @@ export default function PatientsPage() {
             patient_type: patient.patient_type || 'M',
             patient_type_label: patient.patient_type_label || 'Primary Patient',
             access_type: patient.access_type || 'primary',
-            requires_consent: patient.requires_consent || false,
-            consent_status: patient.consent_status || 'not_required',
+            requiresConsent: patient.requiresConsent || false,
+            consentStatus: patient.consentStatus || 'not_required',
             accessGranted: patient.accessGranted ?? true,
             can_view: patient.can_view ?? true,
             same_provider: patient.same_provider || false,
