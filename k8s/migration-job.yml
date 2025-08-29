@@ -4,6 +4,9 @@ metadata:
   name: healthapp-migration-job
 spec:
   template:
+    metadata:
+      labels:
+        job-name: healthapp-migration-job
     spec:
       containers:
       - name: healthapp-migration
