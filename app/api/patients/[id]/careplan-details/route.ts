@@ -248,27 +248,27 @@ export async function GET(request: NextRequest, { params }: { params: { id:strin
       carePlans.map(async (carePlan: any) => {
         const medicationsCount = carePlan.prescribedMedications?.length || 0;
 
-        //         const vitalsCount = await prisma.vitalRequirement.count({
-        //           where: { carePlanId: carePlan.id },
-        //         });
-
-        //         const appointmentWhere: any = {
-        //           patientId: patientId,
-        //           startDate: { gte: carePlan.startDate },
-        //         };
-        //         if (carePlan.endDate) {
-        //           appointmentWhere.startDate.lte = carePlan.endDate;
-        //         }
-
-        //         const appointmentsCount = await prisma.appointment.count({
-        //           where: appointmentWhere,
+        // const vitalsCount = await prisma.vitalRequirement.count({
+        //   where: { carePlanId: carePlan.id },
+        // });
+        //
+        // const appointmentWhere: any = {
+        //   patientId: patientId,
+        //   startDate: { gte: carePlan.startDate },
+        // };
+        // if (carePlan.endDate) {
+        //   appointmentWhere.startDate.lte = carePlan.endDate;
+        // }
+        //
+        // const appointmentsCount = await prisma.appointment.count({
+        //   where: appointmentWhere,
 
         const vitalsCount = await prisma.vitalRequirement.groupBy({
           by: ['carePlanId'],
           _count: true,
           where: {
             carePlanId: {
-              in: carePlans.map(cp => cp.id)
+              in: carePlans.map((cp: { id: any; }) => cp.id)
             }
           }
         });
@@ -278,7 +278,7 @@ export async function GET(request: NextRequest, { params }: { params: { id:strin
           _count: true,
           where: {
             carePlanId: {
-              in: carePlans.map(cp => cp.id)
+              in: carePlans.map((cp: { id: any; }) => cp.id)
             },
             startDate: {
               gte: carePlan.startDate,
