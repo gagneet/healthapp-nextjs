@@ -189,5 +189,7 @@ stages:
               azureSubscriptionEndpoint: '$(AKS_SERVICE_CONNECTION)'
               resourceGroup: '$(AKS_RESOURCE_GROUP)'
               kubernetesCluster: '$(AKS_CLUSTER_NAME)'
-              command: 'apply'
-              configuration: '$(System.ArtifactsDirectory)/manifests/*.yml'
+              configuration: |
+                $(System.ArtifactsDirectory)/manifests/deployment.yml
+                $(System.ArtifactsDirectory)/manifests/service.yml
+                $(System.ArtifactsDirectory)/manifests/ingress.yml
