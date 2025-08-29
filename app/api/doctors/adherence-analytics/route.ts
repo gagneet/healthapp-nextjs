@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from "@/lib/auth";
 import { prisma } from '@/lib/prisma';
+import { Prisma } from '@prisma/client';
 
 /**
  * GET /api/doctors/adherence-analytics
@@ -97,9 +98,9 @@ export async function GET(request: NextRequest) {
       [...new Set(adherenceRecords.map(r => r.patientId))].length : 0;
     
     const patientsWithScores = patientsStats
-      .filter((p): p is typeof p & { overallAdherenceScore: import('@prisma/client').Prisma.Decimal } => p.overallAdherenceScore !== null);
+      .filter((p): p is typeof p & { overallAdherenceScore: Prisma.Decimal } => p.overallAdherenceScore !== null);
 
-    const adherenceScores = patientsWithScores.map(p => p.overallAdherenceScore.toNumber());
+    const adherenceScores = patientsWithScores.map(p => Number(p.overallAdherenceScore));
     
     const averageAdherence = adherenceScores.length > 0 
       ? adherenceScores.reduce((sum, score) => sum + score, 0) / adherenceScores.length
@@ -154,15 +155,7 @@ export async function GET(request: NextRequest) {
     );
 
     const topPatients = patientsWithScores
-      .sort((a, b) => {
-        const aScore = typeof a.overallAdherenceScore?.toNumber === 'function'
-          ? a.overallAdherenceScore.toNumber()
-          : a.overallAdherenceScore;
-        const bScore = typeof b.overallAdherenceScore?.toNumber === 'function'
-          ? b.overallAdherenceScore.toNumber()
-          : b.overallAdherenceScore;
-        return bScore - aScore;
-      })
+      .sort((a, b) => Number(b.overallAdherenceScore) - Number(a.overallAdherenceScore))
       .slice(0, 5)
       .map(p => ({
         patientId: p.patientId,
@@ -171,13 +164,14 @@ export async function GET(request: NextRequest) {
       }));
 
     const patientsNeedingAttention = patientsWithScores
-      .sort((a, b) => a.overallAdherenceScore.toNumber() - b.overallAdherenceScore.toNumber())
+      .filter(p => Number(p.overallAdherenceScore) < 75)
+      .sort((a, b) => Number(a.overallAdherenceScore) - Number(b.overallAdherenceScore))
       .slice(0, 5)
       .map(p => ({
         patientId: p.patientId,
         name: p.user?.name || `${p.user?.firstName || ''} ${p.user?.lastName || ''}`.trim(),
         adherenceScore: p.overallAdherenceScore,
-        riskLevel: p.overallAdherenceScore.toNumber() < 60 ? 'high' : 'medium'
+        riskLevel: Number(p.overallAdherenceScore) < 60 ? 'high' : 'medium'
       }));
 
     const adherenceOverview = [

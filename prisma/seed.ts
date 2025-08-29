@@ -1,5 +1,5 @@
 // lib/seed.ts - Comprehensive Healthcare Test Data Seeding with Updated Schema
-import { fileURLToPath } from 'url';
+import { fileURLToPath, pathToFileURL } from 'url';
 import { PrismaClient, AdherenceType, UserRole, UserAccountStatus, UserGender, MedicationOrganizerType, MedicationLogAdherenceStatus } from '@prisma/client';
 import * as bcrypt from 'bcryptjs';
 
@@ -1000,7 +1000,7 @@ export async function seedComprehensiveHealthcareData() {
 }
 
 // Main execution block
-if (import.meta.url.startsWith('file://') && process.argv[1] === fileURLToPath(import.meta.url)) {
+if (import.meta.url === pathToFileURL(process.argv[1]).href) {
     console.log('🚀 Starting healthcare data seeding...');
     seedComprehensiveHealthcareData()
         .then((result) => {
