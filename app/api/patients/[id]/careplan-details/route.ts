@@ -274,11 +274,6 @@ export async function GET(request: NextRequest, { params }: { params: { id:strin
           medicationsCount,
           vitalsCount,
           appointmentsCount,
-          adherenceOverview: {
-            medicationsCount,
-            vitalsCount,
-            appointmentsCount,
-          },
         };
       })
     );
