@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: healthapp-deployment
+  labels:
+    app: healthapp
+spec:
+  # The number of replicas will be configurable in the pipeline.
+  replicas: 2
+  selector:
+    matchLabels:
+      app: healthapp
+  template:
+    metadata:
+      labels:
+        app: healthapp
+    spec:
+      containers:
+      - name: healthapp
+        # The image will be dynamically set by the Azure Pipeline.
+        image: __ACR_NAME__.azurecr.io/healthapp:__IMAGE_TAG__
+        ports:
+        - containerPort: 3002
+        # Probes to check the health of the application.
+        readinessProbe:
+          httpGet:
+            path: /api/health
+            port: 3002
+          initialDelaySeconds: 15
+          periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /api/health
+            port: 3002
+          initialDelaySeconds: 30
+          periodSeconds: 20
+        # Resource requests and limits are a best practice for scheduling and stability.
+        resources:
+          requests:
+            cpu: "250m"
+            memory: "512Mi"
+          limits:
+            cpu: "500m"
+            memory: "1024Mi"
+        # Environment variables will be loaded from a Kubernetes secret.
+        # The Azure Pipeline will be responsible for creating or updating this secret.
+        envFrom:
+        - secretRef:
+            name: healthapp-secrets

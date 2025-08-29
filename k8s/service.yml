@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: healthapp-service
+spec:
+  # This service will be of type ClusterIP, meaning it's only accessible within the cluster.
+  # The Ingress controller will route external traffic to this service.
+  type: ClusterIP
+  selector:
+    # This selector matches the labels of the pods created by the deployment.
+    app: healthapp
+  ports:
+  - protocol: TCP
+    # The port the service will be available on within the cluster.
+    port: 80
+    # The port on the pods that the service will forward traffic to.
+    targetPort: 3002

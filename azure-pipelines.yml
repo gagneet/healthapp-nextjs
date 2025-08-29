@@ -1,0 +1,172 @@
+# =================================================================================================
+# Azure Pipeline for Deploying the HealthApp Next.js Application to AKS
+# =================================================================================================
+# This pipeline is designed to be triggered on commits to the main branch.
+trigger:
+- main
+
+# Define variables used throughout the pipeline.
+# Important: Add secret variables in the Azure DevOps UI under 'Variables'.
+# Required secret variables:
+#   - ACR_SERVICE_CONNECTION: The name of your Azure Container Registry service connection.
+#   - AKS_SERVICE_CONNECTION: The name of your Azure Kubernetes Service service connection.
+#   - ACR_NAME: The name of your Azure Container Registry (e.g., 'myhealthappacr').
+#   - AKS_CLUSTER_NAME: The name of your AKS cluster.
+#   - AKS_RESOURCE_GROUP: The resource group of your AKS cluster.
+#   - HOSTNAME: The public domain for your application (e.g., 'healthapp.yourdomain.com').
+#   - DATABASE_URL: The connection string for your Azure PostgreSQL database.
+#   - REDIS_URL: The connection string for your Azure Cache for Redis.
+#   - NEXTAUTH_SECRET: A secret key for NextAuth.js.
+#   - NEXTAUTH_URL: The public URL of your application (e.g., 'https://healthapp.yourdomain.com').
+
+variables:
+  # The name of the Docker image repository.
+  imageRepository: 'healthapp'
+  # The tag for the Docker image, using the pipeline's unique build ID.
+  imageTag: '$(Build.BuildId)'
+  # The name of the Kubernetes secret that will store the application's environment variables.
+  kubernetesSecretName: 'healthapp-secrets'
+
+stages:
+# =================================================================================================
+# BUILD STAGE
+# This stage builds the Docker image, pushes it to ACR, and publishes the k8s manifests.
+# =================================================================================================
+- stage: Build
+  displayName: 'Build and Push'
+  jobs:
+  - job: Build
+    displayName: 'Build Docker Image and Publish Artifacts'
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+    # 1. Set up Node.js environment.
+    - task: NodeTool@0
+      displayName: 'Install Node.js'
+      inputs:
+        versionSpec: '22.x'
+
+    # 2. Build the Docker image.
+    - task: Docker@2
+      displayName: 'Build Docker Image'
+      inputs:
+        command: 'build'
+        containerRegistry: '$(ACR_SERVICE_CONNECTION)'
+        repository: '$(imageRepository)'
+        dockerfile: 'Dockerfile'
+        tags: '$(imageTag)'
+
+    # 3. Push the Docker image to Azure Container Registry.
+    - task: Docker@2
+      displayName: 'Push Docker Image to ACR'
+      inputs:
+        command: 'push'
+        containerRegistry: '$(ACR_SERVICE_CONNECTION)'
+        repository: '$(imageRepository)'
+        tags: '$(imageTag)'
+
+    # 4. Publish the Kubernetes manifest files as a pipeline artifact.
+    - task: PublishPipelineArtifact@1
+      displayName: 'Publish Kubernetes Manifests'
+      inputs:
+        targetPath: 'k8s'
+        artifact: 'manifests'
+
+# =================================================================================================
+# DEPLOY STAGE
+# This stage deploys the application to the Azure Kubernetes Service (AKS) cluster.
+# =================================================================================================
+- stage: Deploy
+  displayName: 'Deploy to AKS'
+  # This stage depends on the successful completion of the Build stage.
+  dependsOn: Build
+  jobs:
+  - deployment: Deploy
+    displayName: 'Deploy to AKS Cluster'
+    pool:
+      vmImage: 'ubuntu-latest'
+    environment: 'production' # You can configure this environment in Azure DevOps.
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          # 1. Download the Kubernetes manifests artifact.
+          - task: DownloadPipelineArtifact@2
+            displayName: 'Download Manifests'
+            inputs:
+              artifactName: 'manifests'
+              downloadPath: '$(System.ArtifactsDirectory)/manifests'
+
+          # 2. Replace tokens in the manifest files.
+          - task: Bash@3
+            displayName: 'Replace Tokens in Manifests'
+            inputs:
+              targetType: 'inline'
+              script: |
+                # Replace placeholders in the Kubernetes manifest files with pipeline variables.
+                sed -i "s|__ACR_NAME__|$(ACR_NAME)|g" $(System.ArtifactsDirectory)/manifests/k8s/deployment.yml
+                sed -i "s|__IMAGE_TAG__|$(imageTag)|g" $(System.ArtifactsDirectory)/manifests/k8s/deployment.yml
+                sed -i "s|__ACR_NAME__|$(ACR_NAME)|g" $(System.ArtifactsDirectory)/manifests/k8s/migration-job.yml
+                sed -i "s|__IMAGE_TAG__|$(imageTag)|g" $(System.ArtifactsDirectory)/manifests/k8s/migration-job.yml
+                sed -i "s|__HOSTNAME__|$(HOSTNAME)|g" $(System.ArtifactsDirectory)/manifests/k8s/ingress.yml
+
+          # 3. Create or update the Kubernetes secret with environment variables.
+          - task: Kubernetes@1
+            displayName: 'Create/Update Kubernetes Secret'
+            inputs:
+              connectionType: 'Azure Resource Manager'
+              azureSubscriptionEndpoint: '$(AKS_SERVICE_CONNECTION)'
+              resourceGroup: '$(AKS_RESOURCE_GROUP)'
+              kubernetesCluster: '$(AKS_CLUSTER_NAME)'
+              command: 'apply'
+              useConfigurationFile: true
+              inline: |
+                apiVersion: v1
+                kind: Secret
+                metadata:
+                  name: $(kubernetesSecretName)
+                type: Opaque
+                stringData:
+                  DATABASE_URL: "$(DATABASE_URL)"
+                  REDIS_URL: "$(REDIS_URL)"
+                  NEXTAUTH_SECRET: "$(NEXTAUTH_SECRET)"
+                  NEXTAUTH_URL: "$(NEXTAUTH_URL)"
+                  # Add other required secrets here.
+
+          # 4. Deploy the database migration job.
+          - task: Kubernetes@1
+            displayName: 'Deploy Database Migration Job'
+            inputs:
+              connectionType: 'Azure Resource Manager'
+              azureSubscriptionEndpoint: '$(AKS_SERVICE_CONNECTION)'
+              resourceGroup: '$(AKS_RESOURCE_GROUP)'
+              kubernetesCluster: '$(AKS_CLUSTER_NAME)'
+              command: 'apply'
+              useConfigurationFile: true
+              configuration: '$(System.ArtifactsDirectory)/manifests/k8s/migration-job.yml'
+
+          # 5. Wait for the migration job to complete.
+          - task: Bash@3
+            displayName: 'Wait for Migration Job Completion'
+            inputs:
+              targetType: 'inline'
+              script: |
+                # Wait for up to 5 minutes for the job to complete.
+                if ! kubectl wait --for=condition=complete job/healthapp-migration-job --timeout=300s; then
+                  echo "Migration job failed. Checking logs..."
+                  kubectl logs job/healthapp-migration-job
+                  exit 1
+                fi
+                echo "Migration job completed successfully."
+
+          # 6. Deploy the application (Deployment, Service, Ingress).
+          - task: Kubernetes@1
+            displayName: 'Deploy Application to AKS'
+            inputs:
+              connectionType: 'Azure Resource Manager'
+              azureSubscriptionEndpoint: '$(AKS_SERVICE_CONNECTION)'
+              resourceGroup: '$(AKS_RESOURCE_GROUP)'
+              kubernetesCluster: '$(AKS_CLUSTER_NAME)'
+              command: 'apply'
+              useConfigurationFile: true
+              configuration: '$(System.ArtifactsDirectory)/manifests/k8s/'

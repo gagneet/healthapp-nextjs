@@ -1,0 +1,29 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: healthapp-ingress
+  annotations:
+    # This annotation is for the NGINX Ingress Controller.
+    # It specifies that the Ingress controller should manage the SSL certificate.
+    # This requires cert-manager to be installed in your cluster.
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+spec:
+  # Ingress class specifies which ingress controller should handle this ingress.
+  # This may vary depending on your AKS setup.
+  ingressClassName: nginx
+  tls:
+  - hosts:
+    # The hostname will be dynamically set by the Azure Pipeline.
+    - __HOSTNAME__
+    secretName: healthapp-tls-secret # cert-manager will create this secret
+  rules:
+  - host: __HOSTNAME__
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: healthapp-service
+            port:
+              number: 80
