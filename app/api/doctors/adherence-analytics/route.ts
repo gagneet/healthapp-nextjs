@@ -1,6 +1,65 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from "@/lib/auth";
 import { prisma } from '@/lib/prisma';
+import { Prisma } from '@prisma/client';
+
+// Helper function to safely convert Decimal to number
+function safeToNumber(value: Prisma.Decimal | number | null | undefined): number {
+  if (value === null || value === undefined) {
+    return 0;
+  }
+  if (value instanceof Prisma.Decimal) {
+    return value.toNumber();
+  }
+  return Number(value);
+}
+
+type AdherenceRecordWithPatient = Prisma.AdherenceRecordGetPayload<{
+  include: {
+    patient: {
+      select: {
+        id: true,
+        patientId: true,
+        overallAdherenceScore: true,
+        user: {
+          select: {
+            firstName: true,
+            lastName: true,
+            name: true
+          }
+        }
+      }
+    }
+  }
+}>;
+
+type PatientStats = Prisma.PatientGetPayload<{
+  select: {
+    id: true,
+    patientId: true,
+    overallAdherenceScore: true,
+    user: {
+      select: {
+        firstName: true,
+        lastName: true,
+        name: true
+      }
+    }
+  }
+}>;
+
+type PatientWithAdherenceScore = Omit<PatientStats, 'overallAdherenceScore'> & {
+  overallAdherenceScore: Prisma.Decimal;
+};
+
+const dayRecordSelect = {
+  select: {
+    isCompleted: true,
+    isMissed: true,
+  }
+};
+
+type DayRecord = Prisma.AdherenceRecordGetPayload<typeof dayRecordSelect>;
 
 /**
  * GET /api/doctors/adherence-analytics
@@ -94,21 +153,21 @@ export async function GET(request: NextRequest) {
 
     const totalPatients = patientsStats.length;
     const patientsWithRecords = adherenceRecords.length > 0 ? 
-      [...new Set(adherenceRecords.map(r => r.patientId))].length : 0;
+      [...new Set(adherenceRecords.map((record: AdherenceRecordWithPatient) => record.patientId))].length : 0;
     
     const adherenceScores = patientsStats
-      .filter(p => p.overallAdherenceScore !== null)
-      .map(p => p.overallAdherenceScore as number);
+      .filter((patient: PatientStats): patient is PatientWithAdherenceScore => patient.overallAdherenceScore !== null)
+      .map((patient) => safeToNumber(patient.overallAdherenceScore));
     
     const averageAdherence = adherenceScores.length > 0 
-      ? adherenceScores.reduce((sum, score) => sum + score, 0) / adherenceScores.length
+      ? adherenceScores.reduce((sum: number, score: number) => sum + score, 0) / adherenceScores.length
       : 0;
 
     const adherenceCategories = {
-      excellent: adherenceScores.filter(score => score >= 90).length,
-      good: adherenceScores.filter(score => score >= 75 && score < 90).length,
-      fair: adherenceScores.filter(score => score >= 60 && score < 75).length,
-      poor: adherenceScores.filter(score => score < 60).length
+      excellent: adherenceScores.filter((score: number) => score >= 90).length,
+      good: adherenceScores.filter((score: number) => score >= 75 && score < 90).length,
+      fair: adherenceScores.filter((score: number) => score >= 60 && score < 75).length,
+      poor: adherenceScores.filter((score: number) => score < 60).length
     };
 
     const last7Days = Array.from({length: 7}, (_, i) => {
@@ -132,14 +191,24 @@ export async function GET(request: NextRequest) {
               gte: dayStart,
               lt: dayEnd
             }
+          },
+          select: {
+            isCompleted: true,
+            isMissed: true,
           }
         });
 
-        const dayScores = dayRecords.filter(r => r.isCompleted).map(r => 100).concat(
-          dayRecords.filter(r => r.isMissed).map(r => 0)
-        );
+        const dayScores = dayRecords.reduce((scores: number[], record: DayRecord) => {
+          if (record.isCompleted) {
+            scores.push(100);
+          } else if (record.isMissed) {
+            scores.push(0);
+          }
+          return scores;
+        }, []);
+
         const dayAverage = dayScores.length > 0 
-          ? dayScores.reduce((sum, score) => sum + score, 0) / dayScores.length
+          ? dayScores.reduce((sum: number, score: number) => sum + score, 0) / dayScores.length
           : null;
 
         return {
@@ -151,24 +220,24 @@ export async function GET(request: NextRequest) {
     );
 
     const topPatients = patientsStats
-      .filter(p => p.overallAdherenceScore !== null)
-      .sort((a, b) => (b.overallAdherenceScore as number) - (a.overallAdherenceScore as number))
+      .filter((patient: PatientStats): patient is PatientWithAdherenceScore => patient.overallAdherenceScore !== null)
+      .sort((a, b) => safeToNumber(b.overallAdherenceScore) - safeToNumber(a.overallAdherenceScore))
       .slice(0, 5)
-      .map(p => ({
-        patientId: p.patientId,
-        name: p.user?.name || `${p.user?.firstName || ''} ${p.user?.lastName || ''}`.trim(),
-        adherenceScore: p.overallAdherenceScore
+      .map((patient) => ({
+        patientId: patient.patientId,
+        name: patient.user?.name || `${patient.user?.firstName || ''} ${patient.user?.lastName || ''}`.trim(),
+        adherenceScore: patient.overallAdherenceScore
       }));
 
     const patientsNeedingAttention = patientsStats
-      .filter(p => p.overallAdherenceScore !== null && (p.overallAdherenceScore as number) < 75)
-      .sort((a, b) => (a.overallAdherenceScore as number) - (b.overallAdherenceScore as number))
+      .filter((patient: PatientStats): patient is PatientWithAdherenceScore => patient.overallAdherenceScore !== null && safeToNumber(patient.overallAdherenceScore) < 75)
+      .sort((a, b) => safeToNumber(a.overallAdherenceScore) - safeToNumber(b.overallAdherenceScore))
       .slice(0, 5)
-      .map(p => ({
-        patientId: p.patientId,
-        name: p.user?.name || `${p.user?.firstName || ''} ${p.user?.lastName || ''}`.trim(),
-        adherenceScore: p.overallAdherenceScore,
-        riskLevel: (p.overallAdherenceScore as number) < 60 ? 'high' : 'medium'
+      .map((patient) => ({
+        patientId: patient.patientId,
+        name: patient.user?.name || `${patient.user?.firstName || ''} ${patient.user?.lastName || ''}`.trim(),
+        adherenceScore: patient.overallAdherenceScore,
+        riskLevel: safeToNumber(patient.overallAdherenceScore) < 60 ? 'high' : 'medium'
       }));
 
     const adherenceOverview = [

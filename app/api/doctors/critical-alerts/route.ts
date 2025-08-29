@@ -1,6 +1,29 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from "@/lib/auth";
 import { prisma } from '@/lib/prisma';
+import { Prisma } from '@prisma/client';
+import { userSelect } from '@/lib/prisma-types';
+
+const patientUserInclude = {
+  patient: {
+    include: {
+      user: userSelect
+    }
+  }
+}
+
+type EmergencyAlertWithPatient = Prisma.EmergencyAlertGetPayload<{
+  include: typeof patientUserInclude;
+}>;
+
+type MedicationSafetyAlertWithPatient = Prisma.MedicationSafetyAlertGetPayload<{
+  include: typeof patientUserInclude;
+}>;
+
+type NotificationWithPatient = Prisma.NotificationGetPayload<{
+  include: typeof patientUserInclude;
+}>;
+
 
 /**
  * GET /api/doctors/critical-alerts
@@ -49,20 +72,7 @@ export async function GET(request: NextRequest) {
           acknowledged: false,
           resolved: false
         },
-        include: {
-          patient: {
-            include: {
-              user: {
-                select: {
-                  firstName: true,
-                  lastName: true,
-                  name: true,
-                  email: true
-                }
-              }
-            }
-          }
-        },
+        include: patientUserInclude,
         orderBy: {
           createdAt: 'desc'
         },
@@ -76,20 +86,7 @@ export async function GET(request: NextRequest) {
           },
           resolved: false
         },
-        include: {
-          patient: {
-            include: {
-              user: {
-                select: {
-                  firstName: true,
-                  lastName: true,
-                  name: true,
-                  email: true
-                }
-              }
-            }
-          }
-        },
+        include: patientUserInclude,
         orderBy: {
           createdAt: 'desc'
         },
@@ -102,20 +99,7 @@ export async function GET(request: NextRequest) {
           isUrgent: true,
           readAt: null
         },
-        include: {
-          patient: {
-            include: {
-              user: {
-                select: {
-                  firstName: true,
-                  lastName: true,
-                  name: true,
-                  email: true
-                }
-              }
-            }
-          }
-        },
+        include: patientUserInclude,
         orderBy: {
           createdAt: 'desc'
         },
@@ -124,7 +108,7 @@ export async function GET(request: NextRequest) {
     ]);
 
     const allAlerts = [
-      ...emergencyAlerts.map(alert => {
+      ...emergencyAlerts.map((alert: EmergencyAlertWithPatient) => {
         const patientName = alert.patient?.user.name || 
                            `${alert.patient?.user.firstName || ''} ${alert.patient?.user.lastName || ''}`.trim();
         return {
@@ -139,7 +123,7 @@ export async function GET(request: NextRequest) {
           status: alert.acknowledged ? 'ACKNOWLEDGED' : 'ACTIVE'
         };
       }),
-      ...medicationAlerts.map(alert => {
+      ...medicationAlerts.map((alert: MedicationSafetyAlertWithPatient) => {
         const patientName = alert.patient?.user.name || 
                            `${alert.patient?.user.firstName || ''} ${alert.patient?.user.lastName || ''}`.trim();
         return {
@@ -154,7 +138,7 @@ export async function GET(request: NextRequest) {
           status: alert.resolved ? 'RESOLVED' : 'ACTIVE'
         };
       }),
-      ...recentNotifications.map(notification => {
+      ...recentNotifications.map((notification: NotificationWithPatient) => {
         const patientName = notification.patient?.user.name ||
                            `${notification.patient?.user.firstName || ''} ${notification.patient?.user.lastName || ''}`.trim();
         return {
