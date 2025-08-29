@@ -104,11 +104,11 @@ stages:
               targetType: 'inline'
               script: |
                 # Replace placeholders in the Kubernetes manifest files with pipeline variables.
-                sed -i "s|__ACR_NAME__|$(ACR_NAME)|g" $(System.ArtifactsDirectory)/manifests/k8s/deployment.yml
-                sed -i "s|__IMAGE_TAG__|$(imageTag)|g" $(System.ArtifactsDirectory)/manifests/k8s/deployment.yml
-                sed -i "s|__ACR_NAME__|$(ACR_NAME)|g" $(System.ArtifactsDirectory)/manifests/k8s/migration-job.yml
-                sed -i "s|__IMAGE_TAG__|$(imageTag)|g" $(System.ArtifactsDirectory)/manifests/k8s/migration-job.yml
-                sed -i "s|__HOSTNAME__|$(HOSTNAME)|g" $(System.ArtifactsDirectory)/manifests/k8s/ingress.yml
+                sed -i "s|__ACR_NAME__|$(ACR_NAME)|g" $(System.ArtifactsDirectory)/manifests/deployment.yml
+                sed -i "s|__IMAGE_TAG__|$(imageTag)|g" $(System.ArtifactsDirectory)/manifests/deployment.yml
+                sed -i "s|__ACR_NAME__|$(ACR_NAME)|g" $(System.ArtifactsDirectory)/manifests/migration-job.yml
+                sed -i "s|__IMAGE_TAG__|$(imageTag)|g" $(System.ArtifactsDirectory)/manifests/migration-job.yml
+                sed -i "s|__HOSTNAME__|$(HOSTNAME)|g" $(System.ArtifactsDirectory)/manifests/ingress.yml
 
           # 3. Create or update the Kubernetes secret with environment variables.
           - task: Kubernetes@1
@@ -143,9 +143,19 @@ stages:
               kubernetesCluster: '$(AKS_CLUSTER_NAME)'
               command: 'apply'
               useConfigurationFile: true
-              configuration: '$(System.ArtifactsDirectory)/manifests/k8s/migration-job.yml'
+              configuration: '$(System.ArtifactsDirectory)/manifests/migration-job.yml'
 
-          # 5. Wait for the migration job to complete.
+          # 5. Set kubectl context to the AKS cluster
+          - task: AzureCLI@2
+            displayName: 'Set Kubectl Context'
+            inputs:
+              azureSubscription: '$(AKS_SERVICE_CONNECTION)'
+              scriptType: 'bash'
+              scriptLocation: 'inlineScript'
+              inlineScript: |
+                az aks get-credentials --resource-group $(AKS_RESOURCE_GROUP) --name $(AKS_CLUSTER_NAME) --overwrite-existing
+
+          # 6. Wait for the migration job to complete.
           - task: Bash@3
             displayName: 'Wait for Migration Job Completion'
             inputs:
@@ -159,7 +169,7 @@ stages:
                 fi
                 echo "Migration job completed successfully."
 
-          # 6. Deploy the application (Deployment, Service, Ingress).
+          # 7. Deploy the application (Deployment, Service, Ingress).
           - task: Kubernetes@1
             displayName: 'Deploy Application to AKS'
             inputs:
@@ -169,4 +179,4 @@ stages:
               kubernetesCluster: '$(AKS_CLUSTER_NAME)'
               command: 'apply'
               useConfigurationFile: true
-              configuration: '$(System.ArtifactsDirectory)/manifests/k8s/'
+              configuration: '$(System.ArtifactsDirectory)/manifests/'
