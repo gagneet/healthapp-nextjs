@@ -160,9 +160,19 @@ stages:
             inputs:
               targetType: 'inline'
               script: |
-                # Wait for up to 5 minutes for the job to complete.
-                if ! kubectl wait --for=condition=complete job/healthapp-migration-job --timeout=300s; then
-                  echo "Migration job failed. Checking logs..."
+                # Wait for up to 5 minutes for the job to complete, but do not fail if the job does not exist yet.
+                kubectl wait --for=condition=complete job/healthapp-migration-job --timeout=300s || true
+                
+                # Check if the job exists
+                if ! kubectl get job/healthapp-migration-job > /dev/null 2>&1; then
+                  echo "Migration job does not exist. Exiting with error."
+                  exit 1
+                fi
+                
+                # Check if the job succeeded
+                JOB_STATUS=$(kubectl get job/healthapp-migration-job -o jsonpath='{.status.succeeded}')
+                if [ "$JOB_STATUS" != "1" ]; then
+                  echo "Migration job did not complete successfully. Checking logs..."
                   kubectl logs job/healthapp-migration-job
                   exit 1
                 fi
