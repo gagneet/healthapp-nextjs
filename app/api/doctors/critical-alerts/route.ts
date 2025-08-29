@@ -1,34 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from "@/lib/auth";
 import { prisma } from '@/lib/prisma';
-import { Prisma } from '@prisma/client';
-
-const patientUserSelect = {
-  patient: {
-    include: {
-      user: {
-        select: {
-          firstName: true,
-          lastName: true,
-          name: true,
-          email: true,
-        },
-      },
-    },
-  },
-};
-
-type EmergencyAlertWithPatient = Prisma.EmergencyAlertGetPayload<{
-  include: typeof patientUserSelect;
-}>;
-
-type MedicationSafetyAlertWithPatient = Prisma.MedicationSafetyAlertGetPayload<{
-  include: typeof patientUserSelect;
-}>;
-
-type NotificationWithPatient = Prisma.NotificationGetPayload<{
-  include: typeof patientUserSelect;
-}>;
+import {
+  patientUserSelect,
+  EmergencyAlertWithPatient,
+  MedicationSafetyAlertWithPatient,
+  NotificationWithPatient
+} from '@/lib/prisma-types';
 
 /**
  * GET /api/doctors/critical-alerts

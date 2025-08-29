@@ -37,7 +37,15 @@ type PatientStats = Prisma.PatientGetPayload<{
   }
 }>;
 
-type DayRecord = Prisma.AdherenceRecordGetPayload<{}>;
+const dayRecordSelect = {
+  select: {
+    isCompleted: true,
+    isMissed: true,
+  }
+};
+
+type DayRecord = Prisma.AdherenceRecordGetPayload<typeof dayRecordSelect>;
+
 
 /**
  * GET /api/doctors/adherence-analytics
@@ -169,6 +177,10 @@ export async function GET(request: NextRequest) {
               gte: dayStart,
               lt: dayEnd
             }
+          },
+          select: {
+            isCompleted: true,
+            isMissed: true,
           }
         });
 
