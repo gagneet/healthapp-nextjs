@@ -183,13 +183,28 @@ stages:
 
           # 7. Deploy the application (Deployment, Service, Ingress).
           - task: Kubernetes@1
-            displayName: 'Deploy Application to AKS'
+            displayName: 'Deploy Deployment to AKS'
             inputs:
               connectionType: 'Azure Resource Manager'
               azureSubscriptionEndpoint: '$(AKS_SERVICE_CONNECTION)'
               resourceGroup: '$(AKS_RESOURCE_GROUP)'
               kubernetesCluster: '$(AKS_CLUSTER_NAME)'
-              configuration: |
-                $(System.ArtifactsDirectory)/manifests/deployment.yml
-                $(System.ArtifactsDirectory)/manifests/service.yml
-                $(System.ArtifactsDirectory)/manifests/ingress.yml
+              configuration: '$(System.ArtifactsDirectory)/manifests/deployment.yml'
+
+          - task: Kubernetes@1
+            displayName: 'Deploy Service to AKS'
+            inputs:
+              connectionType: 'Azure Resource Manager'
+              azureSubscriptionEndpoint: '$(AKS_SERVICE_CONNECTION)'
+              resourceGroup: '$(AKS_RESOURCE_GROUP)'
+              kubernetesCluster: '$(AKS_CLUSTER_NAME)'
+              configuration: '$(System.ArtifactsDirectory)/manifests/service.yml'
+
+          - task: Kubernetes@1
+            displayName: 'Deploy Ingress to AKS'
+            inputs:
+              connectionType: 'Azure Resource Manager'
+              azureSubscriptionEndpoint: '$(AKS_SERVICE_CONNECTION)'
+              resourceGroup: '$(AKS_RESOURCE_GROUP)'
+              kubernetesCluster: '$(AKS_CLUSTER_NAME)'
+              configuration: '$(System.ArtifactsDirectory)/manifests/ingress.yml'
