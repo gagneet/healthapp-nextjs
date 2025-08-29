@@ -46,8 +46,8 @@ interface Subscription {
   patientId: string
   patient_name: string
   status: 'ACTIVE' | 'PENDING' | 'CANCELLED' | 'EXPIRED' | 'PAUSED'
-  start_date: string
-  end_date?: string
+  startDate: string
+  endDate?: string
   next_billing_date?: string
   total_paid: number
   createdAt: string
@@ -166,8 +166,8 @@ const mockSubscriptions: Subscription[] = [
     patientId: 'p1',
     patient_name: 'John Doe',
     status: 'ACTIVE',
-    start_date: '2025-01-15T00:00:00Z',
-    end_date: '2025-04-15T00:00:00Z',
+    startDate: '2025-01-15T00:00:00Z',
+    endDate: '2025-04-15T00:00:00Z',
     next_billing_date: '2025-02-15T00:00:00Z',
     total_paid: 599.97,
     createdAt: '2025-01-15T09:30:00Z'
@@ -179,8 +179,8 @@ const mockSubscriptions: Subscription[] = [
     patientId: 'p2',
     patient_name: 'Jane Smith',
     status: 'ACTIVE',
-    start_date: '2025-01-20T00:00:00Z',
-    end_date: '2025-03-20T00:00:00Z',
+    startDate: '2025-01-20T00:00:00Z',
+    endDate: '2025-03-20T00:00:00Z',
     next_billing_date: '2025-02-20T00:00:00Z',
     total_paid: 399.98,
     createdAt: '2025-01-20T14:15:00Z'
@@ -192,7 +192,7 @@ const mockSubscriptions: Subscription[] = [
     patientId: 'p3',
     patient_name: 'Michael Johnson',
     status: 'PENDING',
-    start_date: '2025-01-25T00:00:00Z',
+    startDate: '2025-01-25T00:00:00Z',
     total_paid: 0,
     createdAt: '2025-01-25T11:45:00Z'
   }
@@ -551,9 +551,9 @@ export default function ServicesPage() {
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        <div>Start: {formatDate(subscription.start_date)}</div>
-                        {subscription.end_date && (
-                          <div>End: {formatDate(subscription.end_date)}</div>
+                        <div>Start: {formatDate(subscription.startDate)}</div>
+                        {subscription.endDate && (
+                          <div>End: {formatDate(subscription.endDate)}</div>
                         )}
                         {subscription.next_billing_date && (
                           <div className="text-blue-600">

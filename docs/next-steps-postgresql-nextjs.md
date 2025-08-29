@@ -168,7 +168,7 @@ Current: Not implementedSchema: Emergency response system
 
 Missing:
 
-- Critical alert system (critical_alerts view)
+- Critical alert system (criticalAlerts view)
 - Emergency contact management
 - Advance directive tracking
 - Legal guardian information

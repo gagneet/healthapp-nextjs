@@ -73,40 +73,40 @@ export default (db) => {
   });
 
   User.hasOne(Doctor, { 
-    foreignKey: 'user_id', 
+    foreignKey: 'userId',
     as: 'doctor' 
   });
   Doctor.belongsTo(User, { 
-    foreignKey: 'user_id', 
+    foreignKey: 'userId',
     as: 'user' 
   });
 
   User.hasOne(HSP, {
-    foreignKey: 'user_id',
+    foreignKey: 'userId',
     as: 'hsp'
   });
   HSP.belongsTo(User, {
-    foreignKey: 'user_id',
+    foreignKey: 'userId',
     as: 'user'
   });
 
   User.hasOne(Patient, { 
-    foreignKey: 'user_id', 
+    foreignKey: 'userId',
     as: 'patient' 
   });
   Patient.belongsTo(User, { 
-    foreignKey: 'user_id', 
+    foreignKey: 'userId',
     as: 'user' 
   });
 
   // Legacy Provider associations (keep for backward compatibility)
   if (Provider) {
     User.hasOne(Provider, { 
-      foreignKey: 'user_id', 
+      foreignKey: 'userId',
       as: 'provider' 
     });
     Provider.belongsTo(User, { 
-      foreignKey: 'user_id', 
+      foreignKey: 'userId',
       as: 'user' 
     });
   }
@@ -322,11 +322,11 @@ export default (db) => {
   // HealthcareProvider associations (new PostgreSQL schema)
   if (HealthcareProvider) {
     User.hasOne(HealthcareProvider, {
-      foreignKey: 'user_id',
+      foreignKey: 'userId',
       as: 'healthcareProvider'
     });
     HealthcareProvider.belongsTo(User, {
-      foreignKey: 'user_id',
+      foreignKey: 'userId',
       as: 'user'
     });
 
@@ -599,11 +599,11 @@ export default (db) => {
   // UserDevice associations
   if (UserDevice) {
     User.hasMany(UserDevice, {
-      foreignKey: 'user_id',
+      foreignKey: 'userId',
       as: 'devices'
     });
     UserDevice.belongsTo(User, {
-      foreignKey: 'user_id',
+      foreignKey: 'userId',
       as: 'user'
     });
   }
@@ -655,11 +655,11 @@ export default (db) => {
   // AuditLog associations
   if (AuditLog) {
     User.hasMany(AuditLog, {
-      foreignKey: 'user_id',
+      foreignKey: 'userId',
       as: 'auditLogs'
     });
     AuditLog.belongsTo(User, {
-      foreignKey: 'user_id',
+      foreignKey: 'userId',
       as: 'user'
     });
   }

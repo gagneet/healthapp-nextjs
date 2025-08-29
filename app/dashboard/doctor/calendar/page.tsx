@@ -18,7 +18,7 @@ interface Appointment {
 interface Patient {
   id: string
   name: string
-  medical_record_number: string
+  medicalRecordNumber: string
 }
 
 interface DayPilotEvent {
@@ -89,11 +89,11 @@ export default function DoctorCalendarPage() {
   // Load patients for dropdown (mock data - replace with API call)
   useEffect(() => {
     const mockPatients: Patient[] = [
-      { id: '1', name: 'John Doe', medical_record_number: 'MRN-001' },
-      { id: '2', name: 'Jane Smith', medical_record_number: 'MRN-002' },
-      { id: '3', name: 'Mike Johnson', medical_record_number: 'MRN-003' },
-      { id: '4', name: 'Sarah Wilson', medical_record_number: 'MRN-004' },
-      { id: '5', name: 'David Brown', medical_record_number: 'MRN-005' }
+      { id: '1', name: 'John Doe', medicalRecordNumber: 'MRN-001' },
+      { id: '2', name: 'Jane Smith', medicalRecordNumber: 'MRN-002' },
+      { id: '3', name: 'Mike Johnson', medicalRecordNumber: 'MRN-003' },
+      { id: '4', name: 'Sarah Wilson', medicalRecordNumber: 'MRN-004' },
+      { id: '5', name: 'David Brown', medicalRecordNumber: 'MRN-005' }
     ]
     setPatients(mockPatients)
   }, [])
@@ -509,7 +509,7 @@ export default function DoctorCalendarPage() {
                 <option value="all">All Patients</option>
                 {patients.map((patient) => (
                   <option key={patient.id} value={patient.id}>
-                    {patient.name} ({patient.medical_record_number})
+                    {patient.name} ({patient.medicalRecordNumber})
                   </option>
                 ))}
               </select>

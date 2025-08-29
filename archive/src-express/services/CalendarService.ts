@@ -22,8 +22,8 @@ class CalendarService {
     }
 
     const slots = [];
-    const startTime = this.timeStringToMinutes(availability.start_time);
-    const endTime = this.timeStringToMinutes(availability.end_time);
+    const startTime = this.timeStringToMinutes(availability.startTime);
+    const endTime = this.timeStringToMinutes(availability.endTime);
     const slotDuration = availability.slot_duration;
     
     // Generate slots
@@ -46,7 +46,7 @@ class CalendarService {
         where: {
           doctorId: doctorId,
           date: date,
-          start_time: slotStartTime
+          startTime: slotStartTime
         }
       });
 
@@ -54,8 +54,8 @@ class CalendarService {
         slots.push({
           doctorId: doctorId,
           date: date,
-          start_time: slotStartTime,
-          end_time: slotEndTime,
+          startTime: slotStartTime,
+          endTime: slotEndTime,
           max_appointments: availability.max_appointments_per_slot,
           slot_type: 'regular'
         });
@@ -84,13 +84,13 @@ class CalendarService {
         is_available: true,
         [(Op as any).where]: db.sequelize.literal('booked_appointments < max_appointments')
       },
-      order: [['start_time', 'ASC']]
+      order: [['startTime', 'ASC']]
     });
 
     return slots.map((slot: any) => ({
       slot_id: slot.id,
-      start_time: slot.start_time,
-      end_time: slot.end_time,
+      startTime: slot.startTime,
+      endTime: slot.endTime,
       available_spots: slot.max_appointments - slot.booked_appointments,
       slot_type: slot.slot_type
     }));
@@ -137,7 +137,7 @@ class CalendarService {
           { participant_one_id: doctorId, participant_one_type: 'doctor' },
           { organizer_id: doctorId, organizer_type: 'doctor' }
         ],
-        start_date: {
+        startDate: {
           [Op.between]: [startDate, endDate]
         }
       },
@@ -148,7 +148,7 @@ class CalendarService {
           include: [{ model: User, as: 'user' }]
         }
       ],
-      order: [['start_time', 'ASC']]
+      order: [['startTime', 'ASC']]
     });
 
     const availability = await DoctorAvailability.findAll({
@@ -162,7 +162,7 @@ class CalendarService {
           [Op.between]: [startDate, endDate]
         }
       },
-      order: [['date', 'ASC'], ['start_time', 'ASC']]
+      order: [['date', 'ASC'], ['startTime', 'ASC']]
     });
 
     return {
@@ -180,7 +180,7 @@ class CalendarService {
           { participant_one_id: patientId, participant_one_type: 'patient' },
           { participant_two_id: patientId, participant_two_type: 'patient' }
         ],
-        start_date: {
+        startDate: {
           [Op.between]: [startDate, endDate]
         }
       },
@@ -191,7 +191,7 @@ class CalendarService {
           include: [{ model: User, as: 'user' }]
         }
       ],
-      order: [['start_time', 'ASC']]
+      order: [['startTime', 'ASC']]
     });
 
     const scheduleEvents = await ScheduleEvent.findAll({
@@ -201,7 +201,7 @@ class CalendarService {
         },
         // Add patient filtering through related models
       },
-      order: [['date', 'ASC'], ['start_time', 'ASC']]
+      order: [['date', 'ASC'], ['startTime', 'ASC']]
     });
 
     return {
@@ -220,12 +220,12 @@ class CalendarService {
         ],
         [Op.and]: [
           {
-            start_time: {
+            startTime: {
               [Op.lt]: endTime
             }
           },
           {
-            end_time: {
+            endTime: {
               [Op.gt]: startTime
             }
           }
@@ -271,24 +271,24 @@ class CalendarService {
 
     // Update appointment
     await appointment.update({
-      start_time: newStartTime,
-      end_time: newEndTime,
-      start_date: newStartTime.toISOString().split('T')[0],
-      end_date: newEndTime.toISOString().split('T')[0],
+      startTime: newStartTime,
+      endTime: newEndTime,
+      startDate: newStartTime.toISOString().split('T')[0],
+      endDate: newEndTime.toISOString().split('T')[0],
       slot_id: newSlotId,
       details: {
         ...(appointment as any).details,
         rescheduled: true,
         rescheduled_at: new Date(),
-        previous_start_time: appointment.start_time
+        previous_start_time: appointment.startTime
       }
     });
 
     // Update related schedule events
     await ScheduleEvent.update(
       {
-        start_time: newStartTime,
-        end_time: newEndTime,
+        startTime: newStartTime,
+        endTime: newEndTime,
         date: newStartTime.toISOString().split('T')[0]
       },
       {
@@ -304,7 +304,7 @@ class CalendarService {
 
   // Set doctor availability
   async setDoctorAvailability(doctorId: any, availabilityData: any) {
-    const { day_of_week, start_time, end_time, slot_duration, max_appointments_per_slot, break_start_time, break_end_time } = availabilityData;
+    const { day_of_week, startTime, endTime, slot_duration, max_appointments_per_slot, break_start_time, break_end_time } = availabilityData;
 
     const [availability, created] = await DoctorAvailability.findOrCreate({
       where: {
@@ -312,8 +312,8 @@ class CalendarService {
         day_of_week: day_of_week
       },
       defaults: {
-        start_time,
-        end_time,
+        startTime,
+        endTime,
         slot_duration: slot_duration || 30,
         max_appointments_per_slot: max_appointments_per_slot || 1,
         break_start_time,
@@ -324,8 +324,8 @@ class CalendarService {
 
     if (!created) {
       await availability.update({
-        start_time,
-        end_time,
+        startTime,
+        endTime,
         slot_duration: slot_duration || availability.slot_duration,
         max_appointments_per_slot: max_appointments_per_slot || availability.max_appointments_per_slot,
         break_start_time,
@@ -353,20 +353,20 @@ class CalendarService {
     return {
       id: appointment.id,
       description: appointment.description,
-      start_time: appointment.start_time,
-      end_time: appointment.end_time,
+      startTime: appointment.startTime,
+      endTime: appointment.endTime,
       type: appointment.details?.type || 'consultation',
       status: appointment.details?.status || 'scheduled',
-      patient_name: appointment.patient ? `${appointment.patient.first_name} ${appointment.patient.last_name}` : 'Unknown',
-      doctor_name: appointment.doctor ? `Dr. ${appointment.doctor.first_name} ${appointment.doctor.last_name}` : 'Unknown'
+      patient_name: appointment.patient ? `${appointment.patient.firstName} ${appointment.patient.lastName}` : 'Unknown',
+      doctor_name: appointment.doctor ? `Dr. ${appointment.doctor.firstName} ${appointment.doctor.lastName}` : 'Unknown'
     };
   }
 
   formatAvailability(availability: any) {
     return {
       day_of_week: availability.day_of_week,
-      start_time: availability.start_time,
-      end_time: availability.end_time,
+      startTime: availability.startTime,
+      endTime: availability.endTime,
       slot_duration: availability.slot_duration,
       break_time: availability.break_start_time ? {
         start: availability.break_start_time,
@@ -379,8 +379,8 @@ class CalendarService {
     return {
       id: slot.id,
       date: slot.date,
-      start_time: slot.start_time,
-      end_time: slot.end_time,
+      startTime: slot.startTime,
+      endTime: slot.endTime,
       available_spots: slot.max_appointments - slot.booked_appointments,
       slot_type: slot.slot_type,
       is_available: slot.is_available
@@ -392,8 +392,8 @@ class CalendarService {
       id: event.id,
       type: event.event_type,
       date: event.date,
-      start_time: event.start_time,
-      end_time: event.end_time,
+      startTime: event.startTime,
+      endTime: event.endTime,
       status: event.status,
       priority: event.details?.priority || 'normal'
     };

@@ -208,8 +208,8 @@ export class LaboratoryService {
             include: {
               user: {
                 select: {
-                  first_name: true,
-                  last_name: true,
+                  firstName: true,
+                  lastName: true,
                   email: true
                 }
               },
@@ -224,8 +224,8 @@ export class LaboratoryService {
             include: {
               user: {
                 select: {
-                  first_name: true,
-                  last_name: true,
+                  firstName: true,
+                  lastName: true,
                   email: true,
                   date_of_birth: true,
                   gender: true
@@ -360,8 +360,8 @@ export class LaboratoryService {
             include: {
               user: {
                 select: {
-                  first_name: true,
-                  last_name: true
+                  firstName: true,
+                  lastName: true
                 }
               },
               speciality: {
@@ -375,8 +375,8 @@ export class LaboratoryService {
             include: {
               user: {
                 select: {
-                  first_name: true,
-                  last_name: true,
+                  firstName: true,
+                  lastName: true,
                   date_of_birth: true
                 }
               }
@@ -489,13 +489,13 @@ export class LaboratoryService {
         orderNumber: order.order_number,
         patient: {
           id: order.patient.user.id,
-          name: `${order.patient.user.first_name} ${order.patient.user.last_name}`,
+          name: `${order.patient.user.firstName} ${order.patient.user.lastName}`,
           dateOfBirth: order.patient.user.date_of_birth,
           gender: order.patient.user.gender,
         },
         physician: {
           id: order.doctor.user.id,
-          name: `${order.doctor.user.first_name} ${order.doctor.user.last_name}`,
+          name: `${order.doctor.user.firstName} ${order.doctor.user.lastName}`,
           npi: order.doctor.medical_license_number,
         },
         tests: order.ordered_tests,

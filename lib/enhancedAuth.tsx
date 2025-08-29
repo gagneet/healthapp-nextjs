@@ -197,7 +197,7 @@ export const EnhancedAuthProvider: React.FC<EnhancedAuthProviderProps> = ({ chil
         storeTokens(tokens, user)
         
         logger.info('Enhanced login successful')
-        toast.success(`Welcome back, ${user.first_name || user.email}!`)
+        toast.success(`Welcome back, ${user.firstName || user.email}!`)
         return true
       } else {
         logger.warn('Login failed:', (response as any).payload?.message)

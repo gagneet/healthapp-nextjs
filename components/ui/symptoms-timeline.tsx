@@ -10,9 +10,9 @@ interface Symptom {
   x: number
   y: number
   description?: string
-  onset_time: string
+  onsetTime: string
   recordedAt: string
-  body_part?: string
+  bodyPart?: string
   status?: 'active' | 'resolved' | 'improving' | 'worsening'
 }
 
@@ -31,7 +31,7 @@ export default function SymptomsTimeline({
 
   // Sort symptoms by date (most recent first)
   const sortedSymptoms = [...symptoms].sort((a, b) => 
-    new Date(b.onset_time).getTime() - new Date(a.onset_time).getTime()
+    new Date(b.onsetTime).getTime() - new Date(a.onsetTime).getTime()
   )
 
   // Filter symptoms by date range
@@ -47,7 +47,7 @@ export default function SymptomsTimeline({
 
     const cutoff = new Date(now.getTime() - ranges[selectedDateRange])
     return sortedSymptoms.filter(symptom => 
-      new Date(symptom.onset_time) >= cutoff
+      new Date(symptom.onsetTime) >= cutoff
     )
   }
 
@@ -95,7 +95,7 @@ export default function SymptomsTimeline({
     const groups: { [key: string]: Symptom[] } = {}
     
     filteredSymptoms.forEach(symptom => {
-      const date = new Date(symptom.onset_time).toDateString()
+      const date = new Date(symptom.onsetTime).toDateString()
       if (!groups[date]) groups[date] = []
       groups[date].push(symptom)
     })
@@ -191,9 +191,9 @@ export default function SymptomsTimeline({
                               }`}>
                                 {symptom.name}
                               </h5>
-                              {symptom.body_part && (
+                              {symptom.bodyPart && (
                                 <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
-                                  {symptom.body_part}
+                                  {symptom.bodyPart}
                                 </span>
                               )}
                             </div>
@@ -205,7 +205,7 @@ export default function SymptomsTimeline({
                             )}
 
                             <div className="flex items-center space-x-4 mt-2 text-xs text-gray-500">
-                              <span>{formatDateTime(symptom.onset_time)}</span>
+                              <span>{formatDateTime(symptom.onsetTime)}</span>
                               {symptom.status && (
                                 <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                                   getStatusColor(symptom.status)

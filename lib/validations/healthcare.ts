@@ -250,7 +250,7 @@ export const CarePlanSchema = z.object({
   startDate: z.string().pipe(z.coerce.date({ message: "Invalid start date" })),
   endDate: z.string().pipe(z.coerce.date()).optional(),
   planDetails: z.object({
-    care_plans: z.array(z.string()).optional(),
+    carePlans: z.array(z.string()).optional(),
     procedures: z.array(z.string()).optional(),
     lifestyle: z.object({
       diet: z.string().optional(),

@@ -16,8 +16,8 @@ interface AuthResult {
     id: string;
     email: string;
     role: string;
-    first_name: string;
-    last_name: string;
+    firstName: string;
+    lastName: string;
   };
   error?: string;
 }
@@ -53,8 +53,8 @@ export async function verifyAuth(request: NextRequest): Promise<AuthResult> {
         id: true,
         email: true,
         role: true,
-        first_name: true,
-        last_name: true,
+        firstName: true,
+        lastName: true,
         account_status: true,
         email_verified: true
       }
@@ -73,8 +73,8 @@ export async function verifyAuth(request: NextRequest): Promise<AuthResult> {
         id: user.id,
         email: user.email,
         role: user.role as string,
-        first_name: user.first_name || '',
-        last_name: user.last_name || '',
+        firstName: user.firstName || '',
+        lastName: user.lastName || '',
       }
     };
   } catch (error) {

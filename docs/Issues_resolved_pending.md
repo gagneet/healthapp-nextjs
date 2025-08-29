@@ -1482,7 +1482,7 @@ Have made sure all optional fields (strings, numbers, dates, phone numbers) prop
 
 ### ✅ Data structure is correct
 
-- Names split properly (first_name, middle_name, last_name)
+- Names split properly (firstName, middle_name, lastName)
 - Arrays for symptoms and diagnosis
 - Proper insurance_information structure
 - Emergency contacts as array
@@ -1498,7 +1498,7 @@ This should create the patient successfully now! The comprehensive validation fi
 ### ✅ Fixed Issues
 
 1. Insurance amounts now converted to numbers - Frontend now sends parseFloat() values instead of strings
-2. Phone field mapping verified correct - Service correctly maps mobile_number → phone
+2. Phone field mapping verified correct - Service correctly maps mobileNumber → phone
 
 ### ✅ Verified Compatible
 
@@ -1519,7 +1519,7 @@ The form submission should now succeed without any compatibility issues! 🎉
 
 1. Event Status: Database uses lowercase (pending, completed) vs Enums use uppercase (PENDING, COMPLETED)
 2. Event Types: Mixed case usage across different parts of the system
-3. Field Names: dob → date_of_birth, mobile_number → phone (already handled)
+3. Field Names: dob → date_of_birth, mobileNumber → phone (already handled)
 
 ### 🛠️ SOLUTION PROVIDED
 
@@ -1628,7 +1628,7 @@ Updated the getPatients method in patientController.js to:
 whereClause['$patient.primary_care_doctor_id$'] = req.user.id;
 
 // NEW (correct) 
-const doctorRecord = await Doctor.findOne({ where: { user_id: req.user.id } });
+const doctorRecord = await Doctor.findOne({ where: { userId: req.user.id } });
 if (doctorRecord) {
 whereClause['$patient.primary_care_doctor_id$'] = doctorRecord.id;
 } else {
@@ -1692,7 +1692,7 @@ The patient list should now display correctly without the JavaScript errors inte
 ### ✅ Fixed Field Name Error
 
 - Changed cp.name to cp.title as name in the views migration
-- Updated the original care_plans migration to use title instead of name
+- Updated the original carePlans migration to use title instead of name
 
 ### ✅ Made Migrations Idempotent
 
@@ -2631,19 +2631,19 @@ But the current configuration (max 3 attempts) is actually safer because it prev
     "payload": {
       "error": {
         "status": "INTERNAL_ERROR",
-        "message": "WHERE parameter \"user_id\" has invalid \"undefined\" value"
+        "message": "WHERE parameter \"userId\" has invalid \"undefined\" value"
       }
     }
   }
 
 ### Root Cause: Doctor Profile issues
 
-- In the getProfile method in doctorController.js, the code was trying to access req.user.user_id, but the authentication middleware actually sets
+- In the getProfile method in doctorController.js, the code was trying to access req.user.userId, but the authentication middleware actually sets
 req.user to the User object, so the correct property is req.user.id.
 
 Solution: Changed line 8 in /src/controllers/doctorController.js:
 // Before (incorrect)
-const userId = req.user.user_id;
+const userId = req.user.userId;
 
 // After (correct)  
 const userId = req.user.id;
@@ -2683,7 +2683,7 @@ Result: The edit button now works without errors and shows a simple alert messag
 
 ### 🎯 Summary of All Fixes Completed
 
-1. ✅ Doctor Profile 500 Error: Fixed req.user.user_id → req.user.id in doctorController
+1. ✅ Doctor Profile 500 Error: Fixed req.user.userId → req.user.id in doctorController
 2. ✅ Admin Doctors Page Component Errors: Replaced missing UI components with HTML elements
 3. ✅ Toast Error: Fixed undefined toast reference in edit handler
 4. ✅ Docker Swarm Auto-Restart: Confirmed working correctly (was not broken)
@@ -2985,7 +2985,7 @@ The following fields now properly allow empty strings ('') and are truly optiona
 
 - comorbidities - Optional ✅ (This was the main issue)
 - allergies - Optional ✅
-- medical_record_number - Optional
+- medicalRecordNumber - Optional
 
 ### Clinical Fields
 
@@ -3002,8 +3002,8 @@ Confirmed Required Fields
 
 These fields remain mandatory as requested:
 
-1. ✅ Mobile Number (mobile_number) - Required
-2. ✅ Full Name (first_name, last_name) - Required
+1. ✅ Mobile Number (mobileNumber) - Required
+2. ✅ Full Name (firstName, lastName) - Required
 3. ✅ Date of Birth (dob) - Required
 4. ✅ Symptoms (symptoms) - Required (array)
 5. ✅ Diagnosis (diagnosis) - Required (array)
@@ -3073,12 +3073,12 @@ Mismatches Found:
 7. education (frontend) ↔ qualification_details (backend - similar but different structure) ❌
 8. certifications (frontend) ↔ board_certifications (backend - array of strings, not objects) ❌
 9. languages (frontend) ↔ languages_spoken (backend) ❌
-10. profile_image (frontend) ↔ profile_picture_url (backend) ❌
+10. profile_image (frontend) ↔ profilePictureUrl (backend) ❌
 11. speciality_name (frontend) ↔ speciality.name (backend - nested object) ❌
 
 Fields that Match:
 
-- id, user_id, speciality_id, years_of_experience, consultation_fee, total_patients ✅
+- id, userId, speciality_id, years_of_experience, consultation_fee, total_patients ✅
 
 ### Field Mapping Resolution - Doctor Profile
 
@@ -3096,7 +3096,7 @@ Have successfully implemented the fix for the Doctor Profile page error and chec
 - education ➜ qualification_details
 - certifications ➜ board_certifications
 - languages ➜ languages_spoken
-- profile_image ➜ profile_picture_url
+- profile_image ➜ profilePictureUrl
 - speciality_name ➜ speciality.name (nested object)
 - bio ➜ Made optional with fallback
 - Updated data extraction: response.payload.data.profile
@@ -3119,7 +3119,7 @@ The Doctor Profile page should now load without errors when you login as a Docto
 ### 🚨 CRITICAL (Will cause crashes)
 
 1. Doctor Profile Page - profile.average_rating.toString() without null check
-2. Admin Doctors Page - Direct access to doctor.basic_info.first_name without validation
+2. Admin Doctors Page - Direct access to doctor.basic_info.firstName without validation
 3. Patient Dashboard - Deep nested property access without intermediate null checks
 4. Doctor Patients Page - Field name mismatches in medical_info structure
 
@@ -3538,7 +3538,7 @@ Next.js App Router requires consistent parameter names for the same route path. 
 1. ✅ Restored API Contract: Renamed the comprehensive route back to [id] to match frontend expectations
 2. ✅ Enhanced Functionality: The new [id] route now includes the full comprehensive logic from [patientId]
 3. ✅ Backward Compatibility: Frontend calls to /api/patient/dashboard/${user.id} now work correctly
-4. ✅ Improved Search: The route searches for patients by user_id, id, or patientId (flexible matching)
+4. ✅ Improved Search: The route searches for patients by userId, id, or patientId (flexible matching)
 
 ### Technical Details
 
@@ -3551,7 +3551,7 @@ fetch(`/api/patient/dashboard/${user.id}`)
 const patient = await Patient.findOne({
   where: {
     [Op.or]: [
-      { user_id: patientId },  // ✅ Matches user.id from frontend  
+      { userId: patientId },  // ✅ Matches user.id from frontend  
       { id: patientId },
       { patientId: patientId }
     ]
@@ -4038,22 +4038,22 @@ more extensive refactoring to make fully idempotent.
 #### Type Definitions Fixed
 
 - ✅ Added missing properties to Patient interface:
-  - date_of_birth, gender, profile_picture_url
+  - date_of_birth, gender, profilePictureUrl
   - Made most properties optional to match API responses
-- ✅ Added mobile_number to User interface
+- ✅ Added mobileNumber to User interface
 - ✅ Made createdAt and updatedAt optional (often missing from API)
 
 #### Null/Undefined Safety
 
 - ✅ Fixed critical null/undefined issues in components:
-  - critical_alerts ?? 0 checks
-  - adherence_rate ?? 0 with safe division
-  - patient.last_visit ? formatDate(patient.last_visit) : 'No visits'
+  - criticalAlerts ?? 0 checks
+  - adherenceRate ?? 0 with safe division
+  - patient.lastVisit ? formatDate(patient.lastVisit) : 'No visits'
 
 #### Component Safety
 
 - ✅ Added defensive programming patterns for missing data
-- ✅ Fixed mobile_number access with fallback chains
+- ✅ Fixed mobileNumber access with fallback chains
 
 ### 🎯 Results of fixes for UI/UX
 
@@ -4106,9 +4106,9 @@ Key Issues Resolved:
 
 - Added proper null/undefined checks for:
 
-  - p.adherence_rate ?? 0
-  - p.critical_alerts ?? 0
-  - patient.last_visit ? formatDate(patient.last_visit) : 'No visits'
+  - p.adherenceRate ?? 0
+  - p.criticalAlerts ?? 0
+  - patient.lastVisit ? formatDate(patient.lastVisit) : 'No visits'
   - patient.status || 'active'
   - Proper checks for patient name fields
 
@@ -4681,7 +4681,7 @@ From the migration output, I see these missing column errors:
 4. provider_id - missing from care plans table
 5. template_id - missing from care plans table
 6. scheduled_time - missing from events table
-7. mobile_number - missing from users table
+7. mobileNumber - missing from users table
 8. organization_id - missing from users table
 9. entity_type - missing from audit logs table
 10. is_read - missing from notifications table
@@ -4711,15 +4711,15 @@ Problematic Indexes in 20250105130000-add-performance-indexes.ts:
 
 1. adherence_records: Uses completion_status but table has is_completed, is_partial, is_missed
 2. appointments: Uses status and hsp_id but table doesn't have these columns
-3. care_plans: Uses provider_id and template_id but table doesn't have these columns
+3. carePlans: Uses provider_id and template_id but table doesn't have these columns
 4. scheduled_events: Uses completion_status and scheduled_time but table has status and scheduled_for
-5. users: Uses mobile_number and organization_id but table has phone and no org column
+5. users: Uses mobileNumber and organization_id but table has phone and no org column
 6. notifications: Uses is_read, notification_type but table has neither
 7. audit_logs: Uses entity_type, entity_id but table doesn't have these
 
 Let me fix the performance indexes migration to match the actual schema
 
-● Good! The care_plans table has a status column, not plan_status.
+● Good! The carePlans table has a status column, not plan_status.
 
 ● Summary of Fixed Issues:
 
@@ -4735,9 +4735,9 @@ Let me fix the performance indexes migration to match the actual schema
 
 - adherence_records: completion_status → is_completed
 - appointments: removed non-existent status, hsp_id columns
-- care_plans: plan_status → status, provider_id → created_by_doctor_id
+- carePlans: plan_status → status, provider_id → created_by_doctor_id
 - scheduled_events: completion_status → status, scheduled_time → scheduled_for
-- users: mobile_number → phone, removed non-existent organization_id
+- users: mobileNumber → phone, removed non-existent organization_id
 - notifications: updated to use existing columns
 - audit_logs: updated to use existing columns
 
@@ -5127,7 +5127,7 @@ Fixed Issues:
 
 ### 2. Field Name Corrections
 
-- mobile_number → phone (User model)
+- mobileNumber → phone (User model)
 - license_number → medical_license_number (doctors model)
 - years_experience → years_of_experience (doctors model)
 - qualifications → qualification_details (doctors model)
@@ -5186,8 +5186,8 @@ Type error: 'user' is possibly 'undefined'.
   320 |     const canModify = 
 > 321 |       user.role === 'ADMIN' ||
       |       ^
-  322 |       (user.role === 'DOCTOR' && existingAppointment.doctors?.user_id === user.id) ||
-  323 |       (user.role === 'PATIENT' && existingAppointment.patients?.user_id === user.id);
+  322 |       (user.role === 'DOCTOR' && existingAppointment.doctors?.userId === user.id) ||
+  323 |       (user.role === 'PATIENT' && existingAppointment.patients?.userId === user.id);
   324 |
 Next.js build worker exited with code: 1 and signal: null
    Linting and checking validity of types  .
@@ -5199,8 +5199,8 @@ Next.js build worker exited with code: 1 and signal: null
 
 ```typescript
        321 +        user!.role === 'ADMIN' ||
-       322 +        (user!.role === 'DOCTOR' && existingAppointment.doctor?.user_id === user!.id) ||
-       323 +        (user!.role === 'PATIENT' && existingAppointment.patient?.user_id === user!.id);
+       322 +        (user!.role === 'DOCTOR' && existingAppointment.doctor?.userId === user!.id) ||
+       323 +        (user!.role === 'PATIENT' && existingAppointment.patient?.userId === user!.id);
 ```
 
 **Priority Order:**

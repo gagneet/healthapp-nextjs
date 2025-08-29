@@ -31,11 +31,11 @@ export default (sequelize: any, DataTypes: any) => {
       type: DataTypes.DATEONLY,
       allowNull: true,
     },
-    start_time: {
+    startTime: {
       type: DataTypes.DATE,
       allowNull: true,
     },
-    end_time: {
+    endTime: {
       type: DataTypes.DATE,
       allowNull: true,
     },
@@ -62,7 +62,7 @@ export default (sequelize: any, DataTypes: any) => {
     charset: 'latin1',
     paranoid: true,
     indexes: [
-      { fields: ['event_type', 'status', 'date', 'start_time'] },
+      { fields: ['event_type', 'status', 'date', 'startTime'] },
       { fields: ['event_id', 'event_type'] },
       { fields: ['status', 'date'] },
     ],

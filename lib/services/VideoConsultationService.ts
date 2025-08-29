@@ -112,14 +112,14 @@ export class VideoConsultationService {
           doctor: {
             select: {
               id: true,
-              user: { select: { first_name: true, last_name: true, email: true } },
+              user: { select: { firstName: true, lastName: true, email: true } },
               specialization: true,
             }
           },
           patient: {
             select: {
               id: true,
-              user: { select: { first_name: true, last_name: true, email: true } },
+              user: { select: { firstName: true, lastName: true, email: true } },
               date_of_birth: true,
             }
           },
@@ -250,8 +250,8 @@ export class VideoConsultationService {
       const consultations = await prisma.videoConsultation.findMany({
         where: whereClause,
         include: {
-          doctor: { select: { id: true, user: { select: { first_name: true, last_name: true, } }, specialization: true, } },
-          patient: { select: { id: true, user: { select: { first_name: true, last_name: true, } }, } },
+          doctor: { select: { id: true, user: { select: { firstName: true, lastName: true, } }, specialization: true, } },
+          patient: { select: { id: true, user: { select: { firstName: true, lastName: true, } }, } },
           appointment: { select: { id: true, appointment_date: true, } }
         },
         orderBy: { createdAt: 'desc' },
@@ -402,8 +402,8 @@ export class VideoConsultationService {
       const consultations = await prisma.videoConsultation.findMany({
         where: whereClause,
         include: {
-          doctor: { select: { id: true, user: { select: { first_name: true, last_name: true, } }, specialization: true, } },
-          patient: { select: { id: true, user: { select: { first_name: true, last_name: true, } }, } }
+          doctor: { select: { id: true, user: { select: { firstName: true, lastName: true, } }, specialization: true, } },
+          patient: { select: { id: true, user: { select: { firstName: true, lastName: true, } }, } }
         },
         orderBy: { actual_start: 'desc' },
       });

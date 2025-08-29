@@ -54,7 +54,7 @@ class DoctorController {
           {
             model: User,
             as: 'user',
-            attributes: ['id', 'email', 'phone', 'first_name', 'middle_name', 'last_name', 'gender', 'profile_picture_url', 'email_verified', 'createdAt']
+            attributes: ['id', 'email', 'phone', 'firstName', 'middle_name', 'lastName', 'gender', 'profilePictureUrl', 'email_verified', 'createdAt']
           },
           {
             model: Speciality,
@@ -92,16 +92,16 @@ class DoctorController {
           // Basic Information
           id: doctor.id.toString(),
           userId: doctor.userId.toString(),
-          full_name: `${doctor.user?.first_name || ''} ${doctor.user?.middle_name || ''} ${doctor.user?.last_name || ''}`.replace(/\s+/g, ' ').trim(),
-          first_name: doctor.user?.first_name || '',
+          full_name: `${doctor.user?.firstName || ''} ${doctor.user?.middle_name || ''} ${doctor.user?.lastName || ''}`.replace(/\s+/g, ' ').trim(),
+          firstName: doctor.user?.firstName || '',
           middle_name: doctor.user?.middle_name || '',
-          last_name: doctor.user?.last_name || '',
+          lastName: doctor.user?.lastName || '',
           email: doctor.user?.email,
-          mobile_number: doctor.mobile_number || doctor.user?.phone,
+          mobileNumber: doctor.mobileNumber || doctor.user?.phone,
           gender: doctor.gender || doctor.user?.gender,
           
           // Profile Images
-          profile_picture_url: doctor.profile_picture_url || doctor.user?.profile_picture_url,
+          profilePictureUrl: doctor.profilePictureUrl || doctor.user?.profilePictureUrl,
           banner_image_url: doctor.banner_image_url,
           signature_image_url: doctor.signature_image_url,
           signature_data: doctor.signature_data,
@@ -202,7 +202,7 @@ class DoctorController {
         // Basic Information
         full_name,
         gender,
-        mobile_number,
+        mobileNumber,
         
         // Professional Details
         medical_license_number,
@@ -267,14 +267,14 @@ class DoctorController {
       if (full_name) {
         // Split full name into components (don't store full_name as it's not a real field)
         const nameParts = full_name.trim().split(' ');
-        if (nameParts.length >= 1) (userUpdateData as any).first_name = nameParts[0];
-        if (nameParts.length >= 2) (userUpdateData as any).last_name = nameParts[nameParts.length - 1];
+        if (nameParts.length >= 1) (userUpdateData as any).firstName = nameParts[0];
+        if (nameParts.length >= 2) (userUpdateData as any).lastName = nameParts[nameParts.length - 1];
         if (nameParts.length >= 3) {
           (userUpdateData as any).middle_name = nameParts.slice(1, -1).join(' ');
         }
       }
       if (gender) (userUpdateData as any).gender = gender;
-      if (mobile_number) (userUpdateData as any).phone = mobile_number;
+      if (mobileNumber) (userUpdateData as any).phone = mobileNumber;
 
       if (Object.keys(userUpdateData).length > 0) {
         await doctor.user.update(userUpdateData, { transaction });
@@ -282,7 +282,7 @@ class DoctorController {
 
       // Update Doctor table
       const doctorUpdateData = {
-        ...(mobile_number && { mobile_number }),
+        ...(mobileNumber && { mobileNumber }),
         ...(gender && { gender }),
         ...(medical_license_number && { medical_license_number }),
         ...(npi_number && { npi_number }),
@@ -369,7 +369,7 @@ class DoctorController {
         const baseUrl = `${req.protocol}://${req.get('host')}/uploads/doctors/`;
 
         if ((req as any).files.profile_picture) {
-          (updateData as any).profile_picture_url = baseUrl + (req as any).files.profile_picture[0].filename;
+          (updateData as any).profilePictureUrl = baseUrl + (req as any).files.profile_picture[0].filename;
         }
         if ((req as any).files.banner_image) {
           (updateData as any).banner_image_url = baseUrl + (req as any).files.banner_image[0].filename;
@@ -407,7 +407,7 @@ class DoctorController {
           {
             model: User,
             as: 'user',
-            attributes: ['email', 'first_name', 'middle_name', 'last_name', 'email_verified']
+            attributes: ['email', 'firstName', 'middle_name', 'lastName', 'email_verified']
           },
           {
             model: Speciality,
@@ -442,13 +442,13 @@ class DoctorController {
       const responseData = {
         id: doctor.id.toString(),
         userId: doctor.userId.toString(),
-        full_name: `${doctor.user?.first_name || ''} ${doctor.user?.middle_name || ''} ${doctor.user?.last_name || ''}`.replace(/\s+/g, ' ').trim(),
-        first_name: doctor.user?.first_name,
-        last_name: doctor.user?.last_name,
+        full_name: `${doctor.user?.firstName || ''} ${doctor.user?.middle_name || ''} ${doctor.user?.lastName || ''}`.replace(/\s+/g, ' ').trim(),
+        firstName: doctor.user?.firstName,
+        lastName: doctor.user?.lastName,
         email: doctor.user?.email,
-        mobile_number: doctor.mobile_number,
+        mobileNumber: doctor.mobileNumber,
         gender: doctor.gender,
-        profile_picture_url: doctor.profile_picture_url,
+        profilePictureUrl: doctor.profilePictureUrl,
         banner_image_url: doctor.banner_image_url,
         is_verified: doctor.is_verified,
         email_verified: doctor.user?.email_verified,
@@ -509,7 +509,7 @@ class DoctorController {
           {
             model: User,
             as: 'user',
-            attributes: ['email', 'phone', 'first_name', 'middle_name', 'last_name']
+            attributes: ['email', 'phone', 'firstName', 'middle_name', 'lastName']
           },
           {
             model: Appointment,
@@ -573,21 +573,21 @@ class DoctorController {
         (responseData as any).patients[patient.id] = {
           basic_info: {
             id: patient.id?.toString() || '',
-            first_name: patient.first_name || '',
-            last_name: patient.last_name || '',
-            full_name: `${patient.user?.first_name || ''} ${patient.user?.middle_name || ''} ${patient.user?.last_name || ''}`.replace(/\s+/g, ' ').trim() || 'Unknown Patient',
+            firstName: patient.firstName || '',
+            lastName: patient.lastName || '',
+            full_name: `${patient.user?.firstName || ''} ${patient.user?.middle_name || ''} ${patient.user?.lastName || ''}`.replace(/\s+/g, ' ').trim() || 'Unknown Patient',
             current_age: patient.current_age || null,
             gender: patient.gender || null,
-            mobile_number: patient.user?.phone || null,
+            mobileNumber: patient.user?.phone || null,
             email: patient.user?.email || null,
             status: patient.status || 'active',
             createdAt: patient.createdAt || new Date().toISOString()
           },
           medical_info: {
-            last_visit: lastVisit,
-            next_appointment: nextAppointment,
-            adherence_rate: adherenceRate,
-            critical_alerts: criticalAlerts,
+            lastVisit: lastVisit,
+            nextAppointment: nextAppointment,
+            adherenceRate: adherenceRate,
+            criticalAlerts: criticalAlerts,
             total_appointments: appointments.length,
             active_care_plans: carePlans.filter((cp: any) => cp.status === 'active').length,
             total_medications: activeMedications.length
@@ -924,7 +924,7 @@ class DoctorController {
       // Simplified for now - count all appointments for today
       const todaysAppointments = await Appointment.count({
         where: {
-          start_date: {
+          startDate: {
             [Op.gte]: today,
             [Op.lt]: tomorrow
           }
@@ -973,7 +973,7 @@ class DoctorController {
       const dashboardStats = {
         total_patients: totalPatients,
         active_patients: activePatients,
-        critical_alerts: criticalPatients,
+        criticalAlerts: criticalPatients,
         appointments_today: todaysAppointments,
         medication_adherence: avgAdherence,
         vital_readings_pending: vitalsPending
@@ -1020,7 +1020,7 @@ class DoctorController {
           {
             model: User,
             as: 'user',
-            attributes: ['email', 'phone', 'first_name', 'middle_name', 'last_name', 'profile_picture_url']
+            attributes: ['email', 'phone', 'firstName', 'middle_name', 'lastName', 'profilePictureUrl']
           }
         ],
         order: [['updatedAt', 'DESC']],
@@ -1030,18 +1030,18 @@ class DoctorController {
       const recentPatients = patients.map((patient: any) => ({
         id: patient.id.toString(),
         userId: patient.userId.toString(),
-        first_name: patient.user?.first_name || '',
-        last_name: patient.user?.last_name || '',
-        full_name: `${patient.user?.first_name || ''} ${patient.user?.middle_name || ''} ${patient.user?.last_name || ''}`.replace(/\s+/g, ' ').trim(),
+        firstName: patient.user?.firstName || '',
+        lastName: patient.user?.lastName || '',
+        full_name: `${patient.user?.firstName || ''} ${patient.user?.middle_name || ''} ${patient.user?.lastName || ''}`.replace(/\s+/g, ' ').trim(),
         email: patient.user?.email,
         phone: patient.user?.phone,
-        profile_picture_url: patient.user?.profile_picture_url,
+        profilePictureUrl: patient.user?.profilePictureUrl,
         gender: patient.user?.gender,
-        medical_record_number: patient.medical_record_number,
-        last_visit: patient.last_visit_date,
-        next_appointment: patient.next_appointment_date,
-        adherence_rate: patient.overallAdherenceScore || 85, // Use actual adherence score
-        critical_alerts: patient.risk_level === 'high' ? 2 : (patient.risk_level === 'medium' ? 1 : 0),
+        medicalRecordNumber: patient.medicalRecordNumber,
+        lastVisit: patient.last_visit_date,
+        nextAppointment: patient.next_appointment_date,
+        adherenceRate: patient.overallAdherenceScore || 85, // Use actual adherence score
+        criticalAlerts: patient.risk_level === 'high' ? 2 : (patient.risk_level === 'medium' ? 1 : 0),
         status: patient.isActive ? 'active' : 'inactive',
         createdAt: patient.createdAt
       }));
@@ -1093,7 +1093,7 @@ class DoctorController {
           {
             model: User,
             as: 'user',
-            attributes: ['first_name', 'middle_name', 'last_name']
+            attributes: ['firstName', 'middle_name', 'lastName']
           }
         ],
         order: [['overallAdherenceScore', 'ASC']],
@@ -1104,7 +1104,7 @@ class DoctorController {
         criticalAlerts.push({
           id: `adherence_${patient.id}`,
           patientId: patient.id.toString(),
-          patient_name: `${patient.user?.first_name || ''} ${patient.user?.middle_name || ''} ${patient.user?.last_name || ''}`.replace(/\s+/g, ' ').trim() || 'Unknown Patient',
+          patient_name: `${patient.user?.firstName || ''} ${patient.user?.middle_name || ''} ${patient.user?.lastName || ''}`.replace(/\s+/g, ' ').trim() || 'Unknown Patient',
           type: 'medication',
           severity: patient.overallAdherenceScore < 50 ? 'critical' : 'high',
           message: `Low medication adherence: ${patient.overallAdherenceScore}%`,
@@ -1124,7 +1124,7 @@ class DoctorController {
           {
             model: User,
             as: 'user',
-            attributes: ['first_name', 'middle_name', 'last_name']
+            attributes: ['firstName', 'middle_name', 'lastName']
           }
         ],
         order: [['updatedAt', 'DESC']],
@@ -1135,7 +1135,7 @@ class DoctorController {
         criticalAlerts.push({
           id: `risk_${patient.id}`,
           patientId: patient.id.toString(),
-          patient_name: `${patient.user?.first_name || ''} ${patient.user?.middle_name || ''} ${patient.user?.last_name || ''}`.replace(/\s+/g, ' ').trim() || 'Unknown Patient',
+          patient_name: `${patient.user?.firstName || ''} ${patient.user?.middle_name || ''} ${patient.user?.lastName || ''}`.replace(/\s+/g, ' ').trim() || 'Unknown Patient',
           type: 'vital',
           severity: 'critical',
           message: 'Patient marked as high risk - requires immediate attention',
@@ -1209,7 +1209,7 @@ class DoctorController {
       // (Future enhancement: properly implement appointment tracking per doctor)
       const totalAppointments = await Appointment.count({
         where: { 
-          start_date: { [Op.gte]: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) } // Last 30 days
+          startDate: { [Op.gte]: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) } // Last 30 days
         }
       });
 
@@ -1289,7 +1289,7 @@ class DoctorController {
         statusCode: 200,
         payload: {
           data: {
-            adherence_overview: adherenceOverview,
+            adherenceOverview: adherenceOverview,
             monthly_trends: monthlyTrends
           },
           message: 'Adherence analytics retrieved successfully'
@@ -1432,7 +1432,7 @@ class DoctorController {
           include: [{
             model: User,
             as: 'user',
-            attributes: ['first_name', 'middle_name', 'last_name']
+            attributes: ['firstName', 'middle_name', 'lastName']
           }]
         }]
       });

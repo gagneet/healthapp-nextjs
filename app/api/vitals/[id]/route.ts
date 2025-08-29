@@ -93,7 +93,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       unit: vital.vitalType?.unit || '',
       readingTime: vital.readingTime,
       isFlagged: vital.isFlagged || false,
-      normal_range: {
+      normalRange: {
         min: vital.vitalType?.normalRangeMin?.toString() || '0',
         max: vital.vitalType?.normalRangeMax?.toString() || '100'
       },

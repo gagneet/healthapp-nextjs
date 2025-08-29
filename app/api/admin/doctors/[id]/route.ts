@@ -120,9 +120,9 @@ export async function PUT(
 
     const body = await request.json();
     const {
-      first_name,
-      last_name,
-      mobile_number,
+      firstName,
+      lastName,
+      mobileNumber,
       gender,
       speciality_id,
       medical_license_number,
@@ -169,20 +169,20 @@ export async function PUT(
     const result = await prisma.$transaction(async (tx) => {
       // Update user information
       const userUpdates: any = {};
-      if (first_name !== undefined) {
-        userUpdates.firstName = first_name;
+      if (firstName !== undefined) {
+        userUpdates.firstName = firstName;
       }
-      if (last_name !== undefined) {
-        userUpdates.lastName = last_name;
+      if (lastName !== undefined) {
+        userUpdates.lastName = lastName;
       }
-      if (first_name !== undefined || last_name !== undefined) {
-        const newFirstName = first_name !== undefined ? first_name : existingDoctor.user.firstName;
-        const newLastName = last_name !== undefined ? last_name : existingDoctor.user.lastName;
+      if (firstName !== undefined || lastName !== undefined) {
+        const newFirstName = firstName !== undefined ? firstName : existingDoctor.user.firstName;
+        const newLastName = lastName !== undefined ? lastName : existingDoctor.user.lastName;
         userUpdates.fullName = `${newFirstName} ${newLastName}`.trim();
         userUpdates.name = userUpdates.fullName;
       }
-      if (mobile_number !== undefined) {
-        userUpdates.phone = mobile_number;
+      if (mobileNumber !== undefined) {
+        userUpdates.phone = mobileNumber;
       }
       if (gender !== undefined) {
         userUpdates.gender = gender;
@@ -219,8 +219,8 @@ export async function PUT(
       if (consultation_fee !== undefined) {
         doctorUpdates.consultationFee = consultation_fee;
       }
-      if (mobile_number !== undefined) {
-        doctorUpdates.mobileNumber = mobile_number;
+      if (mobileNumber !== undefined) {
+        doctorUpdates.mobileNumber = mobileNumber;
       }
       if (gender !== undefined) {
         doctorUpdates.gender = gender;

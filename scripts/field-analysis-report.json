@@ -8,7 +8,7 @@
   },
   "mismatches": [
     {
-      "field": "first_name",
+      "field": "firstName",
       "count": 53,
       "files": [
         "/app/api/admin/dashboard/route.ts",
@@ -40,7 +40,7 @@
       "possibleMatches": []
     },
     {
-      "field": "last_name",
+      "field": "lastName",
       "count": 53,
       "files": [
         "/app/api/admin/dashboard/route.ts",
@@ -270,7 +270,7 @@
         "select"
       ],
       "possibleMatches": [
-        "medical_record_number",
+        "medicalRecordNumber",
         "medication_management"
       ]
     },
@@ -468,7 +468,7 @@
       "possibleMatches": []
     },
     {
-      "field": "profile_picture_url",
+      "field": "profilePictureUrl",
       "count": 6,
       "files": [
         "/app/api/doctors/profile/route.ts",
@@ -577,7 +577,7 @@
         "property_access"
       ],
       "possibleMatches": [
-        "onset_time"
+        "onsetTime"
       ]
     },
     {
@@ -659,7 +659,7 @@
       ]
     },
     {
-      "field": "last_visit",
+      "field": "lastVisit",
       "count": 4,
       "files": [
         "/app/dashboard/doctor/page.tsx",
@@ -674,7 +674,7 @@
       ]
     },
     {
-      "field": "next_appointment",
+      "field": "nextAppointment",
       "count": 2,
       "files": [
         "/app/dashboard/doctor/patients/[id]/page.tsx",
@@ -689,7 +689,7 @@
       ]
     },
     {
-      "field": "last_taken",
+      "field": "lastTaken",
       "count": 1,
       "files": [
         "/app/dashboard/doctor/patients/[id]/page.tsx"
@@ -702,7 +702,7 @@
       ]
     },
     {
-      "field": "next_due",
+      "field": "nextDue",
       "count": 1,
       "files": [
         "/app/dashboard/doctor/patients/[id]/page.tsx"
@@ -724,7 +724,7 @@
       "possibleMatches": []
     },
     {
-      "field": "body_part",
+      "field": "bodyPart",
       "count": 2,
       "files": [
         "/app/dashboard/doctor/patients/[id]/page.tsx"
@@ -745,7 +745,7 @@
         "property_access"
       ],
       "possibleMatches": [
-        "care_plans",
+        "carePlans",
         "care_plan",
         "card_brand"
       ]
@@ -820,8 +820,8 @@
       "type": "snake_case_in_code",
       "count": 151,
       "examples": [
-        "first_name",
-        "last_name",
+        "firstName",
+        "lastName",
         "account_status",
         "last_login_at",
         "email_verified"

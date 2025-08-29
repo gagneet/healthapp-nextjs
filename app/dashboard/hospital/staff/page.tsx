@@ -20,8 +20,8 @@ import { formatDate, getInitials, getStatusColor } from '@/lib/utils'
 const mockStaff = [
   {
     id: '1',
-    first_name: 'Sarah',
-    last_name: 'Johnson',
+    firstName: 'Sarah',
+    lastName: 'Johnson',
     email: 'sarah.johnson@metrogeneral.com',
     phone: '+1-555-0101',
     role: 'DOCTOR',
@@ -35,8 +35,8 @@ const mockStaff = [
   },
   {
     id: '2',
-    first_name: 'Michael',
-    last_name: 'Chen',
+    firstName: 'Michael',
+    lastName: 'Chen',
     email: 'michael.chen@metrogeneral.com',
     phone: '+1-555-0102',
     role: 'DOCTOR',
@@ -50,8 +50,8 @@ const mockStaff = [
   },
   {
     id: '3',
-    first_name: 'Emma',
-    last_name: 'Davis',
+    firstName: 'Emma',
+    lastName: 'Davis',
     email: 'emma.davis@metrogeneral.com',
     phone: '+1-555-0103',
     role: 'HSP',
@@ -65,8 +65,8 @@ const mockStaff = [
   },
   {
     id: '4',
-    first_name: 'James',
-    last_name: 'Wilson',
+    firstName: 'James',
+    lastName: 'Wilson',
     email: 'james.wilson@metrogeneral.com',
     phone: '+1-555-0104',
     role: 'HSP',
@@ -80,8 +80,8 @@ const mockStaff = [
   },
   {
     id: '5',
-    first_name: 'Lisa',
-    last_name: 'Rodriguez',
+    firstName: 'Lisa',
+    lastName: 'Rodriguez',
     email: 'lisa.rodriguez@metrogeneral.com',
     phone: '+1-555-0105',
     role: 'DOCTOR',
@@ -97,8 +97,8 @@ const mockStaff = [
 
 interface StaffMember {
   id: string
-  first_name: string
-  last_name: string
+  firstName: string
+  lastName: string
   email: string
   phone: string
   role: 'DOCTOR' | 'HSP'
@@ -205,8 +205,8 @@ export default function StaffManagementPage() {
 
   const filteredStaff = staff.filter(member => {
     const matchesSearch = 
-      member.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      member.last_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      member.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      member.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       member.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
       member.specialty.toLowerCase().includes(searchTerm.toLowerCase()) ||
       member.department.toLowerCase().includes(searchTerm.toLowerCase())
@@ -419,13 +419,13 @@ export default function StaffManagementPage() {
                           <div className="flex-shrink-0 h-10 w-10">
                             <div className="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center">
                               <span className="text-sm font-medium text-gray-600">
-                                {getInitials(member.first_name, member.last_name)}
+                                {getInitials(member.firstName, member.lastName)}
                               </span>
                             </div>
                           </div>
                           <div className="ml-4">
                             <div className="text-sm font-medium text-gray-900">
-                              {member.role === 'DOCTOR' ? 'Dr. ' : ''}{member.first_name} {member.last_name}
+                              {member.role === 'DOCTOR' ? 'Dr. ' : ''}{member.firstName} {member.lastName}
                             </div>
                             <div className="text-sm text-gray-500">{member.email}</div>
                             <div className="text-xs text-gray-400">{member.license_number}</div>

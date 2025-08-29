@@ -143,9 +143,9 @@ export async function POST(request: NextRequest) {
     const {
       email,
       password,
-      first_name,
-      last_name,
-      mobile_number,
+      firstName,
+      lastName,
+      mobileNumber,
       date_of_birth,
       gender,
       speciality_id,
@@ -171,7 +171,7 @@ export async function POST(request: NextRequest) {
     const hashedPassword = await bcrypt.hash(password, 12);
 
     const result = await prisma.$transaction(async (tx) => {
-      const fullName = `${first_name} ${last_name}`.trim();
+      const fullName = `${firstName} ${lastName}`.trim();
       const newUser = await tx.user.create({
         data: {
           email,
@@ -179,10 +179,10 @@ export async function POST(request: NextRequest) {
           name: fullName,
           emailVerified: new Date(),
           image: null,
-          firstName: first_name,
-          lastName: last_name,
+          firstName: firstName,
+          lastName: lastName,
           fullName: fullName,
-          phone: mobile_number,
+          phone: mobileNumber,
           dateOfBirth: date_of_birth ? new Date(date_of_birth) : null,
           gender,
           role: 'DOCTOR',
@@ -203,7 +203,7 @@ export async function POST(request: NextRequest) {
           qualificationDetails: qualification_details,
           organizationId: organization_id,
           consultationFee: consultation_fee ? parseFloat(consultation_fee) : null,
-          mobileNumber: mobile_number,
+          mobileNumber: mobileNumber,
           gender,
           createdAt: new Date(),
           updatedAt: new Date()

@@ -486,7 +486,7 @@ model User {
 
 model Patient {
   id      String @id @default(uuid())  
-  user_id String @unique
+  userId String @unique
   // ... other fields
   @@map("Patients")  // PascalCase database table
 }
@@ -597,7 +597,7 @@ const alerts = await prisma.EmergencyAlert.findMany({
 ### 8.4 Prisma and PostgreSQL Best Practices Alignment ⚠️ CRITICAL
 - **SCHEMA AUTHORITY**: The Prisma schema in `prisma/schema.prisma` is the single source of truth
 - **MODEL CONVENTIONS**: Follow the exact model naming as defined in schema (PascalCase vs snake_case)
-- **FIELD VALIDATION**: Always verify field existence before using in queries (e.g., `start_date` vs `appointment_date`)
+- **FIELD VALIDATION**: Always verify field existence before using in queries (e.g., `startDate` vs `appointment_date`)
 - **RELATIONSHIP ACCURACY**: Use correct relationship field names (e.g., `user` vs `User`, `patient` vs `Patient`)
 - **TYPE SAFETY**: Leverage Prisma's TypeScript generation for compile-time validation
 - **POSTGRESQL COMPLIANCE**: Ensure all operations align with PostgreSQL constraints and data types
@@ -633,7 +633,7 @@ const records = await prisma.AdherenceRecord.findMany({
 
 #### Database Level
 - **Tables**: Common practice is plural snake_case (e.g., `users`, `posts`)
-- **Columns**: Snake_case is the general database convention (e.g., `createdAt`, `user_id`)
+- **Columns**: Snake_case is the general database convention (e.g., `createdAt`, `userId`)
 
 #### Client Level
 - **The Prisma Client ALWAYS generates camelCase property names** - this is not configurable
@@ -646,7 +646,7 @@ Use `@@map` and `@map` to bridge the naming convention gap:
 ```prisma
 model User {
   id        Int      @id @default(autoincrement())
-  firstName String   @map("first_name")
+  firstName String   @map("firstName")
   createdAt DateTime @default(now()) @map("createdAt")
   posts     Post[]
 

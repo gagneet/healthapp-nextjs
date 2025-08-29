@@ -45,7 +45,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
     // Get patient vitals with template information
     const vitals = await prisma.vitals.findMany({
       where: patientId ? { 
-        care_plans: {
+        carePlans: {
           patientId: patientId
         }
       } : {},
@@ -57,7 +57,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
             details: true
           }
         },
-        care_plans: {
+        carePlans: {
           select: {
             patientId: true,
             patient: {
@@ -82,7 +82,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
 
     const totalCount = await prisma.vital.count({
       where: patientId ? { 
-        care_plans: {
+        carePlans: {
           patientId: patientId
         }
       } : {}
@@ -126,8 +126,8 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
       description,
       repeat_interval,
       repeat_days,
-      start_date,
-      end_date
+      startDate,
+      endDate
     } = body;
 
     // Create the vital monitoring
@@ -137,8 +137,8 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
         vital_template_id,
         care_plan_id,
         description,
-        start_date: new Date(start_date),
-        end_date: end_date ? new Date(end_date) : null,
+        startDate: new Date(startDate),
+        endDate: endDate ? new Date(endDate) : null,
         details: {
           repeat_interval_id: repeat_interval,
           repeat_days,
@@ -154,7 +154,7 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
             unit: true
           }
         },
-        care_plans: {
+        carePlans: {
           select: {
             patientId: true,
             patient: {

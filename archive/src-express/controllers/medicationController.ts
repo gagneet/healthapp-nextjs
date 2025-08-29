@@ -57,8 +57,8 @@ class MedicationController {
               repeat_type: medication.details?.repeat_type || 'daily',
               custom_repeat_options: medication.details?.custom_repeat_options || {}
             },
-            start_date: medication.start_date,
-            end_date: medication.end_date,
+            startDate: medication.startDate,
+            endDate: medication.endDate,
             updatedAt: medication.updatedAt,
             createdAt: medication.createdAt
           },
@@ -114,8 +114,8 @@ class MedicationController {
         unit,
         when_to_take,
         repeat_type,
-        start_date,
-        end_date,
+        startDate,
+        endDate,
         instructions
       } = req.body;
 
@@ -125,8 +125,8 @@ class MedicationController {
         organizer_id: req.user!.id,
         medicine_id,
         description: `${quantity} ${unit} ${strength}`,
-        start_date,
-        end_date,
+        startDate,
+        endDate,
         details: {
           quantity,
           strength,
@@ -135,7 +135,7 @@ class MedicationController {
           repeat_type,
           instructions
         },
-        rr_rule: this.generateRRule(repeat_type, start_date)
+        rr_rule: this.generateRRule(repeat_type, startDate)
       });
 
       // Create schedule events for this medication
@@ -178,13 +178,13 @@ class MedicationController {
           event_type: 'medication-reminder',
           event_id: medicationId
         },
-        order: [['start_time', 'DESC']],
+        order: [['startTime', 'DESC']],
         limit: 30
       });
 
       const timeline = events.map((event: any) => ({
         event_id: `evt_${event.id}`,
-        scheduled_time: event.start_time,
+        scheduled_time: event.startTime,
         status: event.status,
         completed_at: event.status === 'completed' ? event.updatedAt : null,
         notes: event.details?.notes || null
@@ -219,15 +219,15 @@ class MedicationController {
   calculateRemaining(medication: any): number {
     // Calculate remaining doses based on schedule
     const now = new Date();
-    const endDate = new Date(medication.end_date);
+    const endDate = new Date(medication.endDate);
     const daysDiff = Math.ceil((endDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
     return Math.max(0, daysDiff);
   }
 
   calculateTotal(medication: any): number {
     // Calculate total doses
-    const startDate = new Date(medication.start_date);
-    const endDate = new Date(medication.end_date);
+    const startDate = new Date(medication.startDate);
+    const endDate = new Date(medication.endDate);
     return Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
   }
 
@@ -249,8 +249,8 @@ class MedicationController {
     // Create schedule events based on medication schedule
     // This would implement recurring event creation logic
     // For now, create a simple daily schedule
-    const startDate = new Date(medication.start_date);
-    const endDate = new Date(medication.end_date);
+    const startDate = new Date(medication.startDate);
+    const endDate = new Date(medication.endDate);
     
     for (let date = new Date(startDate); date <= endDate; date.setDate(date.getDate() + 1)) {
       await ScheduleEvent.create({
@@ -258,7 +258,7 @@ class MedicationController {
         event_id: medication.id,
         status: 'pending',
         date: date.toISOString().split('T')[0],
-        start_time: new Date(date.getTime() + 9 * 60 * 60 * 1000), // 9 AM default
+        startTime: new Date(date.getTime() + 9 * 60 * 60 * 1000), // 9 AM default
         details: {
           medication_id: medication.id,
           participant_id: medication.participant_id

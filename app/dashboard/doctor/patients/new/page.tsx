@@ -552,17 +552,17 @@ export default function AddPatientPage() {
       
       const patientData = {
         // User fields (snake_case for backend)
-        first_name: firstName,
+        firstName: firstName,
         middle_name: middleName || '',
-        last_name: lastName,
+        lastName: lastName,
         email: formData.email || '',
-        mobile_number: formData.mobileNumber,
+        mobileNumber: formData.mobileNumber,
         gender: (genderMapping as any)[formData.gender] || '',
         dob: processedDateOfBirth,
         address: formData.address || '',
         
         // Patient-specific fields
-        medical_record_number: formData.patientId.trim() || null, // Include custom patient ID
+        medicalRecordNumber: formData.patientId.trim() || null, // Include custom patient ID
         height_cm: parseFloat(formData.heightCm) || null,
         weight_kg: parseFloat(formData.weightKg) || null,
         allergies: Array.isArray(formData.allergies) ? formData.allergies.join(', ') : (formData.allergies || ''),

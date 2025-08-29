@@ -123,8 +123,8 @@ function generateSmartMappings() {
       mappings['vital_readings'] = 'adherence_records';
     }
     
-    if (patientRelations.has('care_plans') && !patientRelations.has('medications')) {
-      mappings['medications'] = 'care_plans';
+    if (patientRelations.has('carePlans') && !patientRelations.has('medications')) {
+      mappings['medications'] = 'carePlans';
     }
   }
   

@@ -11,8 +11,8 @@ const path = require('path');
 // Field mappings from snake_case (code) to camelCase (Prisma)
 const FIELD_MAPPINGS = {
   // User fields
-  'first_name': 'first_name',           // Keep as is - matches Prisma
-  'last_name': 'last_name',             // Keep as is - matches Prisma  
+  'firstName': 'firstName',           // Keep as is - matches Prisma
+  'lastName': 'lastName',             // Keep as is - matches Prisma  
   'phone_number': 'phone',              // Database uses 'phone'
   'email_verified': 'email_verified',   // Keep as is - matches Prisma
   'account_status': 'account_status',   // Keep as is - matches Prisma
@@ -37,7 +37,7 @@ const FIELD_MAPPINGS = {
   'primary_doctor': 'doctors',          // Actual relationship name
   'vital_readings': 'vitalReading',     // Actual model name
   'patient_symptoms': 'symptom',        // Actual model name
-  'medications': 'care_plans',          // Use existing relationship
+  'medications': 'carePlans',          // Use existing relationship
   
   // Count corrections for _count queries
   'vital_readings': 'adherence_records', // Available count field
@@ -161,7 +161,7 @@ async function processFile(filePath, priorityFields, results) {
           replacement: `prisma.${newField}`,
           description: 'prisma model'
         },
-        // Count field references: _count.medications -> _count.care_plans  
+        // Count field references: _count.medications -> _count.carePlans  
         {
           regex: new RegExp(`_count\\.${oldField}\\b`, 'g'),
           replacement: `_count.${newField}`,

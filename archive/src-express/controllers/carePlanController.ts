@@ -57,7 +57,7 @@ class CarePlanController {
       }
 
       const responseData = {
-        care_plans: {},
+        carePlans: {},
         treatments: {},
         conditions: {}
       };
@@ -80,7 +80,7 @@ class CarePlanController {
           where: { care_plan_id: carePlan.id }
         });
 
-        (responseData as any).care_plans[carePlan.id] = {
+        (responseData as any).carePlans[carePlan.id] = {
           basic_info: {
             id: carePlan.id.toString(),
             patientId: carePlan.patientId.toString(),
@@ -94,7 +94,7 @@ class CarePlanController {
           details: {
             clinical_notes: carePlan.details?.clinical_notes || '',
             follow_up_advise: carePlan.details?.follow_up_advise || '',
-            start_date: carePlan.start_date || carePlan.createdAt,
+            startDate: carePlan.startDate || carePlan.createdAt,
             diagnosis: carePlan.diagnosis,
             priority: carePlan.priority
           },
@@ -166,7 +166,7 @@ class CarePlanController {
         name,
         clinical_notes,
         follow_up_advise,
-        start_date
+        startDate
       } = req.body;
 
       // Get doctor ID from authenticated user
@@ -188,7 +188,7 @@ class CarePlanController {
       const carePlan = await CarePlan.create({
         doctorId: doctor.id,
         patientId: patientId,
-        start_date,
+        startDate,
         activated_on: new Date(),
         details: {
           treatment_id,

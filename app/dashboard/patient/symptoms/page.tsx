@@ -21,7 +21,7 @@ interface Symptom {
   severity: number
   location: string
   description: string
-  onset_time: string
+  onsetTime: string
   duration: string
   triggers?: string[]
   relief_factors?: string[]
@@ -168,7 +168,7 @@ export default function SymptomsPage() {
                       </div>
                       <div className="flex items-center text-sm text-gray-600">
                         <CalendarIcon className="w-4 h-4 mr-2" />
-                        {new Date(symptom.onset_time).toLocaleDateString()}
+                        {new Date(symptom.onsetTime).toLocaleDateString()}
                       </div>
                       <div className="flex items-center text-sm text-gray-600">
                         <ClockIcon className="w-4 h-4 mr-2" />
@@ -250,7 +250,7 @@ export default function SymptomsPage() {
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-green-600">
-                {symptoms.filter(s => new Date(s.onset_time) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)).length}
+                {symptoms.filter(s => new Date(s.onsetTime) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)).length}
               </div>
               <div className="text-sm text-green-700">Recent (7 days)</div>
             </div>

@@ -45,8 +45,8 @@ interface CriticalAlertsAPI {
 }
 
 interface AdherenceAnalyticsAPI {
-  adherence_overview: { name: string; value: number; color: string }[]
-  monthly_trends: { month: string; care_plans: number; appointments: number; vitals: number }[]
+  adherenceOverview: { name: string; value: number; color: string }[]
+  monthly_trends: { month: string; carePlans: number; appointments: number; vitals: number }[]
 }
 
 export default function DoctorDashboard() {
@@ -61,7 +61,7 @@ export default function DoctorDashboard() {
   const [recentPatients, setRecentPatients] = useState<Patient[]>([])
   const [criticalAlerts, setCriticalAlerts] = useState<CriticalAlert[]>([])
   const [adherenceChartData, setAdherenceChartData] = useState<{ name: string; value: number; color: string }[]>([])
-  const [monthlyAdherenceData, setMonthlyAdherenceData] = useState<{ month: string; care_plans: number; appointments: number; vitals: number }[]>([])
+  const [monthlyAdherenceData, setMonthlyAdherenceData] = useState<{ month: string; carePlans: number; appointments: number; vitals: number }[]>([])
 
   const fetchDashboardData = async () => {
     try {
@@ -104,7 +104,7 @@ export default function DoctorDashboard() {
       setDashboardStats(statsData.payload.data.stats)
       setRecentPatients(patientsData.payload.data.patients || [])
       setCriticalAlerts(alertsData.payload.data.alerts || [])
-      setAdherenceChartData(analyticsData.payload.data.adherence_overview || [])
+      setAdherenceChartData(analyticsData.payload.data.adherenceOverview || [])
       setMonthlyAdherenceData(analyticsData.payload.data.monthly_trends || [])
 
     } catch (err) {
@@ -355,10 +355,10 @@ export default function DoctorDashboard() {
                   className="flex items-center p-3 hover:bg-gray-50 rounded-lg transition-colors"
                 >
                   <div className="flex-shrink-0">
-                    {(patient as any).profile_picture_url ? (
+                    {(patient as any).profilePictureUrl ? (
                       <img
                         className="h-10 w-10 rounded-full object-cover"
-                        src={(patient as any).profile_picture_url}
+                        src={(patient as any).profilePictureUrl}
                         alt={`${patient.firstName} ${patient.lastName}`}
                       />
                     ) : (

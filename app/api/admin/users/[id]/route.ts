@@ -177,8 +177,8 @@ export async function PUT(
     const userId = params.id;
     const body = await request.json();
     const {
-      first_name,
-      last_name,
+      firstName,
+      lastName,
       phone,
       date_of_birth,
       gender,
@@ -225,21 +225,21 @@ export async function PUT(
       updatedAt: new Date()
     };
 
-    if (first_name !== undefined) {
-      updateData.firstName = first_name;
-      const newLastName = last_name !== undefined ? last_name : existingUser.lastName;
+    if (firstName !== undefined) {
+      updateData.firstName = firstName;
+      const newLastName = lastName !== undefined ? lastName : existingUser.lastName;
       if (newLastName) {
-        updateData.name = `${first_name} ${newLastName}`.trim();
-        updateData.fullName = `${first_name} ${newLastName}`.trim();
+        updateData.name = `${firstName} ${newLastName}`.trim();
+        updateData.fullName = `${firstName} ${newLastName}`.trim();
       }
     }
 
-    if (last_name !== undefined) {
-      updateData.lastName = last_name;
-      const newFirstName = first_name !== undefined ? first_name : existingUser.firstName;
+    if (lastName !== undefined) {
+      updateData.lastName = lastName;
+      const newFirstName = firstName !== undefined ? firstName : existingUser.firstName;
       if (newFirstName) {
-        updateData.name = `${newFirstName} ${last_name}`.trim();
-        updateData.fullName = `${newFirstName} ${last_name}`.trim();
+        updateData.name = `${newFirstName} ${lastName}`.trim();
+        updateData.fullName = `${newFirstName} ${lastName}`.trim();
       }
     }
 

@@ -157,7 +157,7 @@ export async function POST(request: NextRequest) {
     const {
       patientId,
       service_plan_id,
-      start_date,
+      startDate,
       billing_cycle,
       payment_method_id,
       auto_renewal
@@ -182,7 +182,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Calculate end date based on billing cycle
-    const startDate = new Date(start_date);
+    const startDate = new Date(startDate);
     const endDate = new Date(startDate);
     
     // Add duration based on billing cycle

@@ -33,11 +33,11 @@ export default {
         type: Sequelize.DATEONLY,
         allowNull: false,
       },
-      start_time: {
+      startTime: {
         type: Sequelize.TIME,
         allowNull: false,
       },
-      end_time: {
+      endTime: {
         type: Sequelize.TIME,
         allowNull: false,
       },
@@ -74,7 +74,7 @@ export default {
     });
 
     // Add indexes
-    await queryInterface.addIndex('appointment_slots', ['doctorId', 'date', 'start_time']);
+    await queryInterface.addIndex('appointment_slots', ['doctorId', 'date', 'startTime']);
     await queryInterface.addIndex('appointment_slots', ['doctorId', 'is_available']);
     await queryInterface.addIndex('appointment_slots', ['date', 'is_available']);
   },

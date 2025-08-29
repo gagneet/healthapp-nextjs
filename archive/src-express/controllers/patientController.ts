@@ -43,7 +43,7 @@ class PatientController {
               {
                 model: User,
                 as: 'user',
-                attributes: ['first_name', 'last_name', 'email']
+                attributes: ['firstName', 'lastName', 'email']
               }
             ]
           }
@@ -64,10 +64,10 @@ class PatientController {
               
               // Common fields from User model
               gender: patient.user.gender,
-              first_name: patient.user.first_name,
+              firstName: patient.user.firstName,
               middle_name: patient.user.middle_name,
-              last_name: patient.user.last_name,
-              full_name: `${patient.user.first_name || ''} ${patient.user.middle_name || ''} ${patient.user.last_name || ''}`.replace(/\s+/g, ' ').trim(), // Constructed field
+              lastName: patient.user.lastName,
+              full_name: `${patient.user.firstName || ''} ${patient.user.middle_name || ''} ${patient.user.lastName || ''}`.replace(/\s+/g, ' ').trim(), // Constructed field
               current_age: patient.user.current_age, // Virtual field
               age: `${patient.user.current_age} years`,
               
@@ -79,11 +79,11 @@ class PatientController {
               formatted_address: patient.user.formatted_address,
               
               // Contact from User model
-              mobile_number: patient.user.mobile_number,
+              mobileNumber: patient.user.mobileNumber,
               email: patient.user.email,
               
               // Patient-specific fields
-              medical_record_number: patient.medical_record_number,
+              medicalRecordNumber: patient.medicalRecordNumber,
               blood_group: patient.blood_type,
               height_cm: patient.height_cm,
               weight_kg: patient.weight_kg,
@@ -110,7 +110,7 @@ class PatientController {
             // Relationships
             primary_doctor: patient.primaryCareDoctor ? {
               id: patient.primaryCareDoctor.id,
-              name: `${patient.primaryCareDoctor.user.first_name || ''} ${patient.primaryCareDoctor.user.middle_name || ''} ${patient.primaryCareDoctor.user.last_name || ''}`.replace(/\s+/g, ' ').trim(),
+              name: `${patient.primaryCareDoctor.user.firstName || ''} ${patient.primaryCareDoctor.user.middle_name || ''} ${patient.primaryCareDoctor.user.lastName || ''}`.replace(/\s+/g, ' ').trim(),
               email: patient.primaryCareDoctor.user.email
             } : null,
             
@@ -223,7 +223,7 @@ class PatientController {
       let nameToUse = doctorName;
       if (!nameToUse && req.user) {
         const user = await User.findByPk(req.user!.id);
-        nameToUse = user ? `${user.first_name} ${user.last_name}` : 'Unknown Doctor';
+        nameToUse = user ? `${user.firstName} ${user.lastName}` : 'Unknown Doctor';
       }
 
       const patientId = await PatientService.generatePatientID(nameToUse || 'Unknown Doctor');
@@ -298,14 +298,14 @@ class PatientController {
               basic_info: {
                 id: patient.id.toString(),
                 userId: patient.userId?.toString() || patient.user?.id?.toString(),
-                full_name: `${patient.user?.first_name || patient.first_name || ''} ${patient.user?.last_name || patient.last_name || ''}`.trim(),
-                first_name: patient.user?.first_name || patient.first_name,
-                last_name: patient.user?.last_name || patient.last_name,
+                full_name: `${patient.user?.firstName || patient.firstName || ''} ${patient.user?.lastName || patient.lastName || ''}`.trim(),
+                firstName: patient.user?.firstName || patient.firstName,
+                lastName: patient.user?.lastName || patient.lastName,
                 current_age: patient.current_age,
                 gender: patient.gender,
-                mobile_number: maskedPhone,
+                mobileNumber: maskedPhone,
                 masked_email: maskedEmail,
-                medical_record_number: patient.medical_record_number,
+                medicalRecordNumber: patient.medicalRecordNumber,
                 primary_doctor: patient.primary_doctor
               },
               // Consent workflow fields
@@ -352,8 +352,8 @@ class PatientController {
 
       if (search) {
         (whereClause as any)[Op.or] = [
-          { first_name: { [Op.like]: `%${search}%` } },
-          { last_name: { [Op.like]: `%${search}%` } },
+          { firstName: { [Op.like]: `%${search}%` } },
+          { lastName: { [Op.like]: `%${search}%` } },
           { email: { [Op.like]: `%${search}%` } },
           { '$patientProfile.medical_record_number$': { [Op.like]: `%${search}%` } }
         ];
@@ -378,7 +378,7 @@ class PatientController {
                   {
                     model: User,
                     as: 'user',
-                    attributes: ['first_name', 'last_name']
+                    attributes: ['firstName', 'lastName']
                   }
                 ]
               }
@@ -397,15 +397,15 @@ class PatientController {
             basic_info: {
               id: user.patientProfile.id.toString(),
               userId: user.id.toString(),
-              full_name: `${user.first_name || ''} ${user.middle_name || ''} ${user.last_name || ''}`.replace(/\s+/g, ' ').trim(),
-              first_name: user.first_name,
-              last_name: user.last_name,
+              full_name: `${user.firstName || ''} ${user.middle_name || ''} ${user.lastName || ''}`.replace(/\s+/g, ' ').trim(),
+              firstName: user.firstName,
+              lastName: user.lastName,
               current_age: user.current_age,
               gender: user.gender,
-              mobile_number: user.mobile_number,
-              medical_record_number: user.patientProfile.medical_record_number,
+              mobileNumber: user.mobileNumber,
+              medicalRecordNumber: user.patientProfile.medicalRecordNumber,
               primary_doctor: user.patientProfile.primaryCareDoctor?.user ? 
-                `${user.patientProfile.primaryCareDoctor.user.first_name || ''} ${user.patientProfile.primaryCareDoctor.user.last_name || ''}`.trim() : null
+                `${user.patientProfile.primaryCareDoctor.user.firstName || ''} ${user.patientProfile.primaryCareDoctor.user.lastName || ''}`.trim() : null
             },
             patient_type: 'M',
             accessGranted: true,
@@ -488,7 +488,7 @@ class PatientController {
                 include: [{
                   model: User,
                   as: 'user',
-                  attributes: ['first_name', 'last_name', 'email']
+                  attributes: ['firstName', 'lastName', 'email']
                 }]
               },
               {
@@ -519,12 +519,12 @@ class PatientController {
         patient_info: {
           id: patient.id.toString(),
           userId: user.id.toString(),
-          full_name: `${user.first_name || ''} ${user.last_name || ''}`.trim(),
+          full_name: `${user.firstName || ''} ${user.lastName || ''}`.trim(),
           age: user.current_age,
           gender: user.gender,
-          medical_record_number: patient.medical_record_number,
+          medicalRecordNumber: patient.medicalRecordNumber,
           primary_doctor: patient.primaryCareDoctor ? {
-            name: `${patient.primaryCareDoctor.user.first_name || ''} ${patient.primaryCareDoctor.user.last_name || ''}`.trim(),
+            name: `${patient.primaryCareDoctor.user.firstName || ''} ${patient.primaryCareDoctor.user.lastName || ''}`.trim(),
             email: patient.primaryCareDoctor.user.email
           } : null
         },
@@ -588,7 +588,7 @@ class PatientController {
         include: [{
           model: User,
           as: 'user',
-          attributes: ['first_name', 'last_name']
+          attributes: ['firstName', 'lastName']
         }]
       });
 
@@ -759,7 +759,7 @@ class PatientController {
         include: [{
           model: User,
           as: 'user',
-          attributes: ['first_name', 'last_name', 'mobile_number', 'email']
+          attributes: ['firstName', 'lastName', 'mobileNumber', 'email']
         }]
       });
 
@@ -773,7 +773,7 @@ class PatientController {
         include: [{
           model: User,
           as: 'user',
-          attributes: ['first_name', 'last_name']
+          attributes: ['firstName', 'lastName']
         }]
       });
 
@@ -802,13 +802,13 @@ class PatientController {
 
       // TODO: Send OTP via SMS/Email (integrate with notification service)
       const contactInfo = consent_method === 'sms' ? 
-        patient.user.mobile_number : 
+        patient.user.mobileNumber : 
         patient.user.email;
 
       res.status(201).json(ResponseFormatter.success(
         {
           consent_request_id: consentRequest.id,
-          patient_name: `${patient.user.first_name} ${patient.user.last_name}`,
+          patient_name: `${patient.user.firstName} ${patient.user.lastName}`,
           contact_method: consent_method,
           contact_info: contactInfo,
           expires_at: expiresAt,
@@ -853,7 +853,7 @@ class PatientController {
             include: [{
               model: User,
               as: 'user',
-              attributes: ['first_name', 'last_name']
+              attributes: ['firstName', 'lastName']
             }]
           }
         ]
@@ -892,7 +892,7 @@ class PatientController {
       res.status(200).json(ResponseFormatter.success(
         {
           assignment_id: assignment.id,
-          patient_name: `${consentRequest.patient.user.first_name} ${consentRequest.patient.user.last_name}`,
+          patient_name: `${consentRequest.patient.user.firstName} ${consentRequest.patient.user.lastName}`,
           consent_verified: true,
           assignment_active: true
         },
@@ -918,7 +918,7 @@ class PatientController {
           {
             model: User,
             as: 'user',
-            attributes: ['first_name', 'last_name']
+            attributes: ['firstName', 'lastName']
           }
         ]
       });
@@ -940,7 +940,7 @@ class PatientController {
             include: [{
               model: User,
               as: 'user',
-              attributes: ['first_name', 'last_name']
+              attributes: ['firstName', 'lastName']
             }]
           },
           {
@@ -950,7 +950,7 @@ class PatientController {
             include: [{
               model: User,
               as: 'user',
-              attributes: ['first_name', 'last_name']
+              attributes: ['firstName', 'lastName']
             }]
           }
         ]
@@ -969,14 +969,14 @@ class PatientController {
         {
           patient_info: {
             id: patient.id,
-            name: `${patient.user.first_name} ${patient.user.last_name}`
+            name: `${patient.user.firstName} ${patient.user.lastName}`
           },
           active_assignments: assignments.map((assignment: any) => ({
             id: assignment.id,
             primary_doctor: assignment.primaryDoctor ? 
-              `${assignment.primaryDoctor.user.first_name} ${assignment.primaryDoctor.user.last_name}` : null,
+              `${assignment.primaryDoctor.user.firstName} ${assignment.primaryDoctor.user.lastName}` : null,
             secondary_doctor: assignment.secondaryDoctor ? 
-              `${assignment.secondaryDoctor.user.first_name} ${assignment.secondaryDoctor.user.last_name}` : null,
+              `${assignment.secondaryDoctor.user.firstName} ${assignment.secondaryDoctor.user.lastName}` : null,
             assignment_reason: assignment.assignment_reason,
             specialtyFocus: assignment.specialtyFocus,
             consent_given_at: assignment.consent_given_at
@@ -998,8 +998,8 @@ class PatientController {
     
     return {
       [Op.or]: [
-        { first_name: { [Op.like]: `%${search}%` } },
-        { last_name: { [Op.like]: `%${search}%` } },
+        { firstName: { [Op.like]: `%${search}%` } },
+        { lastName: { [Op.like]: `%${search}%` } },
         { email: { [Op.like]: `%${search}%` } },
         { '$patient.medical_record_number$': { [Op.like]: `%${search}%` } }
       ]

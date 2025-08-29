@@ -10,7 +10,7 @@
 
 ```typescript
 const rating = profile.average_rating.toFixed(1)  // CRASHES if null
-const name = doctor.basic_info.first_name         // CRASHES if basic_info is null
+const name = doctor.basic_info.firstName         // CRASHES if basic_info is null
 const count = data.adherence_summary.today.medications_taken  // CRASHES if nested null
 ```
 
@@ -18,7 +18,7 @@ const count = data.adherence_summary.today.medications_taken  // CRASHES if nest
 
 ```typescript
 const rating = profile.average_rating ? profile.average_rating.toFixed(1) : '0.0'
-const name = doctor.basic_info?.first_name || 'Unknown'
+const name = doctor.basic_info?.firstName || 'Unknown'
 const count = data?.adherence_summary?.today?.medications_taken ?? 0
 ```
 
@@ -29,7 +29,7 @@ const count = data?.adherence_summary?.today?.medications_taken ?? 0
 ❌ **NEVER DO:**
 
 ```tsx
-<span>{patient.last_visit}</span>  // Shows nothing if null
+<span>{patient.lastVisit}</span>  // Shows nothing if null
 <span>{formatDate(date)}</span>    // Shows "N/A" - not helpful
 ```
 
@@ -37,13 +37,13 @@ const count = data?.adherence_summary?.today?.medications_taken ?? 0
 
 ```tsx
 <span>
-  {patient.last_visit ? formatDate(patient.last_visit) : (
+  {patient.lastVisit ? formatDate(patient.lastVisit) : (
     <span className="text-gray-400 italic">No previous visits</span>
   )}
 </span>
 
 <span>
-  {patient.adherence_rate !== null ? `${patient.adherence_rate}%` : (
+  {patient.adherenceRate !== null ? `${patient.adherenceRate}%` : (
     <span className="text-gray-400 italic">No medication data</span>
   )}
 </span>
@@ -259,8 +259,8 @@ const displayMedicalValue = (value: any, medicalContext: string) => {
 }
 
 // Usage
-<span>{displayMedicalValue(patient.adherence_rate, 'Medication adherence')}</span>
-<span>{displayMedicalValue(patient.last_visit, 'Last visit')}</span>
+<span>{displayMedicalValue(patient.adherenceRate, 'Medication adherence')}</span>
+<span>{displayMedicalValue(patient.lastVisit, 'Last visit')}</span>
 ```
 
 ### Rule 11: Healthcare Entity Relationships
@@ -271,7 +271,7 @@ const displayMedicalValue = (value: any, medicalContext: string) => {
 // Doctor-Patient relationships
 const patientDoctor = patient.primary_care_doctor
 if (patientDoctor) {
-  return patientDoctor.user?.first_name || 'Doctor name not available'
+  return patientDoctor.user?.firstName || 'Doctor name not available'
 } else {
   return 'No assigned doctor'
 }

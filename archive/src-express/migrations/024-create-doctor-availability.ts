@@ -37,11 +37,11 @@ export default {
           max: 6
         }
       },
-      start_time: {
+      startTime: {
         type: Sequelize.TIME,
         allowNull: false,
       },
-      end_time: {
+      endTime: {
         type: Sequelize.TIME,
         allowNull: false,
       },

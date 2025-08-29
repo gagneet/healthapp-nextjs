@@ -23,7 +23,7 @@ export default (sequelize: any) => {
       type: DataTypes.UUID,
       allowNull: true,
       references: {
-        model: 'care_plans',
+        model: 'carePlans',
         key: 'id'
       }
     },

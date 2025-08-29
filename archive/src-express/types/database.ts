@@ -13,8 +13,8 @@ export interface BaseModelAttributes {
 export interface UserAttributes extends BaseModelAttributes {
   email: string;
   password: string;
-  first_name: string;
-  last_name: string;
+  firstName: string;
+  lastName: string;
   middle_name?: string;
   phone?: string;
   gender?: string;

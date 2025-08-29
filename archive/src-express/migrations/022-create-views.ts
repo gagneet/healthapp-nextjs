@@ -16,24 +16,24 @@ export default {
           cp.title as name,
           cp.status,
           cp.priority,
-          cp.start_date,
-          cp.end_date,
+          cp.startDate,
+          cp.endDate,
           
           -- Patient info
           p.id as patientId,
-          u_patient.first_name as patient_first_name,
-          u_patient.last_name as patient_last_name,
+          u_patient.firstName as patient_first_name,
+          u_patient.lastName as patient_last_name,
           u_patient.email as patient_email,
           
           -- Provider info
           COALESCE(hp.id, d.id) as provider_id,
-          COALESCE(u_provider.first_name, u_doctor.first_name) as provider_first_name,
-          COALESCE(u_provider.last_name, u_doctor.last_name) as provider_last_name,
+          COALESCE(u_provider.firstName, u_doctor.firstName) as provider_first_name,
+          COALESCE(u_provider.lastName, u_doctor.lastName) as provider_last_name,
           COALESCE(u_provider.email, u_doctor.email) as provider_email,
           
           cp.createdAt,
           cp.updatedAt
-      FROM care_plans cp
+      FROM carePlans cp
       JOIN patients p ON cp.patientId = p.id
       JOIN users u_patient ON p.userId = u_patient.id
       LEFT JOIN healthcare_providers hp ON cp.created_by_hsp_id = hp.id
@@ -53,8 +53,8 @@ export default {
         CREATE VIEW v_patient_adherence_summary AS
       SELECT 
           p.id as patientId,
-          u.first_name,
-          u.last_name,
+          u.firstName,
+          u.lastName,
           u.email,
           
           -- Adherence stats
@@ -77,7 +77,7 @@ export default {
           AND ar.due_at >= NOW() - INTERVAL '30 days'
       WHERE p.deleted_at IS NULL 
           AND u.deleted_at IS NULL
-      GROUP BY p.id, u.first_name, u.last_name, u.email, p.createdAt, p.updatedAt;
+      GROUP BY p.id, u.firstName, u.lastName, u.email, p.createdAt, p.updatedAt;
       `);
 
     // Upcoming scheduled events
@@ -93,19 +93,19 @@ export default {
           
           -- Patient info
           p.id as patientId,
-          u_patient.first_name as patient_first_name,
-          u_patient.last_name as patient_last_name,
+          u_patient.firstName as patient_first_name,
+          u_patient.lastName as patient_last_name,
           
           -- Provider info (from care plan)
           COALESCE(hp.id, d2.id) as provider_id,
-          COALESCE(u_provider.first_name, u_doctor2.first_name) as provider_first_name,
-          COALESCE(u_provider.last_name, u_doctor2.last_name) as provider_last_name,
+          COALESCE(u_provider.firstName, u_doctor2.firstName) as provider_first_name,
+          COALESCE(u_provider.lastName, u_doctor2.lastName) as provider_last_name,
           
           se.createdAt
       FROM scheduled_events se
       JOIN patients p ON se.patientId = p.id
       JOIN users u_patient ON p.userId = u_patient.id
-      LEFT JOIN care_plans cp ON se.care_plan_id = cp.id
+      LEFT JOIN carePlans cp ON se.care_plan_id = cp.id
       LEFT JOIN healthcare_providers hp ON cp.created_by_hsp_id = hp.id
       LEFT JOIN users u_provider ON hp.userId = u_provider.id
       LEFT JOIN doctors d2 ON cp.created_by_doctor_id = d2.id

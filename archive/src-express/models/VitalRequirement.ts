@@ -13,7 +13,7 @@ export default (sequelize: any) => {
       type: DataTypes.UUID,
       allowNull: false,
       references: {
-        model: 'care_plans',
+        model: 'carePlans',
         key: 'id'
       }
     },
@@ -41,7 +41,7 @@ export default (sequelize: any) => {
       allowNull: true,
     },
     
-    is_critical: {
+    isCritical: {
       type: DataTypes.BOOLEAN,
       defaultValue: false,
     },
@@ -82,7 +82,7 @@ export default (sequelize: any) => {
         fields: ['frequency']
       },
       {
-        fields: ['is_critical']
+        fields: ['isCritical']
       },
       {
         fields: ['care_plan_id', 'vitalTypeId'],

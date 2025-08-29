@@ -148,13 +148,13 @@ export default (sequelize: any) => {
     },
     
     // Timeline (long-term)
-    start_date: {
+    startDate: {
       type: DataTypes.DATE,
       allowNull: false,
       defaultValue: DataTypes.NOW
     },
     
-    end_date: {
+    endDate: {
       type: DataTypes.DATE,
       allowNull: true,
       comment: 'May be open-ended for chronic conditions'
@@ -298,7 +298,7 @@ export default (sequelize: any) => {
     }
     
   }, {
-    tableName: 'care_plans',
+    tableName: 'carePlans',
     underscored: true,
     paranoid: true,
     
@@ -322,7 +322,7 @@ export default (sequelize: any) => {
         fields: ['priority']
       },
       {
-        fields: ['start_date']
+        fields: ['startDate']
       },
       {
         fields: ['next_review_date']
@@ -354,7 +354,7 @@ export default (sequelize: any) => {
         
         // Set next review date
         if (plan.review_frequency_months && !plan.next_review_date) {
-          const nextReview = new Date(plan.start_date);
+          const nextReview = new Date(plan.startDate);
           nextReview.setMonth(nextReview.getMonth() + plan.review_frequency_months);
           plan.next_review_date = nextReview;
         }

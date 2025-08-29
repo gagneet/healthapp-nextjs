@@ -111,7 +111,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
           patientId: { contains: searchQuery, mode: 'insensitive' }
         },
         {
-          medical_record_number: { contains: searchQuery, mode: 'insensitive' }
+          medicalRecordNumber: { contains: searchQuery, mode: 'insensitive' }
         }
       ];
     }
@@ -143,7 +143,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
       select: {
         id: true,
         patientId: true,
-        medical_record_number: true,
+        medicalRecordNumber: true,
         height_cm: true,
         weight_kg: true,
         blood_type: true,
@@ -199,20 +199,20 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
       // ✅ Helper to get name with fallbacks
       const userName = patient.user.name || 
                       patient.user.full_name ||
-                      `${patient.user.first_name || ''} ${patient.user.last_name || ''}`.trim()
+                      `${patient.user.firstName || ''} ${patient.user.lastName || ''}`.trim()
       
-      const userImage = patient.user.image || patient.user.profile_picture_url
+      const userImage = patient.user.image || patient.user.profilePictureUrl
       
       const doctorName = patient.doctors ? 
         (patient.doctors.users_doctors_userIdTousers.name ||
          patient.doctors.users_doctors_userIdTousers.full_name ||
-         `${patient.doctors.users_doctors_userIdTousers.first_name || ''} ${patient.doctors.users_doctors_userIdTousers.last_name || ''}`.trim())
+         `${patient.doctors.users_doctors_userIdTousers.firstName || ''} ${patient.doctors.users_doctors_userIdTousers.lastName || ''}`.trim())
         : null
 
       return {
         id: patient.id,
         patientId: patient.patientId,
-        medicalRecordNumber: patient.medical_record_number,
+        medicalRecordNumber: patient.medicalRecordNumber,
         user: {
           id: patient.user.id,
           email: patient.user.email,
@@ -223,10 +223,10 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
           emailVerified: patient.user.emailVerified,
           
           // ✅ Legacy fields (for backward compatibility)
-          firstName: patient.user.first_name,
-          lastName: patient.user.last_name,
+          firstName: patient.user.firstName,
+          lastName: patient.user.lastName,
           fullName: patient.user.full_name,
-          profilePictureUrl: patient.user.profile_picture_url,
+          profilePictureUrl: patient.user.profilePictureUrl,
           emailVerifiedLegacy: patient.user.email_verified,
           
           // ✅ Additional healthcare fields
@@ -240,13 +240,13 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
           
           // ✅ Auth.js v5 standard fields (preferred)
           name: doctorName,
-          image: patient.doctors.users_doctors_userIdTousers.image || patient.doctors.users_doctors_userIdTousers.profile_picture_url,
+          image: patient.doctors.users_doctors_userIdTousers.image || patient.doctors.users_doctors_userIdTousers.profilePictureUrl,
           
           // ✅ Legacy fields (for backward compatibility)  
-          firstName: patient.doctors.users_doctors_userIdTousers.first_name,
-          lastName: patient.doctors.users_doctors_userIdTousers.last_name,
+          firstName: patient.doctors.users_doctors_userIdTousers.firstName,
+          lastName: patient.doctors.users_doctors_userIdTousers.lastName,
           fullName: patient.doctors.users_doctors_userIdTousers.full_name,
-          profilePictureUrl: patient.doctors.users_doctors_userIdTousers.profile_picture_url,
+          profilePictureUrl: patient.doctors.users_doctors_userIdTousers.profilePictureUrl,
           
           email: patient.doctors.users_doctors_userIdTousers.email
         } : null,
@@ -356,7 +356,7 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
         data: {
           userId: user.id,
           patientId: patientBusinessId,
-          medical_record_number: `MRN${Date.now()}`, // Generate unique MRN
+          medicalRecordNumber: `MRN${Date.now()}`, // Generate unique MRN
           primaryCareDoctorId: patientData.primaryDoctorId,
           height_cm: patientData.height,
           weight_kg: patientData.weight,
@@ -375,13 +375,13 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
 
     // Format response
     // ✅ Format response with dual field support
-    const userName = result.user.name || result.user.full_name || `${result.user.first_name || ''} ${result.user.last_name || ''}`.trim()
-    const userImage = result.user.image || result.user.profile_picture_url
+    const userName = result.user.name || result.user.full_name || `${result.user.firstName || ''} ${result.user.lastName || ''}`.trim()
+    const userImage = result.user.image || result.user.profilePictureUrl
 
     const responseData = {
       id: result.patient.id,
       patientId: result.patient.patientId,
-      medicalRecordNumber: result.patient.medical_record_number,
+      medicalRecordNumber: result.patient.medicalRecordNumber,
       user: {
         id: result.user.id,
         email: result.user.email,
@@ -392,10 +392,10 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
         emailVerified: result.user.emailVerified,
         
         // ✅ Legacy fields (for backward compatibility)
-        firstName: result.user.first_name,
-        lastName: result.user.last_name,
+        firstName: result.user.firstName,
+        lastName: result.user.lastName,
         fullName: result.user.full_name,
-        profilePictureUrl: result.user.profile_picture_url,
+        profilePictureUrl: result.user.profilePictureUrl,
         emailVerifiedLegacy: result.user.email_verified,
         
         // ✅ Additional healthcare fields

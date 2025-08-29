@@ -120,7 +120,7 @@ CREATE TYPE user_status AS ENUM ('active', 'inactive', 'suspended', 'pending_ver
 CREATE TABLE users (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     email VARCHAR(255) UNIQUE NOT NULL,
-    mobile_number VARCHAR(20),
+    mobileNumber VARCHAR(20),
     password_hash VARCHAR(255),
     category user_category NOT NULL,
     status user_status DEFAULT 'pending_verification',
@@ -132,10 +132,10 @@ CREATE TABLE users (
 
 CREATE TABLE user_profiles (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id UUID REFERENCES users(id) ON DELETE CASCADE,
-    first_name VARCHAR(100) NOT NULL,
+    userId UUID REFERENCES users(id) ON DELETE CASCADE,
+    firstName VARCHAR(100) NOT NULL,
     middle_name VARCHAR(100),
-    last_name VARCHAR(100) NOT NULL,
+    lastName VARCHAR(100) NOT NULL,
     date_of_birth DATE,
     gender VARCHAR(10),
     phone_number VARCHAR(20),
@@ -165,8 +165,8 @@ CREATE TABLE role_permissions (
 -- Enhanced patient management with medical compliance
 CREATE TABLE patients (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id UUID REFERENCES users(id) ON DELETE CASCADE,
-    medical_record_number VARCHAR(50) UNIQUE,
+    userId UUID REFERENCES users(id) ON DELETE CASCADE,
+    medicalRecordNumber VARCHAR(50) UNIQUE,
     primary_doctor_id UUID,
     height DECIMAL(5,2),
     weight DECIMAL(5,2),
@@ -217,8 +217,8 @@ CREATE TABLE patient_medications (
     dosage VARCHAR(100) NOT NULL,
     frequency VARCHAR(100) NOT NULL,
     route VARCHAR(50), -- oral, injection, topical, etc.
-    start_date DATE NOT NULL,
-    end_date DATE,
+    startDate DATE NOT NULL,
+    endDate DATE,
     instructions TEXT,
     isActive BOOLEAN DEFAULT true,
     adherenceScore DECIMAL(5,2) DEFAULT 0,
@@ -289,7 +289,7 @@ CREATE TABLE appointments (
     scheduled_time TIME NOT NULL,
     duration_minutes INTEGER DEFAULT 30,
     status appointment_status DEFAULT 'scheduled',
-    is_virtual BOOLEAN DEFAULT false,
+    isVirtual BOOLEAN DEFAULT false,
     meeting_link TEXT,
     chief_complaint TEXT,
     appointment_notes TEXT,
@@ -302,7 +302,7 @@ CREATE TABLE appointments (
 );
 
 -- Comprehensive care plans
-CREATE TABLE care_plans (
+CREATE TABLE carePlans (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     patientId UUID REFERENCES patients(id) ON DELETE CASCADE,
     primary_doctor_id UUID NOT NULL,
@@ -310,8 +310,8 @@ CREATE TABLE care_plans (
     primary_diagnosis VARCHAR(255),
     icd_10_codes JSONB DEFAULT '[]',
     treatment_goals JSONB DEFAULT '[]',
-    start_date DATE NOT NULL,
-    end_date DATE,
+    startDate DATE NOT NULL,
+    endDate DATE,
     status VARCHAR(20) DEFAULT 'active',
     plan_details JSONB,
     createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -1012,7 +1012,7 @@ export const migrationPlan = {
     dependencies: ['patients', 'doctors']
   },
   phase4: {
-    tables: ['appointments', 'care_plans', 'vital_signs'],
+    tables: ['appointments', 'carePlans', 'vital_signs'],
     priority: 'MEDIUM',
     dependencies: ['patients', 'doctors']
   },
@@ -1327,7 +1327,7 @@ healthapp-nextjs/
 #### **High Priority (Weeks 1-4)**
 - [ ] User authentication system with multi-role support
 - [ ] Basic patient management (from your existing `patients` table)
-- [ ] Doctor-patient relationships (from your existing `care_plans`)
+- [ ] Doctor-patient relationships (from your existing `carePlans`)
 - [ ] Medication catalog with Algolia search integration
 
 #### **Medium Priority (Weeks 5-8)**

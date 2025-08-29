@@ -43,8 +43,8 @@ export async function GET(request: NextRequest) {
           select: {
             user: {
               select: {
-                first_name: true,
-                last_name: true,
+                firstName: true,
+                lastName: true,
                 email: true
               }
             }
@@ -126,8 +126,8 @@ export async function POST(request: NextRequest) {
           select: {
             user: {
               select: {
-                first_name: true,
-                last_name: true,
+                firstName: true,
+                lastName: true,
                 email: true
               }
             }

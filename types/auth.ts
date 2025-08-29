@@ -48,11 +48,11 @@ export interface LegacyUserFields {
   /** @deprecated Use name instead */
   full_name?: string
   /** @deprecated Use image instead */
-  profile_picture_url?: string
+  profilePictureUrl?: string
   /** @deprecated Use name.split(' ')[0] instead */
-  first_name?: string
+  firstName?: string
   /** @deprecated Use name.split(' ').slice(1).join(' ') instead */
-  last_name?: string
+  lastName?: string
   /** @deprecated Use emailVerified instead */
   email_verified?: boolean
 }
@@ -65,25 +65,25 @@ export const userHelpers = {
   // Get display name with fallback
   getDisplayName: (user: TransitionUser | null): string => {
     if (!user) return 'User'
-    return user.name || user.full_name || `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email?.split('@')[0] || 'User'
+    return user.name || user.full_name || `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email?.split('@')[0] || 'User'
   },
   
   // Get profile image with fallback
   getProfileImage: (user: TransitionUser | null): string | null => {
     if (!user) return null
-    return user.image || user.profile_picture_url || null
+    return user.image || user.profilePictureUrl || null
   },
   
   // Get first name with fallback
   getFirstName: (user: TransitionUser | null): string => {
     if (!user) return 'User'
-    return user.first_name || user.name?.split(' ')[0] || user.email?.split('@')[0] || 'User'
+    return user.firstName || user.name?.split(' ')[0] || user.email?.split('@')[0] || 'User'
   },
   
   // Get last name with fallback
   getLastName: (user: TransitionUser | null): string => {
     if (!user) return ''
-    return user.last_name || user.name?.split(' ').slice(1).join(' ') || ''
+    return user.lastName || user.name?.split(' ').slice(1).join(' ') || ''
   },
   
   // Check if email is verified
@@ -129,8 +129,8 @@ export interface RegisterData {
   password: string
   confirmPassword: string
   role: HealthcareRole
-  first_name: string
-  last_name: string
+  firstName: string
+  lastName: string
   phone?: string
   organization_code?: string
   terms_accepted: boolean

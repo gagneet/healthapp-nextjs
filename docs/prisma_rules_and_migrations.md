@@ -13,7 +13,7 @@ We'll research the current Prisma conventions and best practices, particularly f
 
 #### Database Level
 - **Tables**: Common practice is plural snake_case (e.g., `users`, `posts`)
-- **Columns**: Snake_case is the general database convention (e.g., `createdAt`, `user_id`)
+- **Columns**: Snake_case is the general database convention (e.g., `createdAt`, `userId`)
 
 #### Client Level
 - **The Prisma Client ALWAYS generates camelCase property names** - this is not configurable
@@ -26,7 +26,7 @@ Use `@@map` and `@map` to bridge the naming convention gap:
 ```prisma
 model User {
   id        Int      @id @default(autoincrement())
-  firstName String   @map("first_name")
+  firstName String   @map("firstName")
   createdAt DateTime @default(now()) @map("createdAt")
   posts     Post[]
   

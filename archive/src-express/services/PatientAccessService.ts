@@ -29,7 +29,7 @@ class PatientAccessService {
           {
             model: User,
             as: 'user',
-            attributes: ['id', 'first_name', 'last_name', 'email']
+            attributes: ['id', 'firstName', 'lastName', 'email']
           },
           {
             model: Organization,
@@ -54,7 +54,7 @@ class PatientAccessService {
         secondary_patients: secondaryPatients,
         doctor_info: {
           id: doctorRecord.id,
-          name: `${doctorRecord.user.first_name} ${doctorRecord.user.last_name}`,
+          name: `${doctorRecord.user.firstName} ${doctorRecord.user.lastName}`,
           provider: doctorRecord.organization?.name || 'No Provider'
         }
       };
@@ -79,7 +79,7 @@ class PatientAccessService {
       (whereClause as any)[Op.or] = [
         { '$user.first_name$': { [Op.iLike]: `%${(options as any).search}%` } },
         { '$user.last_name$': { [Op.iLike]: `%${(options as any).search}%` } },
-        { medical_record_number: { [Op.iLike]: `%${(options as any).search}%` } }
+        { medicalRecordNumber: { [Op.iLike]: `%${(options as any).search}%` } }
       ];
     }
 
@@ -89,7 +89,7 @@ class PatientAccessService {
         {
           model: User,
           as: 'user',
-          attributes: ['id', 'first_name', 'last_name', 'email', 'phone']
+          attributes: ['id', 'firstName', 'lastName', 'email', 'phone']
         }
       ],
       limit: (options as any).limit || 50,
@@ -123,7 +123,7 @@ class PatientAccessService {
             {
               model: User,
               as: 'user',
-              attributes: ['id', 'first_name', 'last_name', 'email', 'phone']
+              attributes: ['id', 'firstName', 'lastName', 'email', 'phone']
             }
           ]
         },
@@ -134,7 +134,7 @@ class PatientAccessService {
             {
               model: User,
               as: 'user',
-              attributes: ['first_name', 'last_name']
+              attributes: ['firstName', 'lastName']
             }
           ]
         },
@@ -166,7 +166,7 @@ class PatientAccessService {
         assignment_reason: assignment.assignment_reason,
         specialtyFocus: assignment.specialtyFocus,
         primary_doctor: assignment.primaryDoctor ? 
-          `${assignment.primaryDoctor.user.first_name} ${assignment.primaryDoctor.user.last_name}` : 
+          `${assignment.primaryDoctor.user.firstName} ${assignment.primaryDoctor.user.lastName}` : 
           'Unknown',
         primary_doctor_provider: assignment.primaryDoctorProvider?.name || 'No Provider',
         secondary_doctor_provider: assignment.secondaryDoctorProvider?.name || 'No Provider'
@@ -359,7 +359,7 @@ class PatientAccessService {
       });
 
       // Get patient and doctor names for personalized messages
-      const patientName = `${assignment.patient.user?.first_name || ''} ${assignment.patient.user?.last_name || ''}`.trim();
+      const patientName = `${assignment.patient.user?.firstName || ''} ${assignment.patient.user?.lastName || ''}`.trim();
       let doctorName = 'Healthcare Provider';
       
       // Get doctor name from assignment
@@ -368,11 +368,11 @@ class PatientAccessService {
           include: [{
             model: User,
             as: 'user',
-            attributes: ['first_name', 'last_name']
+            attributes: ['firstName', 'lastName']
           }]
         });
         if (secondaryDoctor) {
-          doctorName = `${secondaryDoctor.user.first_name || ''} ${secondaryDoctor.user.last_name || ''}`.trim();
+          doctorName = `${secondaryDoctor.user.firstName || ''} ${secondaryDoctor.user.lastName || ''}`.trim();
         }
       }
 

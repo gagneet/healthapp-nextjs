@@ -33,7 +33,7 @@ export default (sequelize: any) => {
     },
     
     // Medical Information
-    medical_record_number: {
+    medicalRecordNumber: {
       type: DataTypes.STRING(50),
       allowNull: true,
       unique: true,
@@ -339,10 +339,10 @@ export default (sequelize: any) => {
         fields: ['organization_id']
       },
       {
-        fields: ['medical_record_number'],
+        fields: ['medicalRecordNumber'],
         unique: true,
         where: {
-          medical_record_number: {
+          medicalRecordNumber: {
             [sequelize.Sequelize.Op.ne]: null
           }
         }
@@ -372,10 +372,10 @@ export default (sequelize: any) => {
     hooks: {
       beforeValidate: (patient: any, options: any) => {
         // Generate medical record number if not provided
-        if (!patient.medical_record_number && patient.organization_id) {
+        if (!patient.medicalRecordNumber && patient.organization_id) {
           const timestamp = Date.now().toString().slice(-6);
           const random = Math.random().toString(36).substring(2, 5).toUpperCase();
-          patient.medical_record_number = `PAT-${timestamp}-${random}`;
+          patient.medicalRecordNumber = `PAT-${timestamp}-${random}`;
         }
       },
       
@@ -597,15 +597,15 @@ export default (sequelize: any) => {
             as: 'user',
             where: {
               [sequelize.Sequelize.Op.or]: [
-                { first_name: { [sequelize.Sequelize.Op.iLike]: `%${query}%` } },
-                { last_name: { [sequelize.Sequelize.Op.iLike]: `%${query}%` } },
+                { firstName: { [sequelize.Sequelize.Op.iLike]: `%${query}%` } },
+                { lastName: { [sequelize.Sequelize.Op.iLike]: `%${query}%` } },
                 { email: { [sequelize.Sequelize.Op.iLike]: `%${query}%` } }
               ]
             }
           }],
           where: {
             [sequelize.Sequelize.Op.or]: [
-              { medical_record_number: { [sequelize.Sequelize.Op.iLike]: `%${query}%` } }
+              { medicalRecordNumber: { [sequelize.Sequelize.Op.iLike]: `%${query}%` } }
             ],
             deleted_at: null
           }

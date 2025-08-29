@@ -42,9 +42,9 @@ export default {
         {
           id: '550e8400-e29b-41d4-a716-446655440010',
           full_name: 'John William Doe',
-          first_name: 'John',
+          firstName: 'John',
           middle_name: 'William',
-          last_name: 'Doe',
+          lastName: 'Doe',
           email: 'john.doe@healthapp.com',
           password_hash: hashedPassword,
           phone: '+1-555-0123',
@@ -58,9 +58,9 @@ export default {
         {
           id: '550e8400-e29b-41d4-a716-446655440011',
           full_name: 'Jane Marie Smith',
-          first_name: 'Jane',
+          firstName: 'Jane',
           middle_name: 'Marie',
-          last_name: 'Smith',
+          lastName: 'Smith',
           email: 'jane.smith@healthapp.com',
           password_hash: hashedPassword,
           phone: '+1-555-0124',
@@ -74,9 +74,9 @@ export default {
         {
           id: '550e8400-e29b-41d4-a716-446655440012',
           full_name: 'Michael Robert Johnson',
-          first_name: 'Michael',
+          firstName: 'Michael',
           middle_name: 'Robert',
-          last_name: 'Johnson',
+          lastName: 'Johnson',
           email: 'michael.johnson@healthapp.com',
           password_hash: hashedPassword,
           phone: '+1-555-0125',
@@ -90,9 +90,9 @@ export default {
         {
           id: '550e8400-e29b-41d4-a716-446655440013',
           full_name: 'Sarah Elizabeth Brown',
-          first_name: 'Sarah',
+          firstName: 'Sarah',
           middle_name: 'Elizabeth',
-          last_name: 'Brown',
+          lastName: 'Brown',
           email: 'sarah.brown@healthapp.com',
           password_hash: hashedPassword,
           phone: '+1-555-0126',
@@ -106,9 +106,9 @@ export default {
         {
           id: '550e8400-e29b-41d4-a716-446655440014',
           full_name: 'David James Wilson',
-          first_name: 'David',
+          firstName: 'David',
           middle_name: 'James',
-          last_name: 'Wilson',
+          lastName: 'Wilson',
           email: 'david.wilson@healthapp.com',
           password_hash: hashedPassword,
           phone: '+1-555-0127',
@@ -128,7 +128,7 @@ export default {
         {
           id: '550e8400-e29b-41d4-a716-446655440030',
           userId: '550e8400-e29b-41d4-a716-446655440010',
-          medical_record_number: 'MRN001',
+          medicalRecordNumber: 'MRN001',
           primaryCareDoctorId: doctorId,
           emergency_contacts: JSON.stringify([{
             name: 'Jane Doe',
@@ -157,7 +157,7 @@ export default {
         {
           id: '550e8400-e29b-41d4-a716-446655440031',
           userId: '550e8400-e29b-41d4-a716-446655440011',
-          medical_record_number: 'MRN002',
+          medicalRecordNumber: 'MRN002',
           primaryCareDoctorId: doctorId,
           emergency_contacts: JSON.stringify([{
             name: 'Robert Smith',
@@ -186,7 +186,7 @@ export default {
         {
           id: '550e8400-e29b-41d4-a716-446655440032',
           userId: '550e8400-e29b-41d4-a716-446655440012',
-          medical_record_number: 'MRN003',
+          medicalRecordNumber: 'MRN003',
           primaryCareDoctorId: doctorId,
           emergency_contacts: JSON.stringify([{
             name: 'Lisa Johnson',
@@ -215,7 +215,7 @@ export default {
         {
           id: '550e8400-e29b-41d4-a716-446655440033',
           userId: '550e8400-e29b-41d4-a716-446655440013',
-          medical_record_number: 'MRN004',
+          medicalRecordNumber: 'MRN004',
           primaryCareDoctorId: doctorId,
           emergency_contacts: JSON.stringify([{
             name: 'Mark Brown',
@@ -244,7 +244,7 @@ export default {
         {
           id: '550e8400-e29b-41d4-a716-446655440034',
           userId: '550e8400-e29b-41d4-a716-446655440014',
-          medical_record_number: 'MRN005',
+          medicalRecordNumber: 'MRN005',
           primaryCareDoctorId: doctorId,
           emergency_contacts: JSON.stringify([{
             name: 'Mary Wilson',

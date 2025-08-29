@@ -9,7 +9,7 @@ interface Symptom {
   x: number // Percentage position on the body diagram
   y: number
   description?: string
-  onset_time: string
+  onsetTime: string
 }
 
 interface BodyDiagramProps {

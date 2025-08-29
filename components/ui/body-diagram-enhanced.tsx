@@ -14,7 +14,7 @@ interface Symptom {
   y: number
   z?: number // Optional Z coordinate for 3D
   description?: string
-  onset_time: string
+  onsetTime: string
 }
 
 interface BodyDiagramEnhancedProps {

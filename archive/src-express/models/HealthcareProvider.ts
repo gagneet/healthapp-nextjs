@@ -368,8 +368,8 @@ export default (sequelize: any) => {
             as: 'user',
             where: {
               [sequelize.Sequelize.Op.or]: [
-                { first_name: { [sequelize.Sequelize.Op.iLike]: `%${query}%` } },
-                { last_name: { [sequelize.Sequelize.Op.iLike]: `%${query}%` } }
+                { firstName: { [sequelize.Sequelize.Op.iLike]: `%${query}%` } },
+                { lastName: { [sequelize.Sequelize.Op.iLike]: `%${query}%` } }
               ]
             }
           }],

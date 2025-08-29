@@ -70,8 +70,8 @@ export class HIPAAAuditLog {
 
   static containsPHI(req: any) {
     const phiFields = [
-      'name', 'first_name', 'last_name', 'email', 'phone', 'address',
-      'date_of_birth', 'ssn', 'medical_record_number', 'diagnosis',
+      'name', 'firstName', 'lastName', 'email', 'phone', 'address',
+      'date_of_birth', 'ssn', 'medicalRecordNumber', 'diagnosis',
       'medication', 'vital', 'treatment', 'allergy'
     ];
     
@@ -268,11 +268,11 @@ function minimizeData(data: any, allowedFields: any, userRole: any): any {
       [USER_ROLES.SYSTEM_ADMIN]: ['*'], // Full access
       [USER_ROLES.HOSPITAL_ADMIN]: ['*'], // Full access within organization
       [USER_ROLES.DOCTOR]: [
-        'medical_record_number', 'diagnosis', 'medications', 'allergies',
-        'medical_history', 'vitals', 'treatment_plans', 'care_plans'
+        'medicalRecordNumber', 'diagnosis', 'medications', 'allergies',
+        'medical_history', 'vitals', 'treatment_plans', 'carePlans'
       ],
       [USER_ROLES.HSP]: [
-        'vitals', 'medications', 'allergies', 'care_plans'
+        'vitals', 'medications', 'allergies', 'carePlans'
       ],
       [USER_ROLES.PATIENT]: [
         'own_data_only' // Patients can only see their own data

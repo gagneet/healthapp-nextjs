@@ -28,7 +28,7 @@ interface DoctorProfile {
 interface PatientProfile {
   id: string
   patientId: string | null
-  medical_record_number: string | null
+  medicalRecordNumber: string | null
   primary_doctor_id: string | null
   height: number | null
   weight: number | null
@@ -84,11 +84,11 @@ declare module "next-auth" {
     /** @deprecated Use name instead */
     full_name?: string
     /** @deprecated Use image instead */
-    profile_picture_url?: string
+    profilePictureUrl?: string
     /** @deprecated Use name.split(' ')[0] instead */
-    first_name?: string
+    firstName?: string
     /** @deprecated Use name.split(' ').slice(1).join(' ') instead */
-    last_name?: string
+    lastName?: string
     
     // Audit trail
     lastLoginAt?: Date | null
@@ -124,11 +124,11 @@ declare module "next-auth" {
       /** @deprecated Use name instead */
       full_name?: string
       /** @deprecated Use image instead */
-      profile_picture_url?: string
+      profilePictureUrl?: string
       /** @deprecated Use name.split(' ')[0] instead */
-      first_name?: string
+      firstName?: string
       /** @deprecated Use name.split(' ').slice(1).join(' ') instead */
-      last_name?: string
+      lastName?: string
     } & DefaultSession["user"]
   }
 }

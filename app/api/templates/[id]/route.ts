@@ -70,7 +70,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       updatedAt: template.updatedAt,
       usage_count: template.usage_count || 0,
       creator: template.User ? {
-        name: `${template.User.first_name || ''} ${template.User.last_name || ''}`.trim(),
+        name: `${template.User.firstName || ''} ${template.User.lastName || ''}`.trim(),
         email: template.User.email
       } : null,
       organization: template.Organization ? {

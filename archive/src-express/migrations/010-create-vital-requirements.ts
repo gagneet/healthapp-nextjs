@@ -21,7 +21,7 @@ export default {
         type: Sequelize.UUID,
         allowNull: false,
         references: {
-          model: 'care_plans',
+          model: 'carePlans',
           key: 'id'
         },
       },
@@ -42,7 +42,7 @@ export default {
         type: Sequelize.TIME,
         allowNull: true,
       },
-      is_critical: {
+      isCritical: {
         type: Sequelize.BOOLEAN,
         defaultValue: false,
       },
@@ -71,7 +71,7 @@ export default {
     const indexes = [
       { fields: ['care_plan_id'], name: 'idx_vital_requirements_care_plan' },
       { fields: ['vitalTypeId'], name: 'idx_vital_requirements_vital_type' },
-      { fields: ['is_critical'], name: 'idx_vital_requirements_critical' },
+      { fields: ['isCritical'], name: 'idx_vital_requirements_critical' },
       { fields: ['frequency'], name: 'idx_vital_requirements_frequency' }
     ];
 

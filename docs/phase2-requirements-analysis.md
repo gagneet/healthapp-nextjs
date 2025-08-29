@@ -68,7 +68,7 @@ CREATE TABLE abdm_health_ids (
   id UUID PRIMARY KEY,
   patientId UUID REFERENCES patients(id),
   health_id_number VARCHAR(14) UNIQUE NOT NULL,
-  mobile_number VARCHAR(15),
+  mobileNumber VARCHAR(15),
   verification_status VARCHAR(20),
   created_date TIMESTAMP,
   qr_code_data TEXT

@@ -52,8 +52,8 @@ export class ConsultationBookingService {
           participant_one_id: data.doctorId,
           participant_two_type: 'PATIENT',
           participant_two_id: data.patientId,
-          start_time: data.appointmentDate,
-          end_time: new Date(data.appointmentDate.getTime() + (data.duration * 60 * 1000)),
+          startTime: data.appointmentDate,
+          endTime: new Date(data.appointmentDate.getTime() + (data.duration * 60 * 1000)),
           description: data.reason,
           details: {
             consultationType: data.consultationType,
@@ -267,7 +267,7 @@ export class ConsultationBookingService {
       const updatedAppointment = await prisma.appointment.update({
         where: { id: appointmentId },
         data: {
-          start_time: newDateTime,
+          startTime: newDateTime,
           status: 'scheduled',
           updatedAt: new Date()
         }
@@ -390,8 +390,8 @@ export class ConsultationBookingService {
             include: {
               user: {
                 select: {
-                  first_name: true,
-                  last_name: true,
+                  firstName: true,
+                  lastName: true,
                   email: true
                 }
               },
@@ -406,8 +406,8 @@ export class ConsultationBookingService {
             include: {
               user: {
                 select: {
-                  first_name: true,
-                  last_name: true,
+                  firstName: true,
+                  lastName: true,
                   email: true
                 }
               }
@@ -464,8 +464,8 @@ export class ConsultationBookingService {
             include: {
               user: {
                 select: {
-                  first_name: true,
-                  last_name: true,
+                  firstName: true,
+                  lastName: true,
                   phone: true
                 }
               }

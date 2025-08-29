@@ -313,8 +313,8 @@ CREATE TABLE patients (
 CREATE TABLE patients (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   business_id VARCHAR(20) UNIQUE NOT NULL, -- PAT-2025-001
-  first_name VARCHAR(100) NOT NULL,
-  last_name VARCHAR(100) NOT NULL,
+  firstName VARCHAR(100) NOT NULL,
+  lastName VARCHAR(100) NOT NULL,
   email VARCHAR(255) UNIQUE,
   date_of_birth DATE,
   createdAt TIMESTAMPTZ DEFAULT NOW(),
@@ -329,8 +329,8 @@ CREATE TABLE patients (
 model Patient {
   id          String   @id @default(cuid())
   businessId  String   @unique @map("business_id")
-  firstName   String   @map("first_name")
-  lastName    String   @map("last_name")
+  firstName   String   @map("firstName")
+  lastName    String   @map("lastName")
   email       String?  @unique
   dateOfBirth DateTime? @map("date_of_birth")
   createdAt   DateTime @default(now()) @map("createdAt")

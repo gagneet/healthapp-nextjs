@@ -18,7 +18,7 @@ export default (sequelize: any, DataTypes: any) => {
       type: DataTypes.UUID,
       allowNull: false,
       references: {
-        model: 'care_plans',
+        model: 'carePlans',
         key: 'id',
       },
     },
@@ -30,11 +30,11 @@ export default (sequelize: any, DataTypes: any) => {
       type: DataTypes.STRING(1000),
       allowNull: true,
     },
-    start_date: {
+    startDate: {
       type: DataTypes.DATE,
       allowNull: true,
     },
-    end_date: {
+    endDate: {
       type: DataTypes.DATE,
       allowNull: true,
     },

@@ -25,8 +25,8 @@ class AppointmentController {
       const {
         patientId,
         description,
-        start_date,
-        end_date,
+        startDate,
+        endDate,
         appointment_type,
         treatment_id,
         repeat_type,
@@ -34,8 +34,8 @@ class AppointmentController {
         slot_id
       } = req.body;
 
-      const startTime = new Date(start_date);
-      const endTime = new Date(end_date);
+      const startTime = new Date(startDate);
+      const endTime = new Date(endDate);
 
       // Check for conflicts
       const conflicts = await CalendarService.checkConflicts(
@@ -54,8 +54,8 @@ class AppointmentController {
               message: 'Time slot conflicts with existing appointment',
               conflicts: conflicts.map((c: any) => ({
                 id: c.id,
-                start_time: c.start_time,
-                end_time: c.end_time
+                startTime: c.startTime,
+                endTime: c.endTime
               }))
             }
           }
@@ -91,10 +91,10 @@ class AppointmentController {
         organizer_type: req.userCategory || req.user!.role || 'user',
         organizer_id: req.user!.id,
         description,
-        start_date: startTime.toISOString().split('T')[0],
-        end_date: endTime.toISOString().split('T')[0],
-        start_time: startTime,
-        end_time: endTime,
+        startDate: startTime.toISOString().split('T')[0],
+        endDate: endTime.toISOString().split('T')[0],
+        startTime: startTime,
+        endTime: endTime,
         details: {
           type: appointment_type,
           treatment_id,
@@ -155,7 +155,7 @@ class AppointmentController {
             as: 'provider'
           }
         ],
-        order: [['start_time', 'ASC']]
+        order: [['startTime', 'ASC']]
       });
 
       const responseData: { appointments: { [key: string]: any } } = { appointments: {} };
@@ -170,10 +170,10 @@ class AppointmentController {
             id: appointment.id.toString(),
             description: appointment.description,
             details: appointment.details || {},
-            start_date: appointment.start_time,
-            end_date: appointment.end_time,
-            start_time: appointment.start_time ? appointment.start_time.toTimeString().split(' ')[0] : null,
-            end_time: appointment.end_time ? appointment.end_time.toTimeString().split(' ')[0] : null
+            startDate: appointment.startTime,
+            endDate: appointment.endTime,
+            startTime: appointment.startTime ? appointment.startTime.toTimeString().split(' ')[0] : null,
+            endTime: appointment.endTime ? appointment.endTime.toTimeString().split(' ')[0] : null
           },
           participant_one: {
             id: appointment.participant_one_id?.toString(),
@@ -231,7 +231,7 @@ class AppointmentController {
 
       const appointments = await Appointment.findAll({
         where: {
-          start_date: date,
+          startDate: date,
           // Add user-specific filtering based on role
           ...(req.userCategory === 'doctor' && req.user && {
             [Op.or]: [
@@ -240,7 +240,7 @@ class AppointmentController {
             ]
           })
         },
-        order: [['start_time', 'ASC']]
+        order: [['startTime', 'ASC']]
       });
 
       const responseData: { appointments: { [key: string]: any } } = { appointments: {} };
@@ -255,8 +255,8 @@ class AppointmentController {
           basic_info: {
             id: appointment.id.toString(),
             description: appointment.description,
-            start_date: appointment.start_time,
-            end_date: appointment.end_time
+            startDate: appointment.startTime,
+            endDate: appointment.endTime
           },
           participant_two: {
             id: appointment.participant_two_id?.toString(),
@@ -285,10 +285,10 @@ class AppointmentController {
       const doctor = await Doctor.findByPk(organizerId, {
         include: [{ model: User, as: 'user' }]
       });
-      return { name: `Dr. ${doctor?.first_name} ${doctor?.last_name}` };
+      return { name: `Dr. ${doctor?.firstName} ${doctor?.lastName}` };
     } else if (organizerType === 'patient') {
       const patient = await Patient.findByPk(organizerId);
-      return { name: `${patient?.first_name} ${patient?.last_name}` };
+      return { name: `${patient?.firstName} ${patient?.lastName}` };
     }
     return null;
   }
@@ -296,10 +296,10 @@ class AppointmentController {
   async getParticipantDetails(participantType: string, participantId: number | string): Promise<{ name: string } | null> {
     if (participantType === 'patient') {
       const patient = await Patient.findByPk(participantId);
-      return { name: `${patient?.first_name} ${patient?.last_name}` };
+      return { name: `${patient?.firstName} ${patient?.lastName}` };
     } else if (participantType === 'doctor') {
       const doctor = await Doctor.findByPk(participantId);
-      return { name: `Dr. ${doctor?.first_name} ${doctor?.last_name}` };
+      return { name: `Dr. ${doctor?.firstName} ${doctor?.lastName}` };
     }
     return null;
   }
@@ -320,7 +320,7 @@ class AppointmentController {
   async createAppointmentSchedule(appointment: any, repeatCount = 1): Promise<void> {
     // Create schedule events for appointments
     for (let i = 0; i < repeatCount; i++) {
-      const eventDate = new Date(appointment.start_time);
+      const eventDate = new Date(appointment.startTime);
       if (appointment.rr_rule?.includes('WEEKLY')) {
         eventDate.setDate(eventDate.getDate() + (i * 7));
       } else if (appointment.rr_rule?.includes('DAILY')) {
@@ -332,8 +332,8 @@ class AppointmentController {
         event_id: appointment.id,
         status: 'scheduled',
         date: eventDate.toISOString().split('T')[0],
-        start_time: eventDate,
-        end_time: new Date(eventDate.getTime() + (appointment.end_time - appointment.start_time)),
+        startTime: eventDate,
+        endTime: new Date(eventDate.getTime() + (appointment.endTime - appointment.startTime)),
         details: {
           appointment_id: appointment.id,
           participant_one_id: appointment.participant_one_id,
@@ -494,9 +494,9 @@ class AppointmentController {
   async rescheduleAppointment(req: Request, res: Response, next: NextFunction): Promise<void | Response> {
     try {
       const { appointmentId } = req.params;
-      const { start_time, end_time, slot_id } = req.body;
+      const { startTime, endTime, slot_id } = req.body;
 
-      if (!start_time || !end_time) {
+      if (!startTime || !endTime) {
         return res.status(400).json({
           status: false,
           statusCode: 400,
@@ -511,8 +511,8 @@ class AppointmentController {
 
       const appointment = await CalendarService.rescheduleAppointment(
         appointmentId,
-        new Date(start_time),
-        new Date(end_time),
+        new Date(startTime),
+        new Date(endTime),
         slot_id
       );
 

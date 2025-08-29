@@ -29,7 +29,7 @@ export default {
         type: Sequelize.UUID,
         allowNull: true,
         references: {
-          model: 'care_plans',
+          model: 'carePlans',
           key: 'id'
         },
       },
@@ -57,7 +57,7 @@ export default {
       },
       
       // Timing
-      onset_time: {
+      onsetTime: {
         type: Sequelize.DATE,
         allowNull: true,
       },
@@ -119,7 +119,7 @@ export default {
       { fields: ['symptom_name'], name: 'idx_symptoms_name' },
       { fields: ['severity'], name: 'idx_symptoms_severity' },
       { fields: ['recordedAt'], name: 'idx_symptoms_recorded_at' },
-      { fields: ['onset_time'], name: 'idx_symptoms_onset_time' }
+      { fields: ['onsetTime'], name: 'idx_symptoms_onset_time' }
     ];
 
     for (const index of indexes) {

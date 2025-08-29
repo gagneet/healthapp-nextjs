@@ -18,8 +18,8 @@ import {
 
 interface PatientProfile {
   id: string
-  first_name: string
-  last_name: string
+  firstName: string
+  lastName: string
   email: string
   phone?: string
   date_of_birth?: string
@@ -51,7 +51,7 @@ interface PatientProfile {
       share_data: boolean
     }
   }
-  profile_picture_url?: string
+  profilePictureUrl?: string
 }
 
 export default function ProfilePage() {
@@ -143,9 +143,9 @@ export default function ProfilePage() {
           <div className="flex items-center">
             <div className="relative">
               <div className="w-24 h-24 bg-gray-200 rounded-full flex items-center justify-center overflow-hidden">
-                {profile?.profile_picture_url ? (
+                {profile?.profilePictureUrl ? (
                   <img
-                    src={profile.profile_picture_url}
+                    src={profile.profilePictureUrl}
                     alt="Profile"
                     className="w-full h-full object-cover"
                   />
@@ -161,7 +161,7 @@ export default function ProfilePage() {
             </div>
             <div className="ml-6 flex-1">
               <h2 className="text-2xl font-bold text-gray-900">
-                {profile?.first_name} {profile?.last_name}
+                {profile?.firstName} {profile?.lastName}
               </h2>
               <p className="text-gray-600">{profile?.email}</p>
               <div className="mt-2 flex items-center space-x-4 text-sm text-gray-500">
@@ -220,11 +220,11 @@ export default function ProfilePage() {
                 {editing ? (
                   <input
                     type="text"
-                    defaultValue={profile?.first_name}
+                    defaultValue={profile?.firstName}
                     className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 ) : (
-                  <p className="text-gray-900">{profile?.first_name || 'Not provided'}</p>
+                  <p className="text-gray-900">{profile?.firstName || 'Not provided'}</p>
                 )}
               </div>
               <div>
@@ -232,11 +232,11 @@ export default function ProfilePage() {
                 {editing ? (
                   <input
                     type="text"
-                    defaultValue={profile?.last_name}
+                    defaultValue={profile?.lastName}
                     className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 ) : (
-                  <p className="text-gray-900">{profile?.last_name || 'Not provided'}</p>
+                  <p className="text-gray-900">{profile?.lastName || 'Not provided'}</p>
                 )}
               </div>
               <div>

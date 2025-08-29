@@ -38,7 +38,7 @@ const authenticate = async (req: Request, res: Response, next: NextFunction): Pr
     if (!user) {
       // Only hit database if not in cache - simplified for testing
       user = await User.findByPk(decoded.userId, {
-        attributes: ['id', 'email', 'first_name', 'last_name', 'role', 'account_status']
+        attributes: ['id', 'email', 'firstName', 'lastName', 'role', 'account_status']
         // Note: Temporarily removed UserRole association to test Dashboard
         // include: [{
         //   model: UserRole,

@@ -68,9 +68,9 @@ function AuthContextProvider({ children }: { children: React.ReactNode }) {
         
         // ✅ Legacy fields for backward compatibility
         full_name: session.user.full_name || session.user.name,
-        profile_picture_url: session.user.profile_picture_url || session.user.image,
-        first_name: session.user.first_name || session.user.name?.split(' ')[0],
-        last_name: session.user.last_name || session.user.name?.split(' ').slice(1).join(' '),
+        profilePictureUrl: session.user.profilePictureUrl || session.user.image,
+        firstName: session.user.firstName || session.user.name?.split(' ')[0],
+        lastName: session.user.lastName || session.user.name?.split(' ').slice(1).join(' '),
         email_verified: session.user.emailVerified ? true : false
       }
       

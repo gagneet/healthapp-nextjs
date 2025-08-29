@@ -16,17 +16,17 @@ class PatientService {
     try {
       const {
         // User fields
-        first_name,
+        firstName,
         middle_name,
-        last_name,
+        lastName,
         email,
-        mobile_number,
+        mobileNumber,
         gender,
         dob, // Frontend sends 'dob', not 'date_of_birth'
         address, // Frontend sends 'address', not separate street/city/state
         
         // Patient-specific fields
-        medical_record_number, // Frontend sends this, not 'patientId'
+        medicalRecordNumber, // Frontend sends this, not 'patientId'
         height_cm,
         weight_kg,
         allergies,
@@ -68,11 +68,11 @@ class PatientService {
 
       // Create user with common fields
       const user = await User.create({
-        first_name,
+        firstName,
         middle_name,
-        last_name,
+        lastName,
         email: email || '', // Email can be empty
-        phone: mobile_number, // Map 'mobile_number' to 'phone' field
+        phone: mobileNumber, // Map 'mobileNumber' to 'phone' field
         gender: mappedGender,
         date_of_birth: dob ? new Date(dob) : null, // Convert to Date object
         role: 'PATIENT', // Use 'role' instead of 'category' as per User model
@@ -81,20 +81,20 @@ class PatientService {
         email_verified: false
       }, { transaction });
 
-      // Use custom medical_record_number if provided, otherwise generate one
-      let finalMedicalRecordNumber = medical_record_number;
+      // Use custom medicalRecordNumber if provided, otherwise generate one
+      let finalMedicalRecordNumber = medicalRecordNumber;
       
       if (!finalMedicalRecordNumber || finalMedicalRecordNumber.trim() === '') {
         // Get creator info for medical record number generation
         const creator = await User.findByPk(creatorId, { transaction });
-        const creatorName = creator ? `${creator.first_name} ${creator.last_name}` : 'Unknown Doctor';
+        const creatorName = creator ? `${creator.firstName} ${creator.lastName}` : 'Unknown Doctor';
         
         // Generate medical record number
         finalMedicalRecordNumber = await this.generatePatientID(creatorName);
       } else {
-        // Validate that custom medical_record_number doesn't already exist
+        // Validate that custom medicalRecordNumber doesn't already exist
         const existingPatient = await Patient.findOne({
-          where: { medical_record_number: finalMedicalRecordNumber.trim() },
+          where: { medicalRecordNumber: finalMedicalRecordNumber.trim() },
           transaction
         });
         
@@ -116,7 +116,7 @@ class PatientService {
       // Create patient with medical-specific fields
       const patient = await Patient.create({
         userId: user.id,
-        medical_record_number: finalMedicalRecordNumber ? finalMedicalRecordNumber.trim() : null,
+        medicalRecordNumber: finalMedicalRecordNumber ? finalMedicalRecordNumber.trim() : null,
         height_cm,
         weight_kg,
         // Convert allergies and comorbidities strings to arrays for JSONB storage
@@ -202,7 +202,7 @@ class PatientService {
       const user = await User.findOne({
         where: {
           [Op.or]: searchFormats.map(format => ({
-            mobile_number: {
+            mobileNumber: {
               [Op.like]: `%${format}%`
             }
           })),
@@ -223,12 +223,12 @@ class PatientService {
             id: user.patientProfile.id,
             patientId: user.patientProfile.patientId,
             userId: user.id,
-            first_name: user.first_name,
+            firstName: user.firstName,
             middle_name: user.middle_name,
-            last_name: user.last_name,
-            full_name: `${user.first_name} ${user.middle_name || ''} ${user.last_name}`.trim(),
+            lastName: user.lastName,
+            full_name: `${user.firstName} ${user.middle_name || ''} ${user.lastName}`.trim(),
             email: user.email,
-            mobile_number: user.mobile_number,
+            mobileNumber: user.mobileNumber,
             gender: user.gender,
             date_of_birth: user.date_of_birth,
             age: user.current_age,
@@ -334,9 +334,9 @@ class PatientService {
 
     // Define which fields belong to User vs Patient
     const userFieldNames = [
-      'first_name', 'middle_name', 'last_name', 'email', 'mobile_number',
+      'firstName', 'middle_name', 'lastName', 'email', 'mobileNumber',
       'gender', 'date_of_birth', 'street', 'city', 'state', 'country',
-      'profile_picture_url'
+      'profilePictureUrl'
     ];
 
     const patientFieldNames = [

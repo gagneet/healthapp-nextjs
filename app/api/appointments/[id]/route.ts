@@ -81,7 +81,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       startTime: appointment.startTime,
       endTime: appointment.endTime,
       status: appointment.status || 'scheduled',
-      isVirtual: (appointment.details as any)?.is_virtual || false, // Assuming is_virtual might be in details
+      isVirtual: (appointment.details as any)?.isVirtual || false, // Assuming isVirtual might be in details
       notes: (appointment.details as any)?.notes,
       createdAt: appointment.createdAt
     }));

@@ -14,16 +14,16 @@ class VitalsController {
         description,
         repeat_interval,
         repeat_days,
-        start_date,
-        end_date
+        startDate,
+        endDate
       } = req.body;
 
       const vital = await Vital.create({
         vital_template_id,
         care_plan_id,
         description,
-        start_date,
-        end_date,
+        startDate,
+        endDate,
         details: {
           repeat_interval_id: repeat_interval,
           repeat_days,
@@ -91,8 +91,8 @@ class VitalsController {
             repeat_days: vital.details?.repeat_days || [1, 2, 3, 4, 5, 6, 7],
             description: vital.description
           },
-          start_date: vital.start_date,
-          end_date: vital.end_date,
+          startDate: vital.startDate,
+          endDate: vital.endDate,
           remaining: this.calculateRemaining(vital),
           total: this.calculateTotal(vital),
           latest_pending_event_id: null // Get from schedule events
@@ -104,7 +104,7 @@ class VitalsController {
               id: vital.template.id.toString(),
               name: vital.template.name,
               unit: vital.template.unit,
-              normal_range: vital.template.details?.normal_range || '',
+              normalRange: vital.template.details?.normalRange || '',
               description: vital.template.details?.description || ''
             }
           };
@@ -152,7 +152,7 @@ class VitalsController {
           event_type: 'vitals',
           event_id: vitalId
         },
-        order: [['start_time', 'DESC']],
+        order: [['startTime', 'DESC']],
         limit: 30
       });
 
@@ -160,7 +160,7 @@ class VitalsController {
         const measurements = event.details?.measurements || {};
         return {
           event_id: `evt_vital_${event.id}`,
-          scheduled_time: event.start_time,
+          scheduled_time: event.startTime,
           status: event.status,
           completed_at: event.status === 'completed' ? event.updatedAt : null,
           measurements,
@@ -209,21 +209,21 @@ class VitalsController {
   // Helper methods
   calculateRemaining(vital: any): number {
     const now = new Date();
-    const endDate = new Date(vital.end_date);
+    const endDate = new Date(vital.endDate);
     const daysDiff = Math.ceil((endDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
     return Math.max(0, daysDiff);
   }
 
   calculateTotal(vital: any): number {
-    const startDate = new Date(vital.start_date);
-    const endDate = new Date(vital.end_date);
+    const startDate = new Date(vital.startDate);
+    const endDate = new Date(vital.endDate);
     return Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
   }
 
   async createVitalSchedule(vital: any, repeatDays: number[]): Promise<void> {
     // Create schedule events for vital monitoring
-    const startDate = new Date(vital.start_date);
-    const endDate = new Date(vital.end_date);
+    const startDate = new Date(vital.startDate);
+    const endDate = new Date(vital.endDate);
     
     for (let date = new Date(startDate); date <= endDate; date.setDate(date.getDate() + 1)) {
       const dayOfWeek = date.getDay() === 0 ? 7 : date.getDay(); // Convert Sunday from 0 to 7
@@ -234,7 +234,7 @@ class VitalsController {
           event_id: vital.id,
           status: 'pending',
           date: date.toISOString().split('T')[0],
-          start_time: new Date(date.getTime() + 8 * 60 * 60 * 1000), // 8 AM default
+          startTime: new Date(date.getTime() + 8 * 60 * 60 * 1000), // 8 AM default
           details: {
             vital_id: vital.id,
             care_plan_id: vital.care_plan_id

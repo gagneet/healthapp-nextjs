@@ -14,8 +14,8 @@ class MedicationService {
       unit,
       when_to_take,
       repeat_type,
-      start_date,
-      end_date,
+      startDate,
+      endDate,
       instructions
     } = medicationData;
 
@@ -26,8 +26,8 @@ class MedicationService {
       organizer_id,
       medicine_id,
       description: `${quantity} ${unit} ${strength}`,
-      start_date,
-      end_date,
+      startDate,
+      endDate,
       details: {
         quantity,
         strength,
@@ -36,7 +36,7 @@ class MedicationService {
         repeat_type,
         instructions
       },
-      rr_rule: this.generateRRule(repeat_type, start_date)
+      rr_rule: this.generateRRule(repeat_type, startDate)
     });
 
     // Create schedule events
@@ -86,8 +86,8 @@ class MedicationService {
   }
 
   async createMedicationSchedule(medication: any) {
-    const startDate = new Date(medication.start_date);
-    const endDate = new Date(medication.end_date);
+    const startDate = new Date(medication.startDate);
+    const endDate = new Date(medication.endDate);
     const whenToTake = medication.details?.when_to_take || 'after_breakfast';
     
     // Define default times for different meal times
@@ -112,7 +112,7 @@ class MedicationService {
         event_id: medication.id,
         status: 'pending',
         date: date.toISOString().split('T')[0],
-        start_time: scheduleTime,
+        startTime: scheduleTime,
         details: {
           medication_id: medication.id,
           participant_id: medication.participant_id,

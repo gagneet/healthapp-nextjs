@@ -553,7 +553,7 @@ export default (sequelize: any) => {
     const criticalValues = [];
     
     this.individual_results.forEach((result: any) => {
-      if (result.is_critical || result.flag === 'critical') {
+      if (result.isCritical || result.flag === 'critical') {
         criticalValues.push({
           test_name: result.name,
           value: result.value,

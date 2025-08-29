@@ -120,8 +120,8 @@ CREATE TABLE users (
     account_status account_status DEFAULT 'PENDING_VERIFICATION',
     
     -- Profile information
-    first_name VARCHAR(100),
-    last_name VARCHAR(100),
+    firstName VARCHAR(100),
+    lastName VARCHAR(100),
     middle_name VARCHAR(100),
     phone VARCHAR(20),
     date_of_birth DATE,
@@ -139,7 +139,7 @@ CREATE TABLE users (
     last_login_at TIMESTAMPTZ,
     
     -- Metadata
-    profile_picture_url VARCHAR(500),
+    profilePictureUrl VARCHAR(500),
     timezone VARCHAR(50) DEFAULT 'UTC',
     locale VARCHAR(10) DEFAULT 'en',
     preferences JSONB DEFAULT '{}',
@@ -187,7 +187,7 @@ CREATE TABLE patients (
     organization_id UUID REFERENCES organizations(id),
     
     -- Medical information
-    medical_record_number VARCHAR(50),
+    medicalRecordNumber VARCHAR(50),
     emergency_contacts JSONB DEFAULT '[]',
     insurance_information JSONB DEFAULT '{}',
     medical_history JSONB DEFAULT '[]',
@@ -261,7 +261,7 @@ CREATE TABLE care_plan_templates (
 );
 
 -- Active Care Plans
-CREATE TABLE care_plans (
+CREATE TABLE carePlans (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     patientId UUID NOT NULL REFERENCES patients(id),
     provider_id UUID NOT NULL REFERENCES healthcare_providers(id),
@@ -276,8 +276,8 @@ CREATE TABLE care_plans (
     -- Status and timing
     status care_plan_status DEFAULT 'DRAFT',
     priority priority_level DEFAULT 'MEDIUM',
-    start_date DATE NOT NULL,
-    end_date DATE,
+    startDate DATE NOT NULL,
+    endDate DATE,
     
     -- Plan data
     plan_data JSONB DEFAULT '{}',
@@ -294,7 +294,7 @@ CREATE TABLE care_plans (
 -- Medications
 CREATE TABLE medications (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    care_plan_id UUID NOT NULL REFERENCES care_plans(id),
+    care_plan_id UUID NOT NULL REFERENCES carePlans(id),
     
     -- Medication details
     medication_name VARCHAR(255) NOT NULL,
@@ -306,11 +306,11 @@ CREATE TABLE medications (
     instructions TEXT,
     
     -- Timing
-    start_date DATE NOT NULL,
-    end_date DATE,
+    startDate DATE NOT NULL,
+    endDate DATE,
     
     -- Metadata
-    is_critical BOOLEAN DEFAULT false,
+    isCritical BOOLEAN DEFAULT false,
     requires_monitoring BOOLEAN DEFAULT false,
     side_effects_to_monitor TEXT[],
     drug_interactions JSONB DEFAULT '[]',
@@ -338,12 +338,12 @@ CREATE TABLE vital_types (
 -- Vital Requirements in care plans
 CREATE TABLE vitalRequirements (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    care_plan_id UUID NOT NULL REFERENCES care_plans(id),
+    care_plan_id UUID NOT NULL REFERENCES carePlans(id),
     vitalTypeId UUID NOT NULL REFERENCES vital_types(id),
     
     frequency VARCHAR(100) NOT NULL, -- daily, twice_daily, weekly, etc.
     preferred_time TIME,
-    is_critical BOOLEAN DEFAULT false,
+    isCritical BOOLEAN DEFAULT false,
     monitoring_notes TEXT,
     
     createdAt TIMESTAMPTZ DEFAULT NOW(),
@@ -367,14 +367,14 @@ CREATE TABLE appointments (
     appointment_type VARCHAR(100), -- consultation, follow-up, emergency
     
     -- Scheduling
-    start_time TIMESTAMPTZ NOT NULL,
-    end_time TIMESTAMPTZ NOT NULL,
+    startTime TIMESTAMPTZ NOT NULL,
+    endTime TIMESTAMPTZ NOT NULL,
     timezone VARCHAR(50) DEFAULT 'UTC',
     
     -- Status and location
     status appointment_status DEFAULT 'SCHEDULED',
     location JSONB DEFAULT '{}', -- Can be physical address or virtual meeting info
-    is_virtual BOOLEAN DEFAULT false,
+    isVirtual BOOLEAN DEFAULT false,
     
     -- Metadata
     notes TEXT,
@@ -390,7 +390,7 @@ CREATE TABLE appointments (
 CREATE TABLE scheduled_events (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     patientId UUID NOT NULL REFERENCES patients(id),
-    care_plan_id UUID REFERENCES care_plans(id),
+    care_plan_id UUID REFERENCES carePlans(id),
     
     -- Event details
     event_type event_type NOT NULL,
@@ -484,7 +484,7 @@ CREATE TABLE vital_readings (
 CREATE TABLE symptoms (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     patientId UUID NOT NULL REFERENCES patients(id),
-    care_plan_id UUID REFERENCES care_plans(id),
+    care_plan_id UUID REFERENCES carePlans(id),
     
     -- Symptom details
     symptom_name VARCHAR(255) NOT NULL,
@@ -493,7 +493,7 @@ CREATE TABLE symptoms (
     body_location JSONB DEFAULT '{}',
     
     -- Timing
-    onset_time TIMESTAMPTZ,
+    onsetTime TIMESTAMPTZ,
     recordedAt TIMESTAMPTZ DEFAULT NOW(),
     
     -- Additional data
@@ -669,24 +669,24 @@ CREATE INDEX idx_providers_verified ON healthcare_providers(is_verified) WHERE d
 -- Indexes for patients
 CREATE INDEX idx_patients_user_id ON patients(userId);
 CREATE INDEX idx_patients_org ON patients(organization_id) WHERE deleted_at IS NULL;
-CREATE INDEX idx_patients_mrn ON patients(medical_record_number) WHERE deleted_at IS NULL;
+CREATE INDEX idx_patients_mrn ON patients(medicalRecordNumber) WHERE deleted_at IS NULL;
 
 -- Indexes for patient_provider_assignments
 CREATE INDEX idx_assignments_patient ON patient_provider_assignments(patientId) WHERE ended_at IS NULL;
 CREATE INDEX idx_assignments_provider ON patient_provider_assignments(provider_id) WHERE ended_at IS NULL;
 CREATE INDEX idx_assignments_active ON patient_provider_assignments(patientId, provider_id) WHERE ended_at IS NULL;
 
--- Indexes for care_plans
-CREATE INDEX idx_care_plans_patient ON care_plans(patientId) WHERE deleted_at IS NULL;
-CREATE INDEX idx_care_plans_provider ON care_plans(provider_id) WHERE deleted_at IS NULL;
-CREATE INDEX idx_care_plans_status ON care_plans(status) WHERE deleted_at IS NULL;
-CREATE INDEX idx_care_plans_dates ON care_plans(start_date, end_date) WHERE deleted_at IS NULL;
+-- Indexes for carePlans
+CREATE INDEX idx_care_plans_patient ON carePlans(patientId) WHERE deleted_at IS NULL;
+CREATE INDEX idx_care_plans_provider ON carePlans(provider_id) WHERE deleted_at IS NULL;
+CREATE INDEX idx_care_plans_status ON carePlans(status) WHERE deleted_at IS NULL;
+CREATE INDEX idx_care_plans_dates ON carePlans(startDate, endDate) WHERE deleted_at IS NULL;
 
 -- Indexes for medications
 CREATE INDEX idx_medications_care_plan ON medications(care_plan_id) WHERE deleted_at IS NULL;
 CREATE INDEX idx_medications_name ON medications(medication_name) WHERE deleted_at IS NULL;
-CREATE INDEX idx_medications_dates ON medications(start_date, end_date) WHERE deleted_at IS NULL;
-CREATE INDEX idx_medications_critical ON medications(is_critical) WHERE deleted_at IS NULL;
+CREATE INDEX idx_medications_dates ON medications(startDate, endDate) WHERE deleted_at IS NULL;
+CREATE INDEX idx_medications_critical ON medications(isCritical) WHERE deleted_at IS NULL;
 
 -- Indexes for scheduled_events
 CREATE INDEX idx_events_patient ON scheduled_events(patientId) WHERE deleted_at IS NULL;
@@ -704,7 +704,7 @@ CREATE INDEX idx_adherence_status ON adherence_records(is_completed, is_missed);
 -- Indexes for appointments
 CREATE INDEX idx_appointments_patient ON appointments(patientId) WHERE deleted_at IS NULL;
 CREATE INDEX idx_appointments_provider ON appointments(provider_id) WHERE deleted_at IS NULL;
-CREATE INDEX idx_appointments_time ON appointments(start_time) WHERE deleted_at IS NULL;
+CREATE INDEX idx_appointments_time ON appointments(startTime) WHERE deleted_at IS NULL;
 CREATE INDEX idx_appointments_status ON appointments(status) WHERE deleted_at IS NULL;
 
 -- Indexes for notifications
@@ -714,7 +714,7 @@ CREATE INDEX idx_notifications_unread ON notifications(recipient_id, is_read) WH
 CREATE INDEX idx_notifications_priority ON notifications(priority) WHERE deleted_at IS NULL;
 
 -- Full-text search indexes
-CREATE INDEX idx_users_name_search ON users USING GIN(to_tsvector('english', COALESCE(first_name, '') || ' ' || COALESCE(last_name, '')));
+CREATE INDEX idx_users_name_search ON users USING GIN(to_tsvector('english', COALESCE(firstName, '') || ' ' || COALESCE(lastName, '')));
 CREATE INDEX idx_medications_name_search ON medications USING GIN(to_tsvector('english', medication_name));
 
 -- ====================================
@@ -734,7 +734,7 @@ $$ language 'plpgsql';
 CREATE TRIGGER update_users_updated_at BEFORE UPDATE ON users FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 CREATE TRIGGER update_healthcare_providers_updated_at BEFORE UPDATE ON healthcare_providers FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 CREATE TRIGGER update_patients_updated_at BEFORE UPDATE ON patients FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-CREATE TRIGGER update_care_plans_updated_at BEFORE UPDATE ON care_plans FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_care_plans_updated_at BEFORE UPDATE ON carePlans FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 CREATE TRIGGER update_medications_updated_at BEFORE UPDATE ON medications FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 CREATE TRIGGER update_appointments_updated_at BEFORE UPDATE ON appointments FOR EACH ROW EXECUTE FUNCTION update_appointments_updated_at();
 CREATE TRIGGER update_scheduled_events_updated_at BEFORE UPDATE ON scheduled_events FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
@@ -751,24 +751,24 @@ SELECT
     cp.title as name,
     cp.status,
     cp.priority,
-    cp.start_date,
-    cp.end_date,
+    cp.startDate,
+    cp.endDate,
     
     -- Patient info
     p.id as patientId,
-    u_patient.first_name as patient_first_name,
-    u_patient.last_name as patient_last_name,
+    u_patient.firstName as patient_first_name,
+    u_patient.lastName as patient_last_name,
     u_patient.email as patient_email,
     
     -- Provider info
     hp.id as provider_id,
-    u_provider.first_name as provider_first_name,
-    u_provider.last_name as provider_last_name,
+    u_provider.firstName as provider_first_name,
+    u_provider.lastName as provider_last_name,
     u_provider.email as provider_email,
     
     cp.createdAt,
     cp.updatedAt
-FROM care_plans cp
+FROM carePlans cp
 JOIN patients p ON cp.patientId = p.id
 JOIN users u_patient ON p.userId = u_patient.id
 JOIN healthcare_providers hp ON cp.provider_id = hp.id
@@ -784,8 +784,8 @@ WHERE cp.deleted_at IS NULL
 CREATE VIEW v_patient_adherence_summary AS
 SELECT 
     p.id as patientId,
-    u.first_name,
-    u.last_name,
+    u.firstName,
+    u.lastName,
     u.email,
     
     -- Adherence stats
@@ -808,7 +808,7 @@ LEFT JOIN adherence_records ar ON p.id = ar.patientId
     AND ar.due_at >= NOW() - INTERVAL '30 days'
 WHERE p.deleted_at IS NULL 
     AND u.deleted_at IS NULL
-GROUP BY p.id, u.first_name, u.last_name, u.email, p.createdAt, p.updatedAt;
+GROUP BY p.id, u.firstName, u.lastName, u.email, p.createdAt, p.updatedAt;
 
 -- Upcoming scheduled events
 CREATE VIEW v_upcoming_events AS
@@ -822,19 +822,19 @@ SELECT
     
     -- Patient info
     p.id as patientId,
-    u_patient.first_name as patient_first_name,
-    u_patient.last_name as patient_last_name,
+    u_patient.firstName as patient_first_name,
+    u_patient.lastName as patient_last_name,
     
     -- Provider info (from care plan)
     hp.id as provider_id,
-    u_provider.first_name as provider_first_name,
-    u_provider.last_name as provider_last_name,
+    u_provider.firstName as provider_first_name,
+    u_provider.lastName as provider_last_name,
     
     se.createdAt
 FROM scheduled_events se
 JOIN patients p ON se.patientId = p.id
 JOIN users u_patient ON p.userId = u_patient.id
-LEFT JOIN care_plans cp ON se.care_plan_id = cp.id
+LEFT JOIN carePlans cp ON se.care_plan_id = cp.id
 LEFT JOIN healthcare_providers hp ON cp.provider_id = hp.id
 LEFT JOIN users u_provider ON hp.userId = u_provider.id
 WHERE se.deleted_at IS NULL 

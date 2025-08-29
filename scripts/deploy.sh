@@ -973,8 +973,8 @@ wait_for_postgres_ready() {
     log_info "This includes: container running, database initialized, and accepting connections"
     log_debug "Looking for service: $service_full_name"
 
-    local start_time=$(date +%s)
-    local timeout_time=$((start_time + max_wait_seconds))
+    local startTime=$(date +%s)
+    local timeout_time=$((startTime + max_wait_seconds))
     local check_count=0
 
     while [ "$(date +%s)" -lt "$timeout_time" ]; do
@@ -1072,8 +1072,8 @@ wait_for_service_ready() {
 
     log_info "Waiting for service $service_name to be ready (max ${max_wait_seconds}s)..."
 
-    local start_time=$(date +%s)
-    local timeout_time=$((start_time + max_wait_seconds))
+    local startTime=$(date +%s)
+    local timeout_time=$((startTime + max_wait_seconds))
 
     while [ $(date +%s) -lt $timeout_time ]; do
         # Check if service exists

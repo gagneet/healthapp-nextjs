@@ -236,7 +236,7 @@ export default (sequelize: any) => {
         {
           model: sequelize.models.User,
           as: 'user',
-          attributes: ['id', 'first_name', 'last_name', 'role']
+          attributes: ['id', 'firstName', 'lastName', 'role']
         }
       ]
     });

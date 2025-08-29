@@ -30,7 +30,7 @@ class SchedulingService {
   async getMissedEvents(patientId: any, eventType = null) {
     const whereClause = {
       status: 'expired',
-      start_time: { [Op.lt]: new Date() }
+      startTime: { [Op.lt]: new Date() }
     };
 
     if (eventType) {
@@ -57,7 +57,7 @@ class SchedulingService {
           required: false
         }
       ],
-      order: [['start_time', 'DESC']],
+      order: [['startTime', 'DESC']],
       limit: 50
     });
 
@@ -70,7 +70,7 @@ class SchedulingService {
     events.forEach((event: any) => {
       const eventData = {
         event_id: `evt_${event.id}`,
-        scheduled_time: event.start_time,
+        scheduled_time: event.startTime,
         missed_at: event.updatedAt
       };
 
@@ -140,11 +140,11 @@ class SchedulingService {
     const events = await ScheduleEvent.findAll({
       where: {
         status: 'pending',
-        start_time: {
+        startTime: {
           [Op.between]: [new Date(), futureDate]
         }
       },
-      order: [['start_time', 'ASC']],
+      order: [['startTime', 'ASC']],
       limit: 20
     });
 

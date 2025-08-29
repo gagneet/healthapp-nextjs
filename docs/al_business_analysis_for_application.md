@@ -547,8 +547,8 @@ CREATE TABLE exercise_sessions (
     
     -- Session details
     session_date DATE,
-    start_time TIME,
-    end_time TIME,
+    startTime TIME,
+    endTime TIME,
     total_duration_minutes INT,
     
     -- Exercise data
@@ -693,7 +693,7 @@ CREATE TABLE appointments (
     appointment_status ENUM('SCHEDULED', 'CONFIRMED', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED', 'NO_SHOW'),
     
     -- Virtual appointment details
-    is_virtual BOOLEAN DEFAULT FALSE,
+    isVirtual BOOLEAN DEFAULT FALSE,
     virtual_meeting_url VARCHAR(500),
     virtual_platform VARCHAR(100),
     
@@ -990,7 +990,7 @@ class VitalSignsCDSS {
 **Care Plan Structure**:
 
 ```sql
-CREATE TABLE care_plans (
+CREATE TABLE carePlans (
     id INT PRIMARY KEY AUTO_INCREMENT,
     patientId INT NOT NULL,
     primary_provider_id INT NOT NULL,
@@ -1008,7 +1008,7 @@ CREATE TABLE care_plans (
     success_metrics JSON, -- measurable outcomes
     
     -- Plan timeline
-    start_date DATE NOT NULL,
+    startDate DATE NOT NULL,
     planned_end_date DATE,
     review_frequency ENUM('WEEKLY', 'BIWEEKLY', 'MONTHLY', 'QUARTERLY'),
     next_review_date DATE,
@@ -1053,8 +1053,8 @@ CREATE TABLE care_plan_activities (
     duration VARCHAR(100),
     
     -- Scheduling
-    start_date DATE,
-    end_date DATE,
+    startDate DATE,
+    endDate DATE,
     scheduled_times JSON, -- array of time specifications
     
     -- Tracking
@@ -1151,7 +1151,7 @@ CREATE TABLE care_plan_outcomes (
 -- Audit logging for all PHI access
 CREATE TABLE phi_access_logs (
     id INT PRIMARY KEY AUTO_INCREMENT,
-    user_id INT NOT NULL,
+    userId INT NOT NULL,
     patientId INT NOT NULL,
     access_type ENUM('CREATE', 'READ', 'UPDATE', 'DELETE', 'EXPORT', 'PRINT'),
     data_category VARCHAR(100), -- medication, vitals, appointments, etc.
@@ -1342,10 +1342,10 @@ spec:
 ```sql
 -- Optimized indexing strategy for healthcare queries
 CREATE INDEX idx_patients_provider_status ON patients(primary_provider_id, status, createdAt);
-CREATE INDEX idx_medications_patient_active ON medications(patientId, active, start_date);
+CREATE INDEX idx_medications_patient_active ON medications(patientId, active, startDate);
 CREATE INDEX idx_appointments_provider_date ON appointments(provider_id, scheduled_date, appointment_status);
 CREATE INDEX idx_vitals_patient_timestamp ON vital_sign_readings(patientId, reading_timestamp DESC);
-CREATE INDEX idx_care_plans_patient_active ON care_plans(patientId, plan_status, start_date);
+CREATE INDEX idx_care_plans_patient_active ON carePlans(patientId, plan_status, startDate);
 
 -- Partitioning for large tables
 CREATE TABLE vital_sign_readings_2025_q1 PARTITION OF vital_sign_readings
@@ -1388,14 +1388,14 @@ app.get('/fhir/R4/Patient/:id', async (req, res) => {
             }]
           },
           system: "http://hospital.smarthealthit.org",
-          value: patient.medical_record_number
+          value: patient.medicalRecordNumber
         }
       ],
       active: patient.active,
       name: [{
         use: "official",
-        family: patient.last_name,
-        given: [patient.first_name, patient.middle_name].filter(Boolean)
+        family: patient.lastName,
+        given: [patient.firstName, patient.middle_name].filter(Boolean)
       }],
       telecom: [
         {
@@ -1572,7 +1572,7 @@ INSERT INTO user_roles (role_name, role_category, description, can_view_patient_
 
 CREATE TABLE user_role_assignments (
     id INT PRIMARY KEY AUTO_INCREMENT,
-    user_id INT NOT NULL,
+    userId INT NOT NULL,
     role_id INT NOT NULL,
     assigned_by_user_id INT,
     
@@ -1590,7 +1590,7 @@ CREATE TABLE user_role_assignments (
     assigned_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     last_modified TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     
-    UNIQUE KEY unique_user_role_org (user_id, role_id, organization_id)
+    UNIQUE KEY unique_user_role_org (userId, role_id, organization_id)
 );
 ```
 
@@ -1926,8 +1926,8 @@ class IoTDeviceIntegration {
 CREATE MATERIALIZED VIEW patient_adherence_summary AS
 SELECT 
     p.id as patientId,
-    p.first_name,
-    p.last_name,
+    p.firstName,
+    p.lastName,
     p.date_of_birth,
     
     -- Overall adherence metrics
@@ -1974,7 +1974,7 @@ LEFT JOIN vital_sign_readings vs2 ON p.id = vs2.patientId
     AND vs2.reading_timestamp >= CURRENT_TIMESTAMP - INTERVAL '30 days'
 LEFT JOIN medication_activity_logs mal ON p.id = mal.patientId 
     AND mal.createdAt >= CURRENT_DATE - INTERVAL '30 days'
-GROUP BY p.id, p.first_name, p.last_name, p.date_of_birth;
+GROUP BY p.id, p.firstName, p.lastName, p.date_of_birth;
 
 -- Index for performance
 CREATE INDEX idx_adherence_summary_risk ON patient_adherence_summary(risk_level);
@@ -1984,8 +1984,8 @@ CREATE INDEX idx_adherence_summary_provider ON patient_adherence_summary(calcula
 CREATE MATERIALIZED VIEW population_health_metrics AS
 SELECT 
     pr.id as provider_id,
-    pr.first_name as provider_first_name,
-    pr.last_name as provider_last_name,
+    pr.firstName as provider_first_name,
+    pr.lastName as provider_last_name,
     pr.specialty,
     
     -- Patient population metrics
@@ -2013,7 +2013,7 @@ SELECT
 FROM providers pr
 JOIN patients p ON pr.id = p.primary_provider_id
 JOIN patient_adherence_summary pas ON p.id = pas.patientId
-GROUP BY pr.id, pr.first_name, pr.last_name, pr.specialty;
+GROUP BY pr.id, pr.firstName, pr.lastName, pr.specialty;
 ```
 
 ### AR-002: Predictive Analytics & Machine Learning
@@ -2439,8 +2439,8 @@ class RealTimeMonitoringService {
 
 ```sql
 -- Patient Demographics
-first_name VARCHAR(100) NOT NULL
-last_name VARCHAR(100) NOT NULL
+firstName VARCHAR(100) NOT NULL
+lastName VARCHAR(100) NOT NULL
 date_of_birth DATE NOT NULL
 gender ENUM('M', 'F', 'O', 'U') -- Male, Female, Other, Unknown
 race_ethnicity VARCHAR(100)

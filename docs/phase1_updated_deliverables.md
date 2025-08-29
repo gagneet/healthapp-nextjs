@@ -368,7 +368,7 @@ export const HEALTHCARE_PERMISSIONS = {
 export async function createAuditLog(action: string, entityType: string, data: any) {
   await prisma.auditLog.create({
     data: {
-      user_id: data.userId,
+      userId: data.userId,
       action,
       entity_type: entityType,
       entity_id: data.entityId,

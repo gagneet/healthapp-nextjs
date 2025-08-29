@@ -41,7 +41,7 @@ export default (sequelize: any) => {
     },
     
     // Profile Information
-    first_name: {
+    firstName: {
       type: DataTypes.STRING(100),
       allowNull: true,
       validate: {
@@ -49,7 +49,7 @@ export default (sequelize: any) => {
       }
     },
     
-    last_name: {
+    lastName: {
       type: DataTypes.STRING(100),
       allowNull: true,
       validate: {
@@ -138,7 +138,7 @@ export default (sequelize: any) => {
     },
     
     // Metadata
-    profile_picture_url: {
+    profilePictureUrl: {
       type: DataTypes.STRING(500),
       allowNull: true,
       validate: {
@@ -248,7 +248,7 @@ export default (sequelize: any) => {
         }
         
         // Normalize names
-        ['first_name', 'last_name', 'middle_name'].forEach(field => {
+        ['firstName', 'lastName', 'middle_name'].forEach(field => {
           if (user[field]) {
             user[field] = user[field].trim();
           }
@@ -294,7 +294,7 @@ export default (sequelize: any) => {
       
       // Get full name
       getFullName() {
-        const parts = [(this as any).first_name, (this as any).middle_name, (this as any).last_name]
+        const parts = [(this as any).firstName, (this as any).middle_name, (this as any).lastName]
           .filter(Boolean);
         return parts.join(' ') || (this as any).email;
       },
@@ -352,8 +352,8 @@ export default (sequelize: any) => {
       
       // Get initials
       getInitials() {
-        const firstName = (this as any).first_name?.[0] || '';
-        const lastName = (this as any).last_name?.[0] || '';
+        const firstName = (this as any).firstName?.[0] || '';
+        const lastName = (this as any).lastName?.[0] || '';
         return (firstName + lastName).toUpperCase() || (this as any).email[0].toUpperCase();
       }
     },
@@ -394,8 +394,8 @@ export default (sequelize: any) => {
         return (this as any).findAll({
           where: {
             [sequelize.Sequelize.Op.or]: [
-              { first_name: { [sequelize.Sequelize.Op.iLike]: `%${query}%` } },
-              { last_name: { [sequelize.Sequelize.Op.iLike]: `%${query}%` } },
+              { firstName: { [sequelize.Sequelize.Op.iLike]: `%${query}%` } },
+              { lastName: { [sequelize.Sequelize.Op.iLike]: `%${query}%` } },
               { email: { [sequelize.Sequelize.Op.iLike]: `%${query}%` } }
             ],
             deleted_at: null

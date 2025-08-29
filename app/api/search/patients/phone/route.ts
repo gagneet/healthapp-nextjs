@@ -108,7 +108,7 @@ export async function POST(request: NextRequest) {
       select: {
         id: true,
         patientId: true,
-        medical_record_number: true,
+        medicalRecordNumber: true,
         user: {
           select: {
             id: true,
@@ -144,10 +144,10 @@ export async function POST(request: NextRequest) {
       match: patient ? {
         id: patient.id,
         patientId: patient.patientId,
-        name: `${patient.user.first_name} ${patient.user.last_name}`.trim(),
+        name: `${patient.user.firstName} ${patient.user.lastName}`.trim(),
         phone: patient.user.phone,
         email: patient.user.email,
-        medical_record_number: patient.medical_record_number
+        medicalRecordNumber: patient.medicalRecordNumber
       } : null
     };
 

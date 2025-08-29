@@ -13,13 +13,13 @@ export default {
       const usersTable = await queryInterface.describeTable('users');
 
       // Add new fields to doctors table if they don't exist
-      if (!doctorsTable.profile_picture_url) {
-        await queryInterface.addColumn('doctors', 'profile_picture_url', {
+      if (!doctorsTable.profilePictureUrl) {
+        await queryInterface.addColumn('doctors', 'profilePictureUrl', {
           type: Sequelize.TEXT,
           allowNull: true,
           comment: 'URL to doctor profile picture'
         }, { transaction });
-        console.log('Added profile_picture_url to doctors table');
+        console.log('Added profilePictureUrl to doctors table');
       }
 
       if (!doctorsTable.banner_image_url) {
@@ -88,13 +88,13 @@ export default {
         console.log('Added gender to doctors table');
       }
 
-      if (!doctorsTable.mobile_number) {
-        await queryInterface.addColumn('doctors', 'mobile_number', {
+      if (!doctorsTable.mobileNumber) {
+        await queryInterface.addColumn('doctors', 'mobileNumber', {
           type: Sequelize.STRING(20),
           allowNull: true,
           comment: 'Doctor mobile number (can be different from user phone)'
         }, { transaction });
-        console.log('Added mobile_number to doctors table');
+        console.log('Added mobileNumber to doctors table');
       }
 
       // Enhance users table for better name handling
@@ -127,7 +127,7 @@ export default {
     
     try {
       // Remove added columns
-      await queryInterface.removeColumn('doctors', 'profile_picture_url', { transaction });
+      await queryInterface.removeColumn('doctors', 'profilePictureUrl', { transaction });
       await queryInterface.removeColumn('doctors', 'banner_image_url', { transaction });
       await queryInterface.removeColumn('doctors', 'qualification_details', { transaction });
       await queryInterface.removeColumn('doctors', 'registration_details', { transaction });
@@ -135,7 +135,7 @@ export default {
       await queryInterface.removeColumn('doctors', 'signature_image_url', { transaction });
       await queryInterface.removeColumn('doctors', 'signature_data', { transaction });
       await queryInterface.removeColumn('doctors', 'gender', { transaction });
-      await queryInterface.removeColumn('doctors', 'mobile_number', { transaction });
+      await queryInterface.removeColumn('doctors', 'mobileNumber', { transaction });
       await queryInterface.removeColumn('users', 'full_name', { transaction });
 
       await transaction.commit();

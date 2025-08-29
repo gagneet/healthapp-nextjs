@@ -46,19 +46,19 @@ export default (sequelize: any, DataTypes: any) => {
       type: DataTypes.STRING(1000),
       allowNull: true,
     },
-    start_date: {
+    startDate: {
       type: DataTypes.DATEONLY,
       allowNull: true,
     },
-    end_date: {
+    endDate: {
       type: DataTypes.DATEONLY,
       allowNull: true,
     },
-    start_time: {
+    startTime: {
       type: DataTypes.DATE,
       allowNull: true,
     },
-    end_time: {
+    endTime: {
       type: DataTypes.DATE,
       allowNull: true,
     },
@@ -104,7 +104,7 @@ export default (sequelize: any, DataTypes: any) => {
       { fields: ['participant_one_id', 'participant_one_type'] },
       { fields: ['participant_two_id', 'participant_two_type'] },
       { fields: ['organizer_id', 'organizer_type'] },
-      { fields: ['start_date'] },
+      { fields: ['startDate'] },
     ],
   });
 

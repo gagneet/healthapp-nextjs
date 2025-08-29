@@ -36,7 +36,7 @@ export default {
       },
       
       // Medical information
-      medical_record_number: {
+      medicalRecordNumber: {
         type: Sequelize.STRING(50),
         allowNull: true,
       },
@@ -156,7 +156,7 @@ export default {
     }
 
     try {
-      await queryInterface.addIndex('patients', ['medical_record_number'], { 
+      await queryInterface.addIndex('patients', ['medicalRecordNumber'], { 
         where: { deleted_at: null },
         name: 'idx_patients_mrn'
       });

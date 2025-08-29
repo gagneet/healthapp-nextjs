@@ -1700,7 +1700,7 @@ I have successfully implemented all PR review fixes for the feat/telemedicine-ai
    - Ensured proper foreign key references
 5. Added missing required fields for appointment creation in ConsultationBookingService.ts
    - Added required fields: organizer_id, organizer_type, participant_one_id, participant_one_type
-   - Updated appointment creation to use start_time and end_time instead of deprecated fields
+   - Updated appointment creation to use startTime and endTime instead of deprecated fields
    - Fixed import statement to remove .js extension
 6. Replaced hard-coded numeric IDs with UUID generation in lib/seed.ts
    - Removed hard-coded numeric IDs from speciality records (lines 305-308 range)
@@ -3054,7 +3054,7 @@ export class HealthcareAuth {
 static async createSession(userId: string, req: NextRequest) {
 const session = await prisma.session.create({
 data: {
-user_id: userId,
+userId: userId,
 session_token: crypto.randomUUID(),
 expires_at: new Date(Date.now() + 8 * 60 * 60 * 1000), // 8 hours
 ip_address: req.ip,
@@ -3767,8 +3767,8 @@ Issue 4: Incorrect Field Mapping in Return Object - ✅ FIXED
   id: user.id,
   email: user.email,
   // Use actual schema fields, with fallbacks
-  name: user.name || user.full_name || `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email.split('@')[0],
-  image: user.image || user.profile_picture_url,
+  name: user.name || user.full_name || `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email.split('@')[0],
+  image: user.image || user.profilePictureUrl,
   emailVerified: user.emailVerified, // Now the correct DateTime field
   // ... healthcare fields
   }
@@ -3870,8 +3870,8 @@ password_hash: passwordHash,
       emailVerified: null,               // DateTime when verified
 
       // Healthcare fields (existing)
-      first_name: firstName,
-      last_name: lastName,
+      firstName: firstName,
+      lastName: lastName,
       full_name: fullName,
       role,
       // ... rest of healthcare fields
@@ -3937,16 +3937,16 @@ The registration system is now fully Auth.js v5 compatible and provides comprehe
 
 2. Authentication Context - 🔴 HIGH PRIORITY
 
-- lib/auth-context.tsx - Using old field mappings (full_name, profile_picture_url)
+- lib/auth-context.tsx - Using old field mappings (full_name, profilePictureUrl)
 
 3. Frontend Components - 🟠 MEDIUM PRIORITY
 
-- components/dashboard/sidebar.tsx - References profile_picture_url
+- components/dashboard/sidebar.tsx - References profilePictureUrl
 - app/dashboard/doctor/page.tsx - Uses full_name for display
 
 4. API Routes - 🟠 MEDIUM PRIORITY
 
-- app/api/doctors/profile/route.ts - Returns profile_picture_url
+- app/api/doctors/profile/route.ts - Returns profilePictureUrl
 - app/api/auth/signup/route.ts - Inconsistent with new registration API
 
 5. Data Flow Issues Identified
@@ -3954,7 +3954,7 @@ The registration system is now fully Auth.js v5 compatible and provides comprehe
 Frontend → Auth Context → Components Chain
 
 // Current (BROKEN):
-session.user.image → full_name (context) → profile_picture_url (components)
+session.user.image → full_name (context) → profilePictureUrl (components)
 
 // Should be (FIXED):
 session.user.image → name (context) → image (components)
@@ -4007,7 +4007,7 @@ Updated API Routes:
 
 1. Doctor Profile API (/api/doctors/profile/route.ts)
 
-- ✅ Database Queries: Now selects both Auth.js v5 fields (name, image, emailVerified) and legacy fields (first_name, last_name, full_name, profile_picture_url)
+- ✅ Database Queries: Now selects both Auth.js v5 fields (name, image, emailVerified) and legacy fields (firstName, lastName, full_name, profilePictureUrl)
 - ✅ Response Format: Provides dual field support with fallback logic
 - ✅ Field Mapping: Smart fallbacks (userName = user.name || user.full_name || constructed name)
 
@@ -4038,8 +4038,8 @@ Migration Strategy Applied:
 Field Mapping Pattern Established:
 
 // ✅ Dual field response pattern
-const userName = user.name || user.full_name || `${user.first_name || ''} ${user.last_name || ''}`.trim()
-const userImage = user.image || user.profile_picture_url
+const userName = user.name || user.full_name || `${user.firstName || ''} ${user.lastName || ''}`.trim()
+const userImage = user.image || user.profilePictureUrl
 const userEmailVerified = user.emailVerified || (user.email_verified ? new Date() : null)
 
 // Response provides both field sets
@@ -4050,10 +4050,10 @@ image: userImage,
 emailVerified: userEmailVerified,
 
     // Legacy fields (for backward compatibility)
-    firstName: user.first_name,
-    lastName: user.last_name,
+    firstName: user.firstName,
+    lastName: user.lastName,
     fullName: user.full_name,
-    profilePictureUrl: user.profile_picture_url,
+    profilePictureUrl: user.profilePictureUrl,
     emailVerifiedLegacy: user.email_verified
 }
 
@@ -4446,8 +4446,8 @@ using Prisma migrations which ensures:
 ### 📊 Database Status
 
 -- Auth.js v5 fields now exist and are populated
-users.name ✅ (populated from first_name + last_name)
-users.image ✅ (mapped from profile_picture_url)
+users.name ✅ (populated from firstName + lastName)
+users.image ✅ (mapped from profilePictureUrl)
 users.email_verified_at ✅ (converted from email_verified boolean)
 
 The authentication system should now work correctly without the "column does not exist" errors! The migration approach ensures the fix is permanent and will
@@ -4576,7 +4576,7 @@ Would you like me to start implementing the missing critical functionality, begi
 
 ✅ Issue 1: Prisma audit_logs schema mismatch
 
-- Error: Invalid 'prisma.auditLog.create()' invocation: Unknown argument 'user_id'. Did you mean 'users'?
+- Error: Invalid 'prisma.auditLog.create()' invocation: Unknown argument 'userId'. Did you mean 'users'?
 - Root Cause: Auth.js callback was using prisma.auditLog.create() with wrong field names
 - Fix: Updated lib/auth.ts:398 to:
     - Use correct model name: prisma.AuditLog.create()
@@ -4594,7 +4594,7 @@ Would you like me to start implementing the missing critical functionality, begi
 
 ✅ Issue 3: Dashboard null reference errors
 
-- Error: TypeError: Cannot read properties of null (reading 'last_name')
+- Error: TypeError: Cannot read properties of null (reading 'lastName')
 - Root Cause: userHelpers functions not handling null user objects during authentication loading
 - Fix: Updated types/auth.ts helper functions:
     - getLastName() - now handles null users, returns empty string
@@ -4944,14 +4944,14 @@ The project is now production-ready with a clean, maintainable structure! 🎉
 Before (Lines 326-329):
 orderBy:
 pagination.sortBy === 'name'
-? { user: { first_name: pagination.sortOrder || 'asc' } }
+? { user: { firstName: pagination.sortOrder || 'asc' } }
 : { [pagination.sortBy === 'createdAt' ? 'createdAt' : pagination.sortBy || 'createdAt']: pagination.sortOrder || 'desc' },
 
 After (Improved):
 orderBy: (() => {
 // Handle name sorting specially
 if (pagination.sortBy === 'name') {
-return { user: { first_name: pagination.sortOrder || 'asc' } };
+return { user: { firstName: pagination.sortOrder || 'asc' } };
 }
 
     // Handle field name mapping and default sorting
@@ -4990,7 +4990,7 @@ Potential Further Improvements:
    // lib/utils/sorting.ts
    export function createOrderByClause(sortBy: string, sortOrder: string) {
    if (sortBy === 'name') {
-   return { user: { first_name: sortOrder || 'asc' } };
+   return { user: { firstName: sortOrder || 'asc' } };
    }
 
     const sortField = sortBy === 'createdAt' ? 'createdAt' : (sortBy || 'createdAt');

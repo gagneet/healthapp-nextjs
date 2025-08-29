@@ -94,8 +94,8 @@ export const createTestUser = async (role: 'DOCTOR' | 'PATIENT' | 'HSP' | 'SYSTE
     data: {
       email: `test-${role.toLowerCase()}-${Date.now()}@test.com`,
       password_hash: 'hashed-password',
-      first_name: `Test`,
-      last_name: `${role}`,
+      firstName: `Test`,
+      lastName: `${role}`,
       role: role,
       account_status: 'active',
     },
@@ -158,8 +158,8 @@ export const generateMedicationData = () => {
     duration_days: 7,
     instructions: 'Take with food',
     prescribed_date: new Date(),
-    start_date: new Date(),
-    end_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+    startDate: new Date(),
+    endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
   }
 }
 

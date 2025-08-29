@@ -238,13 +238,13 @@ export default (sequelize: any) => {
       defaultValue: DataTypes.NOW
     },
     
-    start_date: {
+    startDate: {
       type: DataTypes.DATE,
       allowNull: true,
       comment: 'When patient should start taking medication'
     },
     
-    end_date: {
+    endDate: {
       type: DataTypes.DATE,
       allowNull: true,
       comment: 'When to stop taking medication'

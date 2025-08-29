@@ -30,7 +30,7 @@ import toast from 'react-hot-toast'
 
 interface DoctorProfile {
   id: string
-  user_id: string
+  userId: string
   speciality_id: string
   medical_license_number: string
   years_of_experience: number
@@ -53,7 +53,7 @@ interface DoctorProfile {
   practice_address: object | string
   board_certifications: string[]
   languages_spoken: string[]
-  profile_picture_url: string
+  profilePictureUrl: string
   average_rating: number | null
   total_patients: number
   speciality: {
@@ -61,10 +61,10 @@ interface DoctorProfile {
     name: string
     description: string
   } | null
-  mobile_number?: string
-  first_name?: string
+  mobileNumber?: string
+  firstName?: string
   middle_name?: string
-  last_name?: string
+  lastName?: string
   email?: string
 }
 
@@ -135,7 +135,7 @@ export default function DoctorProfilePage() {
       const response = await apiRequest.post('/doctors/profile/image', formData)
       
       if ((response as any).status && (response as any).payload?.data?.imageUrl) {
-        setProfile(prev => prev ? { ...prev, profile_picture_url: (response as any).payload.data.imageUrl } : null)
+        setProfile(prev => prev ? { ...prev, profilePictureUrl: (response as any).payload.data.imageUrl } : null)
         toast.success('Profile image updated successfully')
       }
     } catch (error) {
@@ -245,9 +245,9 @@ export default function DoctorProfilePage() {
         <div className="flex items-center space-x-6">
           <div className="relative">
             <div className="h-24 w-24 rounded-full bg-white/20 flex items-center justify-center">
-              {profile.profile_picture_url ? (
+              {profile.profilePictureUrl ? (
                 <img
-                  src={profile.profile_picture_url}
+                  src={profile.profilePictureUrl}
                   alt={userHelpers.getDisplayName(user)}
                   className="h-24 w-24 rounded-full object-cover"
                 />
@@ -353,7 +353,7 @@ export default function DoctorProfilePage() {
               </label>
               <div className="flex items-center">
                 <PhoneIcon className="h-4 w-4 text-gray-400 mr-2" />
-                <EditableField field="mobile_number" value={profile?.mobile_number || (user as any)?.mobile_number || (user as any)?.phone || ''} />
+                <EditableField field="mobileNumber" value={profile?.mobileNumber || (user as any)?.mobileNumber || (user as any)?.phone || ''} />
               </div>
             </div>
 

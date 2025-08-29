@@ -154,12 +154,12 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
       patient: {
         id: record.patient.id,
         patientId: record.patient.patientId,
-        name: `${record.patient.user.first_name} ${record.patient.user.last_name}`.trim(),
+        name: `${record.patient.user.firstName} ${record.patient.user.lastName}`.trim(),
         email: record.patient.user.email
       },
       symptomName: record.symptom_name,
       description: record.description,
-      onsetTime: record.onset_time,
+      onsetTime: record.onsetTime,
       bodyLocation: record.body_location || {},
       severity: record.severity,
       triggers: record.triggers || [],
@@ -250,7 +250,7 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
              symptomData.symptoms[0]?.severity === 'MODERATE' ? 3 : 1),
         description: symptomData.additionalNotes || symptomData.symptoms[0]?.description,
         body_location: symptomData.bodyMapping || {},
-        onset_time: symptomData.onsetDate ? new Date(symptomData.onsetDate) : new Date(),
+        onsetTime: symptomData.onsetDate ? new Date(symptomData.onsetDate) : new Date(),
         recordedAt: new Date(),
         triggers: [],
         createdAt: new Date(),
@@ -277,12 +277,12 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
       patient: {
         id: symptomRecord.patient.id,
         patientId: symptomRecord.patient.patientId,
-        name: `${symptomRecord.patient.user.first_name} ${symptomRecord.patient.user.last_name}`.trim(),
+        name: `${symptomRecord.patient.user.firstName} ${symptomRecord.patient.user.lastName}`.trim(),
         email: symptomRecord.patient.user.email
       },
       symptomName: symptomRecord.symptom_name,
       description: symptomRecord.description,
-      onsetTime: symptomRecord.onset_time,
+      onsetTime: symptomRecord.onsetTime,
       bodyLocation: symptomRecord.body_location,
       severity: symptomRecord.severity,
       triggers: symptomRecord.triggers,

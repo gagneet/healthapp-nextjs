@@ -86,8 +86,8 @@ router.get('/enhanced/profile', authenticate, (req, res) => {
         user: {
           id: user?.id,
           email: user?.email,
-          first_name: user?.first_name,
-          last_name: user?.last_name,
+          firstName: user?.firstName,
+          lastName: user?.lastName,
           role: user?.role
         },
         // Return default settings since we don't have a settings table yet

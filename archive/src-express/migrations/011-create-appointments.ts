@@ -69,11 +69,11 @@ export default {
       },
       
       // Scheduling
-      start_time: {
+      startTime: {
         type: Sequelize.DATE,
         allowNull: false,
       },
-      end_time: {
+      endTime: {
         type: Sequelize.DATE,
         allowNull: false,
       },
@@ -91,7 +91,7 @@ export default {
         type: Sequelize.JSONB,
         defaultValue: {}, // Can be physical address or virtual meeting info
       },
-      is_virtual: {
+      isVirtual: {
         type: Sequelize.BOOLEAN,
         defaultValue: false,
       },
@@ -127,7 +127,7 @@ export default {
     const indexes = [
       { fields: ['patientId'], options: { where: { deleted_at: null }, name: 'idx_appointments_patient' } },
       { fields: ['provider_id'], options: { where: { deleted_at: null }, name: 'idx_appointments_provider' } },
-      { fields: ['start_time'], options: { where: { deleted_at: null }, name: 'idx_appointments_time' } },
+      { fields: ['startTime'], options: { where: { deleted_at: null }, name: 'idx_appointments_time' } },
       { fields: ['status'], options: { where: { deleted_at: null }, name: 'idx_appointments_status' } }
     ];
 

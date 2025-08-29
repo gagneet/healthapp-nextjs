@@ -363,7 +363,7 @@ class ConsentController {
             {
               model: User,
               as: 'user',
-              attributes: ['id', 'first_name', 'last_name', 'email']
+              attributes: ['id', 'firstName', 'lastName', 'email']
             },
             {
               model: Speciality,
@@ -390,7 +390,7 @@ class ConsentController {
             {
               model: User,
               as: 'user',
-              attributes: ['id', 'first_name', 'last_name', 'email']
+              attributes: ['id', 'firstName', 'lastName', 'email']
             }
           ],
           limit: limitNum,
@@ -402,7 +402,7 @@ class ConsentController {
         {
           doctors: results.doctors.map(doctor => ({
             id: (doctor as any).id,
-            name: `${(doctor as any).user.first_name} ${(doctor as any).user.last_name}`,
+            name: `${(doctor as any).user.firstName} ${(doctor as any).user.lastName}`,
             email: (doctor as any).user.email,
             speciality: (doctor as any).speciality?.name || 'General',
             license: (doctor as any).medical_license_number,
@@ -410,7 +410,7 @@ class ConsentController {
           })),
           hsps: results.hsps.map(hsp => ({
             id: (hsp as any).id,
-            name: `${(hsp as any).user.first_name} ${(hsp as any).user.last_name}`,
+            name: `${(hsp as any).user.firstName} ${(hsp as any).user.lastName}`,
             email: (hsp as any).user.email,
             license: (hsp as any).license_number,
             type: 'hsp'

@@ -725,7 +725,7 @@ export async function getDoctorDashboard(doctorUserId: string) {
     return {
       stats: {
         total_patients: totalPatients,
-        critical_alerts: 0, // Will be calculated from critical alerts API
+        criticalAlerts: 0, // Will be calculated from critical alerts API
         appointments_today: todayAppointments,
         medication_adherence: Math.floor(Math.random() * 30) + 70, // Mock data
         active_care_plans: activeCarePlans,

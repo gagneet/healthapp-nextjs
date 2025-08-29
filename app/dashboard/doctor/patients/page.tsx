@@ -326,18 +326,18 @@ export default function PatientsPage() {
           // Convert the patients object to an array with consent workflow fields
           const patientsArray = Object.values((result as any).payload.data.patients).map((patient: any) => ({
             id: patient.basic_info?.id || patient.id,
-            user_id: patient.basic_info?.user_id || patient.user_id,
-            first_name: patient.basic_info?.first_name || patient.first_name,
-            last_name: patient.basic_info?.last_name || patient.last_name,
+            userId: patient.basic_info?.userId || patient.userId,
+            firstName: patient.basic_info?.firstName || patient.firstName,
+            lastName: patient.basic_info?.lastName || patient.lastName,
             email: patient.basic_info?.email || patient.email,
-            phone: patient.basic_info?.mobile_number || patient.phone,
+            phone: patient.basic_info?.mobileNumber || patient.phone,
             date_of_birth: patient.basic_info?.date_of_birth || patient.date_of_birth,
             gender: patient.basic_info?.gender || patient.gender,
-            medical_record_number: patient.basic_info?.patientId || patient.medical_record_number,
-            last_visit: patient.medical_info?.last_visit || patient.last_visit || null,
-            next_appointment: patient.medical_info?.next_appointment || patient.next_appointment || null,
-            adherence_rate: patient.medical_info?.adherence_rate ?? patient.adherence_rate ?? 0,
-            critical_alerts: patient.medical_info?.critical_alerts ?? patient.critical_alerts ?? 0,
+            medicalRecordNumber: patient.basic_info?.patientId || patient.medicalRecordNumber,
+            lastVisit: patient.medical_info?.lastVisit || patient.lastVisit || null,
+            nextAppointment: patient.medical_info?.nextAppointment || patient.nextAppointment || null,
+            adherenceRate: patient.medical_info?.adherenceRate ?? patient.adherenceRate ?? 0,
+            criticalAlerts: patient.medical_info?.criticalAlerts ?? patient.criticalAlerts ?? 0,
             total_appointments: patient.medical_info?.total_appointments ?? patient.total_appointments ?? 0,
             active_care_plans: patient.medical_info?.active_care_plans ?? patient.active_care_plans ?? 0,
             status: patient.basic_info?.status || patient.status || 'active',
@@ -470,13 +470,13 @@ export default function PatientsPage() {
           </div>
           <div className="bg-white rounded-lg p-4 border border-gray-200">
             <div className="text-2xl font-bold text-red-600">
-              {patients.filter(p => (p.critical_alerts ?? 0) > 0).length}
+              {patients.filter(p => (p.criticalAlerts ?? 0) > 0).length}
             </div>
             <div className="text-sm text-gray-600">With Alerts</div>
           </div>
           <div className="bg-white rounded-lg p-4 border border-gray-200">
             <div className="text-2xl font-bold text-blue-600">
-              {patients.length > 0 ? Math.round(patients.reduce((sum, p) => sum + (p.adherence_rate ?? 0), 0) / patients.length) : 0}%
+              {patients.length > 0 ? Math.round(patients.reduce((sum, p) => sum + (p.adherenceRate ?? 0), 0) / patients.length) : 0}%
             </div>
             <div className="text-sm text-gray-600">Avg Adherence</div>
           </div>
@@ -535,7 +535,7 @@ export default function PatientsPage() {
                               {patient.firstName} {patient.lastName}
                             </div>
                             <div className="text-sm text-gray-500">
-                              {patient.medical_record_number}
+                              {patient.medicalRecordNumber}
                             </div>
                           </div>
                         </div>
@@ -548,7 +548,7 @@ export default function PatientsPage() {
                         <div className="text-sm text-gray-500">{patient.phone}</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {patient.last_visit ? formatDate(patient.last_visit) : 'No visits'}
+                        {patient.lastVisit ? formatDate(patient.lastVisit) : 'No visits'}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         {getConsentStatusBadge(patient)}

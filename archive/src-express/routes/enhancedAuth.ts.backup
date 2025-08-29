@@ -75,14 +75,14 @@ router.post('/enhanced-sign-in', async (req, res, next) => {
     let profileData = null;
     if (user.role === USER_CATEGORIES.DOCTOR) {
       const doctorProfile = await Doctor.findOne({
-        where: { user_id: user.id },
+        where: { userId: user.id },
         attributes: ['id', 'speciality_id', 'license_number', 'years_of_experience']
       });
       profileData = doctorProfile;
     } else if (user.role === USER_CATEGORIES.PATIENT) {
       const patientProfile = await Patient.findOne({
-        where: { user_id: user.id },
-        attributes: ['id', 'medical_record_number', 'blood_group']
+        where: { userId: user.id },
+        attributes: ['id', 'medicalRecordNumber', 'blood_group']
       });
       profileData = patientProfile;
     }
@@ -101,9 +101,9 @@ router.post('/enhanced-sign-in', async (req, res, next) => {
     const userData = {
       id: user.id,
       email: user.email,
-      first_name: user.first_name,
-      last_name: user.last_name,
-      full_name: `${user.first_name || ''} ${user.middle_name || ''} ${user.last_name || ''}`.replace(/\s+/g, ' ').trim(),
+      firstName: user.firstName,
+      lastName: user.lastName,
+      full_name: `${user.firstName || ''} ${user.middle_name || ''} ${user.lastName || ''}`.replace(/\s+/g, ' ').trim(),
       role: user.role,
       account_status: user.account_status,
       profile: profileData
@@ -248,23 +248,23 @@ router.get('/profile', enhancedAuthenticate, async (req, res, next) => {
     let roleProfile = null;
     if (user.role === USER_CATEGORIES.DOCTOR) {
       roleProfile = await Doctor.findOne({
-        where: { user_id: userId },
+        where: { userId: userId },
         include: [
           {
             model: User,
             as: 'user',
-            attributes: ['first_name', 'last_name', 'email']
+            attributes: ['firstName', 'lastName', 'email']
           }
         ]
       });
     } else if (user.role === USER_CATEGORIES.PATIENT) {
       roleProfile = await Patient.findOne({
-        where: { user_id: userId },
+        where: { userId: userId },
         include: [
           {
             model: User,
             as: 'user',
-            attributes: ['first_name', 'last_name', 'email']
+            attributes: ['firstName', 'lastName', 'email']
           }
         ]
       });
@@ -289,9 +289,9 @@ router.put('/profile', enhancedAuthenticate, async (req, res, next) => {
   try {
     const userId = req.user!.id;
     const { 
-      first_name, 
-      last_name, 
-      mobile_number, 
+      firstName,
+      lastName,
+      mobileNumber,
       date_of_birth,
       gender,
       // Role-specific fields would be handled separately
@@ -304,9 +304,9 @@ router.put('/profile', enhancedAuthenticate, async (req, res, next) => {
     
     // Update basic user information
     const updateData = {};
-    if (first_name !== undefined) (updateData as any).first_name = first_name;
-    if (last_name !== undefined) (updateData as any).last_name = last_name;
-    if (mobile_number !== undefined) (updateData as any).mobile_number = mobile_number;
+    if (firstName !== undefined) (updateData as any).firstName = firstName;
+    if (lastName !== undefined) (updateData as any).lastName = lastName;
+    if (mobileNumber !== undefined) (updateData as any).mobileNumber = mobileNumber;
     if (date_of_birth !== undefined) (updateData as any).date_of_birth = date_of_birth;
     if (gender !== undefined) (updateData as any).gender = gender;
     

@@ -936,15 +936,15 @@ The patient consent workflow system is now fully functional with a professional 
 
 Your application uses a dual-ID architecture that is actually well-designed for healthcare applications:
 
-1. Users Table (user_id): Authentication, basic profile, contact info
+1. Users Table (userId): Authentication, basic profile, contact info
 2. Specialized Tables (patientId, doctorId): Healthcare-specific data, medical records, clinical relationships
 
 ### Key Findings
 
 ✅ Database Design is Correct:
 
-- users → patients (1:1 via user_id)
-- users → doctors (1:1 via user_id)
+- users → patients (1:1 via userId)
+- users → doctors (1:1 via userId)
 - Related tables consistently use patient table IDs (appointments, medications)
 
 ❌ Current Issues:

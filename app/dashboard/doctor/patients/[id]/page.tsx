@@ -31,13 +31,13 @@ interface PatientAPIResponse {
     [key: string]: {
       basic_info: {
         id: string
-        user_id: string
-        first_name: string
-        last_name: string
+        userId: string
+        firstName: string
+        lastName: string
         email?: string
         gender?: string
-        medical_record_number?: string
-        mobile_number?: string
+        medicalRecordNumber?: string
+        mobileNumber?: string
         current_age?: number
       }
       medical_info?: {
@@ -74,7 +74,7 @@ const mockVitalReadings: VitalReading[] = [
     unit: 'mmHg',
     readingTime: '2025-01-22T08:30:00Z',
     isFlagged: true,
-    normal_range: { min: 90, max: 120 },
+    normalRange: { min: 90, max: 120 },
   },
   {
     id: '2',
@@ -83,7 +83,7 @@ const mockVitalReadings: VitalReading[] = [
     unit: 'mg/dL',
     readingTime: '2025-01-22T09:00:00Z',
     isFlagged: false,
-    normal_range: { min: 70, max: 140 },
+    normalRange: { min: 70, max: 140 },
   },
 ]
 
@@ -93,19 +93,19 @@ const mockAppointments: Appointment[] = [
     id: '1',
     title: 'Follow-up Consultation',
     type: 'follow-up',
-    start_time: '2025-02-01T10:00:00Z',
-    end_time: '2025-02-01T10:30:00Z',
+    startTime: '2025-02-01T10:00:00Z',
+    endTime: '2025-02-01T10:30:00Z',
     status: 'scheduled',
-    is_virtual: false,
+    isVirtual: false,
   },
   {
     id: '2',
     title: 'Blood Work Review',
     type: 'consultation',
-    start_time: '2025-01-25T14:00:00Z',
-    end_time: '2025-01-25T14:30:00Z',
+    startTime: '2025-01-25T14:00:00Z',
+    endTime: '2025-01-25T14:30:00Z',
     status: 'confirmed',
-    is_virtual: true,
+    isVirtual: true,
     notes: 'Review recent lab results',
   },
 ]
@@ -116,12 +116,12 @@ const symptoms = [
     name: 'Headache',
     severity: 6,
     description: 'Persistent headache, especially in the morning',
-    onset_time: '2025-01-20T06:00:00Z',
+    onsetTime: '2025-01-20T06:00:00Z',
     recordedAt: '2025-01-20T08:00:00Z',
     x: 50, // Head position (2D)
     y: 8,
     z: 0, // Front of head (3D)
-    body_part: 'Head',
+    bodyPart: 'Head',
     status: 'active'
   },
   {
@@ -129,12 +129,12 @@ const symptoms = [
     name: 'Chest Pain',
     severity: 8,
     description: 'Sharp chest pain, worse with deep breathing',
-    onset_time: '2025-01-19T14:30:00Z',
+    onsetTime: '2025-01-19T14:30:00Z',
     recordedAt: '2025-01-19T15:00:00Z',
     x: 50, // Chest position (2D)
     y: 25,
     z: 0.2, // Front of chest (3D)
-    body_part: 'Chest',
+    bodyPart: 'Chest',
     status: 'worsening'
   },
   {
@@ -142,12 +142,12 @@ const symptoms = [
     name: 'Back Pain',
     severity: 5,
     description: 'Lower back pain, aching sensation',
-    onset_time: '2025-01-18T10:00:00Z',
+    onsetTime: '2025-01-18T10:00:00Z',
     recordedAt: '2025-01-18T10:15:00Z',
     x: 50, // Back position (2D)
     y: 40,
     z: -0.3, // Back of torso (3D)
-    body_part: 'Lower Back',
+    bodyPart: 'Lower Back',
     status: 'improving'
   },
   {
@@ -155,12 +155,12 @@ const symptoms = [
     name: 'Knee Pain',
     severity: 4,
     description: 'Right knee pain when walking',
-    onset_time: '2025-01-17T16:20:00Z',
+    onsetTime: '2025-01-17T16:20:00Z',
     recordedAt: '2025-01-17T18:00:00Z',
     x: 60, // Right knee position (2D)
     y: 80,
     z: 0.1, // Right side (3D)
-    body_part: 'Right Knee',
+    bodyPart: 'Right Knee',
     status: 'active'
   },
   {
@@ -168,12 +168,12 @@ const symptoms = [
     name: 'Shoulder Pain',
     severity: 3,
     description: 'Left shoulder stiffness and mild pain',
-    onset_time: '2025-01-16T09:15:00Z',
+    onsetTime: '2025-01-16T09:15:00Z',
     recordedAt: '2025-01-16T11:30:00Z',
     x: 35, // Left shoulder position (2D)
     y: 22,
     z: 0.1, // Left side (3D)
-    body_part: 'Left Shoulder',
+    bodyPart: 'Left Shoulder',
     status: 'resolved'
   },
   {
@@ -181,12 +181,12 @@ const symptoms = [
     name: 'Abdominal Pain',
     severity: 7,
     description: 'Sharp abdominal pain in upper right quadrant',
-    onset_time: '2025-01-15T12:45:00Z',
+    onsetTime: '2025-01-15T12:45:00Z',
     recordedAt: '2025-01-15T13:00:00Z',
     x: 55, // Abdomen position (2D)
     y: 45,
     z: 0.2, // Front of abdomen (3D)
-    body_part: 'Abdomen',
+    bodyPart: 'Abdomen',
     status: 'resolved'
   }
 ]
@@ -217,7 +217,7 @@ export default function PatientDetailsPage() {
   const [carePlans, setCarePlans] = useState<CarePlan[]>([])
   const [symptoms, setSymptoms] = useState<any[]>([])
   const [loadingStates, setLoadingStates] = useState({
-    care_plans: false,
+    carePlans: false,
     vitals: false,
     appointments: false,
     carePlans: false,
@@ -262,21 +262,21 @@ export default function PatientDetailsPage() {
         // Transform API response to match frontend Patient type
         const transformedPatient: Patient = {
           id: patientData.basic_info.id,
-          user_id: patientData.basic_info.user_id,
-          first_name: patientData.basic_info.first_name || '',
-          last_name: patientData.basic_info.last_name || '',
+          userId: patientData.basic_info.userId,
+          firstName: patientData.basic_info.firstName || '',
+          lastName: patientData.basic_info.lastName || '',
           email: patientData.basic_info.email || '',
-          phone: patientData.basic_info.mobile_number || '',
+          phone: patientData.basic_info.mobileNumber || '',
           // date_of_birth not available in Patient type
           gender: patientData.basic_info.gender || '',
-          medical_record_number: patientData.basic_info.medical_record_number || '',
-          last_visit: '', // This might need to be calculated
-          next_appointment: '', // This will come from appointments API
-          adherence_rate: 85, // This will need to be calculated
-          critical_alerts: 0, // This will need to be calculated
+          medicalRecordNumber: patientData.basic_info.medicalRecordNumber || '',
+          lastVisit: '', // This might need to be calculated
+          nextAppointment: '', // This will come from appointments API
+          adherenceRate: 85, // This will need to be calculated
+          criticalAlerts: 0, // This will need to be calculated
           status: 'active',
           createdAt: patientData.createdAt,
-          profile_picture_url: ''
+          profilePictureUrl: ''
         }
         setPatient(transformedPatient)
       }
@@ -288,7 +288,7 @@ export default function PatientDetailsPage() {
 
   const fetchMedications = useCallback(async () => {
     try {
-      setLoadingStates(prev => ({ ...prev, care_plans: true }))
+      setLoadingStates(prev => ({ ...prev, carePlans: true }))
       const response = await fetch(`/api/medications/${patientId}`, {
         headers: {
           'Content-Type': 'application/json',
@@ -304,10 +304,10 @@ export default function PatientDetailsPage() {
         }
       }
     } catch (err) {
-      console.error('Error fetching care_plans: ', err)
+      console.error('Error fetching carePlans: ', err)
       // Keep empty array as fallback
     } finally {
-      setLoadingStates(prev => ({ ...prev, care_plans: false }))
+      setLoadingStates(prev => ({ ...prev, carePlans: false }))
     }
   }, [patientId])
 
@@ -481,15 +481,15 @@ export default function PatientDetailsPage() {
           <div className="flex items-center space-x-4">
             <div className="h-16 w-16 rounded-full bg-gray-200 flex items-center justify-center">
               <span className="text-xl font-medium text-gray-600">
-                {getInitials(patient.first_name, patient.last_name)}
+                {getInitials(patient.firstName, patient.lastName)}
               </span>
             </div>
             <div>
               <h1 className="text-3xl font-bold text-gray-900">
-                {patient.first_name} {patient.last_name}
+                {patient.firstName} {patient.lastName}
               </h1>
               <p className="text-gray-600">
-                {patient.medical_record_number} • {patient.email}
+                {patient.medicalRecordNumber} • {patient.email}
               </p>
             </div>
           </div>
@@ -618,7 +618,7 @@ export default function PatientDetailsPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Overall Adherence</p>
-                <p className="text-3xl font-bold text-gray-900">{patient.adherence_rate}%</p>
+                <p className="text-3xl font-bold text-gray-900">{patient.adherenceRate}%</p>
               </div>
               <div className="p-3 rounded-full bg-green-100">
                 <CheckIcon className="h-6 w-6" />
@@ -632,7 +632,7 @@ export default function PatientDetailsPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Critical Alerts</p>
-                <p className="text-3xl font-bold text-gray-900">{patient.critical_alerts}</p>
+                <p className="text-3xl font-bold text-gray-900">{patient.criticalAlerts}</p>
               </div>
               <div className="p-3 rounded-full bg-red-100">
                 <ExclamationTriangleIcon className="h-6 w-6 text-red-600" />
@@ -647,7 +647,7 @@ export default function PatientDetailsPage() {
               <div>
                 <p className="text-sm font-medium text-gray-600">Active Medications</p>
                 <p className="text-3xl font-bold text-gray-900">
-                  {loadingStates.care_plans ? (
+                  {loadingStates.carePlans ? (
                     <span className="text-sm text-gray-500">Loading...</span>
                   ) : (
                     medications.length
@@ -667,7 +667,7 @@ export default function PatientDetailsPage() {
               <div>
                 <p className="text-sm font-medium text-gray-600">Next Appointment</p>
                 <p className="text-lg font-bold text-gray-900">
-                  {patient.next_appointment ? formatDate(patient.next_appointment) : (
+                  {patient.nextAppointment ? formatDate(patient.nextAppointment) : (
                     <span className="text-sm text-gray-500 font-normal">No appointments scheduled</span>
                   )}
                 </p>
@@ -767,7 +767,7 @@ export default function PatientDetailsPage() {
                   <div>
                     <dt className="text-sm font-medium text-gray-500">Medical Record Number</dt>
                     <dd className="mt-1 text-sm text-gray-900">
-                      {patient.medical_record_number || <span className="text-gray-400 italic">Not assigned</span>}
+                      {patient.medicalRecordNumber || <span className="text-gray-400 italic">Not assigned</span>}
                     </dd>
                   </div>
                   <div>
@@ -814,7 +814,7 @@ export default function PatientDetailsPage() {
                 </button>
               </CardHeader>
               <CardContent>
-                {loadingStates.care_plans ? (
+                {loadingStates.carePlans ? (
                   <div className="flex items-center justify-center py-8">
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
                     <p className="ml-3 text-gray-600">Loading medications...</p>
@@ -834,7 +834,7 @@ export default function PatientDetailsPage() {
                             <h3 className="text-lg font-medium text-gray-900">
                               {medication.name || 'Unknown Medication'}
                             </h3>
-                            {medication.is_critical === true && (
+                            {medication.isCritical === true && (
                               <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
                                 Critical
                               </span>
@@ -844,20 +844,20 @@ export default function PatientDetailsPage() {
                             {medication.dosage || 'Dosage not specified'} • {medication.frequency || 'Frequency not specified'}
                           </p>
                           <p className="text-sm text-gray-500">
-                            Started: {medication.start_date ? formatDate(medication.start_date) : 'Date not specified'}
+                            Started: {medication.startDate ? formatDate(medication.startDate) : 'Date not specified'}
                           </p>
-                          {medication.last_taken ? (
+                          {medication.lastTaken ? (
                             <p className="text-sm text-gray-500">
-                              Last taken: {formatDateTime(medication.last_taken)}
+                              Last taken: {formatDateTime(medication.lastTaken)}
                             </p>
                           ) : (
                             <p className="text-sm text-gray-400 italic">
                               No recorded doses yet
                             </p>
                           )}
-                          {medication.next_due ? (
+                          {medication.nextDue ? (
                             <p className="text-sm text-blue-600">
-                              Next due: {formatDateTime(medication.next_due)}
+                              Next due: {formatDateTime(medication.nextDue)}
                             </p>
                           ) : (
                             <p className="text-sm text-gray-400 italic">
@@ -867,10 +867,10 @@ export default function PatientDetailsPage() {
                         </div>
                         <div className="text-right">
                           <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-sm font-medium ${
-                            medication.adherence_rate !== undefined ? getAdherenceColor(medication.adherence_rate) : 'bg-gray-100 text-gray-800'
+                            medication.adherenceRate !== undefined ? getAdherenceColor(medication.adherenceRate) : 'bg-gray-100 text-gray-800'
                           }`}>
-                            {medication.adherence_rate !== undefined ? 
-                              `${medication.adherence_rate}% adherence` : 
+                            {medication.adherenceRate !== undefined ? 
+                              `${medication.adherenceRate}% adherence` : 
                               'No data'
                             }
                           </div>
@@ -1156,7 +1156,7 @@ export default function PatientDetailsPage() {
                             {appointment.type || 'General consultation'}
                           </p>
                           <p className="text-sm text-gray-500">
-                            {appointment.start_time ? formatDateTime(appointment.start_time) : 'Time not set'} - {appointment.end_time ? formatDateTime(appointment.end_time) : 'End time not set'}
+                            {appointment.startTime ? formatDateTime(appointment.startTime) : 'Time not set'} - {appointment.endTime ? formatDateTime(appointment.endTime) : 'End time not set'}
                           </p>
                           {appointment.notes ? (
                             <p className="text-sm text-gray-600 mt-2">{appointment.notes}</p>
@@ -1171,7 +1171,7 @@ export default function PatientDetailsPage() {
                             }`}>
                               {appointment.status || 'pending'}
                             </span>
-                            {appointment.is_virtual && (
+                            {appointment.isVirtual && (
                               <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
                                 Virtual
                               </span>
@@ -1250,9 +1250,9 @@ export default function PatientDetailsPage() {
                       setHighlightedSymptom(symptom.id === highlightedSymptom ? null : symptom.id)
                       
                       // Auto-rotate body diagram to best view for the symptom
-                      if (symptom.body_part?.toLowerCase().includes('back')) {
+                      if (symptom.bodyPart?.toLowerCase().includes('back')) {
                         setBodyView('back')
-                      } else if (symptom.body_part?.toLowerCase().includes('side')) {
+                      } else if (symptom.bodyPart?.toLowerCase().includes('side')) {
                         setBodyView('left')
                       } else {
                         setBodyView('front')
@@ -1367,12 +1367,12 @@ export default function PatientDetailsPage() {
                             )}
                           </div>
                           <p className="text-sm text-gray-600">
-                            {carePlan.start_date ? formatDate(carePlan.start_date) : 'Start date not set'} - {carePlan.end_date ? formatDate(carePlan.end_date) : 'Ongoing'}
+                            {carePlan.startDate ? formatDate(carePlan.startDate) : 'Start date not set'} - {carePlan.endDate ? formatDate(carePlan.endDate) : 'Ongoing'}
                           </p>
                           <div className="flex items-center space-x-4 mt-2 text-sm text-gray-500">
-                            <span>{carePlan.adherence_overview?.medications_count || 0} medications</span>
-                            <span>{carePlan.adherence_overview?.vitals_count || 0} vitals</span>
-                            <span>{carePlan.adherence_overview?.appointments_count || 0} appointments</span>
+                            <span>{carePlan.adherenceOverview?.medicationsCount || 0} medications</span>
+                            <span>{carePlan.adherenceOverview?.vitalsCount || 0} vitals</span>
+                            <span>{carePlan.adherenceOverview?.appointmentsCount || 0} appointments</span>
                           </div>
                         </div>
                         <div>

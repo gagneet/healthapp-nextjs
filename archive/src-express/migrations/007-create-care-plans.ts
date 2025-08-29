@@ -4,9 +4,9 @@
 export default {
   up: async (queryInterface: any, Sequelize: any) => {
     // Check if table already exists
-    const tableExists = await queryInterface.tableExists('care_plans');
+    const tableExists = await queryInterface.tableExists('carePlans');
     if (tableExists) {
-      console.log('Table care_plans already exists, skipping creation');
+      console.log('Table carePlans already exists, skipping creation');
       return;
     }
 
@@ -39,8 +39,8 @@ export default {
       console.log('Enum priority_level already exists, skipping');
     }
 
-    // Create care_plans table
-    await queryInterface.createTable('care_plans', {
+    // Create carePlans table
+    await queryInterface.createTable('carePlans', {
       id: {
         type: Sequelize.UUID,
         primaryKey: true,
@@ -98,11 +98,11 @@ export default {
         type: 'priority_level',
         defaultValue: 'MEDIUM',
       },
-      start_date: {
+      startDate: {
         type: Sequelize.DATEONLY,
         allowNull: false,
       },
-      end_date: {
+      endDate: {
         type: Sequelize.DATEONLY,
         allowNull: true,
       },
@@ -141,12 +141,12 @@ export default {
       { fields: ['patientId'], options: { where: { deleted_at: null }, name: 'idx_care_plans_patient' } },
       { fields: ['provider_id'], options: { where: { deleted_at: null }, name: 'idx_care_plans_provider' } },
       { fields: ['status'], options: { where: { deleted_at: null }, name: 'idx_care_plans_status' } },
-      { fields: ['start_date', 'end_date'], options: { where: { deleted_at: null }, name: 'idx_care_plans_dates' } }
+      { fields: ['startDate', 'endDate'], options: { where: { deleted_at: null }, name: 'idx_care_plans_dates' } }
     ];
 
     for (const index of indexes) {
       try {
-        await queryInterface.addIndex('care_plans', index.fields, index.options);
+        await queryInterface.addIndex('carePlans', index.fields, index.options);
       } catch (error) {
         if (!(error as any).message.includes('already exists')) {
           throw error;
@@ -157,7 +157,7 @@ export default {
   },
 
   down: async (queryInterface: any, Sequelize: any) => {
-    await queryInterface.dropTable('care_plans');
+    await queryInterface.dropTable('carePlans');
     await queryInterface.sequelize.query('DROP TYPE IF EXISTS care_plan_status CASCADE;');
     await queryInterface.sequelize.query('DROP TYPE IF EXISTS priority_level CASCADE;');
   }

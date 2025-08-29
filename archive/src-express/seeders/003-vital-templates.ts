@@ -23,7 +23,7 @@ export default {
         name: 'Blood Pressure',
         unit: 'mmHg',
         details: JSON.stringify({
-          normal_range: '120/80',
+          normalRange: '120/80',
           description: 'Systolic and diastolic blood pressure measurement',
           fields: ['systolic', 'diastolic', 'pulse']
         }),
@@ -35,7 +35,7 @@ export default {
         name: 'Blood Sugar',
         unit: 'mg/dL',
         details: JSON.stringify({
-          normal_range: '70-140',
+          normalRange: '70-140',
           description: 'Blood glucose level measurement',
           fields: ['glucose_level', 'measurement_time']
         }),
@@ -47,7 +47,7 @@ export default {
         name: 'Weight',
         unit: 'kg',
         details: JSON.stringify({
-          normal_range: 'Varies by individual',
+          normalRange: 'Varies by individual',
           description: 'Body weight measurement',
           fields: ['weight']
         }),
@@ -59,7 +59,7 @@ export default {
         name: 'Temperature',
         unit: '°F',
         details: JSON.stringify({
-          normal_range: '98.6',
+          normalRange: '98.6',
           description: 'Body temperature measurement',
           fields: ['temperature']
         }),

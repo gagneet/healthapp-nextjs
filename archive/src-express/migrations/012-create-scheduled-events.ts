@@ -68,7 +68,7 @@ export default {
         type: Sequelize.UUID,
         allowNull: true,
         references: {
-          model: 'care_plans',
+          model: 'carePlans',
           key: 'id'
         },
       },

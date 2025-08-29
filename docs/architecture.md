@@ -940,8 +940,8 @@ class PatientService {
 // Comprehensive Sequelize model definitions
 export interface PatientAttributes {
   id: string;
-  user_id: string;
-  medical_record_number: string;
+  userId: string;
+  medicalRecordNumber: string;
   emergency_contacts: object;
   insurance_information: object;
   // ... 20+ properly typed healthcare fields

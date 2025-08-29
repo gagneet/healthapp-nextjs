@@ -75,8 +75,8 @@ export default {
           organizer_id: existingDoctors[i % existingDoctors.length]?.id || existingDoctors[0].id,
           medicine_id: medicine.id,
           description: `${medicine.name} prescribed for ongoing treatment`,
-          start_date: startDate,
-          end_date: new Date(startDate.getTime() + (60 * 24 * 60 * 60 * 1000)), // 60 days later
+          startDate: startDate,
+          endDate: new Date(startDate.getTime() + (60 * 24 * 60 * 60 * 1000)), // 60 days later
           details: JSON.stringify({
             dosage: `${Math.floor(Math.random() * 500) + 50}mg`,
             frequency: ['once_daily', 'twice_daily', 'three_times_daily'][Math.floor(Math.random() * 3)],
@@ -327,7 +327,7 @@ export default {
         metric_data: JSON.stringify({
           total_patients: doctorPatientsCount,
           active_patients: Math.floor(doctorPatientsCount * 0.9),
-          critical_alerts: Math.floor(Math.random() * 8) + 2,
+          criticalAlerts: Math.floor(Math.random() * 8) + 2,
           appointments_today: Math.floor(Math.random() * 12) + 3,
           medication_adherence_avg: Math.floor(Math.random() * 20) + 75,
           vital_readings_pending: Math.floor(Math.random() * 15) + 5,

@@ -91,7 +91,7 @@ export async function GET(request: NextRequest) {
             select: {
               id: true,
               patientId: true,
-              medical_record_number: true
+              medicalRecordNumber: true
             }
           },
           hsps: {
@@ -180,8 +180,8 @@ export async function POST(request: NextRequest) {
     const {
       email,
       password,
-      first_name,
-      last_name,
+      firstName,
+      lastName,
       phone,
       date_of_birth,
       gender,
@@ -190,7 +190,7 @@ export async function POST(request: NextRequest) {
     } = body;
 
     // Validation
-    if (!email || !password || !first_name || !last_name || !role) {
+    if (!email || !password || !firstName || !lastName || !role) {
       return NextResponse.json({
         status: false,
         statusCode: 400,
@@ -225,7 +225,7 @@ export async function POST(request: NextRequest) {
     const hashedPassword = await bcrypt.hash(password, 12);
 
     // Create user with Auth.js v5 compatibility
-    const fullName = `${first_name} ${last_name}`.trim();
+    const fullName = `${firstName} ${lastName}`.trim();
     const newUser = await prisma.user.create({
       data: {
         email,
@@ -235,8 +235,8 @@ export async function POST(request: NextRequest) {
         emailVerified: new Date(),
         image: null,
         // Legacy fields for backward compatibility
-        firstName: first_name,
-        lastName: last_name,
+        firstName: firstName,
+        lastName: lastName,
         fullName: fullName,
         phone,
         dateOfBirth: date_of_birth ? new Date(date_of_birth) : null,

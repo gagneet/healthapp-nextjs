@@ -321,7 +321,7 @@ ADMIN (System Administrator)
 #### Patient Onboarding Process
 
 1. **Patient Creation** → `users` + `patients` + `user_roles` + `user_preferences`
-2. **Doctor Assignment** → `care_plans` (primary doctor relationship)
+2. **Doctor Assignment** → `carePlans` (primary doctor relationship)
 3. **Secondary Doctors** → `careplan_secondary_doctor_mappings`
 4. **Consent Management** → OTP verification → `consents` table
 5. **Payment Terms** → `patients.payment_terms_accepted`
@@ -331,14 +331,14 @@ ADMIN (System Administrator)
 ```javascript
 // User Level
 {
-  mobile_number, prefix, email, password: "Password@123",
+  mobileNumber, prefix, email, password: "Password@123",
   category: "patient", sign_in_type: "basic",
   onboarded: false, verified: true, activated_on: timestamp
 }
 
 // Patient Level  
 {
-  first_name, middle_name, last_name, gender, date_of_birth,
+  firstName, middle_name, lastName, gender, date_of_birth,
   age: calculated, height, weight, address,
   details: { comorbidities: [], allergies: [] }
 }
@@ -382,7 +382,7 @@ User Input → MySQL Storage → Algolia Sync → Search Index Update
 2. Selects medicine from results (references mysql medicine_id)
 3. Creates medication reminder with schedule details
 4. System creates schedule_events for notifications
-5. Links to care_plans if part of treatment protocol
+5. Links to carePlans if part of treatment protocol
 
 ---
 
@@ -884,13 +884,13 @@ const requirePermission = (permission) => {
 // Enhanced Patient Model
 const PatientSchema = {
   // Basic Information
-  first_name: { type: String, required: true },
-  last_name: { type: String, required: true },
+  firstName: { type: String, required: true },
+  lastName: { type: String, required: true },
   date_of_birth: { type: Date, required: true },
   gender: { type: String, enum: ['M', 'F', 'O'] },
   
   // Contact Information  
-  mobile_number: { type: String, required: true },
+  mobileNumber: { type: String, required: true },
   email: { type: String },
   address: { type: Object },
   
@@ -1025,7 +1025,7 @@ class IntegrationService {
   async sendMedicationReminder(patientId, medicationDetails) {
     // Send via multiple channels
     await Promise.all([
-      this.sendSMS(patient.mobile_number, medicationDetails.reminder_text),
+      this.sendSMS(patient.mobileNumber, medicationDetails.reminder_text),
       this.sendPushNotification(patient.device_tokens, medicationDetails),
       this.addToActivityFeed(patientId, 'medication_reminder', medicationDetails)
     ]);

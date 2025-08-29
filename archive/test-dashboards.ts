@@ -99,8 +99,8 @@ async function testDashboards() {
         medical_license_number: true,
         users_doctors_userIdTousers: {
           select: {
-            first_name: true,
-            last_name: true,
+            firstName: true,
+            lastName: true,
             email: true
           }
         }
@@ -109,18 +109,18 @@ async function testDashboards() {
     
     console.log('👨‍⚕️ Doctors with business IDs:');
     doctors.forEach(doc => {
-      console.log(`  - ${doc.doctorId} (${doc.medical_license_number}) - ${doc.users_doctors_userIdTousers.first_name} ${doc.users_doctors_userIdTousers.last_name} (${doc.users_doctors_userIdTousers.email})`);
+      console.log(`  - ${doc.doctorId} (${doc.medical_license_number}) - ${doc.users_doctors_userIdTousers.firstName} ${doc.users_doctors_userIdTousers.lastName} (${doc.users_doctors_userIdTousers.email})`);
     });
     
     const patients = await prisma.patient.findMany({
       select: {
         id: true,
         patientId: true,
-        medical_record_number: true,
+        medicalRecordNumber: true,
         user: {
           select: {
-            first_name: true,
-            last_name: true,
+            firstName: true,
+            lastName: true,
             email: true
           }
         }
@@ -129,7 +129,7 @@ async function testDashboards() {
     
     console.log('👥 Patients with business IDs:');
     patients.forEach(pat => {
-      console.log(`  - ${pat.patientId} (${pat.medical_record_number}) - ${pat.user.first_name} ${pat.user.last_name} (${pat.user.email})`);
+      console.log(`  - ${pat.patientId} (${pat.medicalRecordNumber}) - ${pat.user.firstName} ${pat.user.lastName} (${pat.user.email})`);
     });
     
     const hsps = await prisma.hsps.findMany({
@@ -140,8 +140,8 @@ async function testDashboards() {
         license_number: true,
         users_hsps_userIdTousers: {
           select: {
-            first_name: true,
-            last_name: true,
+            firstName: true,
+            lastName: true,
             email: true
           }
         }
@@ -150,7 +150,7 @@ async function testDashboards() {
     
     console.log('🔬 HSPs with business IDs:');
     hsps.forEach(hsp => {
-      console.log(`  - ${hsp.hsp_id} (${hsp.license_number}) - ${hsp.users_hsps_userIdTousers.first_name} ${hsp.users_hsps_userIdTousers.last_name} (${hsp.users_hsps_userIdTousers.email})`);
+      console.log(`  - ${hsp.hsp_id} (${hsp.license_number}) - ${hsp.users_hsps_userIdTousers.firstName} ${hsp.users_hsps_userIdTousers.lastName} (${hsp.users_hsps_userIdTousers.email})`);
     });
     
     console.log('\n✅ Dashboard testing completed successfully!');

@@ -21,7 +21,7 @@ export default {
         type: Sequelize.UUID,
         allowNull: false,
         references: {
-          model: 'care_plans',
+          model: 'carePlans',
           key: 'id'
         },
       },
@@ -57,17 +57,17 @@ export default {
       },
       
       // Timing
-      start_date: {
+      startDate: {
         type: Sequelize.DATEONLY,
         allowNull: false,
       },
-      end_date: {
+      endDate: {
         type: Sequelize.DATEONLY,
         allowNull: true,
       },
       
       // Metadata
-      is_critical: {
+      isCritical: {
         type: Sequelize.BOOLEAN,
         defaultValue: false,
       },
@@ -105,8 +105,8 @@ export default {
     const indexes = [
       { fields: ['care_plan_id'], options: { where: { deleted_at: null }, name: 'idx_medications_care_plan' } },
       { fields: ['medication_name'], options: { where: { deleted_at: null }, name: 'idx_medications_name' } },
-      { fields: ['start_date', 'end_date'], options: { where: { deleted_at: null }, name: 'idx_medications_dates' } },
-      { fields: ['is_critical'], options: { where: { deleted_at: null }, name: 'idx_medications_critical' } }
+      { fields: ['startDate', 'endDate'], options: { where: { deleted_at: null }, name: 'idx_medications_dates' } },
+      { fields: ['isCritical'], options: { where: { deleted_at: null }, name: 'idx_medications_critical' } }
     ];
 
     for (const index of indexes) {

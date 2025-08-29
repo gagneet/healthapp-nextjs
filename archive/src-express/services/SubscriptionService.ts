@@ -431,7 +431,7 @@ class SubscriptionService {
     // Create new customer
     return await this.stripe.customers.create({
       email: patient.email,
-      name: `${patient.first_name} ${patient.last_name}`,
+      name: `${patient.firstName} ${patient.lastName}`,
       phone: patient.phone,
       metadata: {
         patientId: patient.id,

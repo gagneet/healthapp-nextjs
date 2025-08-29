@@ -148,7 +148,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
         total_providers: totalProviders,
         active_appointments: activeAppointments,
         total_medications: totalMedications,
-        critical_alerts: criticalVitals
+        criticalAlerts: criticalVitals
       },
       trends: {
         user_growth_rate: userGrowthRate + '%',

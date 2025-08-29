@@ -11,7 +11,7 @@ interface Symptom {
   y: number
   z?: number
   description?: string
-  onset_time: string
+  onsetTime: string
 }
 
 interface BodyDiagram3DWrapperProps {

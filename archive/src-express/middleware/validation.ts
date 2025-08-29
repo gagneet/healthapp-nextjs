@@ -56,11 +56,11 @@ const schemas = {
   }),
   
   patientCreate: Joi.object({
-    first_name: Joi.string().max(100).required(),
+    firstName: Joi.string().max(100).required(),
     middle_name: Joi.string().max(100).optional().allow(''),
-    last_name: Joi.string().max(100).required(),
+    lastName: Joi.string().max(100).required(),
     email: Joi.string().email().optional().allow(''),
-    mobile_number: Joi.string().pattern(/^\+?[1-9]\d{1,14}$/).required(),
+    mobileNumber: Joi.string().pattern(/^\+?[1-9]\d{1,14}$/).required(),
     gender: Joi.string().valid('m', 'f', 'o', '').optional(),
     dob: Joi.date().required(),
     address: Joi.string().max(500).optional().allow(''),
@@ -68,7 +68,7 @@ const schemas = {
     weight_kg: Joi.number().min(0).max(1000).optional().allow(null, ''),
     comorbidities: Joi.string().optional().allow(''),
     allergies: Joi.string().optional().allow(''),
-    medical_record_number: Joi.string().max(100).optional().allow(''), // Allow custom patient ID in any format
+    medicalRecordNumber: Joi.string().max(100).optional().allow(''), // Allow custom patient ID in any format
     emergency_contacts: Joi.array().items(
       Joi.object({
         contact_number: Joi.string().optional().allow(''), // Allow any format for emergency contact numbers
@@ -130,16 +130,16 @@ const schemas = {
     unit: Joi.string().required(),
     when_to_take: Joi.string().required(),
     repeat_type: Joi.string().valid('daily', 'weekly', 'monthly', 'custom').required(),
-    start_date: Joi.date().required(),
-    end_date: Joi.date().required(),
+    startDate: Joi.date().required(),
+    endDate: Joi.date().required(),
     instructions: Joi.string().optional()
   }),
   
   appointmentCreate: Joi.object({
     patientId: Joi.string().required(),
     description: Joi.string().required(),
-    start_date: Joi.date().required(),
-    end_date: Joi.date().required(),
+    startDate: Joi.date().required(),
+    endDate: Joi.date().required(),
     appointment_type: Joi.string().required(),
     repeat_type: Joi.string().valid('none', 'daily', 'weekly', 'monthly').optional(),
     repeat_count: Joi.number().integer().min(1).optional(),
@@ -148,8 +148,8 @@ const schemas = {
 
   doctorAvailability: Joi.object({
     day_of_week: Joi.number().integer().min(0).max(6).required(),
-    start_time: Joi.string().pattern(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/).required(),
-    end_time: Joi.string().pattern(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/).required(),
+    startTime: Joi.string().pattern(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/).required(),
+    endTime: Joi.string().pattern(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/).required(),
     slot_duration: Joi.number().integer().min(15).max(240).optional(),
     max_appointments_per_slot: Joi.number().integer().min(1).max(10).optional(),
     break_start_time: Joi.string().pattern(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/).optional(),
@@ -157,8 +157,8 @@ const schemas = {
   }),
 
   appointmentReschedule: Joi.object({
-    start_time: Joi.date().required(),
-    end_time: Joi.date().required(),
+    startTime: Joi.date().required(),
+    endTime: Joi.date().required(),
     slot_id: Joi.string().uuid().optional()
   }),
 

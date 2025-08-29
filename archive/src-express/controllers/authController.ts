@@ -91,8 +91,8 @@ class AuthController {
               id: user.id.toString(),
               email: user.email,
               phone: user.phone,
-              first_name: user.first_name,
-              last_name: user.last_name,
+              firstName: user.firstName,
+              lastName: user.lastName,
               role: user.role,
               account_status: user.account_status,
               email_verified: user.email_verified,
@@ -135,9 +135,9 @@ class AuthController {
         password,
         user_name,
         category,
-        mobile_number,
-        first_name,
-        last_name
+        mobileNumber,
+        firstName,
+        lastName
       } = req.body;
 
       // Check if user already exists
@@ -168,9 +168,9 @@ class AuthController {
         password: hashedPassword,
         user_name,
         category,
-        mobile_number,
-        first_name,
-        last_name,
+        mobileNumber,
+        firstName,
+        lastName,
         account_status: ACCOUNT_STATUS.PENDING_VERIFICATION
       });
 
@@ -185,14 +185,14 @@ class AuthController {
       if (category === USER_CATEGORIES.DOCTOR) {
         await Doctor.create({
           userId: user.id,
-          first_name,
-          last_name
+          firstName,
+          lastName
         });
       } else if (category === USER_CATEGORIES.PATIENT) {
         await Patient.create({
           userId: user.id,
-          first_name,
-          last_name
+          firstName,
+          lastName
         });
       }
 
@@ -266,8 +266,8 @@ class AuthController {
               id: fullUser.id.toString(),
               email: fullUser.email,
               phone: fullUser.phone,
-              first_name: fullUser.first_name,
-              last_name: fullUser.last_name,
+              firstName: fullUser.firstName,
+              lastName: fullUser.lastName,
               role: fullUser.role,
               account_status: fullUser.account_status,
               email_verified: fullUser.email_verified

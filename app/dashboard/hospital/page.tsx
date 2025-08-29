@@ -26,7 +26,7 @@ const mockHospitalStats = {
   total_patients: 342,
   active_staff: 38,
   pending_approvals: 3,
-  critical_alerts: 5,
+  criticalAlerts: 5,
   departments: 8,
   organization_name: 'Metro General Hospital',
 }
@@ -34,8 +34,8 @@ const mockHospitalStats = {
 const mockDoctors = [
   {
     id: '1',
-    first_name: 'Sarah',
-    last_name: 'Johnson',
+    firstName: 'Sarah',
+    lastName: 'Johnson',
     email: 'sarah.johnson@metrogeneral.com',
     specialty: 'Cardiology',
     patients_count: 45,
@@ -45,8 +45,8 @@ const mockDoctors = [
   },
   {
     id: '2',
-    first_name: 'Michael',
-    last_name: 'Chen',
+    firstName: 'Michael',
+    lastName: 'Chen',
     email: 'michael.chen@metrogeneral.com',
     specialty: 'Endocrinology',
     patients_count: 38,
@@ -56,8 +56,8 @@ const mockDoctors = [
   },
   {
     id: '3',
-    first_name: 'David',
-    last_name: 'Williams',
+    firstName: 'David',
+    lastName: 'Williams',
     email: 'david.williams@metrogeneral.com',
     specialty: 'Internal Medicine',
     patients_count: 52,
@@ -70,8 +70,8 @@ const mockDoctors = [
 const mockHSPs = [
   {
     id: '1',
-    first_name: 'Emma',
-    last_name: 'Davis',
+    firstName: 'Emma',
+    lastName: 'Davis',
     email: 'emma.davis@metrogeneral.com',
     role: 'Registered Nurse',
     department: 'Cardiology',
@@ -81,8 +81,8 @@ const mockHSPs = [
   },
   {
     id: '2',
-    first_name: 'James',
-    last_name: 'Wilson',
+    firstName: 'James',
+    lastName: 'Wilson',
     email: 'james.wilson@metrogeneral.com',
     role: 'Clinical Pharmacist',
     department: 'Pharmacy',
@@ -184,7 +184,7 @@ export default function HospitalDashboard() {
           },
           {
             title: 'Critical Alerts',
-            value: mockHospitalStats.critical_alerts,
+            value: mockHospitalStats.criticalAlerts,
             icon: ExclamationTriangleIcon,
             color: 'text-red-600',
             bgColor: 'bg-red-100',
@@ -309,14 +309,14 @@ export default function HospitalDashboard() {
                   <div className="flex-shrink-0">
                     <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
                       <span className="text-sm font-medium text-blue-700">
-                        {getInitials(doctor.first_name, doctor.last_name)}
+                        {getInitials(doctor.firstName, doctor.lastName)}
                       </span>
                     </div>
                   </div>
                   <div className="ml-3 flex-1">
                     <div className="flex items-center justify-between">
                       <p className="text-sm font-medium text-gray-900">
-                        Dr. {doctor.first_name} {doctor.last_name}
+                        Dr. {doctor.firstName} {doctor.lastName}
                       </p>
                       <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
                         {doctor.patients_count} patients
@@ -351,14 +351,14 @@ export default function HospitalDashboard() {
                   <div className="flex-shrink-0">
                     <div className="h-10 w-10 rounded-full bg-green-100 flex items-center justify-center">
                       <span className="text-sm font-medium text-green-700">
-                        {getInitials(hsp.first_name, hsp.last_name)}
+                        {getInitials(hsp.firstName, hsp.lastName)}
                       </span>
                     </div>
                   </div>
                   <div className="ml-3 flex-1">
                     <div className="flex items-center justify-between">
                       <p className="text-sm font-medium text-gray-900">
-                        {hsp.first_name} {hsp.last_name}
+                        {hsp.firstName} {hsp.lastName}
                       </p>
                       <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                         {hsp.patients_assigned} assigned

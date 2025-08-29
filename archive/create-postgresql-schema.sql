@@ -127,8 +127,8 @@ CREATE TABLE users (
     account_status account_status DEFAULT 'PENDING_VERIFICATION',
     
     -- Profile Information
-    first_name VARCHAR(100),
-    last_name VARCHAR(100),
+    firstName VARCHAR(100),
+    lastName VARCHAR(100),
     middle_name VARCHAR(100),
     phone VARCHAR(20),
     date_of_birth DATE,
@@ -146,7 +146,7 @@ CREATE TABLE users (
     last_login_at TIMESTAMP WITH TIME ZONE,
     
     -- Metadata
-    profile_picture_url VARCHAR(500),
+    profilePictureUrl VARCHAR(500),
     timezone VARCHAR(50) DEFAULT 'UTC',
     locale VARCHAR(10) DEFAULT 'en',
     preferences JSONB DEFAULT '{}',
@@ -274,7 +274,7 @@ CREATE TABLE patients (
     organization_id UUID REFERENCES organizations(id),
     
     -- Medical Information
-    medical_record_number VARCHAR(50) UNIQUE,
+    medicalRecordNumber VARCHAR(50) UNIQUE,
     emergency_contacts JSONB DEFAULT '[]',
     insurance_information JSONB DEFAULT '{}',
     medical_history JSONB DEFAULT '[]',
@@ -345,9 +345,9 @@ CREATE TABLE treatment_plans (
     instructions TEXT,
     
     -- Timeline
-    start_date TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    startDate TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     expected_duration_days INTEGER,
-    end_date TIMESTAMP WITH TIME ZONE,
+    endDate TIMESTAMP WITH TIME ZONE,
     
     -- Follow-up
     follow_up_required BOOLEAN DEFAULT TRUE,
@@ -378,7 +378,7 @@ CREATE TABLE treatment_plans (
 );
 
 -- Care Plans table (long-term, chronic conditions)
-CREATE TABLE care_plans (
+CREATE TABLE carePlans (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     patientId UUID NOT NULL REFERENCES patients(id) ON DELETE CASCADE,
     created_by_doctor_id UUID REFERENCES doctors(id),
@@ -411,8 +411,8 @@ CREATE TABLE care_plans (
     medication_management JSONB DEFAULT '{}',
     
     -- Timeline (long-term)
-    start_date TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    end_date TIMESTAMP WITH TIME ZONE,
+    startDate TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    endDate TIMESTAMP WITH TIME ZONE,
     review_frequency_months INTEGER DEFAULT 3,
     next_review_date TIMESTAMP WITH TIME ZONE,
     
@@ -506,8 +506,8 @@ CREATE TABLE prescriptions (
     
     -- Dates
     prescribed_date TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    start_date TIMESTAMP WITH TIME ZONE,
-    end_date TIMESTAMP WITH TIME ZONE,
+    startDate TIMESTAMP WITH TIME ZONE,
+    endDate TIMESTAMP WITH TIME ZONE,
     expiration_date TIMESTAMP WITH TIME ZONE,
     
     -- Status
@@ -593,7 +593,7 @@ CREATE TABLE notifications (
     -- Related Records
     related_appointment_id UUID,
     related_medication_id UUID,
-    related_care_plan_id UUID REFERENCES care_plans(id),
+    related_care_plan_id UUID REFERENCES carePlans(id),
     related_treatment_plan_id UUID REFERENCES treatment_plans(id),
     
     -- Metadata
@@ -625,7 +625,7 @@ CREATE TABLE adherence_logs (
     -- Related Records
     related_medication_id UUID,
     related_appointment_id UUID,
-    related_care_plan_id UUID REFERENCES care_plans(id),
+    related_care_plan_id UUID REFERENCES carePlans(id),
     related_treatment_plan_id UUID REFERENCES treatment_plans(id),
     
     -- Timing Information
@@ -899,8 +899,8 @@ CREATE TABLE medications (
     dosage VARCHAR(100),
     frequency VARCHAR(100),
     instructions TEXT,
-    start_date TIMESTAMP WITH TIME ZONE,
-    end_date TIMESTAMP WITH TIME ZONE,
+    startDate TIMESTAMP WITH TIME ZONE,
+    endDate TIMESTAMP WITH TIME ZONE,
     isActive BOOLEAN DEFAULT TRUE,
     createdAt TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updatedAt TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
@@ -924,7 +924,7 @@ CREATE TABLE appointments (
 CREATE TABLE vitals (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     patientId UUID REFERENCES patients(id),
-    care_plan_id UUID REFERENCES care_plans(id),
+    care_plan_id UUID REFERENCES carePlans(id),
     vitalType VARCHAR(50),
     value DECIMAL(10,3),
     unit VARCHAR(20),
@@ -960,7 +960,7 @@ CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_hsps_verified ON hsps(is_verified);
 
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_patients_user_id ON patients(userId);
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_patients_organization ON patients(organization_id);
-CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_patients_mrn ON patients(medical_record_number);
+CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_patients_mrn ON patients(medicalRecordNumber);
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_patients_primary_doctor ON patients(primaryCareDoctorId);
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_patients_primary_hsp ON patients(primary_care_hsp_id);
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_patients_active ON patients(isActive);
@@ -969,13 +969,13 @@ CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_patients_allergies ON patients USING
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_treatment_plans_patient ON treatment_plans(patientId);
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_treatment_plans_doctor ON treatment_plans(doctorId);
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_treatment_plans_status ON treatment_plans(status);
-CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_treatment_plans_start_date ON treatment_plans(start_date);
+CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_treatment_plans_start_date ON treatment_plans(startDate);
 
-CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_care_plans_patient ON care_plans(patientId);
-CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_care_plans_doctor ON care_plans(created_by_doctor_id);
-CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_care_plans_hsp ON care_plans(created_by_hsp_id);
-CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_care_plans_status ON care_plans(status);
-CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_care_plans_review_date ON care_plans(next_review_date);
+CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_care_plans_patient ON carePlans(patientId);
+CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_care_plans_doctor ON carePlans(created_by_doctor_id);
+CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_care_plans_hsp ON carePlans(created_by_hsp_id);
+CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_care_plans_status ON carePlans(status);
+CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_care_plans_review_date ON carePlans(next_review_date);
 
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_prescriptions_patient ON prescriptions(patientId);
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_prescriptions_doctor ON prescriptions(prescribing_doctor_id);
@@ -1026,7 +1026,7 @@ CREATE TRIGGER update_doctors_updated_at BEFORE UPDATE ON doctors FOR EACH ROW E
 CREATE TRIGGER update_hsps_updated_at BEFORE UPDATE ON hsps FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 CREATE TRIGGER update_patients_updated_at BEFORE UPDATE ON patients FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 CREATE TRIGGER update_treatment_plans_updated_at BEFORE UPDATE ON treatment_plans FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-CREATE TRIGGER update_care_plans_updated_at BEFORE UPDATE ON care_plans FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_care_plans_updated_at BEFORE UPDATE ON carePlans FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 CREATE TRIGGER update_prescriptions_updated_at BEFORE UPDATE ON prescriptions FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 CREATE TRIGGER update_notifications_updated_at BEFORE UPDATE ON notifications FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 CREATE TRIGGER update_adherence_logs_updated_at BEFORE UPDATE ON adherence_logs FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
@@ -1043,7 +1043,7 @@ ALTER TABLE doctors ENABLE ROW LEVEL SECURITY;
 ALTER TABLE hsps ENABLE ROW LEVEL SECURITY;
 ALTER TABLE patients ENABLE ROW LEVEL SECURITY;
 ALTER TABLE treatment_plans ENABLE ROW LEVEL SECURITY;
-ALTER TABLE care_plans ENABLE ROW LEVEL SECURITY;
+ALTER TABLE carePlans ENABLE ROW LEVEL SECURITY;
 ALTER TABLE prescriptions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE notifications ENABLE ROW LEVEL SECURITY;
 ALTER TABLE adherence_logs ENABLE ROW LEVEL SECURITY;
@@ -1073,18 +1073,18 @@ GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO healthcare_admin;
 
 -- Create views for common queries
 CREATE VIEW active_patients AS
-SELECT p.*, u.first_name, u.last_name, u.email, u.phone
+SELECT p.*, u.firstName, u.lastName, u.email, u.phone
 FROM patients p
 JOIN users u ON p.userId = u.id
 WHERE p.isActive = TRUE AND p.deleted_at IS NULL AND u.deleted_at IS NULL;
 
 CREATE VIEW verified_providers AS
-SELECT 'doctor' as provider_type, d.id, d.userId, d.organization_id, u.first_name, u.last_name, d.specialties
+SELECT 'doctor' as provider_type, d.id, d.userId, d.organization_id, u.firstName, u.lastName, d.specialties
 FROM doctors d
 JOIN users u ON d.userId = u.id
 WHERE d.is_verified = TRUE AND d.deleted_at IS NULL
 UNION ALL
-SELECT 'hsp' as provider_type, h.id, h.userId, h.organization_id, u.first_name, u.last_name, h.specializations as specialties
+SELECT 'hsp' as provider_type, h.id, h.userId, h.organization_id, u.firstName, u.lastName, h.specializations as specialties
 FROM hsps h
 JOIN users u ON h.userId = u.id
 WHERE h.is_verified = TRUE AND h.deleted_at IS NULL;

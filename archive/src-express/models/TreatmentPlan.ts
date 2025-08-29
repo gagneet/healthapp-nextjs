@@ -113,7 +113,7 @@ export default (sequelize: any) => {
     },
     
     // Timeline
-    start_date: {
+    startDate: {
       type: DataTypes.DATE,
       allowNull: false,
       defaultValue: DataTypes.NOW
@@ -129,7 +129,7 @@ export default (sequelize: any) => {
       comment: 'Expected treatment duration in days'
     },
     
-    end_date: {
+    endDate: {
       type: DataTypes.DATE,
       allowNull: true,
       comment: 'Planned or actual end date'
@@ -255,10 +255,10 @@ export default (sequelize: any) => {
         fields: ['priority']
       },
       {
-        fields: ['start_date']
+        fields: ['startDate']
       },
       {
-        fields: ['end_date']
+        fields: ['endDate']
       },
       {
         fields: ['follow_up_date']
@@ -284,17 +284,17 @@ export default (sequelize: any) => {
         }
         
         // Calculate end date if duration is provided
-        if (plan.expected_duration_days && plan.start_date && !plan.end_date) {
-          const endDate = new Date(plan.start_date);
+        if (plan.expected_duration_days && plan.startDate && !plan.endDate) {
+          const endDate = new Date(plan.startDate);
           endDate.setDate(endDate.getDate() + plan.expected_duration_days);
-          plan.end_date = endDate;
+          plan.endDate = endDate;
         }
       },
       
       beforeCreate: (plan: any, options: any) => {
         // Set default follow-up date (1 week from start)
         if (plan.follow_up_required && !plan.follow_up_date) {
-          const followUpDate = new Date(plan.start_date);
+          const followUpDate = new Date(plan.startDate);
           followUpDate.setDate(followUpDate.getDate() + 7);
           plan.follow_up_date = followUpDate;
         }
@@ -302,7 +302,7 @@ export default (sequelize: any) => {
       
       afterUpdate: (plan: any, options: any) => {
         // Auto-complete if end date passed
-        if (plan.end_date && new Date() > plan.end_date && plan.status === 'ACTIVE') {
+        if (plan.endDate && new Date() > plan.endDate && plan.status === 'ACTIVE') {
           plan.status = 'COMPLETED';
           plan.completion_percentage = 100;
         }
@@ -320,13 +320,13 @@ export default (sequelize: any) => {
   };
   
   TreatmentPlan.prototype.isOverdue = function() {
-    return this.end_date && new Date() > this.end_date && this.status === 'ACTIVE';
+    return this.endDate && new Date() > this.endDate && this.status === 'ACTIVE';
   };
   
   TreatmentPlan.prototype.getDaysRemaining = function() {
-    if (!this.end_date) return null;
+    if (!this.endDate) return null;
     const now = new Date();
-    const end = new Date(this.end_date);
+    const end = new Date(this.endDate);
     const diffTime = end.getTime() - now.getTime();
     return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   };

@@ -22,7 +22,7 @@ export default (sequelize: any) => {
       type: DataTypes.UUID,
       allowNull: true,
       references: {
-        model: 'care_plans',
+        model: 'carePlans',
         key: 'id'
       }
     },
@@ -64,7 +64,7 @@ export default (sequelize: any) => {
     },
     
     // Timing
-    onset_time: {
+    onsetTime: {
       type: DataTypes.DATE,
       allowNull: true,
     },
@@ -157,7 +157,7 @@ export default (sequelize: any) => {
         fields: ['recordedAt']
       },
       {
-        fields: ['onset_time']
+        fields: ['onsetTime']
       },
       {
         fields: ['patientId', 'recordedAt']
@@ -193,9 +193,9 @@ export default (sequelize: any) => {
       
       // Get duration if onset time is available
       getDuration() {
-        if (!(this as any).onset_time) return null;
+        if (!(this as any).onsetTime) return null;
         
-        const duration = new Date((this as any).recordedAt).getTime() - new Date((this as any).onset_time).getTime();
+        const duration = new Date((this as any).recordedAt).getTime() - new Date((this as any).onsetTime).getTime();
         const hours = Math.floor(duration / (1000 * 60 * 60));
         const days = Math.floor(hours / 24);
         

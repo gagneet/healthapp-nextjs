@@ -17,8 +17,8 @@ class AdminController {
 
       interface WhereClause {
         [Op.or]?: Array<{
-          first_name?: { [Op.like]: string };
-          last_name?: { [Op.like]: string };
+          firstName?: { [Op.like]: string };
+          lastName?: { [Op.like]: string };
         }>;
       }
       
@@ -26,8 +26,8 @@ class AdminController {
       if (search) {
         const searchString = parseQueryParam(search);
         whereClause[Op.or] = [
-          { first_name: { [Op.like]: `%${searchString}%` } },
-          { last_name: { [Op.like]: `%${searchString}%` } }
+          { firstName: { [Op.like]: `%${searchString}%` } },
+          { lastName: { [Op.like]: `%${searchString}%` } }
         ];
       }
 
@@ -37,7 +37,7 @@ class AdminController {
           {
             model: User,
             as: 'user',
-            attributes: ['email', 'mobile_number', 'account_status', 'verified']
+            attributes: ['email', 'mobileNumber', 'account_status', 'verified']
           },
           {
             model: Speciality,
@@ -60,8 +60,8 @@ class AdminController {
         responseData.doctors[doctor.id] = {
           basic_info: {
             id: doctor.id.toString(),
-            first_name: doctor.first_name,
-            last_name: doctor.last_name,
+            firstName: doctor.firstName,
+            lastName: doctor.lastName,
             email: doctor.user?.email,
             speciality: doctor.speciality?.name,
             verification_status: doctor.user?.verified ? 'verified' : 'pending',
@@ -129,7 +129,7 @@ class AdminController {
         const activePrescriptions = await Medication.count({
           where: { 
             medicine_id: medicine.id,
-            end_date: { [Op.gte]: new Date() }
+            endDate: { [Op.gte]: new Date() }
           }
         });
 
@@ -226,11 +226,11 @@ class AdminController {
       const {
         // Basic Information
         full_name,
-        first_name,
+        firstName,
         middle_name,
-        last_name,
+        lastName,
         email,
-        mobile_number,
+        mobileNumber,
         gender,
         password,
         
@@ -303,12 +303,12 @@ class AdminController {
 
       // Create User
       const user = await User.create({
-        full_name: full_name || `${first_name || ''} ${middle_name || ''} ${last_name || ''}`.trim(),
-        first_name,
+        full_name: full_name || `${firstName || ''} ${middle_name || ''} ${lastName || ''}`.trim(),
+        firstName,
         middle_name,
-        last_name,
+        lastName,
         email,
-        phone: mobile_number,
+        phone: mobileNumber,
         password: hashedPassword,
         gender,
         user_category: USER_CATEGORIES.DOCTOR,
@@ -328,7 +328,7 @@ class AdminController {
       // Create Doctor profile
       const doctor = await Doctor.create({
         userId: user.id,
-        mobile_number,
+        mobileNumber,
         gender,
         medical_license_number,
         npi_number,
@@ -379,7 +379,7 @@ class AdminController {
           {
             model: User,
             as: 'user',
-            attributes: ['id', 'email', 'phone', 'first_name', 'middle_name', 'last_name', 'gender', 'email_verified', 'createdAt']
+            attributes: ['id', 'email', 'phone', 'firstName', 'middle_name', 'lastName', 'gender', 'email_verified', 'createdAt']
           },
           {
             model: Speciality,
@@ -416,11 +416,11 @@ class AdminController {
       const {
         // Basic Information
         full_name,
-        first_name,
+        firstName,
         middle_name,
-        last_name,
+        lastName,
         email,
-        mobile_number,
+        mobileNumber,
         gender,
         
         // Professional Details
@@ -483,18 +483,18 @@ class AdminController {
       if (full_name) {
         // Split full name into components (don't store full_name as it's not a real field)
         const nameParts = full_name.trim().split(' ');
-        if (nameParts.length >= 1) (userUpdateData as any).first_name = nameParts[0];
-        if (nameParts.length >= 2) (userUpdateData as any).last_name = nameParts[nameParts.length - 1];
+        if (nameParts.length >= 1) (userUpdateData as any).firstName = nameParts[0];
+        if (nameParts.length >= 2) (userUpdateData as any).lastName = nameParts[nameParts.length - 1];
         if (nameParts.length >= 3) {
           (userUpdateData as any).middle_name = nameParts.slice(1, -1).join(' ');
         }
       }
-      if (first_name) (userUpdateData as any).first_name = first_name;
+      if (firstName) (userUpdateData as any).firstName = firstName;
       if (middle_name) (userUpdateData as any).middle_name = middle_name;
-      if (last_name) (userUpdateData as any).last_name = last_name;
+      if (lastName) (userUpdateData as any).lastName = lastName;
       if (email) (userUpdateData as any).email = email;
       if (gender) (userUpdateData as any).gender = gender;
-      if (mobile_number) (userUpdateData as any).phone = mobile_number;
+      if (mobileNumber) (userUpdateData as any).phone = mobileNumber;
 
       if (Object.keys(userUpdateData).length > 0) {
         await doctor.user.update(userUpdateData, { transaction });
@@ -502,7 +502,7 @@ class AdminController {
 
       // Update Doctor table
       const doctorUpdateData = {
-        ...(mobile_number && { mobile_number }),
+        ...(mobileNumber && { mobileNumber }),
         ...(gender && { gender }),
         ...(medical_license_number && { medical_license_number }),
         ...(npi_number && { npi_number }),
@@ -537,7 +537,7 @@ class AdminController {
           {
             model: User,
             as: 'user',
-            attributes: ['id', 'email', 'phone', 'first_name', 'middle_name', 'last_name', 'gender', 'email_verified']
+            attributes: ['id', 'email', 'phone', 'firstName', 'middle_name', 'lastName', 'gender', 'email_verified']
           },
           {
             model: Speciality,
@@ -632,7 +632,7 @@ class AdminController {
           {
             model: User,
             as: 'user',
-            attributes: ['id', 'email', 'phone', 'first_name', 'middle_name', 'last_name', 'gender', 'email_verified', 'account_status', 'createdAt']
+            attributes: ['id', 'email', 'phone', 'firstName', 'middle_name', 'lastName', 'gender', 'email_verified', 'account_status', 'createdAt']
           },
           {
             model: Speciality,
@@ -670,12 +670,12 @@ class AdminController {
           // Basic Information
           id: doctor.id.toString(),
           userId: doctor.userId.toString(),
-          full_name: `${doctor.user?.first_name || ''} ${doctor.user?.middle_name || ''} ${doctor.user?.last_name || ''}`.replace(/\s+/g, ' ').trim(),
-          first_name: doctor.user?.first_name || '',
+          full_name: `${doctor.user?.firstName || ''} ${doctor.user?.middle_name || ''} ${doctor.user?.lastName || ''}`.replace(/\s+/g, ' ').trim(),
+          firstName: doctor.user?.firstName || '',
           middle_name: doctor.user?.middle_name || '',
-          last_name: doctor.user?.last_name || '',
+          lastName: doctor.user?.lastName || '',
           email: doctor.user?.email,
-          mobile_number: doctor.mobile_number || doctor.user?.phone,
+          mobileNumber: doctor.mobileNumber || doctor.user?.phone,
           gender: doctor.gender || doctor.user?.gender,
           
           // Verification Status (Read Only)
@@ -936,7 +936,7 @@ class AdminController {
       const activeUsage = await Medication.count({
         where: { 
           medicine_id: medicineId,
-          end_date: { [Op.gte]: new Date() }
+          endDate: { [Op.gte]: new Date() }
         }
       });
 

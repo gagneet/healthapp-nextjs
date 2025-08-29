@@ -24,7 +24,7 @@ ALTER TABLE "specialities" RENAME TO "Specialities";
 ALTER TABLE "medicines" RENAME TO "Medicines";
 ALTER TABLE "medications" RENAME TO "Medications";
 ALTER TABLE "medication_logs" RENAME TO "MedicationLogs";
-ALTER TABLE "care_plans" RENAME TO "CarePlans";
+ALTER TABLE "carePlans" RENAME TO "CarePlans";
 ALTER TABLE "appointments" RENAME TO "Appointments";
 
 -- Support tables

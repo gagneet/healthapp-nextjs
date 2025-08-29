@@ -22,11 +22,11 @@ export default (sequelize: any, DataTypes: any) => {
         max: 6
       }
     },
-    start_time: {
+    startTime: {
       type: DataTypes.TIME,
       allowNull: false,
     },
-    end_time: {
+    endTime: {
       type: DataTypes.TIME,
       allowNull: false,
     },

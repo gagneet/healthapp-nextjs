@@ -212,7 +212,7 @@ export default (sequelize: any) => {
           completed,
           missed,
           partial,
-          adherence_rate: total > 0 ? (completed / total * 100).toFixed(2) : 0
+          adherenceRate: total > 0 ? (completed / total * 100).toFixed(2) : 0
         };
       },
       

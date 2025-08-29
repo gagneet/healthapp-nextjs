@@ -69,18 +69,18 @@ export const EVENT_TYPE_MAPPINGS: Record<string, string> = {
 export const FIELD_MAPPINGS: Record<string, string> = {
   // Frontend to Backend User fields
   'dob': 'date_of_birth',
-  'mobile_number': 'phone',
+  'mobileNumber': 'phone',
   'address': 'formatted_address', // Single address field to formatted address
   
   // Frontend to Backend Patient fields  
   'comorbidities': 'medical_history',
   'emergency_contacts': 'emergency_contacts', // Array handling
   'insurance_information': 'insurance_information',
-  'medical_record_number': 'medical_record_number',
+  'medicalRecordNumber': 'medicalRecordNumber',
   
   // Backend to Frontend mappings (reverse)
   'date_of_birth': 'dob',
-  'phone': 'mobile_number',
+  'phone': 'mobileNumber',
   'formatted_address': 'address',
   'medical_history': 'comorbidities'
 };

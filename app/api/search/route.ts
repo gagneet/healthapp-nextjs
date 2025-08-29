@@ -145,7 +145,7 @@ async function searchPatients(searchValue: string, filters: SearchFilters, user:
       { user: { lastName: { contains: searchValue, mode: 'insensitive' } } },
       { user: { email: { contains: searchValue, mode: 'insensitive' } } },
       { patientId: { contains: searchValue, mode: 'insensitive' } },
-      { medical_record_number: { contains: searchValue, mode: 'insensitive' } }
+      { medicalRecordNumber: { contains: searchValue, mode: 'insensitive' } }
     ]
   };
 
@@ -166,7 +166,7 @@ async function searchPatients(searchValue: string, filters: SearchFilters, user:
     select: {
       id: true,
       patientId: true,
-      medical_record_number: true,
+      medicalRecordNumber: true,
       user: {
         select: {
           id: true,

@@ -13,7 +13,7 @@ interface Symptom {
   y: number // 3D position Y (-1 to 1)
   z: number // 3D position Z (-1 to 1)
   description?: string
-  onset_time: string
+  onsetTime: string
 }
 
 interface BodyDiagram3DProps {

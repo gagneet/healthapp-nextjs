@@ -120,23 +120,23 @@ export default {
     // 5. APPOINTMENTS SCHEDULING INDEXES
     const appointmentIndexes = [
       {
-        fields: ['provider_id', 'start_time'],
+        fields: ['provider_id', 'startTime'],
         name: 'idx_appointments_provider_time',
         concurrently: true
       },
       {
-        fields: ['patientId', 'start_time'],
+        fields: ['patientId', 'startTime'],
         name: 'idx_appointments_patient_time',
         concurrently: true
       },
       {
-        fields: ['doctorId', 'start_time'],
+        fields: ['doctorId', 'startTime'],
         name: 'idx_appointments_doctor_time_enhanced',
         concurrently: true,
         where: { doctorId: { [Sequelize.Op.ne]: null } }
       },
       {
-        fields: ['organizer_type', 'organizer_id', 'start_time'],
+        fields: ['organizer_type', 'organizer_id', 'startTime'],
         name: 'idx_appointments_organizer_time',
         concurrently: true
       }
@@ -149,7 +149,7 @@ export default {
     // 6. CARE PLANS INDEXES
     const carePlanIndexes = [
       {
-        fields: ['patientId', 'status', 'start_date'],
+        fields: ['patientId', 'status', 'startDate'],
         name: 'idx_careplans_patient_status_start_fixed',
         concurrently: true
       },
@@ -168,7 +168,7 @@ export default {
     ];
 
     for (const index of carePlanIndexes) {
-      await addIndexSafely('care_plans', index);
+      await addIndexSafely('carePlans', index);
     }
 
     // 7. SCHEDULED EVENTS INDEXES (High-volume operations)
@@ -198,12 +198,12 @@ export default {
     // 8. SYMPTOMS TRACKING INDEXES
     const symptomIndexes = [
       {
-        fields: ['patientId', 'onset_time', 'severity'],
+        fields: ['patientId', 'onsetTime', 'severity'],
         name: 'idx_symptoms_patient_onset_severity',
         concurrently: true
       },
       {
-        fields: ['care_plan_id', 'onset_time'],
+        fields: ['care_plan_id', 'onsetTime'],
         name: 'idx_symptoms_careplan_onset',
         concurrently: true,
         where: { care_plan_id: { [Sequelize.Op.ne]: null } }
@@ -338,9 +338,9 @@ export default {
       { table: 'scheduled_events', name: 'idx_events_time_status' },
       { table: 'scheduled_events', name: 'idx_events_careplan_time_type' },
       { table: 'scheduled_events', name: 'idx_events_patient_time_status' },
-      { table: 'care_plans', name: 'idx_careplans_template_status' },
-      { table: 'care_plans', name: 'idx_careplans_provider_status_created' },
-      { table: 'care_plans', name: 'idx_careplans_patient_status_start' },
+      { table: 'carePlans', name: 'idx_careplans_template_status' },
+      { table: 'carePlans', name: 'idx_careplans_provider_status_created' },
+      { table: 'carePlans', name: 'idx_careplans_patient_status_start' },
       { table: 'appointments', name: 'idx_appointments_hsp_time' },
       { table: 'appointments', name: 'idx_appointments_doctor_time' },
       { table: 'appointments', name: 'idx_appointments_patient_time_status' },

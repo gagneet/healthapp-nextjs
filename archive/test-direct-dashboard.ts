@@ -28,15 +28,15 @@ async function testDirectDashboard() {
         id: true,
         email: true,
         role: true,
-        first_name: true,
-        last_name: true,
+        firstName: true,
+        lastName: true,
         password_hash: true,
         account_status: true,
         patient: {
           select: {
             id: true,
             patientId: true,
-            medical_record_number: true
+            medicalRecordNumber: true
           }
         }
       }
@@ -44,9 +44,9 @@ async function testDirectDashboard() {
     
     console.log(`✅ Found ${users.length} test users:`);
     users.forEach(user => {
-      console.log(`  - ${user.email} (${user.role}) - ${user.first_name} ${user.last_name} [${user.account_status}]`);
+      console.log(`  - ${user.email} (${user.role}) - ${user.firstName} ${user.lastName} [${user.account_status}]`);
       if (user.patient) {
-        console.log(`    Patient Profile: ${user.patient.patientId} (${user.patient.medical_record_number})`);
+        console.log(`    Patient Profile: ${user.patient.patientId} (${user.patient.medicalRecordNumber})`);
       }
     });
     
@@ -71,7 +71,7 @@ async function testDirectDashboard() {
     if (doctorUser && doctorUser.doctors_doctors_userIdTousers) {
       const doctor = doctorUser.doctors_doctors_userIdTousers;
       console.log('✅ Doctor profile found:');
-      console.log(`  - Name: ${doctorUser.first_name} ${doctorUser.last_name}`);
+      console.log(`  - Name: ${doctorUser.firstName} ${doctorUser.lastName}`);
       console.log(`  - Email: ${doctorUser.email}`);
       console.log(`  - Doctor ID: ${doctor.doctorId}`);
       console.log(`  - License: ${doctor.medical_license_number}`);
@@ -92,8 +92,8 @@ async function testDirectDashboard() {
           include: {
             user: {
               select: {
-                first_name: true,
-                last_name: true,
+                firstName: true,
+                lastName: true,
                 email: true,
                 date_of_birth: true,
                 gender: true
@@ -110,10 +110,10 @@ async function testDirectDashboard() {
         : null;
         
       console.log('✅ Patient profile found:');
-      console.log(`  - Name: ${patientUser.patient.user.first_name} ${patientUser.patient.user.last_name}`);
+      console.log(`  - Name: ${patientUser.patient.user.firstName} ${patientUser.patient.user.lastName}`);
       console.log(`  - Email: ${patientUser.patient.user.email}`);
       console.log(`  - Patient ID: ${patientUser.patient.patientId}`);
-      console.log(`  - Medical Record: ${patientUser.patient.medical_record_number}`);
+      console.log(`  - Medical Record: ${patientUser.patient.medicalRecordNumber}`);
       console.log(`  - Age: ${age} years`);
       console.log(`  - Gender: ${patientUser.patient.user.gender}`);
     } else {
@@ -133,7 +133,7 @@ async function testDirectDashboard() {
     if (hspUser && hspUser.hsps_hsps_userIdTousers) {
       const hsp = hspUser.hsps_hsps_userIdTousers;
       console.log('✅ HSP profile found:');
-      console.log(`  - Name: ${hspUser.first_name} ${hspUser.last_name}`);
+      console.log(`  - Name: ${hspUser.firstName} ${hspUser.lastName}`);
       console.log(`  - Email: ${hspUser.email}`);
       console.log(`  - HSP ID: ${hsp.hsp_id}`);
       console.log(`  - Type: ${hsp.hsp_type}`);

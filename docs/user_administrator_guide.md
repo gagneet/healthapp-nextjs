@@ -174,7 +174,7 @@ interface SystemOverview {
 -- Administrator-specific tables
 CREATE TABLE administrators (
     id UUID PRIMARY KEY,
-    user_id UUID REFERENCES users(id),
+    userId UUID REFERENCES users(id),
     super_admin BOOLEAN DEFAULT FALSE,
     permissions JSONB,
     last_login TIMESTAMP,

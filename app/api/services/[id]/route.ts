@@ -93,7 +93,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       revenue_generated: revenueGenerated,
       active_subscriptions: activeSubscriptions,
       doctor: service.doctors ? {
-        name: `${service.doctors.users_doctors_userIdTousers?.first_name || ''} ${service.doctors.users_doctors_userIdTousers?.last_name || ''}`.trim(),
+        name: `${service.doctors.users_doctors_userIdTousers?.firstName || ''} ${service.doctors.users_doctors_userIdTousers?.lastName || ''}`.trim(),
         email: service.doctors.users_doctors_userIdTousers?.email
       } : null
     };

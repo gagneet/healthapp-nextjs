@@ -134,7 +134,7 @@ export const enhancedAuthenticate = async (req: any, res: any, next: any) => {
     if (!user) {
       // Fetch user with roles
       user = await User.findByPk((decoded as any).userId, {
-        attributes: ['id', 'email', 'first_name', 'last_name', 'role', 'account_status', 'isActive'],
+        attributes: ['id', 'email', 'firstName', 'lastName', 'role', 'account_status', 'isActive'],
         include: [{
           model: UserRole,
           as: 'roles',
@@ -257,8 +257,8 @@ export const refreshTokenHandler = async (req: any, res: any) => {
         user: {
           id: user.id,
           email: user.email,
-          first_name: user.first_name,
-          last_name: user.last_name,
+          firstName: user.firstName,
+          lastName: user.lastName,
           role: user.role,
           account_status: user.account_status
         }
@@ -339,8 +339,8 @@ export const validateToken = async (req: any, res: any) => {
         user: {
           id: user.id,
           email: user.email,
-          first_name: user.first_name,
-          last_name: user.last_name,
+          firstName: user.firstName,
+          lastName: user.lastName,
           role: user.role,
           account_status: user.account_status
         },

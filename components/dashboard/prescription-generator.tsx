@@ -18,17 +18,17 @@ interface PrescriptionGeneratorProps {
   setIsOpen: (open: boolean) => void
   patient: {
     id: string
-    first_name: string
-    last_name: string
+    firstName: string
+    lastName: string
     date_of_birth: string
-    medical_record_number: string
+    medicalRecordNumber: string
     address?: string
     phone?: string
   }
   doctor: {
     id: string
-    first_name: string
-    last_name: string
+    firstName: string
+    lastName: string
     specialty: string
     license_number: string
     npi: string
@@ -60,7 +60,7 @@ interface PrescriptionData {
   clinic_name: string
   clinic_address: string
   clinic_phone: string
-  care_plans: Array<{
+  carePlans: Array<{
     name: string
     strength: string
     dosage_form: string
@@ -88,18 +88,18 @@ export default function PrescriptionGenerator({
 
   const generatePrescriptionData = (): PrescriptionData => {
     return {
-      patient_name: `${patient.first_name} ${patient.last_name}`,
+      patient_name: `${patient.firstName} ${patient.lastName}`,
       patient_dob: formatDate(patient.date_of_birth),
       patient_address: patient.address || 'Address not provided',
-      patient_mrn: patient.medical_record_number,
-      doctor_name: `Dr. ${doctor.first_name} ${doctor.last_name}`,
+      patient_mrn: patient.medicalRecordNumber,
+      doctor_name: `Dr. ${doctor.firstName} ${doctor.lastName}`,
       doctor_specialty: doctor.specialty,
       doctor_license: doctor.license_number,
       doctor_npi: doctor.npi,
       clinic_name: doctor.clinic_name,
       clinic_address: doctor.clinic_address,
       clinic_phone: doctor.phone,
-      care_plans: medications,
+      carePlans: medications,
       prescription_date: formatDate(new Date().toISOString()),
       prescription_id: `RX-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
     }
@@ -180,7 +180,7 @@ export default function PrescriptionGenerator({
     if (generatedPdf) {
       const link = document.createElement('a')
       link.href = generatedPdf
-      link.download = `prescription-${patient.last_name}-${formatDate(new Date().toISOString())}.pdf`
+      link.download = `prescription-${patient.lastName}-${formatDate(new Date().toISOString())}.pdf`
       document.body.appendChild(link)
       link.click()
       document.body.removeChild(link)
@@ -211,12 +211,12 @@ export default function PrescriptionGenerator({
         <h3 className="text-lg font-semibold text-gray-900 mb-2">PRESCRIPTION</h3>
         <div className="grid grid-cols-2 gap-4 text-sm">
           <div>
-            <p><strong>Patient:</strong> {patient.first_name} {patient.last_name}</p>
+            <p><strong>Patient:</strong> {patient.firstName} {patient.lastName}</p>
             <p><strong>DOB:</strong> {formatDate(patient.date_of_birth)}</p>
-            <p><strong>MRN:</strong> {patient.medical_record_number}</p>
+            <p><strong>MRN:</strong> {patient.medicalRecordNumber}</p>
           </div>
           <div>
-            <p><strong>Doctor:</strong> Dr. {doctor.first_name} {doctor.last_name}</p>
+            <p><strong>Doctor:</strong> Dr. {doctor.firstName} {doctor.lastName}</p>
             <p><strong>Specialty:</strong> {doctor.specialty}</p>
             <p><strong>License:</strong> {doctor.license_number}</p>
             <p><strong>NPI:</strong> {doctor.npi}</p>
@@ -313,7 +313,7 @@ export default function PrescriptionGenerator({
                     </Dialog.Title>
                     <div className="mt-2">
                       <p className="text-sm text-gray-500">
-                        Generate a prescription PDF for {patient.first_name} {patient.last_name}. The prescription will be automatically uploaded to secure cloud storage.
+                        Generate a prescription PDF for {patient.firstName} {patient.lastName}. The prescription will be automatically uploaded to secure cloud storage.
                       </p>
                     </div>
                   </div>

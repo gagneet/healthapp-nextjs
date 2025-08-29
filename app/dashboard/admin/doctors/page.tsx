@@ -26,7 +26,7 @@ interface Doctor {
   lastName: string
   full_name: string
   email: string
-  mobile_number?: string
+  mobileNumber?: string
   gender?: string
   medical_license_number: string
   npi_number?: string
@@ -105,10 +105,10 @@ export default function AdminDoctorsPage() {
             id: basicInfo.id || doctor.id || '',
             userId: basicInfo.userId || basicInfo.id || doctor.userId || '',
             firstName: basicInfo.firstName || '',
-            last_name: basicInfo.last_name || '',
-            full_name: `${basicInfo.first_name || ''} ${basicInfo.last_name || ''}`.trim() || 'Incomplete Profile',
+            lastName: basicInfo.lastName || '',
+            full_name: `${basicInfo.firstName || ''} ${basicInfo.lastName || ''}`.trim() || 'Incomplete Profile',
             email: basicInfo.email || doctor.email || '',
-            mobile_number: basicInfo.mobile_number || doctor.mobile_number || '',
+            mobileNumber: basicInfo.mobileNumber || doctor.mobileNumber || '',
             medical_license_number: basicInfo.medical_license_number || 'N/A',
             specialties: basicInfo.speciality ? [basicInfo.speciality] : [],
             years_of_experience: basicInfo.years_of_experience || 0,
@@ -146,7 +146,7 @@ export default function AdminDoctorsPage() {
   }
 
   const filteredDoctors = doctors.filter(doctor =>
-    `${doctor.first_name} ${doctor.last_name}`.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    `${doctor.firstName} ${doctor.lastName}`.toLowerCase().includes(searchQuery.toLowerCase()) ||
     doctor.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
     doctor.medical_license_number.toLowerCase().includes(searchQuery.toLowerCase())
   )
@@ -281,14 +281,14 @@ export default function AdminDoctorsPage() {
                   <div className="flex items-center space-x-4">
                     <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
                       <span className="text-lg font-medium text-blue-600">
-                        {doctor.first_name[0]}{doctor.last_name[0]}
+                        {doctor.firstName[0]}{doctor.lastName[0]}
                       </span>
                     </div>
                     
                     <div className="space-y-1">
                       <div className="flex items-center space-x-2">
                         <h3 className="text-lg font-medium text-gray-900">
-                          {doctor.first_name} {doctor.last_name}
+                          {doctor.firstName} {doctor.lastName}
                         </h3>
                         {doctor.is_verified ? (
                           <div className="flex items-center px-2 py-1 text-xs bg-green-100 text-green-800 border border-green-200 rounded-full">
@@ -308,10 +308,10 @@ export default function AdminDoctorsPage() {
                           <EnvelopeIcon className="h-4 w-4" />
                           <span>{doctor.email}</span>
                         </div>
-                        {doctor.mobile_number && (
+                        {doctor.mobileNumber && (
                           <div className="flex items-center space-x-1">
                             <PhoneIcon className="h-4 w-4" />
-                            <span>{doctor.mobile_number}</span>
+                            <span>{doctor.mobileNumber}</span>
                           </div>
                         )}
                       </div>
@@ -437,11 +437,11 @@ function DoctorFormModal({ isOpen, onClose, doctor, specialities, onSubmit, isSu
   const [formData, setFormData] = useState({
     // Basic Information
     full_name: '',
-    first_name: '',
+    firstName: '',
     middle_name: '',
-    last_name: '',
+    lastName: '',
     email: '',
-    mobile_number: '',
+    mobileNumber: '',
     gender: '',
     password: '',
     
@@ -477,11 +477,11 @@ function DoctorFormModal({ isOpen, onClose, doctor, specialities, onSubmit, isSu
     if (doctor) {
       setFormData({
         full_name: doctor.full_name || '',
-        first_name: doctor.first_name || '',
+        firstName: doctor.firstName || '',
         middle_name: doctor.middle_name || '',
-        last_name: doctor.last_name || '',
+        lastName: doctor.lastName || '',
         email: doctor.email || '',
-        mobile_number: doctor.mobile_number || '',
+        mobileNumber: doctor.mobileNumber || '',
         gender: doctor.gender || '',
         password: '', // Never pre-fill password
         medical_license_number: doctor.medical_license_number || '',
@@ -506,11 +506,11 @@ function DoctorFormModal({ isOpen, onClose, doctor, specialities, onSubmit, isSu
       // Reset form for new doctor
       setFormData({
         full_name: '',
-        first_name: '',
+        firstName: '',
         middle_name: '',
-        last_name: '',
+        lastName: '',
         email: '',
-        mobile_number: '',
+        mobileNumber: '',
         gender: '',
         password: '',
         medical_license_number: '',
@@ -570,8 +570,8 @@ function DoctorFormModal({ isOpen, onClose, doctor, specialities, onSubmit, isSu
                   <input
                     type="text"
                     required
-                    value={formData.first_name}
-                    onChange={(e) => setFormData({...formData, first_name: e.target.value})}
+                    value={formData.firstName}
+                    onChange={(e) => setFormData({...formData, firstName: e.target.value})}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
                 </div>
@@ -580,8 +580,8 @@ function DoctorFormModal({ isOpen, onClose, doctor, specialities, onSubmit, isSu
                   <input
                     type="text"
                     required
-                    value={formData.last_name}
-                    onChange={(e) => setFormData({...formData, last_name: e.target.value})}
+                    value={formData.lastName}
+                    onChange={(e) => setFormData({...formData, lastName: e.target.value})}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
                 </div>
@@ -621,8 +621,8 @@ function DoctorFormModal({ isOpen, onClose, doctor, specialities, onSubmit, isSu
                   <label className="block text-sm font-medium text-gray-700 mb-1">Mobile Number</label>
                   <input
                     type="tel"
-                    value={formData.mobile_number}
-                    onChange={(e) => setFormData({...formData, mobile_number: e.target.value})}
+                    value={formData.mobileNumber}
+                    onChange={(e) => setFormData({...formData, mobileNumber: e.target.value})}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
                 </div>

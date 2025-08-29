@@ -75,11 +75,11 @@ export default {
       },
       
       // Profile information
-      first_name: {
+      firstName: {
         type: Sequelize.STRING(100),
         allowNull: true,
       },
-      last_name: {
+      lastName: {
         type: Sequelize.STRING(100),
         allowNull: true,
       },
@@ -139,7 +139,7 @@ export default {
       },
       
       // Metadata
-      profile_picture_url: {
+      profilePictureUrl: {
         type: Sequelize.STRING(500),
         allowNull: true,
       },
@@ -214,7 +214,7 @@ export default {
     try {
       await queryInterface.sequelize.query(`
         CREATE INDEX idx_users_name_search ON users 
-        USING GIN(to_tsvector('english', COALESCE(first_name, '') || ' ' || COALESCE(last_name, '')));
+        USING GIN(to_tsvector('english', COALESCE(firstName, '') || ' ' || COALESCE(lastName, '')));
       `);
     } catch (error) {
       if (!(error as any).message.includes('already exists')) throw (error as any);

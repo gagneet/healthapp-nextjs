@@ -18,11 +18,11 @@ export default (sequelize: any, DataTypes: any) => {
       type: DataTypes.DATEONLY,
       allowNull: false,
     },
-    start_time: {
+    startTime: {
       type: DataTypes.TIME,
       allowNull: false,
     },
-    end_time: {
+    endTime: {
       type: DataTypes.TIME,
       allowNull: false,
     },
@@ -59,7 +59,7 @@ export default (sequelize: any, DataTypes: any) => {
   }, {
     tableName: 'appointment_slots',
     indexes: [
-      { fields: ['doctorId', 'date', 'start_time'] },
+      { fields: ['doctorId', 'date', 'startTime'] },
       { fields: ['doctorId', 'is_available'] },
       { fields: ['date', 'is_available'] },
     ],

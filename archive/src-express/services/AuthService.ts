@@ -10,9 +10,9 @@ class AuthService {
       password,
       user_name,
       category,
-      mobile_number,
-      first_name,
-      last_name
+      mobileNumber,
+      firstName,
+      lastName
     } = userData;
 
     // Hash password
@@ -24,9 +24,9 @@ class AuthService {
       password: hashedPassword,
       user_name,
       category,
-      mobile_number,
-      first_name,
-      last_name,
+      mobileNumber,
+      firstName,
+      lastName,
       account_status: 'pending_verification'
     });
 

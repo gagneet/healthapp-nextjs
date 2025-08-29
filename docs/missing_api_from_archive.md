@@ -309,7 +309,7 @@ I've successfully completed all the todos for this session:
 
 ✅ Field Naming Corrections:
 
-- snake_case → camelCase: Fixed all createdAt, start_time, alert_level references
+- snake_case → camelCase: Fixed all createdAt, startTime, alert_level references
 - Model References: Fixed prisma.providers → prisma.healthcareProvider
 - DELETE Operations: Restored isActive: false instead of deletedAt for soft deletion
 - GroupBy Operations: Fixed _count field access patterns

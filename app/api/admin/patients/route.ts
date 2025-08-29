@@ -178,14 +178,14 @@ export async function POST(request: NextRequest) {
     const {
       email,
       password,
-      first_name,
-      last_name,
+      firstName,
+      lastName,
       phone,
       date_of_birth,
       gender,
       primaryCareDoctorId,
       organization_id,
-      medical_record_number,
+      medicalRecordNumber,
       height_cm,
       weight_kg,
       blood_type,
@@ -195,7 +195,7 @@ export async function POST(request: NextRequest) {
     } = body;
 
     // Validation
-    if (!email || !first_name || !last_name) {
+    if (!email || !firstName || !lastName) {
       return NextResponse.json({
         status: false,
         statusCode: 400,
@@ -222,7 +222,7 @@ export async function POST(request: NextRequest) {
 
     // Create user and patient in transaction
     const result = await prisma.$transaction(async (tx) => {
-      const fullName = `${first_name} ${last_name}`.trim();
+      const fullName = `${firstName} ${lastName}`.trim();
       const newUser = await tx.user.create({
         data: {
           email,
@@ -230,8 +230,8 @@ export async function POST(request: NextRequest) {
           name: fullName,
           emailVerified: new Date(),
           image: null,
-          firstName: first_name,
-          lastName: last_name,
+          firstName: firstName,
+          lastName: lastName,
           fullName: fullName,
           phone,
           dateOfBirth: date_of_birth ? new Date(date_of_birth) : null,
@@ -254,7 +254,7 @@ export async function POST(request: NextRequest) {
           userId: newUser.id,
           primaryCareDoctorId: primaryCareDoctorId,
           organizationId: organization_id,
-          medicalRecordNumber: medical_record_number || `MRN-${patientId}`,
+          medicalRecordNumber: medicalRecordNumber || `MRN-${patientId}`,
           heightCm: height_cm ? parseFloat(height_cm) : null,
           weightKg: weight_kg ? parseFloat(weight_kg) : null,
           bloodType: blood_type,

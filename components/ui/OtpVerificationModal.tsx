@@ -232,7 +232,7 @@ export default function OtpVerificationModal({
                     </h3>
                     <div className="mt-2">
                       <p className="text-sm text-gray-500">
-                        You need patient consent to access <strong>{patient.first_name} {patient.last_name}&apos;s</strong> medical records.
+                        You need patient consent to access <strong>{patient.firstName} {patient.lastName}&apos;s</strong> medical records.
                       </p>
                       <div className="mt-4 p-4 bg-blue-50 rounded-lg">
                         <h4 className="text-sm font-medium text-blue-900 mb-2">OTP will be sent to:</h4>
@@ -370,7 +370,7 @@ export default function OtpVerificationModal({
                       <CheckCircleIcon className="h-16 w-16 text-green-500 mx-auto mb-4" />
                       <p className="text-green-600 font-medium mb-2">Consent verification successful!</p>
                       <p className="text-sm text-gray-500">
-                        You now have access to {patient.first_name} {patient.last_name}&apos;s medical records.
+                        You now have access to {patient.firstName} {patient.lastName}&apos;s medical records.
                       </p>
                     </div>
                   )}

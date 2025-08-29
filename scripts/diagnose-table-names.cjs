@@ -34,7 +34,7 @@ async function diagnosticTableNames() {
       'medicines': 'Medicines',
       'medications': 'Medications',
       'medication_logs': 'MedicationLogs',
-      'care_plans': 'CarePlans',
+      'carePlans': 'CarePlans',
       'appointments': 'Appointments',
       'symptoms': 'Symptoms',
       'adherence_records': 'AdherenceRecords',

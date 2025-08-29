@@ -302,7 +302,7 @@ async function performCustomValidation(
     // Care plan endpoints
     if (endpoint.includes('/care-plans/')) {
       // Validate care plan access through patient relationship
-      const carePlan = await prisma.care_plans.findUnique({
+      const carePlan = await prisma.carePlans.findUnique({
         where: { id: resourceId },
         select: { patientId: true }
       });
