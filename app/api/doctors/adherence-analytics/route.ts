@@ -48,7 +48,9 @@ type PatientStats = Prisma.PatientGetPayload<{
   }
 }>;
 
-type PatientWithAdherenceScore = PatientStats & { overallAdherenceScore: NonNullable<PatientStats['overallAdherenceScore']> };
+type PatientWithAdherenceScore = Omit<PatientStats, 'overallAdherenceScore'> & {
+  overallAdherenceScore: Prisma.Decimal;
+};
 
 const dayRecordSelect = {
   select: {
@@ -197,8 +199,11 @@ export async function GET(request: NextRequest) {
         });
 
         const dayScores = dayRecords.reduce((scores: number[], record: DayRecord) => {
-          if (record.isCompleted) return [...scores, 100];
-          else if (record.isMissed) return [...scores, 0];
+          if (record.isCompleted) {
+            scores.push(100);
+          } else if (record.isMissed) {
+            scores.push(0);
+          }
           return scores;
         }, []);
 

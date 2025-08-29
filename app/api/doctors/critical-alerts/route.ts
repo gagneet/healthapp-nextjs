@@ -1,12 +1,29 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from "@/lib/auth";
 import { prisma } from '@/lib/prisma';
-import {
-  patientUserSelect,
-  EmergencyAlertWithPatient,
-  MedicationSafetyAlertWithPatient,
-  NotificationWithPatient
-} from '@/lib/prisma-types';
+import { Prisma } from '@prisma/client';
+import { userSelect } from '@/lib/prisma-types';
+
+const patientUserInclude = {
+  patient: {
+    include: {
+      user: userSelect
+    }
+  }
+}
+
+type EmergencyAlertWithPatient = Prisma.EmergencyAlertGetPayload<{
+  include: typeof patientUserInclude;
+}>;
+
+type MedicationSafetyAlertWithPatient = Prisma.MedicationSafetyAlertGetPayload<{
+  include: typeof patientUserInclude;
+}>;
+
+type NotificationWithPatient = Prisma.NotificationGetPayload<{
+  include: typeof patientUserInclude;
+}>;
+
 
 /**
  * GET /api/doctors/critical-alerts
@@ -55,7 +72,7 @@ export async function GET(request: NextRequest) {
           acknowledged: false,
           resolved: false
         },
-        include: patientUserSelect,
+        include: patientUserInclude,
         orderBy: {
           createdAt: 'desc'
         },
@@ -69,7 +86,7 @@ export async function GET(request: NextRequest) {
           },
           resolved: false
         },
-        include: patientUserSelect,
+        include: patientUserInclude,
         orderBy: {
           createdAt: 'desc'
         },
@@ -82,7 +99,7 @@ export async function GET(request: NextRequest) {
           isUrgent: true,
           readAt: null
         },
-        include: patientUserSelect,
+        include: patientUserInclude,
         orderBy: {
           createdAt: 'desc'
         },
