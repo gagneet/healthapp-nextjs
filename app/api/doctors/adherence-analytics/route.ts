@@ -171,8 +171,7 @@ export async function GET(request: NextRequest) {
       }));
 
     const patientsNeedingAttention = patientsWithScores
-      .filter(p => p.overallAdherenceScore < 75)
-      .sort((a, b) => a.overallAdherenceScore - b.overallAdherenceScore)
+      .sort((a, b) => a.overallAdherenceScore.toNumber() - b.overallAdherenceScore.toNumber())
       .slice(0, 5)
       .map(p => ({
         patientId: p.patientId,
