@@ -154,7 +154,15 @@ export async function GET(request: NextRequest) {
     );
 
     const topPatients = patientsWithScores
-      .sort((a, b) => b.overallAdherenceScore - a.overallAdherenceScore)
+      .sort((a, b) => {
+        const aScore = typeof a.overallAdherenceScore?.toNumber === 'function'
+          ? a.overallAdherenceScore.toNumber()
+          : a.overallAdherenceScore;
+        const bScore = typeof b.overallAdherenceScore?.toNumber === 'function'
+          ? b.overallAdherenceScore.toNumber()
+          : b.overallAdherenceScore;
+        return bScore - aScore;
+      })
       .slice(0, 5)
       .map(p => ({
         patientId: p.patientId,
