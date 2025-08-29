@@ -181,6 +181,11 @@ export interface CarePlan {
   medicationsCount: number
   vitalsCount: number
   appointmentsCount: number
+  adherenceSummary?: {
+    medicationsCount?: number;
+    vitalsCount?: number;
+    appointmentsCount?: number;
+  };
 }
 
 export interface Medicine {

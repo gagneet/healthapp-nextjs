@@ -220,7 +220,6 @@ export default function PatientDetailsPage() {
     carePlans: false,
     vitals: false,
     appointments: false,
-    carePlans: false,
     symptoms: false
   })
   
@@ -1370,9 +1369,9 @@ export default function PatientDetailsPage() {
                             {carePlan.startDate ? formatDate(carePlan.startDate) : 'Start date not set'} - {carePlan.endDate ? formatDate(carePlan.endDate) : 'Ongoing'}
                           </p>
                           <div className="flex items-center space-x-4 mt-2 text-sm text-gray-500">
-                            <span>{carePlan.adherenceOverview?.medicationsCount || 0} medications</span>
-                            <span>{carePlan.adherenceOverview?.vitalsCount || 0} vitals</span>
-                            <span>{carePlan.adherenceOverview?.appointmentsCount || 0} appointments</span>
+                            <span>{carePlan.adherenceSummary?.medicationsCount || 0} medications</span>
+                            <span>{carePlan.adherenceSummary?.vitalsCount || 0} vitals</span>
+                            <span>{carePlan.adherenceSummary?.appointmentsCount || 0} appointments</span>
                           </div>
                         </div>
                         <div>
