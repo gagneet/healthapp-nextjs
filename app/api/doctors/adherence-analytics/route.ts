@@ -5,6 +5,9 @@ import { Prisma } from '@prisma/client';
 
 // Helper function to safely convert Decimal to number
 function safeToNumber(value: Prisma.Decimal | number | null | undefined): number {
+  if (value === null || value === undefined) {
+    return 0;
+  }
   if (value instanceof Prisma.Decimal) {
     return value.toNumber();
   }
@@ -194,8 +197,8 @@ export async function GET(request: NextRequest) {
         });
 
         const dayScores = dayRecords.reduce((scores: number[], record: DayRecord) => {
-          if (record.isCompleted) scores.push(100);
-          else if (record.isMissed) scores.push(0);
+          if (record.isCompleted) return [...scores, 100];
+          else if (record.isMissed) return [...scores, 0];
           return scores;
         }, []);
 
