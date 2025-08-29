@@ -247,29 +247,46 @@ export async function GET(request: NextRequest, { params }: { params: { id:strin
     const formattedCarePlans = await Promise.all(
       carePlans.map(async (carePlan: any) => {
         const medicationsCount = carePlan.prescribedMedications?.length || 0;
-const vitalsCount = await prisma.vitalRequirement.groupBy({
-  by: ['carePlanId'],
-  _count: true,
-  where: {
-    carePlanId: {
-      in: carePlans.map(cp => cp.id)
-    }
-  }
-});
 
-const appointmentsCount = await prisma.appointment.groupBy({
-  by: ['carePlanId'],
-  _count: true,
-  where: {
-    carePlanId: {
-      in: carePlans.map(cp => cp.id)
-    },
-    startDate: {
-      gte: carePlan.startDate,
-      ...(carePlan.endDate && { lte: carePlan.endDate })
-    }
-  }
-});
+        //         const vitalsCount = await prisma.vitalRequirement.count({
+        //           where: { carePlanId: carePlan.id },
+        //         });
+
+        //         const appointmentWhere: any = {
+        //           patientId: patientId,
+        //           startDate: { gte: carePlan.startDate },
+        //         };
+        //         if (carePlan.endDate) {
+        //           appointmentWhere.startDate.lte = carePlan.endDate;
+        //         }
+
+        //         const appointmentsCount = await prisma.appointment.count({
+        //           where: appointmentWhere,
+
+        const vitalsCount = await prisma.vitalRequirement.groupBy({
+          by: ['carePlanId'],
+          _count: true,
+          where: {
+            carePlanId: {
+              in: carePlans.map(cp => cp.id)
+            }
+          }
+        });
+
+        const appointmentsCount = await prisma.appointment.groupBy({
+          by: ['carePlanId'],
+          _count: true,
+          where: {
+            carePlanId: {
+              in: carePlans.map(cp => cp.id)
+            },
+            startDate: {
+              gte: carePlan.startDate,
+              ...(carePlan.endDate && { lte: carePlan.endDate })
+            }
+          }
+        });
+
         });
 
         return {
@@ -282,6 +299,11 @@ const appointmentsCount = await prisma.appointment.groupBy({
           medicationsCount,
           vitalsCount,
           appointmentsCount,
+          adherenceSummary: {
+            medicationsCount,
+            vitalsCount,
+            appointmentsCount,
+          },
         };
       })
     );
