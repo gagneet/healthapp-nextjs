@@ -202,9 +202,8 @@ stages:
                   TWILIO_PHONE_NUMBER: "$(TWILIO_PHONE_NUMBER)"
 
                   # --- Healthcare Compliance & Security ---
-                  # CRITICAL: Store this in Azure Key Vault and access via CSI driver in production.
+                  # PHI_ENCRYPTION_KEY is now provided via Azure Key Vault CSI driver. Do not inject as a pipeline variable.
                   # This key must be a random string of 32-bytes (256-bit) for AES-256 encryption.
-                  PHI_ENCRYPTION_KEY: "$(PHI_ENCRYPTION_KEY)"
                   AUDIT_LOG_RETENTION_DAYS: "365"
                   ENABLE_HIPAA_AUDIT: "true"
 
