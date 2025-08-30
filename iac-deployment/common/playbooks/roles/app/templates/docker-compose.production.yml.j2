@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+  app:
+    image: "{{ docker_image }}"
+    container_name: healthapp-app-prod
+    env_file:
+      - ./.env.production
+    ports:
+      - "3002:3002"
+    volumes:
+      - /app/logs:/app/logs
+      - /app/uploads:/app/uploads
+    networks:
+      - healthapp-network
+    restart: always
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3002/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
+
+  nginx:
+    image: nginx:alpine
+    container_name: healthapp-nginx-prod
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/ssl:ro
+      - nginx_cache:/var/cache/nginx
+    networks:
+      - healthapp-network
+    depends_on:
+      - app
+    restart: always
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  nginx_cache:
+    driver: local
+
+networks:
+  healthapp-network:
+    driver: bridge

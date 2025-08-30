@@ -1,0 +1,27 @@
+---
+- hosts: webservers
+  vars:
+    app_dir: /srv/healthapp
+    docker_image: "your_docker_hub_username/healthapp:latest" # Replace with your actual image
+    run_migrations: true
+    run_seeding: false
+    server_name: "localhost" # This will be replaced by the actual domain in the cloud provider's section
+    # Database variables will be passed as extra-vars from the command line
+    # for security reasons, but we can set defaults for local testing.
+    db_user: "healthapp_user"
+    db_password: "db_password"
+    db_host: "localhost"
+    db_port: "5432"
+    db_name: "healthapp_prod"
+    # Redis variables
+    redis_host: "localhost"
+    redis_port: "6379"
+    redis_password: "redis_password"
+    # NextAuth variables
+    nextauth_url: "http://localhost"
+    nextauth_secret: "a_very_long_and_secure_secret_for_nextauth"
+    next_public_api_url: "http://localhost/api"
+
+  roles:
+    - docker
+    - app
