@@ -972,6 +972,9 @@ deploy_stack() {
     export POSTGRES_IMAGE="postgres:${POSTGRES_VERSION:-17}-alpine"
     export REDIS_IMAGE="redis:7.4-alpine"
     export PGADMIN_IMAGE="dpage/pgadmin4:latest"
+    
+    # Ensure POSTGRES_DB is explicitly set to avoid nested substitution issues
+    export POSTGRES_DB="${POSTGRES_DB:-healthapp_$ENVIRONMENT}"
 
     # Deploy with environment variables
     docker stack deploy -c "$DOCKER_STACK_FILE" "$STACK_NAME" \
