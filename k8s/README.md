@@ -1,6 +1,6 @@
 # Kubernetes Manifests and Infrastructure as Code (IaC)
 
-This directory contains the Kubernetes manifests required to deploy the HealthApp application to an Azure Kubernetes Service (AKS) cluster. These manifests are used by the Azure CI/CD pipeline in `azure-pipelines.yml` (located in the root directory).
+This directory contains the Kubernetes manifests required to deploy the HealthApp application to an Azure Kubernetes Service (AKS) cluster. These manifests are used by the Azure CI/CD pipeline in `azure-pipelines.yml` located in the root of this repository.
 
 ## The Role of this Pipeline (CI/CD) vs. Infrastructure as Code (IaC)
 
@@ -34,8 +34,25 @@ Your IaC scripts would be responsible for creating and configuring resources suc
 *   **Azure Database for PostgreSQL**: Your primary database.
     *   This includes setting up firewall rules and user access.
 *   **Azure Cache for Redis**: For session storage and caching.
-*   **Azure Key Vault (Recommended)**: For securely storing and managing secrets like database passwords and API keys, rather than just using pipeline variables. Your AKS cluster can be configured to mount secrets directly from Key Vault.
+*   **Azure Key Vault (Recommended)**: For securely storing and managing secrets like database passwords and API keys. This is the recommended best practice over using pipeline variables for sensitive information.
+    *   **Note**: To use this, your AKS cluster must be configured with the **Azure Key Vault Provider for Secrets Store CSI Driver**. This allows you to mount secrets from Key Vault directly into your pods. You will also need to configure the correct **RBAC permissions** (e.g., via a Managed Identity) to allow AKS to access the Key Vault instance.
 *   **Public IP Addresses and DNS Zones**: For exposing your application to the internet.
+
+### Advanced Deployment Strategy: Pruning Resources
+
+The current pipeline uses `kubectl apply -f <directory>` to deploy the application. This command ensures that all resources defined in the manifests are created or updated.
+
+However, it does not handle the deletion of resources that are no longer in the manifests. For example, if you were to delete `service-b.yml` from this directory, `kubectl apply` would not delete the corresponding service from the cluster.
+
+For a more robust production setup, consider adopting a "declarative" approach where the live state of the cluster matches the state defined in Git. This can be achieved by using the `--prune` flag.
+
+`kubectl apply --prune -l app.kubernetes.io/name=healthapp -f .`
+
+**Requirements for using `--prune`:**
+1.  **Labeling:** All resources you want to manage this way must have a common label (e.g., `app.kubernetes.io/name: healthapp`). You would need to add this label to all your manifests in this directory.
+2.  **Pipeline Task:** The `Kubernetes@1` task in the pipeline does not support the `--prune` flag directly. You would need to switch to an `AzureCLI@2` task and run the `kubectl` command manually.
+
+This approach helps prevent orphaned resources and configuration drift over time.
 
 ### Summary
 

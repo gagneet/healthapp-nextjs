@@ -145,31 +145,32 @@ stages:
                   # --- Application Core Settings ---
                   NODE_ENV: "production"
                   PORT: "3002"
-                  FRONTEND_URL: "$(NEXTAUTH_URL)" # Typically same as NEXTAUTH_URL
-                  NEXT_PUBLIC_API_URL: "$(NEXTAUTH_URL)/api"
+                  # Public URL for the client-side, used in things like email links.
+                  FRONTEND_URL: "$(FRONTEND_URL)"
+                  # The root URL for the backend API.
+                  NEXT_PUBLIC_API_URL: "$(FRONTEND_URL)/api"
 
                   # --- Database and Cache ---
                   DATABASE_URL: "$(DATABASE_URL)" # e.g., "postgresql://user:pass@host:port/db?schema=public"
                   REDIS_URL: "$(REDIS_URL)"       # e.g., "redis://:password@host:port"
 
-                  # --- Authentication (Auth.js v5 & JWT) ---
-                  NEXTAUTH_SECRET: "$(NEXTAUTH_SECRET)" # A long, random string
-                  NEXTAUTH_URL: "$(NEXTAUTH_URL)"     # The public URL of your application
-                  AUTH_SECRET: "$(AUTH_SECRET)"         # Should be the same as NEXTAUTH_SECRET for simplicity
-                  JWT_SECRET: "$(JWT_SECRET)"           # Secret for legacy JWTs if needed
-                  JWT_REFRESH_SECRET: "$(JWT_REFRESH_SECRET)" # Secret for legacy JWT refresh tokens
+                  # --- Authentication (Auth.js v5 & Legacy JWT) ---
+                  # Auth.js v5 uses AUTH_SECRET. It's the primary secret for authentication.
+                  # The codebase also supports NEXTAUTH_SECRET for backward compatibility.
+                  # Set AUTH_SECRET to a long, random string (at least 32 characters).
+                  AUTH_SECRET: "$(AUTH_SECRET)"
+                  # The full public URL used for Auth.js callbacks.
+                  NEXTAUTH_URL: "$(NEXTAUTH_URL)"
+                  # The two secrets below are for a legacy JWT implementation that is still in use.
+                  # For security, these should be different from each other and from AUTH_SECRET.
+                  JWT_SECRET: "$(JWT_SECRET)"           # For signing access tokens.
+                  JWT_REFRESH_SECRET: "$(JWT_REFRESH_SECRET)" # For signing refresh tokens.
 
-                  # --- File Storage (e.g., Azure Blob Storage or AWS S3) ---
-                  # Note: Using Azure Blob Storage is recommended for Azure deployments.
-                  # The app might need code changes if it only supports S3.
+                  # --- File Storage (e.g., Azure Blob Storage) ---
+                  # Recommendation: Use Azure Blob Storage for deployments in Azure.
                   AZURE_STORAGE_ACCOUNT_NAME: "$(AZURE_STORAGE_ACCOUNT_NAME)"
                   AZURE_STORAGE_ACCOUNT_KEY: "$(AZURE_STORAGE_ACCOUNT_KEY)"
                   AZURE_STORAGE_CONTAINER_NAME: "$(AZURE_STORAGE_CONTAINER_NAME)"
-                  # If using AWS S3 instead:
-                  # AWS_ACCESS_KEY_ID: "$(AWS_ACCESS_KEY_ID)"
-                  # AWS_SECRET_ACCESS_KEY: "$(AWS_SECRET_ACCESS_KEY)"
-                  # AWS_REGION: "$(AWS_REGION)"
-                  # AWS_S3_BUCKET: "$(AWS_S3_BUCKET)"
 
                   # --- Email Notifications (e.g., SendGrid) ---
                   EMAIL_HOST: "$(EMAIL_HOST)"
@@ -179,7 +180,7 @@ stages:
 
                   # --- Video Consultation (Daily.co) ---
                   DAILY_API_KEY: "$(DAILY_API_KEY)"
-                  DAILY_API_URL: "https://api.daily.co/v1"
+                  DAILY_API_URL: "$(DAILY_API_URL)"
 
                   # --- Lab Integrations ---
                   LAB_WEBHOOK_SECRET: "$(LAB_WEBHOOK_SECRET)"
@@ -190,7 +191,9 @@ stages:
                   STRIPE_WEBHOOK_SECRET: "$(STRIPE_WEBHOOK_SECRET)"
 
                   # --- IoT & Medical Device Integration ---
-                  IOT_DATA_ENCRYPTION_KEY: "$(IOT_DATA_ENCRYPTION_KEY)" # Must be 32 characters
+                  # CRITICAL: Store this in Azure Key Vault and access via CSI driver in production.
+                  # This key must be a random string of 32-bytes (256-bit) for AES-256 encryption.
+                  IOT_DATA_ENCRYPTION_KEY: "$(IOT_DATA_ENCRYPTION_KEY)"
 
                   # --- Notification Services (Twilio for SMS) ---
                   TWILIO_ACCOUNT_SID: "$(TWILIO_ACCOUNT_SID)"
@@ -198,7 +201,9 @@ stages:
                   TWILIO_PHONE_NUMBER: "$(TWILIO_PHONE_NUMBER)"
 
                   # --- Healthcare Compliance & Security ---
-                  PHI_ENCRYPTION_KEY: "$(PHI_ENCRYPTION_KEY)" # Must be 32 characters
+                  # CRITICAL: Store this in Azure Key Vault and access via CSI driver in production.
+                  # This key must be a random string of 32-bytes (256-bit) for AES-256 encryption.
+                  PHI_ENCRYPTION_KEY: "$(PHI_ENCRYPTION_KEY)"
                   AUDIT_LOG_RETENTION_DAYS: "365"
                   ENABLE_HIPAA_AUDIT: "true"
 
