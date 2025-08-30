@@ -1,0 +1,51 @@
+---
+- name: Create application directory
+  file:
+    path: "{{ app_dir }}"
+    state: directory
+    mode: '0755'
+
+- name: Copy docker-compose.production.yml file
+  template:
+    src: docker-compose.production.yml.j2
+    dest: "{{ app_dir }}/docker-compose.production.yml"
+
+- name: Copy .env.production file
+  template:
+    src: .env.production.j2
+    dest: "{{ app_dir }}/.env.production"
+
+- name: Create nginx directory
+  file:
+    path: "{{ app_dir }}/nginx"
+    state: directory
+    mode: '0755'
+
+- name: Copy nginx.conf file
+  template:
+    src: nginx.conf.j2
+    dest: "{{ app_dir }}/nginx/nginx.conf"
+
+- name: Start application stack
+  docker_compose:
+    project_src: "{{ app_dir }}"
+    state: present
+    use_v2: true
+  register: compose_result
+
+- name: Wait for application to be healthy
+  uri:
+    url: "http://localhost:3002/api/health"
+    status_code: 200
+  retries: 30
+  delay: 10
+  register: result
+  until: result.status == 200
+
+- name: Run database migrations
+  command: "docker compose -f {{ app_dir }}/docker-compose.production.yml exec -T app npx prisma migrate deploy"
+  when: run_migrations | bool
+
+- name: Run database seeding
+  command: "docker compose -f {{ app_dir }}/docker-compose.production.yml exec -T app npx prisma db seed"
+  when: run_seeding | bool
