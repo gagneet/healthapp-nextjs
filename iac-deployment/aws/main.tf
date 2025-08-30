@@ -153,7 +153,7 @@ resource "aws_instance" "web" {
 resource "aws_db_instance" "main" {
   allocated_storage    = var.db_allocated_storage
   engine               = "postgres"
-  engine_version       = "14.2"
+  engine_version       = var.postgres_engine_version
   instance_class       = var.db_instance_class
   db_name              = var.db_name
   username             = var.db_user
@@ -178,7 +178,7 @@ resource "aws_elasticache_cluster" "main" {
   node_type            = var.redis_node_type
   num_cache_nodes      = 1
   parameter_group_name = "default.redis7"
-  engine_version       = "7.0"
+  engine_version       = var.redis_engine_version
   port                 = 6379
   subnet_group_name    = aws_elasticache_subnet_group.main.name
   security_group_ids   = [aws_security_group.redis_sg.id]
