@@ -16,7 +16,7 @@ const dbConfig = {
   port: process.env.POSTGRES_PORT || 5432,
   database: process.env.POSTGRES_DB || 'healthapp_dev',
   user: process.env.POSTGRES_USER || 'healthapp_user',
-  password: process.env.POSTGRES_PASSWORD || 'pg_password',
+  password: process.env.POSTGRES_PASSWORD || 'secure_pg_password',
 };
 
 async function main() {

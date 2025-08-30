@@ -142,7 +142,7 @@ The issue is environment configuration, not missing API routes. The Next.js rewr
 
 ✅ Doctor Dashboard - WORKING PERFECTLY:
 
-- Login: ✅ <doctor@healthapp.com> / password123
+- Login: ✅ <doctor@healthapp.com> / T3mpP@ssw0rd2376!
 - Dashboard Stats: ✅ Real data from seeders (5 patients, 84% adherence, 1 critical alert)
 - Recent Patients: ✅ John Doe, Jane Smith, Michael Johnson with real adherence rates
 - Critical Alerts: ✅ Jane Smith marked as high risk with 65% adherence
@@ -150,7 +150,7 @@ The issue is environment configuration, not missing API routes. The Next.js rewr
 
 ✅ Patient Dashboard - WORKING PERFECTLY:
 
-- Login: ✅ <patient@healthapp.com> / password123
+- Login: ✅ <patient@healthapp.com> / T3mpP@ssw0rd2376!
 - Dashboard Data: ✅ Real patient data (John Doe, MRN001, 92% adherence, BMI 24.7, Blood Type O+)
 - Doctor can access patient dashboards with proper authorization
 - All data comes from PostgreSQL seeders, not mock data
@@ -174,13 +174,13 @@ The issue is environment configuration, not missing API routes. The Next.js rewr
 #### Login as Doctor: [http://localhost:3002/auth/login](http://localhost:3002/auth/login)
 
 - Email: <doctor@healthapp.com>
-- Password: password123
+- Password: T3mpP@ssw0rd2376!
 - See real dashboard with 5 patients, adherence metrics, and critical alerts
 
 #### Login as Patient: [http://localhost:3002/auth/login](http://localhost:3002/auth/login)
 
 - Email: <patient@healthapp.com>
-- Password: password123
+- Password: T3mpP@ssw0rd2376!
 - See patient profile and medical data
 
 #### All Data is Real: Coming from PostgreSQL database seeders including
@@ -874,9 +874,9 @@ You're absolutely right about the missing APIs! I've now created the comprehensi
 - 5 Patients: <patient1-5@healthapp.com>
 - 2 Doctors: <doctor1-2@healthapp.com>
 - 1 HSP: <hsp@healthapp.com>
-- 1 Admin: <admin@healthapp.com>
+- 1 Admin: <gagneet@silverfoxtechnologies.com.au>
 - 1 Provider: <provider@healthapp.com>
-- Password: password123 for all users
+- Password: T3mpP@ssw0rd2376! for all users
 
 ✅ Healthcare Data:
 
@@ -1886,7 +1886,7 @@ Everything is now working with consistent ports:
 
 - PostgreSQL: Standard port 5432 ✅
 - Next.js Application: Port 3002 ✅
-- Test User Created: doctor1@healthapp.com with password password123 ✅
+- Test User Created: doctor1@healthapp.com with password T3mpP@ssw0rd2376! ✅
 - Database: All migrations applied and user exists ✅
 - Application: Running and responding on port 3002 ✅
 
@@ -1901,7 +1901,7 @@ You can now test the login:
 
 - Visit: http://healthapp.gagneet.com
 - Email: doctor1@healthapp.com
-- Password: password123
+- Password: T3mpP@ssw0rd2376!
 
 The login should now work because:
 
@@ -1929,8 +1929,8 @@ The application is ready for use with proper authentication!
 - NextAuth Tables: Account, Session, VerificationToken for database sessions
 - Medical Models: Complete healthcare data structure (65+ tables)
 - Test Users Created:
-    - Doctor: doctor1@healthapp.com / password123
-    - Patient: patient1@healthapp.com / password123
+    - Doctor: doctor1@healthapp.com / T3mpP@ssw0rd2376!
+    - Patient: patient1@healthapp.com / T3mpP@ssw0rd2376!
 
 ✅ Pure NextAuth.js Authentication
 
@@ -3165,7 +3165,7 @@ I've successfully identified and fixed the core environment variable synchroniza
 ✅ Root Cause Analysis Completed
 
 The Problem: Environment variable mismatch between:
-1. .env file: POSTGRES_PASSWORD=pg_password
+1. .env file: POSTGRES_PASSWORD=secure_pg_password
 2. Deployment command: POSTGRES_PASSWORD=secure_prod_password
 3. Docker stack: Uses environment variables with defaults
 4. Database initialization: Used initial .env values during first deployment
@@ -3191,8 +3191,8 @@ The Problem: Environment variable mismatch between:
 
 The main issue was inconsistent password handling across deployment components. Fixed by:
 
-- PostgreSQL Container: POSTGRES_PASSWORD=pg_password (from .env)
-- Application Container: DATABASE_URL with matching pg_password
+- PostgreSQL Container: POSTGRES_PASSWORD=secure_pg_password (from .env)
+- Application Container: DATABASE_URL with matching secure_pg_password
 - Database User: Password reset to match environment configuration
 
 ⚠️ Remaining Issue
@@ -3350,17 +3350,17 @@ The test environment uses these default settings:
 Environment Variables for Test
 
 Set these before deployment:
-export POSTGRES_PASSWORD=secure_test_password
+export POSTGRES_PASSWORD=secure_pg_password
 export NEXTAUTH_SECRET=test-nextauth-secret-2025-secure
-export REDIS_PASSWORD=secure_test_redis
+export REDIS_PASSWORD=secure_redis_password
 export PGADMIN_PASSWORD=secure_admin_password
 
 📋 Complete Test Deployment Example
 
 # Set environment variables
-export POSTGRES_PASSWORD=secure_test_password
+export POSTGRES_PASSWORD=secure_pg_password
 export NEXTAUTH_SECRET=test-nextauth-secret-2025-secure
-export REDIS_PASSWORD=secure_test_redis
+export REDIS_PASSWORD=secure_redis_password
 export PGADMIN_PASSWORD=secure_admin_password
 
 # Deploy test environment
@@ -4312,11 +4312,11 @@ All critical infrastructures are in place, including database migrations, compre
 
 🔍 Root Cause:
 
-● The password hash in the database was incorrect. I had inserted a placeholder bcrypt hash that didn't actually correspond to "password123".
+● The password hash in the database was incorrect. I had inserted a placeholder bcrypt hash that didn't actually correspond to "T3mpP@ssw0rd2376!".
 
 🔧 Fix Applied:
 
-1. Generated correct bcrypt hash for "password123": $2b$12$vPt2Z6XSP2U7b94HsoFWouNF/579iGK8O9XW6E59QTrHXNkgjPr..
+1. Generated correct bcrypt hash for "T3mpP@ssw0rd2376!": $2b$12$vPt2Z6XSP2U7b94HsoFWouNF/579iGK8O9XW6E59QTrHXNkgjPr..
 2. Updated all test users in the database with the correct password hash
 3. Verified password comparison now returns true
 
@@ -4335,9 +4335,9 @@ The authentication system is now ready for complete end-to-end testing! Users ca
 1. Access the application: https://healthapp.gagneet.com:3002/auth/signin
 
 2. Sign in with test credentials:
-- Doctor: doctor@healthapp.com / password123 → Should redirect to /dashboard/doctor
-- Patient: patient@healthapp.com / password123 → Should redirect to /dashboard/patient
-- Admin: admin@healthapp.com / password123 → Should redirect to /dashboard/admin
+- Doctor: doctor@healthapp.com / T3mpP@ssw0rd2376! → Should redirect to /dashboard/doctor
+- Patient: patient@healthapp.com / T3mpP@ssw0rd2376! → Should redirect to /dashboard/patient
+- Admin: gagneet@silverfoxtechnologies.com.au / T3mpP@ssw0rd2376! → Should redirect to /dashboard/admin
 
 3. Verify role-based dashboard access works as expected with no server errors.
 
@@ -4357,7 +4357,7 @@ Try logging in now - the authentication should work perfectly!
    - Populated existing user data with correct field mappings
 2. ✅ Password Authentication:
    - Identified incorrect bcrypt hash in database
-   - Generated correct password hash for "password123"
+   - Generated correct password hash for "T3mpP@ssw0rd2376!"
    - Updated all test user accounts with working authentication
 3. ✅ Dashboard Layout Errors:
    - Removed non-existent withAuth HOC imports from all dashboard layouts
@@ -4382,15 +4382,15 @@ Try logging in now - the authentication should work perfectly!
 - Proper session management with Auth.js v5
 
 ✅ Test User Accounts Ready:
-- Doctor: doctor@healthapp.com / password123
+- Doctor: doctor@healthapp.com / T3mpP@ssw0rd2376!
     - Role: DOCTOR
     - Profile: Dr. Emily Rodriguez, Cardiology specialist
     - Dashboard: /dashboard/doctor
-- Patient: patient@healthapp.com / password123
+- Patient: patient@healthapp.com / T3mpP@ssw0rd2376!
     - Role: PATIENT
     - Profile: Sarah Johnson, assigned to Dr. Rodriguez
     - Dashboard: /dashboard/patient
-- Admin: admin@healthapp.com / password123
+- Admin: gagneet@silverfoxtechnologies.com.au / T3mpP@ssw0rd2376!
     - Role: SYSTEM_ADMIN
     - Dashboard: /dashboard/admin
 
@@ -4439,9 +4439,9 @@ using Prisma migrations which ensures:
 
 ### 🧪 Test Credentials (Ready to Use)
 
-- Doctor: doctor@healthapp.com / password123 → /dashboard/doctor
-- Patient: patient@healthapp.com / password123 → /dashboard/patient
-- Admin: admin@healthapp.com / password123 → /dashboard/admin
+- Doctor: doctor@healthapp.com / T3mpP@ssw0rd2376! → /dashboard/doctor
+- Patient: patient@healthapp.com / T3mpP@ssw0rd2376! → /dashboard/patient
+- Admin: gagneet@silverfoxtechnologies.com.au / T3mpP@ssw0rd2376! → /dashboard/admin
 
 ### 📊 Database Status
 
@@ -4468,7 +4468,7 @@ You can now test the login functionality - it should work properly without any d
 
 - 5 Patients: patient1@healthapp.com through patient5@healthapp.com
 - 2 Doctors: doctor1@healthapp.com, doctor2@healthapp.com
-- 1 Admin: admin@healthapp.com (SYSTEM_ADMIN)
+- 1 Admin: gagneet@silverfoxtechnologies.com.au (SYSTEM_ADMIN)
 - 1 Provider Admin: provider@healthapp.com (HOSPITAL_ADMIN)
 - 1 HSP: hsp@healthapp.com (Health Service Provider)
 - Complete Healthcare Data: Specialties, medicines, vital templates, symptoms, treatments

@@ -5,7 +5,7 @@ import bcrypt from 'bcryptjs';
 const prisma = new PrismaClient({
   datasources: {
     db: {
-      url: "postgresql://healthapp_user:pg_password@localhost:5434/healthapp_dev?schema=public"
+      url: "postgresql://healthapp_user:secure_pg_password@localhost:5434/healthapp_dev?schema=public"
     }
   }
 });
@@ -17,7 +17,7 @@ async function testDirectDashboard() {
     // Test 1: Verify all user types exist and can authenticate
     console.log('\n👥 Testing user authentication data...');
     
-    const testPassword = 'password123';
+    const testPassword = 'T3mpP@ssw0rd2376!';
     const hashedPassword = await bcrypt.hash(testPassword, 12);
     
     const users = await prisma.user.findMany({

@@ -738,10 +738,10 @@ everytime?
 Instead of resetting, let's create an incremental migration that adds only the Phase 4 tables to the existing database
 
 ```sql
-DATABASE_URL="postgresql://healthapp_user:pg_password@localhost:5434/healthapp_dev?schema=public" npx prisma db push
-DATABASE_URL="postgresql://healthapp_user:pg_password@localhost:5434/healthapp_dev?schema=public" npx prisma migrate status
+DATABASE_URL="postgresql://healthapp_user:secure_pg_password@localhost:5434/healthapp_dev?schema=public" npx prisma db push
+DATABASE_URL="postgresql://healthapp_user:secure_pg_password@localhost:5434/healthapp_dev?schema=public" npx prisma migrate status
 
-DATABASE_URL="postgresql://healthapp_user:pg_password@localhost:5434/healthapp_dev?schema=public" npx prisma migrate resolve --applied 20250812221652_add_medical_safety_features 
+DATABASE_URL="postgresql://healthapp_user:secure_pg_password@localhost:5434/healthapp_dev?schema=public" npx prisma migrate resolve --applied 20250812221652_add_medical_safety_features 
 ```
 
 ● I see the issue! The database has a complete schema already (from previous development), but our migration files are incomplete. This is a common issue when  working with multiple development phases. Let me provide a comprehensive solution:
@@ -793,9 +793,9 @@ I can see the pattern:
 #### Latest PostgresSQL Schema
 
 ```sql
-DATABASE_URL="postgresql://healthapp_user:pg_password@localhost:5432/healthapp_dev?schema=public" pg_dump -h localhost -p 5432 -U healthapp_user -d healthapp_dev --schema-only --no-owner --no-privileges > docs/postgresql-schema.sql
+DATABASE_URL="postgresql://healthapp_user:secure_pg_password@localhost:5432/healthapp_dev?schema=public" pg_dump -h localhost -p 5432 -U healthapp_user -d healthapp_dev --schema-only --no-owner --no-privileges > docs/postgresql-schema.sql
 # Generate schema with password environment variable
-PGPASSWORD=pg_password pg_dump -h localhost -p 5432 -U healthapp_user -d healthapp_dev --schema-only --no-owner --no-privileges > docs/postgresql-schema.sql   
+PGPASSWORD=secure_pg_password pg_dump -h localhost -p 5432 -U healthapp_user -d healthapp_dev --schema-only --no-owner --no-privileges > docs/postgresql-schema.sql   
 ```
 
 ● 📊 Schema Documentation Updated Successfully!

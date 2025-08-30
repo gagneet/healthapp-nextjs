@@ -10,7 +10,7 @@ services:
     environment:
       POSTGRES_DB: healthapp_dev
       POSTGRES_USER: healthapp_user
-      POSTGRES_PASSWORD: pg_password
+      POSTGRES_PASSWORD: secure_pg_password
       POSTGRES_INITDB_ARGS: "--auth-host=md5"
     ports:
       - "5434:5432"  # Using 5434 to avoid conflicts
@@ -27,7 +27,7 @@ services:
   redis:
     image: redis:7.4-alpine
     container_name: healthapp-redis-local
-    command: redis-server --appendonly yes --requirepass redis_password
+    command: redis-server --appendonly yes --requirepass secure_redis_password
     ports:
       - "6379:6379"
     volumes:
@@ -53,10 +53,10 @@ services:
       POSTGRES_PORT: 5432
       POSTGRES_DB: healthapp_dev
       POSTGRES_USER: healthapp_user
-      POSTGRES_PASSWORD: pg_password
+      POSTGRES_PASSWORD: secure_pg_password
       REDIS_HOST: redis
       REDIS_PORT: 6379
-      REDIS_PASSWORD: redis_password
+      REDIS_PASSWORD: secure_redis_password
       JWT_SECRET: local-dev-secret-key-12345
       CORS_ORIGIN: "${FRONTEND_URL:-http://localhost:3002}"
       FRONTEND_URL: "${FRONTEND_URL:-http://localhost:3002}"
@@ -129,8 +129,8 @@ services:
     image: dpage/pgadmin4:latest
     container_name: healthapp-pgadmin-local
     environment:
-      PGADMIN_DEFAULT_EMAIL: admin@healthapp.com
-      PGADMIN_DEFAULT_PASSWORD: admin123
+      PGADMIN_DEFAULT_EMAIL: gagneet@silverfoxtechnologies.com.au
+      PGADMIN_DEFAULT_PASSWORD: PG@Adm1n%168$
       PGADMIN_CONFIG_SERVER_MODE: 'False'
     ports:
       - "5050:80"

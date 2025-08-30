@@ -267,7 +267,7 @@ export async function seedComprehensiveHealthcareData() {
                     // 1 System Admin
                     createUserData({
                         id: '66666666-6666-6666-6666-666666666666',
-                        email: 'admin@healthapp.com',
+                        email: 'gagneet@silverfoxtechnologies.com.au',
                         passwordHash: hashedPassword,
                         role: 'SYSTEM_ADMIN' as UserRole,
                         firstName: 'Admin',

@@ -164,7 +164,7 @@ CREATE TABLE verification_tokens (
 --
 -- Usage:
 -- To restore this schema: psql -U healthapp_user -d healthapp_dev < docs/postgresql-schema.sql
--- To update schema: PGPASSWORD=pg_password pg_dump -h localhost -p 5434 -U healthapp_user -d healthapp_dev --schema-only --no-owner --no-privileges > docs/postgresql-schema.sql
+-- To update schema: PGPASSWORD=secure_pg_password pg_dump -h localhost -p 5434 -U healthapp_user -d healthapp_dev --schema-only --no-owner --no-privileges > docs/postgresql-schema.sql
 --
 -- PostgreSQL database dump
 --

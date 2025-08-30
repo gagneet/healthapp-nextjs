@@ -293,9 +293,9 @@ export default function LoginPage() {
           <div className="bg-yellow-50 border border-yellow-200 rounded-md p-4 mb-4">
             <h3 className="text-sm font-medium text-yellow-800 mb-2">Test Credentials</h3>
             <div className="text-xs text-yellow-700">
-              <p><strong>Doctor:</strong> doctor@healthapp.com / password123</p>
-              <p><strong>Patient:</strong> patient@healthapp.com / password123</p>
-              <p><strong>Admin:</strong> admin@healthapp.com / password123</p>
+              <p><strong>Doctor:</strong> doctor@healthapp.com / T3mpP@ssw0rd2376!</p>
+              <p><strong>Patient:</strong> patient@healthapp.com / T3mpP@ssw0rd2376!</p>
+              <p><strong>Admin:</strong> gagneet@silverfoxtechnologies.com.au / T3mpP@ssw0rd2376!</p>
             </div>
           </div>
         )}

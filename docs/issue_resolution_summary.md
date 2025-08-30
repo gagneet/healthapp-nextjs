@@ -436,7 +436,7 @@ I've systematically addressed all the issues from the logs you provided:
 2. ✅ Auth.js v5 Authentication Fixed
 
 - Issue: Password mismatch causing "Invalid credentials"
-- Root Cause: Seed file used 'password123' but users expected 'TempPassword123!'
+- Root Cause: Seed file used 'T3mpP@ssw0rd2376!' but users expected 'TempPassword123!'
 - Fixed: Added dedicated doctor accounts with consistent password:
     - doctor@healthapp.com / TempPassword123!
     - doctor1@healthapp.com / TempPassword123!
@@ -497,7 +497,7 @@ I've successfully identified and resolved the core issues:
 1. Domain References Updated: All demo.adhere.live references have been replaced with healthapp.gagneet.com
 2. Branding Updated: All AdhereLive/adherelive branding references have been replaced with appropriate healthcare terminology
 3. Nginx Configuration Fixed: The Docker nginx service conflicts have been resolved by disabling it and using system nginx
-4. Database Password Mismatch Fixed: The services are now using the correct password from .env.test (pg_password)
+4. Database Password Mismatch Fixed: The services are now using the correct password from .env.test (secure_pg_password)
 5. SSL-Ready System Nginx Configuration Created: A complete configuration file has been created for HTTPS with Let's Encrypt support
 
 📋 What You Need to Do Now:
@@ -731,9 +731,9 @@ const prisma = new PrismaClient();
             
             // Test password verification
             const bcryptjs = require('bcryptjs');
-            const testPassword = 'password123';
+            const testPassword = 'T3mpP@ssw0rd2376!';
             const matches = bcryptjs.compareSync(testPassword, user.password_hash);
-            console.log('🔍 Password \"password123\" matches:', matches ? '✅ YES' : '❌ NO');
+            console.log('🔍 Password \"T3mpP@ssw0rd2376!\" matches:', matches ? '✅ YES' : '❌ NO');
             
             // Test different common passwords just to be sure
             ['password', 'doctor123', 'healthapp123'].forEach(pwd => {

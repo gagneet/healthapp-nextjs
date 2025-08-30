@@ -13,7 +13,7 @@ BLUE='\033[0;34m'
 CYAN='\033[0;36m'
 NC='\033[0m' # No Color
 
-ENVIRONMENT="${1:-test}"
+ENVIRONMENT="${1:-prod}"
 STACK_NAME="healthapp-$ENVIRONMENT"
 
 log_info() {
@@ -130,7 +130,7 @@ check_redis_detailed() {
         
         for container_id in $redis_containers; do
             echo -e "\n${BLUE}Container $container_id Redis Status:${NC}"
-            docker exec "$container_id" redis-cli --no-auth-warning -a "secure_test_redis" ping || log_warning "Redis ping failed"
+            docker exec "$container_id" redis-cli --no-auth-warning -a "secure_redis_password" ping || log_warning "Redis ping failed"
         done
     fi
 }
@@ -232,7 +232,7 @@ fix_common_issues() {
     echo "4. Check port conflicts (5432, 6379, 3002, 5050)"
     echo
     echo "5. Manual PostgreSQL test:"
-    echo "   docker run --rm -it -e POSTGRES_DB=healthapp_test -e POSTGRES_USER=healthapp_user -e POSTGRES_PASSWORD=pg_password postgres:17-alpine"
+    echo "   docker run --rm -it -e POSTGRES_DB=healthapp_test -e POSTGRES_USER=healthapp_user -e POSTGRES_PASSWORD=secure_pg_password postgres:17-alpine"
     echo
     echo "6. View real-time logs:"
     echo "   docker service logs -f ${STACK_NAME}_postgres"

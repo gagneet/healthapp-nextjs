@@ -6,7 +6,7 @@ import { authenticateUser } from './lib/api-services.js';
 const prisma = new PrismaClient({
   datasources: {
     db: {
-      url: "postgresql://healthapp_user:pg_password@localhost:5434/healthapp_dev?schema=public"
+      url: "postgresql://healthapp_user:secure_pg_password@localhost:5434/healthapp_dev?schema=public"
     }
   }
 });
@@ -19,21 +19,21 @@ async function testDashboards() {
     console.log('\n🔐 Testing authentication...');
     
     // Test doctor login
-    const doctorAuth = await authenticateUser('doctor1@healthapp.com', 'password123');
+    const doctorAuth = await authenticateUser('doctor1@healthapp.com', 'T3mpP@ssw0rd2376!');
     if (!doctorAuth.success) {
       throw new Error('Doctor authentication failed: ' + doctorAuth.message);
     }
     console.log('✅ Doctor authentication successful');
     
     // Test patient login  
-    const patientAuth = await authenticateUser('patient1@healthapp.com', 'password123');
+    const patientAuth = await authenticateUser('patient1@healthapp.com', 'T3mpP@ssw0rd2376!');
     if (!patientAuth.success) {
       throw new Error('Patient authentication failed: ' + patientAuth.message);
     }
     console.log('✅ Patient authentication successful');
     
     // Test admin login
-    const adminAuth = await authenticateUser('admin@healthapp.com', 'password123');
+    const adminAuth = await authenticateUser('gagneet@silverfoxtechnologies.com.au', 'T3mpP@ssw0rd2376!');
     if (!adminAuth.success) {
       throw new Error('Admin authentication failed: ' + adminAuth.message);
     }

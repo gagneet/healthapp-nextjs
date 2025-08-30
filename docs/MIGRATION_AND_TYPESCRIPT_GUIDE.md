@@ -619,7 +619,7 @@ test.describe('Doctor Dashboard', () => {
     
     // Login as doctor
     await page.fill('[data-testid="email"]', 'doctor@healthapp.com');
-    await page.fill('[data-testid="password"]', 'password123');
+    await page.fill('[data-testid="password"]', 'T3mpP@ssw0rd2376!');
     await page.click('[data-testid="login-button"]');
     
     // Navigate to patients

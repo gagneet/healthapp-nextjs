@@ -10,7 +10,7 @@ export default {
     
     // Check if test users already exist
     const existingUsers = await queryInterface.sequelize.query(
-      "SELECT email FROM users WHERE email IN ('admin@healthapp.com', 'doctor@healthapp.com', 'hsp@healthapp.com', 'hospital.admin@healthapp.com', 'patient@healthapp.com')",
+      "SELECT email FROM users WHERE email IN ('gagneet@silverfoxtechnologies.com.au', 'doctor@healthapp.com', 'hsp@healthapp.com', 'hospital.gagneet@silverfoxtechnologies.com.au', 'patient@healthapp.com')",
       { type: Sequelize.QueryTypes.SELECT }
     );
     
@@ -20,13 +20,13 @@ export default {
     }
 
     // Hash passwords for test users
-    const passwordHash = await bcrypt.hash('password123', 10);
+    const passwordHash = await bcrypt.hash('T3mpP@ssw0rd2376!', 10);
 
     // Create test users with different roles
     const users = [
       {
         id: uuidv4(),
-        email: 'admin@healthapp.com',
+        email: 'gagneet@silverfoxtechnologies.com.au',
         password_hash: passwordHash,
         role: 'SYSTEM_ADMIN',
         account_status: 'ACTIVE',
@@ -62,7 +62,7 @@ export default {
       },
       {
         id: uuidv4(),
-        email: 'hospital.admin@healthapp.com',
+        email: 'hospital.gagneet@silverfoxtechnologies.com.au',
         password_hash: passwordHash,
         role: 'HOSPITAL_ADMIN',
         account_status: 'ACTIVE',
@@ -206,11 +206,11 @@ export default {
     }
 
     console.log('✅ Test users seeded successfully:');
-    console.log('📧 admin@healthapp.com (SYSTEM_ADMIN) - password: password123');
-    console.log('📧 doctor@healthapp.com (DOCTOR) - password: password123');
-    console.log('📧 hsp@healthapp.com (HSP) - password: password123');
-    console.log('📧 hospital.admin@healthapp.com (HOSPITAL_ADMIN) - password: password123');
-    console.log('📧 patient@healthapp.com (PATIENT) - password: password123');
+    console.log('📧 gagneet@silverfoxtechnologies.com.au (SYSTEM_ADMIN) - password: T3mpP@ssw0rd2376!');
+    console.log('📧 doctor@healthapp.com (DOCTOR) - password: T3mpP@ssw0rd2376!');
+    console.log('📧 hsp@healthapp.com (HSP) - password: T3mpP@ssw0rd2376!');
+    console.log('📧 hospital.gagneet@silverfoxtechnologies.com.au (HOSPITAL_ADMIN) - password: T3mpP@ssw0rd2376!');
+    console.log('📧 patient@healthapp.com (PATIENT) - password: T3mpP@ssw0rd2376!');
   },
 
   down: async (queryInterface: any, Sequelize: any) => {

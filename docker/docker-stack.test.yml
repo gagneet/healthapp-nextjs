@@ -1,22 +1,22 @@
-# docker/docker-stack.test.yml
+# docker/docker-stack.yml - Docker Swarm stack for development environment
 version: '3.8'
 
 services:
   postgres:
     image: postgres:17-alpine
     environment:
-      POSTGRES_DB: ${POSTGRES_DB:-healthapp_test}
+      POSTGRES_DB: ${POSTGRES_DB:-healthapp_${ENVIRONMENT}}
       POSTGRES_USER: ${POSTGRES_USER:-healthapp_user}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-pg_password}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-secure_pg_password}
       PGDATA: /var/lib/postgresql/data/pgdata
     volumes:
-      - postgres_test_data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data
     ports:
       - "${HOST_PORT_DB:-5432}:5432"
     networks:
       - healthapp_network
     deploy:
-      replicas: 1
+      replicas: ${REPLICAS_POSTGRES:-1}
       restart_policy:
         condition: on-failure
         delay: 5s
@@ -48,19 +48,24 @@ services:
                -c logging_collector=off
 
   redis:
-    image: redis:7.2-alpine
+    image: redis:7.4-alpine
     volumes:
-      - redis_test_data:/data
+      - redis_data:/data
     ports:
       - "${HOST_PORT_REDIS:-6379}:6379"
     networks:
       - healthapp_network
     deploy:
-      replicas: 1
+      replicas: ${REPLICAS_REDIS:-1}
       restart_policy:
         condition: on-failure
         delay: 5s
         max_attempts: 3
+      resources:
+        limits:
+          memory: 256M
+        reservations:
+          memory: 128M
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
@@ -70,10 +75,10 @@ services:
     command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
 
   app:
-    image: healthapp:${ENVIRONMENT:-test}
+    image: healthapp:${ENVIRONMENT:-prod}
     environment:
       NODE_ENV: ${NODE_ENV:-production}
-      ENVIRONMENT: ${ENVIRONMENT:-test}
+      ENVIRONMENT: ${ENVIRONMENT:-prod}
       DATABASE_URL: ${DATABASE_URL}
       NEXTAUTH_URL: ${NEXTAUTH_URL}
       NEXTAUTH_SECRET: ${NEXTAUTH_SECRET}
@@ -108,18 +113,18 @@ services:
   pgadmin:
     image: dpage/pgadmin4:latest
     environment:
-      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-admin@healthapp.com}
-      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin123}
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-gagneet@silverfoxtechnologies.com.au}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-PG@Adm1n%168$}
       PGADMIN_CONFIG_SERVER_MODE: 'False'
       PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: 'False'
     volumes:
-      - pgadmin_test_data:/var/lib/pgadmin
+      - pgadmin_data:/var/lib/pgadmin
     ports:
-      - "${HOST_PORT_PGADMIN:-5050}:80"
+      - "${HOST_PORT_PGADMIN:-5050}:8084"
     networks:
       - healthapp_network
     deploy:
-      replicas: 1
+      replicas: ${REPLICAS_PGADMIN:-1}
       restart_policy:
         condition: on-failure
         delay: 5s
@@ -133,9 +138,9 @@ networks:
     attachable: true
 
 volumes:
-  postgres_test_data:
+  postgres_data:
     driver: local
-  redis_test_data:
+  redis_data:
     driver: local
-  pgadmin_test_data:
+  pgadmin_data:
     driver: local

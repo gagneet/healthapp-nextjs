@@ -721,11 +721,11 @@ The scripts/deploy-stack.sh script provides a production-ready deployment soluti
 
 ### 👥 Test Credentials Ready
 
-- Doctor: <doctor@healthapp.com> / password123
-- Admin: <admin@healthapp.com> / password123
-- HSP: <hsp@healthapp.com> / password123
-- Hospital Admin: <hospital.admin@healthapp.com> / password123
-- Patient: <patient@healthapp.com> / password123
+- Doctor: <doctor@healthapp.com> / T3mpP@ssw0rd2376!
+- Admin: <gagneet@silverfoxtechnologies.com.au> / T3mpP@ssw0rd2376!
+- HSP: <hsp@healthapp.com> / T3mpP@ssw0rd2376!
+- Hospital Admin: <hospital.gagneet@silverfoxtechnologies.com.au> / T3mpP@ssw0rd2376!
+- Patient: <patient@healthapp.com> / T3mpP@ssw0rd2376!
 
 ### 🛠️ Docker Swarm Management Commands
 
@@ -778,18 +778,18 @@ The login issue has been completely resolved! Here's what was accomplished:
 - UI: Beautiful responsive design with role-specific icons
 
 Test Credentials Available:
-👨‍⚕️ Doctor:         <doctor@healthapp.com> / password123
-🏥 Admin:          <admin@healthapp.com> / password123
-👩‍⚕️ HSP:            <hsp@healthapp.com> / password123
-🏥 Hospital Admin: <hospital.admin@healthapp.com> / password123
-🧑‍🦽 Patient:        <patient@healthapp.com> / password123
+👨‍⚕️ Doctor:         <doctor@healthapp.com> / T3mpP@ssw0rd2376!
+🏥 Admin:          <gagneet@silverfoxtechnologies.com.au> / T3mpP@ssw0rd2376!
+👩‍⚕️ HSP:            <hsp@healthapp.com> / T3mpP@ssw0rd2376!
+🏥 Hospital Admin: <hospital.gagneet@silverfoxtechnologies.com.au> / T3mpP@ssw0rd2376!
+🧑‍🦽 Patient:        <patient@healthapp.com> / T3mpP@ssw0rd2376!
 
 📋 Current Access URLs
 
 - Frontend: [http://192.168.0.148:3002](http://192.168.0.148:3002)
 - Backend API: [http://192.168.0.148:3001](http://192.168.0.148:3001)
 - Health Check: [http://192.168.0.148:3001/health](http://192.168.0.148:3001/health)
-- pgAdmin: [http://192.168.0.148:5050](http://192.168.0.148:5050) (<admin@healthapp.com> / admin123)
+- pgAdmin: [http://192.168.0.148:5050](http://192.168.0.148:5050) (<gagneet@silverfoxtechnologies.com.au> / PG@Adm1n%168$)
 
 The application is now fully functional and ready for use! Users can access the role-based login pages and authenticate successfully with the test credentials provided.
 
@@ -1371,16 +1371,16 @@ The system gracefully handles all scenarios you mentioned - clicking unimplement
 
 #### Configuration Files
 
-- package.json - Engine requirement updated to >=22.18.0
+- package.json - Engine requirement updated to >=22.19.0
 - CLAUDE.md - Documentation updated
-- .nvmrc - Created with version 22.18.0
+- .nvmrc - Created with version 22.19.0
 
 #### Testing
 
 - scripts/test-node-compatibility.js - Compatibility test script
 - Added npm run test:node script
 
-#### Benefits of Node.js 22.18.0 LTS
+#### Benefits of Node.js 22.19.0 LTS
 
 - Security: Fixes high vulnerabilities from Node.js 18
 - Performance: Improved V8 engine and runtime optimizations
@@ -1843,7 +1843,7 @@ All issues have been resolved and the new unified Docker deployment script is no
 - Frontend: [http://localhost:3002](http://localhost:3002) (working)
 - PostgreSQL: Running with health checks
 - Redis: Running with health checks
-- pgAdmin: [http://localhost:5050](http://localhost:5050) (<admin@healthapp.com> / admin123)
+- pgAdmin: [http://localhost:5050](http://localhost:5050) (<gagneet@silverfoxtechnologies.com.au> / PG@Adm1n%168$)
 
 #### Successfully Working Features
 
@@ -2414,7 +2414,7 @@ The HealthApp is now running successfully! Here's what's deployed:
 - Frontend: [http://192.168.0.148:3002](http://192.168.0.148:3002) (✅ Working)
 - Backend API: [http://192.168.0.148:3001](http://192.168.0.148:3001) (✅ Working)
 - Health Check: [http://192.168.0.148:3001/health](http://192.168.0.148:3001/health) (✅ Working)
-- pgAdmin: [http://192.168.0.148:5050](http://192.168.0.148:5050) (<admin@healthapp.com> / admin123)
+- pgAdmin: [http://192.168.0.148:5050](http://192.168.0.148:5050) (<gagneet@silverfoxtechnologies.com.au> / PG@Adm1n%168$)
 
 ### 🐳 Docker Services Running
 
@@ -2515,9 +2515,9 @@ preventing the Enhanced Auth context from working properly has been fixed by usi
 
 You can now:
 
-- ✅ Login as <doctor@healthapp.com> (password: password123) and access the Profile page without errors
+- ✅ Login as <doctor@healthapp.com> (password: T3mpP@ssw0rd2376!) and access the Profile page without errors
 - ✅ Navigate to the Calendar page from doctor dashboard
-- ✅ Login as <admin@healthapp.com> (password: password123) and see the logout button in the sidebar
+- ✅ Login as <gagneet@silverfoxtechnologies.com.au> (password: T3mpP@ssw0rd2376!) and see the logout button in the sidebar
 - ✅ Access the Doctors management page from admin dashboard
 - ✅ See properly populated doctor profile information
 
@@ -2658,7 +2658,7 @@ const userId = req.user.id;
 
 You can now test the doctor profile by:
 
-1. Login as <doctor@healthapp.com> (password: password123)
+1. Login as <doctor@healthapp.com> (password: T3mpP@ssw0rd2376!)
 2. Navigate to the Profile page
 3. The API should now return the complete doctor profile information including:
 
@@ -2736,7 +2736,7 @@ useEffect(() => {
 
 Now when you login:
 
-- ✅ Admin (<admin@healthapp.com>) → redirects to /dashboard/admin
+- ✅ Admin (<gagneet@silverfoxtechnologies.com.au>) → redirects to /dashboard/admin
 - ✅ Doctor (<doctor@healthapp.com>) → redirects to /dashboard/doctor
 - ✅ Patient (<patient@healthapp.com>) → redirects to /dashboard/patient
 
@@ -3781,9 +3781,9 @@ Added proper Content Security Policy in layout.tsx to allow backend API connecti
 - Authenticated: Login API is working correctly with test credentials
 - Test Users Created:
 
-  - <doctor@healthapp.com> / password123
-  - <patient@healthapp.com> / password123
-  - <admin@healthapp.com> / password123
+  - <doctor@healthapp.com> / T3mpP@ssw0rd2376!
+  - <patient@healthapp.com> / T3mpP@ssw0rd2376!
+  - <gagneet@silverfoxtechnologies.com.au> / T3mpP@ssw0rd2376!
 
 ### 🎯 Frontend Configuration
 
@@ -3791,7 +3791,7 @@ Added proper Content Security Policy in layout.tsx to allow backend API connecti
 - Environment: Configured for development with proper security headers
 - Authentication: Ready to handle login flow with backend API
 
-The application should now work properly with successful login authentication and no console errors. Try logging in with <doctor@healthapp.com> and password123 to
+The application should now work properly with successful login authentication and no console errors. Try logging in with <doctor@healthapp.com> and T3mpP@ssw0rd2376! to
 test the full authentication flow.
 
 ● Issues Found and Fixes Needed
@@ -4161,17 +4161,17 @@ Let me know what you see now!
 
 ## Login issues after conversion to TypeScript
 
-● Perfect! I can see there are test users seeded with the password password123. The test credentials are:
+● Perfect! I can see there are test users seeded with the password T3mpP@ssw0rd2376!. The test credentials are:
 
-- Doctor: <doctor@healthapp.com> / password123
-- Patient: <patient@healthapp.com> / password123
-- Admin: <admin@healthapp.com> / password123
-- HSP: <hsp@healthapp.com> / password123
-- Hospital Admin: <hospital.admin@healthapp.com> / password123
+- Doctor: <doctor@healthapp.com> / T3mpP@ssw0rd2376!
+- Patient: <patient@healthapp.com> / T3mpP@ssw0rd2376!
+- Admin: <gagneet@silverfoxtechnologies.com.au> / T3mpP@ssw0rd2376!
+- HSP: <hsp@healthapp.com> / T3mpP@ssw0rd2376!
+- Hospital Admin: <hospital.gagneet@silverfoxtechnologies.com.au> / T3mpP@ssw0rd2376!
 
 Now you should restart your frontend development server to pick up the new configuration, and then try logging in with:
 
-Email: <doctor@healthapp.comPassword>: password123
+Email: <doctor@healthapp.comPassword>: T3mpP@ssw0rd2376!
 
 The authentication should now work because:
 
@@ -4214,7 +4214,7 @@ Option 1: Restart just the database services (Recommended)
 docker run -d --name healthapp-postgres -p 5433:5432 \
   -e POSTGRES_DB=healthapp_dev \
   -e POSTGRES_USER=healthapp_user \
-  -e POSTGRES_PASSWORD=pg_password \
+  -e POSTGRES_PASSWORD=secure_pg_password \
   postgres:17-alpine
 
 docker run -d --name healthapp-redis -p 6379:6379 redis:7-alpine
@@ -4505,7 +4505,7 @@ Evidence of Complete Resolution:
 
 PgAdmin Issue - FULLY FIXED ✅
 
-- Email validation issue resolved by changing from <admin@healthapp.local> to <admin@healthapp.com>
+- Email validation issue resolved by changing from <admin@healthapp.local> to <gagneet@silverfoxtechnologies.com.au>
 - PgAdmin fully operational on port 5050
 
 Final System Status:

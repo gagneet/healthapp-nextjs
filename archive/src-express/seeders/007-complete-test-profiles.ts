@@ -45,11 +45,11 @@ export default {
     }
 
     // Hash password for test users
-    const passwordHash = await bcrypt.hash('password123', 10);
+    const passwordHash = await bcrypt.hash('T3mpP@ssw0rd2376!', 10);
 
     // Get existing users or create them
     let users = await queryInterface.sequelize.query(
-      "SELECT id, email, role FROM users WHERE email IN ('admin@healthapp.com', 'doctor@healthapp.com', 'patient@healthapp.com')",
+      "SELECT id, email, role FROM users WHERE email IN ('gagneet@silverfoxtechnologies.com.au', 'doctor@healthapp.com', 'patient@healthapp.com')",
       { type: Sequelize.QueryTypes.SELECT }
     );
 
@@ -57,10 +57,10 @@ export default {
     const existingEmails = users.map((u: any) => u.email);
     const usersToCreate = [];
 
-    if (!existingEmails.includes('admin@healthapp.com')) {
+    if (!existingEmails.includes('gagneet@silverfoxtechnologies.com.au')) {
       usersToCreate.push({
         id: '11111111-1111-1111-1111-111111111111', // Deterministic UUID for admin
-        email: 'admin@healthapp.com',
+        email: 'gagneet@silverfoxtechnologies.com.au',
         password_hash: passwordHash,
         role: 'SYSTEM_ADMIN',
         account_status: 'ACTIVE',
@@ -118,11 +118,11 @@ export default {
 
     // Re-fetch all users after creation
     users = await queryInterface.sequelize.query(
-      "SELECT id, email, role FROM users WHERE email IN ('admin@healthapp.com', 'doctor@healthapp.com', 'patient@healthapp.com')",
+      "SELECT id, email, role FROM users WHERE email IN ('gagneet@silverfoxtechnologies.com.au', 'doctor@healthapp.com', 'patient@healthapp.com')",
       { type: Sequelize.QueryTypes.SELECT }
     );
 
-    const adminUser = users.find((u: any) => u.email === 'admin@healthapp.com');
+    const adminUser = users.find((u: any) => u.email === 'gagneet@silverfoxtechnologies.com.au');
     const doctorUser = users.find((u: any) => u.email === 'doctor@healthapp.com');
     const patientUser = users.find((u: any) => u.email === 'patient@healthapp.com');
 
@@ -385,9 +385,9 @@ export default {
 
     console.log('✅ Complete test profiles created successfully!');
     console.log('📧 Test credentials:');
-    console.log('👩‍⚕️ doctor@healthapp.com (DOCTOR) - password: password123');
-    console.log('👤 patient@healthapp.com (PATIENT) - password: password123');
-    console.log('👨‍💼 admin@healthapp.com (SYSTEM_ADMIN) - password: password123');
+    console.log('👩‍⚕️ doctor@healthapp.com (DOCTOR) - password: T3mpP@ssw0rd2376!');
+    console.log('👤 patient@healthapp.com (PATIENT) - password: T3mpP@ssw0rd2376!');
+    console.log('👨‍💼 gagneet@silverfoxtechnologies.com.au (SYSTEM_ADMIN) - password: T3mpP@ssw0rd2376!');
     
     console.log('🏥 Doctor Profile: Complete with license, speciality, clinic');
     console.log('👤 Patient Profile: Complete with medical history, allergies, medications');
@@ -422,7 +422,7 @@ export default {
 
     await queryInterface.bulkDelete('users', {
       email: {
-        [Sequelize.Op.in]: ['admin@healthapp.com', 'doctor@healthapp.com', 'patient@healthapp.com']
+        [Sequelize.Op.in]: ['gagneet@silverfoxtechnologies.com.au', 'doctor@healthapp.com', 'patient@healthapp.com']
       }
     });
 

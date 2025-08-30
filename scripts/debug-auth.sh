@@ -91,8 +91,8 @@ const bcrypt = require('bcryptjs');
 
 console.log('🔍 Testing password hashing...');
 
-// Test password (usually 'password123' or 'password' for seeded data)
-const testPasswords = ['password123', 'password', 'doctor123', 'healthapp123'];
+// Test password (usually 'T3mpP@ssw0rd2376!' or 'password' for seeded data)
+const testPasswords = ['T3mpP@ssw0rd2376!', 'password', 'doctor123', 'healthapp123'];
 
 testPasswords.forEach(pwd => {
     const hash = bcrypt.hashSync(pwd, 12);
@@ -100,7 +100,7 @@ testPasswords.forEach(pwd => {
 });
 
 console.log('\\n🔍 If you know the expected password hash, test verification:');
-console.log('bcrypt.compareSync(\"password123\", \"your_hash_here\")');
+console.log('bcrypt.compareSync(\"T3mpP@ssw0rd2376!\", \"your_hash_here\")');
 " || echo "⚠️ Could not run password test (bcryptjs might not be available)"
 
 echo
@@ -135,7 +135,7 @@ echo "====================="
 echo "# Reset a user's password:"
 echo "docker exec $POSTGRES_CONTAINER psql -U healthapp_user -d healthapp_test -c \""
 echo "UPDATE users SET password_hash = '\$2a\$12\$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LeAArtL.xayP1CJUm' WHERE email = 'doctor@healthapp.com';\""
-echo "# (This sets password to 'password123')"
+echo "# (This sets password to 'T3mpP@ssw0rd2376!')"
 echo
 echo "# Re-run seeds to reset all test data:"
 echo "docker exec $CONTAINER_ID npm run seed"

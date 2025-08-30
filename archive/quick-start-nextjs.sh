@@ -46,12 +46,12 @@ PORT=3000
 NEXTAUTH_URL=http://localhost:3000
 NEXTAUTH_SECRET=nextjs_healthcare_secret_key_for_development_not_for_production
 JWT_SECRET=development_jwt_secret_key_not_for_production_use_only
-DATABASE_URL="postgresql://healthapp_user:pg_password@localhost:5432/healthapp_dev?schema=public"
+DATABASE_URL="postgresql://healthapp_user:secure_pg_password@localhost:5432/healthapp_dev?schema=public"
 POSTGRES_HOST=localhost
 POSTGRES_PORT=5432
 POSTGRES_DB=healthapp_dev
 POSTGRES_USER=healthapp_user
-POSTGRES_PASSWORD=pg_password
+POSTGRES_PASSWORD=secure_pg_password
 NEXT_PUBLIC_API_URL=http://localhost:3000/api
 HOST_IP=$HOST_IP
 DEBUG=true
@@ -112,8 +112,8 @@ if [ -f "docker/docker-compose.nextjs-local.yml" ]; then
     echo -e "${GREEN}🔧 API Health Check:${NC}   http://localhost:3000/api/health"
     echo -e "${GREEN}👨‍⚕️ Doctor Dashboard:${NC}  http://localhost:3000/dashboard/doctor"
     echo -e "${GREEN}🤒 Patient Dashboard:${NC}  http://localhost:3000/dashboard/patient"
-    echo -e "${GREEN}🗄️ Database Admin:${NC}     http://localhost:5050 (admin@healthapp.dev/admin123)"
-    echo -e "${GREEN}📊 Redis Admin:${NC}        http://localhost:8081 (admin/admin123)"
+    echo -e "${GREEN}🗄️ Database Admin:${NC}     http://localhost:5050 (admin@healthapp.dev/PG@Adm1n%168$)"
+    echo -e "${GREEN}📊 Redis Admin:${NC}        http://localhost:8081 (admin/PG@Adm1n%168$)"
     echo ""
     echo -e "${BLUE}📝 Useful Commands:${NC}"
     echo "  View logs:     docker-compose -f docker/docker-compose.nextjs-local.yml logs -f nextjs"
@@ -136,7 +136,7 @@ else
     docker run -d --name healthapp-postgres-quick \
         -e POSTGRES_DB=healthapp_dev \
         -e POSTGRES_USER=healthapp_user \
-        -e POSTGRES_PASSWORD=pg_password \
+        -e POSTGRES_PASSWORD=secure_pg_password \
         -p 5432:5432 \
         postgres:17-alpine
     

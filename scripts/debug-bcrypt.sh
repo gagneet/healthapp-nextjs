@@ -50,7 +50,7 @@ const bcryptjs = require('bcryptjs');
 const hash = '$ACTUAL_HASH';
 
 console.log('🧪 Testing with bcryptjs:');
-const testPasswords = ['password123', 'password', 'doctor123', 'healthapp123', 'doctor', 'test123'];
+const testPasswords = ['T3mpP@ssw0rd2376!', 'password', 'doctor123', 'healthapp123', 'doctor', 'test123'];
 
 testPasswords.forEach(pwd => {
     try {
@@ -69,7 +69,7 @@ try {
     const hash = '$ACTUAL_HASH';
 
     console.log('\\n🧪 Testing with bcrypt:');
-    const testPasswords = ['password123', 'password', 'doctor123', 'healthapp123', 'doctor', 'test123'];
+    const testPasswords = ['T3mpP@ssw0rd2376!', 'password', 'doctor123', 'healthapp123', 'doctor', 'test123'];
 
     testPasswords.forEach(pwd => {
         try {
@@ -108,9 +108,9 @@ console.log('🌱 Recreating seeder hash generation...');
 try {
     // Try bcryptjs first (most common)
     const bcryptjs = require('bcryptjs');
-    const testPassword = 'password123';
+    const testPassword = 'T3mpP@ssw0rd2376!';
     const newHash = bcryptjs.hashSync(testPassword, 12);
-    console.log('bcryptjs hash for \"password123\":', newHash);
+    console.log('bcryptjs hash for \"T3mpP@ssw0rd2376!\":', newHash);
     
     // Test if this new hash works with the same password
     const verification = bcryptjs.compareSync(testPassword, newHash);
@@ -123,9 +123,9 @@ try {
 try {
     // Try bcrypt if available
     const bcrypt = require('bcrypt');
-    const testPassword = 'password123';
+    const testPassword = 'T3mpP@ssw0rd2376!';
     const newHash = bcrypt.hashSync(testPassword, 12);
-    console.log('bcrypt hash for \"password123\":', newHash);
+    console.log('bcrypt hash for \"T3mpP@ssw0rd2376!\":', newHash);
     
     // Test if this new hash works with the same password
     const verification = bcrypt.compareSync(testPassword, newHash);
@@ -149,7 +149,7 @@ echo "====================="
 echo "# Option 1: Reset password using the same library as auth:"
 echo "docker exec $APP_CONTAINER node -e \"
 const bcryptjs = require('bcryptjs');
-console.log('New hash:', bcryptjs.hashSync('password123', 12));
+console.log('New hash:', bcryptjs.hashSync('T3mpP@ssw0rd2376!', 12));
 \""
 echo
 echo "# Option 2: Check your auth.ts or auth.js file for bcrypt imports"

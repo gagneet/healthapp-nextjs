@@ -463,7 +463,7 @@ test.describe('Doctor Dashboard Workflow', () => {
     // Login as doctor
     await page.goto('/login');
     await page.fill('[data-testid="email"]', 'doctor@healthapp.com');
-    await page.fill('[data-testid="password"]', 'password123');
+    await page.fill('[data-testid="password"]', 'T3mpP@ssw0rd2376!');
     await page.click('[data-testid="login-button"]');
     
     // Should redirect to doctor dashboard
@@ -537,7 +537,7 @@ test.describe('Patient Portal', () => {
   test('patient can view and record vitals', async ({ page }) => {
     await page.goto('/login');
     await page.fill('[data-testid="email"]', 'patient@healthapp.com');
-    await page.fill('[data-testid="password"]', 'password123');
+    await page.fill('[data-testid="password"]', 'T3mpP@ssw0rd2376!');
     await page.click('[data-testid="login-button"]');
     
     // Navigate to vitals

@@ -690,7 +690,7 @@ pull_base_images() {
     local BASE_IMAGES=(
         "node:22-alpine"                        # Application base image
         "postgres:${POSTGRES_VERSION}-alpine"   # PostgreSQL database
-        "redis:7.2-alpine"                      # Redis cache
+        "redis:7.4-alpine"                      # Redis cache
         "dpage/pgadmin4:latest"                 # PgAdmin interface
     )
 
@@ -736,7 +736,7 @@ start_database_services_early() {
     # Set environment variables for the stack deployment
     export APP_IMAGE="busybox:latest"  # Placeholder image for app service during DB-only deployment
     export POSTGRES_IMAGE="postgres:${POSTGRES_VERSION:-17}-alpine"
-    export REDIS_IMAGE="redis:7.2-alpine"
+    export REDIS_IMAGE="redis:7.4-alpine"
     export PGADMIN_IMAGE="dpage/pgadmin4:latest"
 
     # Deploy the full stack early (services will be updated later)
@@ -866,7 +866,7 @@ deploy_stack() {
 
     # Export all necessary environment variables for the stack
     export POSTGRES_IMAGE="postgres:${POSTGRES_VERSION:-17}-alpine"
-    export REDIS_IMAGE="redis:7.2-alpine"
+    export REDIS_IMAGE="redis:7.4-alpine"
     export PGADMIN_IMAGE="dpage/pgadmin4:latest"
 
     # Deploy with environment variables
@@ -1197,7 +1197,7 @@ check_redis_health() {
     if docker exec "$container_id" redis-cli ping >/dev/null 2>&1; then
         log_debug "Redis is ready (no auth)"
         return 0
-    elif docker exec "$container_id" redis-cli --no-auth-warning -a "${REDIS_PASSWORD:-secure_test_redis}" ping >/dev/null 2>&1; then
+    elif docker exec "$container_id" redis-cli --no-auth-warning -a "${REDIS_PASSWORD:-secure_redis_password}" ping >/dev/null 2>&1; then
         log_debug "Redis is ready (with auth)"
         return 0
     else

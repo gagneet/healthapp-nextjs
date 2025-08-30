@@ -61,7 +61,7 @@ After successful deployment (Pure Next.js Architecture):
 
 ```bash
 # Verify you have these installed:
-node --version    # Should be 22.18.0+ (LTS)
+node --version    # Should be 22.19.0+ (LTS)
 docker --version  # Any recent version
 git --version     # Any recent version
 ```
@@ -122,7 +122,7 @@ NEXTAUTH_URL=http://localhost:3000
 NEXTAUTH_SECRET=nextjs_healthcare_secret_key_for_development_not_for_production
 
 # Database Connection (Prisma)
-DATABASE_URL="postgresql://healthapp_user:pg_password@localhost:5432/healthapp_dev?schema=public"
+DATABASE_URL="postgresql://healthapp_user:secure_pg_password@localhost:5432/healthapp_dev?schema=public"
 
 # Application Settings
 NEXT_PUBLIC_API_URL=http://localhost:3000/api
@@ -191,7 +191,7 @@ ALTER USER healthapp_user CREATEDB;  -- For running tests
 ./scripts/dev-local.sh start
 
 # Seed with comprehensive healthcare data
-DATABASE_URL="postgresql://healthapp_user:pg_password@localhost:5434/healthapp_dev?schema=public" npx prisma db seed
+DATABASE_URL="postgresql://healthapp_user:secure_pg_password@localhost:5434/healthapp_dev?schema=public" npx prisma db seed
 
 # Access platform
 # Frontend: http://localhost:3002
@@ -269,7 +269,7 @@ curl -I http://localhost:3000
 |---------|-----|-------------|
 | **Frontend** | [http://localhost:3002](http://localhost:3002) | Create account via UI |
 | **Backend API** | [http://localhost:3001/api](http://localhost:3001/api) | API endpoints |
-| **pgAdmin** | [http://localhost:5050](http://localhost:5050) | admin@healthapp.com / admin123 |
+| **pgAdmin** | [http://localhost:5050](http://localhost:5050) | gagneet@silverfoxtechnologies.com.au / PG@Adm1n%168$ |
 | **API Docs** | [http://localhost:3001/api-docs](http://localhost:3001/api-docs) | Auto-generated docs |
 
 ### Default Access

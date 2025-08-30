@@ -10,7 +10,8 @@ RUN apk add --no-cache \
     vim \
     openssl \
     ca-certificates \
-    netcat-openbsd
+    netcat-openbsd \
+    git
 
 WORKDIR /app
 
