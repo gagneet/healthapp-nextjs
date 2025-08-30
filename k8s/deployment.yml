@@ -4,6 +4,7 @@ metadata:
   name: healthapp-deployment
   labels:
     app: healthapp
+    app.kubernetes.io/name: healthapp
 spec:
   # The number of replicas will be configurable in the pipeline.
   replicas: 2

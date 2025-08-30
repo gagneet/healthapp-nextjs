@@ -2,6 +2,8 @@ apiVersion: v1
 kind: Service
 metadata:
   name: healthapp-service
+  labels:
+    app.kubernetes.io/name: healthapp
 spec:
   # This service will be of type ClusterIP, meaning it's only accessible within the cluster.
   # The Ingress controller will route external traffic to this service.
