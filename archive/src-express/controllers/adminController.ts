@@ -41,7 +41,7 @@ class AdminController {
           },
           {
             model: Speciality,
-            as: 'speciality'
+            as: 'specialty'
           }
         ],
         offset,
@@ -63,7 +63,7 @@ class AdminController {
             firstName: doctor.firstName,
             lastName: doctor.lastName,
             email: doctor.user?.email,
-            speciality: doctor.speciality?.name,
+            specialty: doctor.specialty?.name,
             verification_status: doctor.user?.verified ? 'verified' : 'pending',
             account_status: doctor.user?.account_status
           },
@@ -383,7 +383,7 @@ class AdminController {
           },
           {
             model: Speciality,
-            as: 'speciality',
+            as: 'specialty',
             attributes: ['id', 'name', 'description']
           },
           {
@@ -541,7 +541,7 @@ class AdminController {
           },
           {
             model: Speciality,
-            as: 'speciality',
+            as: 'specialty',
             attributes: ['id', 'name', 'description']
           },
           {
@@ -636,7 +636,7 @@ class AdminController {
           },
           {
             model: Speciality,
-            as: 'speciality',
+            as: 'specialty',
             attributes: ['id', 'name', 'description']
           },
           {
@@ -688,10 +688,10 @@ class AdminController {
           medical_license_number: doctor.medical_license_number,
           npi_number: doctor.npi_number,
           speciality_id: doctor.speciality_id,
-          speciality: doctor.speciality ? {
-            id: doctor.speciality.id,
-            name: doctor.speciality.name,
-            description: doctor.speciality.description
+          specialty: doctor.specialty ? {
+            id: doctor.specialty.id,
+            name: doctor.specialty.name,
+            description: doctor.specialty.description
           } : null,
           specialties: doctor.specialties || [],
           sub_specialties: doctor.sub_specialties || [],

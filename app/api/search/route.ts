@@ -259,7 +259,7 @@ async function searchMedicines(searchValue: string, filters: SearchFilters) {
 }
 
 async function searchSpecialities(searchValue: string, filters: SearchFilters) {
-  return await prisma.speciality.findMany({
+  return await prisma.specialty.findMany({
     where: {
       OR: [
         { name: { contains: searchValue, mode: 'insensitive' } },

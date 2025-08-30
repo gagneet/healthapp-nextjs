@@ -110,7 +110,7 @@ export default function AdminDoctorsPage() {
             email: basicInfo.email || doctor.email || '',
             mobileNumber: basicInfo.mobileNumber || doctor.mobileNumber || '',
             medical_license_number: basicInfo.medical_license_number || 'N/A',
-            specialties: basicInfo.speciality ? [basicInfo.speciality] : [],
+            specialties: basicInfo.specialty ? [basicInfo.specialty] : [],
             years_of_experience: basicInfo.years_of_experience || 0,
             is_verified: basicInfo.verification_status === 'verified',
             practice_name: basicInfo.practice_name || '',

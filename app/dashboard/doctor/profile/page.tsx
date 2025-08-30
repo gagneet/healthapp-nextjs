@@ -56,7 +56,7 @@ interface DoctorProfile {
   profilePictureUrl: string
   average_rating: number | null
   total_patients: number
-  speciality: {
+  specialty: {
     id: string
     name: string
     description: string
@@ -269,7 +269,7 @@ export default function DoctorProfilePage() {
             <h1 className="text-2xl font-bold">
               Dr. {userHelpers.getLastName(user) || userHelpers.getFirstName(user)}
             </h1>
-            <p className="text-blue-100">{profile.speciality?.name || 'Specialty not specified'}</p>
+            <p className="text-blue-100">{profile.specialty?.name || 'Specialty not specified'}</p>
             <div className="flex items-center space-x-4 mt-2">
               <div className="flex items-center">
                 <StarIcon className="h-4 w-4 text-yellow-300 mr-1" />

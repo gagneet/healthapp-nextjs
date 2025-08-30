@@ -377,7 +377,7 @@ export async function GET(request: NextRequest) {
 #### 👨‍⚕️ Doctor Management (Real-time APIs)
 
 - `GET /api/doctors/dashboard` - Get doctor dashboard with live statistics
-- `GET /api/doctors/profile` - Get doctor profile with speciality info
+- `GET /api/doctors/profile` - Get doctor profile with specialty info
 - `PUT /api/doctors/profile` - Update doctor profile
 - `GET /api/doctors/recent-patients` - Get recent patient activity
 - `GET /api/doctors/critical-alerts` - Get urgent patient alerts

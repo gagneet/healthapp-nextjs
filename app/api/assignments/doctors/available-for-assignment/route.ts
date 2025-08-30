@@ -66,7 +66,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
 
     // Filter by specialty
     if (specialty) {
-      whereConditions.speciality = {
+      whereConditions.specialty = {
         name: { contains: specialty, mode: 'insensitive' }
       }
     }
@@ -113,7 +113,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
             phone: true
           }
         },
-        speciality: {
+        specialty: {
           select: {
             id: true,
             name: true,
@@ -166,9 +166,9 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
         email: doctor.user.email,
         phone: doctor.user.phone,
         specialty: {
-          id: doctor.speciality?.id,
-          name: doctor.speciality?.name || 'General Practice',
-          description: doctor.speciality?.description
+          id: doctor.specialty?.id,
+          name: doctor.specialty?.name || 'General Practice',
+          description: doctor.specialty?.description
         },
         organization: {
           id: doctor.organizationId,
@@ -199,7 +199,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
             : 'Different organization - patient consent required',
           recommended_for_emergency: doctor.emergencyAvailability && currentWorkload < 5,
           suitable_for_assignment_type: {
-            specialist: doctor.speciality?.name !== 'General Practice',
+            specialist: doctor.specialty?.name !== 'General Practice',
             substitute: sameOrganization && currentWorkload < 8,
             transferred: currentWorkload < 5
           }

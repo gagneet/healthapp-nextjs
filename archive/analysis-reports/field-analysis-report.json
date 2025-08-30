@@ -639,7 +639,7 @@
       ]
     },
     {
-      "field": "speciality",
+      "field": "specialty",
       "count": 12,
       "files": [
         "/app/dashboard/admin/doctors/page.tsx",

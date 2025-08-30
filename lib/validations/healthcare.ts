@@ -106,7 +106,7 @@ export const DoctorSchema = z.object({
   
   // Professional Information
   medicalLicenseNumber: z.string().min(1, "Medical license number is required"),
-  specialityId: z.string().uuid("Invalid speciality ID").optional(),
+  specialityId: z.string().uuid("Invalid specialty ID").optional(),
   yearsOfExperience: z.number().min(0).max(70).optional(),
   consultationFee: z.number().min(0).optional(),
   

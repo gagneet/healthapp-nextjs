@@ -1028,7 +1028,7 @@ Phase 3: Healthcare Features
 #### Doctor Management APIs
 
 - /app/api/doctors/profile/route.ts: Doctor profile management with statistics
-- Professional credentials and speciality management
+- Professional credentials and specialty management
 - Dashboard data calculation (patient counts, appointment completion rates)
 - Organization and clinic address management
 
@@ -1703,14 +1703,14 @@ I have successfully implemented all PR review fixes for the feat/telemedicine-ai
    - Updated appointment creation to use startTime and endTime instead of deprecated fields
    - Fixed import statement to remove .js extension
 6. Replaced hard-coded numeric IDs with UUID generation in lib/seed.ts
-   - Removed hard-coded numeric IDs from speciality records (lines 305-308 range)
-   - Updated speciality creation to use proper UUID generation
-   - Created individual speciality records and referenced them by UUID instead of numeric ID
+   - Removed hard-coded numeric IDs from specialty records (lines 305-308 range)
+   - Updated specialty creation to use proper UUID generation
+   - Created individual specialty records and referenced them by UUID instead of numeric ID
 7. Fixed hard-coded specialty ID in tests/setup.ts
    - Resolved TODO comment on line 95
-   - Created dynamic speciality creation in test setup
+   - Created dynamic specialty creation in test setup
    - Added global testSpecialtyId variable for test utilities
-   - Updated createTestDoctor to use dynamically created speciality ID
+   - Updated createTestDoctor to use dynamically created specialty ID
 
 🔧 Key Technical Improvements:
 
@@ -1726,7 +1726,7 @@ I have successfully implemented all PR review fixes for the feat/telemedicine-ai
 - lib/services/LaboratoryService.ts - Corrected database field references
 - lib/services/ConsultationBookingService.ts - Added required appointment fields
 - lib/seed.ts - Replaced numeric IDs with UUID generation
-- tests/setup.ts - Dynamic speciality creation for tests
+- tests/setup.ts - Dynamic specialty creation for tests
 
 All changes follow Next.js best practices, maintain healthcare compliance requirements, and ensure proper database schema alignment. The telemedicine and AI
 monitoring integration is now ready for production deployment with improved data integrity and type safety.

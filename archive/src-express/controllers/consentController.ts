@@ -367,7 +367,7 @@ class ConsentController {
             },
             {
               model: Speciality,
-              as: 'speciality',
+              as: 'specialty',
               attributes: ['id', 'name']
             }
           ],
@@ -404,7 +404,7 @@ class ConsentController {
             id: (doctor as any).id,
             name: `${(doctor as any).user.firstName} ${(doctor as any).user.lastName}`,
             email: (doctor as any).user.email,
-            speciality: (doctor as any).speciality?.name || 'General',
+            specialty: (doctor as any).specialty?.name || 'General',
             license: (doctor as any).medical_license_number,
             type: 'doctor'
           })),

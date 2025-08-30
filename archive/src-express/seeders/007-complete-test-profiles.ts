@@ -389,7 +389,7 @@ export default {
     console.log('👤 patient@healthapp.com (PATIENT) - password: T3mpP@ssw0rd2376!');
     console.log('👨‍💼 gagneet@silverfoxtechnologies.com.au (SYSTEM_ADMIN) - password: T3mpP@ssw0rd2376!');
     
-    console.log('🏥 Doctor Profile: Complete with license, speciality, clinic');
+    console.log('🏥 Doctor Profile: Complete with license, specialty, clinic');
     console.log('👤 Patient Profile: Complete with medical history, allergies, medications');
     console.log('👨‍💼 Admin Profile: System administrator with full access');
   },

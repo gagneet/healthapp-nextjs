@@ -452,7 +452,7 @@ I've systematically addressed all the issues from the logs you provided:
 
 - Issue: getDoctorDashboard() returned only mock data
 - Fixed: Implemented real Prisma queries for:
-    - Doctor profile with speciality and organization
+    - Doctor profile with specialty and organization
     - Patient count, today's appointments, active care plans
     - Recent vitals count, upcoming appointments
     - Recent patient activity with real relationships

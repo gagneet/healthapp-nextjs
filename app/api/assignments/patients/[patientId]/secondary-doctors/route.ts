@@ -118,7 +118,7 @@ export const POST = withErrorHandling(async (request: NextRequest, { params }: {
         user: {
           select: { firstName: true, lastName: true, email: true }
         },
-        speciality: {
+        specialty: {
           select: { name: true, description: true }
         },
         organization: {
@@ -214,7 +214,7 @@ export const POST = withErrorHandling(async (request: NextRequest, { params }: {
         id: secondaryDoctor.id,
         name: `${secondaryDoctor.user.firstName} ${secondaryDoctor.user.lastName}`.trim(),
         email: secondaryDoctor.user.email,
-        specialty: secondaryDoctor.speciality?.name || 'General Practice',
+        specialty: secondaryDoctor.specialty?.name || 'General Practice',
         organization: secondaryDoctor.organization?.name
       },
       assignment_details: {
@@ -321,7 +321,7 @@ export const GET = withErrorHandling(async (request: NextRequest, { params }: { 
             user: {
               select: { firstName: true, lastName: true, email: true }
             },
-            speciality: {
+            specialty: {
               select: { name: true }
             }
           }
@@ -331,7 +331,7 @@ export const GET = withErrorHandling(async (request: NextRequest, { params }: { 
             user: {
               select: { firstName: true, lastName: true, email: true }
             },
-            speciality: {
+            specialty: {
               select: { name: true }
             },
             organization: {
@@ -376,13 +376,13 @@ export const GET = withErrorHandling(async (request: NextRequest, { params }: { 
           id: assignment.primaryDoctor.id,
           name: `${assignment.primaryDoctor.user.firstName} ${assignment.primaryDoctor.user.lastName}`.trim(),
           email: assignment.primaryDoctor.user.email,
-          specialty: assignment.primaryDoctor.speciality?.name
+          specialty: assignment.primaryDoctor.specialty?.name
         } : null,
         secondary_doctor: assignment.secondaryDoctor ? {
           id: assignment.secondaryDoctor.id,
           name: `${assignment.secondaryDoctor.user.firstName} ${assignment.secondaryDoctor.user.lastName}`.trim(),
           email: assignment.secondaryDoctor.user.email,
-          specialty: assignment.secondaryDoctor.speciality?.name,
+          specialty: assignment.secondaryDoctor.specialty?.name,
           organization: assignment.secondaryDoctor.organization?.name
         } : null,
         permissions: assignment.permissions || {},

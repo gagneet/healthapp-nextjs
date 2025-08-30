@@ -62,7 +62,7 @@ The backend API system is now fully implemented and ready for frontend integrati
 #### Comprehensive Doctor Creation API
 
 - Basic Information: Full name, first/middle/last names, email, mobile number, gender
-- Professional Details: Medical license number, NPI number, speciality, years of experience
+- Professional Details: Medical license number, NPI number, specialty, years of experience
 - Qualification Details: Medical school, board certifications, residency programs
 - Registration Details: Professional registration information
 - Subscription Details: Payment account details, consultation fees
@@ -92,7 +92,7 @@ DELETE /api/admin/doctors/:id       # Soft delete doctor
 #### Comprehensive Form Modal
 
 - Basic Information Section: Name fields, gender, email, mobile, password (for new doctors)
-- Professional Details: License numbers, speciality selection, experience
+- Professional Details: License numbers, specialty selection, experience
 - Practice Information: Practice details, consultation fees, medical school
 - Initial Clinic Setup: Optional clinic creation (new doctors only)
 - Form Validation: Required field validation, proper data types
@@ -102,7 +102,7 @@ DELETE /api/admin/doctors/:id       # Soft delete doctor
 #### Key Features Implemented
 
 1. ✅ Same Field Coverage: Add Doctor and Edit Doctor forms have identical comprehensive field sets
-2. ✅ Professional Validation: Medical license numbers, NPI numbers, speciality selection
+2. ✅ Professional Validation: Medical license numbers, NPI numbers, specialty selection
 3. ✅ Qualification Management: Medical school, board certifications, residency tracking
 4. ✅ Practice Setup: Complete practice information including consultation fees
 5. ✅ Initial Clinic Creation: New doctors can have their primary clinic set up automatically

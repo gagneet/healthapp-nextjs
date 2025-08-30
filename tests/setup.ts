@@ -38,7 +38,7 @@ beforeAll(async () => {
   await globalThis.prisma.$connect()
   
   // Create test specialty for doctors
-  const testSpecialty = await globalThis.prisma.speciality.upsert({
+  const testSpecialty = await globalThis.prisma.specialty.upsert({
     where: { name: 'General Medicine' },
     update: {},
     create: {

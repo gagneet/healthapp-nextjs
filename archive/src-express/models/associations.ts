@@ -81,7 +81,7 @@ export default function defineAssociations(models: any) {
   if (Doctor && Speciality) {
     Doctor.belongsTo(Speciality, {
       foreignKey: 'speciality_id',
-      as: 'speciality'
+      as: 'specialty'
     });
     Speciality.hasMany(Doctor, {
       foreignKey: 'speciality_id',

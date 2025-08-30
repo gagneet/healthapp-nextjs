@@ -125,7 +125,7 @@ export const POST = withErrorHandling(async (request: NextRequest, { params }: {
           user: {
             select: { firstName: true, lastName: true, email: true }
           },
-          speciality: {
+          specialty: {
             select: { name: true }
           }
         }
@@ -223,7 +223,7 @@ export const POST = withErrorHandling(async (request: NextRequest, { params }: {
         email: secondaryProvider!.user.email,
         type: providerType,
         ...(providerType === 'doctor' && {
-          specialty: (secondaryProvider as any).speciality?.name
+          specialty: (secondaryProvider as any).specialty?.name
         })
       },
       assignment_details: {

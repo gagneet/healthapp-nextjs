@@ -58,7 +58,7 @@ class DoctorController {
           },
           {
             model: Speciality,
-            as: 'speciality',
+            as: 'specialty',
             attributes: ['id', 'name', 'description']
           },
           {
@@ -115,10 +115,10 @@ class DoctorController {
           medical_license_number: doctor.medical_license_number,
           npi_number: doctor.npi_number,
           speciality_id: doctor.speciality_id,
-          speciality: doctor.speciality ? {
-            id: doctor.speciality.id,
-            name: doctor.speciality.name,
-            description: doctor.speciality.description
+          specialty: doctor.specialty ? {
+            id: doctor.specialty.id,
+            name: doctor.specialty.name,
+            description: doctor.specialty.description
           } : null,
           specialties: doctor.specialties || [],
           sub_specialties: doctor.sub_specialties || [],
@@ -411,7 +411,7 @@ class DoctorController {
           },
           {
             model: Speciality,
-            as: 'speciality'
+            as: 'specialty'
           },
           {
             model: Clinic,
@@ -453,7 +453,7 @@ class DoctorController {
         is_verified: doctor.is_verified,
         email_verified: doctor.user?.email_verified,
         medical_license_number: doctor.medical_license_number,
-        speciality: doctor.speciality,
+        specialty: doctor.specialty,
         specialties: doctor.specialties,
         years_of_experience: doctor.years_of_experience,
         practice_name: doctor.practice_name,

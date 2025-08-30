@@ -2960,7 +2960,7 @@ Systematically removed all references to the non-existent full_name database col
 ### Database Records - FIXED
 
 - Comprehensive seeder created complete test profiles for all user types ✅
-- Doctor profile with medical license, speciality, and clinic information ✅
+- Doctor profile with medical license, specialty, and clinic information ✅
 - Patient profile with medical history, allergies, and medications ✅
 - All required database relationships established ✅
 
@@ -3074,7 +3074,7 @@ Mismatches Found:
 8. certifications (frontend) ↔ board_certifications (backend - array of strings, not objects) ❌
 9. languages (frontend) ↔ languages_spoken (backend) ❌
 10. profile_image (frontend) ↔ profilePictureUrl (backend) ❌
-11. speciality_name (frontend) ↔ speciality.name (backend - nested object) ❌
+11. speciality_name (frontend) ↔ specialty.name (backend - nested object) ❌
 
 Fields that Match:
 
@@ -3097,7 +3097,7 @@ Have successfully implemented the fix for the Doctor Profile page error and chec
 - certifications ➜ board_certifications
 - languages ➜ languages_spoken
 - profile_image ➜ profilePictureUrl
-- speciality_name ➜ speciality.name (nested object)
+- speciality_name ➜ specialty.name (nested object)
 - bio ➜ Made optional with fallback
 - Updated data extraction: response.payload.data.profile
 
@@ -3107,7 +3107,7 @@ Have successfully implemented the fix for the Doctor Profile page error and chec
 
 - TypeScript Interface: Updated to match exact backend response structure
 - Null Safety: Added conditional rendering for all potentially undefined fields
-- Data Structure: Fixed nested object access (e.g., speciality.name)
+- Data Structure: Fixed nested object access (e.g., specialty.name)
 - Array Handling: Proper handling of arrays with fallbacks to empty arrays
 
 The Doctor Profile page should now load without errors when you login as a Doctor user. The development server is running on [http://localhost:3003](http://localhost:3003) and all field mappings are correctly aligned between frontend and backend.
@@ -4013,7 +4013,7 @@ Remaining Non-Idempotent Files (Not Fixed):
 - 008-comprehensive-patient-data.ts - No existence checks, uses uuidv4() everywhere
 - 20250807041830-comprehensive-chart-test-data.ts - Massive data generation without idempotency
 
-The main migration issue (column already exists) and critical seeder dependency issue (missing speciality) are now resolved. The remaining seeders would require
+The main migration issue (column already exists) and critical seeder dependency issue (missing specialty) are now resolved. The remaining seeders would require
 more extensive refactoring to make fully idempotent.
 
 ## ✅ Problem Resolved - UI/UX issues with alignment and CSS

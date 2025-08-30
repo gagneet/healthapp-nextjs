@@ -213,7 +213,7 @@ export class LaboratoryService {
                   email: true
                 }
               },
-              speciality: {
+              specialty: {
                 select: {
                   name: true
                 }
@@ -364,7 +364,7 @@ export class LaboratoryService {
                   lastName: true
                 }
               },
-              speciality: {
+              specialty: {
                 select: {
                   name: true
                 }

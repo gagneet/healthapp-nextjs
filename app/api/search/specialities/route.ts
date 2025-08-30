@@ -1,6 +1,6 @@
 /**
  * Advanced Medical Specialities Search API Route
- * Enhanced speciality search with doctor availability and filtering
+ * Enhanced specialty search with doctor availability and filtering
  * Business Logic: All authenticated healthcare users can search specialities
  */
 
@@ -20,7 +20,7 @@ export const runtime = 'nodejs'
 
 /**
  * GET /api/search/specialities
- * Advanced speciality search with doctor availability
+ * Advanced specialty search with doctor availability
  * Enhanced to include doctor counts, geographic availability, and subspecialties
  */
 export const GET = withErrorHandling(async (request: NextRequest) => {
@@ -32,7 +32,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
 
   // Business Logic: All authenticated healthcare users can search specialities
   if (!['PATIENT', 'DOCTOR', 'HSP', 'SYSTEM_ADMIN'].includes(session.user.role)) {
-    return createForbiddenResponse("Access to speciality search denied")
+    return createForbiddenResponse("Access to specialty search denied")
   }
 
   const { searchParams } = new URL(request.url)
@@ -53,7 +53,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
   }
 
   try {
-    const specialities = await prisma.speciality.findMany({
+    const specialities = await prisma.specialty.findMany({
       where: whereClause,
       take: limit,
       select: {
@@ -90,11 +90,11 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
     // Calculate relevance scores if search query provided
     let scoredSpecialities = specialities
     if (value) {
-      scoredSpecialities = specialities.map(speciality => {
+      scoredSpecialities = specialities.map(specialty => {
         let relevanceScore = 0
         const valueLower = value.toLowerCase()
-        const nameLower = speciality.name?.toLowerCase() || ''
-        const descLower = speciality.description?.toLowerCase() || ''
+        const nameLower = specialty.name?.toLowerCase() || ''
+        const descLower = specialty.description?.toLowerCase() || ''
         
         // Exact name match gets highest score
         if (nameLower === valueLower) {
@@ -110,7 +110,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
           relevanceScore += 15
         }
 
-        return { ...speciality, relevanceScore }
+        return { ...specialty, relevanceScore }
       })
 
       // Sort by relevance score then by name
@@ -124,25 +124,25 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
 
     // Filter by availability if requested
     if (hasAvailableSlots && includeAvailability) {
-      scoredSpecialities = scoredSpecialities.filter((speciality: any) => 
-        speciality.doctors?.some((doctor: any) => doctor.isAcceptingNewPatients)
+      scoredSpecialities = scoredSpecialities.filter((specialty: any) => 
+        specialty.doctors?.some((doctor: any) => doctor.isAcceptingNewPatients)
       )
     }
 
     // Transform to expected format
     const responseData = {
-      specialities: scoredSpecialities.reduce((acc: any, speciality: any) => {
+      specialities: scoredSpecialities.reduce((acc: any, specialty: any) => {
         const doctorInfo = includeAvailability ? {
-          doctor_count: speciality.doctors?.length || 0,
-          accepting_new_patients: speciality.doctors?.filter((d: any) => d.isAcceptingNewPatients).length || 0,
-          average_experience: speciality.doctors?.length > 0 
-            ? Math.round(speciality.doctors.reduce((sum: number, d: any) => sum + (d.yearsOfExperience || 0), 0) / speciality.doctors.length)
+          doctor_count: specialty.doctors?.length || 0,
+          accepting_new_patients: specialty.doctors?.filter((d: any) => d.isAcceptingNewPatients).length || 0,
+          average_experience: specialty.doctors?.length > 0 
+            ? Math.round(specialty.doctors.reduce((sum: number, d: any) => sum + (d.yearsOfExperience || 0), 0) / specialty.doctors.length)
             : 0,
-          fee_range: speciality.doctors?.length > 0 ? {
-            min: Math.min(...speciality.doctors.map((d: any) => d.consultationFee || 0).filter(f => f > 0)),
-            max: Math.max(...speciality.doctors.map((d: any) => d.consultationFee || 0)),
+          fee_range: specialty.doctors?.length > 0 ? {
+            min: Math.min(...specialty.doctors.map((d: any) => d.consultationFee || 0).filter(f => f > 0)),
+            max: Math.max(...specialty.doctors.map((d: any) => d.consultationFee || 0)),
           } : null,
-          available_doctors: speciality.doctors?.filter((d: any) => d.isAcceptingNewPatients).map((doctor: any) => ({
+          available_doctors: specialty.doctors?.filter((d: any) => d.isAcceptingNewPatients).map((doctor: any) => ({
             id: doctor.id,
             name: `${doctor.user.firstName} ${doctor.user.lastName}`.trim(),
             email: doctor.user.email,
@@ -153,12 +153,12 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
           doctor_count: 0
         }
 
-        acc[speciality.id] = {
+        acc[specialty.id] = {
           basic_info: {
-            id: speciality.id.toString(),
-            name: speciality.name,
-            description: speciality.description,
-            ...(value && { relevance_score: (speciality as any).relevanceScore }),
+            id: specialty.id.toString(),
+            name: specialty.name,
+            description: specialty.description,
+            ...(value && { relevance_score: (specialty as any).relevanceScore }),
             ...doctorInfo
           }
         }
@@ -199,7 +199,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
     })
 
   } catch (error) {
-    console.error('Advanced speciality search error:', error)
+    console.error('Advanced specialty search error:', error)
     return createErrorResponse(error as Error)
   }
 })

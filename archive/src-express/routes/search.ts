@@ -78,12 +78,12 @@ router.get('/specialities',
 
       const responseData = { specialities: {} };
 
-      specialities.forEach((speciality: any) => {
-        (responseData as any).specialities[speciality.id] = {
+      specialities.forEach((specialty: any) => {
+        (responseData as any).specialities[specialty.id] = {
           basic_info: {
-            id: speciality.id.toString(),
-            name: speciality.name,
-            description: speciality.description
+            id: specialty.id.toString(),
+            name: specialty.name,
+            description: specialty.description
           }
         };
       });

@@ -69,7 +69,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
       // Add specialty filter
       if (specialty) {
         doctorWhere.AND.push({
-          speciality: {
+          specialty: {
             name: { contains: specialty, mode: 'insensitive' }
           }
         })
@@ -93,7 +93,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
               phone: true
             }
           },
-          speciality: {
+          specialty: {
             select: {
               id: true,
               name: true,
@@ -118,9 +118,9 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
         name: `${doctor.user.firstName} ${doctor.user.lastName}`.trim(),
         email: doctor.user.email,
         phone: doctor.user.phone,
-        speciality: doctor.speciality?.name || 'General Practice',
-        speciality_id: doctor.speciality?.id,
-        speciality_description: doctor.speciality?.description,
+        specialty: doctor.specialty?.name || 'General Practice',
+        speciality_id: doctor.specialty?.id,
+        speciality_description: doctor.specialty?.description,
         license: doctor.medicalLicenseNumber,
         organization: doctor.organization?.name || 'Independent',
         organization_id: doctor.organizationId,
@@ -231,7 +231,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
       
       if (nameLower.includes(queryLower)) relevanceScore += 30
       if (emailLower.includes(queryLower)) relevanceScore += 20
-      if (doctor.speciality.toLowerCase().includes(queryLower)) relevanceScore += 25
+      if (doctor.specialty.toLowerCase().includes(queryLower)) relevanceScore += 25
       if (doctor.accepting_new_patients) relevanceScore += 15
       if (doctor.same_organization) relevanceScore += 10
       
@@ -263,7 +263,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
       same_organization_doctors: scoredDoctors.filter(d => d.same_organization).length,
       same_organization_hsps: scoredHsps.filter(h => h.same_organization).length,
       accepting_new_patients: scoredDoctors.filter(d => d.accepting_new_patients).length,
-      specialties_found: [...new Set(scoredDoctors.map(d => d.speciality))],
+      specialties_found: [...new Set(scoredDoctors.map(d => d.specialty))],
       organizations_represented: [
         ...new Set([
           ...scoredDoctors.map(d => d.organization),

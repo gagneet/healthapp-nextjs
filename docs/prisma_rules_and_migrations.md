@@ -147,7 +147,7 @@ Key Migration Categories:
 
 - 20250822233147: Renamed all tables to PascalCase (users → Users)
 - 20250823005731: Fixed enum naming to PascalCase (enum_users_role → UserRole)
-- 20250820193000: Added unique constraint on speciality names
+- 20250820193000: Added unique constraint on specialty names
 
 ## Migration Quality Assessment
 

@@ -17,7 +17,7 @@ interface DoctorInfo {
   id: string
   name: string
   email: string
-  speciality: string
+  specialty: string
   phone: string
 }
 
@@ -65,20 +65,20 @@ export default function AddCareTeamModal({
           id: 'doc1',
           name: 'Dr. Sarah Johnson',
           email: 'sarah.johnson@hospital.com',
-          speciality: 'Cardiologist',
+          specialty: 'Cardiologist',
           phone: '+1-555-0123'
         },
         {
           id: 'doc2', 
           name: 'Dr. Michael Chen',
           email: 'michael.chen@clinic.com',
-          speciality: 'Endocrinologist',
+          specialty: 'Endocrinologist',
           phone: '+1-555-0124'
         }
       ]
       setSearchResults(mockResults.filter(doc => 
         doc.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        doc.speciality.toLowerCase().includes(searchQuery.toLowerCase())
+        doc.specialty.toLowerCase().includes(searchQuery.toLowerCase())
       ))
     } catch (error) {
       toast.error('Failed to search doctors')
@@ -217,7 +217,7 @@ export default function AddCareTeamModal({
                     type="text"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Enter doctor name or speciality"
+                    placeholder="Enter doctor name or specialty"
                     className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
                   />
@@ -243,7 +243,7 @@ export default function AddCareTeamModal({
                       <div className="flex items-start justify-between">
                         <div>
                           <h4 className="font-medium text-gray-900">{doctor.name}</h4>
-                          <p className="text-sm text-gray-600">{doctor.speciality}</p>
+                          <p className="text-sm text-gray-600">{doctor.specialty}</p>
                           <p className="text-xs text-gray-500">{doctor.email}</p>
                         </div>
                         <UserPlus className="h-5 w-5 text-blue-600" />
@@ -272,7 +272,7 @@ export default function AddCareTeamModal({
                 <h4 className="font-medium text-gray-900 mb-2">Selected Doctor</h4>
                 <div className="p-3 bg-gray-50 rounded-lg">
                   <p className="font-medium">{selectedDoctor.name}</p>
-                  <p className="text-sm text-gray-600">{selectedDoctor.speciality}</p>
+                  <p className="text-sm text-gray-600">{selectedDoctor.specialty}</p>
                   <p className="text-sm text-gray-600">{selectedDoctor.email}</p>
                 </div>
               </div>

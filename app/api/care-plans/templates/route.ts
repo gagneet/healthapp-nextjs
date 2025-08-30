@@ -18,7 +18,7 @@ import { z } from "zod"
 
 /**
  * GET /api/care-plans/templates
- * Retrieve care plan templates based on user role and speciality
+ * Retrieve care plan templates based on user role and specialty
  * Business Logic: Role-based filtering for healthcare templates
  */
 export const GET = withErrorHandling(async (request: NextRequest) => {
@@ -64,7 +64,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
 
     // Business Logic: Role-based access to templates
     if (session.user.role === 'DOCTOR') {
-      // Doctors can see templates for their speciality or general templates
+      // Doctors can see templates for their specialty or general templates
       const doctor = await prisma.doctor.findUnique({
         where: { id: session.user.profileId! },
         select: { speciality_id: true }
@@ -82,7 +82,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
     }
     // System admins can see all templates (no additional restrictions)
 
-    // Apply speciality filter (for admins)
+    // Apply specialty filter (for admins)
     if (specialityId && session.user.role === 'SYSTEM_ADMIN') {
       whereClause.speciality_id = parseInt(specialityId)
     }

@@ -50,7 +50,7 @@ async function testDashboards() {
       console.log('Doctor info:', {
         name: doctorDashboard.doctor.name,
         email: doctorDashboard.doctor.email,
-        speciality: doctorDashboard.doctor.speciality
+        specialty: doctorDashboard.doctor.specialty
       });
       console.log('Statistics:', doctorDashboard.statistics);
     } catch (error) {

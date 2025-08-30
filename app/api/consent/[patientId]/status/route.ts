@@ -108,7 +108,7 @@ export const GET = withErrorHandling(async (request: NextRequest, { params }: { 
                 email: true
               }
             },
-            speciality: {
+            specialty: {
               select: { name: true }
             }
           }
@@ -178,7 +178,7 @@ export const GET = withErrorHandling(async (request: NextRequest, { params }: { 
             id: assignment.secondaryDoctor.id,
             name: `${assignment.secondaryDoctor.user.firstName} ${assignment.secondaryDoctor.user.lastName}`.trim(),
             email: assignment.secondaryDoctor.user.email,
-            specialty: assignment.secondaryDoctor.speciality?.name
+            specialty: assignment.secondaryDoctor.specialty?.name
           } : null,
           secondary_hsp: assignment.secondaryHsp ? {
             id: assignment.secondaryHsp.id,

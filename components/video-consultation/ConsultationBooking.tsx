@@ -20,7 +20,7 @@ interface Doctor {
     firstName: string;
     lastName: string;
   };
-  speciality?: {
+  specialty?: {
     name: string;
   };
   consultation_fee: number;
@@ -82,7 +82,7 @@ export default function ConsultationBooking({
           firstName: 'Dr. Emily',
           lastName: 'Rodriguez'
         },
-        speciality: {
+        specialty: {
           name: 'Internal Medicine'
         },
         consultation_fee: 200
@@ -100,13 +100,13 @@ export default function ConsultationBooking({
         {
           id: 'doc1',
           user: { firstName: 'Dr. Emily', lastName: 'Rodriguez' },
-          speciality: { name: 'Internal Medicine' },
+          specialty: { name: 'Internal Medicine' },
           consultation_fee: 200
         },
         {
           id: 'doc2',
           user: { firstName: 'Dr. Robert', lastName: 'Smith' },
-          speciality: { name: 'Cardiology' },
+          specialty: { name: 'Cardiology' },
           consultation_fee: 250
         }
       ];
@@ -245,7 +245,7 @@ export default function ConsultationBooking({
                     <h3 className="font-semibold">
                       {doctor.user.firstName} {doctor.user.lastName}
                     </h3>
-                    <p className="text-gray-600 text-sm">{doctor.speciality?.name}</p>
+                    <p className="text-gray-600 text-sm">{doctor.specialty?.name}</p>
                   </div>
                   <div className="text-right">
                     <p className="font-semibold">${doctor.consultation_fee}</p>
@@ -273,7 +273,7 @@ export default function ConsultationBooking({
                   <h3 className="text-xl font-semibold">
                     {selectedDoctor.user.firstName} {selectedDoctor.user.lastName}
                   </h3>
-                  <p className="text-blue-600">{selectedDoctor.speciality?.name}</p>
+                  <p className="text-blue-600">{selectedDoctor.specialty?.name}</p>
                 </div>
               </div>
               <div className="text-right">
@@ -473,7 +473,7 @@ export default function ConsultationBooking({
               <div className="grid md:grid-cols-2 gap-6 mb-6">
                 <div className="space-y-2">
                   <p><strong>Doctor:</strong> {selectedDoctor.user.firstName} {selectedDoctor.user.lastName}</p>
-                  <p><strong>Speciality:</strong> {selectedDoctor.speciality?.name}</p>
+                  <p><strong>Speciality:</strong> {selectedDoctor.specialty?.name}</p>
                   <p><strong>Date:</strong> {selectedDate.toLocaleDateString('en-US', { 
                     weekday: 'long', 
                     year: 'numeric', 

@@ -395,7 +395,7 @@ export class ConsultationBookingService {
                   email: true
                 }
               },
-              speciality: {
+              specialty: {
                 select: {
                   name: true
                 }
