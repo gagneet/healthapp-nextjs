@@ -138,7 +138,7 @@ resource "azurerm_postgresql_database" "main" {
   resource_group_name = azurerm_resource_group.main.name
   server_name         = azurerm_postgresql_server.main.name
   charset             = "UTF8"
-  collation           = "English_United States.1252"
+  collation           = "en_US.utf8"
 }
 
 resource "azurerm_redis_cache" "main" {

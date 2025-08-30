@@ -22,6 +22,12 @@ variable "db_instance_class" {
   default     = "db.t3.micro"
 }
 
+variable "postgres_engine_version" {
+  description = "The PostgreSQL engine version."
+  type        = string
+  default     = "14.2"
+}
+
 variable "db_allocated_storage" {
   description = "The allocated storage for the RDS instance."
   type        = number
@@ -50,6 +56,12 @@ variable "redis_node_type" {
   description = "The ElastiCache for Redis node type."
   type        = string
   default     = "cache.t3.micro"
+}
+
+variable "redis_engine_version" {
+  description = "The Redis engine version."
+  type        = string
+  default     = "7.0"
 }
 
 variable "key_name" {
