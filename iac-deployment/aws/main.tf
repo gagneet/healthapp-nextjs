@@ -9,12 +9,34 @@ resource "aws_vpc" "main" {
   }
 }
 
+data "aws_availability_zones" "available" {
+  state = "available"
+}
+
+data "aws_ami" "ubuntu" {
+  most_recent = true
+  owners      = ["099720109477"] # Canonical
+
+  filter {
+    name   = "name"
+    values = ["ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-*"]
+  }
+
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
+  }
+}
+
 resource "aws_subnet" "main" {
-  vpc_id     = aws_vpc.main.id
-  cidr_block = "10.0.1.0/24"
+  count                   = 2
+  vpc_id                  = aws_vpc.main.id
+  cidr_block              = cidrsubnet(aws_vpc.main.cidr_block, 8, count.index)
+  availability_zone       = data.aws_availability_zones.available.names[count.index]
   map_public_ip_on_launch = true
+
   tags = {
-    Name = "healthapp-public-subnet"
+    Name = "healthapp-public-subnet-${count.index + 1}"
   }
 }
 
@@ -37,7 +59,8 @@ resource "aws_route_table" "main" {
 }
 
 resource "aws_route_table_association" "main" {
-  subnet_id      = aws_subnet.main.id
+  count          = length(aws_subnet.main)
+  subnet_id      = aws_subnet.main[count.index].id
   route_table_id = aws_route_table.main.id
 }
 
@@ -50,7 +73,7 @@ resource "aws_security_group" "web_sg" {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = var.ssh_access_cidr
   }
 
   ingress {
@@ -116,10 +139,10 @@ resource "aws_security_group" "redis_sg" {
 }
 
 resource "aws_instance" "web" {
-  ami           = var.ami_id
+  ami           = var.ami_id != "" ? var.ami_id : data.aws_ami.ubuntu.id
   instance_type = var.instance_type
   key_name      = var.key_name
-  subnet_id     = aws_subnet.main.id
+  subnet_id     = aws_subnet.main[0].id
   vpc_security_group_ids = [aws_security_group.web_sg.id]
 
   tags = {
@@ -137,12 +160,13 @@ resource "aws_db_instance" "main" {
   password             = var.db_password
   vpc_security_group_ids = [aws_security_group.db_sg.id]
   db_subnet_group_name = aws_db_subnet_group.main.name
+  storage_encrypted    = true
   skip_final_snapshot  = true
 }
 
 resource "aws_db_subnet_group" "main" {
   name       = "healthapp-db-subnet-group"
-  subnet_ids = [aws_subnet.main.id]
+  subnet_ids = aws_subnet.main[*].id
   tags = {
     Name = "HealthApp DB Subnet Group"
   }
@@ -162,5 +186,5 @@ resource "aws_elasticache_cluster" "main" {
 
 resource "aws_elasticache_subnet_group" "main" {
   name       = "healthapp-redis-subnet-group"
-  subnet_ids = [aws_subnet.main.id]
+  subnet_ids = aws_subnet.main[*].id
 }

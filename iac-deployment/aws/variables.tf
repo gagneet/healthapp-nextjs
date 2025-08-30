@@ -11,9 +11,9 @@ variable "instance_type" {
 }
 
 variable "ami_id" {
-  description = "The AMI for the EC2 instance (Ubuntu 22.04)."
+  description = "The AMI for the EC2 instance (Ubuntu 22.04). If not set, the latest Ubuntu 22.04 AMI will be fetched dynamically."
   type        = string
-  default     = "ami-0c55b159cbfafe1f0" # us-east-1 Ubuntu 22.04 LTS
+  default     = ""
 }
 
 variable "db_instance_class" {
@@ -55,4 +55,10 @@ variable "redis_node_type" {
 variable "key_name" {
   description = "The name of the EC2 key pair to use for SSH access."
   type        = string
+}
+
+variable "ssh_access_cidr" {
+  description = "The CIDR block to allow SSH access from. For security, this should be a specific IP range."
+  type        = list(string)
+  default     = ["0.0.0.0/0"]
 }

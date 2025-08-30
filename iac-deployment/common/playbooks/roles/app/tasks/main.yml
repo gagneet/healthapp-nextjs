@@ -42,9 +42,9 @@
   until: result.status == 200
 
 - name: Run database migrations
-  command: "docker exec {{ compose_result.services.app.name }} npx prisma migrate deploy"
+  command: "docker-compose -f {{ app_dir }}/docker-compose.production.yml exec -T app npx prisma migrate deploy"
   when: run_migrations | bool
 
 - name: Run database seeding
-  command: "docker exec {{ compose_result.services.app.name }} npx prisma db seed"
+  command: "docker-compose -f {{ app_dir }}/docker-compose.production.yml exec -T app npx prisma db seed"
   when: run_seeding | bool

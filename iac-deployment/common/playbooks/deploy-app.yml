@@ -19,7 +19,7 @@
     redis_password: "redis_password"
     # NextAuth variables
     nextauth_url: "http://localhost"
-    nextauth_secret: "a_very_long_and_secure_secret_for_nextauth"
+    nextauth_secret: "" # This must be provided via --extra-vars
     next_public_api_url: "http://localhost/api"
 
   roles:

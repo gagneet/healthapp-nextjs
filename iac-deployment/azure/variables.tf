@@ -16,10 +16,9 @@ variable "admin_username" {
   default     = "ubuntuadmin"
 }
 
-variable "admin_password" {
-  description = "The admin password for the VM."
+variable "ssh_public_key" {
+  description = "The public SSH key to use for authenticating to the VM."
   type        = string
-  sensitive   = true
 }
 
 variable "db_sku_name" {

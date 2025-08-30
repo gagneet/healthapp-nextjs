@@ -11,6 +11,7 @@ Before you begin, ensure you have the following installed:
 - An AWS account with the [AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-install.html) configured.
 - An Azure account with the [Azure CLI](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli) configured.
 - A Docker Hub account to store the application's Docker image.
+- An SSH key pair. You will need the public key for Azure deployment and the private key for Ansible to connect to the provisioned servers.
 
 ## Directory Structure
 
@@ -41,10 +42,11 @@ Before deploying the application, you need to build the Docker image and push it
 #### a. Provision the Infrastructure
 
 1.  Navigate to the `iac-deployment/aws` directory.
-2.  Create a `terraform.tfvars` file and provide values for the variables defined in `variables.tf`. At a minimum, you need to provide `db_password` and `key_name`.
+2.  Create a `terraform.tfvars` file and provide values for the variables defined in `variables.tf`.
     ```tfvars
-    db_password = "your_secure_db_password"
-    key_name    = "your_ec2_key_pair_name"
+    db_password     = "your_secure_db_password"
+    key_name        = "your_ec2_key_pair_name"
+    ssh_access_cidr = ["your_ip_address/32"] # IMPORTANT: Restrict SSH access to your IP
     ```
 3.  Initialize Terraform:
     ```bash
@@ -64,13 +66,14 @@ Before deploying the application, you need to build the Docker image and push it
     [webservers]
     your_ec2_public_ip
     ```
-3.  Run the Ansible playbook to deploy the application. You will need to pass the database and Redis details as extra variables.
+3.  Run the Ansible playbook to deploy the application. You will need to pass the database, Redis, and NextAuth details as extra variables.
     ```bash
     ansible-playbook playbooks/deploy-app.yml -i inventory/hosts \
       -e "db_host='your_rds_endpoint'" \
       -e "db_password='your_secure_db_password'" \
       -e "redis_host='your_redis_endpoint'" \
-      -e "docker_image='your_docker_hub_username/healthapp:latest'"
+      -e "docker_image='your_docker_hub_username/healthapp:latest'" \
+      -e "nextauth_secret='your_very_long_and_secure_nextauth_secret'"
     ```
 
 ### 3. Azure Deployment
@@ -78,10 +81,10 @@ Before deploying the application, you need to build the Docker image and push it
 #### a. Provision the Infrastructure
 
 1.  Navigate to the `iac-deployment/azure` directory.
-2.  Create a `terraform.tfvars` file and provide values for the variables defined in `variables.tf`. At a minimum, you need to provide `admin_password` and `db_password`.
+2.  Create a `terraform.tfvars` file and provide values for the variables defined in `variables.tf`.
     ```tfvars
-    admin_password = "your_secure_vm_password"
     db_password    = "your_secure_db_password"
+    ssh_public_key = "your_public_ssh_key_string"
     ```
 3.  Initialize Terraform:
     ```bash
@@ -101,17 +104,27 @@ Before deploying the application, you need to build the Docker image and push it
     [webservers]
     your_vm_public_ip
     ```
-3.  Run the Ansible playbook to deploy the application. You will need to pass the database and Redis details as extra variables.
+3.  Run the Ansible playbook to deploy the application. You will need to pass the database, Redis, and NextAuth details as extra variables.
     ```bash
     ansible-playbook playbooks/deploy-app.yml -i inventory/hosts \
       -e "db_host='your_postgresql_server_name.postgres.database.azure.com'" \
       -e "db_password='your_secure_db_password'" \
       -e "redis_host='your_redis_cache_name.redis.cache.windows.net'" \
       -e "redis_password='your_redis_primary_key'" \
-      -e "docker_image='your_docker_hub_username/healthapp:latest'"
+      -e "docker_image='your_docker_hub_username/healthapp:latest'" \
+      -e "nextauth_secret='your_very_long_and_secure_nextauth_secret'"
     ```
 
 ## Configuration
 
 -   **Terraform**: You can customize the infrastructure by modifying the variables in the `variables.tf` files in the `aws` and `azure` directories.
 -   **Ansible**: You can customize the application deployment by modifying the variables in the `iac-deployment/common/playbooks/deploy-app.yml` file or by passing them as extra variables to the `ansible-playbook` command.
+
+## Security Note on Secrets
+
+For simplicity, this setup passes secrets like database passwords and `NEXTAUTH_SECRET` as command-line variables to Ansible. In a production environment, it is highly recommended to use a more secure method for managing secrets, such as:
+
+-   [Ansible Vault](https://docs.ansible.com/ansible/latest/user_guide/vault.html)
+-   [AWS Secrets Manager](https://aws.amazon.com/secrets-manager/)
+-   [Azure Key Vault](https://azure.microsoft.com/en-us/services/key-vault/)
+-   CI/CD environment variables.
