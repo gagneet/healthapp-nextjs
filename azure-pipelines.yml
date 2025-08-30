@@ -194,7 +194,9 @@ stages:
                   STRIPE_WEBHOOK_SECRET: "$(STRIPE_WEBHOOK_SECRET)"
 
                   # --- IoT & Medical Device Integration ---
-                  # IOT_DATA_ENCRYPTION_KEY is provided via Azure Key Vault CSI driver at /mnt/secrets-store/iot-data-encryption-key
+                  # CRITICAL: Store this in Azure Key Vault and access via CSI driver in production.
+                  # This key must be a random string of 32-bytes (256-bit) for AES-256 encryption.
+                  IOT_DATA_ENCRYPTION_KEY: "$(IOT_DATA_ENCRYPTION_KEY)"
 
                   # --- Notification Services (Twilio for SMS) ---
                   TWILIO_ACCOUNT_SID: "$(TWILIO_ACCOUNT_SID)"
@@ -202,8 +204,9 @@ stages:
                   TWILIO_PHONE_NUMBER: "$(TWILIO_PHONE_NUMBER)"
 
                   # --- Healthcare Compliance & Security ---
-                  # PHI_ENCRYPTION_KEY is now provided via Azure Key Vault CSI driver. Do not inject as a pipeline variable.
+                  # CRITICAL: Store this in Azure Key Vault and access via CSI driver in production.
                   # This key must be a random string of 32-bytes (256-bit) for AES-256 encryption.
+                  PHI_ENCRYPTION_KEY: "$(PHI_ENCRYPTION_KEY)"
                   AUDIT_LOG_RETENTION_DAYS: "365"
                   ENABLE_HIPAA_AUDIT: "true"
 
@@ -262,6 +265,7 @@ stages:
             inputs:
               targetType: 'inline'
               script: |
+                # This command uses the kubectl context configured in the 'Set Kubectl Context' step (Step 5).
                 # The --prune flag removes any resources that are no longer defined in the source manifests.
                 # It identifies manageable resources using the label 'app.kubernetes.io/name=healthapp'.
                 # We do not prune the migration job itself, as it's a one-off task.
