@@ -98,7 +98,7 @@ services:
       "
 
   app:
-    image: ${APP_IMAGE:-healthapp:${ENVIRONMENT:-dev}}
+    image: ${APP_IMAGE:-healthapp:dev}
     environment:
       NODE_ENV: ${NODE_ENV:-development}
       ENVIRONMENT: ${ENVIRONMENT:-dev}
@@ -137,6 +137,10 @@ services:
       # Additional environment-specific variables
       LOG_LEVEL: ${LOG_LEVEL:-info}
       DEBUG: ${DEBUG:-false}
+      
+      # Database dependency configuration
+      POSTGRES_WAIT_TIMEOUT: ${POSTGRES_WAIT_TIMEOUT:-120}
+      POSTGRES_ADDITIONAL_WAIT: ${POSTGRES_ADDITIONAL_WAIT:-60}
     ports:
       - "${HOST_PORT_FRONTEND:-3002}:3002"
     networks:

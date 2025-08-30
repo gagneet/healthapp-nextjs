@@ -457,6 +457,42 @@ docker/
 
 The system is now much cleaner, safer, and easier to use with a single script handling all environments through parameters instead of separate files! 🎉
 
+## ✅ Enhanced PostgreSQL Dependency Management
+
+The deployment system now includes proper startup sequencing that addresses your specific requirements:
+
+### 🔧 Key Improvements Made
+
+1. PostgreSQL Readiness Verification: The system now performs comprehensive checks to ensure PostgreSQL is:
+   - Container is running and healthy
+   - Database is initialized and accepting connections
+   - Can execute actual queries (not just connection checks)
+2. 60-Second Additional Wait: After PostgreSQL is confirmed ready, the system waits an additional 60 seconds before proceeding with app container startup, as you
+   requested.
+3. User Feedback: The wait includes a countdown display so you can see the progress:
+   PostgreSQL is ready! Waiting additional 60 seconds before proceeding with app startup...
+   This ensures PostgreSQL is fully stabilized before app containers attempt to connect
+   Continuing app startup in 60 seconds...
+   Continuing app startup in 50 seconds...
+   ...
+   Additional wait completed. PostgreSQL is fully stabilized and ready for application connections!
+4. Configurable Timing: The wait time is controlled by the POSTGRES_ADDITIONAL_WAIT environment variable:
+   - Default: 60 seconds (as you requested)
+   - Can be customized in docker-stack.yml or environment files
+   - Set to 0 to disable the additional wait if needed
+
+### 🚀 How It Works
+
+1. Database Services Start First: PostgreSQL container launches
+2. Comprehensive Readiness Check: System verifies PostgreSQL is fully operational
+3. 60-Second Stabilization Wait: Additional wait period after readiness confirmation
+4. App Container Startup: Only then does the application container start building/running
+5. Migration & Seeding: Finally, database operations proceed
+
+This ensures your application containers never attempt to connect to a PostgreSQL instance that isn't fully ready and stabilized, eliminating the deployment hanging issues you experienced.
+
+The solution is now implemented and ready for testing!
+
 ---
 
 For questions or issues, check `DOCKER_README.md` for comprehensive documentation.

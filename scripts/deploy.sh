@@ -573,6 +573,7 @@ setup_environment() {
     fi
 
     # Set Docker images with environment-specific tags
+    export DEPLOY_IMAGE="healthapp:$ENVIRONMENT"
     export APP_IMAGE="${APP_IMAGE:-healthapp:$ENVIRONMENT}"
     export POSTGRES_IMAGE="${POSTGRES_IMAGE:-postgres:${POSTGRES_VERSION:-17}-alpine}"
     export REDIS_IMAGE="${REDIS_IMAGE:-redis:7.4-alpine}"
@@ -829,14 +830,21 @@ start_database_services_early() {
         return
     fi
 
+    # For early deployment, check if our app image exists, otherwise use placeholder
+    local early_app_image="$DEPLOY_IMAGE"
+    if ! docker image inspect "$DEPLOY_IMAGE" >/dev/null 2>&1; then
+        log_info "App image $DEPLOY_IMAGE not yet built, using busybox placeholder for early DB start"
+        early_app_image="busybox:latest"
+    fi
+
     # Set environment variables for the stack deployment
-    export APP_IMAGE="busybox:latest"  # Placeholder image for app service during DB-only deployment
+    export APP_IMAGE="$early_app_image"
     export POSTGRES_IMAGE="postgres:${POSTGRES_VERSION:-17}-alpine"
     export REDIS_IMAGE="redis:7.4-alpine"
     export PGADMIN_IMAGE="dpage/pgadmin4:latest"
 
-    # Deploy the full stack early (services will be updated later)
-    log_info "Deploying database services from main stack: ${STACK_NAME}"
+    # Deploy the full stack early (app service will be updated later if needed)
+    log_info "Deploying stack for early database start: ${STACK_NAME}"
     docker stack deploy -c "$DOCKER_STACK_FILE" "$STACK_NAME"
 
     # Wait for PostgreSQL to be ready
@@ -1137,6 +1145,27 @@ wait_for_postgres_ready() {
                 # Show PostgreSQL status
                 log_info "PostgreSQL Status:"
                 docker exec "$container_id" psql -U "${POSTGRES_USER:-healthapp_user}" -d "${POSTGRES_DB:-healthapp_test}" -c "SELECT version();" 2>/dev/null || true
+
+                # Additional wait as requested by user - 60 seconds after PostgreSQL is ready
+                local additional_wait="${POSTGRES_ADDITIONAL_WAIT:-60}"
+                if [ "$additional_wait" -gt 0 ]; then
+                    log_info "PostgreSQL is ready! Waiting additional ${additional_wait} seconds before proceeding with app startup..."
+                    log_info "This ensures PostgreSQL is fully stabilized before app containers attempt to connect"
+                    
+                    # Show countdown for user feedback
+                    local countdown=$additional_wait
+                    while [ $countdown -gt 0 ]; do
+                        if [ $((countdown % 10)) -eq 0 ] || [ $countdown -le 5 ]; then
+                            log_info "Continuing app startup in ${countdown} seconds..."
+                        fi
+                        sleep 1
+                        countdown=$((countdown - 1))
+                    done
+                    
+                    log_success "Additional wait completed. PostgreSQL is fully stabilized and ready for application connections!"
+                else
+                    log_info "Additional wait disabled (POSTGRES_ADDITIONAL_WAIT=0)"
+                fi
 
                 return 0
             else
