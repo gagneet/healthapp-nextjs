@@ -127,11 +127,80 @@ stages:
                   name: $(kubernetesSecretName)
                 type: Opaque
                 stringData:
-                  DATABASE_URL: "$(DATABASE_URL)"
-                  REDIS_URL: "$(REDIS_URL)"
-                  NEXTAUTH_SECRET: "$(NEXTAUTH_SECRET)"
-                  NEXTAUTH_URL: "$(NEXTAUTH_URL)"
-                  # Add other required secrets here.
+                  # ============================================================================
+                  # INSTRUCTIONS FOR PRODUCTION ENVIRONMENT VARIABLES
+                  # ============================================================================
+                  #
+                  # The following environment variables are required for the application to
+                  # run in production. You must create corresponding 'Secret variables' in
+                  # your Azure DevOps pipeline settings for each of these.
+                  #
+                  # Navigate to: Project Settings > Pipelines > Library > Variable groups
+                  # Or associate them directly with this pipeline under 'Variables'.
+                  #
+                  # For sensitive values, ensure you select 'Keep this value secret'.
+                  #
+                  # ============================================================================
+
+                  # --- Application Core Settings ---
+                  NODE_ENV: "production"
+                  PORT: "3002"
+                  FRONTEND_URL: "$(NEXTAUTH_URL)" # Typically same as NEXTAUTH_URL
+                  NEXT_PUBLIC_API_URL: "$(NEXTAUTH_URL)/api"
+
+                  # --- Database and Cache ---
+                  DATABASE_URL: "$(DATABASE_URL)" # e.g., "postgresql://user:pass@host:port/db?schema=public"
+                  REDIS_URL: "$(REDIS_URL)"       # e.g., "redis://:password@host:port"
+
+                  # --- Authentication (Auth.js v5 & JWT) ---
+                  NEXTAUTH_SECRET: "$(NEXTAUTH_SECRET)" # A long, random string
+                  NEXTAUTH_URL: "$(NEXTAUTH_URL)"     # The public URL of your application
+                  AUTH_SECRET: "$(AUTH_SECRET)"         # Should be the same as NEXTAUTH_SECRET for simplicity
+                  JWT_SECRET: "$(JWT_SECRET)"           # Secret for legacy JWTs if needed
+                  JWT_REFRESH_SECRET: "$(JWT_REFRESH_SECRET)" # Secret for legacy JWT refresh tokens
+
+                  # --- File Storage (e.g., Azure Blob Storage or AWS S3) ---
+                  # Note: Using Azure Blob Storage is recommended for Azure deployments.
+                  # The app might need code changes if it only supports S3.
+                  AZURE_STORAGE_ACCOUNT_NAME: "$(AZURE_STORAGE_ACCOUNT_NAME)"
+                  AZURE_STORAGE_ACCOUNT_KEY: "$(AZURE_STORAGE_ACCOUNT_KEY)"
+                  AZURE_STORAGE_CONTAINER_NAME: "$(AZURE_STORAGE_CONTAINER_NAME)"
+                  # If using AWS S3 instead:
+                  # AWS_ACCESS_KEY_ID: "$(AWS_ACCESS_KEY_ID)"
+                  # AWS_SECRET_ACCESS_KEY: "$(AWS_SECRET_ACCESS_KEY)"
+                  # AWS_REGION: "$(AWS_REGION)"
+                  # AWS_S3_BUCKET: "$(AWS_S3_BUCKET)"
+
+                  # --- Email Notifications (e.g., SendGrid) ---
+                  EMAIL_HOST: "$(EMAIL_HOST)"
+                  EMAIL_PORT: "$(EMAIL_PORT)"
+                  EMAIL_USER: "$(EMAIL_USER)"
+                  EMAIL_PASS: "$(EMAIL_PASS)"
+
+                  # --- Video Consultation (Daily.co) ---
+                  DAILY_API_KEY: "$(DAILY_API_KEY)"
+                  DAILY_API_URL: "https://api.daily.co/v1"
+
+                  # --- Lab Integrations ---
+                  LAB_WEBHOOK_SECRET: "$(LAB_WEBHOOK_SECRET)"
+
+                  # --- Payment Integration (Stripe) ---
+                  STRIPE_PUBLISHABLE_KEY: "$(STRIPE_PUBLISHABLE_KEY)"
+                  STRIPE_SECRET_KEY: "$(STRIPE_SECRET_KEY)"
+                  STRIPE_WEBHOOK_SECRET: "$(STRIPE_WEBHOOK_SECRET)"
+
+                  # --- IoT & Medical Device Integration ---
+                  IOT_DATA_ENCRYPTION_KEY: "$(IOT_DATA_ENCRYPTION_KEY)" # Must be 32 characters
+
+                  # --- Notification Services (Twilio for SMS) ---
+                  TWILIO_ACCOUNT_SID: "$(TWILIO_ACCOUNT_SID)"
+                  TWILIO_AUTH_TOKEN: "$(TWILIO_AUTH_TOKEN)"
+                  TWILIO_PHONE_NUMBER: "$(TWILIO_PHONE_NUMBER)"
+
+                  # --- Healthcare Compliance & Security ---
+                  PHI_ENCRYPTION_KEY: "$(PHI_ENCRYPTION_KEY)" # Must be 32 characters
+                  AUDIT_LOG_RETENTION_DAYS: "365"
+                  ENABLE_HIPAA_AUDIT: "true"
 
           # 4. Deploy the database migration job.
           - task: Kubernetes@1
@@ -182,12 +251,14 @@ stages:
                 echo "Migration job completed successfully."
 
           # 7. Deploy the application (Deployment, Service, Ingress).
+          - task: Kubernetes@1
+            displayName: 'Deploy Application Manifests'
+            inputs:
+              connectionType: 'Azure Resource Manager'
+              azureSubscriptionEndpoint: '$(AKS_SERVICE_CONNECTION)'
+              resourceGroup: '$(AKS_RESOURCE_GROUP)'
               kubernetesCluster: '$(AKS_CLUSTER_NAME)'
               command: 'apply'
-              configuration: '$(System.ArtifactsDirectory)/manifests/deployment.yml'
-
-              configuration: '$(System.ArtifactsDirectory)/manifests/service.yml'
-              command: apply
-
-              configuration: '$(System.ArtifactsDirectory)/manifests/ingress.yml'
-              command: apply
+              # Apply all manifest files in the directory.
+              useConfigurationFile: true
+              configuration: '$(System.ArtifactsDirectory)/manifests/'
