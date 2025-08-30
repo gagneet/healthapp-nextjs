@@ -1,6 +1,6 @@
 # Kubernetes Manifests and Infrastructure as Code (IaC)
 
-This directory contains the Kubernetes manifests required to deploy the HealthApp application to an Azure Kubernetes Service (AKS) cluster. These manifests are used by the Azure CI/CD pipeline in `.github/workflows/azure-pipelines.yml`.
+This directory contains the Kubernetes manifests required to deploy the HealthApp application to an Azure Kubernetes Service (AKS) cluster. These manifests are used by the Azure CI/CD pipeline in `azure-pipelines.yml` (located in the root directory).
 
 ## The Role of this Pipeline (CI/CD) vs. Infrastructure as Code (IaC)
 
