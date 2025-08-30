@@ -1,0 +1,229 @@
+# docker-stack.yml - Universal Docker Swarm Stack for all environments
+# Configurable for dev/test/prod through environment variables
+version: '3.8'
+
+services:
+  postgres:
+    image: ${POSTGRES_IMAGE:-postgres:17-alpine}
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-healthapp_${ENVIRONMENT}}
+      POSTGRES_USER: ${POSTGRES_USER:-healthapp_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-secure_pg_password}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "${HOST_PORT_DB:-5432}:5432"
+    networks:
+      - healthapp_network
+    deploy:
+      replicas: ${REPLICAS_POSTGRES:-1}
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 5
+        window: 120s
+      placement:
+        constraints:
+          - node.role == manager
+      resources:
+        limits:
+          # Production: 1GB, Test: 512MB, Dev: 512MB
+          memory: ${POSTGRES_MEMORY_LIMIT:-512M}
+        reservations:
+          # Production: 512MB, Test: 256MB, Dev: 256MB  
+          memory: ${POSTGRES_MEMORY_RESERVATION:-256M}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-healthapp_user} -d ${POSTGRES_DB:-healthapp_${ENVIRONMENT}}"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
+    command: >
+      postgres -c max_connections=${POSTGRES_MAX_CONNECTIONS:-200}
+               -c shared_buffers=${POSTGRES_SHARED_BUFFERS:-128MB}
+               -c effective_cache_size=${POSTGRES_EFFECTIVE_CACHE:-256MB}
+               -c maintenance_work_mem=${POSTGRES_MAINTENANCE_MEM:-32MB}
+               -c checkpoint_completion_target=0.9
+               -c wal_buffers=8MB
+               -c default_statistics_target=100
+               -c log_statement=${POSTGRES_LOG_STATEMENT:-all}
+               -c log_destination=stderr
+               -c logging_collector=off
+
+  redis:
+    image: ${REDIS_IMAGE:-redis:7.4-alpine}
+    volumes:
+      - redis_data:/data
+    ports:
+      - "${HOST_PORT_REDIS:-6379}:6379"
+    networks:
+      - healthapp_network
+    deploy:
+      replicas: ${REPLICAS_REDIS:-1}
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+      resources:
+        limits:
+          # Production: 512MB, Test: 256MB, Dev: 256MB
+          memory: ${REDIS_MEMORY_LIMIT:-256M}
+        reservations:
+          # Production: 256MB, Test: 128MB, Dev: 128MB
+          memory: ${REDIS_MEMORY_RESERVATION:-128M}
+    healthcheck:
+      test: 
+        - CMD
+        - sh
+        - -c
+        - |
+          if [ -n "${REDIS_PASSWORD:-}" ]; then
+            redis-cli -a "${REDIS_PASSWORD}" ping
+          else
+            redis-cli ping
+          fi
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    command: >
+      sh -c "
+      if [ -n '${REDIS_PASSWORD:-}' ]; then
+        redis-server --requirepass '${REDIS_PASSWORD}' --appendonly yes --maxmemory ${REDIS_MAX_MEMORY:-256mb} --maxmemory-policy allkeys-lru
+      else
+        redis-server --appendonly yes --maxmemory ${REDIS_MAX_MEMORY:-256mb} --maxmemory-policy allkeys-lru
+      fi
+      "
+
+  app:
+    image: ${APP_IMAGE:-healthapp:${ENVIRONMENT:-dev}}
+    environment:
+      NODE_ENV: ${NODE_ENV:-development}
+      ENVIRONMENT: ${ENVIRONMENT:-dev}
+      PORT: 3002
+      
+      # Database Configuration
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: ${POSTGRES_DB:-healthapp_${ENVIRONMENT}}
+      POSTGRES_USER: ${POSTGRES_USER:-healthapp_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      DATABASE_URL: ${DATABASE_URL}
+      
+      # NextAuth.js v5 Configuration  
+      NEXTAUTH_URL: ${NEXTAUTH_URL}
+      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET}
+      AUTH_SECRET: ${AUTH_SECRET:-${NEXTAUTH_SECRET}}
+      
+      # Application URLs
+      FRONTEND_URL: ${FRONTEND_URL}
+      BACKEND_URL: ${BACKEND_URL:-${FRONTEND_URL}}
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+      
+      # Redis Configuration
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+      REDIS_URL: ${REDIS_URL}
+      
+      # AWS S3 Configuration (if needed)
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      AWS_REGION: ${AWS_REGION}
+      S3_BUCKET_NAME: ${S3_BUCKET_NAME}
+      
+      # Additional environment-specific variables
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      DEBUG: ${DEBUG:-false}
+    ports:
+      - "${HOST_PORT_FRONTEND:-3002}:3002"
+    networks:
+      - healthapp_network
+    deploy:
+      replicas: ${REPLICAS_FRONTEND:-1}
+      restart_policy:
+        condition: on-failure
+        delay: 10s
+        max_attempts: 3
+        window: 120s
+      update_config:
+        parallelism: 1
+        delay: 10s
+        failure_action: rollback
+        order: start-first
+      rollback_config:
+        parallelism: 1
+        delay: 10s
+      resources:
+        limits:
+          # Production: 2GB, Test: 1GB, Dev: 1GB
+          memory: ${APP_MEMORY_LIMIT:-1024M}
+        reservations:
+          # Production: 1GB, Test: 512MB, Dev: 512MB
+          memory: ${APP_MEMORY_RESERVATION:-512M}
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:3002/api/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    depends_on:
+      - postgres
+      - redis
+
+  pgadmin:
+    image: ${PGADMIN_IMAGE:-dpage/pgadmin4:latest}
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-admin@healthapp.local}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin}
+      PGADMIN_CONFIG_SERVER_MODE: ${PGADMIN_SERVER_MODE:-False}
+      PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: ${PGADMIN_MASTER_PASSWORD_REQUIRED:-False}
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    ports:
+      - "${HOST_PORT_PGADMIN:-5050}:80"
+    networks:
+      - healthapp_network
+    deploy:
+      replicas: ${REPLICAS_PGADMIN:-1}
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+      placement:
+        # Only deploy on manager nodes for security
+        constraints:
+          - node.role == manager
+      resources:
+        limits:
+          memory: ${PGADMIN_MEMORY_LIMIT:-256M}
+        reservations:
+          memory: ${PGADMIN_MEMORY_RESERVATION:-128M}
+    depends_on:
+      - postgres
+
+networks:
+  healthapp_network:
+    driver: overlay
+    attachable: true
+    # Enable encryption for production
+    driver_opts:
+      encrypted: "${NETWORK_ENCRYPTED:-false}"
+
+volumes:
+  postgres_data:
+    driver: local
+    # Production can use external volumes
+    external: ${POSTGRES_VOLUME_EXTERNAL:-false}
+    name: ${POSTGRES_VOLUME_NAME:-${STACK_NAME}_postgres_data}
+  redis_data:
+    driver: local
+    external: ${REDIS_VOLUME_EXTERNAL:-false}
+    name: ${REDIS_VOLUME_NAME:-${STACK_NAME}_redis_data}
+  pgadmin_data:
+    driver: local
+    external: ${PGADMIN_VOLUME_EXTERNAL:-false}
+    name: ${PGADMIN_VOLUME_NAME:-${STACK_NAME}_pgadmin_data}

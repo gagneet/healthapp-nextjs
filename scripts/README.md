@@ -1,101 +1,105 @@
-# 🚀 HealthApp Deployment Scripts
+# 🚀 HealthApp Consolidated Deployment System
 
-This directory contains enhanced deployment scripts for the HealthApp Healthcare Management Platform with comprehensive migration and seeding improvements.
+This directory contains the **consolidated deployment system** for the HealthApp Healthcare Management Platform with a single script and Docker stack file for all environments.
 
 ## 📅 Latest Updates (August 2025)
 
-### ✅ Enhanced Deployment System
+### ✅ **MAJOR CONSOLIDATION (BREAKING CHANGES)**
+- **Single Deployment Script**: All environment-specific scripts consolidated into `deploy.sh`
+- **Single Docker Stack**: All docker-stack files consolidated into one universal `docker-stack.yml`
+- **Environment Parameters**: Use environment parameters instead of separate scripts
+- **Automatic Configuration**: Environment-specific settings applied automatically
+- **Production Safety Built-In**: Safety measures integrated into the main script
+
+### ✅ Enhanced Migration & Seeding System
 - **Timeout Protection**: All migration and seeding operations now have timeout protection
 - **Fallback Strategies**: Multiple fallback methods prevent deployment failures
-- **Environment-Specific Scripts**: Convenient wrapper scripts for each environment
-- **Production Safety**: Enhanced safety measures for production deployments
 - **TypeScript Seed Support**: Full support for `prisma/seed.ts` with tsx execution
+- **Multiple Seed Locations**: Automatic detection of seed files in various locations
 
-## 🎯 Available Scripts
+## 🎯 Consolidated File Structure
 
-### Environment-Specific Scripts (Recommended)
+```
+scripts/
+└── deploy.sh              # Single universal deployment script
 
-| Script | Purpose | Safety Level | Use Case |
-|--------|---------|--------------|----------|
-| `deploy-local.sh` | Local development | Low (data loss allowed) | Development workstations |
-| `deploy-test.sh` | Test environment | Medium (domain required) | QA and testing |
-| `deploy-prod.sh` | Production | High (safety confirmations) | Live production |
-
-### Universal Script
-
-| Script | Purpose | Flexibility | Use Case |
-|--------|---------|-------------|----------|
-| `deploy.sh` | All environments | Full control | Advanced usage, CI/CD |
-
-## 🏠 Local Development (`deploy-local.sh`)
-
-Quick local development with optimized settings:
-
-```bash
-# Basic deployment
-./scripts/deploy-local.sh --migrate --seed
-
-# Fresh start (removes all data)
-./scripts/deploy-local.sh fresh --migrate --seed
-
-# Clean deployment
-./scripts/deploy-local.sh clean --migrate --seed
-
-# View logs
-./scripts/deploy-local.sh logs app
+docker/
+└── docker-stack.yml       # Single universal Docker stack file
 ```
 
-**Features:**
-- Domain: `localhost` (automatic)
-- Port: `3002` 
-- Replicas: `1`
-- Image pulling: Skip (faster builds)
-- Volume cleanup: Allowed
+### ✅ Removed Files (Consolidated)
+- ❌ `deploy-local.sh` (merged into `deploy.sh`)
+- ❌ `deploy-test.sh` (merged into `deploy.sh`)
+- ❌ `deploy-prod.sh` (merged into `deploy.sh`)
+- ❌ `docker-stack.test.yml` (merged into `docker-stack.yml`)
+- ❌ `docker-stack.prod.yml` (merged into `docker-stack.yml`)
+- ❌ `docker-stack.production.yml` (merged into `docker-stack.yml`)
 
-## 🧪 Test Environment (`deploy-test.sh`)
+## 🚀 **New Consolidated Usage**
 
-Test deployment with production-like settings:
-
+### Universal Command Structure
 ```bash
-# Deploy to test domain
-./scripts/deploy-test.sh deploy --domain test.healthapp.com --migrate --seed
+./scripts/deploy.sh [ENVIRONMENT] [COMMAND] [OPTIONS]
+```
+
+### 🏠 **Development Environment**
+```bash
+# Basic development deployment
+./scripts/deploy.sh dev deploy --migrate --seed
+
+# Development features (automatic):
+- Domain: localhost (automatic)
+- Port: 3002
+- Replicas: 1
+- Memory limits: Lower (512M-1GB)
+- SQL logging: Full (debug mode)
+- Network encryption: Disabled
+- PgAdmin: Single-user mode
+```
+
+### 🧪 **Test Environment**  
+```bash
+# Test deployment
+./scripts/deploy.sh test deploy --domain test.healthapp.com --migrate --seed
 
 # Update existing deployment
-./scripts/deploy-test.sh update --domain test.healthapp.com
+./scripts/deploy.sh test update --domain test.healthapp.com
 
-# Scale test environment  
-./scripts/deploy-test.sh scale --domain test.healthapp.com --replicas 3
+# Scale test environment
+./scripts/deploy.sh test scale --replicas 3
+
+# Test features (automatic):
+- Domain: Required (validation enforced)
+- Port: 3002
+- Replicas: 2 (for load testing)
+- Memory limits: Medium (512M-1GB)
+- SQL logging: Disabled
+- Network encryption: Disabled
+- PgAdmin: Multi-user mode
 ```
 
-**Features:**
-- Domain: Required (validation enforced)
-- Port: `3002`
-- Replicas: `2` (for load testing)
-- Volume cleanup: Allowed with confirmation
-- Database: Isolated test database
-
-## 🚀 Production (`deploy-prod.sh`)
-
-Secure production deployment with safety measures:
-
+### 🚀 **Production Environment**
 ```bash
-# Safe production deployment
-./scripts/deploy-prod.sh deploy --domain healthapp.com --migrate
+# Production deployment with safety checks
+./scripts/deploy.sh prod deploy --domain healthapp.com --migrate
 
 # Update production (recommended)
-./scripts/deploy-prod.sh update --domain healthapp.com
+./scripts/deploy.sh prod update --domain healthapp.com
 
 # Scale production
-./scripts/deploy-prod.sh scale --domain healthapp.com --replicas 3
-```
+./scripts/deploy.sh prod scale --replicas 4
 
-**Safety Features:**
+# Production safety features (automatic):
 - Domain: Required with validation
 - Environment validation: Required variables checked
-- Seeding: BLOCKED (use `--seed` throws error)
-- Volume cleanup: BLOCKED (`--cleanup-volumes` throws error)
-- Fresh deployment: BLOCKED (`fresh` command throws error)
-- Destructive operations: Double confirmation required
+- Memory limits: Higher (1GB-2GB)
+- SQL logging: Disabled
+- Network encryption: Enabled
+- Database optimizations: Higher connections/buffers
+- PgAdmin: Multi-user with master password
+- BLOCKS: --seed, --cleanup-volumes, destructive operations
+- Requires confirmation for stop/restart/migrations
+```
 
 ## 🔄 Migration & Seeding System
 

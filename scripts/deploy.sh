@@ -106,15 +106,17 @@ DB_ALREADY_DEPLOYED=false  # Track if DB was deployed early
 
 print_usage() {
     cat << EOF
-🚀 HealthApp Universal Deployment Script
-==========================================
+🚀 HealthApp Consolidated Deployment Script
+=============================================
+
+Universal deployment script for all environments using a single Docker stack file.
 
 Usage: ./scripts/deploy.sh [ENVIRONMENT] [COMMAND] [OPTIONS]
 
 ENVIRONMENTS:
-  dev          Deploy to development environment
-  test         Deploy to test environment
-  prod         Deploy to production environment
+  dev          Development environment (local development)
+  test         Test environment (QA and testing)  
+  prod         Production environment (live deployment)
 
 COMMANDS:
   deploy       Deploy complete stack to Docker Swarm
@@ -140,7 +142,7 @@ OPTIONS:
   --port-redis PORT          Redis port (default: 6379)
   --port-pgadmin PORT        PgAdmin port (default: 5050)
 
-  --replicas N               Number of replicas for all services
+  --replicas N               Number of app replicas (default: dev=1, test=2, prod=2)
   --migrate                  Run database migrations after deployment
   --seed                     Run database seeders after deployment
   --cleanup                  Clean up before deployment (compiled files + Docker resources)
@@ -151,46 +153,58 @@ OPTIONS:
   --auto-yes                Skip all confirmation prompts
   --debug                   Enable debug output
 
-DOCKER SWARM NOTES:
-  For single-node swarms (development/testing):
-    - Local images can be used directly
-    - No registry required
+SIMPLIFIED EXAMPLES:
 
-  For multi-node swarms (production):
-    - Images must be accessible to all nodes
-    - Configure DOCKER_REGISTRY in .env file:
-      DOCKER_REGISTRY=your.registry.com
-    - Or run a local registry:
-      docker run -d -p 5000:5000 --name registry registry:2
-      DOCKER_REGISTRY=localhost:5000
+  🏠 Development (Local):
+  ./scripts/deploy.sh dev deploy --migrate --seed
+  ./scripts/deploy.sh dev logs app
+  ./scripts/deploy.sh dev stop
 
-IMPORTANT: docker-stack.*.yml files must use environment variables for images:
-  app:
-    image: \${APP_IMAGE:-healthapp:test}
-
-EXAMPLES:
-  # Deploy test environment with custom domain and scaling
-  ./scripts/deploy.sh test deploy --domain healthapp.gagneet.com --replicas 2 --migrate --seed
-
-  # Deploy test with full cleanup including volumes (DANGER: data loss!)
-  ./scripts/deploy.sh test deploy --cleanup --cleanup-volumes --migrate --seed
-
-  # Deploy production with cleanup (preserving volumes)
-  ./scripts/deploy.sh prod deploy --cleanup --migrate --auto-yes
-
-  # Scale test environment
+  🧪 Test Environment:  
+  ./scripts/deploy.sh test deploy --domain test.healthapp.com --migrate --seed
+  ./scripts/deploy.sh test update --domain test.healthapp.com
   ./scripts/deploy.sh test scale --replicas 3
 
-  # View production logs
-  ./scripts/deploy.sh prod logs app
+  🚀 Production:
+  ./scripts/deploy.sh prod deploy --domain healthapp.com --migrate
+  ./scripts/deploy.sh prod update --domain healthapp.com  
+  ./scripts/deploy.sh prod scale --replicas 4
 
-ENVIRONMENT DEFAULTS:
-  Dev:  1 replica,  ports as specified
-  Test: 2 replicas, ports as specified
-  Prod: 2 replicas, ports as specified
+ENVIRONMENT-SPECIFIC DEFAULTS:
 
-WARNING: --cleanup-volumes will DELETE ALL DATA in PostgreSQL and Redis volumes!
-         Use with extreme caution, especially in production.
+  📋 Development (dev):
+  - Memory limits: Lower (512M-1GB)
+  - Logging: Debug level, all SQL statements
+  - Network encryption: Disabled
+  - PgAdmin: Single-user mode
+  - Replicas: 1
+
+  📋 Test (test):
+  - Memory limits: Medium (512M-1GB)
+  - Logging: Info level, no SQL statements
+  - Network encryption: Disabled
+  - PgAdmin: Multi-user mode
+  - Replicas: 2
+
+  📋 Production (prod):
+  - Memory limits: Higher (1GB-2GB)
+  - Logging: Warning level, no SQL statements  
+  - Network encryption: Enabled
+  - PgAdmin: Multi-user with master password
+  - Database optimizations: Higher connections/buffers
+  - Replicas: 2
+
+CONSOLIDATED FEATURES:
+  ✅ Single docker-stack.yml file for all environments
+  ✅ Environment-specific resource limits and configurations
+  ✅ Production safety measures built-in
+  ✅ Enhanced migration and seeding with timeouts
+  ✅ Comprehensive logging and error handling
+
+SAFETY NOTES:
+  ⚠️  Production deployments have built-in confirmations for destructive operations
+  ⚠️  --cleanup-volumes will DELETE ALL DATA in volumes
+  ⚠️  Always backup before running migrations in production
 
 EOF
 }
@@ -219,6 +233,10 @@ log_debug() {
     if [ "${DEBUG:-false}" = "true" ]; then
         echo -e "${PURPLE}[DEBUG]${NC} $1"
     fi
+}
+
+log_critical() {
+    echo -e "${PURPLE}[CRITICAL]${NC} $1"
 }
 
 confirm() {
@@ -427,7 +445,7 @@ setup_environment() {
     # Set derived variables (computed from .env values)
     export APP_NAME="${STACK_NAME_PREFIX:-healthapp}"
     export STACK_NAME="${STACK_NAME_PREFIX:-healthapp}-$ENVIRONMENT"
-    export DOCKER_STACK_FILE="docker/docker-stack.$ENVIRONMENT.yml"
+    export DOCKER_STACK_FILE="docker/docker-stack.yml"  # Single universal stack file
 
     # Docker registry configuration (for multi-node swarms)
     export DOCKER_REGISTRY="${DOCKER_REGISTRY:-}"
@@ -474,6 +492,71 @@ setup_environment() {
         exit 1
     fi
 
+# Environment-specific defaults (applied before .env file values)
+    case $ENVIRONMENT in
+        dev)
+            export NODE_ENV="development"
+            export LOG_LEVEL="${LOG_LEVEL:-debug}"
+            export DEBUG="${DEBUG:-true}"
+            # Dev memory limits (lower)
+            export POSTGRES_MEMORY_LIMIT="${POSTGRES_MEMORY_LIMIT:-512M}"
+            export POSTGRES_MEMORY_RESERVATION="${POSTGRES_MEMORY_RESERVATION:-256M}"
+            export REDIS_MEMORY_LIMIT="${REDIS_MEMORY_LIMIT:-256M}"
+            export REDIS_MEMORY_RESERVATION="${REDIS_MEMORY_RESERVATION:-128M}"
+            export APP_MEMORY_LIMIT="${APP_MEMORY_LIMIT:-1024M}"
+            export APP_MEMORY_RESERVATION="${APP_MEMORY_RESERVATION:-512M}"
+            export PGADMIN_MEMORY_LIMIT="${PGADMIN_MEMORY_LIMIT:-256M}"
+            export PGADMIN_MEMORY_RESERVATION="${PGADMIN_MEMORY_RESERVATION:-128M}"
+            # Dev configuration
+            export POSTGRES_LOG_STATEMENT="${POSTGRES_LOG_STATEMENT:-all}"
+            export PGADMIN_SERVER_MODE="${PGADMIN_SERVER_MODE:-False}"
+            export NETWORK_ENCRYPTED="${NETWORK_ENCRYPTED:-false}"
+            ;;
+        test)
+            export NODE_ENV="production"
+            export LOG_LEVEL="${LOG_LEVEL:-info}"  
+            export DEBUG="${DEBUG:-false}"
+            # Test memory limits (medium)
+            export POSTGRES_MEMORY_LIMIT="${POSTGRES_MEMORY_LIMIT:-512M}"
+            export POSTGRES_MEMORY_RESERVATION="${POSTGRES_MEMORY_RESERVATION:-256M}"
+            export REDIS_MEMORY_LIMIT="${REDIS_MEMORY_LIMIT:-256M}"
+            export REDIS_MEMORY_RESERVATION="${REDIS_MEMORY_RESERVATION:-128M}"
+            export APP_MEMORY_LIMIT="${APP_MEMORY_LIMIT:-1024M}"
+            export APP_MEMORY_RESERVATION="${APP_MEMORY_RESERVATION:-512M}"
+            export PGADMIN_MEMORY_LIMIT="${PGADMIN_MEMORY_LIMIT:-256M}"
+            export PGADMIN_MEMORY_RESERVATION="${PGADMIN_MEMORY_RESERVATION:-128M}"
+            # Test configuration
+            export POSTGRES_LOG_STATEMENT="${POSTGRES_LOG_STATEMENT:-none}"
+            export PGADMIN_SERVER_MODE="${PGADMIN_SERVER_MODE:-True}"
+            export NETWORK_ENCRYPTED="${NETWORK_ENCRYPTED:-false}"
+            ;;
+        prod)
+            export NODE_ENV="production"
+            export LOG_LEVEL="${LOG_LEVEL:-warn}"
+            export DEBUG="${DEBUG:-false}"
+            # Production memory limits (higher)
+            export POSTGRES_MEMORY_LIMIT="${POSTGRES_MEMORY_LIMIT:-1024M}"
+            export POSTGRES_MEMORY_RESERVATION="${POSTGRES_MEMORY_RESERVATION:-512M}"
+            export REDIS_MEMORY_LIMIT="${REDIS_MEMORY_LIMIT:-512M}"
+            export REDIS_MEMORY_RESERVATION="${REDIS_MEMORY_RESERVATION:-256M}"
+            export APP_MEMORY_LIMIT="${APP_MEMORY_LIMIT:-2048M}"
+            export APP_MEMORY_RESERVATION="${APP_MEMORY_RESERVATION:-1024M}"
+            export PGADMIN_MEMORY_LIMIT="${PGADMIN_MEMORY_LIMIT:-256M}"
+            export PGADMIN_MEMORY_RESERVATION="${PGADMIN_MEMORY_RESERVATION:-128M}"
+            # Production configuration
+            export POSTGRES_LOG_STATEMENT="${POSTGRES_LOG_STATEMENT:-none}"
+            export PGADMIN_SERVER_MODE="${PGADMIN_SERVER_MODE:-True}"
+            export PGADMIN_MASTER_PASSWORD_REQUIRED="${PGADMIN_MASTER_PASSWORD_REQUIRED:-True}"
+            export NETWORK_ENCRYPTED="${NETWORK_ENCRYPTED:-true}"
+            # Production database optimizations
+            export POSTGRES_MAX_CONNECTIONS="${POSTGRES_MAX_CONNECTIONS:-500}"
+            export POSTGRES_SHARED_BUFFERS="${POSTGRES_SHARED_BUFFERS:-256MB}"
+            export POSTGRES_EFFECTIVE_CACHE="${POSTGRES_EFFECTIVE_CACHE:-512MB}"
+            export POSTGRES_MAINTENANCE_MEM="${POSTGRES_MAINTENANCE_MEM:-64MB}"
+            export REDIS_MAX_MEMORY="${REDIS_MAX_MEMORY:-512mb}"
+            ;;
+    esac
+
     # Service scaling (use .env values or defaults)
     export REPLICAS_FRONTEND="${REPLICAS:-$(eval echo \$REPLICAS_$(echo $ENVIRONMENT | tr '[:lower:]' '[:upper:]'))}"
     export REPLICAS_POSTGRES="1"  # Always 1 for database
@@ -487,6 +570,19 @@ setup_environment() {
             test) export REPLICAS_FRONTEND="2" ;;
             prod) export REPLICAS_FRONTEND="2" ;;
         esac
+    fi
+
+    # Set Docker images with environment-specific tags
+    export APP_IMAGE="${APP_IMAGE:-healthapp:$ENVIRONMENT}"
+    export POSTGRES_IMAGE="${POSTGRES_IMAGE:-postgres:${POSTGRES_VERSION:-17}-alpine}"
+    export REDIS_IMAGE="${REDIS_IMAGE:-redis:7.4-alpine}"
+    export PGADMIN_IMAGE="${PGADMIN_IMAGE:-dpage/pgadmin4:latest}"
+
+    # Configure Redis URL based on password presence
+    if [ -n "${REDIS_PASSWORD:-}" ]; then
+        export REDIS_URL="redis://:${REDIS_PASSWORD}@redis:6379"
+    else
+        export REDIS_URL="redis://redis:6379"
     fi
 
     log_success "Environment setup complete"
@@ -1800,6 +1896,65 @@ scale_service() {
 # Command Handlers
 # ============================================================================
 
+# Production safety validation
+validate_production_safety() {
+    if [ "$ENVIRONMENT" = "prod" ]; then
+        log_info "🔒 Validating production deployment safety..."
+        
+        # Block dangerous operations in production
+        if [ "$SEED" = true ]; then
+            log_error "❌ PRODUCTION SAFETY: --seed is not allowed in production"
+            log_error "💡 Seeding could overwrite production data"
+            log_error "If you need to seed production, do it manually with extreme caution"
+            exit 1
+        fi
+        
+        if [ "$CLEANUP_VOLUMES" = true ]; then
+            log_error "❌ PRODUCTION SAFETY: --cleanup-volumes is BLOCKED in production"
+            log_error "💡 This would DELETE ALL PRODUCTION DATA"
+            exit 1
+        fi
+        
+        # Require explicit confirmation for destructive operations
+        if [ "$AUTO_YES" != true ]; then
+            case $COMMAND in
+                stop|restart)
+                    log_warning "🚨 PRODUCTION WARNING: $COMMAND operation requested"
+                    log_warning "This will affect live production services and user access"
+                    echo
+                    log_critical "Type 'CONFIRM PRODUCTION $COMMAND' to proceed:"
+                    read -r confirmation
+                    if [ "$confirmation" != "CONFIRM PRODUCTION $COMMAND" ]; then
+                        log_error "Operation cancelled"
+                        exit 1
+                    fi
+                    ;;
+                deploy)
+                    if [ "$MIGRATE" = true ]; then
+                        log_warning "🔄 PRODUCTION MIGRATION WARNING"
+                        log_warning "You are about to run database migrations in production"
+                        echo
+                        log_info "📋 RECOMMENDED STEPS:"
+                        log_info "1. Backup the production database"
+                        log_info "2. Test migrations on a copy of production data"
+                        log_info "3. Plan for rollback if needed"
+                        echo
+                        log_critical "Type 'MIGRATE PRODUCTION' to confirm:"
+                        read -r confirmation
+                        if [ "$confirmation" != "MIGRATE PRODUCTION" ]; then
+                            log_error "Migration cancelled"
+                            exit 1
+                        fi
+                    fi
+                    ;;
+            esac
+        fi
+        
+        log_success "✅ Production safety validation passed"
+    fi
+}
+
+# Enhanced deployment handler with production safety
 handle_deploy() {
     log_deploy "Deploying HealthApp $ENVIRONMENT Environment"
     echo "================================================"
@@ -1807,12 +1962,17 @@ handle_deploy() {
     echo "Stack: $STACK_NAME"
     echo "Domain: $DOMAIN"
     echo "Frontend Port: $PORT_FRONTEND"
-    echo "Backend Port: $PORT_BACKEND"
+    echo "Backend Port: $PORT_BACKEND"  
     echo "Database Port: $PORT_DB"
-    echo "Replicas: $REPLICAS"
+    echo "App Replicas: $REPLICAS_FRONTEND"
+    echo "Memory Limits: App=${APP_MEMORY_LIMIT}, DB=${POSTGRES_MEMORY_LIMIT}, Redis=${REDIS_MEMORY_LIMIT}"
+    echo "Network Encryption: ${NETWORK_ENCRYPTED}"
     echo "Early DB Start: $EARLY_DB_START"
     echo "Cleanup Volumes: $CLEANUP_VOLUMES"
     echo "================================================"
+
+    # Production safety checks
+    validate_production_safety
 
     if [ "$CLEANUP_VOLUMES" = true ]; then
         echo -e "${RED}⚠️  WARNING: Volume cleanup is enabled!${NC}"
@@ -1830,6 +1990,7 @@ handle_deploy() {
     echo
     log_success "🎉 Deployment complete!"
     echo "================================================"
+    echo "Environment: $ENVIRONMENT"
     echo "Access Points:"
     echo "  Frontend:    http://$DOMAIN:$PORT_FRONTEND"
     echo "  Backend API: http://$DOMAIN:$PORT_BACKEND/api"
@@ -1838,8 +1999,13 @@ handle_deploy() {
     echo "Database:"
     echo "  Host: $DOMAIN"
     echo "  Port: $PORT_DB"
-    echo "  Database: ${POSTGRES_DB:-healthapp_test}"
+    echo "  Database: ${POSTGRES_DB:-healthapp_$ENVIRONMENT}"
     echo "  User: ${POSTGRES_USER:-healthapp_user}"
+    echo ""
+    echo "Resources:"
+    echo "  App Replicas: $REPLICAS_FRONTEND"
+    echo "  App Memory: ${APP_MEMORY_LIMIT} (reserved: ${APP_MEMORY_RESERVATION})"
+    echo "  DB Memory: ${POSTGRES_MEMORY_LIMIT} (reserved: ${POSTGRES_MEMORY_RESERVATION})"
     echo "================================================"
 }
 

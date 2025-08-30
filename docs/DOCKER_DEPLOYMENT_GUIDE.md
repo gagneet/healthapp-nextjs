@@ -4,14 +4,14 @@ This comprehensive guide covers deploying the Healthcare Management Platform usi
 
 ## 🆕 Latest Updates (August 2025)
 
-### ✅ **Enhanced Deployment Scripts (NEW)**
-- **Environment-Specific Scripts**: Added convenient `deploy-local.sh`, `deploy-test.sh`, and `deploy-prod.sh` scripts
-- **Production Safety**: Enhanced production deployment with safety checks and confirmations
-- **Timeout Protection**: Added timeout handling to prevent hanging deployments
-- **Comprehensive Logging**: Detailed logging with emojis for better troubleshooting
-- **Seed File Migration**: Updated to use new `prisma/seed.ts` location with TypeScript support
+### ✅ **CONSOLIDATED DEPLOYMENT SYSTEM (MAJOR OVERHAUL)**
+- **Single Docker Stack**: Replaced multiple docker-stack files with one universal `docker-stack.yml`
+- **Single Deployment Script**: Consolidated all deployment scripts into `deploy.sh` with environment parameters
+- **Environment-Based Configuration**: Automatic resource limits and configurations per environment
+- **Production Safety Built-In**: Enhanced safety measures integrated into the main deployment script
+- **Simplified Usage**: Clean, simple command structure for all environments
 
-### ✅ **Migration & Seeding Improvements**
+### ✅ **Enhanced Migration & Seeding Improvements**
 - **Timeout Handling**: Migrations and seeding now have timeout protection (120s/180s respectively)
 - **Fallback Strategies**: Multiple fallback methods for both migration and seeding failures
 - **TypeScript Support**: Full support for TypeScript seed files with `tsx` execution
@@ -124,17 +124,14 @@ docker-compose --version
 ### 1. Local Development
 
 ```bash
-# Start local development environment (easiest method)
-./scripts/deploy-local.sh --migrate --seed
+# Start local development environment
+./scripts/deploy.sh dev deploy --migrate --seed
 
-# Alternative: using main deploy script
-./scripts/deploy.sh dev deploy --domain localhost --migrate --seed
-
-# View logs
-./scripts/deploy-local.sh logs
+# View logs  
+./scripts/deploy.sh dev logs app
 
 # Stop when done
-./scripts/deploy-local.sh stop
+./scripts/deploy.sh dev stop
 ```
 
 ### 2. Test Environment
@@ -143,121 +140,122 @@ docker-compose --version
 # Initialize Docker Swarm (one-time)
 docker swarm init
 
-# Deploy test environment (requires domain)
-./scripts/deploy-test.sh deploy --domain test.healthapp.com --migrate --seed
+# Deploy test environment
+./scripts/deploy.sh test deploy --domain test.healthapp.com --migrate --seed
 
 # Update existing test deployment
-./scripts/deploy-test.sh update --domain test.healthapp.com
+./scripts/deploy.sh test update --domain test.healthapp.com
+
+# Scale test environment
+./scripts/deploy.sh test scale --replicas 3
 ```
 
 ### 3. Production Deployment
 
 ```bash
 # Production deployment with safety checks
-./scripts/deploy-prod.sh deploy --domain healthapp.com --migrate
+./scripts/deploy.sh prod deploy --domain healthapp.com --migrate
 
 # Update production (safest option)
-./scripts/deploy-prod.sh update --domain healthapp.com
+./scripts/deploy.sh prod update --domain healthapp.com
 
-# Scale production services
-./scripts/deploy-prod.sh scale --domain healthapp.com --replicas 3
+# Scale production services  
+./scripts/deploy.sh prod scale --replicas 4
 ```
 
-## 🎯 Environment-Specific Deployment Scripts
+## 🎯 Consolidated Deployment System
 
-We now provide three convenient environment-specific scripts that wrap the main `deploy.sh` script with appropriate defaults and safety measures:
+The deployment system has been completely consolidated into a single script and Docker stack file:
 
-### 🏠 Local Development (`deploy-local.sh`)
+### 📁 **File Structure**
+```
+scripts/
+└── deploy.sh                    # Single universal deployment script
 
-**Purpose**: Quick local development deployment with optimized settings
+docker/  
+└── docker-stack.yml            # Single universal Docker stack file
+```
+
+### 🚀 **Simplified Usage**
+
+All environments now use the same script with environment parameters:
 
 ```bash
-# Basic deployment
-./scripts/deploy-local.sh --migrate --seed
-
-# Available commands
-./scripts/deploy-local.sh deploy    # Deploy complete stack (default)
-./scripts/deploy-local.sh start     # Alias for deploy
-./scripts/deploy-local.sh stop      # Stop local stack
-./scripts/deploy-local.sh restart   # Stop and redeploy
-./scripts/deploy-local.sh logs      # Show service logs
-./scripts/deploy-local.sh status    # Show service status
-./scripts/deploy-local.sh clean     # Clean and redeploy (removes compiled files)
-./scripts/deploy-local.sh fresh     # Fresh deployment (removes volumes - DATA LOSS!)
-./scripts/deploy-local.sh migrate   # Run database migrations only
-./scripts/deploy-local.sh seed      # Run database seeders only
-
-# Local Development Defaults
-- Environment: dev
-- Domain: localhost
-- Port: 3002
-- Replicas: 1
-- Early database start: enabled
-- Skip image pulling: enabled (for faster builds)
+# Universal deployment command structure
+./scripts/deploy.sh [ENVIRONMENT] [COMMAND] [OPTIONS]
 ```
 
-### 🧪 Test Environment (`deploy-test.sh`)
-
-**Purpose**: Test environment deployment with production-like settings
+### 🏠 **Development Environment**
 
 ```bash
-# Test deployment (domain required)
-./scripts/deploy-test.sh deploy --domain test.healthapp.com --migrate --seed
+# Basic development deployment
+./scripts/deploy.sh dev deploy --migrate --seed
 
 # Available commands
-./scripts/deploy-test.sh deploy     # Deploy complete test stack
-./scripts/deploy-test.sh update     # Update running services (safer)
-./scripts/deploy-test.sh stop       # Stop test stack
-./scripts/deploy-test.sh restart    # Stop and redeploy
-./scripts/deploy-test.sh logs       # Show service logs
-./scripts/deploy-test.sh status     # Show service status
-./scripts/deploy-test.sh clean      # Clean and redeploy
-./scripts/deploy-test.sh fresh      # Fresh deployment (removes volumes)
-./scripts/deploy-test.sh scale      # Scale services up/down
+./scripts/deploy.sh dev deploy    # Deploy complete stack  
+./scripts/deploy.sh dev update    # Update running services
+./scripts/deploy.sh dev stop      # Stop stack
+./scripts/deploy.sh dev restart   # Stop and redeploy
+./scripts/deploy.sh dev logs      # Show service logs
+./scripts/deploy.sh dev status    # Show service status
+./scripts/deploy.sh dev migrate   # Run database migrations only
+./scripts/deploy.sh dev seed      # Run database seeders only
+./scripts/deploy.sh dev scale --replicas 2  # Scale services
 
-# Test Environment Features
-- Environment: test
-- Domain: Required (validation enforced)
-- Port: 3002
-- Replicas: 2 (for load testing)
-- Volume cleanup protection: enabled
-- Test database isolation
+# Development Characteristics:
+- Memory limits: Lower (512M-1GB)
+- Logging: Debug level, all SQL statements
+- Network encryption: Disabled
+- PgAdmin: Single-user mode
+- Default replicas: 1
 ```
 
-### 🚀 Production Environment (`deploy-prod.sh`)
+### 🧪 **Test Environment**
 
-**Purpose**: Secure production deployment with comprehensive safety measures
+```bash
+# Test environment deployment
+./scripts/deploy.sh test deploy --domain test.healthapp.com --migrate --seed
+
+# Test environment features:
+- Memory limits: Medium (512M-1GB)
+- Logging: Info level, no SQL statements  
+- Network encryption: Disabled
+- PgAdmin: Multi-user mode
+- Default replicas: 2 (for load testing)
+- Domain validation: Required
+```
+
+### 🚀 **Production Environment**
 
 ```bash
 # Production deployment with safety checks
-./scripts/deploy-prod.sh deploy --domain healthapp.com --migrate
+./scripts/deploy.sh prod deploy --domain healthapp.com --migrate
 
-# Available commands
-./scripts/deploy-prod.sh deploy     # Deploy complete production stack
-./scripts/deploy-prod.sh update     # Update services (RECOMMENDED for production)
-./scripts/deploy-prod.sh stop       # Stop stack (requires confirmation)
-./scripts/deploy-prod.sh restart    # Restart stack (requires confirmation)
-./scripts/deploy-prod.sh logs       # Show service logs
-./scripts/deploy-prod.sh status     # Show service status
-./scripts/deploy-prod.sh migrate    # Run migrations (with backup recommendation)
-./scripts/deploy-prod.sh scale      # Scale services up/down
-./scripts/deploy-prod.sh backup     # Backup production database
-
-# Production Safety Features
-- Environment: prod
-- Domain: Required with validation
-- Production safety confirmations
-- Volume cleanup BLOCKED (--cleanup-volumes disabled)
-- Seeding BLOCKED (--seed disabled)
-- Double confirmation for destructive operations
-- Environment variable validation
-- Automatic backup recommendations
-
-# Blocked Operations in Production
-❌ ./scripts/deploy-prod.sh fresh     # BLOCKED - would delete data
-❌ ./scripts/deploy-prod.sh seed      # BLOCKED - could overwrite data
-❌ --cleanup-volumes flag             # BLOCKED - would delete data
+# Production safety features:
+- Memory limits: Higher (1GB-2GB)
+- Logging: Warning level, no SQL statements
+- Network encryption: Enabled
+- PgAdmin: Multi-user with master password
+- Database optimizations: Higher connections/buffers
+- Default replicas: 2
+- Built-in safety confirmations
+- BLOCKS dangerous operations (--seed, --cleanup-volumes)
 ```
+
+### 🔧 **Environment-Specific Automatic Configuration**
+
+The single Docker stack file automatically configures itself based on the `ENVIRONMENT` variable:
+
+| Configuration | Dev | Test | Prod |
+|---------------|-----|------|------|
+| App Memory | 1GB | 1GB | 2GB |
+| DB Memory | 512MB | 512MB | 1GB |
+| Redis Memory | 256MB | 256MB | 512MB |
+| Network Encryption | ❌ | ❌ | ✅ |
+| SQL Logging | ✅ Full | ❌ None | ❌ None |
+| PgAdmin Mode | Single-user | Multi-user | Multi-user + Master Password |
+| Max DB Connections | 200 | 200 | 500 |
+| DB Shared Buffers | 128MB | 128MB | 256MB |
 
 ## 🔄 Enhanced Migration & Seeding System
 
