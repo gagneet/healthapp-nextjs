@@ -38,21 +38,16 @@ Your IaC scripts would be responsible for creating and configuring resources suc
     *   **Note**: To use this, your AKS cluster must be configured with the **Azure Key Vault Provider for Secrets Store CSI Driver**. This allows you to mount secrets from Key Vault directly into your pods. You will also need to configure the correct **RBAC permissions** (e.g., via a Managed Identity) to allow AKS to access the Key Vault instance.
 *   **Public IP Addresses and DNS Zones**: For exposing your application to the internet.
 
-### Advanced Deployment Strategy: Pruning Resources
+### Deployment Strategy: Declarative Apply with Prune
 
-The current pipeline uses `kubectl apply -f <directory>` to deploy the application. This command ensures that all resources defined in the manifests are created or updated.
+The pipeline uses a declarative deployment strategy with `kubectl apply --prune`. This is a best practice that ensures the state of the Kubernetes cluster accurately reflects the state of the configuration files in this directory.
 
-However, it does not handle the deletion of resources that are no longer in the manifests. For example, if you were to delete `service-b.yml` from this directory, `kubectl apply` would not delete the corresponding service from the cluster.
+**How it Works:**
+*   The `kubectl apply -f <directory>` command ensures all resources defined in the manifests are created or updated.
+*   The `--prune` flag automatically deletes any resources from the cluster that have been removed from the source manifests in Git.
+*   A label selector (`-l app.kubernetes.io/name=healthapp`) is used to ensure that the `--prune` command only considers objects with that specific label, preventing it from accidentally deleting other resources.
 
-For a more robust production setup, consider adopting a "declarative" approach where the live state of the cluster matches the state defined in Git. This can be achieved by using the `--prune` flag.
-
-`kubectl apply --prune -l app.kubernetes.io/name=healthapp -f .`
-
-**Requirements for using `--prune`:**
-1.  **Labeling:** All resources you want to manage this way must have a common label (e.g., `app.kubernetes.io/name: healthapp`). You would need to add this label to all your manifests in this directory.
-2.  **Pipeline Task:** The `Kubernetes@1` task in the pipeline does not support the `--prune` flag directly. You would need to switch to an `AzureCLI@2` task and run the `kubectl` command manually.
-
-This approach helps prevent orphaned resources and configuration drift over time.
+This approach prevents orphaned resources and configuration drift, making the deployment process more reliable and predictable.
 
 ### Summary
 

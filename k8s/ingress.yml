@@ -2,6 +2,8 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: healthapp-ingress
+  labels:
+    app.kubernetes.io/name: healthapp
   annotations:
     # This annotation is for the NGINX Ingress Controller.
     # It specifies that the Ingress controller should manage the SSL certificate.

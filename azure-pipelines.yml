@@ -103,12 +103,15 @@ stages:
             inputs:
               targetType: 'inline'
               script: |
+                # Define the path to the manifests directory.
+                MANIFEST_PATH="$(System.ArtifactsDirectory)/manifests/k8s"
+
                 # Replace placeholders in the Kubernetes manifest files with pipeline variables.
-                sed -i "s|__ACR_NAME__|$(ACR_NAME)|g" $(System.ArtifactsDirectory)/manifests/deployment.yml
-                sed -i "s|__IMAGE_TAG__|$(imageTag)|g" $(System.ArtifactsDirectory)/manifests/deployment.yml
-                sed -i "s|__ACR_NAME__|$(ACR_NAME)|g" $(System.ArtifactsDirectory)/manifests/migration-job.yml
-                sed -i "s|__IMAGE_TAG__|$(imageTag)|g" $(System.ArtifactsDirectory)/manifests/migration-job.yml
-                sed -i "s|__HOSTNAME__|$(HOSTNAME)|g" $(System.ArtifactsDirectory)/manifests/ingress.yml
+                sed -i "s|__ACR_NAME__|$(ACR_NAME)|g" $MANIFEST_PATH/deployment.yml
+                sed -i "s|__IMAGE_TAG__|$(imageTag)|g" $MANIFEST_PATH/deployment.yml
+                sed -i "s|__ACR_NAME__|$(ACR_NAME)|g" $MANIFEST_PATH/migration-job.yml
+                sed -i "s|__IMAGE_TAG__|$(imageTag)|g" $MANIFEST_PATH/migration-job.yml
+                sed -i "s|__HOSTNAME__|$(HOSTNAME)|g" $MANIFEST_PATH/ingress.yml
 
           # 3. Create or update the Kubernetes secret with environment variables.
           - task: Kubernetes@1
@@ -217,7 +220,7 @@ stages:
               kubernetesCluster: '$(AKS_CLUSTER_NAME)'
               command: 'apply'
               useConfigurationFile: true
-              configuration: '$(System.ArtifactsDirectory)/manifests/migration-job.yml'
+              configuration: '$(System.ArtifactsDirectory)/manifests/k8s/migration-job.yml'
 
           # 5. Set kubectl context to the AKS cluster
           - task: AzureCLI@2
@@ -255,15 +258,17 @@ stages:
 
                 echo "Migration job completed successfully."
 
-          # 7. Deploy the application (Deployment, Service, Ingress).
-          - task: Kubernetes@1
-            displayName: 'Deploy Application Manifests'
+          # 7. Deploy the application using kubectl apply --prune.
+          # This will create/update resources and delete any that are no longer in the manifests.
+          - task: Bash@3
+            displayName: 'Deploy Application (Apply & Prune)'
             inputs:
-              connectionType: 'Azure Resource Manager'
-              azureSubscriptionEndpoint: '$(AKS_SERVICE_CONNECTION)'
-              resourceGroup: '$(AKS_RESOURCE_GROUP)'
-              kubernetesCluster: '$(AKS_CLUSTER_NAME)'
-              command: 'apply'
-              # Apply all manifest files in the directory.
-              useConfigurationFile: true
-              configuration: '$(System.ArtifactsDirectory)/manifests/'
+              targetType: 'inline'
+              script: |
+                # The --prune flag removes any resources that are no longer defined in the source manifests.
+                # It identifies manageable resources using the label 'app.kubernetes.io/name=healthapp'.
+                # We do not prune the migration job itself, as it's a one-off task.
+                kubectl apply \
+                  --prune \
+                  -l app.kubernetes.io/name=healthapp \
+                  -f $(System.ArtifactsDirectory)/manifests/k8s/
