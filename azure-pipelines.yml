@@ -194,9 +194,7 @@ stages:
                   STRIPE_WEBHOOK_SECRET: "$(STRIPE_WEBHOOK_SECRET)"
 
                   # --- IoT & Medical Device Integration ---
-                  # CRITICAL: Store this in Azure Key Vault and access via CSI driver in production.
-                  # This key must be a random string of 32-bytes (256-bit) for AES-256 encryption.
-                  IOT_DATA_ENCRYPTION_KEY: "$(IOT_DATA_ENCRYPTION_KEY)"
+                  # IOT_DATA_ENCRYPTION_KEY is provided via Azure Key Vault CSI driver at /mnt/secrets-store/iot-data-encryption-key
 
                   # --- Notification Services (Twilio for SMS) ---
                   TWILIO_ACCOUNT_SID: "$(TWILIO_ACCOUNT_SID)"
