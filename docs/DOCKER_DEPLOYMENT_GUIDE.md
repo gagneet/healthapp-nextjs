@@ -4,6 +4,20 @@ This comprehensive guide covers deploying the Healthcare Management Platform usi
 
 ## 🆕 Latest Updates (August 2025)
 
+### ✅ **Enhanced Deployment Scripts (NEW)**
+- **Environment-Specific Scripts**: Added convenient `deploy-local.sh`, `deploy-test.sh`, and `deploy-prod.sh` scripts
+- **Production Safety**: Enhanced production deployment with safety checks and confirmations
+- **Timeout Protection**: Added timeout handling to prevent hanging deployments
+- **Comprehensive Logging**: Detailed logging with emojis for better troubleshooting
+- **Seed File Migration**: Updated to use new `prisma/seed.ts` location with TypeScript support
+
+### ✅ **Migration & Seeding Improvements**
+- **Timeout Handling**: Migrations and seeding now have timeout protection (120s/180s respectively)
+- **Fallback Strategies**: Multiple fallback methods for both migration and seeding failures
+- **TypeScript Support**: Full support for TypeScript seed files with `tsx` execution
+- **Multiple Seed Locations**: Automatic detection of seed files in various locations
+- **Enhanced Error Recovery**: Improved fallback to `db push` when migrations fail
+
 ### ✅ **Auth.js v5 Migration Completed**
 - **Modern Authentication**: Upgraded from Auth.js v4 to v5 with improved performance
 - **Database Sessions**: Enhanced security with PrismaAdapter integration  
@@ -110,8 +124,11 @@ docker-compose --version
 ### 1. Local Development
 
 ```bash
-# Start local development environment
-./scripts/deploy-local.sh start --migrate --seed
+# Start local development environment (easiest method)
+./scripts/deploy-local.sh --migrate --seed
+
+# Alternative: using main deploy script
+./scripts/deploy.sh dev deploy --domain localhost --migrate --seed
 
 # View logs
 ./scripts/deploy-local.sh logs
@@ -120,83 +137,218 @@ docker-compose --version
 ./scripts/deploy-local.sh stop
 ```
 
-### 2. Development Server
+### 2. Test Environment
 
 ```bash
 # Initialize Docker Swarm (one-time)
 docker swarm init
 
-# Deploy development environment
-./scripts/deploy-dev.sh deploy --host-ip 192.168.1.100 --migrate --seed
+# Deploy test environment (requires domain)
+./scripts/deploy-test.sh deploy --domain test.healthapp.com --migrate --seed
 
-# Scale services
-./scripts/deploy-dev.sh scale frontend 3
+# Update existing test deployment
+./scripts/deploy-test.sh update --domain test.healthapp.com
 ```
 
 ### 3. Production Deployment
 
 ```bash
-# Set required NextAuth.js environment variables
-export NEXTAUTH_SECRET=your-32-char-nextauth-secret
-export POSTGRES_PASSWORD=secure_prod_password
-export REDIS_PASSWORD=secure_redis_password
-export PGADMIN_PASSWORD=secure_admin_password
+# Production deployment with safety checks
+./scripts/deploy-prod.sh deploy --domain healthapp.com --migrate
 
-# Deploy to production with universal script
-./scripts/deploy.sh prod deploy --domain healthapp.gagneet.com --scale 4 --migrate
+# Update production (safest option)
+./scripts/deploy-prod.sh update --domain healthapp.com
+
+# Scale production services
+./scripts/deploy-prod.sh scale --domain healthapp.com --replicas 3
 ```
 
-## 🎯 Environment-Specific Deployment
+## 🎯 Environment-Specific Deployment Scripts
 
-### Local Development with Docker Compose
+We now provide three convenient environment-specific scripts that wrap the main `deploy.sh` script with appropriate defaults and safety measures:
 
-**Script**: `./scripts/deploy-local.sh`
+### 🏠 Local Development (`deploy-local.sh`)
+
+**Purpose**: Quick local development deployment with optimized settings
 
 ```bash
-# Available commands
-./scripts/deploy-local.sh start      # Start all services
-./scripts/deploy-local.sh stop       # Stop all services
-./scripts/deploy-local.sh restart    # Restart services
-./scripts/deploy-local.sh logs       # Show logs
-./scripts/deploy-local.sh status     # Service status
-./scripts/deploy-local.sh migrate    # Run migrations
-./scripts/deploy-local.sh seed       # Run seeders
-./scripts/deploy-local.sh cleanup    # Clean up everything
+# Basic deployment
+./scripts/deploy-local.sh --migrate --seed
 
-# Configuration options
---domain DOMAIN           # Development domain/IP (default: localhost)
---port-app PORT          # Frontend port (default: 3002)
---port-backend PORT      # Backend API port (default: 3005)
---port-db PORT           # Database port (default: 5434)
---port-redis PORT        # Redis port (default: 6379)
---port-pgadmin PORT      # PgAdmin port (default: 5050)
---app-name NAME          # Compose project name (default: healthapp)
---branch BRANCH          # Git branch to use (default: current)
---migrate                # Run migrations after startup
---seed                   # Run seeders after startup
---auto-yes               # Skip confirmations
+# Available commands
+./scripts/deploy-local.sh deploy    # Deploy complete stack (default)
+./scripts/deploy-local.sh start     # Alias for deploy
+./scripts/deploy-local.sh stop      # Stop local stack
+./scripts/deploy-local.sh restart   # Stop and redeploy
+./scripts/deploy-local.sh logs      # Show service logs
+./scripts/deploy-local.sh status    # Show service status
+./scripts/deploy-local.sh clean     # Clean and redeploy (removes compiled files)
+./scripts/deploy-local.sh fresh     # Fresh deployment (removes volumes - DATA LOSS!)
+./scripts/deploy-local.sh migrate   # Run database migrations only
+./scripts/deploy-local.sh seed      # Run database seeders only
+
+# Local Development Defaults
+- Environment: dev
+- Domain: localhost
+- Port: 3002
+- Replicas: 1
+- Early database start: enabled
+- Skip image pulling: enabled (for faster builds)
 ```
 
-### Development Server with Docker Swarm
+### 🧪 Test Environment (`deploy-test.sh`)
 
-**Script**: `./scripts/deploy-dev.sh`
+**Purpose**: Test environment deployment with production-like settings
 
 ```bash
-# Deploy development stack
-./scripts/deploy-dev.sh deploy --scale 2 --migrate --seed
+# Test deployment (domain required)
+./scripts/deploy-test.sh deploy --domain test.healthapp.com --migrate --seed
 
 # Available commands
-deploy    # Deploy stack to swarm
-update    # Update services
-stop      # Remove stack
-logs      # Show service logs
-status    # Show service status
-scale     # Scale services
-migrate   # Run migrations
-seed      # Run seeders
-backup    # Backup database
+./scripts/deploy-test.sh deploy     # Deploy complete test stack
+./scripts/deploy-test.sh update     # Update running services (safer)
+./scripts/deploy-test.sh stop       # Stop test stack
+./scripts/deploy-test.sh restart    # Stop and redeploy
+./scripts/deploy-test.sh logs       # Show service logs
+./scripts/deploy-test.sh status     # Show service status
+./scripts/deploy-test.sh clean      # Clean and redeploy
+./scripts/deploy-test.sh fresh      # Fresh deployment (removes volumes)
+./scripts/deploy-test.sh scale      # Scale services up/down
 
-# Configuration options (same as production)
+# Test Environment Features
+- Environment: test
+- Domain: Required (validation enforced)
+- Port: 3002
+- Replicas: 2 (for load testing)
+- Volume cleanup protection: enabled
+- Test database isolation
+```
+
+### 🚀 Production Environment (`deploy-prod.sh`)
+
+**Purpose**: Secure production deployment with comprehensive safety measures
+
+```bash
+# Production deployment with safety checks
+./scripts/deploy-prod.sh deploy --domain healthapp.com --migrate
+
+# Available commands
+./scripts/deploy-prod.sh deploy     # Deploy complete production stack
+./scripts/deploy-prod.sh update     # Update services (RECOMMENDED for production)
+./scripts/deploy-prod.sh stop       # Stop stack (requires confirmation)
+./scripts/deploy-prod.sh restart    # Restart stack (requires confirmation)
+./scripts/deploy-prod.sh logs       # Show service logs
+./scripts/deploy-prod.sh status     # Show service status
+./scripts/deploy-prod.sh migrate    # Run migrations (with backup recommendation)
+./scripts/deploy-prod.sh scale      # Scale services up/down
+./scripts/deploy-prod.sh backup     # Backup production database
+
+# Production Safety Features
+- Environment: prod
+- Domain: Required with validation
+- Production safety confirmations
+- Volume cleanup BLOCKED (--cleanup-volumes disabled)
+- Seeding BLOCKED (--seed disabled)
+- Double confirmation for destructive operations
+- Environment variable validation
+- Automatic backup recommendations
+
+# Blocked Operations in Production
+❌ ./scripts/deploy-prod.sh fresh     # BLOCKED - would delete data
+❌ ./scripts/deploy-prod.sh seed      # BLOCKED - could overwrite data
+❌ --cleanup-volumes flag             # BLOCKED - would delete data
+```
+
+## 🔄 Enhanced Migration & Seeding System
+
+### Migration Improvements
+
+The deployment system now includes robust migration handling with timeout protection and fallback strategies:
+
+```bash
+# Migration Strategy Decision Tree:
+1. Check for migration files in prisma/migrations/
+2. If found: Check database consistency with migrations
+3. If consistent: Run `prisma migrate deploy`
+4. If inconsistent: Run `prisma migrate reset --force --skip-seed`
+5. If reset fails: Fall back to `prisma db push --force-reset`
+6. If no migrations: Use `prisma db push` directly
+
+# Timeout Protection:
+- Standard migrations: 120 second timeout
+- Migration reset: 120 second timeout  
+- Schema push: 60 second timeout
+- All operations have fallback strategies
+```
+
+### Seeding Improvements
+
+The seeding system now supports multiple locations and execution methods:
+
+```bash
+# Seed File Detection Priority:
+1. prisma/seed.ts (NEW - TypeScript with tsx execution)
+2. prisma/seed.js (Compiled TypeScript)
+3. lib/seed.cjs (Legacy CommonJS)
+4. lib/seed.js (Legacy JavaScript)
+
+# Execution Methods Tried:
+1. `npx prisma db seed` (Prisma's built-in command)
+2. `npx tsx --require dotenv/config prisma/seed.ts`
+3. `npx tsx prisma/seed.ts`  
+4. `npx ts-node --require dotenv/config prisma/seed.ts`
+5. `node prisma/seed.js` (if compiled)
+6. `node lib/seed.cjs` (legacy)
+
+# Timeout Protection:
+- Prisma seed command: 120 second timeout
+- Manual seed execution: 180 second timeout
+- Process never hangs indefinitely
+```
+
+### Package.json Configuration
+
+Current seed configuration (already correctly set):
+
+```json
+{
+  "prisma": {
+    "seed": "tsx --require dotenv/config prisma/seed.ts"
+  }
+}
+```
+
+## 🛠️ Universal Deploy Script
+
+The main `deploy.sh` script is still available for advanced usage and supports all environments:
+
+```bash
+# Universal deployment script syntax
+./scripts/deploy.sh [ENVIRONMENT] [COMMAND] [OPTIONS]
+
+# Examples
+./scripts/deploy.sh dev deploy --domain localhost --migrate --seed
+./scripts/deploy.sh test deploy --domain test.healthapp.com --migrate --seed  
+./scripts/deploy.sh prod deploy --domain healthapp.com --migrate --auto-yes
+
+# All options
+--domain DOMAIN              # Domain/IP for the application
+--env-file FILE             # Environment file to load (default: .env)
+--port-frontend PORT        # Frontend port (default: 3002)
+--port-backend PORT         # Backend port (default: 5001)  
+--port-db PORT              # Database port (default: 5432)
+--port-redis PORT           # Redis port (default: 6379)
+--port-pgadmin PORT         # PgAdmin port (default: 5050)
+--replicas N                # Number of replicas for services
+--migrate                   # Run database migrations after deployment
+--seed                      # Run database seeders after deployment
+--cleanup                   # Clean up before deployment
+--cleanup-volumes           # Also remove data volumes (DANGER)
+--no-early-db              # Don't start database services early
+--skip-build               # Skip Docker image building  
+--skip-image-pull          # Skip pulling base images
+--auto-yes                 # Skip all confirmation prompts
+--debug                    # Enable debug output
 ```
 
 ### Test Environment with Docker Swarm

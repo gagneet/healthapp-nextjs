@@ -1,6 +1,149 @@
-# Healthcare Application Deployment Scripts
+# 🚀 HealthApp Deployment Scripts
 
-This directory contains clean, organized deployment scripts for all environments of the Healthcare Management Platform.
+This directory contains enhanced deployment scripts for the HealthApp Healthcare Management Platform with comprehensive migration and seeding improvements.
+
+## 📅 Latest Updates (August 2025)
+
+### ✅ Enhanced Deployment System
+- **Timeout Protection**: All migration and seeding operations now have timeout protection
+- **Fallback Strategies**: Multiple fallback methods prevent deployment failures
+- **Environment-Specific Scripts**: Convenient wrapper scripts for each environment
+- **Production Safety**: Enhanced safety measures for production deployments
+- **TypeScript Seed Support**: Full support for `prisma/seed.ts` with tsx execution
+
+## 🎯 Available Scripts
+
+### Environment-Specific Scripts (Recommended)
+
+| Script | Purpose | Safety Level | Use Case |
+|--------|---------|--------------|----------|
+| `deploy-local.sh` | Local development | Low (data loss allowed) | Development workstations |
+| `deploy-test.sh` | Test environment | Medium (domain required) | QA and testing |
+| `deploy-prod.sh` | Production | High (safety confirmations) | Live production |
+
+### Universal Script
+
+| Script | Purpose | Flexibility | Use Case |
+|--------|---------|-------------|----------|
+| `deploy.sh` | All environments | Full control | Advanced usage, CI/CD |
+
+## 🏠 Local Development (`deploy-local.sh`)
+
+Quick local development with optimized settings:
+
+```bash
+# Basic deployment
+./scripts/deploy-local.sh --migrate --seed
+
+# Fresh start (removes all data)
+./scripts/deploy-local.sh fresh --migrate --seed
+
+# Clean deployment
+./scripts/deploy-local.sh clean --migrate --seed
+
+# View logs
+./scripts/deploy-local.sh logs app
+```
+
+**Features:**
+- Domain: `localhost` (automatic)
+- Port: `3002` 
+- Replicas: `1`
+- Image pulling: Skip (faster builds)
+- Volume cleanup: Allowed
+
+## 🧪 Test Environment (`deploy-test.sh`)
+
+Test deployment with production-like settings:
+
+```bash
+# Deploy to test domain
+./scripts/deploy-test.sh deploy --domain test.healthapp.com --migrate --seed
+
+# Update existing deployment
+./scripts/deploy-test.sh update --domain test.healthapp.com
+
+# Scale test environment  
+./scripts/deploy-test.sh scale --domain test.healthapp.com --replicas 3
+```
+
+**Features:**
+- Domain: Required (validation enforced)
+- Port: `3002`
+- Replicas: `2` (for load testing)
+- Volume cleanup: Allowed with confirmation
+- Database: Isolated test database
+
+## 🚀 Production (`deploy-prod.sh`)
+
+Secure production deployment with safety measures:
+
+```bash
+# Safe production deployment
+./scripts/deploy-prod.sh deploy --domain healthapp.com --migrate
+
+# Update production (recommended)
+./scripts/deploy-prod.sh update --domain healthapp.com
+
+# Scale production
+./scripts/deploy-prod.sh scale --domain healthapp.com --replicas 3
+```
+
+**Safety Features:**
+- Domain: Required with validation
+- Environment validation: Required variables checked
+- Seeding: BLOCKED (use `--seed` throws error)
+- Volume cleanup: BLOCKED (`--cleanup-volumes` throws error)
+- Fresh deployment: BLOCKED (`fresh` command throws error)
+- Destructive operations: Double confirmation required
+
+## 🔄 Migration & Seeding System
+
+### Migration Strategy
+
+The deployment system uses an intelligent migration decision tree:
+
+1. **Check Migration Files**: Look for `prisma/migrations/` directory
+2. **Database Consistency Check**: Compare database with migration files
+3. **Strategy Selection**:
+   - **Consistent**: Run `prisma migrate deploy` (120s timeout)
+   - **Inconsistent**: Run `prisma migrate reset --force --skip-seed` (120s timeout)  
+   - **Reset Failed**: Fallback to `prisma db push --force-reset` (60s timeout)
+   - **No Migrations**: Use `prisma db push` directly (60s timeout)
+
+### Seeding System
+
+The seeding system supports multiple locations and execution methods:
+
+**Seed File Detection Priority:**
+1. `prisma/seed.ts` (NEW - TypeScript with tsx)
+2. `prisma/seed.js` (Compiled TypeScript)
+3. `lib/seed.cjs` (Legacy CommonJS)
+4. `lib/seed.js` (Legacy JavaScript)
+
+**Execution Methods (tried in order):**
+1. `npx prisma db seed` (Prisma's built-in - 120s timeout)
+2. `npx tsx --require dotenv/config prisma/seed.ts`
+3. `npx tsx prisma/seed.ts`
+4. `npx ts-node --require dotenv/config prisma/seed.ts`
+5. `node prisma/seed.js` (if compiled)
+6. `node lib/seed.cjs` (legacy)
+
+**Timeout Protection:**
+- Total seeding timeout: 180 seconds
+- Process never hangs indefinitely
+- Graceful fallback on failures
+
+### Current Configuration
+
+Package.json is correctly configured:
+```json
+{
+  "prisma": {
+    "seed": "tsx --require dotenv/config prisma/seed.ts"
+  }
+}
+```
 
 ## 🏗️ Architecture Overview
 
