@@ -3067,7 +3067,7 @@ Mismatches Found:
 1. rating (frontend) ↔ average_rating (backend) ❌
 2. license_number (frontend) ↔ medical_license_number (backend) ❌
 3. qualification (frontend) ↔ qualification_details (backend - array) ❌
-4. bio (frontend) ↔ Not provided (backend) ❌
+4. biography (frontend) ↔ Not provided (backend) ❌
 5. availability (frontend) ↔ availability_schedule (backend) ❌
 6. clinic_address (frontend) ↔ practice_address (backend - object) ❌
 7. education (frontend) ↔ qualification_details (backend - similar but different structure) ❌
@@ -3098,7 +3098,7 @@ Have successfully implemented the fix for the Doctor Profile page error and chec
 - languages ➜ languages_spoken
 - profile_image ➜ profilePictureUrl
 - speciality_name ➜ specialty.name (nested object)
-- bio ➜ Made optional with fallback
+- biography ➜ Made optional with fallback
 - Updated data extraction: response.payload.data.profile
 
 #### 🛡️ Null Safety Added: All fields now handle undefined/null values gracefully

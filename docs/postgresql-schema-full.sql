@@ -281,7 +281,7 @@ CREATE TABLE doctors (
     organization_id UUID REFERENCES organizations(id),
     years_of_experience INTEGER DEFAULT 0,
     consultation_fee DECIMAL(10,2) DEFAULT 0.00,
-    bio TEXT,
+    biography TEXT,
     education JSON DEFAULT '[]',
     certifications JSON DEFAULT '[]',
     languages_spoken JSON DEFAULT '["English"]',

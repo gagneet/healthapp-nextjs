@@ -72,7 +72,7 @@ interface DoctorProfile {
         institution: string;
         year: string;
     }>;
-    bio?: string;
+    biography?: string;
     practiceAddress: any;
     boardCertifications: string[];
     languagesSpoken: string[];
@@ -390,7 +390,7 @@ export default function DoctorProfilePage() {
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Bio
               </label>
-              <EditableField field="professional.bio" value={profile.professional.bio || ''} multiline />
+              <EditableField field="professional.biography" value={profile.professional.biography || ''} multiline />
             </div>
           </CardContent>
         </Card>

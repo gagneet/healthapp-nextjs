@@ -56,7 +56,7 @@ export interface DoctorAttributes extends BaseModelAttributes {
   certifications?: string[];
   hospital_affiliations?: string[];
   consultation_fee?: number;
-  bio?: string;
+  biography?: string;
   profile_image?: string;
   availability?: any;
 }

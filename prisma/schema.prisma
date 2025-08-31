@@ -1048,7 +1048,7 @@ model Doctor {
   practiceName                        String?                         @db.VarChar(255)
   practiceAddress                     Json?                           @default("{}")
   practicePhone                       String?                         @db.VarChar(20)
-  bio                                 String?                         @db.Text
+  biography                           String?                         @db.Text
   signaturePic                        String?
   razorpayAccountId                   String?                         @db.VarChar(255)
   totalPatients                       Int?                            @default(0)

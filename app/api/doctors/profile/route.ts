@@ -125,7 +125,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
           contactInfo: doctor.organization.contactInfo
         } : null,
         qualificationDetails: doctor.qualificationDetails,
-        bio: doctor.bio,
+        biography: doctor.biography,
         practiceAddress: doctor.practiceAddress,
         boardCertifications: doctor.boardCertifications,
         languagesSpoken: doctor.languagesSpoken,
@@ -173,7 +173,7 @@ export const PUT = withErrorHandling(async (request: NextRequest) => {
     const allowedDoctorFields = [
       "practiceName", "practiceAddress", "languagesSpoken", "consultationFee",
       "yearsOfExperience", "medicalLicenseNumber", "notificationPreferences",
-      "availabilitySchedule", "bio", "boardCertifications"
+      "availabilitySchedule", "biography", "boardCertifications"
     ];
     const allowedUserFields = ["phone"];
 
