@@ -37,7 +37,7 @@ interface Doctor {
   years_of_experience?: number
   qualification_details?: any[]
   medical_school?: string
-  board_certifications?: string[]
+  boardCertifications?: string[]
   residency_programs?: string[]
   registration_details?: any
   subscription_details?: any
@@ -455,7 +455,7 @@ function DoctorFormModal({ isOpen, onClose, doctor, specialities, onSubmit, isSu
     
     // Qualification Details
     medical_school: '',
-    board_certifications: [] as string[],
+    boardCertifications: [] as string[],
     residency_programs: [] as string[],
     
     // Subscription Details
@@ -491,7 +491,7 @@ function DoctorFormModal({ isOpen, onClose, doctor, specialities, onSubmit, isSu
         sub_specialties: doctor.sub_specialties || [],
         years_of_experience: doctor.years_of_experience || 0,
         medical_school: doctor.medical_school || '',
-        board_certifications: doctor.board_certifications || [],
+        boardCertifications: doctor.boardCertifications || [],
         residency_programs: doctor.residency_programs || [],
         razorpay_account_id: doctor.razorpay_account_id || '',
         consultation_fee: doctor.consultation_fee || 0,
@@ -520,7 +520,7 @@ function DoctorFormModal({ isOpen, onClose, doctor, specialities, onSubmit, isSu
         sub_specialties: [],
         years_of_experience: 0,
         medical_school: '',
-        board_certifications: [],
+        boardCertifications: [],
         residency_programs: [],
         razorpay_account_id: '',
         consultation_fee: 0,

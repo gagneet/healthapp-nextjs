@@ -171,7 +171,7 @@ CREATE TABLE doctors (
     -- Professional Information
     medical_license_number VARCHAR(100) UNIQUE NOT NULL,
     npi_number VARCHAR(20) UNIQUE,
-    board_certifications TEXT[] DEFAULT '{}',
+    boardCertifications TEXT[] DEFAULT '{}',
     medical_school VARCHAR(255),
     residency_programs JSONB DEFAULT '[]',
     specialties TEXT[] DEFAULT '{}',

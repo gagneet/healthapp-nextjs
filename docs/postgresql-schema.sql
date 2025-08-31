@@ -1143,7 +1143,7 @@ CREATE TABLE public.doctors (
     organization_id uuid,
     medical_license_number character varying(100) NOT NULL,
     npi_number character varying(20),
-    board_certifications text[] DEFAULT ARRAY[]::text[],
+    boardCertifications text[] DEFAULT ARRAY[]::text[],
     medical_school character varying(255),
     residency_programs jsonb DEFAULT '[]'::jsonb,
     specialties text[] DEFAULT ARRAY[]::text[],
@@ -3282,7 +3282,7 @@ CREATE INDEX doctor_availability_doctor_id_is_available ON public.doctor_availab
 -- Name: doctors_board_certifications; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX doctors_board_certifications ON public.doctors USING gin (board_certifications);
+CREATE INDEX doctors_board_certifications ON public.doctors USING gin (boardCertifications);
 
 
 --

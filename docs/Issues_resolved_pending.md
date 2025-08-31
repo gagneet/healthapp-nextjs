@@ -3071,7 +3071,7 @@ Mismatches Found:
 5. availability (frontend) ↔ availability_schedule (backend) ❌
 6. clinic_address (frontend) ↔ practice_address (backend - object) ❌
 7. education (frontend) ↔ qualification_details (backend - similar but different structure) ❌
-8. certifications (frontend) ↔ board_certifications (backend - array of strings, not objects) ❌
+8. certifications (frontend) ↔ boardCertifications (backend - array of strings, not objects) ❌
 9. languages (frontend) ↔ languages_spoken (backend) ❌
 10. profile_image (frontend) ↔ profilePictureUrl (backend) ❌
 11. speciality_name (frontend) ↔ specialty.name (backend - nested object) ❌
@@ -3094,7 +3094,7 @@ Have successfully implemented the fix for the Doctor Profile page error and chec
 - availability ➜ availability_schedule
 - clinic_address ➜ practice_address
 - education ➜ qualification_details
-- certifications ➜ board_certifications
+- certifications ➜ boardCertifications
 - languages ➜ languages_spoken
 - profile_image ➜ profilePictureUrl
 - speciality_name ➜ specialty.name (nested object)

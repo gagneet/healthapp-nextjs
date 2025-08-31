@@ -173,7 +173,7 @@ export const PUT = withErrorHandling(async (request: NextRequest) => {
     const allowedDoctorFields = [
       "practiceName", "practiceAddress", "languagesSpoken", "consultationFee",
       "yearsOfExperience", "medicalLicenseNumber", "notificationPreferences",
-      "availabilitySchedule", "bio", "board_certifications"
+      "availabilitySchedule", "bio", "boardCertifications"
     ];
     const allowedUserFields = ["phone"];
 

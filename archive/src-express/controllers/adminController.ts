@@ -245,7 +245,7 @@ class AdminController {
         // Qualification Details
         qualification_details,
         medical_school,
-        board_certifications,
+        boardCertifications,
         residency_programs,
         
         // Registration Details
@@ -338,7 +338,7 @@ class AdminController {
         years_of_experience: years_of_experience || 0,
         qualification_details: qualification_details || [],
         medical_school,
-        board_certifications: board_certifications || [],
+        boardCertifications: boardCertifications || [],
         residency_programs: residency_programs || [],
         registration_details: registration_details || {},
         subscription_details: subscription_details || {},
@@ -434,7 +434,7 @@ class AdminController {
         // Qualification Details
         qualification_details,
         medical_school,
-        board_certifications,
+        boardCertifications,
         residency_programs,
         
         // Registration Details
@@ -512,7 +512,7 @@ class AdminController {
         ...(years_of_experience !== undefined && { years_of_experience }),
         ...(qualification_details && { qualification_details }),
         ...(medical_school && { medical_school }),
-        ...(board_certifications && { board_certifications }),
+        ...(boardCertifications && { boardCertifications }),
         ...(residency_programs && { residency_programs }),
         ...(registration_details && { registration_details }),
         ...(subscription_details && { subscription_details }),
@@ -700,7 +700,7 @@ class AdminController {
           // Qualification Details
           qualification_details: doctor.qualification_details || [],
           medical_school: doctor.medical_school,
-          board_certifications: doctor.board_certifications || [],
+          boardCertifications: doctor.boardCertifications || [],
           residency_programs: doctor.residency_programs || [],
           
           // Registration Details

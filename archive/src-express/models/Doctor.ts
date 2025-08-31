@@ -48,7 +48,7 @@ export default (sequelize: any) => {
       comment: 'National Provider Identifier'
     },
     
-    board_certifications: {
+    boardCertifications: {
       type: DataTypes.ARRAY(DataTypes.TEXT),
       defaultValue: [],
       comment: 'Board certification specialties'
@@ -285,7 +285,7 @@ export default (sequelize: any) => {
         using: 'gin'
       },
       {
-        fields: ['board_certifications'],
+        fields: ['boardCertifications'],
         using: 'gin'
       }
     ],
@@ -301,8 +301,8 @@ export default (sequelize: any) => {
           doctor.sub_specialties = doctor.sub_specialties.map((s: any) => s.toLowerCase().trim());
         }
         
-        if (doctor.board_certifications) {
-          doctor.board_certifications = doctor.board_certifications.map((c: any) => c.toLowerCase().trim());
+        if (doctor.boardCertifications) {
+          doctor.boardCertifications = doctor.boardCertifications.map((c: any) => c.toLowerCase().trim());
         }
       },
       
@@ -354,9 +354,9 @@ export default (sequelize: any) => {
   
   Doctor.prototype.isBoardCertified = function(specialty = null) {
     if (!specialty) {
-      return this.board_certifications.length > 0;
+      return this.boardCertifications.length > 0;
     }
-    return this.board_certifications.some((cert: any) => 
+    return this.boardCertifications.some((cert: any) => 
       (cert as any).toLowerCase().includes((specialty as any).toLowerCase())
     );
   };

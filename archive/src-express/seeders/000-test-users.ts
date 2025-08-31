@@ -119,7 +119,7 @@ export default {
         verification_date: new Date(),
         practice_name: user.email === 'doctor@healthapp.com' ? 'Dr. John Doe Family Practice' : 'Medical Practice',
         medical_school: 'University of Medicine',
-        board_certifications: ['internal medicine'],
+        boardCertifications: ['internal medicine'],
         createdAt: new Date(),
         updatedAt: new Date(),
       }));
@@ -162,7 +162,7 @@ export default {
              ELSE 'Medical Practice'
            END,
            medical_school = 'University of Medicine',
-           board_certifications = ARRAY['internal medicine'],
+           boardCertifications = ARRAY['internal medicine'],
            updatedAt = NOW()
            WHERE id = :doctorId`,
           {

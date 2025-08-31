@@ -158,7 +158,7 @@ export default {
         medical_license_number: 'MD123456',
         speciality_id: null, // Will be set after specialties are created
         years_of_experience: 15,
-        board_certifications: ['Board Certified Internal Medicine', 'Diabetes Care Specialist'],
+        boardCertifications: ['Board Certified Internal Medicine', 'Diabetes Care Specialist'],
         residency_programs: JSON.stringify([
           { program: 'Internal Medicine', institution: 'Mayo Clinic', year: 2013 }
         ]),

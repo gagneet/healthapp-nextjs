@@ -145,7 +145,7 @@ export default {
           npi_number: '1234567890',
           speciality_id: 1, // General Medicine
           specialties: ['general medicine', 'family practice'],
-          board_certifications: ['American Board of Family Medicine'],
+          boardCertifications: ['American Board of Family Medicine'],
           medical_school: 'University of Texas Medical School',
           residency_programs: JSON.stringify([
             {
