@@ -184,7 +184,7 @@ export default function DoctorProfilePage() {
       const response = await apiRequest.post('/doctors/profile/images', formData)
       
       if ((response as any).status && (response as any).payload?.data?.imageUrl) {
-        setProfile(prev => prev ? { ...prev, profilePictureUrl: (response as any).payload.data.imageUrl } : null)
+        setProfile(prev => prev ? { ...prev, user: { ...prev.user, image: (response as any).payload.data.imageUrl } } : null)
         toast.success('Profile image updated successfully')
       }
     } catch (error) {

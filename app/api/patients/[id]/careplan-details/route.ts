@@ -255,38 +255,52 @@ export async function GET(request: NextRequest, { params }: { params: { id:strin
     const { carePlans, vitalRequirements, vitalReadings } = await fetchCarePlanData(patientId);
 
     // Format the care plans data
-    const formattedCarePlans = carePlans.map(carePlan => {
-      const medications = carePlan.prescribedMedications.map(med => ({
-        id: med.id,
-        name: med.medicine.name,
-        type: med.medicine.type,
-        description: med.medicine.description,
-        ...((med as any).prescriptionDetails && {
-            genericName: (med as any).prescriptionDetails.genericName,
-            strength: (med as any).prescriptionDetails.strength,
-            form: (med as any).prescriptionDetails.dosageForm,
-        })
-      }));
+    const formattedCarePlans = await Promise.all(
+      carePlans.map(async (carePlan: any) => {
+        const medications = carePlan.prescribedMedications.map((med: any) => ({
+            id: med.id,
+            name: med.medicine.name,
+            type: med.medicine.type,
+            description: med.medicine.description,
+            ...((med as any).prescriptionDetails && {
+                genericName: (med as any).prescriptionDetails.genericName,
+                strength: (med as any).prescriptionDetails.strength,
+                form: (med as any).prescriptionDetails.dosageForm,
+            })
+        }));
 
-      return {
-        id: carePlan.id,
-        name: carePlan.title || 'Unnamed Care Plan',
-        status: carePlan.status,
-        priority: carePlan.priority || 'medium',
-        startDate: carePlan.startDate,
-        endDate: carePlan.endDate,
-        medications: medications,
-        medicationsCount: medications.length,
-        // You might need to adjust vitals and appointments count logic if it's not working
-        vitalsCount: 0,
-        appointmentsCount: 0,
-        adherenceSummary: {
+        const vitalsCount = await prisma.vitalRequirement.count({
+          where: { carePlanId: carePlan.id },
+        });
+
+        const appointmentWhere: any = {
+          patientId: patientId,
+          carePlanId: carePlan.id,
+        };
+
+        const appointmentsCount = await prisma.appointment.count({
+          where: appointmentWhere,
+        });
+
+        return {
+          id: carePlan.id,
+          name: carePlan.title || 'Unnamed Care Plan',
+          status: carePlan.status,
+          priority: carePlan.priority || 'medium',
+          startDate: carePlan.startDate,
+          endDate: carePlan.endDate,
+          medications: medications,
+          medicationsCount: medications.length,
+          vitalsCount,
+          appointmentsCount,
+          adherenceSummary: {
             medicationsCount: medications.length,
-            vitalsCount: 0,
-            appointmentsCount: 0,
-        },
-      };
-    });
+            vitalsCount,
+            appointmentsCount,
+          },
+        };
+      })
+    );
 
     // Format vital requirements
     const formattedVitalRequirements = vitalRequirements.map((req: any) => ({
