@@ -320,11 +320,28 @@ export async function getPatients(doctorId: string, pagination: {
               specialty: true,
             },
           },
+          appointments: {
+            orderBy: {
+              startDate: 'desc',
+            },
+            take: 1,
+            select: {
+              startDate: true,
+            },
+          },
+          adherenceRecords: {
+            select: {
+              isCompleted: true,
+            },
+          },
           _count: {
             select: {
-              medicationLogs: true,
-              appointments: true,
-              adherenceRecords: true,
+              emergencyAlerts: {
+                where: {
+                  resolved: false,
+                  severity: 'CRITICAL',
+                },
+              },
             },
           },
         },
@@ -345,25 +362,29 @@ export async function getPatients(doctorId: string, pagination: {
     ]);
 
     return {
-      patients: patients.map(patient => ({
-        id: patient.id,
-        patientId: patient.patientId,
-        firstName: patient.user.firstName,
-        lastName: patient.user.lastName,
-        email: patient.user.email,
-        phone: patient.user.phone,
-        dateOfBirth: patient.user.dateOfBirth,
-        primaryDoctor: patient.primaryCareDoctor ? {
-          name: `${patient.primaryCareDoctor.user.firstName} ${patient.primaryCareDoctor.user.lastName}`,
-          specialty: patient.primaryCareDoctor.specialty?.name,
-        } : null,
-        stats: {
-          medicationsCount: patient._count.medicationLogs,
-          appointmentsCount: patient._count.appointments,
-          vitalsCount: patient._count.adherenceRecords,
-        },
-        createdAt: patient.createdAt,
-      })),
+      patients: patients.map(patient => {
+        const totalAdherence = patient.adherenceRecords.length;
+        const completedAdherence = patient.adherenceRecords.filter(r => r.isCompleted).length;
+        const adherenceRate = totalAdherence > 0 ? Math.round((completedAdherence / totalAdherence) * 100) : 0;
+
+        return {
+          id: patient.id,
+          medicalRecordNumber: patient.medicalRecordNumber,
+          firstName: patient.user.firstName,
+          lastName: patient.user.lastName,
+          email: patient.user.email,
+          phone: patient.user.phone,
+          dateOfBirth: patient.user.dateOfBirth,
+          lastVisit: patient.appointments[0]?.startDate || patient.lastVisitDate || null,
+          adherenceRate: adherenceRate,
+          criticalAlerts: patient._count.emergencyAlerts,
+          primaryDoctor: patient.primaryCareDoctor ? {
+            name: `${patient.primaryCareDoctor.user.firstName} ${patient.primaryCareDoctor.user.lastName}`,
+            specialty: patient.primaryCareDoctor.specialty?.name,
+          } : null,
+          createdAt: patient.createdAt,
+        }
+      }),
       pagination: {
         page: pagination.page,
         limit: pagination.limit,
