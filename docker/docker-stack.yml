@@ -6,12 +6,10 @@ services:
   postgres:
     image: ${POSTGRES_IMAGE:-postgres:17-alpine}
     environment:
-      POSTGRES_DB: ${POSTGRES_DB:-healthapp_${ENVIRONMENT}}
+      POSTGRES_DB: ${POSTGRES_DB:-healthapp_test}
       POSTGRES_USER: ${POSTGRES_USER:-healthapp_user}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-secure_pg_password}
       PGDATA: /var/lib/postgresql/data/pgdata
-      # Additional PostgreSQL configuration for better startup
-      POSTGRES_INITDB_ARGS: "--auth-host=scram-sha-256 --auth-local=peer"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
@@ -30,16 +28,14 @@ services:
           - node.role == manager
       resources:
         limits:
-          # Production: 1GB, Test: 512MB, Dev: 512MB
           memory: ${POSTGRES_MEMORY_LIMIT:-512M}
         reservations:
-          # Production: 512MB, Test: 256MB, Dev: 256MB  
           memory: ${POSTGRES_MEMORY_RESERVATION:-256M}
       labels:
         - "service.name=postgres"
         - "service.type=database"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-healthapp_user} -d ${POSTGRES_DB:-healthapp_${ENVIRONMENT}} -h localhost"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-healthapp_user} -d ${POSTGRES_DB:-healthapp_test} -h localhost"]
       interval: 10s
       timeout: 5s
       retries: 10
@@ -75,10 +71,8 @@ services:
         window: 120s
       resources:
         limits:
-          # Production: 512MB, Test: 256MB, Dev: 256MB
           memory: ${REDIS_MEMORY_LIMIT:-256M}
         reservations:
-          # Production: 256MB, Test: 128MB, Dev: 128MB
           memory: ${REDIS_MEMORY_RESERVATION:-128M}
       labels:
         - "service.name=redis"
@@ -112,12 +106,12 @@ services:
     environment:
       NODE_ENV: ${NODE_ENV:-development}
       ENVIRONMENT: ${ENVIRONMENT:-dev}
-      PORT: 3002
+      PORT: "3002"
       
       # Database Configuration
       POSTGRES_HOST: postgres
-      POSTGRES_PORT: 5432
-      POSTGRES_DB: ${POSTGRES_DB:-healthapp_${ENVIRONMENT}}
+      POSTGRES_PORT: "5432"
+      POSTGRES_DB: ${POSTGRES_DB:-healthapp_test}
       POSTGRES_USER: ${POSTGRES_USER:-healthapp_user}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       DATABASE_URL: ${DATABASE_URL}
@@ -134,7 +128,7 @@ services:
       
       # Redis Configuration
       REDIS_HOST: redis
-      REDIS_PORT: 6379
+      REDIS_PORT: "6379"
       REDIS_PASSWORD: ${REDIS_PASSWORD}
       REDIS_URL: ${REDIS_URL}
       
@@ -172,10 +166,8 @@ services:
         delay: 10s
       resources:
         limits:
-          # Production: 2GB, Test: 1GB, Dev: 1GB
           memory: ${APP_MEMORY_LIMIT:-1024M}
         reservations:
-          # Production: 1GB, Test: 512MB, Dev: 512MB
           memory: ${APP_MEMORY_RESERVATION:-512M}
       labels:
         - "service.name=app"
@@ -184,7 +176,6 @@ services:
       test: 
         - CMD-SHELL
         - |
-          # Try health endpoint first, then fall back to root
           curl -f http://localhost:3002/api/health >/dev/null 2>&1 || 
           curl -f http://localhost:3002/ >/dev/null 2>&1 || 
           exit 1
@@ -199,37 +190,35 @@ services:
   pgadmin:
     image: ${PGADMIN_IMAGE:-dpage/pgadmin4:latest}
     environment:
-      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-admin@healthapp.local}
-      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin}
-      PGADMIN_CONFIG_SERVER_MODE: ${PGADMIN_SERVER_MODE:-False}
-      PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: ${PGADMIN_MASTER_PASSWORD_REQUIRED:-False}
-      # Additional PgAdmin configuration for better startup
-      PGADMIN_LISTEN_PORT: 80
-      PGADMIN_CONFIG_UPGRADE_CHECK_ENABLED: False
+      PGADMIN_DEFAULT_EMAIL: "${PGADMIN_DEFAULT_EMAIL:-admin@healthapp.local}"
+      PGADMIN_DEFAULT_PASSWORD: "${PGADMIN_DEFAULT_PASSWORD:-admin}"
+      PGADMIN_CONFIG_SERVER_MODE: "${PGADMIN_SERVER_MODE:-False}"
+      PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: "${PGADMIN_MASTER_PASSWORD_REQUIRED:-False}"
+      PGADMIN_LISTEN_PORT: "80"
+      PGADMIN_CONFIG_UPGRADE_CHECK_ENABLED: "False"
     volumes:
-      - pgadmin_data:/var/lib/pgadmin
+      - pgadmin_data:/var/lib/pgladmin
     ports:
-      - "${HOST_PORT_PGADMIN:-5050}:80"
+      - "${HOST_PORT_PGLADMIN:-5050}:80"
     networks:
       - healthapp_network
     deploy:
-      replicas: ${REPLICAS_PGADMIN:-1}
+      replicas: ${REPLICAS_PGLADMIN:-1}
       restart_policy:
         condition: on-failure
         delay: 5s
         max_attempts: 3
         window: 120s
       placement:
-        # Only deploy on manager nodes for security
         constraints:
           - node.role == manager
       resources:
         limits:
-          memory: ${PGADMIN_MEMORY_LIMIT:-256M}
+          memory: ${PGLADMIN_MEMORY_LIMIT:-256M}
         reservations:
-          memory: ${PGADMIN_MEMORY_RESERVATION:-128M}
+          memory: ${PGLADMIN_MEMORY_RESERVATION:-128M}
       labels:
-        - "service.name=pgadmin"
+        - "service.name=pgladmin"
         - "service.type=admin"
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:80/misc/ping || exit 1"]
@@ -244,10 +233,8 @@ networks:
   healthapp_network:
     driver: overlay
     attachable: true
-    # Enable encryption for production
     driver_opts:
       encrypted: "${NETWORK_ENCRYPTED:-false}"
-    # Add network labels for better management
     labels:
       - "network.name=healthapp"
       - "network.environment=${ENVIRONMENT:-dev}"
@@ -255,7 +242,6 @@ networks:
 volumes:
   postgres_data:
     driver: local
-    # Production can use external volumes
     external: ${POSTGRES_VOLUME_EXTERNAL:-false}
     name: ${POSTGRES_VOLUME_NAME:-${STACK_NAME}_postgres_data}
     labels:
