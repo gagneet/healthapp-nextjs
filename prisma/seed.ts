@@ -385,6 +385,7 @@ export async function seedComprehensiveHealthcareData() {
                         isVerified: true,
                         verificationDate: getRandomPastDate(20, 60),
                         practiceName: 'Smith Cardiology Clinic',
+                        biography: 'Dr. John Smith is a board-certified cardiologist with over 15 years of experience in treating a wide range of cardiovascular conditions. He is dedicated to providing compassionate and comprehensive care to his patients.',
                         createdAt: getRandomPastDate(30, 80),
                     },
                     {
@@ -399,6 +400,7 @@ export async function seedComprehensiveHealthcareData() {
                         isVerified: true,
                         verificationDate: getRandomPastDate(15, 55),
                         practiceName: 'Doe Endocrinology Center',
+                        biography: 'Dr. Jane Doe is a respected endocrinologist specializing in diabetes management and thyroid disorders. She is committed to helping her patients achieve optimal health through personalized treatment plans.',
                         createdAt: getRandomPastDate(28, 78),
                     },
                     {
@@ -413,6 +415,7 @@ export async function seedComprehensiveHealthcareData() {
                         isVerified: true,
                         verificationDate: getRandomPastDate(12, 50),
                         practiceName: 'Rodriguez Family Medicine',
+                        biography: 'Dr. Emily Rodriguez is a dedicated family medicine physician with a passion for preventive care and patient education. She provides comprehensive primary care services to patients of all ages.',
                         createdAt: getRandomPastDate(25, 75),
                     }
                 ]
