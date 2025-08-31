@@ -18,8 +18,53 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import OtpVerificationModal from '@/components/ui/OtpVerificationModal'
 import { apiRequest } from '@/lib/api'
-import { Patient, ConsentStatus } from '@/types/dashboard'
 import { formatDate, getAdherenceColor, getInitials, getStatusColor } from '@/lib/utils'
+
+// Define a more specific Patient type for this component's needs
+export type ConsentStatus =
+  | 'not_required'
+  | 'granted'
+  | 'requested'
+  | 'pending'
+  | 'expired'
+  | 'denied';
+
+export interface Patient {
+  id: string;
+  firstName: string | null;
+  lastName: string | null;
+  email: string;
+  phone: string | null;
+  medicalRecordNumber: string | null;
+  lastVisit: string | null;
+  adherenceRate: number;
+  criticalAlerts: number;
+  status: string;
+  // Fields for patient type and consent, which might not come directly from the main patient model
+  patientType?: 'M' | 'R';
+  accessType?: 'primary' | 'secondary';
+  requiresConsent?: boolean;
+  consentStatus?: ConsentStatus;
+  [key: string]: any; // Allow other properties that are not strictly typed yet
+}
+
+interface PatientAPIResponse {
+  status: boolean;
+  statusCode: number;
+  payload: {
+    data: {
+      patients: Patient[];
+      pagination: {
+        page: number;
+        limit: number;
+        total: number;
+        totalPages: number;
+      };
+    };
+    message: string;
+  };
+}
+
 
 // Helper functions for displaying missing data with user-friendly messages
 const displayMedicalInfo = (value: any, fallbackMessage: string) => {
@@ -320,46 +365,27 @@ export default function PatientsPage() {
       }
       
       try {
-        const result = await apiRequest.get(endpoint)
+        const result = await apiRequest.get<PatientAPIResponse>(endpoint);
         
-        if ((result as any).status && (result as any).payload?.data?.patients) {
-          // Convert the patients object to an array with consent workflow fields
-          const patientsArray = Object.values((result as any).payload.data.patients).map((patient: any) => ({
-            id: patient.basic_info?.id || patient.id,
-            userId: patient.basic_info?.userId || patient.userId,
-            firstName: patient.basic_info?.firstName || patient.firstName,
-            lastName: patient.basic_info?.lastName || patient.lastName,
-            email: patient.basic_info?.email || patient.email,
-            phone: patient.basic_info?.mobileNumber || patient.phone,
-            date_of_birth: patient.basic_info?.date_of_birth || patient.date_of_birth,
-            gender: patient.basic_info?.gender || patient.gender,
-            medicalRecordNumber: patient.basic_info?.patientId || patient.medicalRecordNumber,
-            lastVisit: patient.medical_info?.lastVisit || patient.lastVisit || null,
-            nextAppointment: patient.medical_info?.nextAppointment || patient.nextAppointment || null,
-            adherenceRate: patient.medical_info?.adherenceRate ?? patient.adherenceRate ?? 0,
-            criticalAlerts: patient.medical_info?.criticalAlerts ?? patient.criticalAlerts ?? 0,
-            totalAppointments: patient.medical_info?.totalAppointments ?? patient.totalAppointments ?? 0,
-            active_care_plans: patient.medical_info?.active_care_plans ?? patient.active_care_plans ?? 0,
-            status: patient.basic_info?.status || patient.status || 'active',
-            createdAt: patient.basic_info?.createdAt || patient.createdAt,
-            
-            // Consent workflow fields
-            patient_type: patient.patient_type || 'M',
-            patient_type_label: patient.patient_type_label || 'Primary Patient',
-            access_type: patient.access_type || 'primary',
+        if (result.status && result.payload?.data?.patients) {
+          // The API now returns a flat array of patient objects.
+          const patientsArray = result.payload.data.patients.map((patient) => ({
+            ...patient, // Spread the flat patient object from the API
+            // Ensure default values for fields that might be missing
+            status: patient.status || 'active',
+            lastVisit: patient.lastVisit || null,
+            adherenceRate: patient.adherenceRate ?? 0,
+            criticalAlerts: patient.criticalAlerts ?? 0,
+
+            // Keep consent workflow fields with fallbacks, as they might be added on the fly
+            // or have a different source.
+            patientType: patient.patientType || 'M',
+            accessType: patient.accessType || 'primary',
             requiresConsent: patient.requiresConsent || false,
             consentStatus: patient.consentStatus || 'not_required',
-            accessGranted: patient.accessGranted ?? true,
-            can_view: patient.can_view ?? true,
-            same_provider: patient.same_provider || false,
-            assignment_id: patient.assignment_id || null,
-            assignment_reason: patient.assignment_reason || null,
-            specialtyFocus: patient.specialtyFocus || [],
-            primary_doctor_provider: patient.primary_doctor_provider || null,
-            secondary_doctor_provider: patient.secondary_doctor_provider || null
-          }))
-          setPatients(patientsArray)
-          return
+          }));
+          setPatients(patientsArray);
+          return;
         }
       } catch (apiError) {
         console.error('API call failed:', apiError)

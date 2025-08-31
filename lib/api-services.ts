@@ -9,6 +9,7 @@ import { prisma, healthcareDb } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import type { User, Patient, Doctor, Hsp } from '@prisma/client';
+import { calculateAdherenceRate } from '../lib/utils';
 
 const sanitizeLog = (input: string | null | undefined): string => {
   if (!input) return '';
@@ -238,6 +239,24 @@ export async function createUser(userData: {
  * Healthcare Patient Services with Prisma
  */
 
+export interface PatientListItem {
+  id: string;
+  medicalRecordNumber: string | null;
+  firstName: string | null;
+  lastName: string | null;
+  email: string;
+  phone: string | null;
+  dateOfBirth: Date | null;
+  lastVisit: Date | null;
+  adherenceRate: number;
+  criticalAlerts: number;
+  primaryDoctor: {
+    name: string;
+    specialty: string | undefined;
+  } | null;
+  createdAt: Date | null;
+}
+
 /**
  * Get patients assigned to a doctor with pagination
  */
@@ -247,7 +266,7 @@ export async function getPatients(doctorId: string, pagination: {
   search?: string;
   sortBy?: string;
   sortOrder?: 'asc' | 'desc';
-}) {
+}): Promise<{ patients: PatientListItem[]; pagination: { page: number; limit: number; total: number; totalPages: number; } }> {
   try {
     const skip = (pagination.page - 1) * pagination.limit;
     
@@ -299,7 +318,11 @@ export async function getPatients(doctorId: string, pagination: {
         where: whereClause,
         skip,
         take: pagination.limit,
-        include: {
+        select: {
+          id: true,
+          medicalRecordNumber: true,
+          lastVisitDate: true,
+          createdAt: true,
           user: {
             select: {
               firstName: true,
@@ -320,11 +343,28 @@ export async function getPatients(doctorId: string, pagination: {
               specialty: true,
             },
           },
+          appointments: {
+            orderBy: {
+              startDate: 'desc',
+            },
+            take: 1,
+            select: {
+              startDate: true,
+            },
+          },
+          adherenceRecords: {
+            select: {
+              isCompleted: true,
+            },
+          },
           _count: {
             select: {
-              medicationLogs: true,
-              appointments: true,
-              adherenceRecords: true,
+              emergencyAlerts: {
+                where: {
+                  resolved: false,
+                  severity: 'CRITICAL',
+                },
+              },
             },
           },
         },
@@ -345,25 +385,27 @@ export async function getPatients(doctorId: string, pagination: {
     ]);
 
     return {
-      patients: patients.map(patient => ({
-        id: patient.id,
-        patientId: patient.patientId,
-        firstName: patient.user.firstName,
-        lastName: patient.user.lastName,
-        email: patient.user.email,
-        phone: patient.user.phone,
-        dateOfBirth: patient.user.dateOfBirth,
-        primaryDoctor: patient.primaryCareDoctor ? {
-          name: `${patient.primaryCareDoctor.user.firstName} ${patient.primaryCareDoctor.user.lastName}`,
-          specialty: patient.primaryCareDoctor.specialty?.name,
-        } : null,
-        stats: {
-          medicationsCount: patient._count.medicationLogs,
-          appointmentsCount: patient._count.appointments,
-          vitalsCount: patient._count.adherenceRecords,
-        },
-        createdAt: patient.createdAt,
-      })),
+      patients: patients.map(patient => {
+        const adherenceRate = calculateAdherenceRate(patient.adherenceRecords);
+
+        return {
+          id: patient.id,
+          medicalRecordNumber: patient.medicalRecordNumber,
+          firstName: patient.user.firstName,
+          lastName: patient.user.lastName,
+          email: patient.user.email,
+          phone: patient.user.phone,
+          dateOfBirth: patient.user.dateOfBirth,
+          lastVisit: patient.appointments?.[0]?.startDate || patient.lastVisitDate || null,
+          adherenceRate: adherenceRate,
+          criticalAlerts: patient._count.emergencyAlerts,
+          primaryDoctor: patient.primaryCareDoctor ? {
+            name: `${patient.primaryCareDoctor.user.firstName} ${patient.primaryCareDoctor.user.lastName}`,
+            specialty: patient.primaryCareDoctor.specialty?.name,
+          } : null,
+          createdAt: patient.createdAt,
+        }
+      }),
       pagination: {
         page: pagination.page,
         limit: pagination.limit,
