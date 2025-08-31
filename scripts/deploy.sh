@@ -170,42 +170,6 @@ SIMPLIFIED EXAMPLES:
   ./scripts/deploy.sh prod update --domain healthapp.com  
   ./scripts/deploy.sh prod scale --replicas 4
 
-ENVIRONMENT-SPECIFIC DEFAULTS:
-
-  📋 Development (dev):
-  - Memory limits: Lower (512M-1GB)
-  - Logging: Debug level, all SQL statements
-  - Network encryption: Disabled
-  - PgAdmin: Single-user mode
-  - Replicas: 1
-
-  📋 Test (test):
-  - Memory limits: Medium (512M-1GB)
-  - Logging: Info level, no SQL statements
-  - Network encryption: Disabled
-  - PgAdmin: Multi-user mode
-  - Replicas: 2
-
-  📋 Production (prod):
-  - Memory limits: Higher (1GB-2GB)
-  - Logging: Warning level, no SQL statements  
-  - Network encryption: Enabled
-  - PgAdmin: Multi-user with master password
-  - Database optimizations: Higher connections/buffers
-  - Replicas: 2
-
-CONSOLIDATED FEATURES:
-  ✅ Single docker-stack.yml file for all environments
-  ✅ Environment-specific resource limits and configurations
-  ✅ Production safety measures built-in
-  ✅ Enhanced migration and seeding with timeouts
-  ✅ Comprehensive logging and error handling
-
-SAFETY NOTES:
-  ⚠️  Production deployments have built-in confirmations for destructive operations
-  ⚠️  --cleanup-volumes will DELETE ALL DATA in volumes
-  ⚠️  Always backup before running migrations in production
-
 EOF
 }
 
@@ -810,6 +774,127 @@ pull_base_images() {
     fi
 }
 
+# Create a separate database-only stack file for early deployment
+create_database_only_stack() {
+    log_debug "Creating temporary database-only stack file..."
+    
+    local DB_STACK_FILE="/tmp/database-only-stack.yml"
+    
+    cat > "$DB_STACK_FILE" << 'EOF'
+version: '3.8'
+
+services:
+  postgres:
+    image: ${POSTGRES_IMAGE:-postgres:17-alpine}
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-healthapp_${ENVIRONMENT}}
+      POSTGRES_USER: ${POSTGRES_USER:-healthapp_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-secure_pg_password}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "${HOST_PORT_DB:-5432}:5432"
+    networks:
+      - healthapp_network
+    deploy:
+      replicas: ${REPLICAS_POSTGRES:-1}
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 5
+        window: 120s
+      placement:
+        constraints:
+          - node.role == manager
+      resources:
+        limits:
+          memory: ${POSTGRES_MEMORY_LIMIT:-512M}
+        reservations:
+          memory: ${POSTGRES_MEMORY_RESERVATION:-256M}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-healthapp_user} -d ${POSTGRES_DB:-healthapp_${ENVIRONMENT}}"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
+    command: >
+      postgres -c max_connections=${POSTGRES_MAX_CONNECTIONS:-200}
+               -c shared_buffers=${POSTGRES_SHARED_BUFFERS:-128MB}
+               -c effective_cache_size=${POSTGRES_EFFECTIVE_CACHE:-256MB}
+               -c maintenance_work_mem=${POSTGRES_MAINTENANCE_MEM:-32MB}
+               -c checkpoint_completion_target=0.9
+               -c wal_buffers=8MB
+               -c default_statistics_target=100
+               -c log_statement=${POSTGRES_LOG_STATEMENT:-all}
+               -c log_destination=stderr
+               -c logging_collector=off
+
+  redis:
+    image: ${REDIS_IMAGE:-redis:7.4-alpine}
+    volumes:
+      - redis_data:/data
+    ports:
+      - "${HOST_PORT_REDIS:-6379}:6379"
+    networks:
+      - healthapp_network
+    deploy:
+      replicas: ${REPLICAS_REDIS:-1}
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+      resources:
+        limits:
+          memory: ${REDIS_MEMORY_LIMIT:-256M}
+        reservations:
+          memory: ${REDIS_MEMORY_RESERVATION:-128M}
+    healthcheck:
+      test: 
+        - CMD
+        - sh
+        - -c
+        - |
+          if [ -n "${REDIS_PASSWORD:-}" ]; then
+            redis-cli -a "${REDIS_PASSWORD}" ping
+          else
+            redis-cli ping
+          fi
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    command: >
+      sh -c "
+      if [ -n '${REDIS_PASSWORD:-}' ]; then
+        redis-server --requirepass '${REDIS_PASSWORD}' --appendonly yes --maxmemory ${REDIS_MAX_MEMORY:-256mb} --maxmemory-policy allkeys-lru
+      else
+        redis-server --appendonly yes --maxmemory ${REDIS_MAX_MEMORY:-256mb} --maxmemory-policy allkeys-lru
+      fi
+      "
+
+networks:
+  healthapp_network:
+    driver: overlay
+    attachable: true
+    driver_opts:
+      encrypted: "${NETWORK_ENCRYPTED:-false}"
+
+volumes:
+  postgres_data:
+    driver: local
+    external: ${POSTGRES_VOLUME_EXTERNAL:-false}
+    name: ${POSTGRES_VOLUME_NAME:-${STACK_NAME}_postgres_data}
+  redis_data:
+    driver: local
+    external: ${REDIS_VOLUME_EXTERNAL:-false}
+    name: ${REDIS_VOLUME_NAME:-${STACK_NAME}_redis_data}
+EOF
+
+    echo "$DB_STACK_FILE"
+}
+
 start_database_services_early() {
     if [ "$EARLY_DB_START" != true ]; then
         log_info "Early database start disabled"
@@ -818,44 +903,49 @@ start_database_services_early() {
 
     log_deploy "Starting database services early (before app build)..."
 
-    # Check if main stack already has database services running
+    # Check if database services are already running
     if docker service ls --filter "name=${STACK_NAME}_postgres" --format "{{.Name}}" | grep -q "^${STACK_NAME}_postgres$"; then
-        log_info "Database services already running in main stack"
+        log_info "Database services already running"
         return
     fi
 
-    # Use the actual docker stack file but deploy only database services
-    if [ ! -f "$DOCKER_STACK_FILE" ]; then
-        log_warning "Stack file not found, skipping early database start"
+    # Create temporary database-only stack
+    local DB_STACK_FILE
+    DB_STACK_FILE=$(create_database_only_stack)
+    
+    if [ ! -f "$DB_STACK_FILE" ]; then
+        log_warning "Failed to create database-only stack file, skipping early database start"
         return
     fi
 
-    # For early deployment, check if our app image exists, otherwise use placeholder
-    local early_app_image="$DEPLOY_IMAGE"
-    if ! docker image inspect "$DEPLOY_IMAGE" >/dev/null 2>&1; then
-        log_info "App image $DEPLOY_IMAGE not yet built, using busybox placeholder for early DB start"
-        early_app_image="busybox:latest"
-    fi
-
-    # Set environment variables for the stack deployment
-    export APP_IMAGE="$early_app_image"
+    # Set environment variables for the database stack deployment
     export POSTGRES_IMAGE="postgres:${POSTGRES_VERSION:-17}-alpine"
     export REDIS_IMAGE="redis:7.4-alpine"
-    export PGADMIN_IMAGE="dpage/pgadmin4:latest"
 
-    # Deploy the full stack early (app service will be updated later if needed)
-    log_info "Deploying stack for early database start: ${STACK_NAME}"
-    docker stack deploy -c "$DOCKER_STACK_FILE" "$STACK_NAME"
-
-    # Wait for PostgreSQL to be ready
-    log_info "Waiting for PostgreSQL to initialize (this typically takes 30-60 seconds)..."
-    if wait_for_postgres_ready 120 "$STACK_NAME"; then
-        log_success "Database services started successfully and are ready"
-        # Mark that we've already deployed the database
-        export DB_ALREADY_DEPLOYED=true
+    # Deploy only database services
+    log_info "Deploying database-only stack: ${STACK_NAME}-db"
+    if docker stack deploy -c "$DB_STACK_FILE" "${STACK_NAME}-db"; then
+        log_success "Database stack deployment initiated"
+        
+        # Wait for PostgreSQL to be ready
+        log_info "Waiting for PostgreSQL to initialize (this typically takes 30-60 seconds)..."
+        if wait_for_postgres_ready 180 "${STACK_NAME}-db"; then
+            log_success "Database services started successfully and are ready"
+            export DB_ALREADY_DEPLOYED=true
+        else
+            log_error "Database services failed to start during early deployment"
+            show_service_logs "postgres" 50 "${STACK_NAME}-db"
+            # Clean up the failed database stack
+            docker stack rm "${STACK_NAME}-db" >/dev/null 2>&1 || true
+            exit 1
+        fi
     else
-        log_warning "Database services may not be fully ready yet"
+        log_error "Failed to deploy database-only stack"
+        exit 1
     fi
+    
+    # Clean up temporary file
+    rm -f "$DB_STACK_FILE"
 }
 
 build_images() {
@@ -928,11 +1018,6 @@ build_images() {
         log_error "Image $DEPLOY_IMAGE not found locally"
         exit 1
     fi
-
-    # Don't remove database services - they'll be updated by the main deployment
-    if [ "${DB_ALREADY_DEPLOYED:-false}" = true ]; then
-        log_info "Database services will be updated during main deployment"
-    fi
 }
 
 # ============================================================================
@@ -961,12 +1046,25 @@ deploy_stack() {
         fi
     fi
 
-    # Deploy/update the stack with the image environment variable
+    # If we deployed database services early, we need to clean them up first
     if [ "${DB_ALREADY_DEPLOYED:-false}" = true ]; then
-        log_info "Updating existing stack with application services..."
-    else
-        log_info "Deploying Docker stack..."
+        log_info "Cleaning up early database deployment before main stack deployment..."
+        docker stack rm "${STACK_NAME}-db" >/dev/null 2>&1 || true
+        
+        # Wait a moment for cleanup
+        sleep 5
+        
+        # Wait for the database services to be removed
+        local cleanup_wait=0
+        while docker service ls --filter "name=${STACK_NAME}-db_" --format "{{.Name}}" | grep -q "${STACK_NAME}-db_" && [ $cleanup_wait -lt 30 ]; do
+            sleep 2
+            ((cleanup_wait += 2))
+            log_debug "Waiting for database cleanup... (${cleanup_wait}s)"
+        done
     fi
+
+    # Deploy the main stack
+    log_info "Deploying Docker stack...")
 
     # Export all necessary environment variables for the stack
     export POSTGRES_IMAGE="postgres:${POSTGRES_VERSION:-17}-alpine"
@@ -977,10 +1075,23 @@ deploy_stack() {
     export POSTGRES_DB="${POSTGRES_DB:-healthapp_$ENVIRONMENT}"
 
     # Deploy with environment variables
-    docker stack deploy -c "$DOCKER_STACK_FILE" "$STACK_NAME" \
-        --with-registry-auth
+    if docker stack deploy -c "$DOCKER_STACK_FILE" "$STACK_NAME" --with-registry-auth; then
+        log_success "Stack deployment initiated: $STACK_NAME"
+    else
+        log_error "Stack deployment failed"
+        exit 1
+    fi
 
-    log_success "Stack deployment initiated: $STACK_NAME"
+    # Verify stack deployment
+    sleep 5
+    local services_count=$(docker stack services "$STACK_NAME" --format "{{.Name}}" | wc -l)
+    if [ "$services_count" -eq 0 ]; then
+        log_error "No services found after stack deployment. Stack deployment failed."
+        docker stack ls
+        exit 1
+    fi
+    
+    log_info "Stack deployed successfully with $services_count services"
 
     # Enhanced orchestration: Wait for services in strict dependency order
     log_deploy "Verifying services in dependency order..."
@@ -996,20 +1107,10 @@ deploy_stack() {
 
     # Phase 1: PostgreSQL must be fully ready first
     log_deploy "Phase 1: Ensuring PostgreSQL database is ready..."
-    if [ "${DB_ALREADY_DEPLOYED:-false}" = true ]; then
-        log_info "PostgreSQL was started early and should be ready"
-        # Still verify it's accessible
-        if ! wait_for_postgres_ready 60 "$STACK_NAME"; then
-            log_error "PostgreSQL is not accessible. Cannot proceed with deployment."
-            show_service_logs "postgres" 50
-            exit 1
-        fi
-    else
-        if ! wait_for_postgres_ready 180 "$STACK_NAME"; then
-            log_error "PostgreSQL failed to start. Cannot proceed with deployment."
-            show_service_logs "postgres" 50
-            exit 1
-        fi
+    if ! wait_for_postgres_ready 180 "$STACK_NAME"; then
+        log_error "PostgreSQL failed to start. Cannot proceed with deployment."
+        show_service_logs "postgres" 50
+        exit 1
     fi
 
     # Phase 2: Redis cache
@@ -1115,7 +1216,7 @@ wait_for_postgres_ready() {
 
         # If not found, try name patterns
         if [ -z "$container_id" ]; then
-            for pattern in "${service_full_name}" "${stack_prefix}_postgres" "${STACK_NAME}_postgres" "postgres"; do
+            for pattern in "${service_full_name}" "${stack_prefix}_postgres" "postgres"; do
                 container_id=$(docker ps --filter "name=$pattern" --format "{{.ID}}" | head -1)
                 if [ -n "$container_id" ]; then
                     log_debug "Found container with pattern: $pattern"
@@ -1183,7 +1284,7 @@ wait_for_postgres_ready() {
 
     log_error "PostgreSQL failed to become ready within ${max_wait_seconds} seconds"
     log_debug "Final service status:"
-    docker service ls --filter "name=postgres" || true
+    docker service ls --filter "name=$service_full_name" || true
     log_debug "Final container status:"
     docker ps --filter "name=postgres" --format "table {{.Names}}\t{{.Status}}" || true
     return 1
@@ -1253,7 +1354,7 @@ check_service_ready() {
     local container_id=""
 
     # Method 1: Direct container search by service name
-    container_id=$(docker ps --filter "name=${service_full_name}" --format "{{.ID}}" | head -1)
+    container_id=$(docker ps --filter "label=com.docker.swarm.service.name=${service_full_name}" --format "{{.ID}}" | head -1)
 
     # Method 2: Try with stack name pattern
     if [ -z "$container_id" ]; then
@@ -1576,7 +1677,11 @@ run_migrations() {
         local retry_count=0
 
         while [ $retry_count -lt $max_retries ] && [ -z "$container_id" ]; do
-            container_id=$(docker ps --filter "name=${STACK_NAME}_app" --format "{{.ID}}" | head -1)
+            container_id=$(docker ps --filter "label=com.docker.swarm.service.name=${STACK_NAME}_app" --format "{{.ID}}" | head -1)
+
+            if [ -z "$container_id" ]; then
+                container_id=$(docker ps --filter "name=${STACK_NAME}_app" --format "{{.ID}}" | head -1)
+            fi
 
             if [ -z "$container_id" ]; then
                 container_id=$(docker ps --filter "name=app" --format "{{.ID}}" | head -1)
@@ -1656,7 +1761,11 @@ run_seeds() {
         local container_id=""
         log_info "🔍 Locating running app container..."
         
-        container_id=$(docker ps --filter "name=${STACK_NAME}_app" --format "{{.ID}}" | head -1)
+        container_id=$(docker ps --filter "label=com.docker.swarm.service.name=${STACK_NAME}_app" --format "{{.ID}}" | head -1)
+
+        if [ -z "$container_id" ]; then
+            container_id=$(docker ps --filter "name=${STACK_NAME}_app" --format "{{.ID}}" | head -1)
+        fi
 
         if [ -z "$container_id" ]; then
             log_debug "App container not found with stack name filter, trying generic 'app' filter..."
@@ -1879,7 +1988,7 @@ show_status() {
     echo
     log_info "Container Health Status:"
     for service in postgres redis app pgadmin; do
-        local container_id=$(docker ps --filter "name=${STACK_NAME}_${service}" --format "{{.ID}}" | head -1)
+        local container_id=$(docker ps --filter "label=com.docker.swarm.service.name=${STACK_NAME}_${service}" --format "{{.ID}}" | head -1)
         if [ -n "$container_id" ]; then
             local health=$(docker inspect --format='{{.State.Health.Status}}' "$container_id" 2>/dev/null || echo "no health check")
             echo "  - $service: $health"
@@ -1894,9 +2003,10 @@ show_status() {
 show_service_logs() {
     local service_name="$1"
     local lines="${2:-50}"
+    local stack_name="${3:-$STACK_NAME}"
 
     log_info "Showing last $lines lines of $service_name logs:"
-    docker service logs --tail "$lines" "${STACK_NAME}_${service_name}" 2>/dev/null || log_warning "Could not retrieve $service_name logs"
+    docker service logs --tail "$lines" "${stack_name}_${service_name}" 2>/dev/null || log_warning "Could not retrieve $service_name logs"
 }
 
 show_logs() {

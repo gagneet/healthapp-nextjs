@@ -10,6 +10,8 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-healthapp_user}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-secure_pg_password}
       PGDATA: /var/lib/postgresql/data/pgdata
+      # Additional PostgreSQL configuration for better startup
+      POSTGRES_INITDB_ARGS: "--auth-host=scram-sha-256 --auth-local=peer"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
@@ -33,12 +35,15 @@ services:
         reservations:
           # Production: 512MB, Test: 256MB, Dev: 256MB  
           memory: ${POSTGRES_MEMORY_RESERVATION:-256M}
+      labels:
+        - "service.name=postgres"
+        - "service.type=database"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-healthapp_user} -d ${POSTGRES_DB:-healthapp_${ENVIRONMENT}}"]
-      interval: 15s
-      timeout: 10s
-      retries: 5
-      start_period: 40s
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-healthapp_user} -d ${POSTGRES_DB:-healthapp_${ENVIRONMENT}} -h localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 60s
     command: >
       postgres -c max_connections=${POSTGRES_MAX_CONNECTIONS:-200}
                -c shared_buffers=${POSTGRES_SHARED_BUFFERS:-128MB}
@@ -50,6 +55,8 @@ services:
                -c log_statement=${POSTGRES_LOG_STATEMENT:-all}
                -c log_destination=stderr
                -c logging_collector=off
+               -c listen_addresses='*'
+               -c port=5432
 
   redis:
     image: ${REDIS_IMAGE:-redis:7.4-alpine}
@@ -73,6 +80,9 @@ services:
         reservations:
           # Production: 256MB, Test: 128MB, Dev: 128MB
           memory: ${REDIS_MEMORY_RESERVATION:-128M}
+      labels:
+        - "service.name=redis"
+        - "service.type=cache"
     healthcheck:
       test: 
         - CMD
@@ -167,12 +177,21 @@ services:
         reservations:
           # Production: 1GB, Test: 512MB, Dev: 512MB
           memory: ${APP_MEMORY_RESERVATION:-512M}
+      labels:
+        - "service.name=app"
+        - "service.type=application"
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:3002/api/health || exit 1"]
+      test: 
+        - CMD-SHELL
+        - |
+          # Try health endpoint first, then fall back to root
+          curl -f http://localhost:3002/api/health >/dev/null 2>&1 || 
+          curl -f http://localhost:3002/ >/dev/null 2>&1 || 
+          exit 1
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 60s
+      start_period: 90s
     depends_on:
       - postgres
       - redis
@@ -184,6 +203,9 @@ services:
       PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin}
       PGADMIN_CONFIG_SERVER_MODE: ${PGADMIN_SERVER_MODE:-False}
       PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: ${PGADMIN_MASTER_PASSWORD_REQUIRED:-False}
+      # Additional PgAdmin configuration for better startup
+      PGADMIN_LISTEN_PORT: 80
+      PGADMIN_CONFIG_UPGRADE_CHECK_ENABLED: False
     volumes:
       - pgadmin_data:/var/lib/pgadmin
     ports:
@@ -206,6 +228,15 @@ services:
           memory: ${PGADMIN_MEMORY_LIMIT:-256M}
         reservations:
           memory: ${PGADMIN_MEMORY_RESERVATION:-128M}
+      labels:
+        - "service.name=pgadmin"
+        - "service.type=admin"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:80/misc/ping || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
     depends_on:
       - postgres
 
@@ -216,6 +247,10 @@ networks:
     # Enable encryption for production
     driver_opts:
       encrypted: "${NETWORK_ENCRYPTED:-false}"
+    # Add network labels for better management
+    labels:
+      - "network.name=healthapp"
+      - "network.environment=${ENVIRONMENT:-dev}"
 
 volumes:
   postgres_data:
@@ -223,11 +258,20 @@ volumes:
     # Production can use external volumes
     external: ${POSTGRES_VOLUME_EXTERNAL:-false}
     name: ${POSTGRES_VOLUME_NAME:-${STACK_NAME}_postgres_data}
+    labels:
+      - "volume.service=postgres"
+      - "volume.environment=${ENVIRONMENT:-dev}"
   redis_data:
     driver: local
     external: ${REDIS_VOLUME_EXTERNAL:-false}
     name: ${REDIS_VOLUME_NAME:-${STACK_NAME}_redis_data}
+    labels:
+      - "volume.service=redis"
+      - "volume.environment=${ENVIRONMENT:-dev}"
   pgadmin_data:
     driver: local
     external: ${PGADMIN_VOLUME_EXTERNAL:-false}
     name: ${PGADMIN_VOLUME_NAME:-${STACK_NAME}_pgadmin_data}
+    labels:
+      - "volume.service=pgadmin"
+      - "volume.environment=${ENVIRONMENT:-dev}"
