@@ -790,7 +790,7 @@ deploy_stack() {
     # Export all necessary environment variables
     export POSTGRES_IMAGE="postgres:${POSTGRES_VERSION:-17}-alpine"
     export REDIS_IMAGE="redis:7.4-alpine"
-    export PGADMIN_IMAGE="dpage/pgladmin4:latest"
+    export PGADMIN_IMAGE="dpage/pgadmin4:latest"
     export POSTGRES_DB="${POSTGRES_DB:-healthapp_$ENVIRONMENT}"
 
     if docker stack deploy -c "$DOCKER_STACK_FILE" "$STACK_NAME"; then

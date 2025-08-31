@@ -452,6 +452,7 @@ CREATE TABLE "public"."Medicines" (
                                       "details" JSON,
                                       "creatorId" INTEGER,
                                       "publicMedicine" BOOLEAN DEFAULT true,
+                                      "isActive" BOOLEAN DEFAULT true,
                                       "algoliaObjectId" VARCHAR(255),
                                       "createdAt" TIMESTAMP(3) NOT NULL,
                                       "updatedAt" TIMESTAMP(3) NOT NULL,

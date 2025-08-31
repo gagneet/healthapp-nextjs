@@ -659,6 +659,7 @@ export async function seedComprehensiveHealthcareData() {
                     create: {
                         ...med,
                         publicMedicine: true,
+                        isActive: true,
                         createdAt: getRandomPastDate(30, 60),
                         updatedAt: getRecentDate()
                     }
