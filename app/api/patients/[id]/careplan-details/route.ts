@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from "@/lib/auth";
 import { prisma } from '@/lib/prisma';
-import { Medication, Medicine } from '@prisma/client';
+import { Medication, Medicine, Prescription } from '@prisma/client';
 
 // Define a type for the enhanced medication object
 type EnhancedMedication = Medication & {
@@ -165,7 +165,7 @@ async function fetchCarePlanData(patientId: string) {
   });
 
   // Extract all prescriptions into a map for easy lookup
-  const prescriptionsMap = new Map();
+  const prescriptionsMap = new Map<string, Prescription>();
   if (carePlans.length > 0 && carePlans[0].patient.prescriptions) {
     for (const prescription of carePlans[0].patient.prescriptions) {
       prescriptionsMap.set(prescription.medicationName, prescription);
