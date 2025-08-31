@@ -199,15 +199,23 @@ export async function createUser(userData: {
       await prisma.patient.create({
         data: {
           userId: user.id,
+          patientId: `PAT-${Math.random().toString(36).substring(2, 10).toUpperCase()}`,
           // Add any additional patient-specific fields from userData
         }
       });
-    } else if (userData.role === 'DOCTOR' || userData.role === 'HSP') {
-      await prisma.healthcareProvider.create({
+    } else if (userData.role === 'DOCTOR') {
+      await prisma.doctor.create({
         data: {
           userId: user.id,
-          // HSP type would be stored in specialties array or other fields
-          specialties: userData.role === 'HSP' && userData.hspType ? [userData.hspType] : [],
+          doctorId: `DOC-${Math.random().toString(36).substring(2, 10).toUpperCase()}`,
+          medicalLicenseNumber: userData.medicalLicenseNumber || `ML-FAKE-${Math.random().toString(36).substring(2, 10).toUpperCase()}`,
+        }
+      });
+    } else if (userData.role === 'HSP') {
+      await prisma.hsp.create({
+        data: {
+          userId: user.id,
+          hspId: `HSP-${Math.random().toString(36).substring(2, 10).toUpperCase()}`,
         }
       });
     }
