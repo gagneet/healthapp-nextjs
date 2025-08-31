@@ -1,5 +1,4 @@
 # docker-stack.yml - Universal Docker Swarm Stack for all environments
-# Configurable for dev/test/prod through environment variables
 version: '3.8'
 
 services:
@@ -197,13 +196,13 @@ services:
       PGADMIN_LISTEN_PORT: "80"
       PGADMIN_CONFIG_UPGRADE_CHECK_ENABLED: "False"
     volumes:
-      - pgadmin_data:/var/lib/pgladmin
+      - pgadmin_data:/var/lib/pgadmin
     ports:
-      - "${HOST_PORT_PGLADMIN:-5050}:80"
+      - "${HOST_PORT_PGADMIN:-5050}:80"
     networks:
       - healthapp_network
     deploy:
-      replicas: ${REPLICAS_PGLADMIN:-1}
+      replicas: ${REPLICAS_PGADMIN:-1}
       restart_policy:
         condition: on-failure
         delay: 5s
@@ -214,11 +213,11 @@ services:
           - node.role == manager
       resources:
         limits:
-          memory: ${PGLADMIN_MEMORY_LIMIT:-256M}
+          memory: ${PGADMIN_MEMORY_LIMIT:-256M}
         reservations:
-          memory: ${PGLADMIN_MEMORY_RESERVATION:-128M}
+          memory: ${PGADMIN_MEMORY_RESERVATION:-128M}
       labels:
-        - "service.name=pgladmin"
+        - "service.name=pgadmin"
         - "service.type=admin"
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:80/misc/ping || exit 1"]
@@ -243,21 +242,21 @@ volumes:
   postgres_data:
     driver: local
     external: ${POSTGRES_VOLUME_EXTERNAL:-false}
-    name: ${POSTGRES_VOLUME_NAME:-${STACK_NAME}_postgres_data}
+    name: ${POSTGRES_VOLUME_NAME:-healthapp_${ENVIRONMENT}_postgres_data}
     labels:
       - "volume.service=postgres"
       - "volume.environment=${ENVIRONMENT:-dev}"
   redis_data:
     driver: local
     external: ${REDIS_VOLUME_EXTERNAL:-false}
-    name: ${REDIS_VOLUME_NAME:-${STACK_NAME}_redis_data}
+    name: ${REDIS_VOLUME_NAME:-healthapp_${ENVIRONMENT}_redis_data}
     labels:
       - "volume.service=redis"
       - "volume.environment=${ENVIRONMENT:-dev}"
   pgadmin_data:
     driver: local
     external: ${PGADMIN_VOLUME_EXTERNAL:-false}
-    name: ${PGADMIN_VOLUME_NAME:-${STACK_NAME}_pgadmin_data}
+    name: ${PGADMIN_VOLUME_NAME:-healthapp_${ENVIRONMENT}_pgadmin_data}
     labels:
       - "volume.service=pgadmin"
       - "volume.environment=${ENVIRONMENT:-dev}"
