@@ -11,7 +11,8 @@ import {
 import { writeFile, mkdir } from 'fs/promises'
 import path, { join } from 'path'
 
-const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+const MB = 1024 * 1024;
+const MAX_FILE_SIZE = 5 * MB; // 5MB
 const ALLOWED_FILE_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
 
 export const POST = withErrorHandling(async (request: NextRequest) => {
@@ -35,7 +36,7 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
 
     // Validate file size
     if (file.size > MAX_FILE_SIZE) {
-        return createErrorResponse(new Error(`File size exceeds the limit of ${MAX_FILE_SIZE / (1024*1024)}MB`), 400);
+        return createErrorResponse(new Error(`File size exceeds the limit of ${MAX_FILE_SIZE / MB}MB`), 400);
     }
 
     // Validate file type

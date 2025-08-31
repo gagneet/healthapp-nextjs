@@ -1,6 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from "@/lib/auth";
 import { prisma } from '@/lib/prisma';
+import { Medication, Medicine } from '@prisma/client';
+
+// Define a type for the enhanced medication object
+type EnhancedMedication = Medication & {
+  medicine: Medicine;
+  prescriptionDetails?: {
+    genericName: string | null;
+    strength: string;
+    dosageForm: string;
+  };
+};
 
 /**
  * Authenticate and authorize user for care plan access
@@ -163,10 +174,10 @@ async function fetchCarePlanData(patientId: string) {
 
   // Enhance prescribedMedications with details from prescriptions
   for (const carePlan of carePlans) {
-    for (const med of carePlan.prescribedMedications) {
+    for (const med of carePlan.prescribedMedications as EnhancedMedication[]) {
       const prescription = prescriptionsMap.get(med.medicine.name);
       if (prescription) {
-        (med as any).prescriptionDetails = {
+        med.prescriptionDetails = {
           genericName: prescription.genericName,
           strength: prescription.strength,
           dosageForm: prescription.dosageForm
@@ -257,15 +268,15 @@ export async function GET(request: NextRequest, { params }: { params: { id:strin
     // Format the care plans data
     const formattedCarePlans = await Promise.all(
       carePlans.map(async (carePlan: any) => {
-        const medications = carePlan.prescribedMedications.map((med: any) => ({
+        const medications = (carePlan.prescribedMedications as EnhancedMedication[]).map(med => ({
             id: med.id,
             name: med.medicine.name,
             type: med.medicine.type,
             description: med.medicine.description,
-            ...((med as any).prescriptionDetails && {
-                genericName: (med as any).prescriptionDetails.genericName,
-                strength: (med as any).prescriptionDetails.strength,
-                form: (med as any).prescriptionDetails.dosageForm,
+            ...(med.prescriptionDetails && {
+                genericName: med.prescriptionDetails.genericName,
+                strength: med.prescriptionDetails.strength,
+                form: med.prescriptionDetails.dosageForm,
             })
         }));
 

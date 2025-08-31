@@ -125,7 +125,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
           contactInfo: doctor.organization.contactInfo
         } : null,
         qualificationDetails: doctor.qualificationDetails,
-        bio: doctor.practiceName,
+        bio: doctor.bio,
         practiceAddress: doctor.practiceAddress,
         boardCertifications: doctor.boardCertifications,
         languagesSpoken: doctor.languagesSpoken,

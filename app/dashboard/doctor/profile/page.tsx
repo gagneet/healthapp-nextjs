@@ -143,7 +143,7 @@ export default function DoctorProfilePage() {
           if (!prev) return null;
 
           // Deep copy to avoid direct state mutation
-          const newProfile = JSON.parse(JSON.stringify(prev));
+          const newProfile = structuredClone(prev);
 
           let currentLevel = newProfile;
           fieldParts.forEach((part, index) => {
@@ -376,6 +376,13 @@ export default function DoctorProfilePage() {
                 Consultation Fee (₹)
               </label>
               <EditableField field="professional.consultationFee" value={profile.professional.consultationFee} type="number" />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Practice Name
+              </label>
+              <EditableField field="professional.practiceName" value={profile.professional.practiceName || ''} />
             </div>
 
             <div>
