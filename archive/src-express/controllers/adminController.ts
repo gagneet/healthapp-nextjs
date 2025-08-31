@@ -69,7 +69,7 @@ class AdminController {
           },
           statistics: {
             totalPatients: patientCount,
-            active_care_plans: 0, // Calculate if needed
+            activeCarePlans: 0, // Calculate if needed
             completed_appointments: 0 // Calculate if needed
           }
         };

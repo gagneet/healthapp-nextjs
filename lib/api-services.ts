@@ -770,7 +770,7 @@ export async function getDoctorDashboard(doctorUserId: string) {
         criticalAlerts: 0, // Will be calculated from critical alerts API
         appointments_today: todayAppointments,
         medication_adherence: Math.floor(Math.random() * 30) + 70, // Mock data
-        active_care_plans: activeCarePlans,
+        activeCarePlans: activeCarePlans,
         recent_vitals: recentVitalsCount
       },
       doctor: {
