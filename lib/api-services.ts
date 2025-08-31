@@ -9,6 +9,8 @@ import { prisma, healthcareDb } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import type { User, Patient, Doctor, Hsp } from '@prisma/client';
+import { randomUUID } from 'crypto';
+import { Prisma } from '@prisma/client';
 
 const sanitizeLog = (input: string | null | undefined): string => {
   if (!input) return '';
@@ -167,6 +169,23 @@ export async function createUser(userData: {
   [key: string]: any;
 }): Promise<AuthResult> {
   try {
+    // Validate role
+    const validRoles = ['PATIENT', 'DOCTOR', 'HSP'];
+    if (!validRoles.includes(userData.role)) {
+      return {
+        success: false,
+        message: 'Invalid role specified'
+      };
+    }
+
+    // Validate medical license for doctors
+    if (userData.role === 'DOCTOR' && (!userData.medicalLicenseNumber || typeof userData.medicalLicenseNumber !== 'string')) {
+        return {
+            success: false,
+            message: 'Medical license number is required for doctors'
+        };
+    }
+
     // Check if user already exists
     const existingUser = await prisma.user.findUnique({
       where: { email: userData.email.toLowerCase() }
@@ -182,62 +201,72 @@ export async function createUser(userData: {
     // Hash password
     const hashedPassword = await bcrypt.hash(userData.password, 12);
 
-    // Create user
-    const user = await prisma.user.create({
-      data: {
-        email: userData.email.toLowerCase(),
-        passwordHash: hashedPassword,
-        role: userData.role as any,
-        firstName: userData.firstName,
-        lastName: userData.lastName,
-        accountStatus: 'PENDING_VERIFICATION'
-      }
-    });
+    // Create user and profile in a transaction
+    const result = await prisma.$transaction(async (tx) => {
+        const user = await tx.user.create({
+            data: {
+                email: userData.email.toLowerCase(),
+                passwordHash: hashedPassword,
+                role: userData.role as any,
+                firstName: userData.firstName,
+                lastName: userData.lastName,
+                accountStatus: 'PENDING_VERIFICATION'
+            }
+        });
 
-    // Create specialized profile based on role
-    if (userData.role === 'PATIENT') {
-      await prisma.patient.create({
-        data: {
-          userId: user.id,
-          patientId: `PAT-${Math.random().toString(36).substring(2, 10).toUpperCase()}`,
-          // Add any additional patient-specific fields from userData
+        if (userData.role === 'PATIENT') {
+            await tx.patient.create({
+                data: {
+                    userId: user.id,
+                    patientId: `PAT-${randomUUID().substring(0, 8).toUpperCase()}`,
+                }
+            });
+        } else if (userData.role === 'DOCTOR') {
+            await tx.doctor.create({
+                data: {
+                    userId: user.id,
+                    doctorId: `DOC-${randomUUID().substring(0, 8).toUpperCase()}`,
+                    medicalLicenseNumber: userData.medicalLicenseNumber,
+                }
+            });
+        } else if (userData.role === 'HSP') {
+            await tx.hsp.create({
+                data: {
+                    userId: user.id,
+                    hspId: `HSP-${randomUUID().substring(0, 8).toUpperCase()}`,
+                }
+            });
         }
-      });
-    } else if (userData.role === 'DOCTOR') {
-      await prisma.doctor.create({
-        data: {
-          userId: user.id,
-          doctorId: `DOC-${Math.random().toString(36).substring(2, 10).toUpperCase()}`,
-          medicalLicenseNumber: userData.medicalLicenseNumber || `ML-FAKE-${Math.random().toString(36).substring(2, 10).toUpperCase()}`,
-        }
-      });
-    } else if (userData.role === 'HSP') {
-      await prisma.hsp.create({
-        data: {
-          userId: user.id,
-          hspId: `HSP-${Math.random().toString(36).substring(2, 10).toUpperCase()}`,
-        }
-      });
-    }
+        return user;
+    });
 
     return {
       success: true,
       data: {
         token: '', // Token will be generated on login
         user: {
-          id: user.id,
-          email: user.email,
-          role: user.role,
-          firstName: user.firstName,
-          lastName: user.lastName
+          id: result.id,
+          email: result.email,
+          role: result.role,
+          firstName: result.firstName,
+          lastName: result.lastName
         }
       }
     };
   } catch (error) {
     console.error('User creation error:', error);
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        if (error.code === 'P2002') {
+            // This can happen if the generated ID or another unique field collides.
+            return {
+                success: false,
+                message: `A user with the provided details already exists.`
+            };
+        }
+    }
     return {
       success: false,
-      message: 'Failed to create user'
+      message: 'Failed to create user due to a server error.'
     };
   }
 }

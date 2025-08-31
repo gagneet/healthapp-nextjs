@@ -120,187 +120,142 @@ export async function seedComprehensiveHealthcareData() {
             // Create specific users per your requirements
             console.log('👥 Creating users with exact structure per requirements...');
 
-            const testUsers = await tx.user.createMany({
+            const nonDoctorUsers = [
+                // 5 Patients
+                createUserData({
+                    id: '77777777-7777-7777-7777-777777777777',
+                    email: 'patient1@healthapp.com',
+                    passwordHash: hashedPassword,
+                    role: 'PATIENT' as UserRole,
+                    firstName: 'Sarah',
+                    lastName: 'Johnson',
+                    phone: '+1-555-0101',
+                    dateOfBirth: new Date('1985-06-15'),
+                    gender: 'FEMALE' as UserGender,
+                    accountStatus: 'ACTIVE' as UserAccountStatus,
+                    emailVerifiedLegacy: true,
+                    createdAt: getRandomPastDate(20, 80),
+                    updatedAt: getRecentDate(),
+                }),
+                createUserData({
+                    id: '88888888-8888-8888-8888-888888888888',
+                    email: 'patient2@healthapp.com',
+                    passwordHash: hashedPassword,
+                    role: 'PATIENT' as UserRole,
+                    firstName: 'Michael',
+                    lastName: 'Chen',
+                    phone: '+1-555-0102',
+                    dateOfBirth: new Date('1978-03-22'),
+                    gender: 'MALE' as UserGender,
+                    accountStatus: 'ACTIVE' as UserAccountStatus,
+                    emailVerifiedLegacy: true,
+                    createdAt: getRandomPastDate(18, 78),
+                    updatedAt: getRecentDate(),
+                }),
+                createUserData({
+                    id: '11111111-1111-1111-1111-111111111111',
+                    email: 'patient3@healthapp.com',
+                    passwordHash: hashedPassword,
+                    role: 'PATIENT' as UserRole,
+                    firstName: 'Emma',
+                    lastName: 'Williams',
+                    phone: '+1-555-0103',
+                    dateOfBirth: new Date('1990-09-10'),
+                    gender: 'FEMALE' as UserGender,
+                    accountStatus: 'ACTIVE' as UserAccountStatus,
+                    emailVerifiedLegacy: true,
+                    createdAt: getRandomPastDate(16, 76),
+                    updatedAt: getRecentDate(),
+                }),
+                createUserData({
+                    id: '22222222-2222-2222-2222-222222222222',
+                    email: 'patient4@healthapp.com',
+                    passwordHash: hashedPassword,
+                    role: 'PATIENT' as UserRole,
+                    firstName: 'James',
+                    lastName: 'Brown',
+                    phone: '+1-555-0104',
+                    dateOfBirth: new Date('1965-12-05'),
+                    gender: 'MALE' as UserGender,
+                    accountStatus: 'ACTIVE' as UserAccountStatus,
+                    emailVerifiedLegacy: true,
+                    createdAt: getRandomPastDate(14, 74),
+                    updatedAt: getRecentDate(),
+                }),
+                createUserData({
+                    id: '33333333-3333-3333-3333-333333333333',
+                    email: 'patient5@healthapp.com',
+                    passwordHash: hashedPassword,
+                    role: 'PATIENT' as UserRole,
+                    firstName: 'Olivia',
+                    lastName: 'Davis',
+                    phone: '+1-555-0105',
+                    dateOfBirth: new Date('1995-04-20'),
+                    gender: 'FEMALE' as UserGender,
+                    accountStatus: 'ACTIVE' as UserAccountStatus,
+                    emailVerifiedLegacy: true,
+                    createdAt: getRandomPastDate(12, 72),
+                    updatedAt: getRecentDate(),
+                }),
+
+                // 1 HSP
+                createUserData({
+                    id: '55555555-5555-5555-5555-555555555555',
+                    email: 'hsp@healthapp.com',
+                    passwordHash: hashedPassword,
+                    role: 'HSP' as UserRole,
+                    firstName: 'Maria',
+                    lastName: 'Garcia',
+                    phone: '+1-555-0301',
+                    dateOfBirth: new Date('1980-03-25'),
+                    gender: 'FEMALE' as UserGender,
+                    accountStatus: 'ACTIVE' as UserAccountStatus,
+                    emailVerifiedLegacy: true,
+                    createdAt: getRandomPastDate(35, 85),
+                    updatedAt: getRecentDate(),
+                }),
+
+                // 1 System Admin
+                createUserData({
+                    id: '66666666-6666-6666-6666-666666666666',
+                    email: 'gagneet@silverfoxtechnologies.com.au',
+                    passwordHash: hashedPassword,
+                    role: 'SYSTEM_ADMIN' as UserRole,
+                    firstName: 'Admin',
+                    lastName: 'User',
+                    phone: '+1-555-0401',
+                    dateOfBirth: new Date('1985-01-01'),
+                    gender: 'OTHER' as UserGender,
+                    accountStatus: 'ACTIVE' as UserAccountStatus,
+                    emailVerifiedLegacy: true,
+                    createdAt: getRandomPastDate(40, 90),
+                    updatedAt: getRecentDate(),
+                }),
+
+                // 1 Provider Admin
+                createUserData({
+                    id: '10101010-1010-1010-1010-101010101010',
+                    email: 'provider@healthapp.com',
+                    passwordHash: hashedPassword,
+                    role: 'HOSPITAL_ADMIN' as UserRole,
+                    firstName: 'Provider',
+                    lastName: 'Administrator',
+                    phone: '+1-555-0501',
+                    dateOfBirth: new Date('1982-05-15'),
+                    gender: 'MALE' as UserGender,
+                    accountStatus: 'ACTIVE' as UserAccountStatus,
+                    emailVerifiedLegacy: true,
+                    createdAt: getRandomPastDate(45, 90),
+                    updatedAt: getRecentDate(),
+                })
+            ];
+
+            await tx.user.createMany({
                 skipDuplicates: true,
-                data: [
-                    // 3 Doctors
-                    createUserData({
-                        id: '00000000-0000-0000-0000-000000000001',
-                        email: 'doctor@healthapp.com',
-                        passwordHash: basicDoctorPassword,
-                        role: 'DOCTOR' as UserRole,
-                        firstName: 'Dr. John',
-                        lastName: 'Smith',
-                        phone: '+1-555-0001',
-                        dateOfBirth: new Date('1975-01-15'),
-                        gender: 'MALE' as UserGender,
-                        accountStatus: 'ACTIVE' as UserAccountStatus,
-                        emailVerifiedLegacy: true,
-                        createdAt: getRandomPastDate(30, 90),
-                        updatedAt: getRecentDate(),
-                    }),
-                    createUserData({
-                        id: '00000000-0000-0000-0000-000000000002',
-                        email: 'doctor1@healthapp.com',
-                        passwordHash: basicDoctorPassword,
-                        role: 'DOCTOR' as UserRole,
-                        firstName: 'Dr. Jane',
-                        lastName: 'Doe',
-                        phone: '+1-555-0002',
-                        dateOfBirth: new Date('1978-05-20'),
-                        gender: 'FEMALE' as UserGender,
-                        accountStatus: 'ACTIVE' as UserAccountStatus,
-                        emailVerifiedLegacy: true,
-                        createdAt: getRandomPastDate(28, 88),
-                        updatedAt: getRecentDate(),
-                    }),
-                    createUserData({
-                        id: '00000000-0000-0000-0000-000000000003',
-                        email: 'doctor2@healthapp.com',
-                        passwordHash: hashedPassword,
-                        role: 'DOCTOR' as UserRole,
-                        firstName: 'Dr. Emily',
-                        lastName: 'Rodriguez',
-                        phone: '+1-555-0003',
-                        dateOfBirth: new Date('1980-11-08'),
-                        gender: 'FEMALE' as UserGender,
-                        accountStatus: 'ACTIVE' as UserAccountStatus,
-                        emailVerifiedLegacy: true,
-                        createdAt: getRandomPastDate(25, 85),
-                        updatedAt: getRecentDate(),
-                    }),
-
-                    // 5 Patients
-                    createUserData({
-                        id: '77777777-7777-7777-7777-777777777777',
-                        email: 'patient1@healthapp.com',
-                        passwordHash: hashedPassword,
-                        role: 'PATIENT' as UserRole,
-                        firstName: 'Sarah',
-                        lastName: 'Johnson',
-                        phone: '+1-555-0101',
-                        dateOfBirth: new Date('1985-06-15'),
-                        gender: 'FEMALE' as UserGender,
-                        accountStatus: 'ACTIVE' as UserAccountStatus,
-                        emailVerifiedLegacy: true,
-                        createdAt: getRandomPastDate(20, 80),
-                        updatedAt: getRecentDate(),
-                    }),
-                    createUserData({
-                        id: '88888888-8888-8888-8888-888888888888',
-                        email: 'patient2@healthapp.com',
-                        passwordHash: hashedPassword,
-                        role: 'PATIENT' as UserRole,
-                        firstName: 'Michael',
-                        lastName: 'Chen',
-                        phone: '+1-555-0102',
-                        dateOfBirth: new Date('1978-03-22'),
-                        gender: 'MALE' as UserGender,
-                        accountStatus: 'ACTIVE' as UserAccountStatus,
-                        emailVerifiedLegacy: true,
-                        createdAt: getRandomPastDate(18, 78),
-                        updatedAt: getRecentDate(),
-                    }),
-                    createUserData({
-                        id: '11111111-1111-1111-1111-111111111111',
-                        email: 'patient3@healthapp.com',
-                        passwordHash: hashedPassword,
-                        role: 'PATIENT' as UserRole,
-                        firstName: 'Emma',
-                        lastName: 'Williams',
-                        phone: '+1-555-0103',
-                        dateOfBirth: new Date('1990-09-10'),
-                        gender: 'FEMALE' as UserGender,
-                        accountStatus: 'ACTIVE' as UserAccountStatus,
-                        emailVerifiedLegacy: true,
-                        createdAt: getRandomPastDate(16, 76),
-                        updatedAt: getRecentDate(),
-                    }),
-                    createUserData({
-                        id: '22222222-2222-2222-2222-222222222222',
-                        email: 'patient4@healthapp.com',
-                        passwordHash: hashedPassword,
-                        role: 'PATIENT' as UserRole,
-                        firstName: 'James',
-                        lastName: 'Brown',
-                        phone: '+1-555-0104',
-                        dateOfBirth: new Date('1965-12-05'),
-                        gender: 'MALE' as UserGender,
-                        accountStatus: 'ACTIVE' as UserAccountStatus,
-                        emailVerifiedLegacy: true,
-                        createdAt: getRandomPastDate(14, 74),
-                        updatedAt: getRecentDate(),
-                    }),
-                    createUserData({
-                        id: '33333333-3333-3333-3333-333333333333',
-                        email: 'patient5@healthapp.com',
-                        passwordHash: hashedPassword,
-                        role: 'PATIENT' as UserRole,
-                        firstName: 'Olivia',
-                        lastName: 'Davis',
-                        phone: '+1-555-0105',
-                        dateOfBirth: new Date('1995-04-20'),
-                        gender: 'FEMALE' as UserGender,
-                        accountStatus: 'ACTIVE' as UserAccountStatus,
-                        emailVerifiedLegacy: true,
-                        createdAt: getRandomPastDate(12, 72),
-                        updatedAt: getRecentDate(),
-                    }),
-
-                    // 1 HSP
-                    createUserData({
-                        id: '55555555-5555-5555-5555-555555555555',
-                        email: 'hsp@healthapp.com',
-                        passwordHash: hashedPassword,
-                        role: 'HSP' as UserRole,
-                        firstName: 'Maria',
-                        lastName: 'Garcia',
-                        phone: '+1-555-0301',
-                        dateOfBirth: new Date('1980-03-25'),
-                        gender: 'FEMALE' as UserGender,
-                        accountStatus: 'ACTIVE' as UserAccountStatus,
-                        emailVerifiedLegacy: true,
-                        createdAt: getRandomPastDate(35, 85),
-                        updatedAt: getRecentDate(),
-                    }),
-
-                    // 1 System Admin
-                    createUserData({
-                        id: '66666666-6666-6666-6666-666666666666',
-                        email: 'gagneet@silverfoxtechnologies.com.au',
-                        passwordHash: hashedPassword,
-                        role: 'SYSTEM_ADMIN' as UserRole,
-                        firstName: 'Admin',
-                        lastName: 'User',
-                        phone: '+1-555-0401',
-                        dateOfBirth: new Date('1985-01-01'),
-                        gender: 'OTHER' as UserGender,
-                        accountStatus: 'ACTIVE' as UserAccountStatus,
-                        emailVerifiedLegacy: true,
-                        createdAt: getRandomPastDate(40, 90),
-                        updatedAt: getRecentDate(),
-                    }),
-
-                    // 1 Provider Admin
-                    createUserData({
-                        id: '10101010-1010-1010-1010-101010101010',
-                        email: 'provider@healthapp.com',
-                        passwordHash: hashedPassword,
-                        role: 'HOSPITAL_ADMIN' as UserRole,
-                        firstName: 'Provider',
-                        lastName: 'Administrator',
-                        phone: '+1-555-0501',
-                        dateOfBirth: new Date('1982-05-15'),
-                        gender: 'MALE' as UserGender,
-                        accountStatus: 'ACTIVE' as UserAccountStatus,
-                        emailVerifiedLegacy: true,
-                        createdAt: getRandomPastDate(45, 90),
-                        updatedAt: getRecentDate(),
-                    })
-                ]
+                data: nonDoctorUsers
             });
 
-            console.log(`✅ Created ${testUsers.count} users`);
+            console.log(`✅ Created ${nonDoctorUsers.length} non-doctor users`);
 
             // Create One Organization
             console.log('🏥 Creating organization...');
@@ -368,14 +323,27 @@ export async function seedComprehensiveHealthcareData() {
             const endocrinologySpec = await tx.specialty.findFirst({ where: { name: 'Endocrinology' } });
             const generalMedSpec = await tx.specialty.findFirst({ where: { name: 'General Medicine' } });
 
-            // Create Three Doctor profiles
-            console.log('👨‍⚕️ Creating 3 doctor profiles...');
-            await tx.doctor.createMany({
-                skipDuplicates: true,
-                data: [
-                    {
+            // Create Doctors and their profiles
+            console.log('👨‍⚕️ Creating 3 doctors and their profiles...');
+            const doctorsToCreate = [
+                {
+                    user: createUserData({
+                        id: '00000000-0000-0000-0000-000000000001',
+                        email: 'doctor@healthapp.com',
+                        passwordHash: basicDoctorPassword,
+                        role: 'DOCTOR' as UserRole,
+                        firstName: 'Dr. John',
+                        lastName: 'Smith',
+                        phone: '+1-555-0001',
+                        dateOfBirth: new Date('1975-01-15'),
+                        gender: 'MALE' as UserGender,
+                        accountStatus: 'ACTIVE' as UserAccountStatus,
+                        emailVerifiedLegacy: true,
+                        createdAt: getRandomPastDate(30, 90),
+                        updatedAt: getRecentDate(),
+                    }),
+                    profile: {
                         id: '00000000-0000-0000-0000-000000000011',
-                        userId: '00000000-0000-0000-0000-000000000001',
                         doctorId: 'DR001',
                         specialtyId: cardiologySpec?.id,
                         medicalLicenseNumber: 'MD123456',
@@ -387,10 +355,26 @@ export async function seedComprehensiveHealthcareData() {
                         practiceName: 'Smith Cardiology Clinic',
                         biography: 'Dr. John Smith is a board-certified cardiologist with over 15 years of experience in treating a wide range of cardiovascular conditions. He is dedicated to providing compassionate and comprehensive care to his patients.',
                         createdAt: getRandomPastDate(30, 80),
-                    },
-                    {
+                    }
+                },
+                {
+                    user: createUserData({
+                        id: '00000000-0000-0000-0000-000000000002',
+                        email: 'doctor1@healthapp.com',
+                        passwordHash: basicDoctorPassword,
+                        role: 'DOCTOR' as UserRole,
+                        firstName: 'Dr. Jane',
+                        lastName: 'Doe',
+                        phone: '+1-555-0002',
+                        dateOfBirth: new Date('1978-05-20'),
+                        gender: 'FEMALE' as UserGender,
+                        accountStatus: 'ACTIVE' as UserAccountStatus,
+                        emailVerifiedLegacy: true,
+                        createdAt: getRandomPastDate(28, 88),
+                        updatedAt: getRecentDate(),
+                    }),
+                    profile: {
                         id: '00000000-0000-0000-0000-000000000022',
-                        userId: '00000000-0000-0000-0000-000000000002',
                         doctorId: 'DR002',
                         specialtyId: endocrinologySpec?.id,
                         medicalLicenseNumber: 'MD789012',
@@ -402,10 +386,26 @@ export async function seedComprehensiveHealthcareData() {
                         practiceName: 'Doe Endocrinology Center',
                         biography: 'Dr. Jane Doe is a respected endocrinologist specializing in diabetes management and thyroid disorders. She is committed to helping her patients achieve optimal health through personalized treatment plans.',
                         createdAt: getRandomPastDate(28, 78),
-                    },
-                    {
+                    }
+                },
+                {
+                    user: createUserData({
+                        id: '00000000-0000-0000-0000-000000000003',
+                        email: 'doctor2@healthapp.com',
+                        passwordHash: hashedPassword,
+                        role: 'DOCTOR' as UserRole,
+                        firstName: 'Dr. Emily',
+                        lastName: 'Rodriguez',
+                        phone: '+1-555-0003',
+                        dateOfBirth: new Date('1980-11-08'),
+                        gender: 'FEMALE' as UserGender,
+                        accountStatus: 'ACTIVE' as UserAccountStatus,
+                        emailVerifiedLegacy: true,
+                        createdAt: getRandomPastDate(25, 85),
+                        updatedAt: getRecentDate(),
+                    }),
+                    profile: {
                         id: '00000000-0000-0000-0000-000000000033',
-                        userId: '00000000-0000-0000-0000-000000000003',
                         doctorId: 'DR003',
                         specialtyId: generalMedSpec?.id,
                         medicalLicenseNumber: 'MD345678',
@@ -418,8 +418,16 @@ export async function seedComprehensiveHealthcareData() {
                         biography: 'Dr. Emily Rodriguez is a dedicated family medicine physician with a passion for preventive care and patient education. She provides comprehensive primary care services to patients of all ages.',
                         createdAt: getRandomPastDate(25, 75),
                     }
-                ]
-            });
+                }
+            ];
+
+            for (const doctor of doctorsToCreate) {
+                const existingUser = await tx.user.findUnique({ where: { id: doctor.user.id } });
+                if (!existingUser) {
+                    const newUser = await tx.user.create({ data: doctor.user });
+                    await tx.doctor.create({ data: { ...doctor.profile, userId: newUser.id } });
+                }
+            }
 
             console.log(`✅ Created doctor profiles`);
 
