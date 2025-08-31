@@ -33,58 +33,16 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
   }
 
   try {
-    const { searchParams } = new URL(request.url)
-    const doctorIdParam = searchParams.get('doctorId')
-    
     // Determine target doctor (only self since role is already DOCTOR)
-    const targetDoctorId = session.user.profileId!
+    const targetUserId = session.user.id!
 
     // Fetch basic doctor information
     const doctor = await prisma.doctor.findUnique({
-      where: { id: targetDoctorId },
+      where: { userId: targetUserId },
       include: {
-        user: {
-          select: {
-            id: true,
-            email: true,
-            // ✅ Auth.js v5 fields
-            name: true,
-            image: true,
-            emailVerified: true,
-            // ✅ Legacy fields for backward compatibility
-            firstName: true,
-            lastName: true,
-            fullName: true,
-            profilePictureUrl: true,
-            emailVerifiedLegacy: true,
-            // ✅ Additional fields
-            middleName: true,
-            phone: true,
-            dateOfBirth: true,
-            gender: true,
-            accountStatus: true,
-            timezone: true,
-            locale: true,
-            createdAt: true,
-            updatedAt: true,
-            
-          }
-        },
-        specialty: {
-          select: {
-            id: true,
-            name: true,
-            description: true
-          }
-        },
-        organization: {
-          select: {
-            id: true,
-            name: true,
-            type: true,
-            contactInfo: true
-          }
-        },
+        user: true,
+        specialty: true,
+        organization: true,
         patients: {
           select: {
             id: true
@@ -97,7 +55,8 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
             }
           },
           select: {
-            id: true
+            id: true,
+            status: true,
           }
         }
       }
@@ -110,12 +69,12 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
     // Calculate basic statistics
     const totalPatients = doctor.patients.length
     const recentAppointments = doctor.appointments.length
-    const completedAppointments = 0 // Status field not available - placeholder
+    const completedAppointments = doctor.appointments.filter(a => a.status === 'COMPLETED').length
     const appointmentCompletionRate = recentAppointments > 0 
       ? Math.round((completedAppointments / recentAppointments) * 100) 
       : 0
 
-    // ✅ Helper to get name with fallbacks
+    // Helper to get name with fallbacks
     const userName = doctor.user.name ||
                     doctor.user.fullName ||
                     `${doctor.user.firstName || ''} ${doctor.user.lastName || ''}`.trim()
@@ -133,20 +92,14 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
       user: {
         id: doctor.user.id,
         email: doctor.user.email,
-        
-        // ✅ Auth.js v5 standard fields (preferred)
         name: userName,
         image: userImage,
         emailVerified: userEmailVerified,
-        
-        // ✅ Legacy fields (for backward compatibility)
         firstName: doctor.user.firstName,
         lastName: doctor.user.lastName,
         fullName: doctor.user.fullName,
-        profilePictureUrl: doctor.user.profilePictureUrl,
+        profilePictureUrl: userImage,
         emailVerifiedLegacy: doctor.user.emailVerifiedLegacy,
-        
-        // ✅ Additional healthcare fields
         middleName: doctor.user.middleName,
         phone: doctor.user.phone,
         dateOfBirth: doctor.user.dateOfBirth,
@@ -154,7 +107,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
         accountStatus: doctor.user.accountStatus,
         timezone: doctor.user.timezone,
         locale: doctor.user.locale,
-        lastLoginAt: doctor.user.createdAt
+        lastLoginAt: doctor.user.lastLoginAt
       },
       professional: {
         medicalLicenseNumber: doctor.medicalLicenseNumber,
@@ -170,18 +123,25 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
           name: doctor.organization.name,
           type: doctor.organization.type,
           contactInfo: doctor.organization.contactInfo
-        } : null
+        } : null,
+        qualificationDetails: doctor.qualificationDetails,
+        bio: doctor.bio,
+        practiceAddress: doctor.practiceAddress,
+        boardCertifications: doctor.boardCertifications,
+        languagesSpoken: doctor.languagesSpoken,
       },
       statistics: {
         totalPatients,
         recentAppointments,
         appointmentCompletionRate,
         accountCreated: doctor.createdAt,
-        lastUpdated: doctor.updatedAt
+        lastUpdated: doctor.updatedAt,
+        averageRating: doctor.averageRating,
       },
       settings: {
-        // Placeholder - settings fields need to be resolved with proper schema
-      }
+        notificationPreferences: doctor.notificationPreferences,
+        availabilitySchedule: doctor.availabilitySchedule,
+      },
     }
 
     return createSuccessResponse(profileData);
@@ -203,18 +163,67 @@ export const PUT = withErrorHandling(async (request: NextRequest) => {
     return createUnauthorizedResponse()
   }
 
-  // Business Logic: Only doctors can update doctor profiles  
   if (session.user.role !== 'DOCTOR') {
     return createForbiddenResponse("Only doctors can update doctor profiles")
   }
 
   try {
-    // Stub implementation - field name issues need to be resolved with proper schema
-    return NextResponse.json({
-      status: false,
-      statusCode: 501,
-      payload: { error: { status: 'not_implemented', message: 'Profile updates not yet implemented' } }
-    }, { status: 501 });
+    const body = await request.json();
+
+    const allowedDoctorFields = [
+      "practiceName", "practiceAddress", "languagesSpoken", "consultationFee",
+      "yearsOfExperience", "medicalLicenseNumber", "notificationPreferences",
+      "availabilitySchedule", "bio", "board_certifications"
+    ];
+    const allowedUserFields = ["phone"];
+
+    const doctorUpdateData: any = {};
+    const userUpdateData: any = {};
+
+    // This logic handles both flat and nested properties from the frontend
+    const processObject = (obj: any, prefix = '') => {
+        for (const key in obj) {
+            const newPrefix = prefix ? `${prefix}.${key}` : key;
+            if (typeof obj[key] === 'object' && obj[key] !== null && !Array.isArray(obj[key])) {
+                processObject(obj[key], newPrefix);
+            } else {
+                if (newPrefix.startsWith('user.')) {
+                    const userKey = newPrefix.substring(5);
+                    if (allowedUserFields.includes(userKey)) {
+                        userUpdateData[userKey] = obj[key];
+                    }
+                } else if (newPrefix.startsWith('professional.')) {
+                    const profKey = newPrefix.substring(13);
+                     if (allowedDoctorFields.includes(profKey)) {
+                        doctorUpdateData[profKey] = obj[key];
+                    }
+                } else {
+                    if (allowedDoctorFields.includes(key)) {
+                        doctorUpdateData[key] = obj[key];
+                    }
+                }
+            }
+        }
+    }
+
+    processObject(body);
+
+    if (Object.keys(doctorUpdateData).length === 0 && Object.keys(userUpdateData).length === 0) {
+      return createErrorResponse(new Error("No valid fields provided for update"), 400);
+    }
+
+    const updatePayload: any = { ...doctorUpdateData };
+    if (Object.keys(userUpdateData).length > 0) {
+        updatePayload.user = {
+            update: userUpdateData
+        }
+    }
+
+    const updatedDoctor = await prisma.doctor.update({
+        where: { userId: session.user.id },
+        data: updatePayload,
+    });
+    return createSuccessResponse(updatedDoctor, "Profile updated successfully");
   } catch (error) {
     console.error("Failed to update doctor profile:", error)
     throw error
