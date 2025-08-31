@@ -23,24 +23,24 @@ interface UserSettings {
     sms: boolean
     push: boolean
     medication_reminders: boolean
-    appointment_reminders: boolean
+    appointmentReminders: boolean
     vital_reminders: boolean
   }
   privacy: {
-    profile_visibility: 'public' | 'private' | 'doctors_only'
+    profileVisibility: 'public' | 'private' | 'doctors_only'
     share_data_research: boolean
     allow_marketing: boolean
   }
   security: {
-    two_factor_enabled: boolean
-    login_notifications: boolean
-    session_timeout: number
+    twoFactorEnabled: boolean
+    loginNotifications: boolean
+    sessionTimeout: number
   }
   preferences: {
     theme: 'light' | 'dark' | 'system'
     language: string
     timezone: string
-    date_format: string
+    dateFormat: string
     measurement_units: 'metric' | 'imperial'
   }
 }
@@ -226,9 +226,9 @@ export default function SettingsPage() {
                     </div>
                     <input
                       type="checkbox"
-                      checked={settings?.notifications.appointment_reminders}
+                      checked={settings?.notifications.appointmentReminders}
                       onChange={(e) => updateSettings({
-                        notifications: { ...settings?.notifications!, appointment_reminders: e.target.checked }
+                        notifications: { ...settings?.notifications!, appointmentReminders: e.target.checked }
                       })}
                       className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                     />
@@ -261,9 +261,9 @@ export default function SettingsPage() {
                 <h4 className="text-sm font-medium text-gray-900 mb-2">Profile Visibility</h4>
                 <p className="text-sm text-gray-500 mb-4">Control who can see your profile information</p>
                 <select
-                  value={settings?.privacy.profile_visibility}
+                  value={settings?.privacy.profileVisibility}
                   onChange={(e) => updateSettings({
-                    privacy: { ...settings?.privacy!, profile_visibility: e.target.value as any }
+                    privacy: { ...settings?.privacy!, profileVisibility: e.target.value as any }
                   })}
                   className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
@@ -318,14 +318,14 @@ export default function SettingsPage() {
                   </div>
                   <input
                     type="checkbox"
-                    checked={settings?.security.two_factor_enabled}
+                    checked={settings?.security.twoFactorEnabled}
                     onChange={(e) => updateSettings({
-                      security: { ...settings?.security!, two_factor_enabled: e.target.checked }
+                      security: { ...settings?.security!, twoFactorEnabled: e.target.checked }
                     })}
                     className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                   />
                 </div>
-                {settings?.security.two_factor_enabled && (
+                {settings?.security.twoFactorEnabled && (
                   <div className="bg-green-50 border border-green-200 rounded-md p-4">
                     <p className="text-sm text-green-700">
                       Two-factor authentication is enabled. Use your authenticator app to generate codes.
@@ -341,9 +341,9 @@ export default function SettingsPage() {
                 </div>
                 <input
                   type="checkbox"
-                  checked={settings?.security.login_notifications}
+                  checked={settings?.security.loginNotifications}
                   onChange={(e) => updateSettings({
-                    security: { ...settings?.security!, login_notifications: e.target.checked }
+                    security: { ...settings?.security!, loginNotifications: e.target.checked }
                   })}
                   className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                 />
@@ -353,9 +353,9 @@ export default function SettingsPage() {
                 <h4 className="text-sm font-medium text-gray-900 mb-2">Session Timeout</h4>
                 <p className="text-sm text-gray-500 mb-4">Automatically log out after inactivity</p>
                 <select
-                  value={settings?.security.session_timeout}
+                  value={settings?.security.sessionTimeout}
                   onChange={(e) => updateSettings({
-                    security: { ...settings?.security!, session_timeout: parseInt(e.target.value) }
+                    security: { ...settings?.security!, sessionTimeout: parseInt(e.target.value) }
                   })}
                   className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >

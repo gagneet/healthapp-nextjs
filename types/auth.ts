@@ -103,7 +103,7 @@ export interface User extends LegacyUserFields {
   phone?: string
   date_of_birth?: string
   gender?: 'MALE' | 'FEMALE' | 'OTHER' | 'PREFER_NOT_TO_SAY'
-  two_factor_enabled: boolean
+  twoFactorEnabled: boolean
   timezone: string
   locale: string
   preferences: Record<string, any>

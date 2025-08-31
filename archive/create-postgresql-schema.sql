@@ -139,7 +139,7 @@ CREATE TABLE users (
     email_verification_token VARCHAR(255),
     password_reset_token VARCHAR(255),
     password_reset_expires TIMESTAMP WITH TIME ZONE,
-    two_factor_enabled BOOLEAN DEFAULT FALSE,
+    twoFactorEnabled BOOLEAN DEFAULT FALSE,
     two_factor_secret VARCHAR(255),
     failed_login_attempts INTEGER DEFAULT 0,
     locked_until TIMESTAMP WITH TIME ZONE,
@@ -201,7 +201,7 @@ CREATE TABLE doctors (
     razorpay_account_id VARCHAR(255),
     
     -- Statistics
-    total_patients INTEGER DEFAULT 0,
+    totalPatients INTEGER DEFAULT 0,
     active_treatment_plans INTEGER DEFAULT 0,
     active_care_plans INTEGER DEFAULT 0,
     average_rating DECIMAL(3,2),
@@ -304,7 +304,7 @@ CREATE TABLE patients (
     -- Analytics and Tracking
     overallAdherenceScore DECIMAL(5,2),
     last_adherence_calculation TIMESTAMP WITH TIME ZONE,
-    total_appointments INTEGER DEFAULT 0,
+    totalAppointments INTEGER DEFAULT 0,
     missed_appointments INTEGER DEFAULT 0,
     last_visit_date TIMESTAMP WITH TIME ZONE,
     next_appointment_date TIMESTAMP WITH TIME ZONE,

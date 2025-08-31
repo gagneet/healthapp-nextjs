@@ -325,7 +325,7 @@ export default {
         entity_id: doctor.id,
         metric_type: 'dashboard_summary',
         metric_data: JSON.stringify({
-          total_patients: doctorPatientsCount,
+          totalPatients: doctorPatientsCount,
           active_patients: Math.floor(doctorPatientsCount * 0.9),
           criticalAlerts: Math.floor(Math.random() * 8) + 2,
           appointments_today: Math.floor(Math.random() * 12) + 3,

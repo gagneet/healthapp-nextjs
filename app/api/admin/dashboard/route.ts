@@ -142,8 +142,8 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
     const dashboardData = {
       overview: {
         total_users: totalUsers,
-        total_doctors: totalDoctors,
-        total_patients: totalPatients,
+        totalDoctors: totalDoctors,
+        totalPatients: totalPatients,
         total_hsps: totalHSPs,
         total_providers: totalProviders,
         active_appointments: activeAppointments,
@@ -155,7 +155,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
         recent_registrations: recentRegistrations,
         monthly_trend: monthlyRegistrations.length
       },
-      recent_activity: recentActivity,
+      recentActivity: recentActivity,
       system_health: systemHealth,
       alerts: {
         critical_vitals: criticalVitals,

@@ -14,14 +14,14 @@ import {
 
 interface SystemStats {
   overview: {
-    total_doctors: number
-    total_patients: number
-    total_medicines: number
-    total_appointments: number
+    totalDoctors: number
+    totalPatients: number
+    totalMedicines: number
+    totalAppointments: number
   }
-  recent_activity: {
-    new_doctors_30_days: number
-    new_patients_30_days: number
+  recentActivity: {
+    newDoctors30Days: number
+    newPatients30Days: number
   }
 }
 
@@ -84,7 +84,7 @@ export default function AdminDashboard() {
                     Total Doctors
                   </dt>
                   <dd className="text-lg font-medium text-gray-900">
-                    {stats?.overview.total_doctors || 0}
+                    {stats?.overview.totalDoctors || 0}
                   </dd>
                 </dl>
               </div>
@@ -104,7 +104,7 @@ export default function AdminDashboard() {
                     Total Patients
                   </dt>
                   <dd className="text-lg font-medium text-gray-900">
-                    {stats?.overview.total_patients || 0}
+                    {stats?.overview.totalPatients || 0}
                   </dd>
                 </dl>
               </div>
@@ -124,7 +124,7 @@ export default function AdminDashboard() {
                     Total Medicines
                   </dt>
                   <dd className="text-lg font-medium text-gray-900">
-                    {stats?.overview.total_medicines || 0}
+                    {stats?.overview.totalMedicines || 0}
                   </dd>
                 </dl>
               </div>
@@ -144,7 +144,7 @@ export default function AdminDashboard() {
                     Total Appointments
                   </dt>
                   <dd className="text-lg font-medium text-gray-900">
-                    {stats?.overview.total_appointments || 0}
+                    {stats?.overview.totalAppointments || 0}
                   </dd>
                 </dl>
               </div>
@@ -164,13 +164,13 @@ export default function AdminDashboard() {
               <div className="flex items-center justify-between">
                 <span className="text-sm text-gray-600">New Doctors</span>
                 <span className="text-sm font-medium text-gray-900">
-                  {stats?.recent_activity.new_doctors_30_days || 0}
+                  {stats?.recentActivity.newDoctors30Days || 0}
                 </span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm text-gray-600">New Patients</span>
                 <span className="text-sm font-medium text-gray-900">
-                  {stats?.recent_activity.new_patients_30_days || 0}
+                  {stats?.recentActivity.newPatients30Days || 0}
                 </span>
               </div>
             </div>

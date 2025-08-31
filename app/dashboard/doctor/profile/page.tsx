@@ -52,6 +52,7 @@ interface DoctorProfile {
     lastLoginAt: Date;
   };
   professional: {
+    practiceName: string;
     medicalLicenseNumber: string;
     yearsOfExperience: number;
     consultationFee: number;
@@ -146,7 +147,7 @@ export default function DoctorProfilePage() {
           const newProfile = structuredClone(prev);
 
           let currentLevel = newProfile;
-          fieldParts.forEach((part, index) => {
+          fieldParts.forEach((part:string, index:number) => {
             if (index === fieldParts.length - 1) {
               currentLevel[part] = tempValues[field];
             } else {

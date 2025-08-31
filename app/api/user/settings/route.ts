@@ -47,29 +47,29 @@ export async function GET(request: NextRequest) {
     const preferences = user.preferences as any || {};
     const defaultSettings = {
       notifications: {
-        email_notifications: true,
-        sms_notifications: false,
-        push_notifications: true,
-        appointment_reminders: true,
-        medication_alerts: true,
-        system_updates: false
+        emailNotifications: true,
+        smsNotifications: false,
+        pushNotifications: true,
+        appointmentReminders: true,
+        medicationAlerts: true,
+        systemUpdates: false
       },
       privacy: {
-        profile_visibility: 'colleagues_only',
-        show_online_status: true,
-        allow_patient_messaging: true
+        profileVisibility: 'colleagues_only',
+        showOnlineStatus: true,
+        allowPatientMessaging: true
       },
       preferences: {
         language: user.locale || 'en',
         timezone: user.timezone || 'Asia/Kolkata',
-        date_format: 'DD/MM/YYYY',
-        time_format: '12h',
-        default_consultation_duration: 30
+        dateFormat: 'DD/MM/YYYY',
+        timeFormat: '12h',
+        defaultConsultationDuration: 30
       },
       security: {
         twoFactorEnabled: user.twoFactorEnabled || false,
-        login_notifications: true,
-        session_timeout: 24
+        loginNotifications: true,
+        sessionTimeout: 24
       }
     };
 
@@ -162,9 +162,9 @@ export async function PUT(request: NextRequest) {
     // Extract timezone and locale from preferences for database fields
     const timezone = body.settings.preferences?.timezone || currentUser.timezone;
     const locale = body.settings.preferences?.language || currentUser.locale;
-    const twoFactorEnabled = body.settings.security?.two_factor_enabled !== undefined 
-      ? body.settings.security.two_factor_enabled 
-      : currentPreferences.security?.two_factor_enabled;
+    const twoFactorEnabled = body.settings.security?.twoFactorEnabled !== undefined 
+      ? body.settings.security.twoFactorEnabled 
+      : currentPreferences.security?.twoFactorEnabled;
 
     // Update user record
     const updatedUser = await prisma.user.update({

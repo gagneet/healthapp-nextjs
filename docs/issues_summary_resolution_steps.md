@@ -3753,10 +3753,10 @@ Issue 2: Missing Auth.js Required Fields - ✅ FIXED
 
 Issue 3: Missing 2FA Fields in Query Selection - ✅ FIXED
 
-- Problem: Using two_factor_enabled and two_factor_secret without selecting them
+- Problem: Using twoFactorEnabled and two_factor_secret without selecting them
 - Fix: Added missing 2FA fields to user selection:
   // 2FA fields (CRITICAL - was missing!)
-  two_factor_enabled: true,
+  twoFactorEnabled: true,
   two_factor_secret: true,
 
 Issue 4: Incorrect Field Mapping in Return Object - ✅ FIXED

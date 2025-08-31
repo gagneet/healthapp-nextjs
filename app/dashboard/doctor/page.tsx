@@ -184,7 +184,7 @@ export default function DoctorDashboard() {
         {[
           {
             title: 'Total Patients',
-            value: dashboardStats?.total_patients || 0,
+            value: dashboardStats?.totalPatients || 0,
             icon: UsersIcon,
             color: 'text-blue-600',
             bgColor: 'bg-blue-100',

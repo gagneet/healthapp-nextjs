@@ -169,7 +169,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
     // Generate search insights
     const insights = includeAvailability ? {
       total_specialities: scoredSpecialities.length,
-      total_doctors: scoredSpecialities.reduce((sum: number, s: any) => sum + (s.doctors?.length || 0), 0),
+      totalDoctors: scoredSpecialities.reduce((sum: number, s: any) => sum + (s.doctors?.length || 0), 0),
       accepting_new_patients: scoredSpecialities.reduce((sum: number, s: any) => 
         sum + (s.doctors?.filter((d: any) => d.isAcceptingNewPatients).length || 0), 0),
       organizations_represented: organizationId ? 1 : 

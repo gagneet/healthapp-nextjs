@@ -48,7 +48,7 @@ The Administrator role in Healthcare Management Platform provides system-wide ma
 interface SystemOverview {
   total_organizations: number
   total_users: number
-  total_patients: number
+  totalPatients: number
   system_uptime: string
   active_sessions: number
   api_requests_today: number

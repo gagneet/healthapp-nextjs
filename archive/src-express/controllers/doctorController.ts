@@ -150,7 +150,7 @@ class DoctorController {
           notification_preferences: doctor.notification_preferences || {},
           
           // Statistics
-          total_patients: patientsCount,
+          totalPatients: patientsCount,
           active_treatment_plans: doctor.active_treatment_plans || 0,
           active_care_plans: doctor.active_care_plans || 0,
           average_rating: doctor.average_rating,
@@ -460,7 +460,7 @@ class DoctorController {
         consultation_fee: doctor.consultation_fee,
         languages_spoken: doctor.languages_spoken,
         is_available_online: doctor.is_available_online,
-        total_patients: patientsCount,
+        totalPatients: patientsCount,
         average_rating: doctor.average_rating,
         total_reviews: doctor.total_reviews,
         clinics: doctor.clinics,
@@ -588,7 +588,7 @@ class DoctorController {
             nextAppointment: nextAppointment,
             adherenceRate: adherenceRate,
             criticalAlerts: criticalAlerts,
-            total_appointments: appointments.length,
+            totalAppointments: appointments.length,
             active_care_plans: carePlans.filter((cp: any) => cp.status === 'active').length,
             total_medications: activeMedications.length
           }
@@ -971,7 +971,7 @@ class DoctorController {
       });
 
       const dashboardStats = {
-        total_patients: totalPatients,
+        totalPatients: totalPatients,
         active_patients: activePatients,
         criticalAlerts: criticalPatients,
         appointments_today: todaysAppointments,

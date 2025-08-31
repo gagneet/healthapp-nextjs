@@ -163,7 +163,7 @@ export default (sequelize: any) => {
     notification_preferences: {
       type: DataTypes.JSONB,
       defaultValue: {
-        appointment_reminders: true,
+        appointmentReminders: true,
         patient_updates: true,
         system_notifications: true,
         emergency_alerts: true,
@@ -200,7 +200,7 @@ export default (sequelize: any) => {
     },
     
     // Statistics
-    total_patients: {
+    totalPatients: {
       type: DataTypes.INTEGER,
       defaultValue: 0,
       validate: { min: 0 }
@@ -362,12 +362,12 @@ export default (sequelize: any) => {
   };
   
   Doctor.prototype.acceptsNewPatients = function() {
-    return this.is_verified && this.total_patients < 500;
+    return this.is_verified && this.totalPatients < 500;
   };
   
   Doctor.prototype.getWorkloadPercentage = function() {
     const maxPatients = 500;
-    return Math.round((this.total_patients / maxPatients) * 100);
+    return Math.round((this.totalPatients / maxPatients) * 100);
   };
   
   return Doctor;

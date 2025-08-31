@@ -22,29 +22,29 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
 interface UserSettings {
   notifications: {
-    email_notifications: boolean
-    sms_notifications: boolean
-    push_notifications: boolean
-    appointment_reminders: boolean
-    medication_alerts: boolean
-    system_updates: boolean
+    emailNotifications: boolean
+    smsNotifications: boolean
+    pushNotifications: boolean
+    appointmentReminders: boolean
+    medicationAlerts: boolean
+    systemUpdates: boolean
   }
   privacy: {
-    profile_visibility: 'public' | 'private' | 'colleagues_only'
-    show_online_status: boolean
-    allow_patient_messaging: boolean
+    profileVisibility: 'public' | 'private' | 'colleagues_only'
+    showOnlineStatus: boolean
+    allowPatientMessaging: boolean
   }
   preferences: {
     language: string
     timezone: string
-    date_format: string
-    time_format: '12h' | '24h'
-    default_consultation_duration: number
+    dateFormat: string
+    timeFormat: '12h' | '24h'
+    defaultConsultationDuration: number
   }
   security: {
-    two_factor_enabled: boolean
-    login_notifications: boolean
-    session_timeout: number
+    twoFactorEnabled: boolean
+    loginNotifications: boolean
+    sessionTimeout: number
   }
 }
 
@@ -102,29 +102,29 @@ export default function DoctorSettingsPage() {
       // Fallback to default settings if API fails
       const defaultSettings: UserSettings = {
         notifications: {
-          email_notifications: true,
-          sms_notifications: false,
-          push_notifications: true,
-          appointment_reminders: true,
-          medication_alerts: true,
-          system_updates: false
+          emailNotifications: true,
+          smsNotifications: false,
+          pushNotifications: true,
+          appointmentReminders: true,
+          medicationAlerts: true,
+          systemUpdates: false
         },
         privacy: {
-          profile_visibility: 'colleagues_only',
-          show_online_status: true,
-          allow_patient_messaging: true
+          profileVisibility: 'colleagues_only',
+          showOnlineStatus: true,
+          allowPatientMessaging: true
         },
         preferences: {
           language: 'en',
           timezone: 'Asia/Kolkata',
-          date_format: 'DD/MM/YYYY',
-          time_format: '12h',
-          default_consultation_duration: 30
+          dateFormat: 'DD/MM/YYYY',
+          timeFormat: '12h',
+          defaultConsultationDuration: 30
         },
         security: {
-          two_factor_enabled: false,
-          login_notifications: true,
-          session_timeout: 24
+          twoFactorEnabled: false,
+          loginNotifications: true,
+          sessionTimeout: 24
         }
       };
       setSettings(defaultSettings);
@@ -414,8 +414,8 @@ export default function DoctorSettingsPage() {
                     Date Format
                   </label>
                   <select
-                    value={settings.preferences.date_format}
-                    onChange={(e) => updateSettings('preferences', 'date_format', e.target.value)}
+                    value={settings.preferences.dateFormat}
+                    onChange={(e) => updateSettings('preferences', 'dateFormat', e.target.value)}
                     className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                   >
                     <option value="DD/MM/YYYY">DD/MM/YYYY</option>
@@ -429,8 +429,8 @@ export default function DoctorSettingsPage() {
                     Time Format
                   </label>
                   <select
-                    value={settings.preferences.time_format}
-                    onChange={(e) => updateSettings('preferences', 'time_format', e.target.value as '12h' | '24h')}
+                    value={settings.preferences.timeFormat}
+                    onChange={(e) => updateSettings('preferences', 'timeFormat', e.target.value as '12h' | '24h')}
                     className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                   >
                     <option value="12h">12 Hour (AM/PM)</option>
@@ -444,8 +444,8 @@ export default function DoctorSettingsPage() {
                   </label>
                   <input
                     type="number"
-                    value={settings.preferences.default_consultation_duration}
-                    onChange={(e) => updateSettings('preferences', 'default_consultation_duration', parseInt(e.target.value))}
+                    value={settings.preferences.defaultConsultationDuration}
+                    onChange={(e) => updateSettings('preferences', 'defaultConsultationDuration', parseInt(e.target.value))}
                     className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                   />
                 </div>
@@ -461,43 +461,43 @@ export default function DoctorSettingsPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <ToggleSwitch
-                enabled={settings.notifications.email_notifications}
-                onChange={(value) => updateSettings('notifications', 'email_notifications', value)}
+                enabled={settings.notifications.emailNotifications}
+                onChange={(value) => updateSettings('notifications', 'emailNotifications', value)}
                 label="Email Notifications"
                 description="Receive notifications via email"
               />
               
               <ToggleSwitch
-                enabled={settings.notifications.sms_notifications}
-                onChange={(value) => updateSettings('notifications', 'sms_notifications', value)}
+                enabled={settings.notifications.smsNotifications}
+                onChange={(value) => updateSettings('notifications', 'smsNotifications', value)}
                 label="SMS Notifications"
                 description="Receive notifications via SMS"
               />
               
               <ToggleSwitch
-                enabled={settings.notifications.push_notifications}
-                onChange={(value) => updateSettings('notifications', 'push_notifications', value)}
+                enabled={settings.notifications.pushNotifications}
+                onChange={(value) => updateSettings('notifications', 'pushNotifications', value)}
                 label="Push Notifications"
                 description="Receive browser push notifications"
               />
               
               <ToggleSwitch
-                enabled={settings.notifications.appointment_reminders}
-                onChange={(value) => updateSettings('notifications', 'appointment_reminders', value)}
+                enabled={settings.notifications.appointmentReminders}
+                onChange={(value) => updateSettings('notifications', 'appointmentReminders', value)}
                 label="Appointment Reminders"
                 description="Get notified about upcoming appointments"
               />
               
               <ToggleSwitch
-                enabled={settings.notifications.medication_alerts}
-                onChange={(value) => updateSettings('notifications', 'medication_alerts', value)}
+                enabled={settings.notifications.medicationAlerts}
+                onChange={(value) => updateSettings('notifications', 'medicationAlerts', value)}
                 label="Medication Alerts"
                 description="Receive alerts about patient medications"
               />
               
               <ToggleSwitch
-                enabled={settings.notifications.system_updates}
-                onChange={(value) => updateSettings('notifications', 'system_updates', value)}
+                enabled={settings.notifications.systemUpdates}
+                onChange={(value) => updateSettings('notifications', 'systemUpdates', value)}
                 label="System Updates"
                 description="Get notified about system maintenance and updates"
               />
@@ -516,8 +516,8 @@ export default function DoctorSettingsPage() {
                   Profile Visibility
                 </label>
                 <select
-                  value={settings.privacy.profile_visibility}
-                  onChange={(e) => updateSettings('privacy', 'profile_visibility', e.target.value)}
+                  value={settings.privacy.profileVisibility}
+                  onChange={(e) => updateSettings('privacy', 'profileVisibility', e.target.value)}
                   className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                 >
                   <option value="public">Public</option>
@@ -527,15 +527,15 @@ export default function DoctorSettingsPage() {
               </div>
 
               <ToggleSwitch
-                enabled={settings.privacy.show_online_status}
-                onChange={(value) => updateSettings('privacy', 'show_online_status', value)}
+                enabled={settings.privacy.showOnlineStatus}
+                onChange={(value) => updateSettings('privacy', 'showOnlineStatus', value)}
                 label="Show Online Status"
                 description="Let others see when you're online"
               />
               
               <ToggleSwitch
-                enabled={settings.privacy.allow_patient_messaging}
-                onChange={(value) => updateSettings('privacy', 'allow_patient_messaging', value)}
+                enabled={settings.privacy.allowPatientMessaging}
+                onChange={(value) => updateSettings('privacy', 'allowPatientMessaging', value)}
                 label="Allow Patient Messaging"
                 description="Allow patients to send you messages"
               />
@@ -551,15 +551,15 @@ export default function DoctorSettingsPage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <ToggleSwitch
-                  enabled={settings.security.two_factor_enabled}
-                  onChange={(value) => updateSettings('security', 'two_factor_enabled', value)}
+                  enabled={settings.security.twoFactorEnabled}
+                  onChange={(value) => updateSettings('security', 'twoFactorEnabled', value)}
                   label="Two-Factor Authentication"
                   description="Add an extra layer of security to your account"
                 />
                 
                 <ToggleSwitch
-                  enabled={settings.security.login_notifications}
-                  onChange={(value) => updateSettings('security', 'login_notifications', value)}
+                  enabled={settings.security.loginNotifications}
+                  onChange={(value) => updateSettings('security', 'loginNotifications', value)}
                   label="Login Notifications"
                   description="Get notified when someone logs into your account"
                 />
@@ -570,8 +570,8 @@ export default function DoctorSettingsPage() {
                   </label>
                   <input
                     type="number"
-                    value={settings.security.session_timeout}
-                    onChange={(e) => updateSettings('security', 'session_timeout', parseInt(e.target.value))}
+                    value={settings.security.sessionTimeout}
+                    onChange={(e) => updateSettings('security', 'sessionTimeout', parseInt(e.target.value))}
                     className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                   />
                 </div>

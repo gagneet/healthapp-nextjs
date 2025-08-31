@@ -109,7 +109,7 @@ export default (sequelize: any) => {
       allowNull: true
     },
     
-    two_factor_enabled: {
+    twoFactorEnabled: {
       type: DataTypes.BOOLEAN,
       defaultValue: false
     },

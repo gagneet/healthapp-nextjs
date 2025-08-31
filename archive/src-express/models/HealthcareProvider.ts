@@ -121,12 +121,12 @@ export default (sequelize: any) => {
     notification_preferences: {
       type: DataTypes.JSONB,
       defaultValue: {
-        appointment_reminders: true,
+        appointmentReminders: true,
         patient_updates: true,
         system_notifications: true,
         marketing_emails: false,
-        sms_notifications: true,
-        push_notifications: true
+        smsNotifications: true,
+        pushNotifications: true
       }
     },
     
@@ -155,7 +155,7 @@ export default (sequelize: any) => {
     },
     
     // Statistics (updated by triggers/jobs)
-    total_patients: {
+    totalPatients: {
       type: DataTypes.INTEGER,
       defaultValue: 0,
       validate: {
@@ -288,7 +288,7 @@ export default (sequelize: any) => {
       
       // Check if provider accepts new patients
       acceptsNewPatients() {
-        return (this as any).is_verified && (this as any).total_patients < 1000; // Configurable limit
+        return (this as any).is_verified && (this as any).totalPatients < 1000; // Configurable limit
       },
       
       // Get primary specialty
@@ -316,7 +316,7 @@ export default (sequelize: any) => {
       // Calculate workload percentage
       getWorkloadPercentage() {
         const maxPatients = 1000; // Configurable
-        return Math.round(((this as any).total_patients / maxPatients) * 100);
+        return Math.round(((this as any).totalPatients / maxPatients) * 100);
       }
     },
     
@@ -353,7 +353,7 @@ export default (sequelize: any) => {
             deleted_at: null
           },
           having: sequelize.where(
-            sequelize.col('total_patients'), 
+            sequelize.col('totalPatients'), 
             '<', 
             1000
           )

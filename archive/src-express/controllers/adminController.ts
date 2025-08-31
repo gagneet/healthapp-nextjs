@@ -68,7 +68,7 @@ class AdminController {
             account_status: doctor.user?.account_status
           },
           statistics: {
-            total_patients: patientCount,
+            totalPatients: patientCount,
             active_care_plans: 0, // Calculate if needed
             completed_appointments: 0 // Calculate if needed
           }
@@ -200,14 +200,14 @@ class AdminController {
         payload: {
           data: {
             overview: {
-              total_doctors: totalDoctors,
-              total_patients: totalPatients,
-              total_medicines: totalMedicines,
-              total_appointments: totalAppointments
+              totalDoctors: totalDoctors,
+              totalPatients: totalPatients,
+              totalMedicines: totalMedicines,
+              totalAppointments: totalAppointments
             },
-            recent_activity: {
-              new_doctors_30_days: recentDoctors,
-              new_patients_30_days: recentPatients
+            recentActivity: {
+              newDoctors30Days: recentDoctors,
+              newPatients30Days: recentPatients
             }
           },
           message: 'System statistics retrieved successfully'
@@ -723,7 +723,7 @@ class AdminController {
           notification_preferences: doctor.notification_preferences || {},
           
           // Statistics
-          total_patients: patientCount,
+          totalPatients: patientCount,
           is_available_online: doctor.is_available_online,
           
           // Timestamps

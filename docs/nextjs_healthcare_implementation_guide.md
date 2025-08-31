@@ -124,7 +124,7 @@ CREATE TABLE users (
     password_hash VARCHAR(255),
     category user_category NOT NULL,
     status user_status DEFAULT 'pending_verification',
-    two_factor_enabled BOOLEAN DEFAULT false,
+    twoFactorEnabled BOOLEAN DEFAULT false,
     last_login_at TIMESTAMP,
     createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP

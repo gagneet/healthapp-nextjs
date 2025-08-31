@@ -93,29 +93,29 @@ router.get('/enhanced/profile', authenticate, (req, res) => {
         // Return default settings since we don't have a settings table yet
         settings: {
           notifications: {
-            email_notifications: true,
-            sms_notifications: false,
-            push_notifications: true,
-            appointment_reminders: true,
-            medication_alerts: true,
-            system_updates: false
+            emailNotifications: true,
+            smsNotifications: false,
+            pushNotifications: true,
+            appointmentReminders: true,
+            medicationAlerts: true,
+            systemUpdates: false
           },
           privacy: {
-            profile_visibility: 'colleagues_only',
-            show_online_status: true,
-            allow_patient_messaging: true
+            profileVisibility: 'colleagues_only',
+            showOnlineStatus: true,
+            allowPatientMessaging: true
           },
           preferences: {
             language: 'en',
             timezone: 'Asia/Kolkata',
-            date_format: 'DD/MM/YYYY',
-            time_format: '12h',
-            default_consultation_duration: 30
+            dateFormat: 'DD/MM/YYYY',
+            timeFormat: '12h',
+            defaultConsultationDuration: 30
           },
           security: {
-            two_factor_enabled: false,
-            login_notifications: true,
-            session_timeout: 24
+            twoFactorEnabled: false,
+            loginNotifications: true,
+            sessionTimeout: 24
           }
         }
       },

@@ -147,7 +147,7 @@ export default (sequelize: any) => {
       type: DataTypes.JSONB,
       defaultValue: {
         preferred_contact_method: 'email',
-        appointment_reminders: true,
+        appointmentReminders: true,
         medication_reminders: true,
         health_tips: false,
         research_participation: false,
@@ -220,7 +220,7 @@ export default (sequelize: any) => {
       comment: 'When adherence score was last calculated'
     },
     
-    total_appointments: {
+    totalAppointments: {
       type: DataTypes.INTEGER,
       defaultValue: 0,
       validate: {
@@ -444,10 +444,10 @@ export default (sequelize: any) => {
       
       // Calculate appointment adherence
       getAppointmentAdherence() {
-        if ((this as any).total_appointments === 0) return null;
+        if ((this as any).totalAppointments === 0) return null;
         
-        const attended = (this as any).total_appointments - (this as any).missed_appointments;
-        return ((attended / (this as any).total_appointments) * 100).toFixed(1);
+        const attended = (this as any).totalAppointments - (this as any).missed_appointments;
+        return ((attended / (this as any).totalAppointments) * 100).toFixed(1);
       },
       
       // Check if patient is high risk

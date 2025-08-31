@@ -169,7 +169,7 @@ export default {
           }),
           practice_phone: '+1-555-123-4567',
           languages_spoken: ['en', 'es'],
-          total_patients: 0,
+          totalPatients: 0,
           active_treatment_plans: 0,
           active_care_plans: 0,
           average_rating: 4.8,
@@ -306,7 +306,7 @@ export default {
             preferred_contact_method: 'email',
             language: 'en',
             time_zone: 'America/Chicago',
-            appointment_reminders: true,
+            appointmentReminders: true,
             medication_reminders: true,
             health_tips: true,
             research_participation: false
@@ -320,7 +320,7 @@ export default {
           }),
           overallAdherenceScore: 87.5,
           last_adherence_calculation: new Date(),
-          total_appointments: 12,
+          totalAppointments: 12,
           missed_appointments: 1,
           last_visit_date: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), // 30 days ago
           isActive: true,

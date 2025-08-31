@@ -8,39 +8,39 @@ datasource db {
 }
 
 model Organization {
-  id                         String                        @id @default(uuid()) @db.Uuid
-  name                       String                        @db.VarChar(255)
-  type                       String?                       @default("clinic") @db.VarChar(100)
-  licenseNumber              String?                       @unique @db.VarChar(100)
-  contactInfo                Json?                         @default("{}")
-  address                    Json?                         @default("{}")
-  settings                   Json?                         @default("{\"timezone\": \"UTC\", \"working_hours\": {\"friday\": {\"end\": \"17:00\", \"start\": \"09:00\"}, \"monday\": {\"end\": \"17:00\", \"start\": \"09:00\"}, \"sunday\": {\"closed\": true}, \"tuesday\": {\"end\": \"17:00\", \"start\": \"09:00\"}, \"saturday\": {\"end\": \"13:00\", \"start\": \"09:00\"}, \"thursday\": {\"end\": \"17:00\", \"start\": \"09:00\"}, \"wednesday\": {\"end\": \"17:00\", \"start\": \"09:00\"}}, \"notification_preferences\": {\"sms_enabled\": false, \"push_enabled\": true, \"email_enabled\": true}}")
-  isActive                   Boolean?                      @default(true)
-  hipaaCoveredEntity         Boolean?                      @default(true)
-  businessAssociateAgreement Json?
-  createdAt                  DateTime?                     @db.Timestamptz(6)
-  updatedAt                  DateTime?                     @updatedAt @db.Timestamptz(6)
-  deletedAt                  DateTime?                     @db.Timestamptz(6)
-  auditLogs                  AuditLog[]
-  carePlanTemplates          CarePlanTemplate[]
-  carePlans                  CarePlan[]
-  clinics                    Clinic[]
-  doctors                    Doctor[]
-  healthcareProviders        HealthcareProvider[]
-  hsps                       Hsp[]
-  notifications              Notification[]
-  newPatientProviderConsents PatientProviderConsentHistory[] @relation("NewProviderConsents")
+  id                              String                          @id @default(uuid()) @db.Uuid
+  name                            String                          @db.VarChar(255)
+  type                            String?                         @default("clinic") @db.VarChar(100)
+  licenseNumber                   String?                         @unique @db.VarChar(100)
+  contactInfo                     Json?                           @default("{}")
+  address                         Json?                           @default("{}")
+  settings                        Json?                           @default("{\"timezone\": \"UTC\", \"working_hours\": {\"friday\": {\"end\": \"17:00\", \"start\": \"09:00\"}, \"monday\": {\"end\": \"17:00\", \"start\": \"09:00\"}, \"sunday\": {\"closed\": true}, \"tuesday\": {\"end\": \"17:00\", \"start\": \"09:00\"}, \"saturday\": {\"end\": \"13:00\", \"start\": \"09:00\"}, \"thursday\": {\"end\": \"17:00\", \"start\": \"09:00\"}, \"wednesday\": {\"end\": \"17:00\", \"start\": \"09:00\"}}, \"notification_preferences\": {\"sms_enabled\": false, \"push_enabled\": true, \"email_enabled\": true}}")
+  isActive                        Boolean?                        @default(true)
+  hipaaCoveredEntity              Boolean?                        @default(true)
+  businessAssociateAgreement      Json?
+  createdAt                       DateTime?                       @db.Timestamptz(6)
+  updatedAt                       DateTime?                       @updatedAt @db.Timestamptz(6)
+  deletedAt                       DateTime?                       @db.Timestamptz(6)
+  auditLogs                       AuditLog[]
+  carePlanTemplates               CarePlanTemplate[]
+  carePlans                       CarePlan[]
+  clinics                         Clinic[]
+  doctors                         Doctor[]
+  healthcareProviders             HealthcareProvider[]
+  hsps                            Hsp[]
+  notifications                   Notification[]
+  newPatientProviderConsents      PatientProviderConsentHistory[] @relation("NewProviderConsents")
   previousPatientProviderConsents PatientProviderConsentHistory[] @relation("PreviousProviderConsents")
-  linkedPatients             Patient[]                     @relation("patients_linked_provider_idToorganizations")
-  patients                   Patient[]
-  newProviderChanges         ProviderChange[]              @relation("NewProviderChanges")
-  previousProviderChanges    ProviderChange[]              @relation("PreviousProviderChanges")
-  primaryDoctorAssignments   SecondaryDoctorAssignment[]   @relation("PrimaryDoctorProviderAssignments")
-  secondaryDoctorAssignments SecondaryDoctorAssignment[]   @relation("SecondaryDoctorProviderAssignments")
-  treatmentPlans             TreatmentPlan[]
-  prescriptions              Prescription[]
-  adherenceLogs              AdherenceLog[]
-  medicalDevices             MedicalDevice[]
+  linkedPatients                  Patient[]                       @relation("patients_linked_provider_idToorganizations")
+  patients                        Patient[]
+  newProviderChanges              ProviderChange[]                @relation("NewProviderChanges")
+  previousProviderChanges         ProviderChange[]                @relation("PreviousProviderChanges")
+  primaryDoctorAssignments        SecondaryDoctorAssignment[]     @relation("PrimaryDoctorProviderAssignments")
+  secondaryDoctorAssignments      SecondaryDoctorAssignment[]     @relation("SecondaryDoctorProviderAssignments")
+  treatmentPlans                  TreatmentPlan[]
+  prescriptions                   Prescription[]
+  adherenceLogs                   AdherenceLog[]
+  medicalDevices                  MedicalDevice[]
 
   @@index([isActive], map: "organizations_is_active")
   @@index([name], map: "organizations_name")
@@ -49,75 +49,75 @@ model Organization {
 }
 
 model User {
-  id                      String              @id @default(uuid()) @db.Uuid
-  email                   String              @unique @db.VarChar(255)
-  passwordHash            String?             @db.VarChar(255)
-  name                    String?             @db.VarChar(255)
-  image                   String?             @db.VarChar(500)
-  emailVerified           DateTime?           @db.Timestamptz(6)
-  
+  id            String    @id @default(uuid()) @db.Uuid
+  email         String    @unique @db.VarChar(255)
+  passwordHash  String?   @db.VarChar(255)
+  name          String?   @db.VarChar(255)
+  image         String?   @db.VarChar(500)
+  emailVerified DateTime? @db.Timestamptz(6)
+
   // Healthcare-specific fields
-  role                    UserRole
-  accountStatus           UserAccountStatus?  @default(PENDING_VERIFICATION)
-  firstName               String?             @db.VarChar(100)
-  lastName                String?             @db.VarChar(100)
-  middleName              String?             @db.VarChar(100)
-  phone                   String?             @db.VarChar(20)
-  dateOfBirth             DateTime?           @db.Date
-  gender                  UserGender?
-  emailVerifiedLegacy     Boolean?            @default(false)
-  emailVerificationToken  String?             @db.VarChar(255)
-  passwordResetToken      String?             @db.VarChar(255)
-  passwordResetExpires    DateTime?           @db.Timestamptz(6)
-  twoFactorEnabled        Boolean?            @default(false)
-  twoFactorSecret         String?             @db.VarChar(255)
-  failedLoginAttempts     Int?                @default(0)
-  lockedUntil             DateTime?           @db.Timestamptz(6)
-  lastLoginAt             DateTime?           @db.Timestamptz(6)
-  profilePictureUrl       String?             @db.VarChar(500)
-  timezone                String?             @default("UTC") @db.VarChar(50)
-  locale                  String?             @default("en") @db.VarChar(10)
-  preferences             Json?
-  termsAcceptedAt         DateTime?           @db.Timestamptz(6)
-  privacyPolicyAcceptedAt DateTime?           @db.Timestamptz(6)
-  hipaaConsentDate        DateTime?           @db.Timestamptz(6)
-  createdAt               DateTime?           @db.Timestamptz(6)
-  updatedAt               DateTime?           @updatedAt @db.Timestamptz(6)
-  deletedAt               DateTime?           @db.Timestamptz(6)
-  fullName                String?             @db.VarChar(255)
-  appointmentSlots        AppointmentSlot[]
-  appointments            Appointment[]
-  auditLogs               AuditLog[]
-  carePlanTemplates       CarePlanTemplate[]
-  doctorAvailabilities    DoctorAvailability[]
-  doctorProfile           Doctor?             @relation("UserDoctorProfile")
-  verifiedDoctors         Doctor[]            @relation("UserVerifiedDoctors")
-  healthcareProvider      HealthcareProvider?
-  verifiedHealthcareProviders HealthcareProvider[] @relation("UserVerifiedHealthcareProviders")
-  hspProfile              Hsp?                @relation("UserHspProfile")
-  verifiedHsps            Hsp[]               @relation("UserVerifiedHsps")
-  notifications           Notification[]
-  patientConsentOtps      PatientConsentOtp[] @relation("RequestedByUser")
-  patientDoctorAssignments PatientDoctorAssignment[]
-  patientProviderAssignments PatientProviderAssignment[]
-  patientProfile          Patient?
-  providers               Provider[]
-  scheduledEvents         ScheduledEvent[]
-  userDevices             UserDevice[]
-  userRoles               UserRoleAssignment[]
-  accounts                Account[]
-  sessions                Session[]
-  accountLinks            AccountLink[]
-  verifiedPatientAllergies PatientAllergy[]
-  resolvedMedicationAlerts MedicationSafetyAlert[]
-  createdMedicationAlerts  MedicationSafetyAlert[] @relation("SafetyAlertCreatedBy")
-  acknowledgedEmergencyAlerts EmergencyAlert[]     @relation("EmergencyAlertAcknowledged")
-  resolvedEmergencyAlerts  EmergencyAlert[]     @relation("EmergencyAlertResolved")
-  vitalAlertRules          VitalAlertRule[]
-  addedDevices             ConnectedDevice[]
-  createdConsultations     VideoConsultation[]  @relation("ConsultationCreatedBy")
-  consultationNotesCreated ConsultationNote[]   @relation("ConsultationNoteCreatedBy")
-  adherenceLogsRecorded    AdherenceLog[]
+  role                        UserRole
+  accountStatus               UserAccountStatus?          @default(PENDING_VERIFICATION)
+  firstName                   String?                     @db.VarChar(100)
+  lastName                    String?                     @db.VarChar(100)
+  middleName                  String?                     @db.VarChar(100)
+  phone                       String?                     @db.VarChar(20)
+  dateOfBirth                 DateTime?                   @db.Date
+  gender                      UserGender?
+  emailVerifiedLegacy         Boolean?                    @default(false)
+  emailVerificationToken      String?                     @db.VarChar(255)
+  passwordResetToken          String?                     @db.VarChar(255)
+  passwordResetExpires        DateTime?                   @db.Timestamptz(6)
+  twoFactorEnabled            Boolean?                    @default(false)
+  twoFactorSecret             String?                     @db.VarChar(255)
+  failedLoginAttempts         Int?                        @default(0)
+  lockedUntil                 DateTime?                   @db.Timestamptz(6)
+  lastLoginAt                 DateTime?                   @db.Timestamptz(6)
+  profilePictureUrl           String?                     @db.VarChar(500)
+  timezone                    String?                     @default("UTC") @db.VarChar(50)
+  locale                      String?                     @default("en") @db.VarChar(10)
+  preferences                 Json?
+  termsAcceptedAt             DateTime?                   @db.Timestamptz(6)
+  privacyPolicyAcceptedAt     DateTime?                   @db.Timestamptz(6)
+  hipaaConsentDate            DateTime?                   @db.Timestamptz(6)
+  createdAt                   DateTime?                   @db.Timestamptz(6)
+  updatedAt                   DateTime?                   @updatedAt @db.Timestamptz(6)
+  deletedAt                   DateTime?                   @db.Timestamptz(6)
+  fullName                    String?                     @db.VarChar(255)
+  appointmentSlots            AppointmentSlot[]
+  appointments                Appointment[]
+  auditLogs                   AuditLog[]
+  carePlanTemplates           CarePlanTemplate[]
+  doctorAvailabilities        DoctorAvailability[]
+  doctorProfile               Doctor?                     @relation("UserDoctorProfile")
+  verifiedDoctors             Doctor[]                    @relation("UserVerifiedDoctors")
+  healthcareProvider          HealthcareProvider?
+  verifiedHealthcareProviders HealthcareProvider[]        @relation("UserVerifiedHealthcareProviders")
+  hspProfile                  Hsp?                        @relation("UserHspProfile")
+  verifiedHsps                Hsp[]                       @relation("UserVerifiedHsps")
+  notifications               Notification[]
+  patientConsentOtps          PatientConsentOtp[]         @relation("RequestedByUser")
+  patientDoctorAssignments    PatientDoctorAssignment[]
+  patientProviderAssignments  PatientProviderAssignment[]
+  patientProfile              Patient?
+  providers                   Provider[]
+  scheduledEvents             ScheduledEvent[]
+  userDevices                 UserDevice[]
+  userRoles                   UserRoleAssignment[]
+  accounts                    Account[]
+  sessions                    Session[]
+  accountLinks                AccountLink[]
+  verifiedPatientAllergies    PatientAllergy[]
+  resolvedMedicationAlerts    MedicationSafetyAlert[]
+  createdMedicationAlerts     MedicationSafetyAlert[]     @relation("SafetyAlertCreatedBy")
+  acknowledgedEmergencyAlerts EmergencyAlert[]            @relation("EmergencyAlertAcknowledged")
+  resolvedEmergencyAlerts     EmergencyAlert[]            @relation("EmergencyAlertResolved")
+  vitalAlertRules             VitalAlertRule[]
+  addedDevices                ConnectedDevice[]
+  createdConsultations        VideoConsultation[]         @relation("ConsultationCreatedBy")
+  consultationNotesCreated    ConsultationNote[]          @relation("ConsultationNoteCreatedBy")
+  adherenceLogsRecorded       AdherenceLog[]
 
   @@index([email, accountStatus], map: "idx_users_email_status")
   @@index([role, accountStatus], map: "idx_users_role_status")
@@ -131,23 +131,23 @@ model User {
 }
 
 model Account {
-  id                String   @id @default(cuid())
-  userId            String   @db.Uuid
+  id                String    @id @default(cuid())
+  userId            String    @db.Uuid
   type              String
   provider          String
   providerAccountId String
-  refreshToken      String?  @db.Text
-  accessToken       String?  @db.Text
+  refreshToken      String?   @db.Text
+  accessToken       String?   @db.Text
   expiresAt         Int?
   tokenType         String?
   scope             String?
-  idToken           String?  @db.Text
+  idToken           String?   @db.Text
   sessionState      String?
   providerEmail     String?   @db.VarChar(255)
   providerName      String?   @db.VarChar(255)
   linkedAt          DateTime  @default(now()) @db.Timestamptz(6)
   lastUsedAt        DateTime? @db.Timestamptz(6)
-  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
   @@index([userId, provider])
@@ -155,16 +155,16 @@ model Account {
 }
 
 model Session {
-  id                String   @id @default(cuid())
-  sessionToken      String   @unique
-  userId            String   @db.Uuid
+  id                String    @id @default(cuid())
+  sessionToken      String    @unique
+  userId            String    @db.Uuid
   expires           DateTime
-  ipAddress         String?  @db.VarChar(45)
-  userAgent         String?  @db.Text
-  createdAt         DateTime @default(now()) @db.Timestamptz(6)
-  lastAccessedAt    DateTime?@updatedAt @db.Timestamptz(6)
-  healthcareContext Json?    @default("{}")
-  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  ipAddress         String?   @db.VarChar(45)
+  userAgent         String?   @db.Text
+  createdAt         DateTime  @default(now()) @db.Timestamptz(6)
+  lastAccessedAt    DateTime? @updatedAt @db.Timestamptz(6)
+  healthcareContext Json?     @default("{}")
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId], map: "sessions_user_id")
   @@index([expires], map: "sessions_expires")
@@ -182,16 +182,16 @@ model VerificationToken {
 }
 
 model AccountLink {
-  id                String   @id @default(uuid()) @db.Uuid
-  userId            String   @db.Uuid
-  provider          String   @db.VarChar(50)
-  providerAccountId String   @db.VarChar(255)
-  providerEmail     String?  @db.VarChar(255)
-  linkedAt          DateTime @default(now()) @db.Timestamptz(6)
+  id                String    @id @default(uuid()) @db.Uuid
+  userId            String    @db.Uuid
+  provider          String    @db.VarChar(50)
+  providerAccountId String    @db.VarChar(255)
+  providerEmail     String?   @db.VarChar(255)
+  linkedAt          DateTime  @default(now()) @db.Timestamptz(6)
   lastUsedAt        DateTime? @db.Timestamptz(6)
-  isPrimary         Boolean  @default(false)
-  metadata          Json?    @default("{}")
-  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  isPrimary         Boolean   @default(false)
+  metadata          Json?     @default("{}")
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, provider], map: "account_links_user_provider")
   @@unique([provider, providerAccountId], map: "account_links_provider_account")
@@ -201,81 +201,81 @@ model AccountLink {
 }
 
 model Patient {
-  id                        String                               @id @default(uuid()) @db.Uuid
-  userId                    String                               @unique @db.Uuid
-  organizationId            String?                              @db.Uuid
-  medicalRecordNumber       String?                              @unique @db.VarChar(50)
-  patientId                 String?                              @unique @db.VarChar(100)
-  emergencyContacts         Json?                                @default("[]")
-  insuranceInformation      Json?                                @default("{}")
-  medicalHistory            Json?                                @default("[]")
-  allergies                 Json?                                @default("[]")
-  currentMedications        Json?                                @default("[]")
-  heightCm                  Decimal?                             @db.Decimal(5, 2)
-  weightKg                  Decimal?                             @db.Decimal(5, 2)
-  bloodType                 String?                              @db.VarChar(5)
-  primaryLanguage           String?                              @default("en") @db.VarChar(10)
-  riskLevel                 String?                              @default("low") @db.VarChar(20)
-  riskFactors               Json?                                @default("[]")
-  communicationPreferences  Json?                                @default("{\"language\": \"en\", \"time_zone\": \"UTC\", \"health_tips\": false, \"medication_reminders\": true, \"appointment_reminders\": true, \"research_participation\": false, \"preferred_contact_method\": \"email\"}")
-  privacySettings           Json?                                @default("{\"share_with_family\": false, \"share_for_research\": false, \"data_sharing_consent\": false, \"marketing_communications\": false, \"provider_directory_listing\": true}")
-  primaryCareDoctorId       String?                              @db.Uuid
-  primaryCareHspId          String?                              @db.Uuid
-  careCoordinatorId         String?                              @db.Uuid
-  careCoordinatorType       String?                              @db.VarChar(10)
-  overallAdherenceScore     Decimal?                             @db.Decimal(5, 2)
-  lastAdherenceCalculation  DateTime?                            @db.Timestamptz(6)
-  totalAppointments         Int?                                 @default(0)
-  missedAppointments        Int?                                 @default(0)
-  lastVisitDate             DateTime?                            @db.Timestamptz(6)
-  nextAppointmentDate       DateTime?                            @db.Timestamptz(6)
-  isActive                  Boolean?                             @default(true)
-  requiresInterpreter       Boolean?                             @default(false)
-  hasMobilityIssues         Boolean?                             @default(false)
-  createdAt                 DateTime?                            @db.Timestamptz(6)
-  updatedAt                 DateTime?                            @updatedAt @db.Timestamptz(6)
-  deletedAt                 DateTime?                            @db.Timestamptz(6)
-  linkedProviderId          String?                              @db.Uuid
-  providerLinkedAt          DateTime?                            @db.Timestamptz(6)
-  providerConsentGiven      Boolean?                             @default(false)
-  providerConsentGivenAt    DateTime?                            @db.Timestamptz(6)
-  providerConsentMethod     PatientProviderConsentMethodLegacy?
-  adherenceRecords          AdherenceRecord[]
-  appointments              Appointment[]
-  auditLogs                 AuditLog[]
-  carePlans                 CarePlan[]
-  medicationLogs            MedicationLog[]
-  notifications             Notification[]
-  patientAlerts             PatientAlert[]
-  patientConsentOtps        PatientConsentOtp[]
-  patientDoctorAssignments  PatientDoctorAssignment[]
-  patientProviderAssignments PatientProviderAssignment[]
+  id                            String                              @id @default(uuid()) @db.Uuid
+  userId                        String                              @unique @db.Uuid
+  organizationId                String?                             @db.Uuid
+  medicalRecordNumber           String?                             @unique @db.VarChar(50)
+  patientId                     String?                             @unique @db.VarChar(100)
+  emergencyContacts             Json?                               @default("[]")
+  insuranceInformation          Json?                               @default("{}")
+  medicalHistory                Json?                               @default("[]")
+  allergies                     Json?                               @default("[]")
+  currentMedications            Json?                               @default("[]")
+  heightCm                      Decimal?                            @db.Decimal(5, 2)
+  weightKg                      Decimal?                            @db.Decimal(5, 2)
+  bloodType                     String?                             @db.VarChar(5)
+  primaryLanguage               String?                             @default("en") @db.VarChar(10)
+  riskLevel                     String?                             @default("low") @db.VarChar(20)
+  riskFactors                   Json?                               @default("[]")
+  communicationPreferences      Json?                               @default("{\"language\": \"en\", \"time_zone\": \"UTC\", \"health_tips\": false, \"medication_reminders\": true, \"appointmentReminders\": true, \"research_participation\": false, \"preferred_contact_method\": \"email\"}")
+  privacySettings               Json?                               @default("{\"share_with_family\": false, \"share_for_research\": false, \"data_sharing_consent\": false, \"marketing_communications\": false, \"provider_directory_listing\": true}")
+  primaryCareDoctorId           String?                             @db.Uuid
+  primaryCareHspId              String?                             @db.Uuid
+  careCoordinatorId             String?                             @db.Uuid
+  careCoordinatorType           String?                             @db.VarChar(10)
+  overallAdherenceScore         Decimal?                            @db.Decimal(5, 2)
+  lastAdherenceCalculation      DateTime?                           @db.Timestamptz(6)
+  totalAppointments             Int?                                @default(0)
+  missedAppointments            Int?                                @default(0)
+  lastVisitDate                 DateTime?                           @db.Timestamptz(6)
+  nextAppointmentDate           DateTime?                           @db.Timestamptz(6)
+  isActive                      Boolean?                            @default(true)
+  requiresInterpreter           Boolean?                            @default(false)
+  hasMobilityIssues             Boolean?                            @default(false)
+  createdAt                     DateTime?                           @db.Timestamptz(6)
+  updatedAt                     DateTime?                           @updatedAt @db.Timestamptz(6)
+  deletedAt                     DateTime?                           @db.Timestamptz(6)
+  linkedProviderId              String?                             @db.Uuid
+  providerLinkedAt              DateTime?                           @db.Timestamptz(6)
+  providerConsentGiven          Boolean?                            @default(false)
+  providerConsentGivenAt        DateTime?                           @db.Timestamptz(6)
+  providerConsentMethod         PatientProviderConsentMethodLegacy?
+  adherenceRecords              AdherenceRecord[]
+  appointments                  Appointment[]
+  auditLogs                     AuditLog[]
+  carePlans                     CarePlan[]
+  medicationLogs                MedicationLog[]
+  notifications                 Notification[]
+  patientAlerts                 PatientAlert[]
+  patientConsentOtps            PatientConsentOtp[]
+  patientDoctorAssignments      PatientDoctorAssignment[]
+  patientProviderAssignments    PatientProviderAssignment[]
   patientProviderConsentHistory PatientProviderConsentHistory[]
-  patientSubscriptions      PatientSubscription[]
-  linkedProvider            Organization?                        @relation("patients_linked_provider_idToorganizations", fields: [linkedProviderId], references: [id])
-  organization              Organization?                        @relation(fields: [organizationId], references: [id])
-  primaryCareDoctor         Doctor?                              @relation(fields: [primaryCareDoctorId], references: [id])
-  primaryCareHsp            Hsp?                                 @relation(fields: [primaryCareHspId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  user                      User                                 @relation(fields: [userId], references: [id], onDelete: Cascade)
-  paymentMethods            PaymentMethod[]
-  payments                  Payment[]
-  scheduledEvents           ScheduledEvent[]
-  secondaryDoctorAssignments SecondaryDoctorAssignment[]
-  symptoms                  Symptom[]
-  treatmentPlans            TreatmentPlan[]
-  vitalReadings             VitalReading[]
-  patientAllergies          PatientAllergy[]
-  medicationSafetyAlerts    MedicationSafetyAlert[]
-  emergencyAlerts           EmergencyAlert[]
-  emergencyContactsNew      EmergencyContact[]
-  connectedDevices          ConnectedDevice[]
-  deviceReadings            DeviceReading[]
-  videoConsultations        VideoConsultation[]
-  labOrders                 LabOrder[]
-  gameProfile               PatientGameProfile?
-  prescriptions             Prescription[]
-  medicalDevices            MedicalDevice[]
-  adherenceLogs             AdherenceLog[]
+  patientSubscriptions          PatientSubscription[]
+  linkedProvider                Organization?                       @relation("patients_linked_provider_idToorganizations", fields: [linkedProviderId], references: [id])
+  organization                  Organization?                       @relation(fields: [organizationId], references: [id])
+  primaryCareDoctor             Doctor?                             @relation(fields: [primaryCareDoctorId], references: [id])
+  primaryCareHsp                Hsp?                                @relation(fields: [primaryCareHspId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  user                          User                                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  paymentMethods                PaymentMethod[]
+  payments                      Payment[]
+  scheduledEvents               ScheduledEvent[]
+  secondaryDoctorAssignments    SecondaryDoctorAssignment[]
+  symptoms                      Symptom[]
+  treatmentPlans                TreatmentPlan[]
+  vitalReadings                 VitalReading[]
+  patientAllergies              PatientAllergy[]
+  medicationSafetyAlerts        MedicationSafetyAlert[]
+  emergencyAlerts               EmergencyAlert[]
+  emergencyContactsNew          EmergencyContact[]
+  connectedDevices              ConnectedDevice[]
+  deviceReadings                DeviceReading[]
+  videoConsultations            VideoConsultation[]
+  labOrders                     LabOrder[]
+  gameProfile                   PatientGameProfile?
+  prescriptions                 Prescription[]
+  medicalDevices                MedicalDevice[]
+  adherenceLogs                 AdherenceLog[]
 
   @@index([primaryCareDoctorId, createdAt, isActive], map: "idx_patients_doctor_created_active")
   @@index([patientId, createdAt], map: "idx_patients_id_created")
@@ -294,41 +294,41 @@ model Patient {
 }
 
 model HealthcareProvider {
-  id                      String      @id @default(uuid()) @db.Uuid
-  userId                  String      @unique @db.Uuid
-  organizationId          String?     @db.Uuid
-  licenseNumber           String?     @unique @db.VarChar(100)
-  specialties             String[]    @default([])
-  subSpecialties          String[]    @default([])
-  qualifications          Json?       @default("[]")
-  yearsOfExperience       Int?
-  isVerified              Boolean?    @default(false)
-  verificationDocuments   Json?       @default("[]")
-  verificationDate        DateTime?   @db.Timestamptz(6)
-  verifiedBy              String?     @db.Uuid
-  consultationFee         Decimal?    @db.Decimal(10, 2)
-  availabilitySchedule    Json?       @default("{\"friday\": {\"end\": \"17:00\", \"start\": \"09:00\", \"available\": true}, \"monday\": {\"end\": \"17:00\", \"start\": \"09:00\", \"available\": true}, \"sunday\": {\"available\": false}, \"tuesday\": {\"end\": \"17:00\", \"start\": \"09:00\", \"available\": true}, \"saturday\": {\"available\": false}, \"thursday\": {\"end\": \"17:00\", \"start\": \"09:00\", \"available\": true}, \"wednesday\": {\"end\": \"17:00\", \"start\": \"09:00\", \"available\": true}}")
-  notificationPreferences Json?       @default("{\"patient_updates\": true, \"marketing_emails\": false, \"sms_notifications\": true, \"push_notifications\": true, \"system_notifications\": true, \"appointment_reminders\": true}")
-  practiceName            String?     @db.VarChar(255)
-  practiceAddress         Json?       @default("{}")
-  practicePhone           String?     @db.VarChar(20)
-  practiceWebsite         String?     @db.VarChar(255)
-  totalPatients           Int?        @default(0)
-  activeCarePlans         Int?        @default(0)
-  averageRating           Decimal?    @db.Decimal(3, 2)
-  totalReviews            Int?        @default(0)
-  createdAt               DateTime?   @db.Timestamptz(6)
-  updatedAt               DateTime?   @updatedAt @db.Timestamptz(6)
-  deletedAt               DateTime?   @db.Timestamptz(6)
-  carePlanTemplates       CarePlanTemplate[]
-  organization            Organization? @relation(fields: [organizationId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  user                    User        @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction)
-  verifier                User?       @relation("UserVerifiedHealthcareProviders", fields: [verifiedBy], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  id                         String                      @id @default(uuid()) @db.Uuid
+  userId                     String                      @unique @db.Uuid
+  organizationId             String?                     @db.Uuid
+  licenseNumber              String?                     @unique @db.VarChar(100)
+  specialties                String[]                    @default([])
+  subSpecialties             String[]                    @default([])
+  qualifications             Json?                       @default("[]")
+  yearsOfExperience          Int?
+  isVerified                 Boolean?                    @default(false)
+  verificationDocuments      Json?                       @default("[]")
+  verificationDate           DateTime?                   @db.Timestamptz(6)
+  verifiedBy                 String?                     @db.Uuid
+  consultationFee            Decimal?                    @db.Decimal(10, 2)
+  availabilitySchedule       Json?                       @default("{\"friday\": {\"end\": \"17:00\", \"start\": \"09:00\", \"available\": true}, \"monday\": {\"end\": \"17:00\", \"start\": \"09:00\", \"available\": true}, \"sunday\": {\"available\": false}, \"tuesday\": {\"end\": \"17:00\", \"start\": \"09:00\", \"available\": true}, \"saturday\": {\"available\": false}, \"thursday\": {\"end\": \"17:00\", \"start\": \"09:00\", \"available\": true}, \"wednesday\": {\"end\": \"17:00\", \"start\": \"09:00\", \"available\": true}}")
+  notificationPreferences    Json?                       @default("{\"patient_updates\": true, \"marketing_emails\": false, \"smsNotifications\": true, \"pushNotifications\": true, \"system_notifications\": true, \"appointmentReminders\": true}")
+  practiceName               String?                     @db.VarChar(255)
+  practiceAddress            Json?                       @default("{}")
+  practicePhone              String?                     @db.VarChar(20)
+  practiceWebsite            String?                     @db.VarChar(255)
+  totalPatients              Int?                        @default(0)
+  activeCarePlans            Int?                        @default(0)
+  averageRating              Decimal?                    @db.Decimal(3, 2)
+  totalReviews               Int?                        @default(0)
+  createdAt                  DateTime?                   @db.Timestamptz(6)
+  updatedAt                  DateTime?                   @updatedAt @db.Timestamptz(6)
+  deletedAt                  DateTime?                   @db.Timestamptz(6)
+  carePlanTemplates          CarePlanTemplate[]
+  organization               Organization?               @relation(fields: [organizationId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  user                       User                        @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  verifier                   User?                       @relation("UserVerifiedHealthcareProviders", fields: [verifiedBy], references: [id], onDelete: NoAction, onUpdate: NoAction)
   patientProviderAssignments PatientProviderAssignment[]
-  patientSubscriptions    PatientSubscription[]
-  payments                Payment[]
-  servicePlans            ServicePlan[]
-  vitalReadings           VitalReading[]
+  patientSubscriptions       PatientSubscription[]
+  payments                   Payment[]
+  servicePlans               ServicePlan[]
+  vitalReadings              VitalReading[]
 
   @@index([isVerified])
   @@index([organizationId])
@@ -344,7 +344,7 @@ model Specialty {
   description String?   @db.VarChar(1000)
   userCreated Int?
   createdAt   DateTime? @db.Timestamptz(6)
-  updatedAt   DateTime?  @updatedAt @db.Timestamptz(6)
+  updatedAt   DateTime? @updatedAt @db.Timestamptz(6)
   deletedAt   DateTime?
   doctors     Doctor[]
 
@@ -392,54 +392,54 @@ model Clinic {
 }
 
 model CarePlan {
-  id                        String               @id @default(uuid()) @db.Uuid
-  patientId                 String               @db.Uuid
-  createdByDoctorId         String?              @db.Uuid
-  createdByHspId            String?              @db.Uuid
-  organizationId            String?              @db.Uuid
-  title                     String               @db.VarChar(255)
+  id                        String             @id @default(uuid()) @db.Uuid
+  patientId                 String             @db.Uuid
+  createdByDoctorId         String?            @db.Uuid
+  createdByHspId            String?            @db.Uuid
+  organizationId            String?            @db.Uuid
+  title                     String             @db.VarChar(255)
   description               String?
-  planType                  String?              @default("care_plan") @db.VarChar(20)
-  chronicConditions         String[]             @default([])
-  conditionSeverity         Json?                @default("{}")
-  riskFactors               Json?                @default("[]")
-  longTermGoals             Json?                @default("[]")
-  shortTermMilestones       Json?                @default("[]")
-  interventions             Json?                @default("[]")
-  lifestyleModifications    Json?                @default("[]")
-  monitoringParameters      Json?                @default("[]")
-  monitoringFrequency       Json?                @default("{}")
-  targetValues              Json?                @default("{}")
-  medications               Json?                @default("[]")
-  medicationManagement      Json?                @default("{}")
+  planType                  String?            @default("care_plan") @db.VarChar(20)
+  chronicConditions         String[]           @default([])
+  conditionSeverity         Json?              @default("{}")
+  riskFactors               Json?              @default("[]")
+  longTermGoals             Json?              @default("[]")
+  shortTermMilestones       Json?              @default("[]")
+  interventions             Json?              @default("[]")
+  lifestyleModifications    Json?              @default("[]")
+  monitoringParameters      Json?              @default("[]")
+  monitoringFrequency       Json?              @default("{}")
+  targetValues              Json?              @default("{}")
+  medications               Json?              @default("[]")
+  medicationManagement      Json?              @default("{}")
   startDate                 DateTime
   endDate                   DateTime?
-  reviewFrequencyMonths     Int?                 @default(3)
+  reviewFrequencyMonths     Int?               @default(3)
   nextReviewDate            DateTime?
-  status                    String?              @default("ACTIVE") @db.VarChar(20)
-  priority                  String?              @default("MEDIUM") @db.VarChar(20)
-  primaryCareManagerId      String?              @db.Uuid
-  careTeamMembers           Json?                @default("[]")
-  specialistReferrals       Json?                @default("[]")
-  patientEducationMaterials Json?                @default("[]")
-  selfManagementTasks       Json?                @default("[]")
-  patientGoals              Json?                @default("[]")
-  progressNotes             Json?                @default("[]")
-  outcomeMeasures           Json?                @default("{}")
-  qualityOfLifeScores       Json?                @default("{}")
-  emergencyActionPlan       Json?                @default("{}")
-  warningSigns              String[]             @default([])
-  emergencyContacts         Json?                @default("[]")
+  status                    String?            @default("ACTIVE") @db.VarChar(20)
+  priority                  String?            @default("MEDIUM") @db.VarChar(20)
+  primaryCareManagerId      String?            @db.Uuid
+  careTeamMembers           Json?              @default("[]")
+  specialistReferrals       Json?              @default("[]")
+  patientEducationMaterials Json?              @default("[]")
+  selfManagementTasks       Json?              @default("[]")
+  patientGoals              Json?              @default("[]")
+  progressNotes             Json?              @default("[]")
+  outcomeMeasures           Json?              @default("{}")
+  qualityOfLifeScores       Json?              @default("{}")
+  emergencyActionPlan       Json?              @default("{}")
+  warningSigns              String[]           @default([])
+  emergencyContacts         Json?              @default("[]")
   details                   Json?
-  channelId                 String?              @db.VarChar(255)
+  channelId                 String?            @db.VarChar(255)
   createdAt                 DateTime?
-  updatedAt                 DateTime?            @updatedAt
+  updatedAt                 DateTime?          @updatedAt
   deletedAt                 DateTime?
-  doctor                    Doctor?              @relation(fields: [createdByDoctorId], references: [id])
-  hsp                       Hsp?                 @relation(fields: [createdByHspId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  organization              Organization?        @relation(fields: [organizationId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  patient                   Patient              @relation(fields: [patientId], references: [id], onDelete: Cascade)
-  prescribedMedications     Medication[]         @relation("prescribed_medications")
+  doctor                    Doctor?            @relation(fields: [createdByDoctorId], references: [id])
+  hsp                       Hsp?               @relation(fields: [createdByHspId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  organization              Organization?      @relation(fields: [organizationId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  patient                   Patient            @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  prescribedMedications     Medication[]       @relation("prescribed_medications")
   notifications             Notification[]
   scheduledEvents           ScheduledEvent[]
   symptoms                  Symptom[]
@@ -536,7 +536,7 @@ model Appointment {
   doctor             Doctor?                        @relation(fields: [doctorId], references: [id])
   patient            Patient?                       @relation(fields: [patientId], references: [id])
   provider           User?                          @relation(fields: [providerId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  appointmentSlot    AppointmentSlot?              @relation(fields: [slotId], references: [id])
+  appointmentSlot    AppointmentSlot?               @relation(fields: [slotId], references: [id])
   carePlan           CarePlan?                      @relation(fields: [carePlanId], references: [id])
   notifications      Notification[]
   videoConsultations VideoConsultation[]
@@ -555,20 +555,20 @@ model Appointment {
 }
 
 model DoctorAvailability {
-  id                   String    @id @default(uuid()) @db.Uuid
-  doctorId             String    @db.Uuid
-  dayOfWeek            Int
-  startTime            DateTime  @db.Time(6)
-  endTime              DateTime  @db.Time(6)
-  isAvailable          Boolean?  @default(true)
-  slotDuration         Int?      @default(30)
-  maxAppointmentsPerSlot Int?    @default(1)
-  breakStartTime       DateTime? @db.Time(6)
-  breakEndTime         DateTime? @db.Time(6)
-  createdAt            DateTime
-  updatedAt            DateTime  @updatedAt
-  deletedAt            DateTime?
-  user                 User      @relation(fields: [doctorId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  id                     String    @id @default(uuid()) @db.Uuid
+  doctorId               String    @db.Uuid
+  dayOfWeek              Int
+  startTime              DateTime  @db.Time(6)
+  endTime                DateTime  @db.Time(6)
+  isAvailable            Boolean?  @default(true)
+  slotDuration           Int?      @default(30)
+  maxAppointmentsPerSlot Int?      @default(1)
+  breakStartTime         DateTime? @db.Time(6)
+  breakEndTime           DateTime? @db.Time(6)
+  createdAt              DateTime
+  updatedAt              DateTime  @updatedAt
+  deletedAt              DateTime?
+  user                   User      @relation(fields: [doctorId], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
   @@index([doctorId, dayOfWeek])
   @@index([doctorId, isAvailable])
@@ -576,15 +576,15 @@ model DoctorAvailability {
 }
 
 model VitalType {
-  id                String              @id @default(uuid()) @db.Uuid
-  name              String              @unique @db.VarChar(100)
-  unit              String?             @db.VarChar(20)
-  normalRangeMin    Decimal?            @db.Decimal(10, 2)
-  normalRangeMax    Decimal?            @db.Decimal(10, 2)
+  id                String             @id @default(uuid()) @db.Uuid
+  name              String             @unique @db.VarChar(100)
+  unit              String?            @db.VarChar(20)
+  normalRangeMin    Decimal?           @db.Decimal(10, 2)
+  normalRangeMax    Decimal?           @db.Decimal(10, 2)
   description       String?
-  validationRules   Json?               @default("{}")
+  validationRules   Json?              @default("{}")
   createdAt         DateTime?
-  updatedAt         DateTime?           @updatedAt
+  updatedAt         DateTime?          @updatedAt
   deletedAt         DateTime?
   vitalReadings     VitalReading[]
   vitalRequirements VitalRequirement[]
@@ -732,30 +732,30 @@ model ServicePlan {
 }
 
 model PatientSubscription {
-  id                   String                    @id @default(uuid()) @db.Uuid
-  patientId            String                    @db.Uuid
-  providerId           String                    @db.Uuid
-  servicePlanId        String                    @db.Uuid
-  status               PatientSubscriptionStatus?@default(ACTIVE)
-  currentPeriodStart   DateTime                  @db.Date
-  currentPeriodEnd     DateTime                  @db.Date
-  nextBillingDate      DateTime?                 @db.Date
-  trialStart           DateTime?                 @db.Date
-  trialEnd             DateTime?                 @db.Date
-  paymentMethodId      String?                   @db.VarChar(255)
-  stripeSubscriptionId String?                   @unique @db.VarChar(255)
-  stripeCustomerId     String?                   @db.VarChar(255)
+  id                   String                     @id @default(uuid()) @db.Uuid
+  patientId            String                     @db.Uuid
+  providerId           String                     @db.Uuid
+  servicePlanId        String                     @db.Uuid
+  status               PatientSubscriptionStatus? @default(ACTIVE)
+  currentPeriodStart   DateTime                   @db.Date
+  currentPeriodEnd     DateTime                   @db.Date
+  nextBillingDate      DateTime?                  @db.Date
+  trialStart           DateTime?                  @db.Date
+  trialEnd             DateTime?                  @db.Date
+  paymentMethodId      String?                    @db.VarChar(255)
+  stripeSubscriptionId String?                    @unique @db.VarChar(255)
+  stripeCustomerId     String?                    @db.VarChar(255)
   lastPaymentDate      DateTime?
-  lastPaymentAmount    Decimal?                  @db.Decimal(10, 2)
-  failureCount         Int?                      @default(0)
-  metadata             Json?                     @default("{}") @db.Json
+  lastPaymentAmount    Decimal?                   @db.Decimal(10, 2)
+  failureCount         Int?                       @default(0)
+  metadata             Json?                      @default("{}") @db.Json
   createdAt            DateTime
-  updatedAt            DateTime                  @updatedAt
+  updatedAt            DateTime                   @updatedAt
   cancelledAt          DateTime?
   deletedAt            DateTime?
-  patient              Patient                   @relation(fields: [patientId], references: [id], onDelete: Cascade)
-  healthcareProvider   HealthcareProvider        @relation(fields: [providerId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  servicePlan          ServicePlan               @relation(fields: [servicePlanId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  patient              Patient                    @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  healthcareProvider   HealthcareProvider         @relation(fields: [providerId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  servicePlan          ServicePlan                @relation(fields: [servicePlanId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   payments             Payment[]
 
   @@index([nextBillingDate])
@@ -944,7 +944,7 @@ model AuditLog {
 
 model SequelizeMeta {
   name String @id @db.VarChar(255)
-  
+
   @@map("SequelizeMeta")
 }
 
@@ -1008,15 +1008,15 @@ model CarePlanTemplate {
 }
 
 model DashboardMetric {
-  id            String                     @id @db.Uuid
-  entityType    DashboardMetricsEntityType
-  entityId      String                     @db.Uuid
-  metricType    String                     @db.VarChar(100)
-  metricData    Json                       @default("{}")
-  calculatedAt  DateTime
-  validUntil    DateTime?
-  createdAt     DateTime?
-  updatedAt     DateTime?
+  id           String                     @id @db.Uuid
+  entityType   DashboardMetricsEntityType
+  entityId     String                     @db.Uuid
+  metricType   String                     @db.VarChar(100)
+  metricData   Json                       @default("{}")
+  calculatedAt DateTime
+  validUntil   DateTime?
+  createdAt    DateTime?
+  updatedAt    DateTime?
 
   @@unique([entityType, entityId, metricType])
   @@index([calculatedAt, validUntil])
@@ -1024,73 +1024,73 @@ model DashboardMetric {
 }
 
 model Doctor {
-  id                      String      @id @default(uuid()) @db.Uuid
-  userId                  String      @unique @db.Uuid
-  doctorId                String      @unique @db.VarChar(50)
-  organizationId          String?     @db.Uuid
-  medicalLicenseNumber    String      @unique @db.VarChar(100)
-  npiNumber               String?     @unique @db.VarChar(20)
-  boardCertifications     String[]    @default([])
-  medicalSchool           String?     @db.VarChar(255)
-  residencyPrograms       Json?       @default("[]")
-  specialties             String[]    @default([])
-  subSpecialties          String[]    @default([])
-  yearsOfExperience       Int?
-  capabilities            String[]    @default(["prescribe_medications", "order_tests", "diagnose", "create_treatment_plans", "create_care_plans", "modify_medications", "monitor_vitals", "patient_education", "care_coordination", "emergency_response"])
-  isVerified              Boolean?    @default(false)
-  verificationDocuments   Json?       @default("[]")
-  verificationDate        DateTime?
-  verifiedBy              String?     @db.Uuid
-  consultationFee         Decimal?    @db.Decimal(10, 2)
-  availabilitySchedule    Json?       @default("{\"friday\": {\"end\": \"17:00\", \"start\": \"09:00\", \"available\": true}, \"monday\": {\"end\": \"17:00\", \"start\": \"09:00\", \"available\": true}, \"sunday\": {\"available\": false}, \"tuesday\": {\"end\": \"17:00\", \"start\": \"09:00\", \"available\": true}, \"saturday\": {\"available\": false}, \"thursday\": {\"end\": \"17:00\", \"start\": \"09:00\", \"available\": true}, \"wednesday\": {\"end\": \"17:00\", \"start\": \"09:00\", \"available\": true}}")
-  languagesSpoken         String[]    @default(["en"])
-  notificationPreferences Json?       @default("{\"patient_updates\": true, \"emergency_alerts\": true, \"peer_consultations\": true, \"system_notifications\": true, \"appointment_reminders\": true}")
-  practiceName            String?     @db.VarChar(255)
-  practiceAddress         Json?       @default("{}")
-  practicePhone           String?     @db.VarChar(20)
-  bio                     String?     @db.Text
-  signaturePic            String?
-  razorpayAccountId       String?     @db.VarChar(255)
-  totalPatients           Int?        @default(0)
-  activeTreatmentPlans    Int?        @default(0)
-  activeCarePlans         Int?        @default(0)
-  averageRating           Decimal?    @db.Decimal(3, 2)
-  totalReviews            Int?        @default(0)
-  isAvailableOnline       Boolean?    @default(true)
-  createdAt               DateTime?
-  updatedAt               DateTime?
-  deletedAt               DateTime?
-  specialtyId             Int?
-  profilePictureUrl       String?
-  bannerImageUrl          String?
-  qualificationDetails    Json?       @default("[]")
-  registrationDetails     Json?       @default("{}")
-  subscriptionDetails     Json?       @default("{}")
-  signatureImageUrl       String?
-  signatureData           String?
-  gender                  String?     @db.VarChar(20)
-  mobileNumber            String?     @db.VarChar(20)
-  appointments            Appointment[]
-  carePlans               CarePlan[]
-  clinics                 Clinic[]
-  organization            Organization? @relation(fields: [organizationId], references: [id])
-  specialty               Specialty?    @relation(fields: [specialtyId], references: [id])
-  user                    User          @relation("UserDoctorProfile", fields: [userId], references: [id], onDelete: Cascade)
-  verifier                User?         @relation("UserVerifiedDoctors", fields: [verifiedBy], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  hsps                    Hsp[]
-  notifications           Notification[]
-  primaryPatientConsentOtps PatientConsentOtp[] @relation("PrimaryDoctorPatientConsentOtps")
-  secondaryPatientConsentOtps PatientConsentOtp[] @relation("SecondaryDoctorPatientConsentOtps")
-  assignedPatientDoctorAssignments PatientDoctorAssignment[] @relation("AssignedByDoctorPatientDoctorAssignments")
-  doctorAssignments       PatientDoctorAssignment[]
-  patientProviderConsentHistories PatientProviderConsentHistory[]
-  patients                Patient[]
-  primarySecondaryDoctorAssignments SecondaryDoctorAssignment[] @relation("PrimaryDoctorSecondaryDoctorAssignments")
-  secondarySecondaryDoctorAssignments SecondaryDoctorAssignment[] @relation("SecondaryDoctorSecondaryDoctorAssignments")
-  prescriptions           Prescription[]
-  treatmentPlans          TreatmentPlan[]
-  videoConsultations      VideoConsultation[]
-  labOrders               LabOrder[]
+  id                                  String                          @id @default(uuid()) @db.Uuid
+  userId                              String                          @unique @db.Uuid
+  doctorId                            String                          @unique @db.VarChar(50)
+  organizationId                      String?                         @db.Uuid
+  medicalLicenseNumber                String                          @unique @db.VarChar(100)
+  npiNumber                           String?                         @unique @db.VarChar(20)
+  boardCertifications                 String[]                        @default([])
+  medicalSchool                       String?                         @db.VarChar(255)
+  residencyPrograms                   Json?                           @default("[]")
+  specialties                         String[]                        @default([])
+  subSpecialties                      String[]                        @default([])
+  yearsOfExperience                   Int?
+  capabilities                        String[]                        @default(["prescribe_medications", "order_tests", "diagnose", "create_treatment_plans", "create_care_plans", "modify_medications", "monitor_vitals", "patient_education", "care_coordination", "emergency_response"])
+  isVerified                          Boolean?                        @default(false)
+  verificationDocuments               Json?                           @default("[]")
+  verificationDate                    DateTime?
+  verifiedBy                          String?                         @db.Uuid
+  consultationFee                     Decimal?                        @db.Decimal(10, 2)
+  availabilitySchedule                Json?                           @default("{\"friday\": {\"end\": \"17:00\", \"start\": \"09:00\", \"available\": true}, \"monday\": {\"end\": \"17:00\", \"start\": \"09:00\", \"available\": true}, \"sunday\": {\"available\": false}, \"tuesday\": {\"end\": \"17:00\", \"start\": \"09:00\", \"available\": true}, \"saturday\": {\"available\": false}, \"thursday\": {\"end\": \"17:00\", \"start\": \"09:00\", \"available\": true}, \"wednesday\": {\"end\": \"17:00\", \"start\": \"09:00\", \"available\": true}}")
+  languagesSpoken                     String[]                        @default(["en"])
+  notificationPreferences             Json?                           @default("{\"patient_updates\": true, \"emergency_alerts\": true, \"peer_consultations\": true, \"system_notifications\": true, \"appointmentReminders\": true}")
+  practiceName                        String?                         @db.VarChar(255)
+  practiceAddress                     Json?                           @default("{}")
+  practicePhone                       String?                         @db.VarChar(20)
+  bio                                 String?                         @db.Text
+  signaturePic                        String?
+  razorpayAccountId                   String?                         @db.VarChar(255)
+  totalPatients                       Int?                            @default(0)
+  activeTreatmentPlans                Int?                            @default(0)
+  activeCarePlans                     Int?                            @default(0)
+  averageRating                       Decimal?                        @db.Decimal(3, 2)
+  totalReviews                        Int?                            @default(0)
+  isAvailableOnline                   Boolean?                        @default(true)
+  createdAt                           DateTime?
+  updatedAt                           DateTime?
+  deletedAt                           DateTime?
+  specialtyId                         Int?
+  profilePictureUrl                   String?
+  bannerImageUrl                      String?
+  qualificationDetails                Json?                           @default("[]")
+  registrationDetails                 Json?                           @default("{}")
+  subscriptionDetails                 Json?                           @default("{}")
+  signatureImageUrl                   String?
+  signatureData                       String?
+  gender                              String?                         @db.VarChar(20)
+  mobileNumber                        String?                         @db.VarChar(20)
+  appointments                        Appointment[]
+  carePlans                           CarePlan[]
+  clinics                             Clinic[]
+  organization                        Organization?                   @relation(fields: [organizationId], references: [id])
+  specialty                           Specialty?                      @relation(fields: [specialtyId], references: [id])
+  user                                User                            @relation("UserDoctorProfile", fields: [userId], references: [id], onDelete: Cascade)
+  verifier                            User?                           @relation("UserVerifiedDoctors", fields: [verifiedBy], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  hsps                                Hsp[]
+  notifications                       Notification[]
+  primaryPatientConsentOtps           PatientConsentOtp[]             @relation("PrimaryDoctorPatientConsentOtps")
+  secondaryPatientConsentOtps         PatientConsentOtp[]             @relation("SecondaryDoctorPatientConsentOtps")
+  assignedPatientDoctorAssignments    PatientDoctorAssignment[]       @relation("AssignedByDoctorPatientDoctorAssignments")
+  doctorAssignments                   PatientDoctorAssignment[]
+  patientProviderConsentHistories     PatientProviderConsentHistory[]
+  patients                            Patient[]
+  primarySecondaryDoctorAssignments   SecondaryDoctorAssignment[]     @relation("PrimaryDoctorSecondaryDoctorAssignments")
+  secondarySecondaryDoctorAssignments SecondaryDoctorAssignment[]     @relation("SecondaryDoctorSecondaryDoctorAssignments")
+  prescriptions                       Prescription[]
+  treatmentPlans                      TreatmentPlan[]
+  videoConsultations                  VideoConsultation[]
+  labOrders                           LabOrder[]
 
   @@index([boardCertifications], type: Gin)
   @@index([gender])
@@ -1102,51 +1102,51 @@ model Doctor {
 }
 
 model Hsp {
-  id                      String      @id @default(uuid()) @db.Uuid
-  userId                  String      @unique @db.Uuid
-  hspId                   String      @unique @db.VarChar(50)
-  organizationId          String?     @db.Uuid
-  hspType                 String      @db.VarChar(50)
-  licenseNumber           String?     @unique @db.VarChar(100)
-  certificationNumber     String?     @db.VarChar(100)
-  certifications          String[]    @default([])
-  education               Json?       @default("[]")
-  specializations         String[]    @default([])
-  yearsOfExperience       Int?
-  capabilities            String[]    @default(["monitor_vitals", "patient_education", "care_coordination"])
-  requiresSupervision     Boolean?    @default(true)
-  supervisingDoctorId     String?     @db.Uuid
-  supervisionLevel        String?     @default("direct") @db.VarChar(20)
-  isVerified              Boolean?    @default(false)
-  verificationDocuments   Json?       @default("[]")
-  verificationDate        DateTime?
-  verifiedBy              String?     @db.Uuid
-  hourlyRate              Decimal?    @db.Decimal(8, 2)
-  availabilitySchedule    Json?       @default("{\"friday\": {\"end\": \"18:00\", \"start\": \"08:00\", \"available\": true}, \"monday\": {\"end\": \"18:00\", \"start\": \"08:00\", \"available\": true}, \"sunday\": {\"available\": false}, \"tuesday\": {\"end\": \"18:00\", \"start\": \"08:00\", \"available\": true}, \"saturday\": {\"available\": false}, \"thursday\": {\"end\": \"18:00\", \"start\": \"08:00\", \"available\": true}, \"wednesday\": {\"end\": \"18:00\", \"start\": \"08:00\", \"available\": true}}")
-  languagesSpoken         String[]    @default(["en"])
-  notificationPreferences Json?       @default("{\"patient_updates\": true, \"shift_reminders\": true, \"emergency_alerts\": true, \"system_notifications\": true}")
-  departments             String[]    @default([])
-  shiftPreferences        Json?       @default("{\"preferred_shifts\": [\"day\"], \"weekend_availability\": false, \"night_shift_available\": false}")
-  totalPatientsAssisted   Int?        @default(0)
-  activeCarePlans         Int?        @default(0)
-  tasksCompleted          Int?        @default(0)
-  averageRating           Decimal?    @db.Decimal(3, 2)
-  totalReviews            Int?        @default(0)
-  isAvailable             Boolean?    @default(true)
-  createdAt               DateTime?
-  updatedAt               DateTime?
-  deletedAt               DateTime?
-  carePlans               CarePlan[]
-  organization            Organization? @relation(fields: [organizationId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  supervisingDoctor       Doctor?       @relation(fields: [supervisingDoctorId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  user                    User          @relation("UserHspProfile", fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction)
-  verifier                User?         @relation("UserVerifiedHsps", fields: [verifiedBy], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  notifications           Notification[]
-  patientConsentOtps      PatientConsentOtp[]
+  id                              String                          @id @default(uuid()) @db.Uuid
+  userId                          String                          @unique @db.Uuid
+  hspId                           String                          @unique @db.VarChar(50)
+  organizationId                  String?                         @db.Uuid
+  hspType                         String                          @db.VarChar(50)
+  licenseNumber                   String?                         @unique @db.VarChar(100)
+  certificationNumber             String?                         @db.VarChar(100)
+  certifications                  String[]                        @default([])
+  education                       Json?                           @default("[]")
+  specializations                 String[]                        @default([])
+  yearsOfExperience               Int?
+  capabilities                    String[]                        @default(["monitor_vitals", "patient_education", "care_coordination"])
+  requiresSupervision             Boolean?                        @default(true)
+  supervisingDoctorId             String?                         @db.Uuid
+  supervisionLevel                String?                         @default("direct") @db.VarChar(20)
+  isVerified                      Boolean?                        @default(false)
+  verificationDocuments           Json?                           @default("[]")
+  verificationDate                DateTime?
+  verifiedBy                      String?                         @db.Uuid
+  hourlyRate                      Decimal?                        @db.Decimal(8, 2)
+  availabilitySchedule            Json?                           @default("{\"friday\": {\"end\": \"18:00\", \"start\": \"08:00\", \"available\": true}, \"monday\": {\"end\": \"18:00\", \"start\": \"08:00\", \"available\": true}, \"sunday\": {\"available\": false}, \"tuesday\": {\"end\": \"18:00\", \"start\": \"08:00\", \"available\": true}, \"saturday\": {\"available\": false}, \"thursday\": {\"end\": \"18:00\", \"start\": \"08:00\", \"available\": true}, \"wednesday\": {\"end\": \"18:00\", \"start\": \"08:00\", \"available\": true}}")
+  languagesSpoken                 String[]                        @default(["en"])
+  notificationPreferences         Json?                           @default("{\"patient_updates\": true, \"shift_reminders\": true, \"emergency_alerts\": true, \"system_notifications\": true}")
+  departments                     String[]                        @default([])
+  shiftPreferences                Json?                           @default("{\"preferred_shifts\": [\"day\"], \"weekend_availability\": false, \"night_shift_available\": false}")
+  totalPatientsAssisted           Int?                            @default(0)
+  activeCarePlans                 Int?                            @default(0)
+  tasksCompleted                  Int?                            @default(0)
+  averageRating                   Decimal?                        @db.Decimal(3, 2)
+  totalReviews                    Int?                            @default(0)
+  isAvailable                     Boolean?                        @default(true)
+  createdAt                       DateTime?
+  updatedAt                       DateTime?
+  deletedAt                       DateTime?
+  carePlans                       CarePlan[]
+  organization                    Organization?                   @relation(fields: [organizationId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  supervisingDoctor               Doctor?                         @relation(fields: [supervisingDoctorId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  user                            User                            @relation("UserHspProfile", fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  verifier                        User?                           @relation("UserVerifiedHsps", fields: [verifiedBy], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  notifications                   Notification[]
+  patientConsentOtps              PatientConsentOtp[]
   patientProviderConsentHistories PatientProviderConsentHistory[]
-  patients                Patient[]
-  secondaryDoctorAssignments SecondaryDoctorAssignment[]
-  prescriptions           Prescription[]
+  patients                        Patient[]
+  secondaryDoctorAssignments      SecondaryDoctorAssignment[]
+  prescriptions                   Prescription[]
 
   @@index([departments], type: Gin)
   @@index([hspType])
@@ -1158,19 +1158,19 @@ model Hsp {
 }
 
 model MedicationLog {
-  id              String                         @id @db.Uuid
-  medicationId    String                         @db.Uuid
-  patientId       String                         @db.Uuid
+  id              String                        @id @db.Uuid
+  medicationId    String                        @db.Uuid
+  patientId       String                        @db.Uuid
   scheduledAt     DateTime
   takenAt         DateTime?
-  dosageTaken     String?                        @db.VarChar(100)
+  dosageTaken     String?                       @db.VarChar(100)
   notes           String?
   adherenceStatus MedicationLogAdherenceStatus? @default(MISSED)
-  reminderSent    Boolean?                       @default(false)
+  reminderSent    Boolean?                      @default(false)
   createdAt       DateTime?
   updatedAt       DateTime?
-  medication      Medication                     @relation(fields: [medicationId], references: [id], onDelete: NoAction)
-  patient         Patient                        @relation(fields: [patientId], references: [id], onDelete: NoAction)
+  medication      Medication                    @relation(fields: [medicationId], references: [id], onDelete: NoAction)
+  patient         Patient                       @relation(fields: [patientId], references: [id], onDelete: NoAction)
 
   @@index([adherenceStatus, scheduledAt])
   @@index([medicationId, scheduledAt])
@@ -1203,43 +1203,43 @@ model PatientAlert {
 }
 
 model PatientConsentOtp {
-  id                        String                   @id @db.Uuid
-  secondaryAssignmentId     String                   @db.Uuid
-  patientId                 String                   @db.Uuid
-  primaryDoctorId           String                   @db.Uuid
-  secondaryDoctorId         String?                  @db.Uuid
-  secondaryHspId            String?                  @db.Uuid
-  otpCode                   String                   @db.VarChar(10)
-  otpMethod                 PatientConsentOtpMethod? @default(BOTH)
-  patientPhone              String?                  @db.VarChar(20)
-  patientEmail              String?                  @db.VarChar(255)
+  id                        String                    @id @db.Uuid
+  secondaryAssignmentId     String                    @db.Uuid
+  patientId                 String                    @db.Uuid
+  primaryDoctorId           String                    @db.Uuid
+  secondaryDoctorId         String?                   @db.Uuid
+  secondaryHspId            String?                   @db.Uuid
+  otpCode                   String                    @db.VarChar(10)
+  otpMethod                 PatientConsentOtpMethod?  @default(BOTH)
+  patientPhone              String?                   @db.VarChar(20)
+  patientEmail              String?                   @db.VarChar(255)
   generatedAt               DateTime?
   expiresAt                 DateTime
-  attemptsCount             Int?                     @default(0)
-  maxAttempts               Int?                     @default(3)
-  isVerified                Boolean?                 @default(false)
+  attemptsCount             Int?                      @default(0)
+  maxAttempts               Int?                      @default(3)
+  isVerified                Boolean?                  @default(false)
   verifiedAt                DateTime?
-  isExpired                 Boolean?                 @default(false)
-  isBlocked                 Boolean?                 @default(false)
+  isExpired                 Boolean?                  @default(false)
+  isBlocked                 Boolean?                  @default(false)
   blockedAt                 DateTime?
-  requestedByUserId         String                   @db.Uuid
-  requestIpAddress          String?                  @db.Inet
+  requestedByUserId         String                    @db.Uuid
+  requestIpAddress          String?                   @db.Inet
   requestUserAgent          String?
-  smsSent                   Boolean?                 @default(false)
+  smsSent                   Boolean?                  @default(false)
   smsSentAt                 DateTime?
   smsError                  String?
-  emailSent                 Boolean?                 @default(false)
+  emailSent                 Boolean?                  @default(false)
   emailSentAt               DateTime?
   emailError                String?
   createdAt                 DateTime?
   updatedAt                 DateTime?
   deletedAt                 DateTime?
-  patient                   Patient                  @relation(fields: [patientId], references: [id], onDelete: Cascade)
-  primaryDoctor             Doctor                   @relation("PrimaryDoctorPatientConsentOtps", fields: [primaryDoctorId], references: [id], onDelete: Cascade)
-  requestedByUser           User                     @relation("RequestedByUser", fields: [requestedByUserId], references: [id], onDelete: Cascade)
+  patient                   Patient                   @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  primaryDoctor             Doctor                    @relation("PrimaryDoctorPatientConsentOtps", fields: [primaryDoctorId], references: [id], onDelete: Cascade)
+  requestedByUser           User                      @relation("RequestedByUser", fields: [requestedByUserId], references: [id], onDelete: Cascade)
   secondaryDoctorAssignment SecondaryDoctorAssignment @relation(fields: [secondaryAssignmentId], references: [id], onDelete: Cascade)
-  secondaryDoctor           Doctor?                  @relation("SecondaryDoctorPatientConsentOtps", fields: [secondaryDoctorId], references: [id], onDelete: Cascade)
-  secondaryHsp              Hsp?                     @relation(fields: [secondaryHspId], references: [id], onDelete: Cascade)
+  secondaryDoctor           Doctor?                   @relation("SecondaryDoctorPatientConsentOtps", fields: [secondaryDoctorId], references: [id], onDelete: Cascade)
+  secondaryHsp              Hsp?                      @relation(fields: [secondaryHspId], references: [id], onDelete: Cascade)
 
   @@index([expiresAt])
   @@index([generatedAt])
@@ -1271,34 +1271,34 @@ model PatientProviderAssignment {
 }
 
 model PatientProviderConsentHistory {
-  id                 String                        @id @db.Uuid
-  patientId          String                        @db.Uuid
-  previousProviderId String?                       @db.Uuid
-  newProviderId      String                        @db.Uuid
-  doctorId           String?                       @db.Uuid
-  hspId              String?                       @db.Uuid
-  consentRequired    Boolean?                      @default(false)
-  consentRequested   Boolean?                      @default(false)
-  consentRequestedAt DateTime?
-  consentGiven       Boolean?                      @default(false)
-  consentGivenAt     DateTime?
-  consentMethod      PatientProviderConsentMethod?
-  consentToken       String?                       @db.VarChar(100)
+  id                    String                        @id @db.Uuid
+  patientId             String                        @db.Uuid
+  previousProviderId    String?                       @db.Uuid
+  newProviderId         String                        @db.Uuid
+  doctorId              String?                       @db.Uuid
+  hspId                 String?                       @db.Uuid
+  consentRequired       Boolean?                      @default(false)
+  consentRequested      Boolean?                      @default(false)
+  consentRequestedAt    DateTime?
+  consentGiven          Boolean?                      @default(false)
+  consentGivenAt        DateTime?
+  consentMethod         PatientProviderConsentMethod?
+  consentToken          String?                       @db.VarChar(100)
   consentTokenExpiresAt DateTime?
-  consentVerified    Boolean?                      @default(false)
-  consentDenied      Boolean?                      @default(false)
-  consentDeniedAt    DateTime?
-  reason             String?
-  initiatedBy        String?                       @db.Uuid
-  status             PatientProviderConsentStatus? @default(PENDING)
-  metadata           Json?                         @default("{}")
-  createdAt          DateTime?
-  updatedAt          DateTime?
-  doctor             Doctor?                       @relation(fields: [doctorId], references: [id], onUpdate: NoAction)
-  hsp                Hsp?                          @relation(fields: [hspId], references: [id], onUpdate: NoAction)
-  newProvider        Organization                  @relation("NewProviderConsents", fields: [newProviderId], references: [id], onDelete: Cascade, onUpdate: NoAction)
-  patient            Patient                       @relation(fields: [patientId], references: [id], onDelete: Cascade, onUpdate: NoAction)
-  previousProvider   Organization?                 @relation("PreviousProviderConsents", fields: [previousProviderId], references: [id], onUpdate: NoAction)
+  consentVerified       Boolean?                      @default(false)
+  consentDenied         Boolean?                      @default(false)
+  consentDeniedAt       DateTime?
+  reason                String?
+  initiatedBy           String?                       @db.Uuid
+  status                PatientProviderConsentStatus? @default(PENDING)
+  metadata              Json?                         @default("{}")
+  createdAt             DateTime?
+  updatedAt             DateTime?
+  doctor                Doctor?                       @relation(fields: [doctorId], references: [id], onUpdate: NoAction)
+  hsp                   Hsp?                          @relation(fields: [hspId], references: [id], onUpdate: NoAction)
+  newProvider           Organization                  @relation("NewProviderConsents", fields: [newProviderId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  patient               Patient                       @relation(fields: [patientId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  previousProvider      Organization?                 @relation("PreviousProviderConsents", fields: [previousProviderId], references: [id], onUpdate: NoAction)
 
   @@index([consentRequestedAt])
   @@index([doctorId])
@@ -1377,21 +1377,21 @@ model Payment {
 }
 
 model ProviderChange {
-  id                    String                        @id @db.Uuid
+  id                    String                         @id @db.Uuid
   practitionerType      ProviderChangePractitionerType
-  practitionerId        String                        @db.Uuid
-  previousProviderId    String?                       @db.Uuid
-  newProviderId         String                        @db.Uuid
+  practitionerId        String                         @db.Uuid
+  previousProviderId    String?                        @db.Uuid
+  newProviderId         String                         @db.Uuid
   changeDate            DateTime
-  affectedPatientsCount Int?                          @default(0)
-  consentRequiredCount  Int?                          @default(0)
-  consentObtainedCount  Int?                          @default(0)
+  affectedPatientsCount Int?                           @default(0)
+  consentRequiredCount  Int?                           @default(0)
+  consentObtainedCount  Int?                           @default(0)
   reason                String?
-  status                ProviderChangeStatus?         @default(ACTIVE)
+  status                ProviderChangeStatus?          @default(ACTIVE)
   createdAt             DateTime?
   updatedAt             DateTime?
-  newProvider           Organization                  @relation("NewProviderChanges", fields: [newProviderId], references: [id], onDelete: Cascade, onUpdate: NoAction)
-  previousProvider      Organization?                 @relation("PreviousProviderChanges", fields: [previousProviderId], references: [id], onUpdate: NoAction)
+  newProvider           Organization                   @relation("NewProviderChanges", fields: [newProviderId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  previousProvider      Organization?                  @relation("PreviousProviderChanges", fields: [previousProviderId], references: [id], onUpdate: NoAction)
 
   @@index([changeDate])
   @@index([newProviderId])
@@ -1439,27 +1439,27 @@ model ScheduleEvent {
 }
 
 model ScheduledEvent {
-  id               String                 @id @db.Uuid
-  patientId        String                 @db.Uuid
-  carePlanId       String?                @db.Uuid
+  id               String                  @id @db.Uuid
+  patientId        String                  @db.Uuid
+  carePlanId       String?                 @db.Uuid
   eventType        ScheduledEventType
-  eventId          String?                @db.Uuid
-  title            String                 @db.VarChar(255)
+  eventId          String?                 @db.Uuid
+  title            String                  @db.VarChar(255)
   description      String?
   scheduledFor     DateTime
-  timezone         String?                @default("UTC") @db.VarChar(50)
-  status           ScheduledEventStatus?  @default(SCHEDULED)
-  priority         ScheduledEventPriority?@default(MEDIUM)
-  eventData        Json?                  @default("{}")
+  timezone         String?                 @default("UTC") @db.VarChar(50)
+  status           ScheduledEventStatus?   @default(SCHEDULED)
+  priority         ScheduledEventPriority? @default(MEDIUM)
+  eventData        Json?                   @default("{}")
   completedAt      DateTime?
-  completedBy      String?                @db.Uuid
+  completedBy      String?                 @db.Uuid
   createdAt        DateTime?
   updatedAt        DateTime?
   deletedAt        DateTime?
   adherenceRecords AdherenceRecord[]
-  carePlan         CarePlan?              @relation(fields: [carePlanId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  completedByUser  User?                  @relation(fields: [completedBy], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  patient          Patient                @relation(fields: [patientId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  carePlan         CarePlan?               @relation(fields: [carePlanId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  completedByUser  User?                   @relation(fields: [completedBy], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  patient          Patient                 @relation(fields: [patientId], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
   @@index([carePlanId, scheduledFor, eventType], map: "idx_events_careplan_time_type")
   @@index([patientId, scheduledFor, status], map: "idx_events_patient_time_status")
@@ -1468,36 +1468,36 @@ model ScheduledEvent {
 }
 
 model SecondaryDoctorAssignment {
-  id                        String                                @id @db.Uuid
-  patientId                 String                                @db.Uuid
-  primaryDoctorId           String                                @db.Uuid
-  secondaryDoctorId         String?                               @db.Uuid
-  secondaryHspId            String?                               @db.Uuid
+  id                        String                                  @id @db.Uuid
+  patientId                 String                                  @db.Uuid
+  primaryDoctorId           String                                  @db.Uuid
+  secondaryDoctorId         String?                                 @db.Uuid
+  secondaryHspId            String?                                 @db.Uuid
   assignmentReason          String?
-  specialtyFocus            String[]                              @default([])
-  carePlanIds               String[]                              @default([]) @db.Uuid
-  primaryDoctorProviderId   String?                               @db.Uuid
-  secondaryDoctorProviderId String?                               @db.Uuid
-  consentRequired           Boolean?                              @default(true)
+  specialtyFocus            String[]                                @default([])
+  carePlanIds               String[]                                @default([]) @db.Uuid
+  primaryDoctorProviderId   String?                                 @db.Uuid
+  secondaryDoctorProviderId String?                                 @db.Uuid
+  consentRequired           Boolean?                                @default(true)
   consentStatus             SecondaryDoctorAssignmentConsentStatus? @default(PENDING)
-  accessGranted             Boolean?                              @default(false)
+  accessGranted             Boolean?                                @default(false)
   firstAccessAttemptAt      DateTime?
   accessGrantedAt           DateTime?
   consentExpiresAt          DateTime?
-  consentDurationMonths     Int?                                  @default(6)
-  isActive                  Boolean?                              @default(true)
+  consentDurationMonths     Int?                                    @default(6)
+  isActive                  Boolean?                                @default(true)
   assignmentStartDate       DateTime?
   assignmentEndDate         DateTime?
   createdAt                 DateTime?
   updatedAt                 DateTime?
   deletedAt                 DateTime?
   patientConsentOtps        PatientConsentOtp[]
-  patient                   Patient                               @relation(fields: [patientId], references: [id], onDelete: Cascade)
-  primaryDoctor             Doctor                                @relation("PrimaryDoctorSecondaryDoctorAssignments", fields: [primaryDoctorId], references: [id], onDelete: Cascade)
-  primaryDoctorProvider     Organization?                         @relation("PrimaryDoctorProviderAssignments", fields: [primaryDoctorProviderId], references: [id])
-  secondaryDoctor           Doctor?                               @relation("SecondaryDoctorSecondaryDoctorAssignments", fields: [secondaryDoctorId], references: [id], onDelete: Cascade)
-  secondaryDoctorProvider   Organization?                         @relation("SecondaryDoctorProviderAssignments", fields: [secondaryDoctorProviderId], references: [id])
-  secondaryHsp              Hsp?                                  @relation(fields: [secondaryHspId], references: [id], onDelete: Cascade)
+  patient                   Patient                                 @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  primaryDoctor             Doctor                                  @relation("PrimaryDoctorSecondaryDoctorAssignments", fields: [primaryDoctorId], references: [id], onDelete: Cascade)
+  primaryDoctorProvider     Organization?                           @relation("PrimaryDoctorProviderAssignments", fields: [primaryDoctorProviderId], references: [id])
+  secondaryDoctor           Doctor?                                 @relation("SecondaryDoctorSecondaryDoctorAssignments", fields: [secondaryDoctorId], references: [id], onDelete: Cascade)
+  secondaryDoctorProvider   Organization?                           @relation("SecondaryDoctorProviderAssignments", fields: [secondaryDoctorProviderId], references: [id])
+  secondaryHsp              Hsp?                                    @relation(fields: [secondaryHspId], references: [id], onDelete: Cascade)
 
   @@index([accessGranted])
   @@index([consentExpiresAt])
@@ -1562,43 +1562,43 @@ model TreatmentDatabase {
 }
 
 model TreatmentPlan {
-  id                   String       @id @db.Uuid
-  patientId            String       @db.Uuid
-  doctorId             String       @db.Uuid
-  organizationId       String?      @db.Uuid
-  title                String       @db.VarChar(255)
+  id                   String         @id @db.Uuid
+  patientId            String         @db.Uuid
+  doctorId             String         @db.Uuid
+  organizationId       String?        @db.Uuid
+  title                String         @db.VarChar(255)
   description          String?
-  planType             String?      @default("treatment_plan") @db.VarChar(20)
-  primaryDiagnosis     String       @db.VarChar(255)
-  secondaryDiagnoses   String[]     @default([])
+  planType             String?        @default("treatment_plan") @db.VarChar(20)
+  primaryDiagnosis     String         @db.VarChar(255)
+  secondaryDiagnoses   String[]       @default([])
   chiefComplaint       String?
-  symptoms             Json?        @default("[]")
-  treatmentGoals       Json?        @default("[]")
-  interventions        Json?        @default("[]")
-  medications          Json?        @default("[]")
+  symptoms             Json?          @default("[]")
+  treatmentGoals       Json?          @default("[]")
+  interventions        Json?          @default("[]")
+  medications          Json?          @default("[]")
   instructions         String?
   startDate            DateTime
   expectedDurationDays Int?
   endDate              DateTime?
-  followUpRequired     Boolean?     @default(true)
+  followUpRequired     Boolean?       @default(true)
   followUpDate         DateTime?
   followUpInstructions String?
-  status               String?      @default("ACTIVE") @db.VarChar(20)
-  priority             String?      @default("MEDIUM") @db.VarChar(20)
-  progressNotes        Json?        @default("[]")
-  completionPercentage Int?         @default(0)
+  status               String?        @default("ACTIVE") @db.VarChar(20)
+  priority             String?        @default("MEDIUM") @db.VarChar(20)
+  progressNotes        Json?          @default("[]")
+  completionPercentage Int?           @default(0)
   outcome              String?
-  emergencyContacts    Json?        @default("[]")
-  warningSigns         String[]     @default([])
-  assignedHsps         String[]     @default([]) @db.Uuid
-  careTeamNotes        Json?        @default("[]")
+  emergencyContacts    Json?          @default("[]")
+  warningSigns         String[]       @default([])
+  assignedHsps         String[]       @default([]) @db.Uuid
+  careTeamNotes        Json?          @default("[]")
   createdAt            DateTime?
   updatedAt            DateTime?
   deletedAt            DateTime?
   notifications        Notification[]
-  doctor               Doctor       @relation(fields: [doctorId], references: [id], onDelete: NoAction)
-  organization         Organization?@relation(fields: [organizationId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  patient              Patient      @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  doctor               Doctor         @relation(fields: [doctorId], references: [id], onDelete: NoAction)
+  organization         Organization?  @relation(fields: [organizationId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  patient              Patient        @relation(fields: [patientId], references: [id], onDelete: Cascade)
   adherenceLogs        AdherenceLog[]
 
   @@index([doctorId])
@@ -1950,20 +1950,20 @@ enum VitalReadingAlertLevel {
 // ============================================================================
 
 model DrugInteraction {
-  id                String                  @id @default(uuid()) @db.Uuid
-  rxcuiOne          String                  @db.VarChar(50)  // RxNorm identifier for first drug
-  rxcuiTwo          String                  @db.VarChar(50)  // RxNorm identifier for second drug
-  drugNameOne       String                  @db.VarChar(255)
-  drugNameTwo       String                  @db.VarChar(255)
-  severityLevel     DrugInteractionSeverity
-  interactionType   String                  @db.VarChar(100) // "pharmacokinetic", "pharmacodynamic", "duplicate"
-  description       String                  @db.Text
-  clinicalEffect    String                  @db.Text
-  managementAdvice  String                  @db.Text
-  evidenceLevel     String                  @db.VarChar(10)  // "HIGH", "MODERATE", "LOW"
-  source            String                  @default("RxNorm") @db.VarChar(50)
-  lastUpdatedAt     DateTime                @updatedAt @db.Timestamptz(6)
-  createdAt         DateTime                @default(now()) @db.Timestamptz(6)
+  id                     String                  @id @default(uuid()) @db.Uuid
+  rxcuiOne               String                  @db.VarChar(50) // RxNorm identifier for first drug
+  rxcuiTwo               String                  @db.VarChar(50) // RxNorm identifier for second drug
+  drugNameOne            String                  @db.VarChar(255)
+  drugNameTwo            String                  @db.VarChar(255)
+  severityLevel          DrugInteractionSeverity
+  interactionType        String                  @db.VarChar(100) // "pharmacokinetic", "pharmacodynamic", "duplicate"
+  description            String                  @db.Text
+  clinicalEffect         String                  @db.Text
+  managementAdvice       String                  @db.Text
+  evidenceLevel          String                  @db.VarChar(10) // "HIGH", "MODERATE", "LOW"
+  source                 String                  @default("RxNorm") @db.VarChar(50)
+  lastUpdatedAt          DateTime                @updatedAt @db.Timestamptz(6)
+  createdAt              DateTime                @default(now()) @db.Timestamptz(6)
   medicationSafetyAlerts MedicationSafetyAlert[]
 
   @@unique([rxcuiOne, rxcuiTwo])
@@ -1973,23 +1973,23 @@ model DrugInteraction {
 }
 
 model PatientAllergy {
-  id                String           @id @default(uuid()) @db.Uuid
-  patientId         String           @db.Uuid
-  allergenType      AllergenType
-  allergenName      String           @db.VarChar(255)
-  allergenRxnorm    String?          @db.VarChar(50) // RxNorm code if medication
-  reactionSeverity  AllergySeverity
-  reactionSymptoms  String?          @db.Text
-  onsetDate         DateTime?        @db.Date
-  verifiedByDoctor  Boolean          @default(false)
-  verifiedBy        String?          @db.Uuid
-  notes             String?          @db.Text
-  isActive          Boolean          @default(true)
-  createdAt         DateTime         @default(now()) @db.Timestamptz(6)
-  updatedAt         DateTime         @updatedAt @db.Timestamptz(6)
+  id               String          @id @default(uuid()) @db.Uuid
+  patientId        String          @db.Uuid
+  allergenType     AllergenType
+  allergenName     String          @db.VarChar(255)
+  allergenRxnorm   String?         @db.VarChar(50) // RxNorm code if medication
+  reactionSeverity AllergySeverity
+  reactionSymptoms String?         @db.Text
+  onsetDate        DateTime?       @db.Date
+  verifiedByDoctor Boolean         @default(false)
+  verifiedBy       String?         @db.Uuid
+  notes            String?         @db.Text
+  isActive         Boolean         @default(true)
+  createdAt        DateTime        @default(now()) @db.Timestamptz(6)
+  updatedAt        DateTime        @updatedAt @db.Timestamptz(6)
 
-  patient           Patient          @relation(fields: [patientId], references: [id], onDelete: Cascade)
-  verifiedByUser    User?            @relation(fields: [verifiedBy], references: [id])
+  patient                Patient                 @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  verifiedByUser         User?                   @relation(fields: [verifiedBy], references: [id])
   medicationSafetyAlerts MedicationSafetyAlert[]
 
   @@index([patientId, isActive])
@@ -2018,12 +2018,12 @@ model MedicationSafetyAlert {
   createdAt         DateTime            @default(now())
   updatedAt         DateTime            @updatedAt
 
-  patient           Patient             @relation(fields: [patientId], references: [id], onDelete: Cascade)
-  medication        Medication?         @relation(fields: [medicationId], references: [id])
-  drugInteraction   DrugInteraction?    @relation(fields: [drugInteractionId], references: [id])
-  patientAllergy    PatientAllergy?     @relation(fields: [patientAllergyId], references: [id])
-  resolvedByUser    User?               @relation(fields: [resolvedBy], references: [id])
-  createdByUser     User?               @relation("SafetyAlertCreatedBy", fields: [createdBy], references: [id])
+  patient         Patient          @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  medication      Medication?      @relation(fields: [medicationId], references: [id])
+  drugInteraction DrugInteraction? @relation(fields: [drugInteractionId], references: [id])
+  patientAllergy  PatientAllergy?  @relation(fields: [patientAllergyId], references: [id])
+  resolvedByUser  User?            @relation(fields: [resolvedBy], references: [id])
+  createdByUser   User?            @relation("SafetyAlertCreatedBy", fields: [createdBy], references: [id])
 
   @@index([patientId, severity, resolved])
   @@index([alertType, createdAt])
@@ -2037,33 +2037,33 @@ model MedicationSafetyAlert {
 // ============================================================================
 
 model EmergencyAlert {
-  id                   String            @id @default(uuid()) @db.Uuid
-  patientId            String            @db.Uuid
-  alertType            EmergencyAlertType
-  priorityLevel        EmergencyPriority
-  vitalReadingId       String?           @db.Uuid
-  triggeredByRule      String?           @db.VarChar(255)
-  alertTitle           String            @db.VarChar(255)
-  alertMessage         String            @db.Text
-  clinicalContext      String?           @db.Text
-  acknowledged         Boolean           @default(false)
-  acknowledgedBy       String?           @db.Uuid
-  acknowledgedAt       DateTime?
-  resolved             Boolean           @default(false)
-  resolvedBy           String?           @db.Uuid
-  resolvedAt           DateTime?
-  resolutionNotes      String?           @db.Text
-  notificationsSent    Json              @default("[]")
-  escalationLevel      Int               @default(0)
-  maxEscalations       Int               @default(3)
-  createdAt            DateTime          @default(now())
-  updatedAt            DateTime          @updatedAt
+  id                String             @id @default(uuid()) @db.Uuid
+  patientId         String             @db.Uuid
+  alertType         EmergencyAlertType
+  priorityLevel     EmergencyPriority
+  vitalReadingId    String?            @db.Uuid
+  triggeredByRule   String?            @db.VarChar(255)
+  alertTitle        String             @db.VarChar(255)
+  alertMessage      String             @db.Text
+  clinicalContext   String?            @db.Text
+  acknowledged      Boolean            @default(false)
+  acknowledgedBy    String?            @db.Uuid
+  acknowledgedAt    DateTime?
+  resolved          Boolean            @default(false)
+  resolvedBy        String?            @db.Uuid
+  resolvedAt        DateTime?
+  resolutionNotes   String?            @db.Text
+  notificationsSent Json               @default("[]")
+  escalationLevel   Int                @default(0)
+  maxEscalations    Int                @default(3)
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
 
-  patient              Patient           @relation(fields: [patientId], references: [id], onDelete: Cascade)
-  vitalReading         VitalReading?     @relation(fields: [vitalReadingId], references: [id])
-  acknowledgedByUser   User?             @relation("EmergencyAlertAcknowledged", fields: [acknowledgedBy], references: [id])
-  resolvedByUser       User?             @relation("EmergencyAlertResolved", fields: [resolvedBy], references: [id])
-  deviceReadings       DeviceReading[]   @relation("DeviceReadingToEmergencyAlert")
+  patient            Patient         @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  vitalReading       VitalReading?   @relation(fields: [vitalReadingId], references: [id])
+  acknowledgedByUser User?           @relation("EmergencyAlertAcknowledged", fields: [acknowledgedBy], references: [id])
+  resolvedByUser     User?           @relation("EmergencyAlertResolved", fields: [resolvedBy], references: [id])
+  deviceReadings     DeviceReading[] @relation("DeviceReadingToEmergencyAlert")
 
   @@index([patientId, priorityLevel, acknowledged, resolved])
   @@index([alertType, createdAt])
@@ -2072,29 +2072,29 @@ model EmergencyAlert {
 }
 
 model VitalAlertRule {
-  id                 String             @id @default(uuid()) @db.Uuid
-  name               String             @db.VarChar(255)
-  description        String?            @db.Text
-  vitalType          String             @db.VarChar(100)
-  conditionType      VitalConditionType
-  thresholdValue     Decimal?           @db.Decimal(10, 2)
-  thresholdMin       Decimal?           @db.Decimal(10, 2)
-  thresholdMax       Decimal?           @db.Decimal(10, 2)
-  unit               String?            @db.VarChar(20)
-  alertLevel         AlertSeverity
-  alertMessage       String             @db.Text
-  notificationDelay  Int                @default(0)
-  minAge             Int?
-  maxAge             Int?
-  genderSpecific     String?            @db.VarChar(10)
-  isActive           Boolean            @default(true)
-  appliesToAll       Boolean            @default(true)
-  patientConditions  Json?              @default("[]")
-  createdBy          String?            @db.Uuid
-  createdAt          DateTime           @default(now())
-  updatedAt          DateTime           @updatedAt
+  id                String             @id @default(uuid()) @db.Uuid
+  name              String             @db.VarChar(255)
+  description       String?            @db.Text
+  vitalType         String             @db.VarChar(100)
+  conditionType     VitalConditionType
+  thresholdValue    Decimal?           @db.Decimal(10, 2)
+  thresholdMin      Decimal?           @db.Decimal(10, 2)
+  thresholdMax      Decimal?           @db.Decimal(10, 2)
+  unit              String?            @db.VarChar(20)
+  alertLevel        AlertSeverity
+  alertMessage      String             @db.Text
+  notificationDelay Int                @default(0)
+  minAge            Int?
+  maxAge            Int?
+  genderSpecific    String?            @db.VarChar(10)
+  isActive          Boolean            @default(true)
+  appliesToAll      Boolean            @default(true)
+  patientConditions Json?              @default("[]")
+  createdBy         String?            @db.Uuid
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
 
-  createdByUser      User?              @relation(fields: [createdBy], references: [id])
+  createdByUser User? @relation(fields: [createdBy], references: [id])
 
   @@index([vitalType, isActive])
   @@index([alertLevel])
@@ -2102,24 +2102,24 @@ model VitalAlertRule {
 }
 
 model EmergencyContact {
-  id                    String    @id @default(uuid()) @db.Uuid
-  patientId             String    @db.Uuid
-  name                  String    @db.VarChar(255)
-  relationship          String    @db.VarChar(100)
-  phone                 String    @db.VarChar(20)
-  email                 String?   @db.VarChar(255)
-  address               Json?
-  priorityOrder         Int       @default(1)
-  canReceiveMedical     Boolean   @default(false)
-  preferredContact      String    @default("phone") @db.VarChar(20)
-  isActive              Boolean   @default(true)
-  hipaaAuthorized       Boolean   @default(false)
-  authorizationDate     DateTime?
-  authorizationExpires  DateTime?
-  createdAt             DateTime  @default(now())
-  updatedAt             DateTime  @updatedAt
+  id                   String    @id @default(uuid()) @db.Uuid
+  patientId            String    @db.Uuid
+  name                 String    @db.VarChar(255)
+  relationship         String    @db.VarChar(100)
+  phone                String    @db.VarChar(20)
+  email                String?   @db.VarChar(255)
+  address              Json?
+  priorityOrder        Int       @default(1)
+  canReceiveMedical    Boolean   @default(false)
+  preferredContact     String    @default("phone") @db.VarChar(20)
+  isActive             Boolean   @default(true)
+  hipaaAuthorized      Boolean   @default(false)
+  authorizationDate    DateTime?
+  authorizationExpires DateTime?
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
 
-  patient               Patient   @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  patient Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
 
   @@index([patientId, priorityOrder])
   @@index([patientId, isActive])
@@ -2295,49 +2295,49 @@ enum ConnectionType {
 }
 
 model VideoConsultation {
-  id                    String              @id @default(uuid()) @db.Uuid
-  consultationId        String              @unique @db.VarChar(255)
-  doctorId              String              @db.Uuid
-  patientId             String              @db.Uuid
-  appointmentId         String?             @db.Uuid
-  consultationType      ConsultationType    @default(VIDEO_CONSULTATION)
-  status                ConsultationStatus  @default(SCHEDULED)
-  priority              ConsultationPriority @default(ROUTINE)
-  scheduledStart        DateTime
-  scheduledEnd          DateTime
-  actualStart           DateTime?
-  actualEnd             DateTime?
-  timezone              String              @default("UTC") @db.VarChar(50)
-  roomId                String?             @unique @db.VarChar(255)
-  roomToken             String?             @db.Text
-  doctorJoinUrl         String?             @db.Text
-  patientJoinUrl        String?             @db.Text
-  recordingEnabled      Boolean             @default(false)
-  recordingUrl          String?             @db.Text
-  chiefComplaint        String?             @db.Text
-  presentingSymptoms    String[]            @default([])
-  consultationNotes     String?             @db.Text
-  diagnosis             String?             @db.Text
-  treatmentPlan         String?             @db.Text
-  followUpRequired      Boolean             @default(false)
-  followUpDate          DateTime?
-  connectionQuality     Json?               @default("{}")
-  technicalIssues       String[]            @default([])
-  durationMinutes       Int?
-  consultationFee       Decimal?            @db.Decimal(10, 2)
-  insuranceCovered      Boolean             @default(false)
-  paymentStatus         String?             @default("pending") @db.VarChar(50)
-  createdBy             String              @db.Uuid
-  createdAt             DateTime            @default(now())
-  updatedAt             DateTime            @updatedAt
-  doctor                Doctor             @relation(fields: [doctorId], references: [id], onDelete: Cascade)
-  patient               Patient             @relation(fields: [patientId], references: [id], onDelete: Cascade)
-  appointment           Appointment?        @relation(fields: [appointmentId], references: [id])
-  creator               User                @relation("ConsultationCreatedBy", fields: [createdBy], references: [id])
-  prescriptions         ConsultationPrescription[]
-  labOrders             LabOrder[]
+  id                       String                     @id @default(uuid()) @db.Uuid
+  consultationId           String                     @unique @db.VarChar(255)
+  doctorId                 String                     @db.Uuid
+  patientId                String                     @db.Uuid
+  appointmentId            String?                    @db.Uuid
+  consultationType         ConsultationType           @default(VIDEO_CONSULTATION)
+  status                   ConsultationStatus         @default(SCHEDULED)
+  priority                 ConsultationPriority       @default(ROUTINE)
+  scheduledStart           DateTime
+  scheduledEnd             DateTime
+  actualStart              DateTime?
+  actualEnd                DateTime?
+  timezone                 String                     @default("UTC") @db.VarChar(50)
+  roomId                   String?                    @unique @db.VarChar(255)
+  roomToken                String?                    @db.Text
+  doctorJoinUrl            String?                    @db.Text
+  patientJoinUrl           String?                    @db.Text
+  recordingEnabled         Boolean                    @default(false)
+  recordingUrl             String?                    @db.Text
+  chiefComplaint           String?                    @db.Text
+  presentingSymptoms       String[]                   @default([])
+  consultationNotes        String?                    @db.Text
+  diagnosis                String?                    @db.Text
+  treatmentPlan            String?                    @db.Text
+  followUpRequired         Boolean                    @default(false)
+  followUpDate             DateTime?
+  connectionQuality        Json?                      @default("{}")
+  technicalIssues          String[]                   @default([])
+  durationMinutes          Int?
+  consultationFee          Decimal?                   @db.Decimal(10, 2)
+  insuranceCovered         Boolean                    @default(false)
+  paymentStatus            String?                    @default("pending") @db.VarChar(50)
+  createdBy                String                     @db.Uuid
+  createdAt                DateTime                   @default(now())
+  updatedAt                DateTime                   @updatedAt
+  doctor                   Doctor                     @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  patient                  Patient                    @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  appointment              Appointment?               @relation(fields: [appointmentId], references: [id])
+  creator                  User                       @relation("ConsultationCreatedBy", fields: [createdBy], references: [id])
+  prescriptions            ConsultationPrescription[]
+  labOrders                LabOrder[]
   consultationNotesEntries ConsultationNote[]
-  
+
   @@index([doctorId, scheduledStart])
   @@index([patientId, status])
   @@index([status, scheduledStart])
@@ -2346,68 +2346,68 @@ model VideoConsultation {
 }
 
 model ConsultationPrescription {
-  id                    String              @id @default(uuid()) @db.Uuid
-  consultationId        String              @db.Uuid
-  medicationName        String              @db.VarChar(255)
-  dosage                String              @db.VarChar(100)
-  frequency             String              @db.VarChar(100)
-  durationDays          Int
-  quantity              Int?
-  instructions          String?             @db.Text
-  refillsAllowed        Int                 @default(0)
-  ndcCode               String?             @db.VarChar(50)
-  genericSubstitution   Boolean             @default(true)
-  pharmacyInstructions  String?             @db.Text
-  createdAt             DateTime            @default(now())
-  consultation          VideoConsultation   @relation(fields: [consultationId], references: [id], onDelete: Cascade)
-  
+  id                   String            @id @default(uuid()) @db.Uuid
+  consultationId       String            @db.Uuid
+  medicationName       String            @db.VarChar(255)
+  dosage               String            @db.VarChar(100)
+  frequency            String            @db.VarChar(100)
+  durationDays         Int
+  quantity             Int?
+  instructions         String?           @db.Text
+  refillsAllowed       Int               @default(0)
+  ndcCode              String?           @db.VarChar(50)
+  genericSubstitution  Boolean           @default(true)
+  pharmacyInstructions String?           @db.Text
+  createdAt            DateTime          @default(now())
+  consultation         VideoConsultation @relation(fields: [consultationId], references: [id], onDelete: Cascade)
+
   @@index([consultationId])
   @@map("ConsultationPrescriptions")
 }
 
 model ConsultationNote {
-  id                    String              @id @default(uuid()) @db.Uuid
-  consultationId        String              @db.Uuid
-  noteType              String              @db.VarChar(50)
-  content               String              @db.Text
-  timestamp             DateTime            @default(now())
-  createdBy             String              @db.Uuid
-  consultation          VideoConsultation   @relation(fields: [consultationId], references: [id], onDelete: Cascade)
-  creator               User                @relation("ConsultationNoteCreatedBy", fields: [createdBy], references: [id])
-  
+  id             String            @id @default(uuid()) @db.Uuid
+  consultationId String            @db.Uuid
+  noteType       String            @db.VarChar(50)
+  content        String            @db.Text
+  timestamp      DateTime          @default(now())
+  createdBy      String            @db.Uuid
+  consultation   VideoConsultation @relation(fields: [consultationId], references: [id], onDelete: Cascade)
+  creator        User              @relation("ConsultationNoteCreatedBy", fields: [createdBy], references: [id])
+
   @@index([consultationId, noteType])
   @@map("ConsultationNotes")
 }
 
 model LabOrder {
-  id                    String              @id @default(uuid()) @db.Uuid
-  orderNumber           String              @unique @db.VarChar(100)
-  patientId             String              @db.Uuid
-  doctorId              String              @db.Uuid
-  consultationId        String?             @db.Uuid
-  orderDate             DateTime            @default(now())
-  priority              String              @default("routine") @db.VarChar(50)
-  status                LabOrderStatus      @default(ORDERED)
-  category              LabTestCategory     @default(BLOOD_CHEMISTRY)
-  orderedTests          Json                @default("[]")
-  clinicalIndication    String?             @db.Text
-  specialInstructions   String?             @db.Text
-  labFacilityName       String?             @db.VarChar(255)
-  labFacilityCode       String?             @db.VarChar(100)
-  collectionDate        DateTime?
-  expectedResultDate    DateTime?
-  resultsAvailable      Boolean             @default(false)
-  resultsData           Json?               @default("{}")
-  resultsPdfUrl         String?             @db.Text
-  criticalValues        Boolean             @default(false)
-  externalLabOrderId    String?             @db.VarChar(255)
-  createdAt             DateTime            @default(now())
-  updatedAt             DateTime            @updatedAt
-  patient               Patient             @relation(fields: [patientId], references: [id], onDelete: Cascade)
-  doctor                Doctor              @relation(fields: [doctorId], references: [id])
-  consultation          VideoConsultation?  @relation(fields: [consultationId], references: [id])
-  results               LabResult[]
-  
+  id                  String             @id @default(uuid()) @db.Uuid
+  orderNumber         String             @unique @db.VarChar(100)
+  patientId           String             @db.Uuid
+  doctorId            String             @db.Uuid
+  consultationId      String?            @db.Uuid
+  orderDate           DateTime           @default(now())
+  priority            String             @default("routine") @db.VarChar(50)
+  status              LabOrderStatus     @default(ORDERED)
+  category            LabTestCategory    @default(BLOOD_CHEMISTRY)
+  orderedTests        Json               @default("[]")
+  clinicalIndication  String?            @db.Text
+  specialInstructions String?            @db.Text
+  labFacilityName     String?            @db.VarChar(255)
+  labFacilityCode     String?            @db.VarChar(100)
+  collectionDate      DateTime?
+  expectedResultDate  DateTime?
+  resultsAvailable    Boolean            @default(false)
+  resultsData         Json?              @default("{}")
+  resultsPdfUrl       String?            @db.Text
+  criticalValues      Boolean            @default(false)
+  externalLabOrderId  String?            @db.VarChar(255)
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+  patient             Patient            @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  doctor              Doctor             @relation(fields: [doctorId], references: [id])
+  consultation        VideoConsultation? @relation(fields: [consultationId], references: [id])
+  results             LabResult[]
+
   @@index([patientId, status])
   @@index([doctorId, orderDate])
   @@index([status, expectedResultDate])
@@ -2415,26 +2415,26 @@ model LabOrder {
 }
 
 model LabResult {
-  id                    String              @id @default(uuid()) @db.Uuid
-  labOrderId            String              @db.Uuid
-  testName              String              @db.VarChar(255)
-  testCode              String?             @db.VarChar(50)
-  resultValue           String?             @db.VarChar(255)
-  numericValue          Decimal?            @db.Decimal(10, 3)
-  resultUnit            String?             @db.VarChar(50)
-  referenceRange        String?             @db.VarChar(255)
-  resultStatus          String              @default("final") @db.VarChar(50)
-  abnormalFlag          String?             @db.VarChar(10)
-  criticalFlag          Boolean             @default(false)
-  collectionDate        DateTime?
-  resultDate            DateTime            @default(now())
-  verifiedDate          DateTime?
-  method                String?             @db.VarChar(255)
-  specimenType          String?             @db.VarChar(100)
-  comments              String?             @db.Text
-  createdAt             DateTime            @default(now())
-  labOrder              LabOrder            @relation(fields: [labOrderId], references: [id], onDelete: Cascade)
-  
+  id             String    @id @default(uuid()) @db.Uuid
+  labOrderId     String    @db.Uuid
+  testName       String    @db.VarChar(255)
+  testCode       String?   @db.VarChar(50)
+  resultValue    String?   @db.VarChar(255)
+  numericValue   Decimal?  @db.Decimal(10, 3)
+  resultUnit     String?   @db.VarChar(50)
+  referenceRange String?   @db.VarChar(255)
+  resultStatus   String    @default("final") @db.VarChar(50)
+  abnormalFlag   String?   @db.VarChar(10)
+  criticalFlag   Boolean   @default(false)
+  collectionDate DateTime?
+  resultDate     DateTime  @default(now())
+  verifiedDate   DateTime?
+  method         String?   @db.VarChar(255)
+  specimenType   String?   @db.VarChar(100)
+  comments       String?   @db.Text
+  createdAt      DateTime  @default(now())
+  labOrder       LabOrder  @relation(fields: [labOrderId], references: [id], onDelete: Cascade)
+
   @@index([labOrderId])
   @@index([testName, resultDate])
   @@index([criticalFlag, resultDate])
@@ -2442,103 +2442,103 @@ model LabResult {
 }
 
 model PatientGameProfile {
-  id                   String              @id @default(uuid()) @db.Uuid
-  patientId            String              @unique @db.Uuid
-  totalPoints          Int                 @default(0)
-  currentLevel         Int                 @default(1)
-  experiencePoints     Int                 @default(0)
-  medicationStreak     Int                 @default(0)
-  appointmentStreak    Int                 @default(0)
-  vitalsStreak         Int                 @default(0)
-  longestStreak        Int                 @default(0)
-  badgesEarned         String[]            @default([])
-  challengesCompleted  String[]            @default([])
-  loginStreak          Int                 @default(0)
+  id                   String                  @id @default(uuid()) @db.Uuid
+  patientId            String                  @unique @db.Uuid
+  totalPoints          Int                     @default(0)
+  currentLevel         Int                     @default(1)
+  experiencePoints     Int                     @default(0)
+  medicationStreak     Int                     @default(0)
+  appointmentStreak    Int                     @default(0)
+  vitalsStreak         Int                     @default(0)
+  longestStreak        Int                     @default(0)
+  badgesEarned         String[]                @default([])
+  challengesCompleted  String[]                @default([])
+  loginStreak          Int                     @default(0)
   lastActivity         DateTime?
-  totalActivities      Int                 @default(0)
-  gamificationEnabled  Boolean             @default(true)
-  notificationsEnabled Boolean             @default(true)
-  publicProfile        Boolean             @default(false)
-  createdAt            DateTime            @default(now())
-  updatedAt            DateTime            @updatedAt
-  patient              Patient             @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  totalActivities      Int                     @default(0)
+  gamificationEnabled  Boolean                 @default(true)
+  notificationsEnabled Boolean                 @default(true)
+  publicProfile        Boolean                 @default(false)
+  createdAt            DateTime                @default(now())
+  updatedAt            DateTime                @updatedAt
+  patient              Patient                 @relation(fields: [patientId], references: [id], onDelete: Cascade)
   badgeAwards          GameBadgeAward[]
   challengeProgress    GameChallengeProgress[]
-  
+
   @@index([totalPoints, currentLevel])
   @@index([patientId, lastActivity])
   @@map("PatientGameProfiles")
 }
 
 model GameBadgeAward {
-  id                String              @id @default(uuid()) @db.Uuid
-  patientId         String              @db.Uuid
-  badgeType         GameBadgeType
-  badgeName         String              @db.VarChar(255)
-  badgeDescription  String?             @db.Text
-  pointsAwarded     Int                 @default(0)
-  awardedDate       DateTime            @default(now())
-  badgeIcon         String?             @db.VarChar(255)
-  badgeColor        String?             @db.VarChar(50)
-  achievementData   Json?               @default("{}")
-  gameProfile       PatientGameProfile  @relation(fields: [patientId], references: [patientId], onDelete: Cascade)
-  
+  id               String             @id @default(uuid()) @db.Uuid
+  patientId        String             @db.Uuid
+  badgeType        GameBadgeType
+  badgeName        String             @db.VarChar(255)
+  badgeDescription String?            @db.Text
+  pointsAwarded    Int                @default(0)
+  awardedDate      DateTime           @default(now())
+  badgeIcon        String?            @db.VarChar(255)
+  badgeColor       String?            @db.VarChar(50)
+  achievementData  Json?              @default("{}")
+  gameProfile      PatientGameProfile @relation(fields: [patientId], references: [patientId], onDelete: Cascade)
+
   @@index([patientId, awardedDate])
   @@index([badgeType])
   @@map("GameBadgeAwards")
 }
 
 model GameChallengeProgress {
-  id               String              @id @default(uuid()) @db.Uuid
-  patientId        String              @db.Uuid
-  challengeType    GameChallengeType
-  challengeName    String              @db.VarChar(255)
-  targetValue      Int
-  currentProgress  Int                 @default(0)
-  startDate        DateTime
-  endDate          DateTime
-  isCompleted      Boolean             @default(false)
-  completionDate   DateTime?
-  pointsEarned     Int                 @default(0)
-  challengeRules   Json?               @default("{}")
-  progressData     Json?               @default("{}")
-  createdAt        DateTime            @default(now())
-  updatedAt        DateTime            @updatedAt
-  gameProfile      PatientGameProfile  @relation(fields: [patientId], references: [patientId], onDelete: Cascade)
-  
+  id              String             @id @default(uuid()) @db.Uuid
+  patientId       String             @db.Uuid
+  challengeType   GameChallengeType
+  challengeName   String             @db.VarChar(255)
+  targetValue     Int
+  currentProgress Int                @default(0)
+  startDate       DateTime
+  endDate         DateTime
+  isCompleted     Boolean            @default(false)
+  completionDate  DateTime?
+  pointsEarned    Int                @default(0)
+  challengeRules  Json?              @default("{}")
+  progressData    Json?              @default("{}")
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+  gameProfile     PatientGameProfile @relation(fields: [patientId], references: [patientId], onDelete: Cascade)
+
   @@index([patientId, isCompleted])
   @@index([challengeType, endDate])
   @@map("GameChallengeProgress")
 }
 
 model ConnectedDevice {
-  id                   String            @id @default(uuid()) @db.Uuid
-  patientId            String            @db.Uuid
-  pluginId             String            @db.VarChar(100)
-  deviceName           String            @db.VarChar(255)
-  deviceModel          String?           @db.VarChar(255)
-  deviceType           DeviceType
-  manufacturer         String?           @db.VarChar(255)
-  serialNumber         String?           @db.VarChar(100)
-  firmwareVersion      String?           @db.VarChar(50)
-  connectionType       ConnectionType
-  deviceIdentifier     String            @db.VarChar(255)
-  connectionConfig     Json?             @default("{}")
-  lastConnected        DateTime?
-  connectionStatus     DeviceStatus      @default(DISCONNECTED)
-  autoSyncEnabled      Boolean           @default(true)
-  syncIntervalMinutes  Int               @default(15)
-  lastSync             DateTime?
-  syncErrorCount       Int               @default(0)
-  isActive             Boolean           @default(true)
-  addedBy              String            @db.Uuid
-  notes                String?           @db.Text
-  createdAt            DateTime          @default(now())
-  updatedAt            DateTime          @updatedAt
-  patient              Patient           @relation(fields: [patientId], references: [id], onDelete: Cascade)
-  addedByUser          User              @relation(fields: [addedBy], references: [id], onDelete: Restrict)
-  deviceReadings       DeviceReading[]
-  
+  id                  String          @id @default(uuid()) @db.Uuid
+  patientId           String          @db.Uuid
+  pluginId            String          @db.VarChar(100)
+  deviceName          String          @db.VarChar(255)
+  deviceModel         String?         @db.VarChar(255)
+  deviceType          DeviceType
+  manufacturer        String?         @db.VarChar(255)
+  serialNumber        String?         @db.VarChar(100)
+  firmwareVersion     String?         @db.VarChar(50)
+  connectionType      ConnectionType
+  deviceIdentifier    String          @db.VarChar(255)
+  connectionConfig    Json?           @default("{}")
+  lastConnected       DateTime?
+  connectionStatus    DeviceStatus    @default(DISCONNECTED)
+  autoSyncEnabled     Boolean         @default(true)
+  syncIntervalMinutes Int             @default(15)
+  lastSync            DateTime?
+  syncErrorCount      Int             @default(0)
+  isActive            Boolean         @default(true)
+  addedBy             String          @db.Uuid
+  notes               String?         @db.Text
+  createdAt           DateTime        @default(now())
+  updatedAt           DateTime        @updatedAt
+  patient             Patient         @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  addedByUser         User            @relation(fields: [addedBy], references: [id], onDelete: Restrict)
+  deviceReadings      DeviceReading[]
+
   @@unique([patientId, deviceIdentifier])
   @@index([pluginId, deviceType])
   @@index([patientId, connectionStatus])
@@ -2546,38 +2546,38 @@ model ConnectedDevice {
 }
 
 model DeviceReading {
-  id                    String            @id @default(uuid()) @db.Uuid
-  deviceId              String            @db.Uuid
-  patientId             String            @db.Uuid
-  pluginId              String            @db.VarChar(100)
-  medicalDeviceId       String?           @db.Uuid
-  vitalReadingId        String?           @db.Uuid
-  readingType           String            @db.VarChar(100)
-  measurementTimestamp  DateTime
-  receivedTimestamp     DateTime          @default(now())
-  rawData               Json              @default("{}")
-  processedValues       Json              @default("{}")
-  primaryValue          Decimal?          @db.Decimal(10, 3)
-  secondaryValue        Decimal?          @db.Decimal(10, 3)
-  measurementUnit       String?           @db.VarChar(50)
-  dataQualityScore      Decimal?          @db.Decimal(3, 2)
-  isValidated           Boolean           @default(false)
-  validationNotes       String?           @db.Text
-  isAnomaly             Boolean           @default(false)
-  anomalyReason         String?           @db.VarChar(255)
-  readingContext        String?           @db.VarChar(255)
-  symptomsReported      String[]          @default([])
-  medicationTaken       Boolean?
-  triggeredAlerts       Boolean           @default(false)
-  alertReasons          String[]          @default([])
-  syncBatchId           String?           @db.Uuid
-  createdAt             DateTime          @default(now())
-  device                ConnectedDevice   @relation(fields: [deviceId], references: [id], onDelete: Cascade)
-  patient               Patient           @relation(fields: [patientId], references: [id], onDelete: Cascade)
-  vitalReading          VitalReading?     @relation(fields: [vitalReadingId], references: [id], onDelete: SetNull)
-  medicalDevice         MedicalDevice?    @relation(fields: [medicalDeviceId], references: [id], onDelete: SetNull)
-  emergencyAlerts       EmergencyAlert[]  @relation("DeviceReadingToEmergencyAlert")
-  
+  id                   String           @id @default(uuid()) @db.Uuid
+  deviceId             String           @db.Uuid
+  patientId            String           @db.Uuid
+  pluginId             String           @db.VarChar(100)
+  medicalDeviceId      String?          @db.Uuid
+  vitalReadingId       String?          @db.Uuid
+  readingType          String           @db.VarChar(100)
+  measurementTimestamp DateTime
+  receivedTimestamp    DateTime         @default(now())
+  rawData              Json             @default("{}")
+  processedValues      Json             @default("{}")
+  primaryValue         Decimal?         @db.Decimal(10, 3)
+  secondaryValue       Decimal?         @db.Decimal(10, 3)
+  measurementUnit      String?          @db.VarChar(50)
+  dataQualityScore     Decimal?         @db.Decimal(3, 2)
+  isValidated          Boolean          @default(false)
+  validationNotes      String?          @db.Text
+  isAnomaly            Boolean          @default(false)
+  anomalyReason        String?          @db.VarChar(255)
+  readingContext       String?          @db.VarChar(255)
+  symptomsReported     String[]         @default([])
+  medicationTaken      Boolean?
+  triggeredAlerts      Boolean          @default(false)
+  alertReasons         String[]         @default([])
+  syncBatchId          String?          @db.Uuid
+  createdAt            DateTime         @default(now())
+  device               ConnectedDevice  @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  patient              Patient          @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  vitalReading         VitalReading?    @relation(fields: [vitalReadingId], references: [id], onDelete: SetNull)
+  medicalDevice        MedicalDevice?   @relation(fields: [medicalDeviceId], references: [id], onDelete: SetNull)
+  emergencyAlerts      EmergencyAlert[] @relation("DeviceReadingToEmergencyAlert")
+
   @@index([patientId, readingType, measurementTimestamp])
   @@index([deviceId, measurementTimestamp])
   @@index([pluginId, readingType])
@@ -2586,60 +2586,60 @@ model DeviceReading {
 }
 
 model DevicePlugin {
-  id                 String            @id @db.VarChar(100)
-  name               String            @db.VarChar(255)
-  version            String            @db.VarChar(20)
-  description        String?           @db.Text
-  supportedDevices   DeviceType[]
-  supportedRegions   String[]          @default([])
-  apiVersion         String            @db.VarChar(10)
-  defaultConfig      Json              @default("{}")
-  oauthConfig        Json?             @default("{}")
-  rateLimits         Json?             @default("{}")
-  isEnabled          Boolean           @default(true)
-  requiresAuth       Boolean           @default(false)
-  maintenanceMode    Boolean           @default(false)
-  installedAt        DateTime          @default(now())
-  lastUpdated        DateTime          @updatedAt
-  usageCount         Int               @default(0)
-  
+  id               String       @id @db.VarChar(100)
+  name             String       @db.VarChar(255)
+  version          String       @db.VarChar(20)
+  description      String?      @db.Text
+  supportedDevices DeviceType[]
+  supportedRegions String[]     @default([])
+  apiVersion       String       @db.VarChar(10)
+  defaultConfig    Json         @default("{}")
+  oauthConfig      Json?        @default("{}")
+  rateLimits       Json?        @default("{}")
+  isEnabled        Boolean      @default(true)
+  requiresAuth     Boolean      @default(false)
+  maintenanceMode  Boolean      @default(false)
+  installedAt      DateTime     @default(now())
+  lastUpdated      DateTime     @updatedAt
+  usageCount       Int          @default(0)
+
   @@map("DevicePlugins")
 }
 
 // Medical Device Integration Model
 model MedicalDevice {
-  id                    String       @id @default(uuid()) @db.Uuid
-  organizationId        String?      @db.Uuid
-  patientId             String?      @db.Uuid
-  deviceName            String       @db.VarChar(255)
-  deviceType            String       @db.VarChar(100)
-  manufacturer          String       @db.VarChar(100)
-  modelNumber           String?      @db.VarChar(100)
-  serialNumber          String?      @db.VarChar(100)
-  firmwareVersion       String?      @db.VarChar(50)
-  macAddress            String?      @db.VarChar(20)
-  ipAddress             String?      @db.VarChar(20)
-  bluetoothId           String?      @db.VarChar(50)
-  status                String       @default("inactive") @db.VarChar(20) // active, inactive, maintenance, error
-  lastConnected         DateTime?
-  lastDataSync          DateTime?
-  batteryLevel          Int?         // 0-100 percentage
-  connectionType        String       @db.VarChar(30) // bluetooth, wifi, cellular, usb, serial
-  dataFrequency         String?      @db.VarChar(50) // continuous, daily, weekly, on-demand
-  calibrationDate       DateTime?
-  nextCalibrationDue    DateTime?
-  isActive              Boolean      @default(true)
-  configuration         Json         @default("{}")
-  metadata              Json         @default("{}")
-  createdAt             DateTime     @default(now())
-  updatedAt             DateTime     @updatedAt
-  deletedAt             DateTime?
-  
+  id                 String    @id @default(uuid()) @db.Uuid
+  organizationId     String?   @db.Uuid
+  patientId          String?   @db.Uuid
+  deviceName         String    @db.VarChar(255)
+  deviceType         String    @db.VarChar(100)
+  manufacturer       String    @db.VarChar(100)
+  modelNumber        String?   @db.VarChar(100)
+  serialNumber       String?   @db.VarChar(100)
+  firmwareVersion    String?   @db.VarChar(50)
+  macAddress         String?   @db.VarChar(20)
+  ipAddress          String?   @db.VarChar(20)
+  bluetoothId        String?   @db.VarChar(50)
+  status             String    @default("inactive") @db.VarChar(20) // active, inactive, maintenance, error
+  lastConnected      DateTime?
+  lastDataSync       DateTime?
+  batteryLevel       Int? // 0-100 percentage
+  connectionType     String    @db.VarChar(30) // bluetooth, wifi, cellular, usb, serial
+  dataFrequency      String?   @db.VarChar(50) // continuous, daily, weekly, on-demand
+  calibrationDate    DateTime?
+  nextCalibrationDue DateTime?
+  isActive           Boolean   @default(true)
+  configuration      Json      @default("{}")
+  metadata           Json      @default("{}")
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  deletedAt          DateTime?
+
   // Relations
-  organization          Organization? @relation(fields: [organizationId], references: [id])
-  patient               Patient?      @relation(fields: [patientId], references: [id])
-  deviceReadings        DeviceReading[]
-  
+  organization   Organization?   @relation(fields: [organizationId], references: [id])
+  patient        Patient?        @relation(fields: [patientId], references: [id])
+  deviceReadings DeviceReading[]
+
   @@index([patientId])
   @@index([deviceType])
   @@index([status])
@@ -2649,101 +2649,101 @@ model MedicalDevice {
 
 // Electronic Prescription Management Model
 model Prescription {
-  id                      String    @id @default(uuid()) @db.Uuid
-  patientId               String    @db.Uuid
-  prescribingDoctorId     String?   @db.Uuid
-  prescribingHspId        String?   @db.Uuid
-  organizationId          String?   @db.Uuid
-  prescriptionNumber      String    @unique @db.VarChar(100)
-  externalPrescriptionId  String?   @db.VarChar(100)
-  
+  id                     String  @id @default(uuid()) @db.Uuid
+  patientId              String  @db.Uuid
+  prescribingDoctorId    String? @db.Uuid
+  prescribingHspId       String? @db.Uuid
+  organizationId         String? @db.Uuid
+  prescriptionNumber     String  @unique @db.VarChar(100)
+  externalPrescriptionId String? @db.VarChar(100)
+
   // Medication Information
-  medicationName          String    @db.VarChar(255)
-  genericName             String?   @db.VarChar(255)
-  ndcNumber               String?   @db.VarChar(20)
-  rxnormCode              String?   @db.VarChar(20)
-  
+  medicationName String  @db.VarChar(255)
+  genericName    String? @db.VarChar(255)
+  ndcNumber      String? @db.VarChar(20)
+  rxnormCode     String? @db.VarChar(20)
+
   // Dosage and Administration
-  strength                String    @db.VarChar(50)
-  dosageForm              String    @db.VarChar(50) // tablet, capsule, liquid, injection, etc.
-  routeOfAdministration   String    @db.VarChar(30) // oral, topical, injection, etc.
-  doseAmount              Decimal   @db.Decimal(10, 3)
-  doseUnit                String    @db.VarChar(20)
-  frequency               String    @db.VarChar(50)
-  frequencyPerDay         Int?
-  dosingSchedule          Json      @default("[]")
-  
+  strength              String  @db.VarChar(50)
+  dosageForm            String  @db.VarChar(50) // tablet, capsule, liquid, injection, etc.
+  routeOfAdministration String  @db.VarChar(30) // oral, topical, injection, etc.
+  doseAmount            Decimal @db.Decimal(10, 3)
+  doseUnit              String  @db.VarChar(20)
+  frequency             String  @db.VarChar(50)
+  frequencyPerDay       Int?
+  dosingSchedule        Json    @default("[]")
+
   // Instructions
-  sigInstructions         String    @db.Text
-  patientInstructions     String?   @db.Text
-  foodInstructions        String?   @db.VarChar(100) // with_food, without_food, etc.
-  
+  sigInstructions     String  @db.Text
+  patientInstructions String? @db.Text
+  foodInstructions    String? @db.VarChar(100) // with_food, without_food, etc.
+
   // Quantity and Refills
-  quantityPrescribed      Int
-  quantityUnit            String    @db.VarChar(20)
-  daysSupply              Int?
-  refillsAllowed          Int       @default(0)
-  refillsUsed             Int       @default(0)
-  
+  quantityPrescribed Int
+  quantityUnit       String @db.VarChar(20)
+  daysSupply         Int?
+  refillsAllowed     Int    @default(0)
+  refillsUsed        Int    @default(0)
+
   // Clinical Information
-  indication              String?   @db.VarChar(255)
-  diagnosisCodes          String[]  @default([])
-  
+  indication     String?  @db.VarChar(255)
+  diagnosisCodes String[] @default([])
+
   // Controlled Substance Information
-  isControlledSubstance   Boolean   @default(false)
-  deaSchedule             String?   @db.VarChar(5)
-  
+  isControlledSubstance Boolean @default(false)
+  deaSchedule           String? @db.VarChar(5)
+
   // Dates
-  prescribedDate          DateTime  @default(now())
-  startDate               DateTime?
-  endDate                 DateTime?
-  expirationDate          DateTime?
-  
+  prescribedDate DateTime  @default(now())
+  startDate      DateTime?
+  endDate        DateTime?
+  expirationDate DateTime?
+
   // Status
-  status                  String    @default("active") @db.VarChar(20) // draft, pending, active, filled, discontinued, expired, cancelled
-  discontinuationReason   String?   @db.VarChar(100)
-  
+  status                String  @default("active") @db.VarChar(20) // draft, pending, active, filled, discontinued, expired, cancelled
+  discontinuationReason String? @db.VarChar(100)
+
   // Pharmacy Information
-  pharmacyId              String?   @db.Uuid
-  pharmacyName            String?   @db.VarChar(255)
-  pharmacyPhone           String?   @db.VarChar(20)
-  
+  pharmacyId    String? @db.Uuid
+  pharmacyName  String? @db.VarChar(255)
+  pharmacyPhone String? @db.VarChar(20)
+
   // Electronic Prescribing
-  ePrescribingId          String?   @db.VarChar(100)
-  transmittedToPharmacy   Boolean   @default(false)
-  transmissionDate        DateTime?
-  
+  ePrescribingId        String?   @db.VarChar(100)
+  transmittedToPharmacy Boolean   @default(false)
+  transmissionDate      DateTime?
+
   // Cost and Insurance
-  estimatedCost           Decimal?  @db.Decimal(10, 2)
-  insuranceCoverage       Json      @default("{}")
-  
+  estimatedCost     Decimal? @db.Decimal(10, 2)
+  insuranceCoverage Json     @default("{}")
+
   // Safety and Interactions
-  drugInteractions        Json      @default("[]")
-  allergyAlerts           Json      @default("[]")
-  warnings                Json      @default("[]")
-  
+  drugInteractions Json @default("[]")
+  allergyAlerts    Json @default("[]")
+  warnings         Json @default("[]")
+
   // Provider Information
-  prescriberNpi           String?   @db.VarChar(20)
-  prescriberDea           String?   @db.VarChar(20)
-  electronicSignature    String?   @db.Text
-  
+  prescriberNpi       String? @db.VarChar(20)
+  prescriberDea       String? @db.VarChar(20)
+  electronicSignature String? @db.Text
+
   // Monitoring
-  requiresMonitoring      Boolean   @default(false)
-  monitoringParameters    Json      @default("[]")
-  
+  requiresMonitoring   Boolean @default(false)
+  monitoringParameters Json    @default("[]")
+
   // Metadata
-  metadata                Json      @default("{}")
-  createdAt               DateTime  @default(now())
-  updatedAt               DateTime  @updatedAt
-  deletedAt               DateTime?
-  
+  metadata  Json      @default("{}")
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
   // Relations
-  patient                 Patient       @relation(fields: [patientId], references: [id], onDelete: Cascade)
-  prescribingDoctor       Doctor?       @relation(fields: [prescribingDoctorId], references: [id])
-  prescribingHsp          Hsp?          @relation(fields: [prescribingHspId], references: [id])
-  organization            Organization? @relation(fields: [organizationId], references: [id])
-  adherenceLogs           AdherenceLog[]
-  
+  patient           Patient        @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  prescribingDoctor Doctor?        @relation(fields: [prescribingDoctorId], references: [id])
+  prescribingHsp    Hsp?           @relation(fields: [prescribingHspId], references: [id])
+  organization      Organization?  @relation(fields: [organizationId], references: [id])
+  adherenceLogs     AdherenceLog[]
+
   @@index([patientId])
   @@index([prescribingDoctorId])
   @@index([prescribingHspId])
@@ -2760,78 +2760,78 @@ model Prescription {
 
 // Comprehensive Medication Adherence Tracking Model  
 model AdherenceLog {
-  id                      String    @id @default(uuid()) @db.Uuid
-  patientId               String    @db.Uuid
-  organizationId          String?   @db.Uuid
-  
+  id             String  @id @default(uuid()) @db.Uuid
+  patientId      String  @db.Uuid
+  organizationId String? @db.Uuid
+
   // Type of adherence being tracked
-  adherenceType           String    @db.VarChar(30) // medication, appointment, vital_check, care_plan_task, etc.
-  
+  adherenceType String @db.VarChar(30) // medication, appointment, vital_check, care_plan_task, etc.
+
   // Related Records
-  relatedMedicationId     String?   @db.Uuid
-  relatedPrescriptionId   String?   @db.Uuid
-  relatedAppointmentId    String?   @db.Uuid
-  relatedCarePlanId       String?   @db.Uuid
-  relatedTreatmentPlanId  String?   @db.Uuid
-  
+  relatedMedicationId    String? @db.Uuid
+  relatedPrescriptionId  String? @db.Uuid
+  relatedAppointmentId   String? @db.Uuid
+  relatedCarePlanId      String? @db.Uuid
+  relatedTreatmentPlanId String? @db.Uuid
+
   // Timing Information
-  scheduledDatetime       DateTime
-  actualDatetime          DateTime?
-  
+  scheduledDatetime DateTime
+  actualDatetime    DateTime?
+
   // Adherence Status
-  status                  String    @db.VarChar(20) // completed, missed, partial, delayed, rescheduled, cancelled
-  completionPercentage    Int       @default(0) // 0-100
-  delayMinutes            Int?      // negative for early, positive for late
-  
+  status               String @db.VarChar(20) // completed, missed, partial, delayed, rescheduled, cancelled
+  completionPercentage Int    @default(0) // 0-100
+  delayMinutes         Int? // negative for early, positive for late
+
   // Medication-Specific Fields
-  prescribedDose          Decimal?  @db.Decimal(10, 3)
-  actualDose              Decimal?  @db.Decimal(10, 3)
-  doseUnit                String?   @db.VarChar(20)
-  
+  prescribedDose Decimal? @db.Decimal(10, 3)
+  actualDose     Decimal? @db.Decimal(10, 3)
+  doseUnit       String?  @db.VarChar(20)
+
   // Patient-Reported Information
-  patientNotes            String?   @db.Text
-  sideEffectsReported     Json      @default("[]")
-  symptomsBefore          Json      @default("{}")
-  symptomsAfter           Json      @default("{}")
-  
+  patientNotes        String? @db.Text
+  sideEffectsReported Json    @default("[]")
+  symptomsBefore      Json    @default("{}")
+  symptomsAfter       Json    @default("{}")
+
   // Reason for Non-Adherence
-  missedReason            String?   @db.VarChar(50) // forgot, side_effects, cost_concerns, etc.
-  missedReasonDetails     String?   @db.Text
-  
+  missedReason        String? @db.VarChar(50) // forgot, side_effects, cost_concerns, etc.
+  missedReasonDetails String? @db.Text
+
   // Data Source
-  recordedBy              String    @default("patient") @db.VarChar(20) // patient, caregiver, provider, system, device
-  recordedByUserId        String?   @db.Uuid
-  
+  recordedBy       String  @default("patient") @db.VarChar(20) // patient, caregiver, provider, system, device
+  recordedByUserId String? @db.Uuid
+
   // Device/Technology Integration
-  deviceId                String?   @db.Uuid
-  verificationMethod      String?   @db.VarChar(30) // self_report, caregiver_report, pill_count, smart_bottle, etc.
-  
+  deviceId           String? @db.Uuid
+  verificationMethod String? @db.VarChar(30) // self_report, caregiver_report, pill_count, smart_bottle, etc.
+
   // Mood and Context
-  moodBefore              Int?      // 1-10 scale
-  moodAfter               Int?      // 1-10 scale
-  location                String?   @db.VarChar(100)
-  
+  moodBefore Int? // 1-10 scale
+  moodAfter  Int? // 1-10 scale
+  location   String? @db.VarChar(100)
+
   // Reminders and Interventions
-  reminderSent            Boolean   @default(false)
-  reminderAcknowledged    Boolean   @default(false)
-  interventionTriggered   Boolean   @default(false)
-  
+  reminderSent          Boolean @default(false)
+  reminderAcknowledged  Boolean @default(false)
+  interventionTriggered Boolean @default(false)
+
   // Metadata
-  metadata                Json      @default("{}")
-  createdAt               DateTime  @default(now())
-  updatedAt               DateTime  @updatedAt
-  deletedAt               DateTime?
-  
+  metadata  Json      @default("{}")
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
   // Relations
-  patient                 Patient       @relation(fields: [patientId], references: [id], onDelete: Cascade)
-  organization            Organization? @relation(fields: [organizationId], references: [id])
-  relatedMedication       Medication?   @relation(fields: [relatedMedicationId], references: [id])
-  relatedPrescription     Prescription? @relation(fields: [relatedPrescriptionId], references: [id])
-  relatedAppointment      Appointment?  @relation(fields: [relatedAppointmentId], references: [id])
-  relatedCarePlan         CarePlan?     @relation(fields: [relatedCarePlanId], references: [id])
-  relatedTreatmentPlan    TreatmentPlan? @relation(fields: [relatedTreatmentPlanId], references: [id])
-  recordedByUser          User?         @relation(fields: [recordedByUserId], references: [id])
-  
+  patient              Patient        @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  organization         Organization?  @relation(fields: [organizationId], references: [id])
+  relatedMedication    Medication?    @relation(fields: [relatedMedicationId], references: [id])
+  relatedPrescription  Prescription?  @relation(fields: [relatedPrescriptionId], references: [id])
+  relatedAppointment   Appointment?   @relation(fields: [relatedAppointmentId], references: [id])
+  relatedCarePlan      CarePlan?      @relation(fields: [relatedCarePlanId], references: [id])
+  relatedTreatmentPlan TreatmentPlan? @relation(fields: [relatedTreatmentPlanId], references: [id])
+  recordedByUser       User?          @relation(fields: [recordedByUserId], references: [id])
+
   @@index([patientId])
   @@index([organizationId])
   @@index([adherenceType])

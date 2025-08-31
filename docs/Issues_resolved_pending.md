@@ -3078,7 +3078,7 @@ Mismatches Found:
 
 Fields that Match:
 
-- id, userId, speciality_id, years_of_experience, consultation_fee, total_patients ✅
+- id, userId, speciality_id, years_of_experience, consultation_fee, totalPatients ✅
 
 ### Field Mapping Resolution - Doctor Profile
 

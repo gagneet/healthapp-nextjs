@@ -1946,7 +1946,7 @@ SELECT
     END as risk_level,
     
     -- Healthcare utilization
-    COUNT(a.id) as total_appointments,
+    COUNT(a.id) as totalAppointments,
     COUNT(CASE WHEN a.appointment_status = 'NO_SHOW' THEN 1 END) as missed_appointments,
     COUNT(eh.id) as emergency_visits,
     
@@ -1989,7 +1989,7 @@ SELECT
     pr.specialty,
     
     -- Patient population metrics
-    COUNT(DISTINCT p.id) as total_patients,
+    COUNT(DISTINCT p.id) as totalPatients,
     COUNT(DISTINCT CASE WHEN pas.risk_level = 'CRITICAL_RISK' THEN p.id END) as critical_risk_patients,
     COUNT(DISTINCT CASE WHEN pas.risk_level = 'HIGH_RISK' THEN p.id END) as high_risk_patients,
     
@@ -2002,7 +2002,7 @@ SELECT
     COUNT(CASE WHEN pas.avg_systolic_bp > 140 THEN 1 END)::DECIMAL / COUNT(pas.avg_systolic_bp) * 100 as hypertension_rate,
     
     -- Healthcare utilization
-    AVG(pas.missed_appointments::DECIMAL / NULLIF(pas.total_appointments, 0)) * 100 as avg_no_show_rate,
+    AVG(pas.missed_appointments::DECIMAL / NULLIF(pas.totalAppointments, 0)) * 100 as avg_no_show_rate,
     SUM(pas.emergency_visits) as total_emergency_visits,
     
     -- Quality metrics

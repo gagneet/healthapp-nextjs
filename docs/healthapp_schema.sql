@@ -132,7 +132,7 @@ CREATE TABLE users (
     email_verification_token VARCHAR(255),
     password_reset_token VARCHAR(255),
     password_reset_expires TIMESTAMPTZ,
-    two_factor_enabled BOOLEAN DEFAULT false,
+    twoFactorEnabled BOOLEAN DEFAULT false,
     two_factor_secret VARCHAR(255),
     failed_login_attempts INTEGER DEFAULT 0,
     locked_until TIMESTAMPTZ,

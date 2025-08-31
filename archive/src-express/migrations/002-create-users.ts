@@ -117,7 +117,7 @@ export default {
         type: Sequelize.DATE,
         allowNull: true,
       },
-      two_factor_enabled: {
+      twoFactorEnabled: {
         type: Sequelize.BOOLEAN,
         defaultValue: false,
       },

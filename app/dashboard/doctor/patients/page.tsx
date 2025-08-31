@@ -338,7 +338,7 @@ export default function PatientsPage() {
             nextAppointment: patient.medical_info?.nextAppointment || patient.nextAppointment || null,
             adherenceRate: patient.medical_info?.adherenceRate ?? patient.adherenceRate ?? 0,
             criticalAlerts: patient.medical_info?.criticalAlerts ?? patient.criticalAlerts ?? 0,
-            total_appointments: patient.medical_info?.total_appointments ?? patient.total_appointments ?? 0,
+            totalAppointments: patient.medical_info?.totalAppointments ?? patient.totalAppointments ?? 0,
             active_care_plans: patient.medical_info?.active_care_plans ?? patient.active_care_plans ?? 0,
             status: patient.basic_info?.status || patient.status || 'active',
             createdAt: patient.basic_info?.createdAt || patient.createdAt,

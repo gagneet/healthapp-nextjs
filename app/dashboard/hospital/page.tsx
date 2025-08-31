@@ -21,9 +21,9 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 
 // Mock data - replace with actual API calls
 const mockHospitalStats = {
-  total_doctors: 24,
+  totalDoctors: 24,
   total_hsps: 18,
-  total_patients: 342,
+  totalPatients: 342,
   active_staff: 38,
   pending_approvals: 3,
   criticalAlerts: 5,
@@ -160,7 +160,7 @@ export default function HospitalDashboard() {
         {[
           {
             title: 'Total Doctors',
-            value: mockHospitalStats.total_doctors,
+            value: mockHospitalStats.totalDoctors,
             icon: UsersIcon,
             color: 'text-blue-600',
             bgColor: 'bg-blue-100',
@@ -176,7 +176,7 @@ export default function HospitalDashboard() {
           },
           {
             title: 'Total Patients',
-            value: mockHospitalStats.total_patients,
+            value: mockHospitalStats.totalPatients,
             icon: HeartIcon,
             color: 'text-purple-600',
             bgColor: 'bg-purple-100',

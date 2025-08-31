@@ -258,7 +258,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
 
     // Generate search insights
     const insights = {
-      total_doctors: scoredDoctors.length,
+      totalDoctors: scoredDoctors.length,
       total_hsps: scoredHsps.length,
       same_organization_doctors: scoredDoctors.filter(d => d.same_organization).length,
       same_organization_hsps: scoredHsps.filter(h => h.same_organization).length,

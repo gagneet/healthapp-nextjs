@@ -148,7 +148,7 @@ CREATE TABLE users (
     profilePictureUrl VARCHAR(500),
     
     -- Security Fields
-    two_factor_enabled BOOLEAN DEFAULT FALSE,
+    twoFactorEnabled BOOLEAN DEFAULT FALSE,
     two_factor_secret VARCHAR(255),
     failed_login_attempts INTEGER DEFAULT 0,
     locked_until TIMESTAMPTZ,
