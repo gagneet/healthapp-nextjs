@@ -446,6 +446,7 @@ model CarePlan {
   vitalRequirements         VitalRequirement[]
   vitals                    Vital[]
   adherenceLogs             AdherenceLog[]
+  appointments              Appointment[]
 
   @@index([chronicConditions], type: Gin)
   @@index([createdByDoctorId])
@@ -531,10 +532,12 @@ model Appointment {
   doctorId           String?                        @db.Uuid
   patientId          String?                        @db.Uuid
   slotId             String?                        @db.Uuid
+  carePlanId         String?                        @db.Uuid
   doctor             Doctor?                        @relation(fields: [doctorId], references: [id])
   patient            Patient?                       @relation(fields: [patientId], references: [id])
   provider           User?                          @relation(fields: [providerId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   appointmentSlot    AppointmentSlot?              @relation(fields: [slotId], references: [id])
+  carePlan           CarePlan?                      @relation(fields: [carePlanId], references: [id])
   notifications      Notification[]
   videoConsultations VideoConsultation[]
   adherenceLogs      AdherenceLog[]
@@ -544,6 +547,7 @@ model Appointment {
   @@index([participantTwoId, participantTwoType])
   @@index([slotId])
   @@index([startDate])
+  @@index([carePlanId])
   @@index([organizerType, organizerId, startTime], map: "idx_appointments_organizer_time")
   @@index([patientId, startTime], map: "idx_appointments_patient_time")
   @@index([providerId, startTime], map: "idx_appointments_provider_time")
