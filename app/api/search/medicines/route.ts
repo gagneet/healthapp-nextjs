@@ -59,7 +59,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
             { name: { contains: value, mode: 'insensitive' } },
             { description: { contains: value, mode: 'insensitive' } },
             // Search within details JSON for generic names and brand names
-            { details: { path: "$.generic_name", string_contains: value } },
+            { details: { path: "$.genericName", string_contains: value } },
             { details: { path: "$.brand_names[*]", string_contains: value } }
           ]
         }
@@ -127,7 +127,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
       }
 
       // Generic name match
-      const genericName = medicine.details?.generic_name?.toLowerCase() || ''
+      const genericName = medicine.details?.genericName?.toLowerCase() || ''
       if (genericName.includes(valueLower)) {
         relevanceScore += 30
       }
@@ -161,7 +161,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
             name: medicine.name,
             type: medicine.type,
             strength: details.strength || details.common_dosages?.[0] || '',
-            generic_name: details.generic_name || '',
+            genericName: details.genericName || '',
             description: medicine.description,
             relevance_score: medicine.relevanceScore,
             ...(includeDetails && {

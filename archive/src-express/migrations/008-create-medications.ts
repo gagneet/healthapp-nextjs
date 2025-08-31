@@ -31,7 +31,7 @@ export default {
         type: Sequelize.STRING(255),
         allowNull: false,
       },
-      generic_name: {
+      genericName: {
         type: Sequelize.STRING(255),
         allowNull: true,
       },

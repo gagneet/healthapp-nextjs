@@ -361,7 +361,7 @@ ADMIN (System Administrator)
 - **MySQL `medicines` Table**: Persistent medicine catalog
   - Fields: id, name, type, description, creator_id, public_medicine, algolia_object_id
 - **Algolia Search Index**: Real-time medicine search
-  - Searchable: name, generic_name, classification
+  - Searchable: name, genericName, classification
   - Supports: creator filtering, public/private medicine filtering
 
 #### Medicine Addition Workflow

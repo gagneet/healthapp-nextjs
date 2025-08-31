@@ -23,7 +23,7 @@ export default {
         type: 'tablet',
         description: 'Diabetes medication',
         details: JSON.stringify({
-          generic_name: 'Metformin Hydrochloride',
+          genericName: 'Metformin Hydrochloride',
           formulation: 'tablet',
           strength: '500mg'
         }),
@@ -37,7 +37,7 @@ export default {
         type: 'tablet',
         description: 'Blood pressure medication',
         details: JSON.stringify({
-          generic_name: 'Lisinopril',
+          genericName: 'Lisinopril',
           formulation: 'tablet',
           strength: '10mg'
         }),
@@ -51,7 +51,7 @@ export default {
         type: 'tablet',
         description: 'Pain relief and blood thinner',
         details: JSON.stringify({
-          generic_name: 'Acetylsalicylic acid',
+          genericName: 'Acetylsalicylic acid',
           formulation: 'tablet',
           strength: '81mg'
         }),
@@ -65,7 +65,7 @@ export default {
         type: 'tablet',
         description: 'Anti-inflammatory pain reliever',
         details: JSON.stringify({
-          generic_name: 'Ibuprofen',
+          genericName: 'Ibuprofen',
           formulation: 'tablet',
           strength: '200mg'
         }),
@@ -79,7 +79,7 @@ export default {
         type: 'tablet',
         description: 'Calcium channel blocker for blood pressure',
         details: JSON.stringify({
-          generic_name: 'Amlodipine Besylate',
+          genericName: 'Amlodipine Besylate',
           formulation: 'tablet',
           strength: '5mg'
         }),

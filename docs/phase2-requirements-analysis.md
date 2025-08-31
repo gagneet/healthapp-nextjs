@@ -277,7 +277,7 @@ CREATE TABLE medication_availability (
   pharmacy_id UUID REFERENCES pharmacy_integrations(id),
   medication_name VARCHAR(255),
   brand_name VARCHAR(255),
-  generic_name VARCHAR(255),
+  genericName VARCHAR(255),
   price DECIMAL(10,2),
   availability_status VARCHAR(20),
   last_updated TIMESTAMP

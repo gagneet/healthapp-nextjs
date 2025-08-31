@@ -197,7 +197,7 @@ CREATE TABLE drug_interactions (
 CREATE TABLE medications (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name VARCHAR(255) NOT NULL,
-    generic_name VARCHAR(255),
+    genericName VARCHAR(255),
     brand_names JSONB DEFAULT '[]',
     drug_class VARCHAR(100),
     controlled_substance_schedule VARCHAR(10),

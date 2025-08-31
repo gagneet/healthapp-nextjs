@@ -68,7 +68,7 @@ export default (sequelize: any) => {
       comment: 'Name of the prescribed medication'
     },
     
-    generic_name: {
+    genericName: {
       type: DataTypes.STRING(255),
       allowNull: true,
       comment: 'Generic name of the medication'

@@ -298,7 +298,7 @@ CREATE TABLE medications (
     
     -- Medication details
     medication_name VARCHAR(255) NOT NULL,
-    generic_name VARCHAR(255),
+    genericName VARCHAR(255),
     ndc_code VARCHAR(20), -- National Drug Code
     dosage VARCHAR(100) NOT NULL,
     route VARCHAR(50), -- oral, IV, topical, etc.

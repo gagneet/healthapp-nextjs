@@ -470,7 +470,7 @@ CREATE TABLE prescriptions (
     
     -- Medication Information
     medication_name VARCHAR(255) NOT NULL,
-    generic_name VARCHAR(255),
+    genericName VARCHAR(255),
     ndc_number VARCHAR(20),
     rxnorm_code VARCHAR(20),
     

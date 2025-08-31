@@ -842,14 +842,14 @@ class AdminController {
   // Medicine CRUD Operations
   async createMedicine(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { name, type, strength, generic_name, description, public_medicine = true } = req.body;
+      const { name, type, strength, genericName, description, public_medicine = true } = req.body;
 
       const medicine = await Medicine.create({
         name,
         type,
         details: {
           strength,
-          generic_name
+          genericName
         },
         description,
         public_medicine,
@@ -872,7 +872,7 @@ class AdminController {
   async updateMedicine(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const { medicineId } = req.params;
-      const { name, type, strength, generic_name, description, public_medicine } = req.body;
+      const { name, type, strength, genericName, description, public_medicine } = req.body;
 
       const medicine = await Medicine.findByPk(medicineId);
       if (!medicine) {
@@ -894,7 +894,7 @@ class AdminController {
         type,
         details: {
           strength,
-          generic_name
+          genericName
         },
         description,
         public_medicine

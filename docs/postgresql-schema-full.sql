@@ -356,7 +356,7 @@ CREATE TABLE patient_doctor_assignments (
 CREATE TABLE medicines (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name VARCHAR(255) NOT NULL,
-    generic_name VARCHAR(255),
+    genericName VARCHAR(255),
     brand_names JSON DEFAULT '[]',
     description TEXT,
     dosage_forms JSON DEFAULT '[]',

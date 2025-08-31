@@ -47,7 +47,7 @@ router.get('/medicines',
             name: medicine.name,
             type: medicine.type,
             strength: medicine.details?.strength || '',
-            generic_name: medicine.details?.generic_name || '',
+            genericName: medicine.details?.genericName || '',
             description: medicine.description
           }
         };
