@@ -9,7 +9,7 @@ import { prisma, healthcareDb } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import type { User, Patient, Doctor, Hsp } from '@prisma/client';
-import { calculateAdherenceRate } from '../lib/utils';
+import { calculateAdherenceRate } from '@/lib/utils';
 
 const sanitizeLog = (input: string | null | undefined): string => {
   if (!input) return '';
@@ -241,6 +241,7 @@ export async function createUser(userData: {
 
 export interface PatientListItem {
   id: string;
+  patientId: string | null;
   medicalRecordNumber: string | null;
   firstName: string | null;
   lastName: string | null;
@@ -320,6 +321,7 @@ export async function getPatients(doctorId: string, pagination: {
         take: pagination.limit,
         select: {
           id: true,
+          patientId: true,
           medicalRecordNumber: true,
           lastVisitDate: true,
           createdAt: true,
@@ -770,7 +772,7 @@ export async function getDoctorDashboard(doctorUserId: string) {
         criticalAlerts: 0, // Will be calculated from critical alerts API
         appointments_today: todayAppointments,
         medication_adherence: Math.floor(Math.random() * 30) + 70, // Mock data
-        activeCarePlans: activeCarePlans,
+        active_care_plans: activeCarePlans,
         recent_vitals: recentVitalsCount
       },
       doctor: {

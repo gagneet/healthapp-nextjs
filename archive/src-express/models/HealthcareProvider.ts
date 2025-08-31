@@ -163,7 +163,7 @@ export default (sequelize: any) => {
       }
     },
     
-    activeCarePlans: {
+    active_care_plans: {
       type: DataTypes.INTEGER,
       defaultValue: 0,
       validate: {

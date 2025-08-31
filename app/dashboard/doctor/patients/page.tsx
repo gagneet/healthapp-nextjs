@@ -40,12 +40,12 @@ export interface Patient {
   adherenceRate: number;
   criticalAlerts: number;
   status: string;
+  patientId?: string | null;
   // Fields for patient type and consent, which might not come directly from the main patient model
   patientType?: 'M' | 'R';
   accessType?: 'primary' | 'secondary';
   requiresConsent?: boolean;
   consentStatus?: ConsentStatus;
-  [key: string]: any; // Allow other properties that are not strictly typed yet
 }
 
 interface PatientAPIResponse {
@@ -349,6 +349,7 @@ export default function PatientsPage() {
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null)
   const [isDrawerOpen, setIsDrawerOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null);
   const [selectedPatientForConsent, setSelectedPatientForConsent] = useState<Patient | null>(null)
   const [isOtpModalOpen, setIsOtpModalOpen] = useState(false)
 
@@ -358,7 +359,8 @@ export default function PatientsPage() {
 
   const fetchPatients = async (searchQuery = '') => {
     try {
-      setIsLoading(true)
+      setIsLoading(true);
+      setError(null);
       let endpoint = '/patients/pagination?page=1&limit=50'
       if (searchQuery) {
         endpoint += `&search=${encodeURIComponent(searchQuery)}`
@@ -388,12 +390,12 @@ export default function PatientsPage() {
           return;
         }
       } catch (apiError) {
-        console.error('API call failed:', apiError)
-        setPatients([])
-        // Don't throw - let component handle gracefully
+        console.error('API call failed:', apiError);
+        setError('Failed to fetch patient data. Please try again later.');
+        setPatients([]);
       }
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
   }
 
@@ -514,114 +516,124 @@ export default function PatientsPage() {
             <CardTitle>Patient List ({filteredPatients.length})</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Patient
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Type
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Contact
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Last Visit
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Consent Status
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Adherence
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Alerts
-                    </th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {filteredPatients.map((patient) => (
-                    <tr key={patient.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center">
-                          <div className="flex-shrink-0 h-10 w-10">
-                            <div className="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center">
-                              <span className="text-sm font-medium text-gray-600">
-                                {getInitials(patient.firstName, patient.lastName)}
-                              </span>
-                            </div>
-                          </div>
-                          <div className="ml-4">
-                            <div className="text-sm font-medium text-gray-900">
-                              {patient.firstName} {patient.lastName}
-                            </div>
-                            <div className="text-sm text-gray-500">
-                              {patient.medicalRecordNumber}
-                            </div>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        {getPatientTypeBadge(patient)}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">{patient.email}</div>
-                        <div className="text-sm text-gray-500">{patient.phone}</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {patient.lastVisit ? formatDate(patient.lastVisit) : 'No visits'}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        {getConsentStatusBadge(patient)}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                          {patient.adherenceRate}%
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        {patient.criticalAlerts === null || patient.criticalAlerts === undefined ? (
-                          <span className="text-gray-400 italic text-sm">No alert data</span>
-                        ) : patient.criticalAlerts > 0 ? (
-                          <div className="flex items-center">
-                            <ExclamationTriangleIcon className="h-4 w-4 text-red-500 mr-1" />
-                            <span className="text-sm text-red-600">
-                              {patient.criticalAlerts}
-                            </span>
-                          </div>
-                        ) : (
-                          <span className="text-sm text-gray-500">None</span>
-                        )}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <button
-                          onClick={() => handlePatientClick(patient)}
-                          className="text-blue-600 hover:text-blue-900 mr-4"
-                        >
-                          <EyeIcon className="h-4 w-4" />
-                        </button>
-                        {getConsentActionButtons(patient, handleRequestConsent)}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-            {filteredPatients.length === 0 && (
-              <div className="text-center py-12">
-                <div className="text-gray-500">
-                  {searchTerm || statusFilter !== 'all' 
-                    ? 'No patients match your search criteria.' 
-                    : 'No patients found.'
-                  }
-                </div>
+            {error && (
+              <div className="text-center py-12 text-red-600 bg-red-50 rounded-lg">
+                <ExclamationTriangleIcon className="mx-auto h-8 w-8" />
+                <p className="mt-2 font-semibold">{error}</p>
               </div>
+            )}
+            {!error && (
+              <>
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Patient
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Type
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Contact
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Last Visit
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Consent Status
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Adherence
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Alerts
+                        </th>
+                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Actions
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {filteredPatients.map((patient) => (
+                        <tr key={patient.id} className="hover:bg-gray-50">
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="flex items-center">
+                              <div className="flex-shrink-0 h-10 w-10">
+                                <div className="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center">
+                                  <span className="text-sm font-medium text-gray-600">
+                                    {getInitials(patient.firstName, patient.lastName)}
+                                  </span>
+                                </div>
+                              </div>
+                              <div className="ml-4">
+                                <div className="text-sm font-medium text-gray-900">
+                                  {patient.firstName} {patient.lastName}
+                                </div>
+                                <div className="text-sm text-gray-500">
+                                  {patient.medicalRecordNumber}
+                                </div>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            {getPatientTypeBadge(patient)}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="text-sm text-gray-900">{patient.email}</div>
+                            <div className="text-sm text-gray-500">{patient.phone}</div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {patient.lastVisit ? formatDate(patient.lastVisit) : 'No visits'}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            {getConsentStatusBadge(patient)}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                              {patient.adherenceRate}%
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            {patient.criticalAlerts === null || patient.criticalAlerts === undefined ? (
+                              <span className="text-gray-400 italic text-sm">No alert data</span>
+                            ) : patient.criticalAlerts > 0 ? (
+                              <div className="flex items-center">
+                                <ExclamationTriangleIcon className="h-4 w-4 text-red-500 mr-1" />
+                                <span className="text-sm text-red-600">
+                                  {patient.criticalAlerts}
+                                </span>
+                              </div>
+                            ) : (
+                              <span className="text-sm text-gray-500">None</span>
+                            )}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <button
+                              onClick={() => handlePatientClick(patient)}
+                              className="text-blue-600 hover:text-blue-900 mr-4"
+                            >
+                              <EyeIcon className="h-4 w-4" />
+                            </button>
+                            {getConsentActionButtons(patient, handleRequestConsent)}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                {filteredPatients.length === 0 && (
+                  <div className="text-center py-12">
+                    <div className="text-gray-500">
+                      {searchTerm || statusFilter !== 'all'
+                        ? 'No patients match your search criteria.'
+                        : 'No patients found.'
+                      }
+                    </div>
+                  </div>
+                )}
+              </>
             )}
           </CardContent>
         </Card>

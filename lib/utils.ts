@@ -87,6 +87,6 @@ export const calculateAdherenceRate = (records: Array<{ isCompleted: boolean | n
     return 0;
   }
   const total = records.length;
-  const completed = records.filter(r => r.isCompleted).length;
+  const completed = records.filter(r => r.isCompleted === true).length;
   return Math.round((completed / total) * 100);
 };
