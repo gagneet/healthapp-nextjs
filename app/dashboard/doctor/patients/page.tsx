@@ -19,34 +19,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import OtpVerificationModal from '@/components/ui/OtpVerificationModal'
 import { apiRequest } from '@/lib/api'
 import { formatDate, getAdherenceColor, getInitials, getStatusColor } from '@/lib/utils'
-
-// Define a more specific Patient type for this component's needs
-export type ConsentStatus =
-  | 'not_required'
-  | 'granted'
-  | 'requested'
-  | 'pending'
-  | 'expired'
-  | 'denied';
-
-export interface Patient {
-  id: string;
-  firstName: string | null;
-  lastName: string | null;
-  email: string;
-  phone: string | null;
-  medicalRecordNumber: string | null;
-  lastVisit: string | null;
-  adherenceRate: number;
-  criticalAlerts: number;
-  status: string;
-  patientId?: string | null;
-  // Fields for patient type and consent, which might not come directly from the main patient model
-  patientType?: 'M' | 'R';
-  accessType?: 'primary' | 'secondary';
-  requiresConsent?: boolean;
-  consentStatus?: ConsentStatus;
-}
+import type { Patient, ConsentStatus } from '@/types/patient';
 
 interface PatientAPIResponse {
   status: boolean;
