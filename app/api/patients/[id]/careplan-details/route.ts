@@ -134,36 +134,50 @@ async function fetchCarePlanData(patientId: string) {
     where: {
       patientId: patientId,
       status: 'ACTIVE'
-      // isActive: true
     },
     include: {
-      // 'medications' is a json field, the relation is 'prescribedMedications'
       prescribedMedications: {
         include: {
-          medicine: {
-            select: {
-              id: true,
-              name: true,
-              type: true,
-              description: true,
-            }
-          }
+          medicine: true // Fetch the full medicine object
         }
       },
       patient: {
         select: {
           id: true,
           patientId: true,
-          overallAdherenceScore: true
+          overallAdherenceScore: true,
+          prescriptions: true // Fetch prescriptions for the patient
         }
       }
     },
     orderBy: { createdAt: 'desc' }
   });
 
+  // Extract all prescriptions into a map for easy lookup
+  const prescriptionsMap = new Map();
+  if (carePlans.length > 0 && carePlans[0].patient.prescriptions) {
+    for (const prescription of carePlans[0].patient.prescriptions) {
+      prescriptionsMap.set(prescription.medicationName, prescription);
+    }
+  }
+
+  // Enhance prescribedMedications with details from prescriptions
+  for (const carePlan of carePlans) {
+    for (const med of carePlan.prescribedMedications) {
+      const prescription = prescriptionsMap.get(med.medicine.name);
+      if (prescription) {
+        (med as any).prescriptionDetails = {
+          genericName: prescription.genericName,
+          strength: prescription.strength,
+          dosageForm: prescription.dosageForm
+        };
+      }
+    }
+  }
+
+
   // Get vital requirements and readings
   const vitalRequirements = await prisma.vitalRequirement.findMany({
-    // VitalRequirement is linked to CarePlan, not directly to Patient.
     where: { carePlan: { patientId: patientId } },
     include: {
       vitalType: {
@@ -182,7 +196,6 @@ async function fetchCarePlanData(patientId: string) {
   const thirtyDaysAgo = new Date();
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-  // The model is VitalReading, not vitals
   const vitalReadings = await prisma.vitalReading.findMany({
     where: {
       patientId: patientId,
@@ -242,67 +255,38 @@ export async function GET(request: NextRequest, { params }: { params: { id:strin
     const { carePlans, vitalRequirements, vitalReadings } = await fetchCarePlanData(patientId);
 
     // Format the care plans data
-    const formattedCarePlans = await Promise.all(
-      carePlans.map(async (carePlan: any) => {
-        const medicationsCount = carePlan.prescribedMedications?.length || 0;
+    const formattedCarePlans = carePlans.map(carePlan => {
+      const medications = carePlan.prescribedMedications.map(med => ({
+        id: med.id,
+        name: med.medicine.name,
+        type: med.medicine.type,
+        description: med.medicine.description,
+        ...((med as any).prescriptionDetails && {
+            genericName: (med as any).prescriptionDetails.genericName,
+            strength: (med as any).prescriptionDetails.strength,
+            form: (med as any).prescriptionDetails.dosageForm,
+        })
+      }));
 
-        // const vitalsCount = await prisma.vitalRequirement.count({
-        //   where: { carePlanId: carePlan.id },
-        // });
-        //
-        // const appointmentWhere: any = {
-        //   patientId: patientId,
-        //   startDate: { gte: carePlan.startDate },
-        // };
-        // if (carePlan.endDate) {
-        //   appointmentWhere.startDate.lte = carePlan.endDate;
-        // }
-        //
-        // const appointmentsCount = await prisma.appointment.count({
-        //   where: appointmentWhere,
-
-        const vitalsCount = await prisma.vitalRequirement.groupBy({
-          by: ['carePlanId'],
-          _count: true,
-          where: {
-            carePlanId: {
-              in: carePlans.map((cp: { id: any; }) => cp.id)
-            }
-          }
-        });
-
-        const appointmentsCount = await prisma.appointment.groupBy({
-          by: ['carePlanId'],
-          _count: true,
-          where: {
-            carePlanId: {
-              in: carePlans.map((cp: { id: any; }) => cp.id)
-            },
-            startDate: {
-              gte: carePlan.startDate,
-              ...(carePlan.endDate && { lte: carePlan.endDate })
-            }
-          }
-        });
-
-        return {
-          id: carePlan.id,
-          name: carePlan.title || 'Unnamed Care Plan',
-          status: carePlan.status,
-          priority: carePlan.priority || 'medium',
-          startDate: carePlan.startDate,
-          endDate: carePlan.endDate,
-          medicationsCount,
-          vitalsCount,
-          appointmentsCount,
-          adherenceSummary: {
-            medicationsCount,
-            vitalsCount,
-            appointmentsCount,
-          },
-        };
-      })
-    );
+      return {
+        id: carePlan.id,
+        name: carePlan.title || 'Unnamed Care Plan',
+        status: carePlan.status,
+        priority: carePlan.priority || 'medium',
+        startDate: carePlan.startDate,
+        endDate: carePlan.endDate,
+        medications: medications,
+        medicationsCount: medications.length,
+        // You might need to adjust vitals and appointments count logic if it's not working
+        vitalsCount: 0,
+        appointmentsCount: 0,
+        adherenceSummary: {
+            medicationsCount: medications.length,
+            vitalsCount: 0,
+            appointmentsCount: 0,
+        },
+      };
+    });
 
     // Format vital requirements
     const formattedVitalRequirements = vitalRequirements.map((req: any) => ({

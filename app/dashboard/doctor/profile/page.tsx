@@ -121,12 +121,39 @@ export default function DoctorProfilePage() {
 
   const handleSaveField = async (field: string) => {
     try {
-      const response = await apiRequest.put('/doctors/profile', {
-        [field]: tempValues[field]
-      })
+      const fieldParts = field.split('.');
+      const updateData: any = {};
+      let currentLevel = updateData;
+
+      fieldParts.forEach((part, index) => {
+        if (index === fieldParts.length - 1) {
+          currentLevel[part] = tempValues[field];
+        } else {
+          currentLevel[part] = {};
+          currentLevel = currentLevel[part];
+        }
+      });
+
+      const response = await apiRequest.put('/doctors/profile', updateData);
       
       if ((response as any).status) {
-        setProfile(prev => prev ? { ...prev, [field]: tempValues[field] } : null)
+        setProfile(prev => {
+          if (!prev) return null;
+
+          // Deep copy to avoid direct state mutation
+          const newProfile = JSON.parse(JSON.stringify(prev));
+
+          let currentLevel = newProfile;
+          fieldParts.forEach((part, index) => {
+            if (index === fieldParts.length - 1) {
+              currentLevel[part] = tempValues[field];
+            } else {
+              currentLevel = currentLevel[part];
+            }
+          });
+
+          return newProfile;
+        })
         setEditingField(null)
         setTempValues({})
         toast.success('Profile updated successfully')
@@ -353,7 +380,7 @@ export default function DoctorProfilePage() {
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Bio
               </label>
-              <EditableField field="bio" value={profile.bio || ''} multiline />
+              <EditableField field="practiceName" value={profile.bio || ''} multiline />
             </div>
           </CardContent>
         </Card>
@@ -373,7 +400,7 @@ export default function DoctorProfilePage() {
               </label>
               <div className="flex items-center">
                 <PhoneIcon className="h-4 w-4 text-gray-400 mr-2" />
-                <EditableField field="user.phone" value={profile.user.phone || ''} />
+                <EditableField field="user.phone" value={profile.user.phone || ''} type="tel" />
               </div>
             </div>
 

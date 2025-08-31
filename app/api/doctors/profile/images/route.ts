@@ -8,8 +8,11 @@ import {
   createForbiddenResponse,
   withErrorHandling
 } from "@/lib/api-response"
-import { writeFile } from 'fs/promises'
-import { join } from 'path'
+import { writeFile, mkdir } from 'fs/promises'
+import path, { join } from 'path'
+
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+const ALLOWED_FILE_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
 
 export const POST = withErrorHandling(async (request: NextRequest) => {
   const session = await auth()
@@ -30,19 +33,33 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
       return createErrorResponse(new Error("No file uploaded"), 400);
     }
 
+    // Validate file size
+    if (file.size > MAX_FILE_SIZE) {
+        return createErrorResponse(new Error(`File size exceeds the limit of ${MAX_FILE_SIZE / (1024*1024)}MB`), 400);
+    }
+
+    // Validate file type
+    if (!ALLOWED_FILE_TYPES.includes(file.type)) {
+        return createErrorResponse(new Error(`File type not supported. Allowed types: ${ALLOWED_FILE_TYPES.join(', ')}`), 400);
+    }
+
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
+    // Sanitize filename and create unique name
+    const fileExtension = path.extname(file.name);
+    const uniqueFilename = `${Date.now()}-${Math.round(Math.random() * 1E9)}${fileExtension}`;
+
     const publicDir = join(process.cwd(), 'public', 'uploads', 'doctors');
-    const filePath = join(publicDir, file.name);
+    const filePath = join(publicDir, uniqueFilename);
 
     // Ensure directory exists
-    await require('fs').promises.mkdir(publicDir, { recursive: true });
+    await mkdir(publicDir, { recursive: true });
 
     await writeFile(filePath, buffer);
     console.log(`open ${filePath} to see the uploaded file`);
 
-    const fileUrl = `/uploads/doctors/${file.name}`;
+    const fileUrl = `/uploads/doctors/${uniqueFilename}`;
 
     const updatedDoctor = await prisma.doctor.update({
       where: { userId: session.user.id },

@@ -172,9 +172,59 @@ export const PUT = withErrorHandling(async (request: NextRequest) => {
 
   try {
     const body = await request.json();
+
+    const allowedDoctorFields = [
+      "practiceName", "practiceAddress", "languagesSpoken", "consultationFee",
+      "yearsOfExperience", "medicalLicenseNumber", "notificationPreferences",
+      "availabilitySchedule", "bio", "board_certifications"
+    ];
+    const allowedUserFields = ["phone"];
+
+    const doctorUpdateData: any = {};
+    const userUpdateData: any = {};
+
+    // This logic handles both flat and nested properties from the frontend
+    const processObject = (obj: any, prefix = '') => {
+        for (const key in obj) {
+            const newPrefix = prefix ? `${prefix}.${key}` : key;
+            if (typeof obj[key] === 'object' && obj[key] !== null && !Array.isArray(obj[key])) {
+                processObject(obj[key], newPrefix);
+            } else {
+                if (newPrefix.startsWith('user.')) {
+                    const userKey = newPrefix.substring(5);
+                    if (allowedUserFields.includes(userKey)) {
+                        userUpdateData[userKey] = obj[key];
+                    }
+                } else if (newPrefix.startsWith('professional.')) {
+                    const profKey = newPrefix.substring(13);
+                     if (allowedDoctorFields.includes(profKey)) {
+                        doctorUpdateData[profKey] = obj[key];
+                    }
+                } else {
+                    if (allowedDoctorFields.includes(key)) {
+                        doctorUpdateData[key] = obj[key];
+                    }
+                }
+            }
+        }
+    }
+
+    processObject(body);
+
+    if (Object.keys(doctorUpdateData).length === 0 && Object.keys(userUpdateData).length === 0) {
+      return createErrorResponse(new Error("No valid fields provided for update"), 400);
+    }
+
+    const updatePayload: any = { ...doctorUpdateData };
+    if (Object.keys(userUpdateData).length > 0) {
+        updatePayload.user = {
+            update: userUpdateData
+        }
+    }
+
     const updatedDoctor = await prisma.doctor.update({
         where: { userId: session.user.id },
-        data: body,
+        data: updatePayload,
     });
     return createSuccessResponse(updatedDoctor, "Profile updated successfully");
   } catch (error) {
