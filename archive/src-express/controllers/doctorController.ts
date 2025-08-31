@@ -152,7 +152,7 @@ class DoctorController {
           // Statistics
           totalPatients: patientsCount,
           active_treatment_plans: doctor.active_treatment_plans || 0,
-          activeCarePlans: doctor.activeCarePlans || 0,
+          active_care_plans: doctor.active_care_plans || 0,
           average_rating: doctor.average_rating,
           total_reviews: doctor.total_reviews || 0,
           is_available_online: doctor.is_available_online,
@@ -589,7 +589,7 @@ class DoctorController {
             adherenceRate: adherenceRate,
             criticalAlerts: criticalAlerts,
             totalAppointments: appointments.length,
-            activeCarePlans: carePlans.filter((cp: any) => cp.status === 'active').length,
+            active_care_plans: carePlans.filter((cp: any) => cp.status === 'active').length,
             total_medications: activeMedications.length
           }
         };

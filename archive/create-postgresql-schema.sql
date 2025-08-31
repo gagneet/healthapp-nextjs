@@ -203,7 +203,7 @@ CREATE TABLE doctors (
     -- Statistics
     totalPatients INTEGER DEFAULT 0,
     active_treatment_plans INTEGER DEFAULT 0,
-    activeCarePlans INTEGER DEFAULT 0,
+    active_care_plans INTEGER DEFAULT 0,
     average_rating DECIMAL(3,2),
     total_reviews INTEGER DEFAULT 0,
     is_available_online BOOLEAN DEFAULT TRUE,
@@ -255,7 +255,7 @@ CREATE TABLE hsps (
     
     -- Statistics
     total_patients_assisted INTEGER DEFAULT 0,
-    activeCarePlans INTEGER DEFAULT 0,
+    active_care_plans INTEGER DEFAULT 0,
     tasks_completed INTEGER DEFAULT 0,
     average_rating DECIMAL(3,2),
     total_reviews INTEGER DEFAULT 0,
