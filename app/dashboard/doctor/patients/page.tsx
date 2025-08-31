@@ -333,13 +333,13 @@ export default function PatientsPage() {
             adherenceRate: patient.adherenceRate ?? 0,
             criticalAlerts: patient.criticalAlerts ?? 0,
             totalAppointments: patient.totalAppointments ?? 0,
-            active_care_plans: patient.active_care_plans ?? 0,
+            activeCarePlans: patient.activeCarePlans ?? 0,
 
             // Keep consent workflow fields with fallbacks, as they might be added on the fly
             // or have a different source.
-            patient_type: patient.patient_type || 'M',
-            patient_type_label: patient.patient_type_label || 'Primary Patient',
-            access_type: patient.access_type || 'primary',
+            patientType: patient.patientType || 'M',
+            patientTypeLabel: patient.patientTypeLabel || 'Primary Patient',
+            accessType: patient.accessType || 'primary',
             requiresConsent: patient.requiresConsent || false,
             consentStatus: patient.consentStatus || 'not_required',
             accessGranted: patient.accessGranted ?? true,
@@ -348,8 +348,8 @@ export default function PatientsPage() {
             assignment_id: patient.assignment_id || null,
             assignment_reason: patient.assignment_reason || null,
             specialtyFocus: patient.specialtyFocus || [],
-            primary_doctor_provider: patient.primary_doctor_provider || null,
-            secondary_doctor_provider: patient.secondary_doctor_provider || null
+            primaryDoctorProvider: patient.primaryDoctorProvider || null,
+            secondaryDoctorProvider: patient.secondaryDoctorProvider || null
           }));
           setPatients(patientsArray);
           return;
