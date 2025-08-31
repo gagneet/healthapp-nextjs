@@ -241,22 +241,16 @@ networks:
 volumes:
   postgres_data:
     driver: local
-    external: ${POSTGRES_VOLUME_EXTERNAL:-false}
-    name: ${POSTGRES_VOLUME_NAME:-healthapp_${ENVIRONMENT}_postgres_data}
     labels:
       - "volume.service=postgres"
       - "volume.environment=${ENVIRONMENT:-dev}"
   redis_data:
     driver: local
-    external: ${REDIS_VOLUME_EXTERNAL:-false}
-    name: ${REDIS_VOLUME_NAME:-healthapp_${ENVIRONMENT}_redis_data}
     labels:
       - "volume.service=redis"
       - "volume.environment=${ENVIRONMENT:-dev}"
   pgadmin_data:
     driver: local
-    external: ${PGADMIN_VOLUME_EXTERNAL:-false}
-    name: ${PGADMIN_VOLUME_NAME:-healthapp_${ENVIRONMENT}_pgadmin_data}
     labels:
       - "volume.service=pgadmin"
       - "volume.environment=${ENVIRONMENT:-dev}"
