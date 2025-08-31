@@ -209,7 +209,7 @@ export default (sequelize: any) => {
       validate: { min: 0 }
     },
     
-    activeCarePlans: {
+    active_care_plans: {
       type: DataTypes.INTEGER,
       defaultValue: 0,
       validate: { min: 0 }

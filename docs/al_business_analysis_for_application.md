@@ -1153,7 +1153,7 @@ CREATE TABLE phi_access_logs (
     id INT PRIMARY KEY AUTO_INCREMENT,
     userId INT NOT NULL,
     patientId INT NOT NULL,
-    accessType ENUM('CREATE', 'READ', 'UPDATE', 'DELETE', 'EXPORT', 'PRINT'),
+    access_type ENUM('CREATE', 'READ', 'UPDATE', 'DELETE', 'EXPORT', 'PRINT'),
     data_category VARCHAR(100), -- medication, vitals, appointments, etc.
     accessed_data_id INT,
     

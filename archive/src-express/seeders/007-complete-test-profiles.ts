@@ -171,7 +171,7 @@ export default {
           languages_spoken: ['en', 'es'],
           totalPatients: 0,
           active_treatment_plans: 0,
-          activeCarePlans: 0,
+          active_care_plans: 0,
           average_rating: 4.8,
           total_reviews: 127,
           is_available_online: true,

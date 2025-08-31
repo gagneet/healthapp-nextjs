@@ -9,6 +9,7 @@ import { prisma, healthcareDb } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import type { User, Patient, Doctor, Hsp } from '@prisma/client';
+import { calculateAdherenceRate } from '@/lib/utils';
 
 const sanitizeLog = (input: string | null | undefined): string => {
   if (!input) return '';
@@ -238,6 +239,25 @@ export async function createUser(userData: {
  * Healthcare Patient Services with Prisma
  */
 
+export interface PatientListItem {
+  id: string;
+  patientId: string | null;
+  medicalRecordNumber: string | null;
+  firstName: string | null;
+  lastName: string | null;
+  email: string;
+  phone: string | null;
+  dateOfBirth: Date | null;
+  lastVisit: Date | null;
+  adherenceRate: number;
+  criticalAlerts: number;
+  primaryDoctor: {
+    name: string;
+    specialty: string | undefined;
+  } | null;
+  createdAt: Date | null;
+}
+
 /**
  * Get patients assigned to a doctor with pagination
  */
@@ -247,7 +267,7 @@ export async function getPatients(doctorId: string, pagination: {
   search?: string;
   sortBy?: string;
   sortOrder?: 'asc' | 'desc';
-}) {
+}): Promise<{ patients: PatientListItem[]; pagination: { page: number; limit: number; total: number; totalPages: number; } }> {
   try {
     const skip = (pagination.page - 1) * pagination.limit;
     
@@ -299,7 +319,12 @@ export async function getPatients(doctorId: string, pagination: {
         where: whereClause,
         skip,
         take: pagination.limit,
-        include: {
+        select: {
+          id: true,
+          patientId: true,
+          medicalRecordNumber: true,
+          lastVisitDate: true,
+          createdAt: true,
           user: {
             select: {
               firstName: true,
@@ -363,9 +388,7 @@ export async function getPatients(doctorId: string, pagination: {
 
     return {
       patients: patients.map(patient => {
-        const totalAdherence = patient.adherenceRecords.length;
-        const completedAdherence = patient.adherenceRecords.filter(r => r.isCompleted).length;
-        const adherenceRate = totalAdherence > 0 ? Math.round((completedAdherence / totalAdherence) * 100) : 0;
+        const adherenceRate = calculateAdherenceRate(patient.adherenceRecords);
 
         return {
           id: patient.id,
@@ -375,7 +398,7 @@ export async function getPatients(doctorId: string, pagination: {
           email: patient.user.email,
           phone: patient.user.phone,
           dateOfBirth: patient.user.dateOfBirth,
-          lastVisit: patient.appointments[0]?.startDate || patient.lastVisitDate || null,
+          lastVisit: patient.appointments?.[0]?.startDate || patient.lastVisitDate || null,
           adherenceRate: adherenceRate,
           criticalAlerts: patient._count.emergencyAlerts,
           primaryDoctor: patient.primaryCareDoctor ? {
@@ -749,7 +772,7 @@ export async function getDoctorDashboard(doctorUserId: string) {
         criticalAlerts: 0, // Will be calculated from critical alerts API
         appointments_today: todayAppointments,
         medication_adherence: Math.floor(Math.random() * 30) + 70, // Mock data
-        activeCarePlans: activeCarePlans,
+        active_care_plans: activeCarePlans,
         recent_vitals: recentVitalsCount
       },
       doctor: {

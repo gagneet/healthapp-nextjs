@@ -99,7 +99,7 @@ class PatientAccessService {
 
     return patients.map((patient: any) => ({
       ...patient.toJSON(),
-      accessType: 'primary',
+      access_type: 'primary',
       accessGranted: true,
       requiresConsent: false
     }));
@@ -158,7 +158,7 @@ class PatientAccessService {
       return {
         ...assignment.patient.toJSON(),
         assignment_id: assignment.id,
-        accessType: 'secondary',
+        access_type: 'secondary',
         accessGranted: assignment.accessGranted,
         requiresConsent: requiresConsent,
         consentStatus: assignment.consentStatus,
@@ -168,8 +168,8 @@ class PatientAccessService {
         primary_doctor: assignment.primaryDoctor ? 
           `${assignment.primaryDoctor.user.firstName} ${assignment.primaryDoctor.user.lastName}` : 
           'Unknown',
-        primaryDoctorProvider: assignment.primaryDoctorProvider?.name || 'No Provider',
-        secondaryDoctorProvider: assignment.secondaryDoctorProvider?.name || 'No Provider'
+        primary_doctor_provider: assignment.primaryDoctorProvider?.name || 'No Provider',
+        secondary_doctor_provider: assignment.secondaryDoctorProvider?.name || 'No Provider'
       };
     });
   }
@@ -265,7 +265,7 @@ class PatientAccessService {
       if (isPrimaryDoctor) {
         return {
           can_access: true,
-          accessType: 'primary',
+          access_type: 'primary',
           requiresConsent: false
         };
       }
@@ -285,7 +285,7 @@ class PatientAccessService {
 
         return {
           can_access: canAccess,
-          accessType: 'secondary',
+          access_type: 'secondary',
           requiresConsent: requiresConsent,
           consentStatus: secondaryAssignment.consentStatus,
           assignment_id: secondaryAssignment.id
