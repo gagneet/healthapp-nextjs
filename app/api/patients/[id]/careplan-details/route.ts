@@ -144,10 +144,8 @@ async function fetchCarePlanData(patientId: string) {
             select: {
               id: true,
               name: true,
-              genericName: true,
-              strength: true,
-              form: true,
-              category: true
+              type: true,
+              description: true,
             }
           }
         }
@@ -322,7 +320,7 @@ export async function GET(request: NextRequest, { params }: { params: { id:strin
       vitalType: reading.vitalType,
       value: reading.value,
       readingTime: reading.readingTime,
-      isNormal: reading.is_normal, // is_normal does not exist on VitalReading model
+      isFlagged: reading.isFlagged,
       alertLevel: reading.alertLevel
     }));
 

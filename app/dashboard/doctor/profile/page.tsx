@@ -29,43 +29,63 @@ import { formatDate } from '@/lib/utils'
 import toast from 'react-hot-toast'
 
 interface DoctorProfile {
-  id: string
-  userId: string
-  speciality_id: string
-  medical_license_number: string
-  years_of_experience: number
+  id: string;
+  doctorId: string;
+  user: {
+    id: string;
+    email: string;
+    name: string;
+    image: string;
+    emailVerified: Date | null;
+    firstName: string;
+    lastName: string;
+    fullName: string;
+    profilePictureUrl: string;
+    emailVerifiedLegacy: boolean;
+    middleName: string;
+    phone: string;
+    dateOfBirth: Date;
+    gender: string;
+    accountStatus: string;
+    timezone: string;
+    locale: string;
+    lastLoginAt: Date;
+  };
+  professional: {
+    medicalLicenseNumber: string;
+    yearsOfExperience: number;
+    consultationFee: number;
+    specialty: {
+      id: string;
+      name: string;
+      description: string;
+    } | null;
+    organization: {
+      id: string;
+      name: string;
+      type: string;
+      contactInfo: any;
+    } | null;
+  };
+  statistics: {
+    totalPatients: number;
+    recentAppointments: number;
+    appointmentCompletionRate: number;
+    accountCreated: Date;
+    lastUpdated: Date;
+  };
+  settings: any;
   qualification_details: Array<{
-    degree: string
-    institution: string
-    year: string
-  }>
-  bio?: string
-  consultation_fee: number
-  availability_schedule: {
-    monday?: { start: string; end: string; available: boolean }
-    tuesday?: { start: string; end: string; available: boolean }
-    wednesday?: { start: string; end: string; available: boolean }
-    thursday?: { start: string; end: string; available: boolean }
-    friday?: { start: string; end: string; available: boolean }
-    saturday?: { start: string; end: string; available: boolean }
-    sunday?: { start: string; end: string; available: boolean }
-  }
-  practice_address: object | string
-  board_certifications: string[]
-  languages_spoken: string[]
-  profilePictureUrl: string
-  average_rating: number | null
-  total_patients: number
-  specialty: {
-    id: string
-    name: string
-    description: string
-  } | null
-  mobileNumber?: string
-  firstName?: string
-  middle_name?: string
-  lastName?: string
-  email?: string
+    degree: string;
+    institution: string;
+    year: string;
+  }>;
+  bio?: string;
+  availability_schedule: any;
+  practice_address: any;
+  board_certifications: string[];
+  languages_spoken: string[];
+  profilePictureUrl: string;
 }
 
 export default function DoctorProfilePage() {
@@ -83,8 +103,8 @@ export default function DoctorProfilePage() {
   const fetchDoctorProfile = async () => {
     try {
       const response = await apiRequest.get('/doctors/profile')
-      if ((response as any).status && (response as any).payload?.data?.profile) {
-        setProfile((response as any).payload.data.profile)
+      if ((response as any).status && (response as any).payload?.data) {
+        setProfile((response as any).payload.data)
       }
     } catch (error) {
       console.error('Failed to fetch doctor profile:', error)
@@ -132,7 +152,7 @@ export default function DoctorProfilePage() {
     formData.append('profile_image', file)
 
     try {
-      const response = await apiRequest.post('/doctors/profile/image', formData)
+      const response = await apiRequest.post('/doctors/profile/images', formData)
       
       if ((response as any).status && (response as any).payload?.data?.imageUrl) {
         setProfile(prev => prev ? { ...prev, profilePictureUrl: (response as any).payload.data.imageUrl } : null)
@@ -267,21 +287,21 @@ export default function DoctorProfilePage() {
           </div>
           <div className="flex-1">
             <h1 className="text-2xl font-bold">
-              Dr. {userHelpers.getLastName(user) || userHelpers.getFirstName(user)}
+              Dr. {profile.user.name}
             </h1>
-            <p className="text-blue-100">{profile.specialty?.name || 'Specialty not specified'}</p>
+            <p className="text-blue-100">{profile.professional.specialty?.name || 'Specialty not specified'}</p>
             <div className="flex items-center space-x-4 mt-2">
               <div className="flex items-center">
                 <StarIcon className="h-4 w-4 text-yellow-300 mr-1" />
-                <span>{profile.average_rating ? profile.average_rating.toString() : '0.0'}</span>
+                <span>{profile.statistics.appointmentCompletionRate ? profile.statistics.appointmentCompletionRate.toString() : '0.0'}</span>
               </div>
               <div className="flex items-center">
                 <UsersIcon className="h-4 w-4 text-blue-200 mr-1" />
-                <span>{profile.total_patients} patients</span>
+                <span>{profile.statistics.totalPatients} patients</span>
               </div>
               <div className="flex items-center">
                 <BriefcaseIcon className="h-4 w-4 text-blue-200 mr-1" />
-                <span>{profile.years_of_experience} years experience</span>
+                <span>{profile.professional.yearsOfExperience} years experience</span>
               </div>
             </div>
           </div>
@@ -312,21 +332,21 @@ export default function DoctorProfilePage() {
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 License Number
               </label>
-              <EditableField field="medical_license_number" value={profile.medical_license_number} />
+              <EditableField field="professional.medicalLicenseNumber" value={profile.professional.medicalLicenseNumber} />
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Years of Experience
               </label>
-              <EditableField field="years_of_experience" value={profile.years_of_experience} type="number" />
+              <EditableField field="professional.yearsOfExperience" value={profile.professional.yearsOfExperience} type="number" />
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Consultation Fee (₹)
               </label>
-              <EditableField field="consultation_fee" value={profile.consultation_fee} type="number" />
+              <EditableField field="professional.consultationFee" value={profile.professional.consultationFee} type="number" />
             </div>
 
             <div>
@@ -353,7 +373,7 @@ export default function DoctorProfilePage() {
               </label>
               <div className="flex items-center">
                 <PhoneIcon className="h-4 w-4 text-gray-400 mr-2" />
-                <EditableField field="mobileNumber" value={profile?.mobileNumber || (user as any)?.mobileNumber || (user as any)?.phone || ''} />
+                <EditableField field="user.phone" value={profile.user.phone || ''} />
               </div>
             </div>
 
