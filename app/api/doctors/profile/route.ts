@@ -98,7 +98,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
         firstName: doctor.user.firstName,
         lastName: doctor.user.lastName,
         fullName: doctor.user.fullName,
-        profilePictureUrl: doctor.user.profilePictureUrl,
+        profilePictureUrl: userImage,
         emailVerifiedLegacy: doctor.user.emailVerifiedLegacy,
         middleName: doctor.user.middleName,
         phone: doctor.user.phone,
@@ -123,28 +123,25 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
           name: doctor.organization.name,
           type: doctor.organization.type,
           contactInfo: doctor.organization.contactInfo
-        } : null
+        } : null,
+        qualificationDetails: doctor.qualificationDetails,
+        bio: doctor.practiceName,
+        practiceAddress: doctor.practiceAddress,
+        boardCertifications: doctor.boardCertifications,
+        languagesSpoken: doctor.languagesSpoken,
       },
       statistics: {
         totalPatients,
         recentAppointments,
         appointmentCompletionRate,
         accountCreated: doctor.createdAt,
-        lastUpdated: doctor.updatedAt
+        lastUpdated: doctor.updatedAt,
+        averageRating: doctor.averageRating,
       },
       settings: {
-        notification_preferences: doctor.notificationPreferences,
-        availability_schedule: doctor.availabilitySchedule,
+        notificationPreferences: doctor.notificationPreferences,
+        availabilitySchedule: doctor.availabilitySchedule,
       },
-      qualification_details: doctor.qualificationDetails,
-      bio: doctor.practiceName,
-      availability_schedule: doctor.availabilitySchedule,
-      practice_address: doctor.practiceAddress,
-      board_certifications: doctor.boardCertifications,
-      languages_spoken: doctor.languagesSpoken,
-      profilePictureUrl: doctor.profilePictureUrl,
-      average_rating: doctor.averageRating,
-      total_patients: totalPatients,
     }
 
     return createSuccessResponse(profileData);

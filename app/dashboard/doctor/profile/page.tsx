@@ -66,6 +66,15 @@ interface DoctorProfile {
       type: string;
       contactInfo: any;
     } | null;
+    qualificationDetails: Array<{
+        degree: string;
+        institution: string;
+        year: string;
+    }>;
+    bio?: string;
+    practiceAddress: any;
+    boardCertifications: string[];
+    languagesSpoken: string[];
   };
   statistics: {
     totalPatients: number;
@@ -73,19 +82,12 @@ interface DoctorProfile {
     appointmentCompletionRate: number;
     accountCreated: Date;
     lastUpdated: Date;
+    averageRating: number | null;
   };
-  settings: any;
-  qualification_details: Array<{
-    degree: string;
-    institution: string;
-    year: string;
-  }>;
-  bio?: string;
-  availability_schedule: any;
-  practice_address: any;
-  board_certifications: string[];
-  languages_spoken: string[];
-  profilePictureUrl: string;
+  settings: {
+      notificationPreferences: any;
+      availabilitySchedule: any;
+  };
 }
 
 export default function DoctorProfilePage() {
@@ -292,9 +294,9 @@ export default function DoctorProfilePage() {
         <div className="flex items-center space-x-6">
           <div className="relative">
             <div className="h-24 w-24 rounded-full bg-white/20 flex items-center justify-center">
-              {profile.profilePictureUrl ? (
+              {profile.user.image ? (
                 <img
-                  src={profile.profilePictureUrl}
+                  src={profile.user.image}
                   alt={userHelpers.getDisplayName(user)}
                   className="h-24 w-24 rounded-full object-cover"
                 />
@@ -320,7 +322,7 @@ export default function DoctorProfilePage() {
             <div className="flex items-center space-x-4 mt-2">
               <div className="flex items-center">
                 <StarIcon className="h-4 w-4 text-yellow-300 mr-1" />
-                <span>{profile.statistics.appointmentCompletionRate ? profile.statistics.appointmentCompletionRate.toString() : '0.0'}</span>
+                <span>{profile.statistics.averageRating ? profile.statistics.averageRating.toString() : '0.0'}</span>
               </div>
               <div className="flex items-center">
                 <UsersIcon className="h-4 w-4 text-blue-200 mr-1" />
@@ -380,7 +382,7 @@ export default function DoctorProfilePage() {
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Bio
               </label>
-              <EditableField field="practiceName" value={profile.bio || ''} multiline />
+              <EditableField field="professional.bio" value={profile.professional.bio || ''} multiline />
             </div>
           </CardContent>
         </Card>
@@ -408,7 +410,7 @@ export default function DoctorProfilePage() {
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Practice Address
               </label>
-              <EditableField field="practice_address" value={typeof profile.practice_address === 'string' ? profile.practice_address : JSON.stringify(profile.practice_address || {})} multiline />
+              <EditableField field="professional.practiceAddress" value={typeof profile.professional.practiceAddress === 'string' ? profile.professional.practiceAddress : JSON.stringify(profile.professional.practiceAddress || {})} multiline />
             </div>
 
             <div>
@@ -416,7 +418,7 @@ export default function DoctorProfilePage() {
                 Languages
               </label>
               <div className="flex flex-wrap gap-2">
-                {(profile.languages_spoken || []).map((language, index) => (
+                {(profile.professional.languagesSpoken || []).map((language, index) => (
                   <span
                     key={index}
                     className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
@@ -439,7 +441,7 @@ export default function DoctorProfilePage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {(profile.qualification_details || []).map((edu, index) => (
+              {(profile.professional.qualificationDetails || []).map((edu, index) => (
                 <div key={index} className="border-l-4 border-blue-500 pl-4">
                   <h4 className="font-medium text-gray-900">{edu.degree}</h4>
                   <p className="text-sm text-gray-600">{edu.institution}</p>
@@ -460,7 +462,7 @@ export default function DoctorProfilePage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {(profile.board_certifications || []).map((cert, index) => (
+              {(profile.professional.boardCertifications || []).map((cert, index) => (
                 <div key={index} className="border rounded-lg p-3">
                   <h4 className="font-medium text-gray-900">{cert}</h4>
                 </div>
@@ -480,7 +482,7 @@ export default function DoctorProfilePage() {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-7 gap-4">
-            {Object.entries(profile.availability_schedule || {}).map(([day, schedule]) => (
+            {Object.entries(profile.settings.availabilitySchedule || {}).map(([day, schedule]) => (
               <div key={day} className="border rounded-lg p-3">
                 <h4 className="font-medium text-gray-900 capitalize">{day}</h4>
                 {schedule?.available ? (
