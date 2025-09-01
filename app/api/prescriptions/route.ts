@@ -130,16 +130,7 @@ export async function POST(request: NextRequest) {
     const prescriptionNumber = `RX-${Date.now()}-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
 
     // Calculate expiration date
-    const expirationDate = new Date();
-    if (validatedData.isControlledSubstance) {
-      if (validatedData.deaSchedule === 'CII') {
-        expirationDate.setDate(expirationDate.getDate() + 90); // 90 days for CII
-      } else {
-        expirationDate.setDate(expirationDate.getDate() + 180); // 6 months for CIII-CV
-      }
-    } else {
-      expirationDate.setFullYear(expirationDate.getFullYear() + 1); // 1 year for non-controlled
-    }
+    const expirationDate = calculateExpirationDate(validatedData.isControlledSubstance, validatedData.deaSchedule);
 
     // Calculate days supply if not provided
     const daysSupply = validatedData.daysSupply || 
@@ -389,4 +380,27 @@ export async function GET(request: NextRequest) {
     }
     return NextResponse.json({ error: 'Failed to fetch prescriptions' }, { status: 500 });
   }
+}
+
+function calculateExpirationDate(isControlledSubstance: boolean, deaSchedule?: string): Date {
+  const expirationDate = new Date();
+
+  if (isControlledSubstance) {
+    switch (deaSchedule) {
+      case 'CII':
+        expirationDate.setDate(expirationDate.getDate() + 90);
+        break;
+      case 'CIII':
+      case 'CIV':
+      case 'CV':
+        expirationDate.setDate(expirationDate.getDate() + 180);
+        break;
+      default:
+        expirationDate.setDate(expirationDate.getDate() + 365);
+    }
+  } else {
+    expirationDate.setDate(expirationDate.getDate() + 365);
+  }
+
+  return expirationDate;
 }

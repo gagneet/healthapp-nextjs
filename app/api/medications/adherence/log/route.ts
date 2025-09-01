@@ -301,7 +301,17 @@ export async function GET(request: NextRequest) {
     });
 
     // Build filter based on user permissions
-    const logFilter: any = {};
+    interface LogFilter {
+      patientId?: string;
+      medicationId?: string;
+      adherenceStatus?: string;
+      logMethod?: string;
+      scheduledTime?: {
+        gte?: Date;
+        lte?: Date;
+      };
+    }
+    const logFilter: LogFilter = {};
     let hasAccess = false;
 
     if (session.user.role === 'PATIENT') {

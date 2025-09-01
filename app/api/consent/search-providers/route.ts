@@ -52,7 +52,24 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
 
     // Search doctors
     if (type === 'doctor' || type === 'both') {
-      const doctorWhere: any = {
+      interface DoctorSearchConditions {
+        AND: Array<{
+          isActive?: boolean;
+          OR?: Array<{
+            user?: {
+              firstName?: { contains: string; mode: 'insensitive' };
+              lastName?: { contains: string; mode: 'insensitive' };
+              email?: { contains: string; mode: 'insensitive' };
+            };
+            medicalLicenseNumber?: { contains: string; mode: 'insensitive' };
+          }>;
+          specialty?: {
+            name: { contains: string; mode: 'insensitive' };
+          };
+          organizationId?: string;
+        }>;
+      }
+      const doctorWhere: DoctorSearchConditions = {
         AND: [
           { isActive: includeInactive ? undefined : true },
           {
@@ -64,7 +81,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
             ]
           }
         ]
-      }
+      };
 
       // Add specialty filter
       if (specialty) {
@@ -72,12 +89,12 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
           specialty: {
             name: { contains: specialty, mode: 'insensitive' }
           }
-        })
+        });
       }
 
       // Add organization filter
       if (organizationId) {
-        doctorWhere.AND.push({ organizationId })
+        doctorWhere.AND.push({ organizationId });
       }
 
       const doctors = await prisma.doctor.findMany({
@@ -138,7 +155,21 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
 
     // Search HSPs
     if (type === 'hsp' || type === 'both') {
-      const hspWhere: any = {
+      interface HSPSearchConditions {
+        AND: Array<{
+          isActive?: boolean;
+          OR?: Array<{
+            user?: {
+              firstName?: { contains: string; mode: 'insensitive' };
+              lastName?: { contains: string; mode: 'insensitive' };
+              email?: { contains: string; mode: 'insensitive' };
+            };
+            licenseNumber?: { contains: string; mode: 'insensitive' };
+          }>;
+          organizationId?: string;
+        }>;
+      }
+      const hspWhere: HSPSearchConditions = {
         AND: [
           { isActive: includeInactive ? undefined : true },
           {
@@ -150,11 +181,11 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
             ]
           }
         ]
-      }
+      };
 
       // Add organization filter
       if (organizationId) {
-        hspWhere.AND.push({ organizationId })
+        hspWhere.AND.push({ organizationId });
       }
 
       const hsps = await prisma.hsp.findMany({
