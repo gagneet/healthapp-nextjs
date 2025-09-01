@@ -311,6 +311,43 @@ export default function PatientsPage() {
     fetchPatients()
   }, [])
 
+  interface ApiPatient {
+    id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    phone: string;
+    medicalRecordNumber: string;
+    status?: string;
+    lastVisit?: string | null;
+    nextAppointment?: string | null;
+    adherenceRate?: number | null;
+    criticalAlerts?: number | null;
+    totalAppointments?: number;
+    activeCarePlans?: number;
+    patientType?: 'M' | 'R';
+    accessType?: 'primary' | 'secondary';
+    requiresConsent?: boolean;
+    consentStatus?: ConsentStatus;
+    accessGranted?: boolean;
+    can_view?: boolean;
+    same_provider?: boolean;
+    assignment_id?: string | null;
+    assignment_reason?: string | null;
+    specialtyFocus?: string[];
+    primaryDoctorProvider?: any;
+    secondaryDoctorProvider?: any;
+  }
+
+  interface PatientsApiResponse {
+    status: boolean;
+    payload: {
+      data: {
+        patients: ApiPatient[];
+      };
+    };
+  }
+
   const fetchPatients = async (searchQuery = '') => {
     try {
       setIsLoading(true)
@@ -320,13 +357,11 @@ export default function PatientsPage() {
       }
       
       try {
-        const result = await apiRequest.get(endpoint)
+        const result = await apiRequest.get(endpoint) as PatientsApiResponse;
         
-        if ((result as any).status && (result as any).payload?.data?.patients) {
-          // The API now returns a flat array of patient objects.
-          const patientsArray = ((result as any).payload.data.patients).map((patient: any) => ({
-            ...patient, // Spread the flat patient object from the API
-            // Ensure default values for fields that might be missing
+        if (result.status && result.payload?.data?.patients) {
+          const patientsArray: Patient[] = result.payload.data.patients.map((patient: ApiPatient) => ({
+            ...patient,
             status: patient.status || 'active',
             lastVisit: patient.lastVisit || null,
             nextAppointment: patient.nextAppointment || null,
@@ -334,11 +369,8 @@ export default function PatientsPage() {
             criticalAlerts: patient.criticalAlerts ?? 0,
             totalAppointments: patient.totalAppointments ?? 0,
             activeCarePlans: patient.activeCarePlans ?? 0,
-
-            // Keep consent workflow fields with fallbacks, as they might be added on the fly
-            // or have a different source.
             patientType: patient.patientType || 'M',
-            patientTypeLabel: patient.patientTypeLabel || 'Primary Patient',
+            patientTypeLabel: patient.patientType === 'M' ? 'Primary Patient' : 'Referred Patient',
             accessType: patient.accessType || 'primary',
             requiresConsent: patient.requiresConsent || false,
             consentStatus: patient.consentStatus || 'not_required',
@@ -357,7 +389,6 @@ export default function PatientsPage() {
       } catch (apiError) {
         console.error('API call failed:', apiError)
         setPatients([])
-        // Don't throw - let component handle gracefully
       }
     } finally {
       setIsLoading(false)

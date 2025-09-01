@@ -10,7 +10,7 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import type { User, Patient, Doctor, Hsp } from '@prisma/client';
 import { randomUUID } from 'crypto';
-import { Prisma } from '@prisma/client';
+import { Prisma, UserRole } from '@prisma/client';
 
 const sanitizeLog = (input: string | null | undefined): string => {
   if (!input) return '';
@@ -161,7 +161,7 @@ export async function verifyToken(token: string) {
  * Create new user with healthcare role
  */
 export async function createUser(userData: {
-  email: string;
+  email:string;
   password: string;
   role: string;
   firstName: string;
@@ -170,8 +170,8 @@ export async function createUser(userData: {
 }): Promise<AuthResult> {
   try {
     // Validate role
-    const validRoles = ['PATIENT', 'DOCTOR', 'HSP'];
-    if (!validRoles.includes(userData.role)) {
+    const validRoles = Object.values(UserRole);
+    if (!validRoles.includes(userData.role as UserRole)) {
       return {
         success: false,
         message: 'Invalid role specified'
@@ -266,7 +266,7 @@ export async function createUser(userData: {
             // This can happen if the generated ID or another unique field collides.
             return {
                 success: false,
-                message: `A user with the provided details already exists.`
+                message: 'Registration failed due to a conflict with existing data.'
             };
         }
     }
