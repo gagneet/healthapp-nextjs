@@ -327,7 +327,7 @@ export class HealthcareRBAC {
    * Get filtered patient list based on user role and relationships
    */
   static async getAuthorizedPatients(userId: string, userRole: string, additionalFilters: any = {}) {
-    let whereClause = { ...additionalFilters };
+    const whereClause = { ...additionalFilters };
 
     if (userRole === 'PATIENT') {
       whereClause.userId = userId;

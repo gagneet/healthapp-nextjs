@@ -3,6 +3,17 @@ import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 
+interface LogFilter {
+  patientId?: string;
+  medicationId?: string;
+  adherenceStatus?: string;
+  logMethod?: string;
+  scheduledTime?: {
+    gte?: Date;
+    lte?: Date;
+  };
+}
+
 const logAdherenceSchema = z.object({
   medicationId: z.string().uuid(),
   scheduledTime: z.string().datetime(),
@@ -59,7 +70,7 @@ export async function POST(request: NextRequest) {
 
     // Permission check: Patient themselves, their doctors, caregivers, or admins
     let hasAccess = false;
-    let loggedBy = session.user.id;
+    const loggedBy = session.user.id;
 
     if (session.user.role === 'PATIENT') {
       const patient = await prisma.patient.findFirst({
@@ -301,12 +312,12 @@ export async function GET(request: NextRequest) {
     });
 
     // Build filter based on user permissions
-    let logFilter: any = {};
+    const logFilter: LogFilter = {};
     let hasAccess = false;
 
     if (session.user.role === 'PATIENT') {
       const patient = await prisma.patient.findFirst({
-        where: { userId: session.user.id }
+        where: { userId: session.user.id },
       });
       if (patient) {
         logFilter.patientId = patient.id;
@@ -323,12 +334,12 @@ export async function GET(request: NextRequest) {
                 patientDoctorAssignments: {
                   some: {
                     doctorId: session.user.id,
-                    status: 'ACTIVE'
-                  }
-                }
-              }
-            ]
-          }
+                    status: 'ACTIVE',
+                  },
+                },
+              },
+            ],
+          },
         });
         if (doctorAccess) {
           logFilter.patientId = queryData.patientId;
@@ -347,26 +358,14 @@ export async function GET(request: NextRequest) {
     }
 
     // Add additional filters
-    if (queryData.medicationId) {
-      logFilter.medicationId = queryData.medicationId;
-    }
-
-    if (queryData.status) {
-      logFilter.adherenceStatus = queryData.status;
-    }
-
-    if (queryData.logMethod) {
-      logFilter.logMethod = queryData.logMethod;
-    }
-
+    if (queryData.medicationId) logFilter.medicationId = queryData.medicationId;
+    if (queryData.status) logFilter.adherenceStatus = queryData.status;
+    if (queryData.logMethod) logFilter.logMethod = queryData.logMethod;
     if (queryData.startDate || queryData.endDate) {
-      logFilter.scheduledTime = {};
-      if (queryData.startDate) {
-        logFilter.scheduledTime.gte = new Date(queryData.startDate);
-      }
-      if (queryData.endDate) {
-        logFilter.scheduledTime.lte = new Date(queryData.endDate + 'T23:59:59.999Z');
-      }
+      logFilter.scheduledTime = {
+        ...(queryData.startDate && { gte: new Date(queryData.startDate) }),
+        ...(queryData.endDate && { lte: new Date(queryData.endDate + 'T23:59:59.999Z') }),
+      };
     }
 
     // Get logs with pagination

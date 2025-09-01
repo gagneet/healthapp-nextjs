@@ -14,6 +14,7 @@ import {
   createForbiddenResponse,
   withErrorHandling
 } from "@/lib/api-response"
+import { SearchConditions, DoctorSearchFields, HSPSearchFields } from "@/lib/types";
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -52,7 +53,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
 
     // Search doctors
     if (type === 'doctor' || type === 'both') {
-      let doctorWhere: any = {
+      const doctorWhere: SearchConditions<DoctorSearchFields> = {
         AND: [
           { isActive: includeInactive ? undefined : true },
           {
@@ -64,7 +65,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
             ]
           }
         ]
-      }
+      };
 
       // Add specialty filter
       if (specialty) {
@@ -72,12 +73,12 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
           specialty: {
             name: { contains: specialty, mode: 'insensitive' }
           }
-        })
+        });
       }
 
       // Add organization filter
       if (organizationId) {
-        doctorWhere.AND.push({ organizationId })
+        doctorWhere.AND.push({ organizationId });
       }
 
       const doctors = await prisma.doctor.findMany({
@@ -138,7 +139,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
 
     // Search HSPs
     if (type === 'hsp' || type === 'both') {
-      let hspWhere: any = {
+      const hspWhere: SearchConditions<HSPSearchFields> = {
         AND: [
           { isActive: includeInactive ? undefined : true },
           {
@@ -150,11 +151,11 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
             ]
           }
         ]
-      }
+      };
 
       // Add organization filter
       if (organizationId) {
-        hspWhere.AND.push({ organizationId })
+        hspWhere.AND.push({ organizationId });
       }
 
       const hsps = await prisma.hsp.findMany({

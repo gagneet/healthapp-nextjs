@@ -139,7 +139,7 @@ export async function GET(request: NextRequest) {
 
 // Search functions for different entity types
 async function searchPatients(searchValue: string, filters: SearchFilters, user: any) {
-  let whereClause: any = {
+  const whereClause: any = {
     OR: [
       { user: { firstName: { contains: searchValue, mode: 'insensitive' } } },
       { user: { lastName: { contains: searchValue, mode: 'insensitive' } } },

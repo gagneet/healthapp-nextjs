@@ -63,7 +63,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
   const category = searchParams.get('category')
   const severityLevel = searchParams.get('severityLevel')
 
-  let whereClause: any = {
+  const whereClause: any = {
     isActive: true
   }
 

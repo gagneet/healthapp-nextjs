@@ -49,7 +49,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
   }
 
   try {
-    let whereClause: any = {
+    const whereClause: any = {
       AND: [
         { isActive: true },
         {
@@ -176,7 +176,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
     }))
 
     // Get symptom frequency if including symptoms
-    let symptomFrequency: { [key: string]: number } = {}
+    const symptomFrequency: { [key: string]: number } = {}
     if (includeSymptoms) {
       finalResults.forEach(diagnosis => {
         if (Array.isArray(diagnosis.symptoms)) {

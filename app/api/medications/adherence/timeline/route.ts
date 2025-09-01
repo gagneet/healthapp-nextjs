@@ -117,7 +117,7 @@ export async function GET(request: NextRequest) {
     );
 
     // Build medication filter
-    let medicationFilter: any = {
+    const medicationFilter: any = {
       ...patientFilter,
       createdAt: {
         gte: startDate,

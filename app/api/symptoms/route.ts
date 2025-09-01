@@ -58,7 +58,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
   const severity = searchParams.get('severity')
 
   // Build where clause based on user role and filters
-  let whereClause: any = {}
+  const whereClause: any = {}
 
   // Business Logic: Role-based data access
   switch (session.user.role) {

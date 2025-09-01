@@ -346,7 +346,7 @@ class PatientController {
       }
 
       // Fallback for non-doctor users - original logic
-      let whereClause = {
+      const whereClause = {
         role: USER_CATEGORIES.PATIENT
       };
 

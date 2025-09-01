@@ -135,7 +135,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
   const createdBy = searchParams.get('createdBy')
 
   try {
-    let whereClause: any = {
+    const whereClause: any = {
       AND: [
         { isActive: true },
         // Filter for custom diagnoses by looking for entries created by users

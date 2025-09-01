@@ -51,7 +51,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
   }
 
   try {
-    let whereClause: any = {
+    const whereClause: any = {
       AND: [
         ...(publicOnly ? [{ publicMedicine: true }] : []),
         {

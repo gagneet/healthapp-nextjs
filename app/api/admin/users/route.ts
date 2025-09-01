@@ -32,7 +32,7 @@ export async function GET(request: NextRequest) {
     const status = searchParams.get('status');
     const offset = (page - 1) * limit;
 
-    let whereClause: any = {};
+    const whereClause: any = {};
     
     if (search) {
       whereClause.OR = [

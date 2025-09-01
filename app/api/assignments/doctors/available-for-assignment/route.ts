@@ -59,7 +59,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
     }
 
     // Build query conditions
-    let whereConditions: any = {
+    const whereConditions: any = {
       isActive: true,
       id: { not: requestingDoctor.id } // Exclude the requesting doctor
     }

@@ -227,7 +227,7 @@ class RateLimiter {
     }
 
     // Get timestamps for this source and clean old ones
-    let timestamps = (this as any).logs.get(source);
+    const timestamps = (this as any).logs.get(source);
     const windowStart = now - (this as any).windowMs;
 
     // Remove timestamps outside the window

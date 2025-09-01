@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
       }, { status: 403 });
     }
 
-    let whereClause: any = {};
+    const whereClause: any = {};
 
     if (session.user.role === 'PATIENT') {
       const patient = await prisma.patient.findFirst({

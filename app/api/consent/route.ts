@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
     }
     const user = session.user;
 
-    let whereClause: any = {};
+    const whereClause: any = {};
 
     // Role-based access control
     if (user!.role === 'PATIENT') {

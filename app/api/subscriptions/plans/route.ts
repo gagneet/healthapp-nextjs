@@ -141,7 +141,7 @@ export async function GET(request: NextRequest) {
     });
 
     // Build filter based on user role and query parameters
-    let planFilter: any = {
+    const planFilter: any = {
       isActive: queryData.isActive
     };
 

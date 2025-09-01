@@ -48,7 +48,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    let whereClause: any = {
+    const whereClause: any = {
       AND: [
         { isActive: true },
         {

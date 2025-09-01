@@ -121,7 +121,7 @@ export const POST = withErrorHandling(async (request: NextRequest, { params }: {
       })
     } else {
       // Find the most recent active assignment requiring consent
-      let assignmentWhere: any = {
+      const assignmentWhere: any = {
         patientId: patientId,
         requiresConsent: true,
         consentStatus: 'pending',

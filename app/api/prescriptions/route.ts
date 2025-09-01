@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
+import { addDays, addYears } from 'date-fns';
 
 const createPrescriptionSchema = z.object({
   patientId: z.string().uuid(),
@@ -130,16 +131,7 @@ export async function POST(request: NextRequest) {
     const prescriptionNumber = `RX-${Date.now()}-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
 
     // Calculate expiration date
-    let expirationDate = new Date();
-    if (validatedData.isControlledSubstance) {
-      if (validatedData.deaSchedule === 'CII') {
-        expirationDate.setDate(expirationDate.getDate() + 90); // 90 days for CII
-      } else {
-        expirationDate.setDate(expirationDate.getDate() + 180); // 6 months for CIII-CV
-      }
-    } else {
-      expirationDate.setFullYear(expirationDate.getFullYear() + 1); // 1 year for non-controlled
-    }
+    const expirationDate = calculateExpirationDate(validatedData.isControlledSubstance, validatedData.deaSchedule);
 
     // Calculate days supply if not provided
     const daysSupply = validatedData.daysSupply || 
@@ -264,7 +256,7 @@ export async function GET(request: NextRequest) {
     });
 
     // Build where clause based on user role and permissions
-    let whereClause: any = {};
+    const whereClause: any = {};
 
     if (session.user.role === 'DOCTOR') {
       const doctor = await prisma.doctor.findUnique({
@@ -388,5 +380,26 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid query parameters', details: error.errors }, { status: 400 });
     }
     return NextResponse.json({ error: 'Failed to fetch prescriptions' }, { status: 500 });
+  }
+}
+
+function calculateExpirationDate(isControlledSubstance: boolean, deaSchedule?: string): Date {
+  const now = new Date();
+
+  if (isControlledSubstance) {
+    switch (deaSchedule) {
+      case 'CII':
+        return addDays(now, 90);
+      case 'CIII':
+      case 'CIV':
+      case 'CV':
+        return addDays(now, 180);
+      default:
+        // This case should ideally not be reached if validation is correct
+        // but as a safeguard, we throw an error.
+        throw new Error(`Invalid or missing DEA schedule for controlled substance: ${deaSchedule}`);
+    }
+  } else {
+    return addYears(now, 1);
   }
 }

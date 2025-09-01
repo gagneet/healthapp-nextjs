@@ -60,7 +60,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
   const { page, limit, patientId, doctorId, searchQuery, status, sortBy, sortOrder } = paginationResult.data
   const skip = (page - 1) * limit
 
-  let whereClause: any = {}
+  const whereClause: any = {}
 
     // Business Logic: Role-based data access control
     switch (session.user.role) {

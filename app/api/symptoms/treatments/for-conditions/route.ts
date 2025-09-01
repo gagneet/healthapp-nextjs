@@ -65,7 +65,7 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
 
   try {
     // Build base query for treatments
-    let whereClause: any = {
+    const whereClause: any = {
       AND: [
         { isActive: true },
         {
@@ -307,7 +307,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
 
   try {
     // Simplified search for single condition
-    let whereClause: any = {
+    const whereClause: any = {
       AND: [
         { isActive: true },
         { applicableConditions: { has: condition } }
