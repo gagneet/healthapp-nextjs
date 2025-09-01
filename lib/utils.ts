@@ -76,17 +76,3 @@ export function getStatusColor(status: string) {
       return 'text-blue-600 bg-blue-100'
   }
 }
-
-/**
- * Calculates the adherence rate from an array of records.
- * @param records An array of objects with an `isCompleted` boolean property.
- * @returns The adherence rate as a percentage (0-100).
- */
-export const calculateAdherenceRate = (records: Array<{ isCompleted: boolean | null }>): number => {
-  if (!records || records.length === 0) {
-    return 0;
-  }
-  const total = records.length;
-  const completed = records.filter(r => r.isCompleted === true).length;
-  return Math.round((completed / total) * 100);
-};

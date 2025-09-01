@@ -304,7 +304,7 @@ class ConsentController {
       res.status(200).json(ResponseFormatter.success(
         {
           can_access: accessCheck.can_access,
-          access_type: accessCheck.access_type || 'none',
+          accessType: accessCheck.accessType || 'none',
           requiresConsent: accessCheck.requiresConsent || false,
           consentStatus: accessCheck.consentStatus || 'none',
           assignment_id: accessCheck.assignment_id || null,

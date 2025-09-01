@@ -120,187 +120,47 @@ export async function seedComprehensiveHealthcareData() {
             // Create specific users per your requirements
             console.log('👥 Creating users with exact structure per requirements...');
 
-            const testUsers = await tx.user.createMany({
+            const adminUsers = [
+                // 1 System Admin
+                createUserData({
+                    id: '66666666-6666-6666-6666-666666666666',
+                    email: 'gagneet@silverfoxtechnologies.com.au',
+                    passwordHash: hashedPassword,
+                    role: 'SYSTEM_ADMIN' as UserRole,
+                    firstName: 'Admin',
+                    lastName: 'User',
+                    phone: '+1-555-0401',
+                    dateOfBirth: new Date('1985-01-01'),
+                    gender: 'OTHER' as UserGender,
+                    accountStatus: 'ACTIVE' as UserAccountStatus,
+                    emailVerifiedLegacy: true,
+                    createdAt: getRandomPastDate(40, 90),
+                    updatedAt: getRecentDate(),
+                }),
+
+                // 1 Provider Admin
+                createUserData({
+                    id: '10101010-1010-1010-1010-101010101010',
+                    email: 'provider@healthapp.com',
+                    passwordHash: hashedPassword,
+                    role: 'HOSPITAL_ADMIN' as UserRole,
+                    firstName: 'Provider',
+                    lastName: 'Administrator',
+                    phone: '+1-555-0501',
+                    dateOfBirth: new Date('1982-05-15'),
+                    gender: 'MALE' as UserGender,
+                    accountStatus: 'ACTIVE' as UserAccountStatus,
+                    emailVerifiedLegacy: true,
+                    createdAt: getRandomPastDate(45, 90),
+                    updatedAt: getRecentDate(),
+                })
+            ];
+
+            await tx.user.createMany({
                 skipDuplicates: true,
-                data: [
-                    // 3 Doctors
-                    createUserData({
-                        id: '00000000-0000-0000-0000-000000000001',
-                        email: 'doctor@healthapp.com',
-                        passwordHash: basicDoctorPassword,
-                        role: 'DOCTOR' as UserRole,
-                        firstName: 'Dr. John',
-                        lastName: 'Smith',
-                        phone: '+1-555-0001',
-                        dateOfBirth: new Date('1975-01-15'),
-                        gender: 'MALE' as UserGender,
-                        accountStatus: 'ACTIVE' as UserAccountStatus,
-                        emailVerifiedLegacy: true,
-                        createdAt: getRandomPastDate(30, 90),
-                        updatedAt: getRecentDate(),
-                    }),
-                    createUserData({
-                        id: '00000000-0000-0000-0000-000000000002',
-                        email: 'doctor1@healthapp.com',
-                        passwordHash: basicDoctorPassword,
-                        role: 'DOCTOR' as UserRole,
-                        firstName: 'Dr. Jane',
-                        lastName: 'Doe',
-                        phone: '+1-555-0002',
-                        dateOfBirth: new Date('1978-05-20'),
-                        gender: 'FEMALE' as UserGender,
-                        accountStatus: 'ACTIVE' as UserAccountStatus,
-                        emailVerifiedLegacy: true,
-                        createdAt: getRandomPastDate(28, 88),
-                        updatedAt: getRecentDate(),
-                    }),
-                    createUserData({
-                        id: '00000000-0000-0000-0000-000000000003',
-                        email: 'doctor2@healthapp.com',
-                        passwordHash: hashedPassword,
-                        role: 'DOCTOR' as UserRole,
-                        firstName: 'Dr. Emily',
-                        lastName: 'Rodriguez',
-                        phone: '+1-555-0003',
-                        dateOfBirth: new Date('1980-11-08'),
-                        gender: 'FEMALE' as UserGender,
-                        accountStatus: 'ACTIVE' as UserAccountStatus,
-                        emailVerifiedLegacy: true,
-                        createdAt: getRandomPastDate(25, 85),
-                        updatedAt: getRecentDate(),
-                    }),
-
-                    // 5 Patients
-                    createUserData({
-                        id: '77777777-7777-7777-7777-777777777777',
-                        email: 'patient1@healthapp.com',
-                        passwordHash: hashedPassword,
-                        role: 'PATIENT' as UserRole,
-                        firstName: 'Sarah',
-                        lastName: 'Johnson',
-                        phone: '+1-555-0101',
-                        dateOfBirth: new Date('1985-06-15'),
-                        gender: 'FEMALE' as UserGender,
-                        accountStatus: 'ACTIVE' as UserAccountStatus,
-                        emailVerifiedLegacy: true,
-                        createdAt: getRandomPastDate(20, 80),
-                        updatedAt: getRecentDate(),
-                    }),
-                    createUserData({
-                        id: '88888888-8888-8888-8888-888888888888',
-                        email: 'patient2@healthapp.com',
-                        passwordHash: hashedPassword,
-                        role: 'PATIENT' as UserRole,
-                        firstName: 'Michael',
-                        lastName: 'Chen',
-                        phone: '+1-555-0102',
-                        dateOfBirth: new Date('1978-03-22'),
-                        gender: 'MALE' as UserGender,
-                        accountStatus: 'ACTIVE' as UserAccountStatus,
-                        emailVerifiedLegacy: true,
-                        createdAt: getRandomPastDate(18, 78),
-                        updatedAt: getRecentDate(),
-                    }),
-                    createUserData({
-                        id: '11111111-1111-1111-1111-111111111111',
-                        email: 'patient3@healthapp.com',
-                        passwordHash: hashedPassword,
-                        role: 'PATIENT' as UserRole,
-                        firstName: 'Emma',
-                        lastName: 'Williams',
-                        phone: '+1-555-0103',
-                        dateOfBirth: new Date('1990-09-10'),
-                        gender: 'FEMALE' as UserGender,
-                        accountStatus: 'ACTIVE' as UserAccountStatus,
-                        emailVerifiedLegacy: true,
-                        createdAt: getRandomPastDate(16, 76),
-                        updatedAt: getRecentDate(),
-                    }),
-                    createUserData({
-                        id: '22222222-2222-2222-2222-222222222222',
-                        email: 'patient4@healthapp.com',
-                        passwordHash: hashedPassword,
-                        role: 'PATIENT' as UserRole,
-                        firstName: 'James',
-                        lastName: 'Brown',
-                        phone: '+1-555-0104',
-                        dateOfBirth: new Date('1965-12-05'),
-                        gender: 'MALE' as UserGender,
-                        accountStatus: 'ACTIVE' as UserAccountStatus,
-                        emailVerifiedLegacy: true,
-                        createdAt: getRandomPastDate(14, 74),
-                        updatedAt: getRecentDate(),
-                    }),
-                    createUserData({
-                        id: '33333333-3333-3333-3333-333333333333',
-                        email: 'patient5@healthapp.com',
-                        passwordHash: hashedPassword,
-                        role: 'PATIENT' as UserRole,
-                        firstName: 'Olivia',
-                        lastName: 'Davis',
-                        phone: '+1-555-0105',
-                        dateOfBirth: new Date('1995-04-20'),
-                        gender: 'FEMALE' as UserGender,
-                        accountStatus: 'ACTIVE' as UserAccountStatus,
-                        emailVerifiedLegacy: true,
-                        createdAt: getRandomPastDate(12, 72),
-                        updatedAt: getRecentDate(),
-                    }),
-
-                    // 1 HSP
-                    createUserData({
-                        id: '55555555-5555-5555-5555-555555555555',
-                        email: 'hsp@healthapp.com',
-                        passwordHash: hashedPassword,
-                        role: 'HSP' as UserRole,
-                        firstName: 'Maria',
-                        lastName: 'Garcia',
-                        phone: '+1-555-0301',
-                        dateOfBirth: new Date('1980-03-25'),
-                        gender: 'FEMALE' as UserGender,
-                        accountStatus: 'ACTIVE' as UserAccountStatus,
-                        emailVerifiedLegacy: true,
-                        createdAt: getRandomPastDate(35, 85),
-                        updatedAt: getRecentDate(),
-                    }),
-
-                    // 1 System Admin
-                    createUserData({
-                        id: '66666666-6666-6666-6666-666666666666',
-                        email: 'gagneet@silverfoxtechnologies.com.au',
-                        passwordHash: hashedPassword,
-                        role: 'SYSTEM_ADMIN' as UserRole,
-                        firstName: 'Admin',
-                        lastName: 'User',
-                        phone: '+1-555-0401',
-                        dateOfBirth: new Date('1985-01-01'),
-                        gender: 'OTHER' as UserGender,
-                        accountStatus: 'ACTIVE' as UserAccountStatus,
-                        emailVerifiedLegacy: true,
-                        createdAt: getRandomPastDate(40, 90),
-                        updatedAt: getRecentDate(),
-                    }),
-
-                    // 1 Provider Admin
-                    createUserData({
-                        id: '10101010-1010-1010-1010-101010101010',
-                        email: 'provider@healthapp.com',
-                        passwordHash: hashedPassword,
-                        role: 'HOSPITAL_ADMIN' as UserRole,
-                        firstName: 'Provider',
-                        lastName: 'Administrator',
-                        phone: '+1-555-0501',
-                        dateOfBirth: new Date('1982-05-15'),
-                        gender: 'MALE' as UserGender,
-                        accountStatus: 'ACTIVE' as UserAccountStatus,
-                        emailVerifiedLegacy: true,
-                        createdAt: getRandomPastDate(45, 90),
-                        updatedAt: getRecentDate(),
-                    })
-                ]
+                data: adminUsers
             });
-
-            console.log(`✅ Created ${testUsers.count} users`);
+            console.log(`✅ Created ${adminUsers.length} admin users`);
 
             // Create One Organization
             console.log('🏥 Creating organization...');
@@ -368,14 +228,27 @@ export async function seedComprehensiveHealthcareData() {
             const endocrinologySpec = await tx.specialty.findFirst({ where: { name: 'Endocrinology' } });
             const generalMedSpec = await tx.specialty.findFirst({ where: { name: 'General Medicine' } });
 
-            // Create Three Doctor profiles
-            console.log('👨‍⚕️ Creating 3 doctor profiles...');
-            await tx.doctor.createMany({
-                skipDuplicates: true,
-                data: [
-                    {
+            // Create Doctors and their profiles
+            console.log('👨‍⚕️ Creating 3 doctors and their profiles...');
+            const doctorsToCreate = [
+                {
+                    user: createUserData({
+                        id: '00000000-0000-0000-0000-000000000001',
+                        email: 'doctor@healthapp.com',
+                        passwordHash: basicDoctorPassword,
+                        role: 'DOCTOR' as UserRole,
+                        firstName: 'Dr. John',
+                        lastName: 'Smith',
+                        phone: '+1-555-0001',
+                        dateOfBirth: new Date('1975-01-15'),
+                        gender: 'MALE' as UserGender,
+                        accountStatus: 'ACTIVE' as UserAccountStatus,
+                        emailVerifiedLegacy: true,
+                        createdAt: getRandomPastDate(30, 90),
+                        updatedAt: getRecentDate(),
+                    }),
+                    profile: {
                         id: '00000000-0000-0000-0000-000000000011',
-                        userId: '00000000-0000-0000-0000-000000000001',
                         doctorId: 'DR001',
                         specialtyId: cardiologySpec?.id,
                         medicalLicenseNumber: 'MD123456',
@@ -387,10 +260,26 @@ export async function seedComprehensiveHealthcareData() {
                         practiceName: 'Smith Cardiology Clinic',
                         biography: 'Dr. John Smith is a board-certified cardiologist with over 15 years of experience in treating a wide range of cardiovascular conditions. He is dedicated to providing compassionate and comprehensive care to his patients.',
                         createdAt: getRandomPastDate(30, 80),
-                    },
-                    {
+                    }
+                },
+                {
+                    user: createUserData({
+                        id: '00000000-0000-0000-0000-000000000002',
+                        email: 'doctor1@healthapp.com',
+                        passwordHash: basicDoctorPassword,
+                        role: 'DOCTOR' as UserRole,
+                        firstName: 'Dr. Jane',
+                        lastName: 'Doe',
+                        phone: '+1-555-0002',
+                        dateOfBirth: new Date('1978-05-20'),
+                        gender: 'FEMALE' as UserGender,
+                        accountStatus: 'ACTIVE' as UserAccountStatus,
+                        emailVerifiedLegacy: true,
+                        createdAt: getRandomPastDate(28, 88),
+                        updatedAt: getRecentDate(),
+                    }),
+                    profile: {
                         id: '00000000-0000-0000-0000-000000000022',
-                        userId: '00000000-0000-0000-0000-000000000002',
                         doctorId: 'DR002',
                         specialtyId: endocrinologySpec?.id,
                         medicalLicenseNumber: 'MD789012',
@@ -402,10 +291,26 @@ export async function seedComprehensiveHealthcareData() {
                         practiceName: 'Doe Endocrinology Center',
                         biography: 'Dr. Jane Doe is a respected endocrinologist specializing in diabetes management and thyroid disorders. She is committed to helping her patients achieve optimal health through personalized treatment plans.',
                         createdAt: getRandomPastDate(28, 78),
-                    },
-                    {
+                    }
+                },
+                {
+                    user: createUserData({
+                        id: '00000000-0000-0000-0000-000000000003',
+                        email: 'doctor2@healthapp.com',
+                        passwordHash: hashedPassword,
+                        role: 'DOCTOR' as UserRole,
+                        firstName: 'Dr. Emily',
+                        lastName: 'Rodriguez',
+                        phone: '+1-555-0003',
+                        dateOfBirth: new Date('1980-11-08'),
+                        gender: 'FEMALE' as UserGender,
+                        accountStatus: 'ACTIVE' as UserAccountStatus,
+                        emailVerifiedLegacy: true,
+                        createdAt: getRandomPastDate(25, 85),
+                        updatedAt: getRecentDate(),
+                    }),
+                    profile: {
                         id: '00000000-0000-0000-0000-000000000033',
-                        userId: '00000000-0000-0000-0000-000000000003',
                         doctorId: 'DR003',
                         specialtyId: generalMedSpec?.id,
                         medicalLicenseNumber: 'MD345678',
@@ -418,30 +323,250 @@ export async function seedComprehensiveHealthcareData() {
                         biography: 'Dr. Emily Rodriguez is a dedicated family medicine physician with a passion for preventive care and patient education. She provides comprehensive primary care services to patients of all ages.',
                         createdAt: getRandomPastDate(25, 75),
                     }
-                ]
-            });
+                }
+            ];
 
+            for (const doctor of doctorsToCreate) {
+                const existingUser = await tx.user.findUnique({ where: { id: doctor.user.id } });
+                if (!existingUser) {
+                    const newUser = await tx.user.create({ data: doctor.user });
+                    await tx.doctor.create({ data: { ...doctor.profile, userId: newUser.id } });
+                } else {
+                    const existingProfile = await tx.doctor.findUnique({ where: { userId: existingUser.id } });
+                    if (!existingProfile) {
+                        await tx.doctor.create({ data: { ...doctor.profile, userId: existingUser.id } });
+                    }
+                }
+            }
             console.log(`✅ Created doctor profiles`);
 
-            // Create HSP profile
-            console.log('🩺 Creating HSP profile...');
-            await tx.hsp.upsert({
-                where: { id: '55555555-5555-5555-5555-555555555551' },
-                update: {},
-                create: {
-                    id: '55555555-5555-5555-5555-555555555551',
-                    userId: '55555555-5555-5555-5555-555555555555',
-                    hspId: 'HSP001',
-                    hspType: 'wellness_coach',
-                    licenseNumber: 'HSP12345',
-                    certifications: ['Certified Wellness Coach', 'Nutrition Specialist'],
-                    specializations: ['wellness_coaching', 'nutrition'],
-                    yearsOfExperience: 8,
-                    createdAt: getRandomPastDate(35, 75)
-                }
-            });
+            // Create HSP and Patient profiles with robust logic
+            // ... (HSP and Patient creation logic will be added here in subsequent steps) ...
 
-            console.log(`✅ Created HSP profile`);
+            // NOTE: The original HSP and Patient creation logic is temporarily removed and will be replaced.
+            // This is a placeholder for the next step of the refactoring.
+            const hspsToCreate = [
+                {
+                    user: createUserData({
+                        id: '55555555-5555-5555-5555-555555555555',
+                        email: 'hsp@healthapp.com',
+                        passwordHash: hashedPassword,
+                        role: 'HSP' as UserRole,
+                        firstName: 'Maria',
+                        lastName: 'Garcia',
+                        phone: '+1-555-0301',
+                        dateOfBirth: new Date('1980-03-25'),
+                        gender: 'FEMALE' as UserGender,
+                        accountStatus: 'ACTIVE' as UserAccountStatus,
+                        emailVerifiedLegacy: true,
+                        createdAt: getRandomPastDate(35, 85),
+                        updatedAt: getRecentDate(),
+                    }),
+                    profile: {
+                        id: '55555555-5555-5555-5555-555555555551',
+                        hspId: 'HSP001',
+                        hspType: 'wellness_coach',
+                        licenseNumber: 'HSP12345',
+                        certifications: ['Certified Wellness Coach', 'Nutrition Specialist'],
+                        specializations: ['wellness_coaching', 'nutrition'],
+                        yearsOfExperience: 8,
+                        createdAt: getRandomPastDate(35, 75)
+                    }
+                }
+            ];
+
+            for (const hsp of hspsToCreate) {
+                const existingUser = await tx.user.findUnique({ where: { id: hsp.user.id } });
+                if (!existingUser) {
+                    const newUser = await tx.user.create({ data: hsp.user });
+                    await tx.hsp.create({ data: { ...hsp.profile, userId: newUser.id } });
+                } else {
+                    const existingProfile = await tx.hsp.findUnique({ where: { userId: existingUser.id } });
+                    if (!existingProfile) {
+                        await tx.hsp.create({ data: { ...hsp.profile, userId: existingUser.id } });
+                    }
+                }
+            }
+            console.log('✅ Created HSP profiles');
+
+            const patientsToCreate = [
+                {
+                    user: createUserData({
+                        id: '77777777-7777-7777-7777-777777777777',
+                        email: 'patient1@healthapp.com',
+                        passwordHash: hashedPassword,
+                        role: 'PATIENT' as UserRole,
+                        firstName: 'Sarah',
+                        lastName: 'Johnson',
+                        phone: '+1-555-0101',
+                        dateOfBirth: new Date('1985-06-15'),
+                        gender: 'FEMALE' as UserGender,
+                        accountStatus: 'ACTIVE' as UserAccountStatus,
+                        emailVerifiedLegacy: true,
+                        createdAt: getRandomPastDate(20, 80),
+                        updatedAt: getRecentDate(),
+                    }),
+                    profile: {
+                        patientId: 'PAT-2025-001',
+                        organizationId: organization.id,
+                        primaryCareDoctorId: '00000000-0000-0000-0000-000000000011',
+                        heightCm: 165.0,
+                        weightKg: 68.5,
+                        bloodType: 'A+',
+                        primaryLanguage: 'en',
+                        allergies: [ { name: 'Penicillin', severity: 'severe', reaction: 'rash' }, { name: 'Shellfish', severity: 'moderate', reaction: 'hives' } ],
+                        medicalHistory: [ { condition: 'Type 2 Diabetes', diagnosed: '2022-03-15', status: 'active' }, { condition: 'Hypertension', diagnosed: '2021-08-20', status: 'controlled' } ],
+                        emergencyContacts: [ { name: 'John Johnson', relationship: 'spouse', phone: '+1-555-0103', primary: true } ],
+                        overallAdherenceScore: 85.5,
+                        createdAt: getRandomPastDate(20, 70),
+                        updatedAt: getRecentDate()
+                    }
+                },
+                {
+                    user: createUserData({
+                        id: '88888888-8888-8888-8888-888888888888',
+                        email: 'patient2@healthapp.com',
+                        passwordHash: hashedPassword,
+                        role: 'PATIENT' as UserRole,
+                        firstName: 'Michael',
+                        lastName: 'Chen',
+                        phone: '+1-555-0102',
+                        dateOfBirth: new Date('1978-03-22'),
+                        gender: 'MALE' as UserGender,
+                        accountStatus: 'ACTIVE' as UserAccountStatus,
+                        emailVerifiedLegacy: true,
+                        createdAt: getRandomPastDate(18, 78),
+                        updatedAt: getRecentDate(),
+                    }),
+                    profile: {
+                        patientId: 'PAT-2025-002',
+                        organizationId: organization.id,
+                        primaryCareDoctorId: '00000000-0000-0000-0000-000000000011',
+                        heightCm: 178.0,
+                        weightKg: 82.3,
+                        bloodType: 'O-',
+                        primaryLanguage: 'en',
+                        allergies: [],
+                        medicalHistory: [ { condition: 'Hypertension', diagnosed: '2020-05-10', status: 'active' }, { condition: 'High Cholesterol', diagnosed: '2019-11-15', status: 'controlled' } ],
+                        emergencyContacts: [ { name: 'Lisa Chen', relationship: 'wife', phone: '+1-555-0104', primary: true } ],
+                        overallAdherenceScore: 92.0,
+                        createdAt: getRandomPastDate(18, 68),
+                        updatedAt: getRecentDate()
+                    }
+                },
+                {
+                    user: createUserData({
+                        id: '11111111-1111-1111-1111-111111111111',
+                        email: 'patient3@healthapp.com',
+                        passwordHash: hashedPassword,
+                        role: 'PATIENT' as UserRole,
+                        firstName: 'Emma',
+                        lastName: 'Williams',
+                        phone: '+1-555-0103',
+                        dateOfBirth: new Date('1990-09-10'),
+                        gender: 'FEMALE' as UserGender,
+                        accountStatus: 'ACTIVE' as UserAccountStatus,
+                        emailVerifiedLegacy: true,
+                        createdAt: getRandomPastDate(16, 76),
+                        updatedAt: getRecentDate(),
+                    }),
+                    profile: {
+                        patientId: 'PAT-2025-003',
+                        organizationId: organization.id,
+                        primaryCareDoctorId: '00000000-0000-0000-0000-000000000011',
+                        heightCm: 162.0,
+                        weightKg: 55.2,
+                        bloodType: 'B+',
+                        primaryLanguage: 'en',
+                        allergies: [ { name: 'Latex', severity: 'mild', reaction: 'skin irritation' } ],
+                        medicalHistory: [ { condition: 'Coronary Artery Disease', diagnosed: '2023-01-10', status: 'managed' } ],
+                        emergencyContacts: [ { name: 'David Williams', relationship: 'father', phone: '+1-555-0106', primary: true } ],
+                        overallAdherenceScore: 78.5,
+                        createdAt: getRandomPastDate(16, 66),
+                        updatedAt: getRecentDate()
+                    }
+                },
+                {
+                    user: createUserData({
+                        id: '22222222-2222-2222-2222-222222222222',
+                        email: 'patient4@healthapp.com',
+                        passwordHash: hashedPassword,
+                        role: 'PATIENT' as UserRole,
+                        firstName: 'James',
+                        lastName: 'Brown',
+                        phone: '+1-555-0104',
+                        dateOfBirth: new Date('1965-12-05'),
+                        gender: 'MALE' as UserGender,
+                        accountStatus: 'ACTIVE' as UserAccountStatus,
+                        emailVerifiedLegacy: true,
+                        createdAt: getRandomPastDate(14, 74),
+                        updatedAt: getRecentDate(),
+                    }),
+                    profile: {
+                        patientId: 'PAT-2025-004',
+                        organizationId: organization.id,
+                        primaryCareDoctorId: '00000000-0000-0000-0000-000000000022',
+                        heightCm: 175.0,
+                        weightKg: 88.7,
+                        bloodType: 'AB+',
+                        primaryLanguage: 'en',
+                        allergies: [],
+                        medicalHistory: [ { condition: 'Type 2 Diabetes', diagnosed: '2020-08-15', status: 'controlled' }, { condition: 'Diabetic Neuropathy', diagnosed: '2022-11-20', status: 'active' } ],
+                        emergencyContacts: [ { name: 'Mary Brown', relationship: 'wife', phone: '+1-555-0107', primary: true } ],
+                        overallAdherenceScore: 88.2,
+                        createdAt: getRandomPastDate(14, 64),
+                        updatedAt: getRecentDate()
+                    }
+                },
+                {
+                    user: createUserData({
+                        id: '33333333-3333-3333-3333-333333333333',
+                        email: 'patient5@healthapp.com',
+                        passwordHash: hashedPassword,
+                        role: 'PATIENT' as UserRole,
+                        firstName: 'Olivia',
+                        lastName: 'Davis',
+                        phone: '+1-555-0105',
+                        dateOfBirth: new Date('1995-04-20'),
+                        gender: 'FEMALE' as UserGender,
+                        accountStatus: 'ACTIVE' as UserAccountStatus,
+                        emailVerifiedLegacy: true,
+                        createdAt: getRandomPastDate(12, 72),
+                        updatedAt: getRecentDate(),
+                    }),
+                    profile: {
+                        patientId: 'PAT-2025-005',
+                        organizationId: organization.id,
+                        primaryCareDoctorId: '00000000-0000-0000-0000-000000000022',
+                        heightCm: 158.0,
+                        weightKg: 52.1,
+                        bloodType: 'O+',
+                        primaryLanguage: 'en',
+                        allergies: [ { name: 'Aspirin', severity: 'severe', reaction: 'stomach upset' } ],
+                        medicalHistory: [ { condition: 'Hypothyroidism', diagnosed: '2021-06-30', status: 'active' }, { condition: 'Prediabetes', diagnosed: '2023-02-15', status: 'monitoring' } ],
+                        emergencyContacts: [ { name: 'Thomas Davis', relationship: 'brother', phone: '+1-555-0108', primary: true } ],
+                        overallAdherenceScore: 95.1,
+                        createdAt: getRandomPastDate(12, 62),
+                        updatedAt: getRecentDate()
+                    }
+                }
+            ];
+
+            // Simplified patient creation loop
+            for (const patient of patientsToCreate) {
+                const existingUser = await tx.user.findUnique({ where: { id: patient.user.id } });
+                if (!existingUser) {
+                    const newUser = await tx.user.create({ data: patient.user });
+                    await tx.patient.create({ data: { ...patient.profile, userId: newUser.id } });
+                } else {
+                    const existingProfile = await tx.patient.findUnique({ where: { userId: existingUser.id } });
+                    if (!existingProfile) {
+                        await tx.patient.create({ data: { ...patient.profile, userId: existingUser.id } });
+                    }
+                }
+            }
+            console.log('✅ Created patient profiles');
+
 
             // Create Provider
             console.log('🏢 Creating provider...');
@@ -472,127 +597,6 @@ export async function seedComprehensiveHealthcareData() {
                 console.log(`⚠️ Skipping provider creation - schema mismatch: ${error.message}`);
                 provider = null;
             }
-
-            // Create five patient profiles
-            console.log('👥 Creating patient profiles with specific doctor assignments...');
-            await tx.patient.createMany({
-                skipDuplicates: true,
-                data: [
-                    // 3 patients for Doctor 1 (Dr. John Smith)
-                    {
-                        userId: '77777777-7777-7777-7777-777777777777',
-                        patientId: 'PAT-2025-001',
-                        organizationId: organization.id,
-                        primaryCareDoctorId: '00000000-0000-0000-0000-000000000011',
-                        heightCm: 165.0,
-                        weightKg: 68.5,
-                        bloodType: 'A+',
-                        primaryLanguage: 'en',
-                        allergies: [
-                            { name: 'Penicillin', severity: 'severe', reaction: 'rash' },
-                            { name: 'Shellfish', severity: 'moderate', reaction: 'hives' }
-                        ],
-                        medicalHistory: [
-                            { condition: 'Type 2 Diabetes', diagnosed: '2022-03-15', status: 'active' },
-                            { condition: 'Hypertension', diagnosed: '2021-08-20', status: 'controlled' }
-                        ],
-                        emergencyContacts: [
-                            { name: 'John Johnson', relationship: 'spouse', phone: '+1-555-0103', primary: true }
-                        ],
-                        overallAdherenceScore: 85.5,
-                        createdAt: getRandomPastDate(20, 70),
-                        updatedAt: getRecentDate()
-                    },
-                    {
-                        userId: '88888888-8888-8888-8888-888888888888',
-                        patientId: 'PAT-2025-002',
-                        organizationId: organization.id,
-                        primaryCareDoctorId: '00000000-0000-0000-0000-000000000011',
-                        heightCm: 178.0,
-                        weightKg: 82.3,
-                        bloodType: 'O-',
-                        primaryLanguage: 'en',
-                        allergies: [],
-                        medicalHistory: [
-                            { condition: 'Hypertension', diagnosed: '2020-05-10', status: 'active' },
-                            { condition: 'High Cholesterol', diagnosed: '2019-11-15', status: 'controlled' }
-                        ],
-                        emergencyContacts: [
-                            { name: 'Lisa Chen', relationship: 'wife', phone: '+1-555-0104', primary: true }
-                        ],
-                        overallAdherenceScore: 92.0,
-                        createdAt: getRandomPastDate(18, 68),
-                        updatedAt: getRecentDate()
-                    },
-                    {
-                        userId: '11111111-1111-1111-1111-111111111111',
-                        patientId: 'PAT-2025-003',
-                        organizationId: organization.id,
-                        primaryCareDoctorId: '00000000-0000-0000-0000-000000000011',
-                        heightCm: 162.0,
-                        weightKg: 55.2,
-                        bloodType: 'B+',
-                        primaryLanguage: 'en',
-                        allergies: [
-                            { name: 'Latex', severity: 'mild', reaction: 'skin irritation' }
-                        ],
-                        medicalHistory: [
-                            { condition: 'Coronary Artery Disease', diagnosed: '2023-01-10', status: 'managed' }
-                        ],
-                        emergencyContacts: [
-                            { name: 'David Williams', relationship: 'father', phone: '+1-555-0106', primary: true }
-                        ],
-                        overallAdherenceScore: 78.5,
-                        createdAt: getRandomPastDate(16, 66),
-                        updatedAt: getRecentDate()
-                    },
-                    // 2 patients for Doctor 2 (Dr. Jane Doe)
-                    {
-                        userId: '22222222-2222-2222-2222-222222222222',
-                        patientId: 'PAT-2025-004',
-                        organizationId: organization.id,
-                        primaryCareDoctorId: '00000000-0000-0000-0000-000000000022',
-                        heightCm: 175.0,
-                        weightKg: 88.7,
-                        bloodType: 'AB+',
-                        primaryLanguage: 'en',
-                        allergies: [],
-                        medicalHistory: [
-                            { condition: 'Type 2 Diabetes', diagnosed: '2020-08-15', status: 'controlled' },
-                            { condition: 'Diabetic Neuropathy', diagnosed: '2022-11-20', status: 'active' }
-                        ],
-                        emergencyContacts: [
-                            { name: 'Mary Brown', relationship: 'wife', phone: '+1-555-0107', primary: true }
-                        ],
-                        overallAdherenceScore: 88.2,
-                        createdAt: getRandomPastDate(14, 64),
-                        updatedAt: getRecentDate()
-                    },
-                    {
-                        userId: '33333333-3333-3333-3333-333333333333',
-                        patientId: 'PAT-2025-005',
-                        organizationId: organization.id,
-                        primaryCareDoctorId: '00000000-0000-0000-0000-000000000022',
-                        heightCm: 158.0,
-                        weightKg: 52.1,
-                        bloodType: 'O+',
-                        primaryLanguage: 'en',
-                        allergies: [
-                            { name: 'Aspirin', severity: 'severe', reaction: 'stomach upset' }
-                        ],
-                        medicalHistory: [
-                            { condition: 'Hypothyroidism', diagnosed: '2021-06-30', status: 'active' },
-                            { condition: 'Prediabetes', diagnosed: '2023-02-15', status: 'monitoring' }
-                        ],
-                        emergencyContacts: [
-                            { name: 'Thomas Davis', relationship: 'brother', phone: '+1-555-0108', primary: true }
-                        ],
-                        overallAdherenceScore: 95.1,
-                        createdAt: getRandomPastDate(12, 62),
-                        updatedAt: getRecentDate()
-                    }
-                ]
-            });
 
             console.log(`✅ Created patient profiles`);
 

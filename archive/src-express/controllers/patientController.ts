@@ -266,8 +266,8 @@ class PatientController {
         accessiblePatients.primary_patients.forEach((patient: any) => {
           allPatients.push({
             ...patient,
-            patient_type: 'M', // Main/Primary
-            patient_type_label: 'Primary Patient',
+            patientType: 'M', // Main/Primary
+            patientTypeLabel: 'Primary Patient',
             requiresConsent: false,
             consentStatus: 'not_required',
             accessGranted: true,
@@ -279,8 +279,8 @@ class PatientController {
         accessiblePatients.secondary_patients.forEach((patient: any) => {
           allPatients.push({
             ...patient,
-            patient_type: 'R', // Referred/Secondary
-            patient_type_label: 'Secondary Patient',
+            patientType: 'R', // Referred/Secondary
+            patientTypeLabel: 'Secondary Patient',
             can_view: patient.accessGranted
           });
         });
@@ -309,9 +309,9 @@ class PatientController {
                 primary_doctor: patient.primary_doctor
               },
               // Consent workflow fields
-              patient_type: patient.patient_type,
-              patient_type_label: patient.patient_type_label,
-              access_type: patient.access_type,
+              patientType: patient.patientType,
+              patientTypeLabel: patient.patientTypeLabel,
+              accessType: patient.accessType,
               requiresConsent: patient.requiresConsent,
               consentStatus: patient.consentStatus || 'not_required',
               accessGranted: patient.accessGranted,
@@ -321,8 +321,8 @@ class PatientController {
               assignment_reason: patient.assignment_reason || null,
               specialtyFocus: patient.specialtyFocus || [],
               // Provider information
-              primary_doctor_provider: patient.primary_doctor_provider || null,
-              secondary_doctor_provider: patient.secondary_doctor_provider || null
+              primaryDoctorProvider: patient.primaryDoctorProvider || null,
+              secondaryDoctorProvider: patient.secondaryDoctorProvider || null
             };
             return acc;
           }, {})
@@ -407,7 +407,7 @@ class PatientController {
               primary_doctor: user.patientProfile.primaryCareDoctor?.user ? 
                 `${user.patientProfile.primaryCareDoctor.user.firstName || ''} ${user.patientProfile.primaryCareDoctor.user.lastName || ''}`.trim() : null
             },
-            patient_type: 'M',
+            patientType: 'M',
             accessGranted: true,
             can_view: true
           };

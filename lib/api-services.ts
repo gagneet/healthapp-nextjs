@@ -9,7 +9,8 @@ import { prisma, healthcareDb } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import type { User, Patient, Doctor, Hsp } from '@prisma/client';
-import { calculateAdherenceRate } from '@/lib/utils';
+import { randomUUID } from 'crypto';
+import { Prisma, UserRole } from '@prisma/client';
 
 const sanitizeLog = (input: string | null | undefined): string => {
   if (!input) return '';
@@ -160,7 +161,7 @@ export async function verifyToken(token: string) {
  * Create new user with healthcare role
  */
 export async function createUser(userData: {
-  email: string;
+  email:string;
   password: string;
   role: string;
   firstName: string;
@@ -168,6 +169,29 @@ export async function createUser(userData: {
   [key: string]: any;
 }): Promise<AuthResult> {
   try {
+    // Validate role
+    const validRoles = Object.values(UserRole);
+    if (!validRoles.includes(userData.role as UserRole)) {
+      return {
+        success: false,
+        message: 'Invalid role specified'
+      };
+    }
+
+    // Validate medical license for doctors
+    if (
+        userData.role === 'DOCTOR' &&
+        (
+            typeof userData.medicalLicenseNumber !== 'string' ||
+            userData.medicalLicenseNumber.trim().length === 0
+        )
+    ) {
+        return {
+            success: false,
+            message: 'Medical license number is required for doctors'
+        };
+    }
+
     // Check if user already exists
     const existingUser = await prisma.user.findUnique({
       where: { email: userData.email.toLowerCase() }
@@ -183,54 +207,72 @@ export async function createUser(userData: {
     // Hash password
     const hashedPassword = await bcrypt.hash(userData.password, 12);
 
-    // Create user
-    const user = await prisma.user.create({
-      data: {
-        email: userData.email.toLowerCase(),
-        passwordHash: hashedPassword,
-        role: userData.role as any,
-        firstName: userData.firstName,
-        lastName: userData.lastName,
-        accountStatus: 'PENDING_VERIFICATION'
-      }
-    });
+    // Create user and profile in a transaction
+    const result = await prisma.$transaction(async (tx) => {
+        const user = await tx.user.create({
+            data: {
+                email: userData.email.toLowerCase(),
+                passwordHash: hashedPassword,
+                role: userData.role as any,
+                firstName: userData.firstName,
+                lastName: userData.lastName,
+                accountStatus: 'PENDING_VERIFICATION'
+            }
+        });
 
-    // Create specialized profile based on role
-    if (userData.role === 'PATIENT') {
-      await prisma.patient.create({
-        data: {
-          userId: user.id,
-          // Add any additional patient-specific fields from userData
+        if (userData.role === 'PATIENT') {
+            await tx.patient.create({
+                data: {
+                    userId: user.id,
+                    patientId: `PAT-${randomUUID()}`,
+                }
+            });
+        } else if (userData.role === 'DOCTOR') {
+            await tx.doctor.create({
+                data: {
+                    userId: user.id,
+                    doctorId: `DOC-${randomUUID()}`,
+                    medicalLicenseNumber: userData.medicalLicenseNumber,
+                }
+            });
+        } else if (userData.role === 'HSP') {
+            await tx.hsp.create({
+                data: {
+                    userId: user.id,
+                    hspId: `HSP-${randomUUID()}`,
+                }
+            });
         }
-      });
-    } else if (userData.role === 'DOCTOR' || userData.role === 'HSP') {
-      await prisma.healthcareProvider.create({
-        data: {
-          userId: user.id,
-          // HSP type would be stored in specialties array or other fields
-          specialties: userData.role === 'HSP' && userData.hspType ? [userData.hspType] : [],
-        }
-      });
-    }
+        return user;
+    });
 
     return {
       success: true,
       data: {
         token: '', // Token will be generated on login
         user: {
-          id: user.id,
-          email: user.email,
-          role: user.role,
-          firstName: user.firstName,
-          lastName: user.lastName
+          id: result.id,
+          email: result.email,
+          role: result.role,
+          firstName: result.firstName,
+          lastName: result.lastName
         }
       }
     };
   } catch (error) {
     console.error('User creation error:', error);
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        if (error.code === 'P2002') {
+            // This can happen if the generated ID or another unique field collides.
+            return {
+                success: false,
+                message: 'Registration failed due to a conflict with existing data.'
+            };
+        }
+    }
     return {
       success: false,
-      message: 'Failed to create user'
+      message: 'Failed to create user due to a server error.'
     };
   }
 }
@@ -238,25 +280,6 @@ export async function createUser(userData: {
 /**
  * Healthcare Patient Services with Prisma
  */
-
-export interface PatientListItem {
-  id: string;
-  patientId: string | null;
-  medicalRecordNumber: string | null;
-  firstName: string | null;
-  lastName: string | null;
-  email: string;
-  phone: string | null;
-  dateOfBirth: Date | null;
-  lastVisit: Date | null;
-  adherenceRate: number;
-  criticalAlerts: number;
-  primaryDoctor: {
-    name: string;
-    specialty: string | undefined;
-  } | null;
-  createdAt: Date | null;
-}
 
 /**
  * Get patients assigned to a doctor with pagination
@@ -267,7 +290,7 @@ export async function getPatients(doctorId: string, pagination: {
   search?: string;
   sortBy?: string;
   sortOrder?: 'asc' | 'desc';
-}): Promise<{ patients: PatientListItem[]; pagination: { page: number; limit: number; total: number; totalPages: number; } }> {
+}) {
   try {
     const skip = (pagination.page - 1) * pagination.limit;
     
@@ -319,12 +342,7 @@ export async function getPatients(doctorId: string, pagination: {
         where: whereClause,
         skip,
         take: pagination.limit,
-        select: {
-          id: true,
-          patientId: true,
-          medicalRecordNumber: true,
-          lastVisitDate: true,
-          createdAt: true,
+        include: {
           user: {
             select: {
               firstName: true,
@@ -388,7 +406,9 @@ export async function getPatients(doctorId: string, pagination: {
 
     return {
       patients: patients.map(patient => {
-        const adherenceRate = calculateAdherenceRate(patient.adherenceRecords);
+        const totalAdherence = patient.adherenceRecords.length;
+        const completedAdherence = patient.adherenceRecords.filter(r => r.isCompleted).length;
+        const adherenceRate = totalAdherence > 0 ? Math.round((completedAdherence / totalAdherence) * 100) : 0;
 
         return {
           id: patient.id,
@@ -398,7 +418,7 @@ export async function getPatients(doctorId: string, pagination: {
           email: patient.user.email,
           phone: patient.user.phone,
           dateOfBirth: patient.user.dateOfBirth,
-          lastVisit: patient.appointments?.[0]?.startDate || patient.lastVisitDate || null,
+          lastVisit: patient.appointments[0]?.startDate || patient.lastVisitDate || null,
           adherenceRate: adherenceRate,
           criticalAlerts: patient._count.emergencyAlerts,
           primaryDoctor: patient.primaryCareDoctor ? {
@@ -772,7 +792,7 @@ export async function getDoctorDashboard(doctorUserId: string) {
         criticalAlerts: 0, // Will be calculated from critical alerts API
         appointments_today: todayAppointments,
         medication_adherence: Math.floor(Math.random() * 30) + 70, // Mock data
-        active_care_plans: activeCarePlans,
+        activeCarePlans: activeCarePlans,
         recent_vitals: recentVitalsCount
       },
       doctor: {

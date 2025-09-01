@@ -131,7 +131,7 @@ export const GET = withErrorHandling(async (request: NextRequest, { params }: { 
     if (assignments.length === 0) {
       return createSuccessResponse({
         can_access: false,
-        access_type: 'none',
+        accessType: 'none',
         requiresConsent: false,
         consentStatus: 'no_assignment',
         assignments: [],
@@ -258,7 +258,7 @@ export const GET = withErrorHandling(async (request: NextRequest, { params }: { 
       },
       access_summary: {
         can_access: canAccess,
-        access_type: accessType,
+        accessType: accessType,
         requiresConsent: requiresConsent,
         consentStatus: overallConsentStatus,
         has_active_otp: hasActiveOtp,
