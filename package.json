@@ -44,9 +44,6 @@
     "db:studio": "npx prisma studio",
     "db:setup": "npm run db:generate && npm run migrate && npm run seed"
   },
-  "prisma": {
-    "seed": "tsx --require dotenv/config prisma/seed.ts"
-  },
   "devDependencies": {
     "@babel/preset-env": "^7.28.3",
     "@tailwindcss/forms": "^0.5.0",
