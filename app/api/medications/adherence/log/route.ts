@@ -312,8 +312,8 @@ export async function GET(request: NextRequest) {
     });
 
     // Build filter based on user permissions
-    let hasAccess = false;
     const logFilter: LogFilter = {};
+    let hasAccess = false;
 
     if (session.user.role === 'PATIENT') {
       const patient = await prisma.patient.findFirst({
