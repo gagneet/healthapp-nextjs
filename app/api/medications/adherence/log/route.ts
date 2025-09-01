@@ -312,12 +312,12 @@ export async function GET(request: NextRequest) {
     });
 
     // Build filter based on user permissions
-    const logFilter: LogFilter = {};
     let hasAccess = false;
+    const logFilter: LogFilter = {};
 
     if (session.user.role === 'PATIENT') {
       const patient = await prisma.patient.findFirst({
-        where: { userId: session.user.id }
+        where: { userId: session.user.id },
       });
       if (patient) {
         logFilter.patientId = patient.id;
@@ -334,12 +334,12 @@ export async function GET(request: NextRequest) {
                 patientDoctorAssignments: {
                   some: {
                     doctorId: session.user.id,
-                    status: 'ACTIVE'
-                  }
-                }
-              }
-            ]
-          }
+                    status: 'ACTIVE',
+                  },
+                },
+              },
+            ],
+          },
         });
         if (doctorAccess) {
           logFilter.patientId = queryData.patientId;
@@ -358,26 +358,14 @@ export async function GET(request: NextRequest) {
     }
 
     // Add additional filters
-    if (queryData.medicationId) {
-      logFilter.medicationId = queryData.medicationId;
-    }
-
-    if (queryData.status) {
-      logFilter.adherenceStatus = queryData.status;
-    }
-
-    if (queryData.logMethod) {
-      logFilter.logMethod = queryData.logMethod;
-    }
-
+    if (queryData.medicationId) logFilter.medicationId = queryData.medicationId;
+    if (queryData.status) logFilter.adherenceStatus = queryData.status;
+    if (queryData.logMethod) logFilter.logMethod = queryData.logMethod;
     if (queryData.startDate || queryData.endDate) {
-      logFilter.scheduledTime = {};
-      if (queryData.startDate) {
-        logFilter.scheduledTime.gte = new Date(queryData.startDate);
-      }
-      if (queryData.endDate) {
-        logFilter.scheduledTime.lte = new Date(queryData.endDate + 'T23:59:59.999Z');
-      }
+      logFilter.scheduledTime = {
+        ...(queryData.startDate && { gte: new Date(queryData.startDate) }),
+        ...(queryData.endDate && { lte: new Date(queryData.endDate + 'T23:59:59.999Z') }),
+      };
     }
 
     // Get logs with pagination

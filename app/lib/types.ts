@@ -1,6 +1,6 @@
 export interface SearchConditions<T> {
   AND: Array<{
-    isActive?: boolean;
+    isActive?: boolean | undefined;
     OR?: Array<T>;
     organizationId?: string;
     specialty?: {
