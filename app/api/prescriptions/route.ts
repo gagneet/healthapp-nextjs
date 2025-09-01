@@ -130,7 +130,7 @@ export async function POST(request: NextRequest) {
     const prescriptionNumber = `RX-${Date.now()}-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
 
     // Calculate expiration date
-    let expirationDate = new Date();
+    const expirationDate = new Date();
     if (validatedData.isControlledSubstance) {
       if (validatedData.deaSchedule === 'CII') {
         expirationDate.setDate(expirationDate.getDate() + 90); // 90 days for CII
@@ -264,7 +264,7 @@ export async function GET(request: NextRequest) {
     });
 
     // Build where clause based on user role and permissions
-    let whereClause: any = {};
+    const whereClause: any = {};
 
     if (session.user.role === 'DOCTOR') {
       const doctor = await prisma.doctor.findUnique({

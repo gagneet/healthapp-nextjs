@@ -49,7 +49,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
   }
 
   try {
-    let whereClause: any = {
+    const whereClause: any = {
       AND: [
         { isActive: true },
         {
@@ -178,7 +178,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
     }))
 
     // Get condition frequency if including conditions
-    let conditionFrequency: { [key: string]: number } = {}
+    const conditionFrequency: { [key: string]: number } = {}
     if (includeConditions) {
       finalResults.forEach(treatment => {
         if (Array.isArray(treatment.applicableConditions)) {

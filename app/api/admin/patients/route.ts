@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
     const doctorId = searchParams.get('doctorId');
     const offset = (page - 1) * limit;
 
-    let whereClause: any = {};
+    const whereClause: any = {};
     
     if (search) {
       whereClause.user = {

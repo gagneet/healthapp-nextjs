@@ -42,7 +42,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
   const hasAvailableSlots = searchParams.get('hasAvailableSlots') === 'true'
   const limit = parseInt(searchParams.get('limit') || '50')
 
-  let whereClause: any = {}
+  const whereClause: any = {}
 
   // If search value provided, filter by name/description
   if (value && value.trim().length >= 2) {

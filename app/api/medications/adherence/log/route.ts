@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
 
     // Permission check: Patient themselves, their doctors, caregivers, or admins
     let hasAccess = false;
-    let loggedBy = session.user.id;
+    const loggedBy = session.user.id;
 
     if (session.user.role === 'PATIENT') {
       const patient = await prisma.patient.findFirst({
@@ -301,7 +301,7 @@ export async function GET(request: NextRequest) {
     });
 
     // Build filter based on user permissions
-    let logFilter: any = {};
+    const logFilter: any = {};
     let hasAccess = false;
 
     if (session.user.role === 'PATIENT') {

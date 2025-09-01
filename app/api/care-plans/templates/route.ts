@@ -58,7 +58,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
   const { page, limit, specialityId, searchQuery, diagnosisCategory, sortBy, sortOrder } = paginationResult.data
   const skip = (page - 1) * limit
 
-  let whereClause: any = {
+  const whereClause: any = {
       isActive: true // Only show active templates
     }
 

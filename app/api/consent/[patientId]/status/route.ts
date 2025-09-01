@@ -69,7 +69,7 @@ export const GET = withErrorHandling(async (request: NextRequest, { params }: { 
     }
 
     // Get all assignments for this patient where current user is involved
-    let assignmentConditions: any = {
+    const assignmentConditions: any = {
       patientId: patientId
     }
 

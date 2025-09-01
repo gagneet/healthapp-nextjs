@@ -63,7 +63,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
   const ageGroup = searchParams.get('ageGroup')
   const gender = searchParams.get('gender')
 
-  let whereClause: any = {
+  const whereClause: any = {
     isActive: true
   }
 

@@ -268,7 +268,7 @@ export async function GET(request: NextRequest) {
     });
 
     // Build filter based on user permissions
-    let vitalsFilter: any = {};
+    const vitalsFilter: any = {};
     let hasAccess = false;
 
     if (session.user.role === 'PATIENT') {

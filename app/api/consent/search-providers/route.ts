@@ -52,7 +52,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
 
     // Search doctors
     if (type === 'doctor' || type === 'both') {
-      let doctorWhere: any = {
+      const doctorWhere: any = {
         AND: [
           { isActive: includeInactive ? undefined : true },
           {
@@ -138,7 +138,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
 
     // Search HSPs
     if (type === 'hsp' || type === 'both') {
-      let hspWhere: any = {
+      const hspWhere: any = {
         AND: [
           { isActive: includeInactive ? undefined : true },
           {

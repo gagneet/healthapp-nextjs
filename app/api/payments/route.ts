@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
     const endDate = searchParams.get('endDate');
     const offset = (page - 1) * limit;
 
-    let whereClause: any = {};
+    const whereClause: any = {};
 
     // Role-based access control
     if (session.user.role === 'PATIENT') {

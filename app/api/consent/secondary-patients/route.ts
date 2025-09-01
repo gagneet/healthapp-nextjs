@@ -67,7 +67,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
     }
 
     // Build search conditions
-    let patientSearchConditions: any = {}
+    const patientSearchConditions: any = {}
     if (search) {
       patientSearchConditions.OR = [
         { user: { firstName: { contains: search, mode: 'insensitive' } } },

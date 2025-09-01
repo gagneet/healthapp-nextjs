@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'patientId or assignmentId is required' }, { status: 400 });
     }
 
-    let whereClause: any = {};
+    const whereClause: any = {};
     if (assignmentId) {
       whereClause.secondaryAssignmentId = assignmentId;
     } else {
