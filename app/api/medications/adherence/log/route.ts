@@ -3,6 +3,17 @@ import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 
+interface LogFilter {
+  patientId?: string;
+  medicationId?: string;
+  adherenceStatus?: string;
+  logMethod?: string;
+  scheduledTime?: {
+    gte?: Date;
+    lte?: Date;
+  };
+}
+
 const logAdherenceSchema = z.object({
   medicationId: z.string().uuid(),
   scheduledTime: z.string().datetime(),
@@ -301,16 +312,6 @@ export async function GET(request: NextRequest) {
     });
 
     // Build filter based on user permissions
-    interface LogFilter {
-      patientId?: string;
-      medicationId?: string;
-      adherenceStatus?: string;
-      logMethod?: string;
-      scheduledTime?: {
-        gte?: Date;
-        lte?: Date;
-      };
-    }
     const logFilter: LogFilter = {};
     let hasAccess = false;
 

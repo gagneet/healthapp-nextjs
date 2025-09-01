@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
+import { addDays, addYears } from 'date-fns';
 
 const createPrescriptionSchema = z.object({
   patientId: z.string().uuid(),
@@ -383,24 +384,22 @@ export async function GET(request: NextRequest) {
 }
 
 function calculateExpirationDate(isControlledSubstance: boolean, deaSchedule?: string): Date {
-  const expirationDate = new Date();
+  const now = new Date();
 
   if (isControlledSubstance) {
     switch (deaSchedule) {
       case 'CII':
-        expirationDate.setDate(expirationDate.getDate() + 90);
-        break;
+        return addDays(now, 90);
       case 'CIII':
       case 'CIV':
       case 'CV':
-        expirationDate.setDate(expirationDate.getDate() + 180);
-        break;
+        return addDays(now, 180);
       default:
-        expirationDate.setDate(expirationDate.getDate() + 365);
+        // This case should ideally not be reached if validation is correct
+        // but as a safeguard, we throw an error.
+        throw new Error(`Invalid or missing DEA schedule for controlled substance: ${deaSchedule}`);
     }
   } else {
-    expirationDate.setDate(expirationDate.getDate() + 365);
+    return addYears(now, 1);
   }
-
-  return expirationDate;
 }

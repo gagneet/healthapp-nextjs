@@ -14,6 +14,7 @@ import {
   createForbiddenResponse,
   withErrorHandling
 } from "@/lib/api-response"
+import { SearchConditions, DoctorSearchFields, HSPSearchFields } from "@/lib/types";
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -52,24 +53,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
 
     // Search doctors
     if (type === 'doctor' || type === 'both') {
-      interface DoctorSearchConditions {
-        AND: Array<{
-          isActive?: boolean;
-          OR?: Array<{
-            user?: {
-              firstName?: { contains: string; mode: 'insensitive' };
-              lastName?: { contains: string; mode: 'insensitive' };
-              email?: { contains: string; mode: 'insensitive' };
-            };
-            medicalLicenseNumber?: { contains: string; mode: 'insensitive' };
-          }>;
-          specialty?: {
-            name: { contains: string; mode: 'insensitive' };
-          };
-          organizationId?: string;
-        }>;
-      }
-      const doctorWhere: DoctorSearchConditions = {
+      const doctorWhere: SearchConditions<DoctorSearchFields> = {
         AND: [
           { isActive: includeInactive ? undefined : true },
           {
@@ -155,21 +139,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
 
     // Search HSPs
     if (type === 'hsp' || type === 'both') {
-      interface HSPSearchConditions {
-        AND: Array<{
-          isActive?: boolean;
-          OR?: Array<{
-            user?: {
-              firstName?: { contains: string; mode: 'insensitive' };
-              lastName?: { contains: string; mode: 'insensitive' };
-              email?: { contains: string; mode: 'insensitive' };
-            };
-            licenseNumber?: { contains: string; mode: 'insensitive' };
-          }>;
-          organizationId?: string;
-        }>;
-      }
-      const hspWhere: HSPSearchConditions = {
+      const hspWhere: SearchConditions<HSPSearchFields> = {
         AND: [
           { isActive: includeInactive ? undefined : true },
           {
