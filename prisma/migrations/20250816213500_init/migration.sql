@@ -62,7 +62,7 @@ CREATE TYPE "public"."ProviderChangeStatus" AS ENUM ('ACTIVE', 'PROCESSING', 'CO
 CREATE TYPE "public"."ScheduleEventType" AS ENUM ('APPOINTMENT', 'REMINDER', 'medicationReminder', 'VITALS', 'careplanActivation', 'DIET', 'WORKOUT');
 
 -- CreateEnum
-CREATE TYPE "public"."ScheduleEventStatus" AS ENUM ('SCHEDULED', 'PENDING', 'COMPLETED', 'EXPIRED', 'CANCELLED', 'STARTED', 'PRIOR');
+CREATE TYPE "public"."ScheduledEventStatus" AS ENUM ('SCHEDULED', 'PENDING', 'IN_PROGRESS', 'COMPLETED', 'MISSED', 'CANCELLED', 'EXPIRED', 'STARTED', 'PRIOR');
 
 -- CreateEnum
 CREATE TYPE "public"."ScheduledEventType" AS ENUM ('MEDICATION', 'APPOINTMENT', 'VITAL_CHECK', 'SYMPTOM_LOG', 'DIET_LOG', 'EXERCISE', 'REMINDER');
@@ -1146,7 +1146,7 @@ CREATE TABLE "public"."scheduleEvents" (
                                            "eventType" "public"."ScheduleEventType",
                                            "eventId" UUID,
                                            "details" JSON,
-                                           "status" "public"."ScheduleEventStatus" NOT NULL DEFAULT 'PENDING',
+                                           "status" "public"."ScheduledEventStatus" NOT NULL DEFAULT 'PENDING',
                                            "date" DATE,
                                            "startTime" TIMESTAMP(3),
                                            "endTime" TIMESTAMP(3),

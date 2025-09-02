@@ -1419,13 +1419,13 @@ model Provider {
 }
 
 model ScheduleEvent {
-  id        String              @id @db.Uuid
+  id        String               @id @db.Uuid
   critical  Boolean?
   eventType ScheduleEventType?
-  eventId   String?             @db.Uuid
-  details   Json?               @db.Json
-  status    ScheduleEventStatus @default(PENDING)
-  date      DateTime?           @db.Date
+  eventId   String?              @db.Uuid
+  details   Json?                @db.Json
+  status    ScheduledEventStatus @default(PENDING)
+  date      DateTime?            @db.Date
   startTime DateTime?
   endTime   DateTime?
   createdAt DateTime?
@@ -1836,16 +1836,6 @@ enum ScheduleEventType {
   WORKOUT
 }
 
-enum ScheduleEventStatus {
-  SCHEDULED
-  PENDING
-  COMPLETED
-  EXPIRED
-  CANCELLED
-  STARTED
-  PRIOR
-}
-
 enum ScheduledEventType {
   MEDICATION
   APPOINTMENT
@@ -1871,6 +1861,8 @@ enum ScheduledEventStatus {
   MISSED
   CANCELLED
   EXPIRED
+  STARTED
+  PRIOR
 }
 
 enum PatientDoctorAssignmentType {
