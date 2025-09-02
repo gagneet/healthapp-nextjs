@@ -154,7 +154,7 @@ CREATE TYPE "public"."DeviceStatus" AS ENUM ('CONNECTED', 'DISCONNECTED', 'SYNCI
 CREATE TYPE "public"."ConnectionType" AS ENUM ('BLUETOOTH_LE', 'WIFI', 'API_OAUTH', 'MANUAL_ENTRY', 'BRIDGE_DEVICE');
 
 -- CreateTable
-CREATE TABLE "public"."Organizations" (
+CREATE TABLE "public"."organizations" (
                                           "id" UUID NOT NULL,
                                           "name" VARCHAR(255) NOT NULL,
                                           "type" VARCHAR(100) DEFAULT 'clinic',
@@ -169,11 +169,11 @@ CREATE TABLE "public"."Organizations" (
                                           "updatedAt" TIMESTAMPTZ(6),
                                           "deletedAt" TIMESTAMPTZ(6),
 
-                                          CONSTRAINT "Organizations_pkey" PRIMARY KEY ("id")
+                                          CONSTRAINT "organizations_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "public"."Users" (
+CREATE TABLE "public"."users" (
                                   "id" UUID NOT NULL,
                                   "email" VARCHAR(255) NOT NULL,
                                   "passwordHash" VARCHAR(255),
@@ -209,11 +209,11 @@ CREATE TABLE "public"."Users" (
                                   "deletedAt" TIMESTAMPTZ(6),
                                   "fullName" VARCHAR(255),
 
-                                  CONSTRAINT "Users_pkey" PRIMARY KEY ("id")
+                                  CONSTRAINT "users_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "public"."Accounts" (
+CREATE TABLE "public"."accounts" (
                                      "id" TEXT NOT NULL,
                                      "userId" UUID NOT NULL,
                                      "type" TEXT NOT NULL,
@@ -231,11 +231,11 @@ CREATE TABLE "public"."Accounts" (
                                      "linkedAt" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
                                      "lastUsedAt" TIMESTAMPTZ(6),
 
-                                     CONSTRAINT "Accounts_pkey" PRIMARY KEY ("id")
+                                     CONSTRAINT "accounts_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "public"."Sessions" (
+CREATE TABLE "public"."sessions" (
                                      "id" TEXT NOT NULL,
                                      "sessionToken" TEXT NOT NULL,
                                      "userId" UUID NOT NULL,
@@ -246,18 +246,18 @@ CREATE TABLE "public"."Sessions" (
                                      "lastAccessedAt" TIMESTAMPTZ(6),
                                      "healthcareContext" JSONB DEFAULT '{}',
 
-                                     CONSTRAINT "Sessions_pkey" PRIMARY KEY ("id")
+                                     CONSTRAINT "sessions_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "public"."VerificationTokens" (
+CREATE TABLE "public"."verification_tokens" (
                                                "identifier" TEXT NOT NULL,
                                                "token" TEXT NOT NULL,
                                                "expires" TIMESTAMP(3) NOT NULL
 );
 
 -- CreateTable
-CREATE TABLE "public"."AccountLinks" (
+CREATE TABLE "public"."account_links" (
                                          "id" UUID NOT NULL,
                                          "userId" UUID NOT NULL,
                                          "provider" VARCHAR(50) NOT NULL,
@@ -268,11 +268,11 @@ CREATE TABLE "public"."AccountLinks" (
                                          "isPrimary" BOOLEAN NOT NULL DEFAULT false,
                                          "metadata" JSONB DEFAULT '{}',
 
-                                         CONSTRAINT "AccountLinks_pkey" PRIMARY KEY ("id")
+                                         CONSTRAINT "account_links_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "public"."Patients" (
+CREATE TABLE "public"."patients" (
                                      "id" UUID NOT NULL,
                                      "userId" UUID NOT NULL,
                                      "organizationId" UUID,
@@ -313,11 +313,11 @@ CREATE TABLE "public"."Patients" (
                                      "providerConsentGivenAt" TIMESTAMPTZ(6),
                                      "providerConsentMethod" "public"."PatientProviderConsentMethodLegacy",
 
-                                     CONSTRAINT "Patients_pkey" PRIMARY KEY ("id")
+                                     CONSTRAINT "patients_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "public"."HealthcareProviders" (
+CREATE TABLE "public"."healthcare_providers" (
                                                 "id" UUID NOT NULL,
                                                 "userId" UUID NOT NULL,
                                                 "organizationId" UUID,
@@ -345,11 +345,11 @@ CREATE TABLE "public"."HealthcareProviders" (
                                                 "updatedAt" TIMESTAMPTZ(6),
                                                 "deletedAt" TIMESTAMPTZ(6),
 
-                                                CONSTRAINT "HealthcareProviders_pkey" PRIMARY KEY ("id")
+                                                CONSTRAINT "healthcare_providers_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "public"."Specialties" (
+CREATE TABLE "public"."specialties" (
                                         "id" SERIAL NOT NULL,
                                         "name" VARCHAR(255) NOT NULL,
                                         "description" VARCHAR(1000),
@@ -358,11 +358,11 @@ CREATE TABLE "public"."Specialties" (
                                         "updatedAt" TIMESTAMPTZ(6),
                                         "deletedAt" TIMESTAMP(3),
 
-                                        CONSTRAINT "Specialties_pkey" PRIMARY KEY ("id")
+                                        CONSTRAINT "specialties_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "public"."Clinics" (
+CREATE TABLE "public"."clinics" (
                                     "id" UUID NOT NULL,
                                     "name" VARCHAR(255) NOT NULL,
                                     "doctorId" UUID NOT NULL,
@@ -391,11 +391,11 @@ CREATE TABLE "public"."Clinics" (
                                     "updatedAt" TIMESTAMPTZ(6),
                                     "deletedAt" TIMESTAMPTZ(6),
 
-                                    CONSTRAINT "Clinics_pkey" PRIMARY KEY ("id")
+                                    CONSTRAINT "clinics_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "public"."CarePlans" (
+CREATE TABLE "public"."care_plans" (
                                       "id" UUID NOT NULL,
                                       "patientId" UUID NOT NULL,
                                       "createdByDoctorId" UUID,
@@ -440,11 +440,11 @@ CREATE TABLE "public"."CarePlans" (
                                       "updatedAt" TIMESTAMP(3),
                                       "deletedAt" TIMESTAMP(3),
 
-                                      CONSTRAINT "CarePlans_pkey" PRIMARY KEY ("id")
+                                      CONSTRAINT "care_plans_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "public"."Medicines" (
+CREATE TABLE "public"."medicines" (
                                       "id" UUID NOT NULL,
                                       "name" VARCHAR(1000) NOT NULL,
                                       "type" VARCHAR(1000) DEFAULT 'tablet',
@@ -458,11 +458,11 @@ CREATE TABLE "public"."Medicines" (
                                       "updatedAt" TIMESTAMP(3) NOT NULL,
                                       "deletedAt" TIMESTAMP(3),
 
-                                      CONSTRAINT "Medicines_pkey" PRIMARY KEY ("id")
+                                      CONSTRAINT "medicines_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "public"."Medications" (
+CREATE TABLE "public"."medications" (
                                         "id" UUID NOT NULL,
                                         "participantId" UUID NOT NULL,
                                         "organizerType" "public"."MedicationOrganizerType",
@@ -478,11 +478,11 @@ CREATE TABLE "public"."Medications" (
                                         "deletedAt" TIMESTAMP(3),
                                         "carePlanId" UUID,
 
-                                        CONSTRAINT "Medications_pkey" PRIMARY KEY ("id")
+                                        CONSTRAINT "medications_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "public"."Appointments" (
+CREATE TABLE "public"."appointments" (
                                          "id" UUID NOT NULL,
                                          "participantOneType" "public"."AppointmentParticipantOneType",
                                          "participantOneId" UUID,
@@ -506,11 +506,11 @@ CREATE TABLE "public"."Appointments" (
                                          "patientId" UUID,
                                          "slotId" UUID,
 
-                                         CONSTRAINT "Appointments_pkey" PRIMARY KEY ("id")
+                                         CONSTRAINT "appointments_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "public"."DoctorAvailability" (
+CREATE TABLE "public"."doctor_availability" (
                                                "id" UUID NOT NULL,
                                                "doctorId" UUID NOT NULL,
                                                "dayOfWeek" INTEGER NOT NULL,
@@ -525,11 +525,11 @@ CREATE TABLE "public"."DoctorAvailability" (
                                                "updatedAt" TIMESTAMP(3) NOT NULL,
                                                "deletedAt" TIMESTAMP(3),
 
-                                               CONSTRAINT "DoctorAvailability_pkey" PRIMARY KEY ("id")
+                                               CONSTRAINT "doctor_availability_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "public"."VitalTypes" (
+CREATE TABLE "public"."vital_types" (
                                        "id" UUID NOT NULL,
                                        "name" VARCHAR(100) NOT NULL,
                                        "unit" VARCHAR(20),
@@ -541,11 +541,11 @@ CREATE TABLE "public"."VitalTypes" (
                                        "updatedAt" TIMESTAMP(3),
                                        "deletedAt" TIMESTAMP(3),
 
-                                       CONSTRAINT "VitalTypes_pkey" PRIMARY KEY ("id")
+                                       CONSTRAINT "vital_types_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "public"."VitalReadings" (
+CREATE TABLE "public"."vital_readings" (
                                           "id" UUID NOT NULL,
                                           "patientId" UUID NOT NULL,
                                           "vitalTypeId" UUID NOT NULL,
@@ -570,11 +570,11 @@ CREATE TABLE "public"."VitalReadings" (
                                           "alertLevel" "public"."VitalReadingAlertLevel" DEFAULT 'NORMAL',
                                           "alertReasons" JSONB DEFAULT '[]',
 
-                                          CONSTRAINT "VitalReadings_pkey" PRIMARY KEY ("id")
+                                          CONSTRAINT "vital_readings_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "public"."Symptoms" (
+CREATE TABLE "public"."symptoms" (
                                      "id" UUID NOT NULL,
                                      "patientId" UUID NOT NULL,
                                      "carePlanId" UUID,
@@ -592,11 +592,11 @@ CREATE TABLE "public"."Symptoms" (
                                      "updatedAt" TIMESTAMP(3),
                                      "deletedAt" TIMESTAMP(3),
 
-                                     CONSTRAINT "Symptoms_pkey" PRIMARY KEY ("id")
+                                     CONSTRAINT "symptoms_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "public"."AdherenceRecords" (
+CREATE TABLE "public"."adherence_records" (
                                              "id" UUID NOT NULL,
                                              "patientId" UUID NOT NULL,
                                              "scheduledEventId" UUID,
@@ -613,11 +613,11 @@ CREATE TABLE "public"."AdherenceRecords" (
                                              "updatedAt" TIMESTAMP(3),
                                              "deletedAt" TIMESTAMP(3),
 
-                                             CONSTRAINT "AdherenceRecords_pkey" PRIMARY KEY ("id")
+                                             CONSTRAINT "adherence_records_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "public"."ServicePlans" (
+CREATE TABLE "public"."service_plans" (
                                          "id" UUID NOT NULL,
                                          "providerId" UUID NOT NULL,
                                          "name" VARCHAR(255) NOT NULL,
@@ -636,11 +636,11 @@ CREATE TABLE "public"."ServicePlans" (
                                          "updatedAt" TIMESTAMP(3) NOT NULL,
                                          "deletedAt" TIMESTAMP(3),
 
-                                         CONSTRAINT "ServicePlans_pkey" PRIMARY KEY ("id")
+                                         CONSTRAINT "service_plans_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "public"."PatientSubscriptions" (
+CREATE TABLE "public"."patient_subscriptions" (
                                                  "id" UUID NOT NULL,
                                                  "patientId" UUID NOT NULL,
                                                  "providerId" UUID NOT NULL,
@@ -663,11 +663,11 @@ CREATE TABLE "public"."PatientSubscriptions" (
                                                  "cancelledAt" TIMESTAMP(3),
                                                  "deletedAt" TIMESTAMP(3),
 
-                                                 CONSTRAINT "PatientSubscriptions_pkey" PRIMARY KEY ("id")
+                                                 CONSTRAINT "patient_subscriptions_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "public"."PatientDoctorAssignments" (
+CREATE TABLE "public"."patient_doctor_assignments" (
                                                      "id" UUID NOT NULL,
                                                      "patientId" UUID NOT NULL,
                                                      "doctorId" UUID NOT NULL,
@@ -693,11 +693,11 @@ CREATE TABLE "public"."PatientDoctorAssignments" (
                                                      "updatedAt" TIMESTAMP(3),
                                                      "deletedAt" TIMESTAMP(3),
 
-                                                     CONSTRAINT "PatientDoctorAssignments_pkey" PRIMARY KEY ("id")
+                                                     CONSTRAINT "patient_doctor_assignments_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "public"."UserDevices" (
+CREATE TABLE "public"."user_devices" (
                                         "id" UUID NOT NULL,
                                         "userId" UUID NOT NULL,
                                         "deviceType" VARCHAR(50) NOT NULL,
@@ -710,11 +710,11 @@ CREATE TABLE "public"."UserDevices" (
                                         "updatedAt" TIMESTAMP(3),
                                         "deletedAt" TIMESTAMP(3),
 
-                                        CONSTRAINT "UserDevices_pkey" PRIMARY KEY ("id")
+                                        CONSTRAINT "user_devices_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "public"."Notifications" (
+CREATE TABLE "public"."notifications" (
                                           "id" UUID NOT NULL,
                                           "patientId" UUID,
                                           "doctorId" UUID,
@@ -751,11 +751,11 @@ CREATE TABLE "public"."Notifications" (
                                           "deletedAt" TIMESTAMP(3),
                                           "recipientId" UUID,
 
-                                          CONSTRAINT "Notifications_pkey" PRIMARY KEY ("id")
+                                          CONSTRAINT "notifications_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "public"."AuditLogs" (
+CREATE TABLE "public"."audit_logs" (
                                       "id" UUID NOT NULL,
                                       "userId" UUID,
                                       "userRole" VARCHAR(50),
@@ -778,18 +778,18 @@ CREATE TABLE "public"."AuditLogs" (
                                       "timestamp" TIMESTAMP(3) NOT NULL,
                                       "createdAt" TIMESTAMP(3),
 
-                                      CONSTRAINT "AuditLogs_pkey" PRIMARY KEY ("id")
+                                      CONSTRAINT "audit_logs_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "public"."SequelizeMeta" (
+CREATE TABLE "public"."sequelize_meta" (
                                           "name" VARCHAR(255) NOT NULL,
 
-                                          CONSTRAINT "SequelizeMeta_pkey" PRIMARY KEY ("name")
+                                          CONSTRAINT "sequelize_meta_pkey" PRIMARY KEY ("name")
 );
 
 -- CreateTable
-CREATE TABLE "public"."AppointmentSlot" (
+CREATE TABLE "public"."appointment_slots" (
                                             "id" UUID NOT NULL,
                                             "doctorId" UUID NOT NULL,
                                             "date" DATE NOT NULL,
@@ -804,11 +804,11 @@ CREATE TABLE "public"."AppointmentSlot" (
                                             "updatedAt" TIMESTAMP(3) NOT NULL,
                                             "deletedAt" TIMESTAMP(3),
 
-                                            CONSTRAINT "AppointmentSlot_pkey" PRIMARY KEY ("id")
+                                            CONSTRAINT "appointment_slots_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "public"."CarePlanTemplates" (
+CREATE TABLE "public"."care_plan_templates" (
                                               "id" UUID NOT NULL,
                                               "name" VARCHAR(255) NOT NULL,
                                               "description" TEXT,
@@ -828,11 +828,11 @@ CREATE TABLE "public"."CarePlanTemplates" (
                                               "updatedAt" TIMESTAMP(3) NOT NULL,
                                               "deletedAt" TIMESTAMP(3),
 
-                                              CONSTRAINT "CarePlanTemplates_pkey" PRIMARY KEY ("id")
+                                              CONSTRAINT "care_plan_templates_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "public"."DashboardMetrics" (
+CREATE TABLE "public"."dashboard_metrics" (
                                              "id" UUID NOT NULL,
                                              "entityType" "public"."DashboardMetricsEntityType" NOT NULL,
                                              "entityId" UUID NOT NULL,
@@ -843,11 +843,11 @@ CREATE TABLE "public"."DashboardMetrics" (
                                              "createdAt" TIMESTAMP(3),
                                              "updatedAt" TIMESTAMP(3),
 
-                                             CONSTRAINT "DashboardMetrics_pkey" PRIMARY KEY ("id")
+                                             CONSTRAINT "dashboard_metrics_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "public"."Doctors" (
+CREATE TABLE "public"."doctors" (
                                     "id" UUID NOT NULL,
                                     "userId" UUID NOT NULL,
                                     "doctorId" VARCHAR(50) NOT NULL,
@@ -894,11 +894,11 @@ CREATE TABLE "public"."Doctors" (
                                     "gender" VARCHAR(20),
                                     "mobileNumber" VARCHAR(20),
 
-                                    CONSTRAINT "Doctors_pkey" PRIMARY KEY ("id")
+                                    CONSTRAINT "doctors_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "public"."HSPs" (
+CREATE TABLE "public"."hsps" (
                                  "id" UUID NOT NULL,
                                  "userId" UUID NOT NULL,
                                  "hspId" VARCHAR(50) NOT NULL,
@@ -934,11 +934,11 @@ CREATE TABLE "public"."HSPs" (
                                  "updatedAt" TIMESTAMP(3),
                                  "deletedAt" TIMESTAMP(3),
 
-                                 CONSTRAINT "HSPs_pkey" PRIMARY KEY ("id")
+                                 CONSTRAINT "hsps_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "public"."MedicationLogs" (
+CREATE TABLE "public"."medication_logs" (
                                            "id" UUID NOT NULL,
                                            "medicationId" UUID NOT NULL,
                                            "patientId" UUID NOT NULL,
@@ -951,11 +951,11 @@ CREATE TABLE "public"."MedicationLogs" (
                                            "createdAt" TIMESTAMP(3),
                                            "updatedAt" TIMESTAMP(3),
 
-                                           CONSTRAINT "MedicationLogs_pkey" PRIMARY KEY ("id")
+                                           CONSTRAINT "medication_logs_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "public"."PatientAlerts" (
+CREATE TABLE "public"."patient_alerts" (
                                           "id" UUID NOT NULL,
                                           "patientId" UUID NOT NULL,
                                           "alertType" "public"."PatientAlertType" NOT NULL,
@@ -972,11 +972,11 @@ CREATE TABLE "public"."PatientAlerts" (
                                           "createdAt" TIMESTAMP(3),
                                           "updatedAt" TIMESTAMP(3),
 
-                                          CONSTRAINT "PatientAlerts_pkey" PRIMARY KEY ("id")
+                                          CONSTRAINT "patient_alerts_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "public"."PatientConsentOtp" (
+CREATE TABLE "public"."patient_consent_otps" (
                                               "id" UUID NOT NULL,
                                               "secondaryAssignmentId" UUID NOT NULL,
                                               "patientId" UUID NOT NULL,
@@ -1009,11 +1009,11 @@ CREATE TABLE "public"."PatientConsentOtp" (
                                               "updatedAt" TIMESTAMP(3),
                                               "deletedAt" TIMESTAMP(3),
 
-                                              CONSTRAINT "PatientConsentOtp_pkey" PRIMARY KEY ("id")
+                                              CONSTRAINT "patient_consent_otps_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "public"."PatientProviderAssignments" (
+CREATE TABLE "public"."patient_provider_assignments" (
                                                        "id" UUID NOT NULL,
                                                        "patientId" UUID NOT NULL,
                                                        "providerId" UUID NOT NULL,
@@ -1023,11 +1023,11 @@ CREATE TABLE "public"."PatientProviderAssignments" (
                                                        "endedAt" TIMESTAMP(3),
                                                        "notes" TEXT,
 
-                                                       CONSTRAINT "PatientProviderAssignments_pkey" PRIMARY KEY ("id")
+                                                       CONSTRAINT "patient_provider_assignments_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "public"."PatientProviderConsentHistory" (
+CREATE TABLE "public"."patient_provider_consent_history" (
                                                           "id" UUID NOT NULL,
                                                           "patientId" UUID NOT NULL,
                                                           "previousProviderId" UUID,
@@ -1052,11 +1052,11 @@ CREATE TABLE "public"."PatientProviderConsentHistory" (
                                                           "createdAt" TIMESTAMP(3),
                                                           "updatedAt" TIMESTAMP(3),
 
-                                                          CONSTRAINT "PatientProviderConsentHistory_pkey" PRIMARY KEY ("id")
+                                                          CONSTRAINT "patient_provider_consent_history_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "public"."PaymentMethods" (
+CREATE TABLE "public"."payment_methods" (
                                            "id" UUID NOT NULL,
                                            "patientId" UUID NOT NULL,
                                            "stripePaymentMethodId" VARCHAR(255) NOT NULL,
@@ -1075,11 +1075,11 @@ CREATE TABLE "public"."PaymentMethods" (
                                            "updatedAt" TIMESTAMP(3) NOT NULL,
                                            "deletedAt" TIMESTAMP(3),
 
-                                           CONSTRAINT "PaymentMethods_pkey" PRIMARY KEY ("id")
+                                           CONSTRAINT "payment_methods_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "public"."Payments" (
+CREATE TABLE "public"."payments" (
                                      "id" UUID NOT NULL,
                                      "subscriptionId" UUID NOT NULL,
                                      "patientId" UUID NOT NULL,
@@ -1103,11 +1103,11 @@ CREATE TABLE "public"."Payments" (
                                      "processedAt" TIMESTAMP(3),
                                      "deletedAt" TIMESTAMP(3),
 
-                                     CONSTRAINT "Payments_pkey" PRIMARY KEY ("id")
+                                     CONSTRAINT "payments_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "public"."ProviderChanges" (
+CREATE TABLE "public"."provider_changes" (
                                             "id" UUID NOT NULL,
                                             "practitionerType" "public"."ProviderChangePractitionerType" NOT NULL,
                                             "practitionerId" UUID NOT NULL,
@@ -1122,11 +1122,11 @@ CREATE TABLE "public"."ProviderChanges" (
                                             "createdAt" TIMESTAMP(3),
                                             "updatedAt" TIMESTAMP(3),
 
-                                            CONSTRAINT "ProviderChanges_pkey" PRIMARY KEY ("id")
+                                            CONSTRAINT "provider_changes_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "public"."Providers" (
+CREATE TABLE "public"."providers" (
                                       "id" UUID NOT NULL,
                                       "userId" UUID NOT NULL,
                                       "name" VARCHAR(100) NOT NULL,
@@ -1139,11 +1139,11 @@ CREATE TABLE "public"."Providers" (
                                       "updatedAt" TIMESTAMP(3) NOT NULL,
                                       "deletedAt" TIMESTAMP(3),
 
-                                      CONSTRAINT "Providers_pkey" PRIMARY KEY ("id")
+                                      CONSTRAINT "providers_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "public"."ScheduleEvents" (
+CREATE TABLE "public"."schedule_events" (
                                            "id" UUID NOT NULL,
                                            "critical" BOOLEAN,
                                            "eventType" "public"."ScheduleEventType",
@@ -1157,11 +1157,11 @@ CREATE TABLE "public"."ScheduleEvents" (
                                            "updatedAt" TIMESTAMP(3),
                                            "deletedAt" TIMESTAMP(3),
 
-                                           CONSTRAINT "ScheduleEvents_pkey" PRIMARY KEY ("id")
+                                           CONSTRAINT "schedule_events_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "public"."ScheduledEvents" (
+CREATE TABLE "public"."scheduled_events" (
                                             "id" UUID NOT NULL,
                                             "patientId" UUID NOT NULL,
                                             "carePlanId" UUID,
@@ -1180,11 +1180,11 @@ CREATE TABLE "public"."ScheduledEvents" (
                                             "updatedAt" TIMESTAMP(3),
                                             "deletedAt" TIMESTAMP(3),
 
-                                            CONSTRAINT "ScheduledEvents_pkey" PRIMARY KEY ("id")
+                                            CONSTRAINT "scheduled_events_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "public"."SecondaryDoctorAssignments" (
+CREATE TABLE "public"."secondary_doctor_assignments" (
                                                        "id" UUID NOT NULL,
                                                        "patientId" UUID NOT NULL,
                                                        "primaryDoctorId" UUID NOT NULL,
@@ -1209,11 +1209,11 @@ CREATE TABLE "public"."SecondaryDoctorAssignments" (
                                                        "updatedAt" TIMESTAMP(3),
                                                        "deletedAt" TIMESTAMP(3),
 
-                                                       CONSTRAINT "SecondaryDoctorAssignments_pkey" PRIMARY KEY ("id")
+                                                       CONSTRAINT "secondary_doctor_assignments_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "public"."SymptomsDatabase" (
+CREATE TABLE "public"."symptoms_database" (
                                              "id" UUID NOT NULL,
                                              "diagnosisName" VARCHAR(255) NOT NULL,
                                              "symptoms" JSONB DEFAULT '{}',
@@ -1227,11 +1227,11 @@ CREATE TABLE "public"."SymptomsDatabase" (
                                              "updatedAt" TIMESTAMP(3),
                                              "deletedAt" TIMESTAMP(3),
 
-                                             CONSTRAINT "SymptomsDatabase_pkey" PRIMARY KEY ("id")
+                                             CONSTRAINT "symptoms_database_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "public"."TreatmentDatabase" (
+CREATE TABLE "public"."treatment_database" (
                                               "id" UUID NOT NULL,
                                               "treatmentName" VARCHAR(255) NOT NULL,
                                               "treatmentType" VARCHAR(50) NOT NULL,
@@ -1254,11 +1254,11 @@ CREATE TABLE "public"."TreatmentDatabase" (
                                               "updatedAt" TIMESTAMP(3),
                                               "deletedAt" TIMESTAMP(3),
 
-                                              CONSTRAINT "TreatmentDatabase_pkey" PRIMARY KEY ("id")
+                                              CONSTRAINT "treatment_database_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "public"."TreatmentPlans" (
+CREATE TABLE "public"."treatment_plans" (
                                            "id" UUID NOT NULL,
                                            "patientId" UUID NOT NULL,
                                            "doctorId" UUID NOT NULL,
@@ -1293,11 +1293,11 @@ CREATE TABLE "public"."TreatmentPlans" (
                                            "updatedAt" TIMESTAMP(3),
                                            "deletedAt" TIMESTAMP(3),
 
-                                           CONSTRAINT "TreatmentPlans_pkey" PRIMARY KEY ("id")
+                                           CONSTRAINT "treatment_plans_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "public"."UserRoleAssignments" (
+CREATE TABLE "public"."user_role_assignments" (
                                                 "id" UUID NOT NULL,
                                                 "userIdentity" UUID NOT NULL,
                                                 "linkedWith" "public"."UserRoleLinkedWith",
@@ -1306,11 +1306,11 @@ CREATE TABLE "public"."UserRoleAssignments" (
                                                 "updatedAt" TIMESTAMP(3) NOT NULL,
                                                 "deletedAt" TIMESTAMP(3),
 
-                                                CONSTRAINT "UserRoleAssignments_pkey" PRIMARY KEY ("id")
+                                                CONSTRAINT "user_role_assignments_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "public"."VitalRequirements" (
+CREATE TABLE "public"."vital_requirements" (
                                               "id" UUID NOT NULL,
                                               "carePlanId" UUID NOT NULL,
                                               "vitalTypeId" UUID NOT NULL,
@@ -1322,11 +1322,11 @@ CREATE TABLE "public"."VitalRequirements" (
                                               "updatedAt" TIMESTAMP(3),
                                               "deletedAt" TIMESTAMP(3),
 
-                                              CONSTRAINT "VitalRequirements_pkey" PRIMARY KEY ("id")
+                                              CONSTRAINT "vital_requirements_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "public"."VitalTemplates" (
+CREATE TABLE "public"."vital_templates" (
                                            "id" UUID NOT NULL,
                                            "name" VARCHAR(255) NOT NULL,
                                            "unit" VARCHAR(255),
@@ -1335,11 +1335,11 @@ CREATE TABLE "public"."VitalTemplates" (
                                            "updatedAt" TIMESTAMP(3) NOT NULL,
                                            "deletedAt" TIMESTAMP(3),
 
-                                           CONSTRAINT "VitalTemplates_pkey" PRIMARY KEY ("id")
+                                           CONSTRAINT "vital_templates_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "public"."Vitals" (
+CREATE TABLE "public"."vitals" (
                                    "id" UUID NOT NULL,
                                    "vitalTemplateId" UUID NOT NULL,
                                    "carePlanId" UUID NOT NULL,
@@ -1351,11 +1351,11 @@ CREATE TABLE "public"."Vitals" (
                                    "updatedAt" TIMESTAMP(3) NOT NULL,
                                    "deletedAt" TIMESTAMP(3),
 
-                                   CONSTRAINT "Vitals_pkey" PRIMARY KEY ("id")
+                                   CONSTRAINT "vitals_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "public"."DrugInteractions" (
+CREATE TABLE "public"."drug_interactions" (
                                              "id" UUID NOT NULL,
                                              "rxcuiOne" VARCHAR(50) NOT NULL,
                                              "rxcuiTwo" VARCHAR(50) NOT NULL,
@@ -1371,11 +1371,11 @@ CREATE TABLE "public"."DrugInteractions" (
                                              "lastUpdatedAt" TIMESTAMPTZ(6),
                                              "createdAt" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-                                             CONSTRAINT "DrugInteractions_pkey" PRIMARY KEY ("id")
+                                             CONSTRAINT "drug_interactions_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "public"."PatientAllergies" (
+CREATE TABLE "public"."patient_allergies" (
                                              "id" UUID NOT NULL,
                                              "patientId" UUID NOT NULL,
                                              "allergenType" "public"."AllergenType" NOT NULL,
@@ -1391,11 +1391,11 @@ CREATE TABLE "public"."PatientAllergies" (
                                              "createdAt" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
                                              "updatedAt" TIMESTAMPTZ(6),
 
-                                             CONSTRAINT "PatientAllergies_pkey" PRIMARY KEY ("id")
+                                             CONSTRAINT "patient_allergies_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "public"."MedicationSafetyAlerts" (
+CREATE TABLE "public"."medication_safety_alerts" (
                                                    "id" UUID NOT NULL,
                                                    "patientId" UUID NOT NULL,
                                                    "medicationId" UUID,
@@ -1416,11 +1416,11 @@ CREATE TABLE "public"."MedicationSafetyAlerts" (
                                                    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
                                                    "updatedAt" TIMESTAMP(3) NOT NULL,
 
-                                                   CONSTRAINT "MedicationSafetyAlerts_pkey" PRIMARY KEY ("id")
+                                                   CONSTRAINT "medication_safety_alerts_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "public"."EmergencyAlerts" (
+CREATE TABLE "public"."emergency_alerts" (
                                             "id" UUID NOT NULL,
                                             "patientId" UUID NOT NULL,
                                             "alertType" "public"."EmergencyAlertType" NOT NULL,
@@ -1443,11 +1443,11 @@ CREATE TABLE "public"."EmergencyAlerts" (
                                             "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
                                             "updatedAt" TIMESTAMP(3) NOT NULL,
 
-                                            CONSTRAINT "EmergencyAlerts_pkey" PRIMARY KEY ("id")
+                                            CONSTRAINT "emergency_alerts_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "public"."VitalAlertRules" (
+CREATE TABLE "public"."vital_alert_rules" (
                                             "id" UUID NOT NULL,
                                             "name" VARCHAR(255) NOT NULL,
                                             "description" TEXT,
@@ -1470,11 +1470,11 @@ CREATE TABLE "public"."VitalAlertRules" (
                                             "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
                                             "updatedAt" TIMESTAMP(3) NOT NULL,
 
-                                            CONSTRAINT "VitalAlertRules_pkey" PRIMARY KEY ("id")
+                                            CONSTRAINT "vital_alert_rules_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "public"."EmergencyContacts" (
+CREATE TABLE "public"."emergency_contacts" (
                                               "id" UUID NOT NULL,
                                               "patientId" UUID NOT NULL,
                                               "name" VARCHAR(255) NOT NULL,
@@ -1492,11 +1492,11 @@ CREATE TABLE "public"."EmergencyContacts" (
                                               "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
                                               "updatedAt" TIMESTAMP(3) NOT NULL,
 
-                                              CONSTRAINT "EmergencyContacts_pkey" PRIMARY KEY ("id")
+                                              CONSTRAINT "emergency_contacts_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "public"."VideoConsultations" (
+CREATE TABLE "public"."video_consultations" (
                                                "id" UUID NOT NULL,
                                                "consultationId" VARCHAR(255) NOT NULL,
                                                "doctorId" UUID NOT NULL,
@@ -1533,11 +1533,11 @@ CREATE TABLE "public"."VideoConsultations" (
                                                "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
                                                "updatedAt" TIMESTAMP(3) NOT NULL,
 
-                                               CONSTRAINT "VideoConsultations_pkey" PRIMARY KEY ("id")
+                                               CONSTRAINT "video_consultations_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "public"."ConsultationPrescriptions" (
+CREATE TABLE "public"."consultation_prescriptions" (
                                                       "id" UUID NOT NULL,
                                                       "consultationId" UUID NOT NULL,
                                                       "medicationName" VARCHAR(255) NOT NULL,
@@ -1552,11 +1552,11 @@ CREATE TABLE "public"."ConsultationPrescriptions" (
                                                       "pharmacyInstructions" TEXT,
                                                       "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-                                                      CONSTRAINT "ConsultationPrescriptions_pkey" PRIMARY KEY ("id")
+                                                      CONSTRAINT "consultation_prescriptions_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "public"."ConsultationNotes" (
+CREATE TABLE "public"."consultation_notes" (
                                               "id" UUID NOT NULL,
                                               "consultationId" UUID NOT NULL,
                                               "noteType" VARCHAR(50) NOT NULL,
@@ -1564,11 +1564,11 @@ CREATE TABLE "public"."ConsultationNotes" (
                                               "timestamp" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
                                               "createdBy" UUID NOT NULL,
 
-                                              CONSTRAINT "ConsultationNotes_pkey" PRIMARY KEY ("id")
+                                              CONSTRAINT "consultation_notes_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "public"."LabOrders" (
+CREATE TABLE "public"."lab_orders" (
                                       "id" UUID NOT NULL,
                                       "orderNumber" VARCHAR(100) NOT NULL,
                                       "patientId" UUID NOT NULL,
@@ -1593,11 +1593,11 @@ CREATE TABLE "public"."LabOrders" (
                                       "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
                                       "updatedAt" TIMESTAMP(3) NOT NULL,
 
-                                      CONSTRAINT "LabOrders_pkey" PRIMARY KEY ("id")
+                                      CONSTRAINT "lab_orders_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "public"."LabResults" (
+CREATE TABLE "public"."lab_results" (
                                        "id" UUID NOT NULL,
                                        "labOrderId" UUID NOT NULL,
                                        "testName" VARCHAR(255) NOT NULL,
@@ -1617,11 +1617,11 @@ CREATE TABLE "public"."LabResults" (
                                        "comments" TEXT,
                                        "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-                                       CONSTRAINT "LabResults_pkey" PRIMARY KEY ("id")
+                                       CONSTRAINT "lab_results_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "public"."PatientGameProfiles" (
+CREATE TABLE "public"."patient_game_profiles" (
                                                 "id" UUID NOT NULL,
                                                 "patientId" UUID NOT NULL,
                                                 "totalPoints" INTEGER NOT NULL DEFAULT 0,
@@ -1642,11 +1642,11 @@ CREATE TABLE "public"."PatientGameProfiles" (
                                                 "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
                                                 "updatedAt" TIMESTAMP(3) NOT NULL,
 
-                                                CONSTRAINT "PatientGameProfiles_pkey" PRIMARY KEY ("id")
+                                                CONSTRAINT "patient_game_profiles_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "public"."GameBadgeAwards" (
+CREATE TABLE "public"."game_badge_awards" (
                                             "id" UUID NOT NULL,
                                             "patientId" UUID NOT NULL,
                                             "badgeType" "public"."GameBadgeType" NOT NULL,
@@ -1658,11 +1658,11 @@ CREATE TABLE "public"."GameBadgeAwards" (
                                             "badgeColor" VARCHAR(50),
                                             "achievementData" JSONB DEFAULT '{}',
 
-                                            CONSTRAINT "GameBadgeAwards_pkey" PRIMARY KEY ("id")
+                                            CONSTRAINT "game_badge_awards_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "public"."GameChallengeProgress" (
+CREATE TABLE "public"."game_challenge_progress" (
                                                   "id" UUID NOT NULL,
                                                   "patientId" UUID NOT NULL,
                                                   "challengeType" "public"."GameChallengeType" NOT NULL,
@@ -1679,11 +1679,11 @@ CREATE TABLE "public"."GameChallengeProgress" (
                                                   "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
                                                   "updatedAt" TIMESTAMP(3) NOT NULL,
 
-                                                  CONSTRAINT "GameChallengeProgress_pkey" PRIMARY KEY ("id")
+                                                  CONSTRAINT "game_challenge_progress_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "public"."ConnectedDevices" (
+CREATE TABLE "public"."connected_devices" (
                                              "id" UUID NOT NULL,
                                              "patientId" UUID NOT NULL,
                                              "pluginId" VARCHAR(100) NOT NULL,
@@ -1708,11 +1708,11 @@ CREATE TABLE "public"."ConnectedDevices" (
                                              "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
                                              "updatedAt" TIMESTAMP(3) NOT NULL,
 
-                                             CONSTRAINT "ConnectedDevices_pkey" PRIMARY KEY ("id")
+                                             CONSTRAINT "connected_devices_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "public"."DeviceReadings" (
+CREATE TABLE "public"."device_readings" (
                                            "id" UUID NOT NULL,
                                            "deviceId" UUID NOT NULL,
                                            "patientId" UUID NOT NULL,
@@ -1739,11 +1739,11 @@ CREATE TABLE "public"."DeviceReadings" (
                                            "syncBatchId" UUID,
                                            "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-                                           CONSTRAINT "DeviceReadings_pkey" PRIMARY KEY ("id")
+                                           CONSTRAINT "device_readings_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "public"."DevicePlugins" (
+CREATE TABLE "public"."device_plugins" (
                                           "id" VARCHAR(100) NOT NULL,
                                           "name" VARCHAR(255) NOT NULL,
                                           "version" VARCHAR(20) NOT NULL,
@@ -1761,1420 +1761,1420 @@ CREATE TABLE "public"."DevicePlugins" (
                                           "lastUpdated" TIMESTAMP(3) NOT NULL,
                                           "usageCount" INTEGER NOT NULL DEFAULT 0,
 
-                                          CONSTRAINT "DevicePlugins_pkey" PRIMARY KEY ("id")
+                                          CONSTRAINT "device_plugins_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "public"."_DeviceReadingToEmergencyAlert" (
+CREATE TABLE "public"."_device_reading_to_emergency_alert" (
                                                            "A" UUID NOT NULL,
                                                            "B" UUID NOT NULL,
 
-                                                           CONSTRAINT "_DeviceReadingToEmergencyAlert_AB_pkey" PRIMARY KEY ("A","B")
+                                                           CONSTRAINT "_device_reading_to_emergency_alert_AB_pkey" PRIMARY KEY ("A","B")
 );
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Organizations_licenseNumber_key" ON "public"."Organizations"("licenseNumber");
+CREATE UNIQUE INDEX "organizations_licenseNumber_key" ON "public"."organizations"("licenseNumber");
 
 -- CreateIndex
-CREATE INDEX "organizations_is_active" ON "public"."Organizations"("isActive");
+CREATE INDEX "organizations_is_active" ON "public"."organizations"("isActive");
 
 -- CreateIndex
-CREATE INDEX "organizations_name" ON "public"."Organizations"("name");
+CREATE INDEX "organizations_name" ON "public"."organizations"("name");
 
 -- CreateIndex
-CREATE INDEX "organizations_type" ON "public"."Organizations"("type");
+CREATE INDEX "organizations_type" ON "public"."organizations"("type");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Users_email_key" ON "public"."Users"("email");
+CREATE UNIQUE INDEX "users_email_key" ON "public"."users"("email");
 
 -- CreateIndex
-CREATE INDEX "idx_users_email_status" ON "public"."Users"("email", "accountStatus");
+CREATE INDEX "idx_users_email_status" ON "public"."users"("email", "accountStatus");
 
 -- CreateIndex
-CREATE INDEX "idx_users_role_status" ON "public"."Users"("role", "accountStatus");
+CREATE INDEX "idx_users_role_status" ON "public"."users"("role", "accountStatus");
 
 -- CreateIndex
-CREATE INDEX "users_account_status" ON "public"."Users"("accountStatus");
+CREATE INDEX "users_account_status" ON "public"."users"("accountStatus");
 
 -- CreateIndex
-CREATE INDEX "users_email_verified" ON "public"."Users"("emailVerifiedLegacy");
+CREATE INDEX "users_email_verified" ON "public"."users"("emailVerifiedLegacy");
 
 -- CreateIndex
-CREATE INDEX "users_full_name" ON "public"."Users"("fullName");
+CREATE INDEX "users_full_name" ON "public"."users"("fullName");
 
 -- CreateIndex
-CREATE INDEX "users_last_login_at" ON "public"."Users"("lastLoginAt");
+CREATE INDEX "users_last_login_at" ON "public"."users"("lastLoginAt");
 
 -- CreateIndex
-CREATE INDEX "users_phone" ON "public"."Users"("phone");
+CREATE INDEX "users_phone" ON "public"."users"("phone");
 
 -- CreateIndex
-CREATE INDEX "users_role" ON "public"."Users"("role");
+CREATE INDEX "users_role" ON "public"."users"("role");
 
 -- CreateIndex
-CREATE INDEX "Accounts_userId_provider_idx" ON "public"."Accounts"("userId", "provider");
+CREATE INDEX "accounts_userId_provider_idx" ON "public"."accounts"("userId", "provider");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Accounts_provider_providerAccountId_key" ON "public"."Accounts"("provider", "providerAccountId");
+CREATE UNIQUE INDEX "accounts_provider_providerAccountId_key" ON "public"."accounts"("provider", "providerAccountId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Sessions_sessionToken_key" ON "public"."Sessions"("sessionToken");
+CREATE UNIQUE INDEX "sessions_sessionToken_key" ON "public"."sessions"("sessionToken");
 
 -- CreateIndex
-CREATE INDEX "sessions_user_id" ON "public"."Sessions"("userId");
+CREATE INDEX "sessions_user_id" ON "public"."sessions"("userId");
 
 -- CreateIndex
-CREATE INDEX "sessions_expires" ON "public"."Sessions"("expires");
+CREATE INDEX "sessions_expires" ON "public"."sessions"("expires");
 
 -- CreateIndex
-CREATE INDEX "sessions_ip_address" ON "public"."Sessions"("ipAddress");
+CREATE INDEX "sessions_ip_address" ON "public"."sessions"("ipAddress");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "VerificationTokens_token_key" ON "public"."VerificationTokens"("token");
+CREATE UNIQUE INDEX "verification_tokens_token_key" ON "public"."verification_tokens"("token");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "VerificationTokens_identifier_token_key" ON "public"."VerificationTokens"("identifier", "token");
+CREATE UNIQUE INDEX "verification_tokens_identifier_token_key" ON "public"."verification_tokens"("identifier", "token");
 
 -- CreateIndex
-CREATE INDEX "account_links_user_id" ON "public"."AccountLinks"("userId");
+CREATE INDEX "account_links_user_id" ON "public"."account_links"("userId");
 
 -- CreateIndex
-CREATE INDEX "account_links_provider" ON "public"."AccountLinks"("provider");
+CREATE INDEX "account_links_provider" ON "public"."account_links"("provider");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "account_links_user_provider" ON "public"."AccountLinks"("userId", "provider");
+CREATE UNIQUE INDEX "account_links_user_provider" ON "public"."account_links"("userId", "provider");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "account_links_provider_account" ON "public"."AccountLinks"("provider", "providerAccountId");
+CREATE UNIQUE INDEX "account_links_provider_account" ON "public"."account_links"("provider", "providerAccountId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Patients_userId_key" ON "public"."Patients"("userId");
+CREATE UNIQUE INDEX "patients_userId_key" ON "public"."patients"("userId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Patients_medicalRecordNumber_key" ON "public"."Patients"("medicalRecordNumber");
+CREATE UNIQUE INDEX "patients_medicalRecordNumber_key" ON "public"."patients"("medicalRecordNumber");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Patients_patientId_key" ON "public"."Patients"("patientId");
+CREATE UNIQUE INDEX "patients_patientId_key" ON "public"."patients"("patientId");
 
 -- CreateIndex
-CREATE INDEX "idx_patients_doctor_created_active" ON "public"."Patients"("primaryCareDoctorId", "createdAt", "isActive");
+CREATE INDEX "idx_patients_doctor_created_active" ON "public"."patients"("primaryCareDoctorId", "createdAt", "isActive");
 
 -- CreateIndex
-CREATE INDEX "idx_patients_id_created" ON "public"."Patients"("patientId", "createdAt");
+CREATE INDEX "idx_patients_id_created" ON "public"."patients"("patientId", "createdAt");
 
 -- CreateIndex
-CREATE INDEX "idx_patients_user_doctor" ON "public"."Patients"("userId", "primaryCareDoctorId");
+CREATE INDEX "idx_patients_user_doctor" ON "public"."patients"("userId", "primaryCareDoctorId");
 
 -- CreateIndex
-CREATE INDEX "Patients_allergies_idx" ON "public"."Patients" USING GIN ("allergies");
+CREATE INDEX "patients_allergies_idx" ON "public"."patients" USING GIN ("allergies");
 
 -- CreateIndex
-CREATE INDEX "Patients_isActive_idx" ON "public"."Patients"("isActive");
+CREATE INDEX "patients_isActive_idx" ON "public"."patients"("isActive");
 
 -- CreateIndex
-CREATE INDEX "Patients_linkedProviderId_idx" ON "public"."Patients"("linkedProviderId");
+CREATE INDEX "patients_linkedProviderId_idx" ON "public"."patients"("linkedProviderId");
 
 -- CreateIndex
-CREATE INDEX "Patients_medicalHistory_idx" ON "public"."Patients" USING GIN ("medicalHistory");
+CREATE INDEX "patients_medicalHistory_idx" ON "public"."patients" USING GIN ("medicalHistory");
 
 -- CreateIndex
-CREATE INDEX "Patients_organizationId_idx" ON "public"."Patients"("organizationId");
+CREATE INDEX "patients_organizationId_idx" ON "public"."patients"("organizationId");
 
 -- CreateIndex
-CREATE INDEX "Patients_primaryCareDoctorId_idx" ON "public"."Patients"("primaryCareDoctorId");
+CREATE INDEX "patients_primaryCareDoctorId_idx" ON "public"."patients"("primaryCareDoctorId");
 
 -- CreateIndex
-CREATE INDEX "Patients_primaryCareHspId_idx" ON "public"."Patients"("primaryCareHspId");
+CREATE INDEX "patients_primaryCareHspId_idx" ON "public"."patients"("primaryCareHspId");
 
 -- CreateIndex
-CREATE INDEX "Patients_providerConsentGiven_idx" ON "public"."Patients"("providerConsentGiven");
+CREATE INDEX "patients_providerConsentGiven_idx" ON "public"."patients"("providerConsentGiven");
 
 -- CreateIndex
-CREATE INDEX "Patients_providerLinkedAt_idx" ON "public"."Patients"("providerLinkedAt");
+CREATE INDEX "patients_providerLinkedAt_idx" ON "public"."patients"("providerLinkedAt");
 
 -- CreateIndex
-CREATE INDEX "Patients_riskLevel_idx" ON "public"."Patients"("riskLevel");
+CREATE INDEX "patients_riskLevel_idx" ON "public"."patients"("riskLevel");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "HealthcareProviders_userId_key" ON "public"."HealthcareProviders"("userId");
+CREATE UNIQUE INDEX "healthcare_providers_userId_key" ON "public"."healthcare_providers"("userId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "HealthcareProviders_licenseNumber_key" ON "public"."HealthcareProviders"("licenseNumber");
+CREATE UNIQUE INDEX "healthcare_providers_licenseNumber_key" ON "public"."healthcare_providers"("licenseNumber");
 
 -- CreateIndex
-CREATE INDEX "HealthcareProviders_isVerified_idx" ON "public"."HealthcareProviders"("isVerified");
+CREATE INDEX "healthcare_providers_isVerified_idx" ON "public"."healthcare_providers"("isVerified");
 
 -- CreateIndex
-CREATE INDEX "HealthcareProviders_organizationId_idx" ON "public"."HealthcareProviders"("organizationId");
+CREATE INDEX "healthcare_providers_organizationId_idx" ON "public"."healthcare_providers"("organizationId");
 
 -- CreateIndex
-CREATE INDEX "HealthcareProviders_specialties_idx" ON "public"."HealthcareProviders" USING GIN ("specialties");
+CREATE INDEX "healthcare_providers_specialties_idx" ON "public"."healthcare_providers" USING GIN ("specialties");
 
 -- CreateIndex
-CREATE INDEX "HealthcareProviders_verificationDate_idx" ON "public"."HealthcareProviders"("verificationDate");
+CREATE INDEX "healthcare_providers_verificationDate_idx" ON "public"."healthcare_providers"("verificationDate");
 
 -- CreateIndex
-CREATE INDEX "idx_providers_org_verified" ON "public"."HealthcareProviders"("organizationId", "isVerified");
+CREATE INDEX "idx_providers_org_verified" ON "public"."healthcare_providers"("organizationId", "isVerified");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Specialties_name_key" ON "public"."Specialties"("name");
+CREATE UNIQUE INDEX "specialties_name_key" ON "public"."specialties"("name");
 
 -- CreateIndex
-CREATE INDEX "Clinics_doctorId_idx" ON "public"."Clinics"("doctorId");
+CREATE INDEX "clinics_doctorId_idx" ON "public"."clinics"("doctorId");
 
 -- CreateIndex
-CREATE INDEX "Clinics_isActive_idx" ON "public"."Clinics"("isActive");
+CREATE INDEX "clinics_isActive_idx" ON "public"."clinics"("isActive");
 
 -- CreateIndex
-CREATE INDEX "Clinics_isPrimary_idx" ON "public"."Clinics"("isPrimary");
+CREATE INDEX "clinics_isPrimary_idx" ON "public"."clinics"("isPrimary");
 
 -- CreateIndex
-CREATE INDEX "Clinics_organizationId_idx" ON "public"."Clinics"("organizationId");
+CREATE INDEX "clinics_organizationId_idx" ON "public"."clinics"("organizationId");
 
 -- CreateIndex
-CREATE INDEX "idx_clinics_coordinates" ON "public"."Clinics"("latitude", "longitude");
+CREATE INDEX "idx_clinics_coordinates" ON "public"."clinics"("latitude", "longitude");
 
 -- CreateIndex
-CREATE INDEX "idx_clinics_location_verified" ON "public"."Clinics"("locationVerified");
+CREATE INDEX "idx_clinics_location_verified" ON "public"."clinics"("locationVerified");
 
 -- CreateIndex
-CREATE INDEX "CarePlans_chronicConditions_idx" ON "public"."CarePlans" USING GIN ("chronicConditions");
+CREATE INDEX "care_plans_chronicConditions_idx" ON "public"."care_plans" USING GIN ("chronicConditions");
 
 -- CreateIndex
-CREATE INDEX "CarePlans_createdByDoctorId_idx" ON "public"."CarePlans"("createdByDoctorId");
+CREATE INDEX "care_plans_createdByDoctorId_idx" ON "public"."care_plans"("createdByDoctorId");
 
 -- CreateIndex
-CREATE INDEX "CarePlans_createdByHspId_idx" ON "public"."CarePlans"("createdByHspId");
+CREATE INDEX "care_plans_createdByHspId_idx" ON "public"."care_plans"("createdByHspId");
 
 -- CreateIndex
-CREATE INDEX "CarePlans_monitoringParameters_idx" ON "public"."CarePlans" USING GIN ("monitoringParameters");
+CREATE INDEX "care_plans_monitoringParameters_idx" ON "public"."care_plans" USING GIN ("monitoringParameters");
 
 -- CreateIndex
-CREATE INDEX "CarePlans_nextReviewDate_idx" ON "public"."CarePlans"("nextReviewDate");
+CREATE INDEX "care_plans_nextReviewDate_idx" ON "public"."care_plans"("nextReviewDate");
 
 -- CreateIndex
-CREATE INDEX "CarePlans_organizationId_idx" ON "public"."CarePlans"("organizationId");
+CREATE INDEX "care_plans_organizationId_idx" ON "public"."care_plans"("organizationId");
 
 -- CreateIndex
-CREATE INDEX "CarePlans_patientId_idx" ON "public"."CarePlans"("patientId");
+CREATE INDEX "care_plans_patientId_idx" ON "public"."care_plans"("patientId");
 
 -- CreateIndex
-CREATE INDEX "CarePlans_priority_idx" ON "public"."CarePlans"("priority");
+CREATE INDEX "care_plans_priority_idx" ON "public"."care_plans"("priority");
 
 -- CreateIndex
-CREATE INDEX "CarePlans_startDate_idx" ON "public"."CarePlans"("startDate");
+CREATE INDEX "care_plans_startDate_idx" ON "public"."care_plans"("startDate");
 
 -- CreateIndex
-CREATE INDEX "CarePlans_status_idx" ON "public"."CarePlans"("status");
+CREATE INDEX "care_plans_status_idx" ON "public"."care_plans"("status");
 
 -- CreateIndex
-CREATE INDEX "idx_careplans_patient_status_start_fixed" ON "public"."CarePlans"("patientId", "status", "startDate");
+CREATE INDEX "idx_careplans_patient_status_start_fixed" ON "public"."care_plans"("patientId", "status", "startDate");
 
 -- CreateIndex
-CREATE INDEX "Medications_medicineId_idx" ON "public"."Medications"("medicineId");
+CREATE INDEX "medications_medicineId_idx" ON "public"."medications"("medicineId");
 
 -- CreateIndex
-CREATE INDEX "Medications_organizerType_organizerId_idx" ON "public"."Medications"("organizerType", "organizerId");
+CREATE INDEX "medications_organizerType_organizerId_idx" ON "public"."medications"("organizerType", "organizerId");
 
 -- CreateIndex
-CREATE INDEX "Medications_participantId_idx" ON "public"."Medications"("participantId");
+CREATE INDEX "medications_participantId_idx" ON "public"."medications"("participantId");
 
 -- CreateIndex
-CREATE INDEX "Appointments_organizerId_organizerType_idx" ON "public"."Appointments"("organizerId", "organizerType");
+CREATE INDEX "appointments_organizerId_organizerType_idx" ON "public"."appointments"("organizerId", "organizerType");
 
 -- CreateIndex
-CREATE INDEX "Appointments_participantOneId_participantOneType_idx" ON "public"."Appointments"("participantOneId", "participantOneType");
+CREATE INDEX "appointments_participantOneId_participantOneType_idx" ON "public"."appointments"("participantOneId", "participantOneType");
 
 -- CreateIndex
-CREATE INDEX "Appointments_participantTwoId_participantTwoType_idx" ON "public"."Appointments"("participantTwoId", "participantTwoType");
+CREATE INDEX "appointments_participantTwoId_participantTwoType_idx" ON "public"."appointments"("participantTwoId", "participantTwoType");
 
 -- CreateIndex
-CREATE INDEX "Appointments_slotId_idx" ON "public"."Appointments"("slotId");
+CREATE INDEX "appointments_slotId_idx" ON "public"."appointments"("slotId");
 
 -- CreateIndex
-CREATE INDEX "Appointments_startDate_idx" ON "public"."Appointments"("startDate");
+CREATE INDEX "appointments_startDate_idx" ON "public"."appointments"("startDate");
 
 -- CreateIndex
-CREATE INDEX "idx_appointments_organizer_time" ON "public"."Appointments"("organizerType", "organizerId", "startTime");
+CREATE INDEX "idx_appointments_organizer_time" ON "public"."appointments"("organizerType", "organizerId", "startTime");
 
 -- CreateIndex
-CREATE INDEX "idx_appointments_patient_time" ON "public"."Appointments"("patientId", "startTime");
+CREATE INDEX "idx_appointments_patient_time" ON "public"."appointments"("patientId", "startTime");
 
 -- CreateIndex
-CREATE INDEX "idx_appointments_provider_time" ON "public"."Appointments"("providerId", "startTime");
+CREATE INDEX "idx_appointments_provider_time" ON "public"."appointments"("providerId", "startTime");
 
 -- CreateIndex
-CREATE INDEX "DoctorAvailability_doctorId_dayOfWeek_idx" ON "public"."DoctorAvailability"("doctorId", "dayOfWeek");
+CREATE INDEX "doctor_availability_doctorId_dayOfWeek_idx" ON "public"."doctor_availability"("doctorId", "dayOfWeek");
 
 -- CreateIndex
-CREATE INDEX "DoctorAvailability_doctorId_isAvailable_idx" ON "public"."DoctorAvailability"("doctorId", "isAvailable");
+CREATE INDEX "doctor_availability_doctorId_isAvailable_idx" ON "public"."doctor_availability"("doctorId", "isAvailable");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "VitalTypes_name_key" ON "public"."VitalTypes"("name");
+CREATE UNIQUE INDEX "vital_types_name_key" ON "public"."vital_types"("name");
 
 -- CreateIndex
-CREATE INDEX "VitalTypes_unit_idx" ON "public"."VitalTypes"("unit");
+CREATE INDEX "vital_types_unit_idx" ON "public"."vital_types"("unit");
 
 -- CreateIndex
-CREATE INDEX "idx_vitals_patient_time_type" ON "public"."VitalReadings"("patientId", "readingTime", "vitalTypeId");
+CREATE INDEX "idx_vitals_patient_time_type" ON "public"."vital_readings"("patientId", "readingTime", "vitalTypeId");
 
 -- CreateIndex
-CREATE INDEX "idx_vitals_patient_type_time_desc" ON "public"."VitalReadings"("patientId", "vitalTypeId", "readingTime");
+CREATE INDEX "idx_vitals_patient_type_time_desc" ON "public"."vital_readings"("patientId", "vitalTypeId", "readingTime");
 
 -- CreateIndex
-CREATE INDEX "idx_vitals_time_patient" ON "public"."VitalReadings"("readingTime", "patientId");
+CREATE INDEX "idx_vitals_time_patient" ON "public"."vital_readings"("readingTime", "patientId");
 
 -- CreateIndex
-CREATE INDEX "VitalReadings_alertLevel_idx" ON "public"."VitalReadings"("alertLevel");
+CREATE INDEX "vital_readings_alertLevel_idx" ON "public"."vital_readings"("alertLevel");
 
 -- CreateIndex
-CREATE INDEX "vital_readings_blood_pressure_idx" ON "public"."VitalReadings"("systolicValue", "diastolicValue");
+CREATE INDEX "vital_readings_blood_pressure_idx" ON "public"."vital_readings"("systolicValue", "diastolicValue");
 
 -- CreateIndex
-CREATE INDEX "VitalReadings_isFlagged_idx" ON "public"."VitalReadings"("isFlagged");
+CREATE INDEX "vital_readings_isFlagged_idx" ON "public"."vital_readings"("isFlagged");
 
 -- CreateIndex
-CREATE INDEX "VitalReadings_isValidated_idx" ON "public"."VitalReadings"("isValidated");
+CREATE INDEX "vital_readings_isValidated_idx" ON "public"."vital_readings"("isValidated");
 
 -- CreateIndex
-CREATE INDEX "VitalReadings_patientId_idx" ON "public"."VitalReadings"("patientId");
+CREATE INDEX "vital_readings_patientId_idx" ON "public"."vital_readings"("patientId");
 
 -- CreateIndex
-CREATE INDEX "vital_readings_patient_id_vital_type_id_reading_time" ON "public"."VitalReadings"("patientId", "vitalTypeId", "readingTime");
+CREATE INDEX "vital_readings_patient_id_vital_type_id_reading_time" ON "public"."vital_readings"("patientId", "vitalTypeId", "readingTime");
 
 -- CreateIndex
-CREATE INDEX "VitalReadings_readingTime_idx" ON "public"."VitalReadings"("readingTime");
+CREATE INDEX "vital_readings_readingTime_idx" ON "public"."vital_readings"("readingTime");
 
 -- CreateIndex
-CREATE INDEX "VitalReadings_vitalTypeId_idx" ON "public"."VitalReadings"("vitalTypeId");
+CREATE INDEX "vital_readings_vitalTypeId_idx" ON "public"."vital_readings"("vitalTypeId");
 
 -- CreateIndex
-CREATE INDEX "idx_symptoms_patient_onset_severity" ON "public"."Symptoms"("patientId", "onsetTime", "severity");
+CREATE INDEX "idx_symptoms_patient_onset_severity" ON "public"."symptoms"("patientId", "onsetTime", "severity");
 
 -- CreateIndex
-CREATE INDEX "Symptoms_carePlanId_idx" ON "public"."Symptoms"("carePlanId");
+CREATE INDEX "symptoms_carePlanId_idx" ON "public"."symptoms"("carePlanId");
 
 -- CreateIndex
-CREATE INDEX "Symptoms_onsetTime_idx" ON "public"."Symptoms"("onsetTime");
+CREATE INDEX "symptoms_onsetTime_idx" ON "public"."symptoms"("onsetTime");
 
 -- CreateIndex
-CREATE INDEX "Symptoms_patientId_idx" ON "public"."Symptoms"("patientId");
+CREATE INDEX "symptoms_patientId_idx" ON "public"."symptoms"("patientId");
 
 -- CreateIndex
-CREATE INDEX "symptoms_patient_id_recorded_at" ON "public"."Symptoms"("patientId", "recordedAt");
+CREATE INDEX "symptoms_patient_id_recorded_at" ON "public"."symptoms"("patientId", "recordedAt");
 
 -- CreateIndex
-CREATE INDEX "Symptoms_recordedAt_idx" ON "public"."Symptoms"("recordedAt");
+CREATE INDEX "symptoms_recordedAt_idx" ON "public"."symptoms"("recordedAt");
 
 -- CreateIndex
-CREATE INDEX "Symptoms_severity_idx" ON "public"."Symptoms"("severity");
+CREATE INDEX "symptoms_severity_idx" ON "public"."symptoms"("severity");
 
 -- CreateIndex
-CREATE INDEX "Symptoms_symptomName_idx" ON "public"."Symptoms"("symptomName");
+CREATE INDEX "symptoms_symptomName_idx" ON "public"."symptoms"("symptomName");
 
 -- CreateIndex
-CREATE INDEX "AdherenceRecords_adherenceType_idx" ON "public"."AdherenceRecords"("adherenceType");
+CREATE INDEX "adherence_records_adherenceType_idx" ON "public"."adherence_records"("adherenceType");
 
 -- CreateIndex
-CREATE INDEX "AdherenceRecords_dueAt_idx" ON "public"."AdherenceRecords"("dueAt");
+CREATE INDEX "adherence_records_dueAt_idx" ON "public"."adherence_records"("dueAt");
 
 -- CreateIndex
-CREATE INDEX "AdherenceRecords_isCompleted_isMissed_idx" ON "public"."AdherenceRecords"("isCompleted", "isMissed");
+CREATE INDEX "adherence_records_isCompleted_isMissed_idx" ON "public"."adherence_records"("isCompleted", "isMissed");
 
 -- CreateIndex
-CREATE INDEX "AdherenceRecords_patientId_idx" ON "public"."AdherenceRecords"("patientId");
+CREATE INDEX "adherence_records_patientId_idx" ON "public"."adherence_records"("patientId");
 
 -- CreateIndex
-CREATE INDEX "AdherenceRecords_patientId_adherenceType_dueAt_idx" ON "public"."AdherenceRecords"("patientId", "adherenceType", "dueAt");
+CREATE INDEX "adherence_records_patientId_adherenceType_dueAt_idx" ON "public"."adherence_records"("patientId", "adherenceType", "dueAt");
 
 -- CreateIndex
-CREATE INDEX "AdherenceRecords_patientId_dueAt_idx" ON "public"."AdherenceRecords"("patientId", "dueAt");
+CREATE INDEX "adherence_records_patientId_dueAt_idx" ON "public"."adherence_records"("patientId", "dueAt");
 
 -- CreateIndex
-CREATE INDEX "AdherenceRecords_scheduledEventId_idx" ON "public"."AdherenceRecords"("scheduledEventId");
+CREATE INDEX "adherence_records_scheduledEventId_idx" ON "public"."adherence_records"("scheduledEventId");
 
 -- CreateIndex
-CREATE INDEX "idx_adherence_event_status_completed" ON "public"."AdherenceRecords"("scheduledEventId", "isCompleted", "recordedAt");
+CREATE INDEX "idx_adherence_event_status_completed" ON "public"."adherence_records"("scheduledEventId", "isCompleted", "recordedAt");
 
 -- CreateIndex
-CREATE INDEX "idx_adherence_patient_due_status" ON "public"."AdherenceRecords"("patientId", "dueAt", "isCompleted");
+CREATE INDEX "idx_adherence_patient_due_status" ON "public"."adherence_records"("patientId", "dueAt", "isCompleted");
 
 -- CreateIndex
-CREATE INDEX "ServicePlans_billingCycle_idx" ON "public"."ServicePlans"("billingCycle");
+CREATE INDEX "service_plans_billingCycle_idx" ON "public"."service_plans"("billingCycle");
 
 -- CreateIndex
-CREATE INDEX "ServicePlans_isActive_idx" ON "public"."ServicePlans"("isActive");
+CREATE INDEX "service_plans_isActive_idx" ON "public"."service_plans"("isActive");
 
 -- CreateIndex
-CREATE INDEX "ServicePlans_name_idx" ON "public"."ServicePlans"("name");
+CREATE INDEX "service_plans_name_idx" ON "public"."service_plans"("name");
 
 -- CreateIndex
-CREATE INDEX "ServicePlans_price_idx" ON "public"."ServicePlans"("price");
+CREATE INDEX "service_plans_price_idx" ON "public"."service_plans"("price");
 
 -- CreateIndex
-CREATE INDEX "ServicePlans_providerId_idx" ON "public"."ServicePlans"("providerId");
+CREATE INDEX "service_plans_providerId_idx" ON "public"."service_plans"("providerId");
 
 -- CreateIndex
-CREATE INDEX "ServicePlans_serviceType_idx" ON "public"."ServicePlans"("serviceType");
+CREATE INDEX "service_plans_serviceType_idx" ON "public"."service_plans"("serviceType");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "PatientSubscriptions_stripeSubscriptionId_key" ON "public"."PatientSubscriptions"("stripeSubscriptionId");
+CREATE UNIQUE INDEX "patient_subscriptions_stripeSubscriptionId_key" ON "public"."patient_subscriptions"("stripeSubscriptionId");
 
 -- CreateIndex
-CREATE INDEX "PatientSubscriptions_nextBillingDate_idx" ON "public"."PatientSubscriptions"("nextBillingDate");
+CREATE INDEX "patient_subscriptions_nextBillingDate_idx" ON "public"."patient_subscriptions"("nextBillingDate");
 
 -- CreateIndex
-CREATE INDEX "PatientSubscriptions_patientId_idx" ON "public"."PatientSubscriptions"("patientId");
+CREATE INDEX "patient_subscriptions_patientId_idx" ON "public"."patient_subscriptions"("patientId");
 
 -- CreateIndex
-CREATE INDEX "PatientSubscriptions_patientId_providerId_idx" ON "public"."PatientSubscriptions"("patientId", "providerId");
+CREATE INDEX "patient_subscriptions_patientId_providerId_idx" ON "public"."patient_subscriptions"("patientId", "providerId");
 
 -- CreateIndex
-CREATE INDEX "PatientSubscriptions_providerId_idx" ON "public"."PatientSubscriptions"("providerId");
+CREATE INDEX "patient_subscriptions_providerId_idx" ON "public"."patient_subscriptions"("providerId");
 
 -- CreateIndex
-CREATE INDEX "PatientSubscriptions_servicePlanId_idx" ON "public"."PatientSubscriptions"("servicePlanId");
+CREATE INDEX "patient_subscriptions_servicePlanId_idx" ON "public"."patient_subscriptions"("servicePlanId");
 
 -- CreateIndex
-CREATE INDEX "PatientSubscriptions_status_idx" ON "public"."PatientSubscriptions"("status");
+CREATE INDEX "patient_subscriptions_status_idx" ON "public"."patient_subscriptions"("status");
 
 -- CreateIndex
-CREATE INDEX "PatientSubscriptions_stripeCustomerId_idx" ON "public"."PatientSubscriptions"("stripeCustomerId");
+CREATE INDEX "patient_subscriptions_stripeCustomerId_idx" ON "public"."patient_subscriptions"("stripeCustomerId");
 
 -- CreateIndex
-CREATE INDEX "PatientSubscriptions_stripeSubscriptionId_idx" ON "public"."PatientSubscriptions"("stripeSubscriptionId");
+CREATE INDEX "patient_subscriptions_stripeSubscriptionId_idx" ON "public"."patient_subscriptions"("stripeSubscriptionId");
 
 -- CreateIndex
-CREATE INDEX "idx_assignments_doctor_active_created" ON "public"."PatientDoctorAssignments"("doctorId", "isActive", "createdAt");
+CREATE INDEX "idx_assignments_doctor_active_created" ON "public"."patient_doctor_assignments"("doctorId", "isActive", "createdAt");
 
 -- CreateIndex
-CREATE INDEX "idx_assignments_patient_type_active" ON "public"."PatientDoctorAssignments"("patientId", "assignmentType", "isActive");
+CREATE INDEX "idx_assignments_patient_type_active" ON "public"."patient_doctor_assignments"("patientId", "assignmentType", "isActive");
 
 -- CreateIndex
-CREATE INDEX "PatientDoctorAssignments_assignmentType_idx" ON "public"."PatientDoctorAssignments"("assignmentType");
+CREATE INDEX "patient_doctor_assignments_assignmentType_idx" ON "public"."patient_doctor_assignments"("assignmentType");
 
 -- CreateIndex
-CREATE INDEX "PatientDoctorAssignments_doctorId_idx" ON "public"."PatientDoctorAssignments"("doctorId");
+CREATE INDEX "patient_doctor_assignments_doctorId_idx" ON "public"."patient_doctor_assignments"("doctorId");
 
 -- CreateIndex
-CREATE INDEX "PatientDoctorAssignments_isActive_idx" ON "public"."PatientDoctorAssignments"("isActive");
+CREATE INDEX "patient_doctor_assignments_isActive_idx" ON "public"."patient_doctor_assignments"("isActive");
 
 -- CreateIndex
-CREATE INDEX "PatientDoctorAssignments_patientConsentStatus_idx" ON "public"."PatientDoctorAssignments"("patientConsentStatus");
+CREATE INDEX "patient_doctor_assignments_patientConsentStatus_idx" ON "public"."patient_doctor_assignments"("patientConsentStatus");
 
 -- CreateIndex
-CREATE INDEX "PatientDoctorAssignments_patientId_idx" ON "public"."PatientDoctorAssignments"("patientId");
+CREATE INDEX "patient_doctor_assignments_patientId_idx" ON "public"."patient_doctor_assignments"("patientId");
 
 -- CreateIndex
-CREATE INDEX "UserDevices_deviceType_idx" ON "public"."UserDevices"("deviceType");
+CREATE INDEX "user_devices_deviceType_idx" ON "public"."user_devices"("deviceType");
 
 -- CreateIndex
-CREATE INDEX "UserDevices_isActive_idx" ON "public"."UserDevices"("isActive");
+CREATE INDEX "user_devices_isActive_idx" ON "public"."user_devices"("isActive");
 
 -- CreateIndex
-CREATE INDEX "UserDevices_lastUsedAt_idx" ON "public"."UserDevices"("lastUsedAt");
+CREATE INDEX "user_devices_lastUsedAt_idx" ON "public"."user_devices"("lastUsedAt");
 
 -- CreateIndex
-CREATE INDEX "UserDevices_pushToken_idx" ON "public"."UserDevices"("pushToken");
+CREATE INDEX "user_devices_pushToken_idx" ON "public"."user_devices"("pushToken");
 
 -- CreateIndex
-CREATE INDEX "UserDevices_userId_idx" ON "public"."UserDevices"("userId");
+CREATE INDEX "user_devices_userId_idx" ON "public"."user_devices"("userId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "UserDevices_userId_pushToken_key" ON "public"."UserDevices"("userId", "pushToken");
+CREATE UNIQUE INDEX "user_devices_userId_pushToken_key" ON "public"."user_devices"("userId", "pushToken");
 
 -- CreateIndex
-CREATE INDEX "idx_notifications_type_priority_created" ON "public"."Notifications"("type", "priority", "createdAt");
+CREATE INDEX "idx_notifications_type_priority_created" ON "public"."notifications"("type", "priority", "createdAt");
 
 -- CreateIndex
-CREATE INDEX "Notifications_doctorId_idx" ON "public"."Notifications"("doctorId");
+CREATE INDEX "notifications_doctorId_idx" ON "public"."notifications"("doctorId");
 
 -- CreateIndex
-CREATE INDEX "Notifications_expiresAt_idx" ON "public"."Notifications"("expiresAt");
+CREATE INDEX "notifications_expiresAt_idx" ON "public"."notifications"("expiresAt");
 
 -- CreateIndex
-CREATE INDEX "Notifications_hspId_idx" ON "public"."Notifications"("hspId");
+CREATE INDEX "notifications_hspId_idx" ON "public"."notifications"("hspId");
 
 -- CreateIndex
-CREATE INDEX "Notifications_isUrgent_idx" ON "public"."Notifications"("isUrgent");
+CREATE INDEX "notifications_isUrgent_idx" ON "public"."notifications"("isUrgent");
 
 -- CreateIndex
-CREATE INDEX "Notifications_organizationId_idx" ON "public"."Notifications"("organizationId");
+CREATE INDEX "notifications_organizationId_idx" ON "public"."notifications"("organizationId");
 
 -- CreateIndex
-CREATE INDEX "Notifications_patientId_idx" ON "public"."Notifications"("patientId");
+CREATE INDEX "notifications_patientId_idx" ON "public"."notifications"("patientId");
 
 -- CreateIndex
-CREATE INDEX "notifications_patient_id_status_created_at" ON "public"."Notifications"("patientId", "status", "createdAt");
+CREATE INDEX "notifications_patient_id_status_created_at" ON "public"."notifications"("patientId", "status", "createdAt");
 
 -- CreateIndex
-CREATE INDEX "Notifications_priority_idx" ON "public"."Notifications"("priority");
+CREATE INDEX "notifications_priority_idx" ON "public"."notifications"("priority");
 
 -- CreateIndex
-CREATE INDEX "Notifications_requiresAction_actionTaken_idx" ON "public"."Notifications"("requiresAction", "actionTaken");
+CREATE INDEX "notifications_requiresAction_actionTaken_idx" ON "public"."notifications"("requiresAction", "actionTaken");
 
 -- CreateIndex
-CREATE INDEX "Notifications_scheduledFor_idx" ON "public"."Notifications"("scheduledFor");
+CREATE INDEX "notifications_scheduledFor_idx" ON "public"."notifications"("scheduledFor");
 
 -- CreateIndex
-CREATE INDEX "Notifications_status_idx" ON "public"."Notifications"("status");
+CREATE INDEX "notifications_status_idx" ON "public"."notifications"("status");
 
 -- CreateIndex
-CREATE INDEX "notifications_status_scheduled_for_expires_at" ON "public"."Notifications"("status", "scheduledFor", "expiresAt");
+CREATE INDEX "notifications_status_scheduled_for_expires_at" ON "public"."notifications"("status", "scheduledFor", "expiresAt");
 
 -- CreateIndex
-CREATE INDEX "Notifications_type_idx" ON "public"."Notifications"("type");
+CREATE INDEX "notifications_type_idx" ON "public"."notifications"("type");
 
 -- CreateIndex
-CREATE INDEX "AuditLogs_accessGranted_idx" ON "public"."AuditLogs"("accessGranted");
+CREATE INDEX "audit_logs_accessGranted_idx" ON "public"."audit_logs"("accessGranted");
 
 -- CreateIndex
-CREATE INDEX "AuditLogs_action_idx" ON "public"."AuditLogs"("action");
+CREATE INDEX "audit_logs_action_idx" ON "public"."audit_logs"("action");
 
 -- CreateIndex
-CREATE INDEX "AuditLogs_ipAddress_idx" ON "public"."AuditLogs"("ipAddress");
+CREATE INDEX "audit_logs_ipAddress_idx" ON "public"."audit_logs"("ipAddress");
 
 -- CreateIndex
-CREATE INDEX "AuditLogs_organizationId_idx" ON "public"."AuditLogs"("organizationId");
+CREATE INDEX "audit_logs_organizationId_idx" ON "public"."audit_logs"("organizationId");
 
 -- CreateIndex
-CREATE INDEX "AuditLogs_patientId_idx" ON "public"."AuditLogs"("patientId");
+CREATE INDEX "audit_logs_patientId_idx" ON "public"."audit_logs"("patientId");
 
 -- CreateIndex
-CREATE INDEX "AuditLogs_patientId_phiAccessed_timestamp_idx" ON "public"."AuditLogs"("patientId", "phiAccessed", "timestamp");
+CREATE INDEX "audit_logs_patientId_phiAccessed_timestamp_idx" ON "public"."audit_logs"("patientId", "phiAccessed", "timestamp");
 
 -- CreateIndex
-CREATE INDEX "AuditLogs_phiAccessed_idx" ON "public"."AuditLogs"("phiAccessed");
+CREATE INDEX "audit_logs_phiAccessed_idx" ON "public"."audit_logs"("phiAccessed");
 
 -- CreateIndex
-CREATE INDEX "AuditLogs_retentionDate_idx" ON "public"."AuditLogs"("retentionDate");
+CREATE INDEX "audit_logs_retentionDate_idx" ON "public"."audit_logs"("retentionDate");
 
 -- CreateIndex
-CREATE INDEX "AuditLogs_riskLevel_idx" ON "public"."AuditLogs"("riskLevel");
+CREATE INDEX "audit_logs_riskLevel_idx" ON "public"."audit_logs"("riskLevel");
 
 -- CreateIndex
-CREATE INDEX "AuditLogs_riskLevel_accessGranted_timestamp_idx" ON "public"."AuditLogs"("riskLevel", "accessGranted", "timestamp");
+CREATE INDEX "audit_logs_riskLevel_accessGranted_timestamp_idx" ON "public"."audit_logs"("riskLevel", "accessGranted", "timestamp");
 
 -- CreateIndex
-CREATE INDEX "AuditLogs_sessionId_idx" ON "public"."AuditLogs"("sessionId");
+CREATE INDEX "audit_logs_sessionId_idx" ON "public"."audit_logs"("sessionId");
 
 -- CreateIndex
-CREATE INDEX "AuditLogs_timestamp_idx" ON "public"."AuditLogs"("timestamp");
+CREATE INDEX "audit_logs_timestamp_idx" ON "public"."audit_logs"("timestamp");
 
 -- CreateIndex
-CREATE INDEX "AuditLogs_userId_idx" ON "public"."AuditLogs"("userId");
+CREATE INDEX "audit_logs_userId_idx" ON "public"."audit_logs"("userId");
 
 -- CreateIndex
-CREATE INDEX "AuditLogs_userId_timestamp_idx" ON "public"."AuditLogs"("userId", "timestamp");
+CREATE INDEX "audit_logs_userId_timestamp_idx" ON "public"."audit_logs"("userId", "timestamp");
 
 -- CreateIndex
-CREATE INDEX "idx_audit_user_created_action" ON "public"."AuditLogs"("userId", "createdAt", "action");
+CREATE INDEX "idx_audit_user_created_action" ON "public"."audit_logs"("userId", "createdAt", "action");
 
 -- CreateIndex
-CREATE INDEX "AppointmentSlot_date_isAvailable_idx" ON "public"."AppointmentSlot"("date", "isAvailable");
+CREATE INDEX "appointment_slots_date_isAvailable_idx" ON "public"."appointment_slots"("date", "isAvailable");
 
 -- CreateIndex
-CREATE INDEX "AppointmentSlot_doctorId_date_startTime_idx" ON "public"."AppointmentSlot"("doctorId", "date", "startTime");
+CREATE INDEX "appointment_slots_doctorId_date_startTime_idx" ON "public"."appointment_slots"("doctorId", "date", "startTime");
 
 -- CreateIndex
-CREATE INDEX "AppointmentSlot_doctorId_isAvailable_idx" ON "public"."AppointmentSlot"("doctorId", "isAvailable");
+CREATE INDEX "appointment_slots_doctorId_isAvailable_idx" ON "public"."appointment_slots"("doctorId", "isAvailable");
 
 -- CreateIndex
-CREATE INDEX "CarePlanTemplates_conditions_idx" ON "public"."CarePlanTemplates" USING GIN ("conditions");
+CREATE INDEX "care_plan_templates_conditions_idx" ON "public"."care_plan_templates" USING GIN ("conditions");
 
 -- CreateIndex
-CREATE INDEX "CarePlanTemplates_createdBy_idx" ON "public"."CarePlanTemplates"("createdBy");
+CREATE INDEX "care_plan_templates_createdBy_idx" ON "public"."care_plan_templates"("createdBy");
 
 -- CreateIndex
-CREATE INDEX "CarePlanTemplates_isApproved_idx" ON "public"."CarePlanTemplates"("isApproved");
+CREATE INDEX "care_plan_templates_isApproved_idx" ON "public"."care_plan_templates"("isApproved");
 
 -- CreateIndex
-CREATE INDEX "CarePlanTemplates_isPublic_idx" ON "public"."CarePlanTemplates"("isPublic");
+CREATE INDEX "care_plan_templates_isPublic_idx" ON "public"."care_plan_templates"("isPublic");
 
 -- CreateIndex
-CREATE INDEX "CarePlanTemplates_name_idx" ON "public"."CarePlanTemplates"("name");
+CREATE INDEX "care_plan_templates_name_idx" ON "public"."care_plan_templates"("name");
 
 -- CreateIndex
-CREATE INDEX "CarePlanTemplates_organizationId_idx" ON "public"."CarePlanTemplates"("organizationId");
+CREATE INDEX "care_plan_templates_organizationId_idx" ON "public"."care_plan_templates"("organizationId");
 
 -- CreateIndex
-CREATE INDEX "CarePlanTemplates_specialties_idx" ON "public"."CarePlanTemplates" USING GIN ("specialties");
+CREATE INDEX "care_plan_templates_specialties_idx" ON "public"."care_plan_templates" USING GIN ("specialties");
 
 -- CreateIndex
-CREATE INDEX "CarePlanTemplates_tags_idx" ON "public"."CarePlanTemplates" USING GIN ("tags");
+CREATE INDEX "care_plan_templates_tags_idx" ON "public"."care_plan_templates" USING GIN ("tags");
 
 -- CreateIndex
-CREATE INDEX "DashboardMetrics_calculatedAt_validUntil_idx" ON "public"."DashboardMetrics"("calculatedAt", "validUntil");
+CREATE INDEX "dashboard_metrics_calculatedAt_validUntil_idx" ON "public"."dashboard_metrics"("calculatedAt", "validUntil");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "DashboardMetrics_entityType_entityId_metricType_key" ON "public"."DashboardMetrics"("entityType", "entityId", "metricType");
+CREATE UNIQUE INDEX "dashboard_metrics_entityType_entityId_metricType_key" ON "public"."dashboard_metrics"("entityType", "entityId", "metricType");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Doctors_userId_key" ON "public"."Doctors"("userId");
+CREATE UNIQUE INDEX "doctors_userId_key" ON "public"."doctors"("userId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Doctors_doctorId_key" ON "public"."Doctors"("doctorId");
+CREATE UNIQUE INDEX "doctors_doctorId_key" ON "public"."doctors"("doctorId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Doctors_medicalLicenseNumber_key" ON "public"."Doctors"("medicalLicenseNumber");
+CREATE UNIQUE INDEX "doctors_medicalLicenseNumber_key" ON "public"."doctors"("medicalLicenseNumber");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Doctors_npiNumber_key" ON "public"."Doctors"("npiNumber");
+CREATE UNIQUE INDEX "doctors_npiNumber_key" ON "public"."doctors"("npiNumber");
 
 -- CreateIndex
-CREATE INDEX "Doctors_boardCertifications_idx" ON "public"."Doctors" USING GIN ("boardCertifications");
+CREATE INDEX "doctors_boardCertifications_idx" ON "public"."doctors" USING GIN ("boardCertifications");
 
 -- CreateIndex
-CREATE INDEX "Doctors_gender_idx" ON "public"."Doctors"("gender");
+CREATE INDEX "doctors_gender_idx" ON "public"."doctors"("gender");
 
 -- CreateIndex
-CREATE INDEX "Doctors_isVerified_idx" ON "public"."Doctors"("isVerified");
+CREATE INDEX "doctors_isVerified_idx" ON "public"."doctors"("isVerified");
 
 -- CreateIndex
-CREATE INDEX "Doctors_isVerified_gender_idx" ON "public"."Doctors"("isVerified", "gender");
+CREATE INDEX "doctors_isVerified_gender_idx" ON "public"."doctors"("isVerified", "gender");
 
 -- CreateIndex
-CREATE INDEX "Doctors_organizationId_idx" ON "public"."Doctors"("organizationId");
+CREATE INDEX "doctors_organizationId_idx" ON "public"."doctors"("organizationId");
 
 -- CreateIndex
-CREATE INDEX "Doctors_specialties_idx" ON "public"."Doctors" USING GIN ("specialties");
+CREATE INDEX "doctors_specialties_idx" ON "public"."doctors" USING GIN ("specialties");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "HSPs_userId_key" ON "public"."HSPs"("userId");
+CREATE UNIQUE INDEX "hsps_userId_key" ON "public"."hsps"("userId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "HSPs_hspId_key" ON "public"."HSPs"("hspId");
+CREATE UNIQUE INDEX "hsps_hspId_key" ON "public"."hsps"("hspId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "HSPs_licenseNumber_key" ON "public"."HSPs"("licenseNumber");
+CREATE UNIQUE INDEX "hsps_licenseNumber_key" ON "public"."hsps"("licenseNumber");
 
 -- CreateIndex
-CREATE INDEX "HSPs_departments_idx" ON "public"."HSPs" USING GIN ("departments");
+CREATE INDEX "hsps_departments_idx" ON "public"."hsps" USING GIN ("departments");
 
 -- CreateIndex
-CREATE INDEX "HSPs_hspType_idx" ON "public"."HSPs"("hspType");
+CREATE INDEX "hsps_hspType_idx" ON "public"."hsps"("hspType");
 
 -- CreateIndex
-CREATE INDEX "HSPs_isVerified_idx" ON "public"."HSPs"("isVerified");
+CREATE INDEX "hsps_isVerified_idx" ON "public"."hsps"("isVerified");
 
 -- CreateIndex
-CREATE INDEX "HSPs_organizationId_idx" ON "public"."HSPs"("organizationId");
+CREATE INDEX "hsps_organizationId_idx" ON "public"."hsps"("organizationId");
 
 -- CreateIndex
-CREATE INDEX "HSPs_specializations_idx" ON "public"."HSPs" USING GIN ("specializations");
+CREATE INDEX "hsps_specializations_idx" ON "public"."hsps" USING GIN ("specializations");
 
 -- CreateIndex
-CREATE INDEX "HSPs_supervisingDoctorId_idx" ON "public"."HSPs"("supervisingDoctorId");
+CREATE INDEX "hsps_supervisingDoctorId_idx" ON "public"."hsps"("supervisingDoctorId");
 
 -- CreateIndex
-CREATE INDEX "MedicationLogs_adherenceStatus_scheduledAt_idx" ON "public"."MedicationLogs"("adherenceStatus", "scheduledAt");
+CREATE INDEX "medication_logs_adherenceStatus_scheduledAt_idx" ON "public"."medication_logs"("adherenceStatus", "scheduledAt");
 
 -- CreateIndex
-CREATE INDEX "MedicationLogs_medicationId_scheduledAt_idx" ON "public"."MedicationLogs"("medicationId", "scheduledAt");
+CREATE INDEX "medication_logs_medicationId_scheduledAt_idx" ON "public"."medication_logs"("medicationId", "scheduledAt");
 
 -- CreateIndex
-CREATE INDEX "MedicationLogs_patientId_scheduledAt_idx" ON "public"."MedicationLogs"("patientId", "scheduledAt");
+CREATE INDEX "medication_logs_patientId_scheduledAt_idx" ON "public"."medication_logs"("patientId", "scheduledAt");
 
 -- CreateIndex
-CREATE INDEX "PatientAlerts_acknowledged_resolved_idx" ON "public"."PatientAlerts"("acknowledged", "resolved");
+CREATE INDEX "patient_alerts_acknowledged_resolved_idx" ON "public"."patient_alerts"("acknowledged", "resolved");
 
 -- CreateIndex
-CREATE INDEX "PatientAlerts_createdAt_idx" ON "public"."PatientAlerts"("createdAt");
+CREATE INDEX "patient_alerts_createdAt_idx" ON "public"."patient_alerts"("createdAt");
 
 -- CreateIndex
-CREATE INDEX "PatientAlerts_patientId_alertType_severity_idx" ON "public"."PatientAlerts"("patientId", "alertType", "severity");
+CREATE INDEX "patient_alerts_patientId_alertType_severity_idx" ON "public"."patient_alerts"("patientId", "alertType", "severity");
 
 -- CreateIndex
-CREATE INDEX "PatientConsentOtp_expiresAt_idx" ON "public"."PatientConsentOtp"("expiresAt");
+CREATE INDEX "patient_consent_otps_expiresAt_idx" ON "public"."patient_consent_otps"("expiresAt");
 
 -- CreateIndex
-CREATE INDEX "PatientConsentOtp_generatedAt_idx" ON "public"."PatientConsentOtp"("generatedAt");
+CREATE INDEX "patient_consent_otps_generatedAt_idx" ON "public"."patient_consent_otps"("generatedAt");
 
 -- CreateIndex
-CREATE INDEX "PatientConsentOtp_isBlocked_idx" ON "public"."PatientConsentOtp"("isBlocked");
+CREATE INDEX "patient_consent_otps_isBlocked_idx" ON "public"."patient_consent_otps"("isBlocked");
 
 -- CreateIndex
-CREATE INDEX "PatientConsentOtp_isExpired_idx" ON "public"."PatientConsentOtp"("isExpired");
+CREATE INDEX "patient_consent_otps_isExpired_idx" ON "public"."patient_consent_otps"("isExpired");
 
 -- CreateIndex
-CREATE INDEX "PatientConsentOtp_isVerified_idx" ON "public"."PatientConsentOtp"("isVerified");
+CREATE INDEX "patient_consent_otps_isVerified_idx" ON "public"."patient_consent_otps"("isVerified");
 
 -- CreateIndex
-CREATE INDEX "PatientConsentOtp_otpCode_idx" ON "public"."PatientConsentOtp"("otpCode");
+CREATE INDEX "patient_consent_otps_otpCode_idx" ON "public"."patient_consent_otps"("otpCode");
 
 -- CreateIndex
-CREATE INDEX "PatientConsentOtp_patientId_idx" ON "public"."PatientConsentOtp"("patientId");
+CREATE INDEX "patient_consent_otps_patientId_idx" ON "public"."patient_consent_otps"("patientId");
 
 -- CreateIndex
-CREATE INDEX "PatientConsentOtp_requestedByUserId_idx" ON "public"."PatientConsentOtp"("requestedByUserId");
+CREATE INDEX "patient_consent_otps_requestedByUserId_idx" ON "public"."patient_consent_otps"("requestedByUserId");
 
 -- CreateIndex
-CREATE INDEX "PatientConsentOtp_secondaryAssignmentId_idx" ON "public"."PatientConsentOtp"("secondaryAssignmentId");
+CREATE INDEX "patient_consent_otps_secondaryAssignmentId_idx" ON "public"."patient_consent_otps"("secondaryAssignmentId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "PatientProviderAssignments_patientId_providerId_role_endedA_key" ON "public"."PatientProviderAssignments"("patientId", "providerId", "role", "endedAt");
+CREATE UNIQUE INDEX "patient_provider_assignments_patientId_providerId_role_endedA_key" ON "public"."patient_provider_assignments"("patientId", "providerId", "role", "endedAt");
 
 -- CreateIndex
-CREATE INDEX "PatientProviderConsentHistory_consentRequestedAt_idx" ON "public"."PatientProviderConsentHistory"("consentRequestedAt");
+CREATE INDEX "patient_provider_consent_history_consentRequestedAt_idx" ON "public"."patient_provider_consent_history"("consentRequestedAt");
 
 -- CreateIndex
-CREATE INDEX "PatientProviderConsentHistory_doctorId_idx" ON "public"."PatientProviderConsentHistory"("doctorId");
+CREATE INDEX "patient_provider_consent_history_doctorId_idx" ON "public"."patient_provider_consent_history"("doctorId");
 
 -- CreateIndex
-CREATE INDEX "PatientProviderConsentHistory_hspId_idx" ON "public"."PatientProviderConsentHistory"("hspId");
+CREATE INDEX "patient_provider_consent_history_hspId_idx" ON "public"."patient_provider_consent_history"("hspId");
 
 -- CreateIndex
-CREATE INDEX "PatientProviderConsentHistory_newProviderId_idx" ON "public"."PatientProviderConsentHistory"("newProviderId");
+CREATE INDEX "patient_provider_consent_history_newProviderId_idx" ON "public"."patient_provider_consent_history"("newProviderId");
 
 -- CreateIndex
-CREATE INDEX "PatientProviderConsentHistory_patientId_status_idx" ON "public"."PatientProviderConsentHistory"("patientId", "status");
+CREATE INDEX "patient_provider_consent_history_patientId_status_idx" ON "public"."patient_provider_consent_history"("patientId", "status");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "PaymentMethods_stripePaymentMethodId_key" ON "public"."PaymentMethods"("stripePaymentMethodId");
+CREATE UNIQUE INDEX "payment_methods_stripePaymentMethodId_key" ON "public"."payment_methods"("stripePaymentMethodId");
 
 -- CreateIndex
-CREATE INDEX "PaymentMethods_isActive_idx" ON "public"."PaymentMethods"("isActive");
+CREATE INDEX "payment_methods_isActive_idx" ON "public"."payment_methods"("isActive");
 
 -- CreateIndex
-CREATE INDEX "PaymentMethods_isDefault_idx" ON "public"."PaymentMethods"("isDefault");
+CREATE INDEX "payment_methods_isDefault_idx" ON "public"."payment_methods"("isDefault");
 
 -- CreateIndex
-CREATE INDEX "PaymentMethods_patientId_idx" ON "public"."PaymentMethods"("patientId");
+CREATE INDEX "payment_methods_patientId_idx" ON "public"."payment_methods"("patientId");
 
 -- CreateIndex
-CREATE INDEX "PaymentMethods_stripePaymentMethodId_idx" ON "public"."PaymentMethods"("stripePaymentMethodId");
+CREATE INDEX "payment_methods_stripePaymentMethodId_idx" ON "public"."payment_methods"("stripePaymentMethodId");
 
 -- CreateIndex
-CREATE INDEX "PaymentMethods_type_idx" ON "public"."PaymentMethods"("type");
+CREATE INDEX "payment_methods_type_idx" ON "public"."payment_methods"("type");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Payments_stripePaymentIntentId_key" ON "public"."Payments"("stripePaymentIntentId");
+CREATE UNIQUE INDEX "payments_stripePaymentIntentId_key" ON "public"."payments"("stripePaymentIntentId");
 
 -- CreateIndex
-CREATE INDEX "Payments_billingPeriodStart_billingPeriodEnd_idx" ON "public"."Payments"("billingPeriodStart", "billingPeriodEnd");
+CREATE INDEX "payments_billingPeriodStart_billingPeriodEnd_idx" ON "public"."payments"("billingPeriodStart", "billingPeriodEnd");
 
 -- CreateIndex
-CREATE INDEX "Payments_createdAt_idx" ON "public"."Payments"("createdAt");
+CREATE INDEX "payments_createdAt_idx" ON "public"."payments"("createdAt");
 
 -- CreateIndex
-CREATE INDEX "Payments_patientId_idx" ON "public"."Payments"("patientId");
+CREATE INDEX "payments_patientId_idx" ON "public"."payments"("patientId");
 
 -- CreateIndex
-CREATE INDEX "Payments_providerId_idx" ON "public"."Payments"("providerId");
+CREATE INDEX "payments_providerId_idx" ON "public"."payments"("providerId");
 
 -- CreateIndex
-CREATE INDEX "Payments_status_idx" ON "public"."Payments"("status");
+CREATE INDEX "payments_status_idx" ON "public"."payments"("status");
 
 -- CreateIndex
-CREATE INDEX "Payments_stripePaymentIntentId_idx" ON "public"."Payments"("stripePaymentIntentId");
+CREATE INDEX "payments_stripePaymentIntentId_idx" ON "public"."payments"("stripePaymentIntentId");
 
 -- CreateIndex
-CREATE INDEX "Payments_subscriptionId_idx" ON "public"."Payments"("subscriptionId");
+CREATE INDEX "payments_subscriptionId_idx" ON "public"."payments"("subscriptionId");
 
 -- CreateIndex
-CREATE INDEX "Payments_paymentMethodId_idx" ON "public"."Payments"("paymentMethodId");
+CREATE INDEX "payments_paymentMethodId_idx" ON "public"."payments"("paymentMethodId");
 
 -- CreateIndex
-CREATE INDEX "ProviderChanges_changeDate_idx" ON "public"."ProviderChanges"("changeDate");
+CREATE INDEX "provider_changes_changeDate_idx" ON "public"."provider_changes"("changeDate");
 
 -- CreateIndex
-CREATE INDEX "ProviderChanges_newProviderId_idx" ON "public"."ProviderChanges"("newProviderId");
+CREATE INDEX "provider_changes_newProviderId_idx" ON "public"."provider_changes"("newProviderId");
 
 -- CreateIndex
-CREATE INDEX "ProviderChanges_practitionerType_practitionerId_idx" ON "public"."ProviderChanges"("practitionerType", "practitionerId");
+CREATE INDEX "provider_changes_practitionerType_practitionerId_idx" ON "public"."provider_changes"("practitionerType", "practitionerId");
 
 -- CreateIndex
-CREATE INDEX "ProviderChanges_status_idx" ON "public"."ProviderChanges"("status");
+CREATE INDEX "provider_changes_status_idx" ON "public"."provider_changes"("status");
 
 -- CreateIndex
-CREATE INDEX "Providers_userId_idx" ON "public"."Providers"("userId");
+CREATE INDEX "providers_userId_idx" ON "public"."providers"("userId");
 
 -- CreateIndex
-CREATE INDEX "ScheduleEvents_eventId_eventType_idx" ON "public"."ScheduleEvents"("eventId", "eventType");
+CREATE INDEX "schedule_events_eventId_eventType_idx" ON "public"."schedule_events"("eventId", "eventType");
 
 -- CreateIndex
-CREATE INDEX "ScheduleEvents_eventType_status_date_startTime_idx" ON "public"."ScheduleEvents"("eventType", "status", "date", "startTime");
+CREATE INDEX "schedule_events_eventType_status_date_startTime_idx" ON "public"."schedule_events"("eventType", "status", "date", "startTime");
 
 -- CreateIndex
-CREATE INDEX "ScheduleEvents_status_date_idx" ON "public"."ScheduleEvents"("status", "date");
+CREATE INDEX "schedule_events_status_date_idx" ON "public"."schedule_events"("status", "date");
 
 -- CreateIndex
-CREATE INDEX "idx_events_careplan_time_type" ON "public"."ScheduledEvents"("carePlanId", "scheduledFor", "eventType");
+CREATE INDEX "idx_events_careplan_time_type" ON "public"."scheduled_events"("carePlanId", "scheduledFor", "eventType");
 
 -- CreateIndex
-CREATE INDEX "idx_events_patient_time_status" ON "public"."ScheduledEvents"("patientId", "scheduledFor", "status");
+CREATE INDEX "idx_events_patient_time_status" ON "public"."scheduled_events"("patientId", "scheduledFor", "status");
 
 -- CreateIndex
-CREATE INDEX "ScheduledEvents_carePlanId_idx" ON "public"."ScheduledEvents"("carePlanId");
+CREATE INDEX "scheduled_events_carePlanId_idx" ON "public"."scheduled_events"("carePlanId");
 
 -- CreateIndex
-CREATE INDEX "SecondaryDoctorAssignments_accessGranted_idx" ON "public"."SecondaryDoctorAssignments"("accessGranted");
+CREATE INDEX "secondary_doctor_assignments_accessGranted_idx" ON "public"."secondary_doctor_assignments"("accessGranted");
 
 -- CreateIndex
-CREATE INDEX "SecondaryDoctorAssignments_consentExpiresAt_idx" ON "public"."SecondaryDoctorAssignments"("consentExpiresAt");
+CREATE INDEX "secondary_doctor_assignments_consentExpiresAt_idx" ON "public"."secondary_doctor_assignments"("consentExpiresAt");
 
 -- CreateIndex
-CREATE INDEX "SecondaryDoctorAssignments_consentStatus_idx" ON "public"."SecondaryDoctorAssignments"("consentStatus");
+CREATE INDEX "secondary_doctor_assignments_consentStatus_idx" ON "public"."secondary_doctor_assignments"("consentStatus");
 
 -- CreateIndex
-CREATE INDEX "SecondaryDoctorAssignments_isActive_idx" ON "public"."SecondaryDoctorAssignments"("isActive");
+CREATE INDEX "secondary_doctor_assignments_isActive_idx" ON "public"."secondary_doctor_assignments"("isActive");
 
 -- CreateIndex
-CREATE INDEX "SecondaryDoctorAssignments_patientId_idx" ON "public"."SecondaryDoctorAssignments"("patientId");
+CREATE INDEX "secondary_doctor_assignments_patientId_idx" ON "public"."secondary_doctor_assignments"("patientId");
 
 -- CreateIndex
-CREATE INDEX "SecondaryDoctorAssignments_primaryDoctorId_idx" ON "public"."SecondaryDoctorAssignments"("primaryDoctorId");
+CREATE INDEX "secondary_doctor_assignments_primaryDoctorId_idx" ON "public"."secondary_doctor_assignments"("primaryDoctorId");
 
 -- CreateIndex
-CREATE INDEX "SecondaryDoctorAssignments_secondaryDoctorId_idx" ON "public"."SecondaryDoctorAssignments"("secondaryDoctorId");
+CREATE INDEX "secondary_doctor_assignments_secondaryDoctorId_idx" ON "public"."secondary_doctor_assignments"("secondaryDoctorId");
 
 -- CreateIndex
-CREATE INDEX "SecondaryDoctorAssignments_secondaryHspId_idx" ON "public"."SecondaryDoctorAssignments"("secondaryHspId");
+CREATE INDEX "secondary_doctor_assignments_secondaryHspId_idx" ON "public"."secondary_doctor_assignments"("secondaryHspId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "SymptomsDatabase_diagnosisName_key" ON "public"."SymptomsDatabase"("diagnosisName");
+CREATE UNIQUE INDEX "symptoms_database_diagnosisName_key" ON "public"."symptoms_database"("diagnosisName");
 
 -- CreateIndex
-CREATE INDEX "SymptomsDatabase_category_idx" ON "public"."SymptomsDatabase"("category");
+CREATE INDEX "symptoms_database_category_idx" ON "public"."symptoms_database"("category");
 
 -- CreateIndex
-CREATE INDEX "SymptomsDatabase_isActive_idx" ON "public"."SymptomsDatabase"("isActive");
+CREATE INDEX "symptoms_database_isActive_idx" ON "public"."symptoms_database"("isActive");
 
 -- CreateIndex
-CREATE INDEX "SymptomsDatabase_symptoms_idx" ON "public"."SymptomsDatabase" USING GIN ("symptoms");
+CREATE INDEX "symptoms_database_symptoms_idx" ON "public"."symptoms_database" USING GIN ("symptoms");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "TreatmentDatabase_treatmentName_key" ON "public"."TreatmentDatabase"("treatmentName");
+CREATE UNIQUE INDEX "treatment_database_treatmentName_key" ON "public"."treatment_database"("treatmentName");
 
 -- CreateIndex
-CREATE INDEX "TreatmentDatabase_applicableConditions_idx" ON "public"."TreatmentDatabase" USING GIN ("applicableConditions");
+CREATE INDEX "treatment_database_applicableConditions_idx" ON "public"."treatment_database" USING GIN ("applicableConditions");
 
 -- CreateIndex
-CREATE INDEX "TreatmentDatabase_category_idx" ON "public"."TreatmentDatabase"("category");
+CREATE INDEX "treatment_database_category_idx" ON "public"."treatment_database"("category");
 
 -- CreateIndex
-CREATE INDEX "TreatmentDatabase_isActive_idx" ON "public"."TreatmentDatabase"("isActive");
+CREATE INDEX "treatment_database_isActive_idx" ON "public"."treatment_database"("isActive");
 
 -- CreateIndex
-CREATE INDEX "TreatmentDatabase_severityLevel_idx" ON "public"."TreatmentDatabase"("severityLevel");
+CREATE INDEX "treatment_database_severityLevel_idx" ON "public"."treatment_database"("severityLevel");
 
 -- CreateIndex
-CREATE INDEX "TreatmentDatabase_treatmentType_idx" ON "public"."TreatmentDatabase"("treatmentType");
+CREATE INDEX "treatment_database_treatmentType_idx" ON "public"."treatment_database"("treatmentType");
 
 -- CreateIndex
-CREATE INDEX "TreatmentPlans_doctorId_idx" ON "public"."TreatmentPlans"("doctorId");
+CREATE INDEX "treatment_plans_doctorId_idx" ON "public"."treatment_plans"("doctorId");
 
 -- CreateIndex
-CREATE INDEX "TreatmentPlans_endDate_idx" ON "public"."TreatmentPlans"("endDate");
+CREATE INDEX "treatment_plans_endDate_idx" ON "public"."treatment_plans"("endDate");
 
 -- CreateIndex
-CREATE INDEX "TreatmentPlans_followUpDate_idx" ON "public"."TreatmentPlans"("followUpDate");
+CREATE INDEX "treatment_plans_followUpDate_idx" ON "public"."treatment_plans"("followUpDate");
 
 -- CreateIndex
-CREATE INDEX "TreatmentPlans_organizationId_idx" ON "public"."TreatmentPlans"("organizationId");
+CREATE INDEX "treatment_plans_organizationId_idx" ON "public"."treatment_plans"("organizationId");
 
 -- CreateIndex
-CREATE INDEX "TreatmentPlans_patientId_idx" ON "public"."TreatmentPlans"("patientId");
+CREATE INDEX "treatment_plans_patientId_idx" ON "public"."treatment_plans"("patientId");
 
 -- CreateIndex
-CREATE INDEX "TreatmentPlans_primaryDiagnosis_idx" ON "public"."TreatmentPlans"("primaryDiagnosis");
+CREATE INDEX "treatment_plans_primaryDiagnosis_idx" ON "public"."treatment_plans"("primaryDiagnosis");
 
 -- CreateIndex
-CREATE INDEX "TreatmentPlans_priority_idx" ON "public"."TreatmentPlans"("priority");
+CREATE INDEX "treatment_plans_priority_idx" ON "public"."treatment_plans"("priority");
 
 -- CreateIndex
-CREATE INDEX "TreatmentPlans_secondaryDiagnoses_idx" ON "public"."TreatmentPlans" USING GIN ("secondaryDiagnoses");
+CREATE INDEX "treatment_plans_secondaryDiagnoses_idx" ON "public"."treatment_plans" USING GIN ("secondaryDiagnoses");
 
 -- CreateIndex
-CREATE INDEX "TreatmentPlans_startDate_idx" ON "public"."TreatmentPlans"("startDate");
+CREATE INDEX "treatment_plans_startDate_idx" ON "public"."treatment_plans"("startDate");
 
 -- CreateIndex
-CREATE INDEX "TreatmentPlans_status_idx" ON "public"."TreatmentPlans"("status");
+CREATE INDEX "treatment_plans_status_idx" ON "public"."treatment_plans"("status");
 
 -- CreateIndex
-CREATE INDEX "TreatmentPlans_symptoms_idx" ON "public"."TreatmentPlans" USING GIN ("symptoms");
+CREATE INDEX "treatment_plans_symptoms_idx" ON "public"."treatment_plans" USING GIN ("symptoms");
 
 -- CreateIndex
-CREATE INDEX "idx_userroles_identity_linked" ON "public"."UserRoleAssignments"("userIdentity", "linkedWith");
+CREATE INDEX "idx_userroles_identity_linked" ON "public"."user_role_assignments"("userIdentity", "linkedWith");
 
 -- CreateIndex
-CREATE INDEX "VitalRequirements_carePlanId_idx" ON "public"."VitalRequirements"("carePlanId");
+CREATE INDEX "vital_requirements_carePlanId_idx" ON "public"."vital_requirements"("carePlanId");
 
 -- CreateIndex
-CREATE INDEX "VitalRequirements_frequency_idx" ON "public"."VitalRequirements"("frequency");
+CREATE INDEX "vital_requirements_frequency_idx" ON "public"."vital_requirements"("frequency");
 
 -- CreateIndex
-CREATE INDEX "VitalRequirements_isCritical_idx" ON "public"."VitalRequirements"("isCritical");
+CREATE INDEX "vital_requirements_isCritical_idx" ON "public"."vital_requirements"("isCritical");
 
 -- CreateIndex
-CREATE INDEX "VitalRequirements_vitalTypeId_idx" ON "public"."VitalRequirements"("vitalTypeId");
+CREATE INDEX "vital_requirements_vitalTypeId_idx" ON "public"."vital_requirements"("vitalTypeId");
 
 -- CreateIndex
-CREATE INDEX "Vitals_carePlanId_idx" ON "public"."Vitals"("carePlanId");
+CREATE INDEX "vitals_carePlanId_idx" ON "public"."vitals"("carePlanId");
 
 -- CreateIndex
-CREATE INDEX "Vitals_vitalTemplateId_idx" ON "public"."Vitals"("vitalTemplateId");
+CREATE INDEX "vitals_vitalTemplateId_idx" ON "public"."vitals"("vitalTemplateId");
 
 -- CreateIndex
-CREATE INDEX "DrugInteractions_severityLevel_idx" ON "public"."DrugInteractions"("severityLevel");
+CREATE INDEX "drug_interactions_severityLevel_idx" ON "public"."drug_interactions"("severityLevel");
 
 -- CreateIndex
-CREATE INDEX "DrugInteractions_drugNameOne_drugNameTwo_idx" ON "public"."DrugInteractions"("drugNameOne", "drugNameTwo");
+CREATE INDEX "drug_interactions_drugNameOne_drugNameTwo_idx" ON "public"."drug_interactions"("drugNameOne", "drugNameTwo");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "DrugInteractions_rxcuiOne_rxcuiTwo_key" ON "public"."DrugInteractions"("rxcuiOne", "rxcuiTwo");
+CREATE UNIQUE INDEX "drug_interactions_rxcuiOne_rxcuiTwo_key" ON "public"."drug_interactions"("rxcuiOne", "rxcuiTwo");
 
 -- CreateIndex
-CREATE INDEX "PatientAllergies_patientId_isActive_idx" ON "public"."PatientAllergies"("patientId", "isActive");
+CREATE INDEX "patient_allergies_patientId_isActive_idx" ON "public"."patient_allergies"("patientId", "isActive");
 
 -- CreateIndex
-CREATE INDEX "PatientAllergies_allergenType_allergenName_idx" ON "public"."PatientAllergies"("allergenType", "allergenName");
+CREATE INDEX "patient_allergies_allergenType_allergenName_idx" ON "public"."patient_allergies"("allergenType", "allergenName");
 
 -- CreateIndex
-CREATE INDEX "MedicationSafetyAlerts_patientId_severity_resolved_idx" ON "public"."MedicationSafetyAlerts"("patientId", "severity", "resolved");
+CREATE INDEX "medication_safety_alerts_patientId_severity_resolved_idx" ON "public"."medication_safety_alerts"("patientId", "severity", "resolved");
 
 -- CreateIndex
-CREATE INDEX "MedicationSafetyAlerts_alertType_createdAt_idx" ON "public"."MedicationSafetyAlerts"("alertType", "createdAt");
+CREATE INDEX "medication_safety_alerts_alertType_createdAt_idx" ON "public"."medication_safety_alerts"("alertType", "createdAt");
 
 -- CreateIndex
-CREATE INDEX "MedicationSafetyAlerts_resolved_createdAt_idx" ON "public"."MedicationSafetyAlerts"("resolved", "createdAt");
+CREATE INDEX "medication_safety_alerts_resolved_createdAt_idx" ON "public"."medication_safety_alerts"("resolved", "createdAt");
 
 -- CreateIndex
-CREATE INDEX "EmergencyAlerts_patientId_priorityLevel_acknowledged_resolv_idx" ON "public"."EmergencyAlerts"("patientId", "priorityLevel", "acknowledged", "resolved");
+CREATE INDEX "emergency_alerts_patientId_priorityLevel_acknowledged_resolv_idx" ON "public"."emergency_alerts"("patientId", "priorityLevel", "acknowledged", "resolved");
 
 -- CreateIndex
-CREATE INDEX "EmergencyAlerts_alertType_createdAt_idx" ON "public"."EmergencyAlerts"("alertType", "createdAt");
+CREATE INDEX "emergency_alerts_alertType_createdAt_idx" ON "public"."emergency_alerts"("alertType", "createdAt");
 
 -- CreateIndex
-CREATE INDEX "EmergencyAlerts_resolved_createdAt_idx" ON "public"."EmergencyAlerts"("resolved", "createdAt");
+CREATE INDEX "emergency_alerts_resolved_createdAt_idx" ON "public"."emergency_alerts"("resolved", "createdAt");
 
 -- CreateIndex
-CREATE INDEX "VitalAlertRules_vitalType_isActive_idx" ON "public"."VitalAlertRules"("vitalType", "isActive");
+CREATE INDEX "vital_alert_rules_vitalType_isActive_idx" ON "public"."vital_alert_rules"("vitalType", "isActive");
 
 -- CreateIndex
-CREATE INDEX "VitalAlertRules_alertLevel_idx" ON "public"."VitalAlertRules"("alertLevel");
+CREATE INDEX "vital_alert_rules_alertLevel_idx" ON "public"."vital_alert_rules"("alertLevel");
 
 -- CreateIndex
-CREATE INDEX "EmergencyContacts_patientId_priorityOrder_idx" ON "public"."EmergencyContacts"("patientId", "priorityOrder");
+CREATE INDEX "emergency_contacts_patientId_priorityOrder_idx" ON "public"."emergency_contacts"("patientId", "priorityOrder");
 
 -- CreateIndex
-CREATE INDEX "EmergencyContacts_patientId_isActive_idx" ON "public"."EmergencyContacts"("patientId", "isActive");
+CREATE INDEX "emergency_contacts_patientId_isActive_idx" ON "public"."emergency_contacts"("patientId", "isActive");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "VideoConsultations_consultationId_key" ON "public"."VideoConsultations"("consultationId");
+CREATE UNIQUE INDEX "video_consultations_consultationId_key" ON "public"."video_consultations"("consultationId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "VideoConsultations_roomId_key" ON "public"."VideoConsultations"("roomId");
+CREATE UNIQUE INDEX "video_consultations_roomId_key" ON "public"."video_consultations"("roomId");
 
 -- CreateIndex
-CREATE INDEX "VideoConsultations_doctorId_scheduledStart_idx" ON "public"."VideoConsultations"("doctorId", "scheduledStart");
+CREATE INDEX "video_consultations_doctorId_scheduledStart_idx" ON "public"."video_consultations"("doctorId", "scheduledStart");
 
 -- CreateIndex
-CREATE INDEX "VideoConsultations_patientId_status_idx" ON "public"."VideoConsultations"("patientId", "status");
+CREATE INDEX "video_consultations_patientId_status_idx" ON "public"."video_consultations"("patientId", "status");
 
 -- CreateIndex
-CREATE INDEX "VideoConsultations_status_scheduledStart_idx" ON "public"."VideoConsultations"("status", "scheduledStart");
+CREATE INDEX "video_consultations_status_scheduledStart_idx" ON "public"."video_consultations"("status", "scheduledStart");
 
 -- CreateIndex
-CREATE INDEX "VideoConsultations_consultationType_priority_idx" ON "public"."VideoConsultations"("consultationType", "priority");
+CREATE INDEX "video_consultations_consultationType_priority_idx" ON "public"."video_consultations"("consultationType", "priority");
 
 -- CreateIndex
-CREATE INDEX "ConsultationPrescriptions_consultationId_idx" ON "public"."ConsultationPrescriptions"("consultationId");
+CREATE INDEX "consultation_prescriptions_consultationId_idx" ON "public"."consultation_prescriptions"("consultationId");
 
 -- CreateIndex
-CREATE INDEX "ConsultationNotes_consultationId_noteType_idx" ON "public"."ConsultationNotes"("consultationId", "noteType");
+CREATE INDEX "consultation_notes_consultationId_noteType_idx" ON "public"."consultation_notes"("consultationId", "noteType");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "LabOrders_orderNumber_key" ON "public"."LabOrders"("orderNumber");
+CREATE UNIQUE INDEX "lab_orders_orderNumber_key" ON "public"."lab_orders"("orderNumber");
 
 -- CreateIndex
-CREATE INDEX "LabOrders_patientId_status_idx" ON "public"."LabOrders"("patientId", "status");
+CREATE INDEX "lab_orders_patientId_status_idx" ON "public"."lab_orders"("patientId", "status");
 
 -- CreateIndex
-CREATE INDEX "LabOrders_doctorId_orderDate_idx" ON "public"."LabOrders"("doctorId", "orderDate");
+CREATE INDEX "lab_orders_doctorId_orderDate_idx" ON "public"."lab_orders"("doctorId", "orderDate");
 
 -- CreateIndex
-CREATE INDEX "LabOrders_status_expectedResultDate_idx" ON "public"."LabOrders"("status", "expectedResultDate");
+CREATE INDEX "lab_orders_status_expectedResultDate_idx" ON "public"."lab_orders"("status", "expectedResultDate");
 
 -- CreateIndex
-CREATE INDEX "LabResults_labOrderId_idx" ON "public"."LabResults"("labOrderId");
+CREATE INDEX "lab_results_labOrderId_idx" ON "public"."lab_results"("labOrderId");
 
 -- CreateIndex
-CREATE INDEX "LabResults_testName_resultDate_idx" ON "public"."LabResults"("testName", "resultDate");
+CREATE INDEX "lab_results_testName_resultDate_idx" ON "public"."lab_results"("testName", "resultDate");
 
 -- CreateIndex
-CREATE INDEX "LabResults_criticalFlag_resultDate_idx" ON "public"."LabResults"("criticalFlag", "resultDate");
+CREATE INDEX "lab_results_criticalFlag_resultDate_idx" ON "public"."lab_results"("criticalFlag", "resultDate");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "PatientGameProfiles_patientId_key" ON "public"."PatientGameProfiles"("patientId");
+CREATE UNIQUE INDEX "patient_game_profiles_patientId_key" ON "public"."patient_game_profiles"("patientId");
 
 -- CreateIndex
-CREATE INDEX "PatientGameProfiles_totalPoints_currentLevel_idx" ON "public"."PatientGameProfiles"("totalPoints", "currentLevel");
+CREATE INDEX "patient_game_profiles_totalPoints_currentLevel_idx" ON "public"."patient_game_profiles"("totalPoints", "currentLevel");
 
 -- CreateIndex
-CREATE INDEX "PatientGameProfiles_patientId_lastActivity_idx" ON "public"."PatientGameProfiles"("patientId", "lastActivity");
+CREATE INDEX "patient_game_profiles_patientId_lastActivity_idx" ON "public"."patient_game_profiles"("patientId", "lastActivity");
 
 -- CreateIndex
-CREATE INDEX "GameBadgeAwards_patientId_awardedDate_idx" ON "public"."GameBadgeAwards"("patientId", "awardedDate");
+CREATE INDEX "game_badge_awards_patientId_awardedDate_idx" ON "public"."game_badge_awards"("patientId", "awardedDate");
 
 -- CreateIndex
-CREATE INDEX "GameBadgeAwards_badgeType_idx" ON "public"."GameBadgeAwards"("badgeType");
+CREATE INDEX "game_badge_awards_badgeType_idx" ON "public"."game_badge_awards"("badgeType");
 
 -- CreateIndex
-CREATE INDEX "GameChallengeProgress_patientId_isCompleted_idx" ON "public"."GameChallengeProgress"("patientId", "isCompleted");
+CREATE INDEX "game_challenge_progress_patientId_isCompleted_idx" ON "public"."game_challenge_progress"("patientId", "isCompleted");
 
 -- CreateIndex
-CREATE INDEX "GameChallengeProgress_challengeType_endDate_idx" ON "public"."GameChallengeProgress"("challengeType", "endDate");
+CREATE INDEX "game_challenge_progress_challengeType_endDate_idx" ON "public"."game_challenge_progress"("challengeType", "endDate");
 
 -- CreateIndex
-CREATE INDEX "ConnectedDevices_pluginId_deviceType_idx" ON "public"."ConnectedDevices"("pluginId", "deviceType");
+CREATE INDEX "connected_devices_pluginId_deviceType_idx" ON "public"."connected_devices"("pluginId", "deviceType");
 
 -- CreateIndex
-CREATE INDEX "ConnectedDevices_patientId_connectionStatus_idx" ON "public"."ConnectedDevices"("patientId", "connectionStatus");
+CREATE INDEX "connected_devices_patientId_connectionStatus_idx" ON "public"."connected_devices"("patientId", "connectionStatus");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "ConnectedDevices_patientId_deviceIdentifier_key" ON "public"."ConnectedDevices"("patientId", "deviceIdentifier");
+CREATE UNIQUE INDEX "connected_devices_patientId_deviceIdentifier_key" ON "public"."connected_devices"("patientId", "deviceIdentifier");
 
 -- CreateIndex
-CREATE INDEX "DeviceReadings_patientId_readingType_measurementTimestamp_idx" ON "public"."DeviceReadings"("patientId", "readingType", "measurementTimestamp");
+CREATE INDEX "device_readings_patientId_readingType_measurementTimestamp_idx" ON "public"."device_readings"("patientId", "readingType", "measurementTimestamp");
 
 -- CreateIndex
-CREATE INDEX "DeviceReadings_deviceId_measurementTimestamp_idx" ON "public"."DeviceReadings"("deviceId", "measurementTimestamp");
+CREATE INDEX "device_readings_deviceId_measurementTimestamp_idx" ON "public"."device_readings"("deviceId", "measurementTimestamp");
 
 -- CreateIndex
-CREATE INDEX "DeviceReadings_pluginId_readingType_idx" ON "public"."DeviceReadings"("pluginId", "readingType");
+CREATE INDEX "device_readings_pluginId_readingType_idx" ON "public"."device_readings"("pluginId", "readingType");
 
 -- CreateIndex
-CREATE INDEX "DeviceReadings_triggeredAlerts_measurementTimestamp_idx" ON "public"."DeviceReadings"("triggeredAlerts", "measurementTimestamp");
+CREATE INDEX "device_readings_triggeredAlerts_measurementTimestamp_idx" ON "public"."device_readings"("triggeredAlerts", "measurementTimestamp");
 
 -- CreateIndex
-CREATE INDEX "_DeviceReadingToEmergencyAlert_B_index" ON "public"."_DeviceReadingToEmergencyAlert"("B");
+CREATE INDEX "_device_reading_to_emergency_alert_B_index" ON "public"."_device_reading_to_emergency_alert"("B");
 
 -- AddForeignKey
-ALTER TABLE "public"."Accounts" ADD CONSTRAINT "Accounts_userId_fkey" FOREIGN KEY ("userId") REFERENCES "public"."Users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "public"."accounts" ADD CONSTRAINT "accounts_userId_fkey" FOREIGN KEY ("userId") REFERENCES "public"."users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."Sessions" ADD CONSTRAINT "Sessions_userId_fkey" FOREIGN KEY ("userId") REFERENCES "public"."Users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "public"."sessions" ADD CONSTRAINT "sessions_userId_fkey" FOREIGN KEY ("userId") REFERENCES "public"."users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."AccountLinks" ADD CONSTRAINT "AccountLinks_userId_fkey" FOREIGN KEY ("userId") REFERENCES "public"."Users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "public"."account_links" ADD CONSTRAINT "account_links_userId_fkey" FOREIGN KEY ("userId") REFERENCES "public"."users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."Patients" ADD CONSTRAINT "Patients_linkedProviderId_fkey" FOREIGN KEY ("linkedProviderId") REFERENCES "public"."Organizations"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "public"."patients" ADD CONSTRAINT "patients_linkedProviderId_fkey" FOREIGN KEY ("linkedProviderId") REFERENCES "public"."organizations"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."Patients" ADD CONSTRAINT "Patients_organizationId_fkey" FOREIGN KEY ("organizationId") REFERENCES "public"."Organizations"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "public"."patients" ADD CONSTRAINT "patients_organizationId_fkey" FOREIGN KEY ("organizationId") REFERENCES "public"."organizations"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."Patients" ADD CONSTRAINT "Patients_primaryCareDoctorId_fkey" FOREIGN KEY ("primaryCareDoctorId") REFERENCES "public"."Doctors"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "public"."patients" ADD CONSTRAINT "patients_primaryCareDoctorId_fkey" FOREIGN KEY ("primaryCareDoctorId") REFERENCES "public"."doctors"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."Patients" ADD CONSTRAINT "Patients_primaryCareHspId_fkey" FOREIGN KEY ("primaryCareHspId") REFERENCES "public"."HSPs"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "public"."patients" ADD CONSTRAINT "patients_primaryCareHspId_fkey" FOREIGN KEY ("primaryCareHspId") REFERENCES "public"."hsps"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "public"."Patients" ADD CONSTRAINT "Patients_userId_fkey" FOREIGN KEY ("userId") REFERENCES "public"."Users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "public"."patients" ADD CONSTRAINT "patients_userId_fkey" FOREIGN KEY ("userId") REFERENCES "public"."users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."HealthcareProviders" ADD CONSTRAINT "HealthcareProviders_organizationId_fkey" FOREIGN KEY ("organizationId") REFERENCES "public"."Organizations"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "public"."healthcare_providers" ADD CONSTRAINT "healthcare_providers_organizationId_fkey" FOREIGN KEY ("organizationId") REFERENCES "public"."organizations"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "public"."HealthcareProviders" ADD CONSTRAINT "HealthcareProviders_userId_fkey" FOREIGN KEY ("userId") REFERENCES "public"."Users"("id") ON DELETE CASCADE ON UPDATE NO ACTION;
+ALTER TABLE "public"."healthcare_providers" ADD CONSTRAINT "healthcare_providers_userId_fkey" FOREIGN KEY ("userId") REFERENCES "public"."users"("id") ON DELETE CASCADE ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "public"."HealthcareProviders" ADD CONSTRAINT "HealthcareProviders_verifiedBy_fkey" FOREIGN KEY ("verifiedBy") REFERENCES "public"."Users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "public"."healthcare_providers" ADD CONSTRAINT "healthcare_providers_verifiedBy_fkey" FOREIGN KEY ("verifiedBy") REFERENCES "public"."users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "public"."Clinics" ADD CONSTRAINT "Clinics_doctorId_fkey" FOREIGN KEY ("doctorId") REFERENCES "public"."Doctors"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "public"."clinics" ADD CONSTRAINT "clinics_doctorId_fkey" FOREIGN KEY ("doctorId") REFERENCES "public"."doctors"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."Clinics" ADD CONSTRAINT "Clinics_organizationId_fkey" FOREIGN KEY ("organizationId") REFERENCES "public"."Organizations"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "public"."clinics" ADD CONSTRAINT "clinics_organizationId_fkey" FOREIGN KEY ("organizationId") REFERENCES "public"."organizations"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "public"."CarePlans" ADD CONSTRAINT "CarePlans_createdByDoctorId_fkey" FOREIGN KEY ("createdByDoctorId") REFERENCES "public"."Doctors"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "public"."care_plans" ADD CONSTRAINT "care_plans_createdByDoctorId_fkey" FOREIGN KEY ("createdByDoctorId") REFERENCES "public"."doctors"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."CarePlans" ADD CONSTRAINT "CarePlans_createdByHspId_fkey" FOREIGN KEY ("createdByHspId") REFERENCES "public"."HSPs"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "public"."care_plans" ADD CONSTRAINT "care_plans_createdByHspId_fkey" FOREIGN KEY ("createdByHspId") REFERENCES "public"."hsps"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "public"."CarePlans" ADD CONSTRAINT "CarePlans_organizationId_fkey" FOREIGN KEY ("organizationId") REFERENCES "public"."Organizations"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "public"."care_plans" ADD CONSTRAINT "care_plans_organizationId_fkey" FOREIGN KEY ("organizationId") REFERENCES "public"."organizations"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "public"."CarePlans" ADD CONSTRAINT "CarePlans_patientId_fkey" FOREIGN KEY ("patientId") REFERENCES "public"."Patients"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "public"."care_plans" ADD CONSTRAINT "care_plans_patientId_fkey" FOREIGN KEY ("patientId") REFERENCES "public"."patients"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."Medications" ADD CONSTRAINT "Medications_carePlanId_fkey" FOREIGN KEY ("carePlanId") REFERENCES "public"."CarePlans"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "public"."medications" ADD CONSTRAINT "medications_carePlanId_fkey" FOREIGN KEY ("carePlanId") REFERENCES "public"."care_plans"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."Medications" ADD CONSTRAINT "Medications_medicineId_fkey" FOREIGN KEY ("medicineId") REFERENCES "public"."Medicines"("id") ON DELETE NO ACTION ON UPDATE CASCADE;
+ALTER TABLE "public"."medications" ADD CONSTRAINT "medications_medicineId_fkey" FOREIGN KEY ("medicineId") REFERENCES "public"."medicines"("id") ON DELETE NO ACTION ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."Appointments" ADD CONSTRAINT "Appointments_doctorId_fkey" FOREIGN KEY ("doctorId") REFERENCES "public"."Doctors"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "public"."appointments" ADD CONSTRAINT "appointments_doctorId_fkey" FOREIGN KEY ("doctorId") REFERENCES "public"."doctors"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."Appointments" ADD CONSTRAINT "Appointments_patientId_fkey" FOREIGN KEY ("patientId") REFERENCES "public"."Patients"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "public"."appointments" ADD CONSTRAINT "appointments_patientId_fkey" FOREIGN KEY ("patientId") REFERENCES "public"."patients"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."Appointments" ADD CONSTRAINT "Appointments_providerId_fkey" FOREIGN KEY ("providerId") REFERENCES "public"."Users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "public"."appointments" ADD CONSTRAINT "appointments_providerId_fkey" FOREIGN KEY ("providerId") REFERENCES "public"."users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "public"."Appointments" ADD CONSTRAINT "Appointments_slotId_fkey" FOREIGN KEY ("slotId") REFERENCES "public"."AppointmentSlot"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "public"."appointments" ADD CONSTRAINT "appointments_slotId_fkey" FOREIGN KEY ("slotId") REFERENCES "public"."appointment_slots"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."DoctorAvailability" ADD CONSTRAINT "DoctorAvailability_doctorId_fkey" FOREIGN KEY ("doctorId") REFERENCES "public"."Users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "public"."doctor_availability" ADD CONSTRAINT "doctor_availability_doctorId_fkey" FOREIGN KEY ("doctorId") REFERENCES "public"."users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "public"."VitalReadings" ADD CONSTRAINT "VitalReadings_adherenceRecordId_fkey" FOREIGN KEY ("adherenceRecordId") REFERENCES "public"."AdherenceRecords"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "public"."vital_readings" ADD CONSTRAINT "vital_readings_adherenceRecordId_fkey" FOREIGN KEY ("adherenceRecordId") REFERENCES "public"."adherence_records"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "public"."VitalReadings" ADD CONSTRAINT "VitalReadings_patientId_fkey" FOREIGN KEY ("patientId") REFERENCES "public"."Patients"("id") ON DELETE NO ACTION ON UPDATE CASCADE;
+ALTER TABLE "public"."vital_readings" ADD CONSTRAINT "vital_readings_patientId_fkey" FOREIGN KEY ("patientId") REFERENCES "public"."patients"("id") ON DELETE NO ACTION ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."VitalReadings" ADD CONSTRAINT "VitalReadings_validatedBy_fkey" FOREIGN KEY ("validatedBy") REFERENCES "public"."HealthcareProviders"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "public"."vital_readings" ADD CONSTRAINT "vital_readings_validatedBy_fkey" FOREIGN KEY ("validatedBy") REFERENCES "public"."healthcare_providers"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "public"."VitalReadings" ADD CONSTRAINT "VitalReadings_vitalTypeId_fkey" FOREIGN KEY ("vitalTypeId") REFERENCES "public"."VitalTypes"("id") ON DELETE NO ACTION ON UPDATE CASCADE;
+ALTER TABLE "public"."vital_readings" ADD CONSTRAINT "vital_readings_vitalTypeId_fkey" FOREIGN KEY ("vitalTypeId") REFERENCES "public"."vital_types"("id") ON DELETE NO ACTION ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."Symptoms" ADD CONSTRAINT "Symptoms_carePlanId_fkey" FOREIGN KEY ("carePlanId") REFERENCES "public"."CarePlans"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "public"."symptoms" ADD CONSTRAINT "symptoms_carePlanId_fkey" FOREIGN KEY ("carePlanId") REFERENCES "public"."care_plans"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "public"."Symptoms" ADD CONSTRAINT "Symptoms_patientId_fkey" FOREIGN KEY ("patientId") REFERENCES "public"."Patients"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "public"."symptoms" ADD CONSTRAINT "symptoms_patientId_fkey" FOREIGN KEY ("patientId") REFERENCES "public"."patients"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "public"."AdherenceRecords" ADD CONSTRAINT "AdherenceRecords_patientId_fkey" FOREIGN KEY ("patientId") REFERENCES "public"."Patients"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "public"."adherence_records" ADD CONSTRAINT "adherence_records_patientId_fkey" FOREIGN KEY ("patientId") REFERENCES "public"."patients"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "public"."AdherenceRecords" ADD CONSTRAINT "AdherenceRecords_scheduledEventId_fkey" FOREIGN KEY ("scheduledEventId") REFERENCES "public"."ScheduledEvents"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "public"."adherence_records" ADD CONSTRAINT "adherence_records_scheduledEventId_fkey" FOREIGN KEY ("scheduledEventId") REFERENCES "public"."scheduled_events"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "public"."ServicePlans" ADD CONSTRAINT "ServicePlans_providerId_fkey" FOREIGN KEY ("providerId") REFERENCES "public"."HealthcareProviders"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "public"."service_plans" ADD CONSTRAINT "service_plans_providerId_fkey" FOREIGN KEY ("providerId") REFERENCES "public"."healthcare_providers"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."PatientSubscriptions" ADD CONSTRAINT "PatientSubscriptions_patientId_fkey" FOREIGN KEY ("patientId") REFERENCES "public"."Patients"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "public"."patient_subscriptions" ADD CONSTRAINT "patient_subscriptions_patientId_fkey" FOREIGN KEY ("patientId") REFERENCES "public"."patients"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."PatientSubscriptions" ADD CONSTRAINT "PatientSubscriptions_providerId_fkey" FOREIGN KEY ("providerId") REFERENCES "public"."HealthcareProviders"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "public"."patient_subscriptions" ADD CONSTRAINT "patient_subscriptions_providerId_fkey" FOREIGN KEY ("providerId") REFERENCES "public"."healthcare_providers"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "public"."PatientSubscriptions" ADD CONSTRAINT "PatientSubscriptions_servicePlanId_fkey" FOREIGN KEY ("servicePlanId") REFERENCES "public"."ServicePlans"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "public"."patient_subscriptions" ADD CONSTRAINT "patient_subscriptions_servicePlanId_fkey" FOREIGN KEY ("servicePlanId") REFERENCES "public"."service_plans"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "public"."PatientDoctorAssignments" ADD CONSTRAINT "PatientDoctorAssignments_assignedByAdminId_fkey" FOREIGN KEY ("assignedByAdminId") REFERENCES "public"."Users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "public"."patient_doctor_assignments" ADD CONSTRAINT "patient_doctor_assignments_assignedByAdminId_fkey" FOREIGN KEY ("assignedByAdminId") REFERENCES "public"."users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "public"."PatientDoctorAssignments" ADD CONSTRAINT "PatientDoctorAssignments_assignedByDoctorId_fkey" FOREIGN KEY ("assignedByDoctorId") REFERENCES "public"."Doctors"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "public"."patient_doctor_assignments" ADD CONSTRAINT "patient_doctor_assignments_assignedByDoctorId_fkey" FOREIGN KEY ("assignedByDoctorId") REFERENCES "public"."doctors"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "public"."PatientDoctorAssignments" ADD CONSTRAINT "PatientDoctorAssignments_doctorId_fkey" FOREIGN KEY ("doctorId") REFERENCES "public"."Doctors"("id") ON DELETE CASCADE ON UPDATE NO ACTION;
+ALTER TABLE "public"."patient_doctor_assignments" ADD CONSTRAINT "patient_doctor_assignments_doctorId_fkey" FOREIGN KEY ("doctorId") REFERENCES "public"."doctors"("id") ON DELETE CASCADE ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "public"."PatientDoctorAssignments" ADD CONSTRAINT "PatientDoctorAssignments_patientId_fkey" FOREIGN KEY ("patientId") REFERENCES "public"."Patients"("id") ON DELETE CASCADE ON UPDATE NO ACTION;
+ALTER TABLE "public"."patient_doctor_assignments" ADD CONSTRAINT "patient_doctor_assignments_patientId_fkey" FOREIGN KEY ("patientId") REFERENCES "public"."patients"("id") ON DELETE CASCADE ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "public"."UserDevices" ADD CONSTRAINT "UserDevices_userId_fkey" FOREIGN KEY ("userId") REFERENCES "public"."Users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "public"."user_devices" ADD CONSTRAINT "user_devices_userId_fkey" FOREIGN KEY ("userId") REFERENCES "public"."users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "public"."Notifications" ADD CONSTRAINT "Notifications_doctorId_fkey" FOREIGN KEY ("doctorId") REFERENCES "public"."Doctors"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "public"."notifications" ADD CONSTRAINT "notifications_doctorId_fkey" FOREIGN KEY ("doctorId") REFERENCES "public"."doctors"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "public"."Notifications" ADD CONSTRAINT "Notifications_hspId_fkey" FOREIGN KEY ("hspId") REFERENCES "public"."HSPs"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "public"."notifications" ADD CONSTRAINT "notifications_hspId_fkey" FOREIGN KEY ("hspId") REFERENCES "public"."hsps"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "public"."Notifications" ADD CONSTRAINT "Notifications_organizationId_fkey" FOREIGN KEY ("organizationId") REFERENCES "public"."Organizations"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "public"."notifications" ADD CONSTRAINT "notifications_organizationId_fkey" FOREIGN KEY ("organizationId") REFERENCES "public"."organizations"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "public"."Notifications" ADD CONSTRAINT "Notifications_patientId_fkey" FOREIGN KEY ("patientId") REFERENCES "public"."Patients"("id") ON DELETE CASCADE ON UPDATE NO ACTION;
+ALTER TABLE "public"."notifications" ADD CONSTRAINT "notifications_patientId_fkey" FOREIGN KEY ("patientId") REFERENCES "public"."patients"("id") ON DELETE CASCADE ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "public"."Notifications" ADD CONSTRAINT "Notifications_recipientId_fkey" FOREIGN KEY ("recipientId") REFERENCES "public"."Users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "public"."notifications" ADD CONSTRAINT "notifications_recipientId_fkey" FOREIGN KEY ("recipientId") REFERENCES "public"."users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."Notifications" ADD CONSTRAINT "Notifications_relatedAppointmentId_fkey" FOREIGN KEY ("relatedAppointmentId") REFERENCES "public"."Appointments"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "public"."notifications" ADD CONSTRAINT "notifications_relatedAppointmentId_fkey" FOREIGN KEY ("relatedAppointmentId") REFERENCES "public"."appointments"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "public"."Notifications" ADD CONSTRAINT "Notifications_relatedCarePlanId_fkey" FOREIGN KEY ("relatedCarePlanId") REFERENCES "public"."CarePlans"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "public"."notifications" ADD CONSTRAINT "notifications_relatedCarePlanId_fkey" FOREIGN KEY ("relatedCarePlanId") REFERENCES "public"."care_plans"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "public"."Notifications" ADD CONSTRAINT "Notifications_relatedMedicationId_fkey" FOREIGN KEY ("relatedMedicationId") REFERENCES "public"."Medications"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "public"."notifications" ADD CONSTRAINT "notifications_relatedMedicationId_fkey" FOREIGN KEY ("relatedMedicationId") REFERENCES "public"."medications"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "public"."Notifications" ADD CONSTRAINT "Notifications_relatedTreatmentPlanId_fkey" FOREIGN KEY ("relatedTreatmentPlanId") REFERENCES "public"."TreatmentPlans"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "public"."notifications" ADD CONSTRAINT "notifications_relatedTreatmentPlanId_fkey" FOREIGN KEY ("relatedTreatmentPlanId") REFERENCES "public"."treatment_plans"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "public"."AuditLogs" ADD CONSTRAINT "AuditLogs_organizationId_fkey" FOREIGN KEY ("organizationId") REFERENCES "public"."Organizations"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "public"."audit_logs" ADD CONSTRAINT "audit_logs_organizationId_fkey" FOREIGN KEY ("organizationId") REFERENCES "public"."organizations"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "public"."AuditLogs" ADD CONSTRAINT "AuditLogs_patientId_fkey" FOREIGN KEY ("patientId") REFERENCES "public"."Patients"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "public"."audit_logs" ADD CONSTRAINT "audit_logs_patientId_fkey" FOREIGN KEY ("patientId") REFERENCES "public"."patients"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "public"."AuditLogs" ADD CONSTRAINT "AuditLogs_userId_fkey" FOREIGN KEY ("userId") REFERENCES "public"."Users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "public"."audit_logs" ADD CONSTRAINT "audit_logs_userId_fkey" FOREIGN KEY ("userId") REFERENCES "public"."users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."AppointmentSlot" ADD CONSTRAINT "AppointmentSlot_doctorId_fkey" FOREIGN KEY ("doctorId") REFERENCES "public"."Users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "public"."appointment_slots" ADD CONSTRAINT "appointment_slots_doctorId_fkey" FOREIGN KEY ("doctorId") REFERENCES "public"."users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "public"."CarePlanTemplates" ADD CONSTRAINT "CarePlanTemplates_approvedBy_fkey" FOREIGN KEY ("approvedBy") REFERENCES "public"."Users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "public"."care_plan_templates" ADD CONSTRAINT "care_plan_templates_approvedBy_fkey" FOREIGN KEY ("approvedBy") REFERENCES "public"."users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "public"."CarePlanTemplates" ADD CONSTRAINT "CarePlanTemplates_createdBy_fkey" FOREIGN KEY ("createdBy") REFERENCES "public"."HealthcareProviders"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "public"."care_plan_templates" ADD CONSTRAINT "care_plan_templates_createdBy_fkey" FOREIGN KEY ("createdBy") REFERENCES "public"."healthcare_providers"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "public"."CarePlanTemplates" ADD CONSTRAINT "CarePlanTemplates_organizationId_fkey" FOREIGN KEY ("organizationId") REFERENCES "public"."Organizations"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "public"."care_plan_templates" ADD CONSTRAINT "care_plan_templates_organizationId_fkey" FOREIGN KEY ("organizationId") REFERENCES "public"."organizations"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "public"."CarePlanTemplates" ADD CONSTRAINT "CarePlanTemplates_parentTemplateId_fkey" FOREIGN KEY ("parentTemplateId") REFERENCES "public"."CarePlanTemplates"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "public"."care_plan_templates" ADD CONSTRAINT "care_plan_templates_parentTemplateId_fkey" FOREIGN KEY ("parentTemplateId") REFERENCES "public"."care_plan_templates"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "public"."Doctors" ADD CONSTRAINT "Doctors_organizationId_fkey" FOREIGN KEY ("organizationId") REFERENCES "public"."Organizations"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "public"."doctors" ADD CONSTRAINT "doctors_organizationId_fkey" FOREIGN KEY ("organizationId") REFERENCES "public"."organizations"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."Doctors" ADD CONSTRAINT "Doctors_specialtyId_fkey" FOREIGN KEY ("specialtyId") REFERENCES "public"."Specialties"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "public"."doctors" ADD CONSTRAINT "doctors_specialtyId_fkey" FOREIGN KEY ("specialtyId") REFERENCES "public"."specialties"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."Doctors" ADD CONSTRAINT "Doctors_userId_fkey" FOREIGN KEY ("userId") REFERENCES "public"."Users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "public"."doctors" ADD CONSTRAINT "doctors_userId_fkey" FOREIGN KEY ("userId") REFERENCES "public"."users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."Doctors" ADD CONSTRAINT "Doctors_verifiedBy_fkey" FOREIGN KEY ("verifiedBy") REFERENCES "public"."Users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "public"."doctors" ADD CONSTRAINT "doctors_verifiedBy_fkey" FOREIGN KEY ("verifiedBy") REFERENCES "public"."users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "public"."HSPs" ADD CONSTRAINT "HSPs_organizationId_fkey" FOREIGN KEY ("organizationId") REFERENCES "public"."Organizations"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "public"."hsps" ADD CONSTRAINT "hsps_organizationId_fkey" FOREIGN KEY ("organizationId") REFERENCES "public"."organizations"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "public"."HSPs" ADD CONSTRAINT "HSPs_supervisingDoctorId_fkey" FOREIGN KEY ("supervisingDoctorId") REFERENCES "public"."Doctors"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "public"."hsps" ADD CONSTRAINT "hsps_supervisingDoctorId_fkey" FOREIGN KEY ("supervisingDoctorId") REFERENCES "public"."doctors"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "public"."HSPs" ADD CONSTRAINT "HSPs_userId_fkey" FOREIGN KEY ("userId") REFERENCES "public"."Users"("id") ON DELETE CASCADE ON UPDATE NO ACTION;
+ALTER TABLE "public"."hsps" ADD CONSTRAINT "hsps_userId_fkey" FOREIGN KEY ("userId") REFERENCES "public"."users"("id") ON DELETE CASCADE ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "public"."HSPs" ADD CONSTRAINT "HSPs_verifiedBy_fkey" FOREIGN KEY ("verifiedBy") REFERENCES "public"."Users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "public"."hsps" ADD CONSTRAINT "hsps_verifiedBy_fkey" FOREIGN KEY ("verifiedBy") REFERENCES "public"."users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "public"."MedicationLogs" ADD CONSTRAINT "MedicationLogs_medicationId_fkey" FOREIGN KEY ("medicationId") REFERENCES "public"."Medications"("id") ON DELETE NO ACTION ON UPDATE CASCADE;
+ALTER TABLE "public"."medication_logs" ADD CONSTRAINT "medication_logs_medicationId_fkey" FOREIGN KEY ("medicationId") REFERENCES "public"."medications"("id") ON DELETE NO ACTION ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."MedicationLogs" ADD CONSTRAINT "MedicationLogs_patientId_fkey" FOREIGN KEY ("patientId") REFERENCES "public"."Patients"("id") ON DELETE NO ACTION ON UPDATE CASCADE;
+ALTER TABLE "public"."medication_logs" ADD CONSTRAINT "medication_logs_patientId_fkey" FOREIGN KEY ("patientId") REFERENCES "public"."patients"("id") ON DELETE NO ACTION ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."PatientAlerts" ADD CONSTRAINT "PatientAlerts_patientId_fkey" FOREIGN KEY ("patientId") REFERENCES "public"."Patients"("id") ON DELETE NO ACTION ON UPDATE CASCADE;
+ALTER TABLE "public"."patient_alerts" ADD CONSTRAINT "patient_alerts_patientId_fkey" FOREIGN KEY ("patientId") REFERENCES "public"."patients"("id") ON DELETE NO ACTION ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."PatientConsentOtp" ADD CONSTRAINT "PatientConsentOtp_patientId_fkey" FOREIGN KEY ("patientId") REFERENCES "public"."Patients"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "public"."patient_consent_otps" ADD CONSTRAINT "patient_consent_otps_patientId_fkey" FOREIGN KEY ("patientId") REFERENCES "public"."patients"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."PatientConsentOtp" ADD CONSTRAINT "PatientConsentOtp_primaryDoctorId_fkey" FOREIGN KEY ("primaryDoctorId") REFERENCES "public"."Doctors"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "public"."patient_consent_otps" ADD CONSTRAINT "patient_consent_otps_primaryDoctorId_fkey" FOREIGN KEY ("primaryDoctorId") REFERENCES "public"."doctors"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."PatientConsentOtp" ADD CONSTRAINT "PatientConsentOtp_requestedByUserId_fkey" FOREIGN KEY ("requestedByUserId") REFERENCES "public"."Users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "public"."patient_consent_otps" ADD CONSTRAINT "patient_consent_otps_requestedByUserId_fkey" FOREIGN KEY ("requestedByUserId") REFERENCES "public"."users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."PatientConsentOtp" ADD CONSTRAINT "PatientConsentOtp_secondaryAssignmentId_fkey" FOREIGN KEY ("secondaryAssignmentId") REFERENCES "public"."SecondaryDoctorAssignments"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "public"."patient_consent_otps" ADD CONSTRAINT "patient_consent_otps_secondaryAssignmentId_fkey" FOREIGN KEY ("secondaryAssignmentId") REFERENCES "public"."secondary_doctor_assignments"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."PatientConsentOtp" ADD CONSTRAINT "PatientConsentOtp_secondaryDoctorId_fkey" FOREIGN KEY ("secondaryDoctorId") REFERENCES "public"."Doctors"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "public"."patient_consent_otps" ADD CONSTRAINT "patient_consent_otps_secondaryDoctorId_fkey" FOREIGN KEY ("secondaryDoctorId") REFERENCES "public"."doctors"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."PatientConsentOtp" ADD CONSTRAINT "PatientConsentOtp_secondaryHspId_fkey" FOREIGN KEY ("secondaryHspId") REFERENCES "public"."HSPs"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "public"."patient_consent_otps" ADD CONSTRAINT "patient_consent_otps_secondaryHspId_fkey" FOREIGN KEY ("secondaryHspId") REFERENCES "public"."hsps"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."PatientProviderAssignments" ADD CONSTRAINT "PatientProviderAssignments_assignedBy_fkey" FOREIGN KEY ("assignedBy") REFERENCES "public"."Users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "public"."patient_provider_assignments" ADD CONSTRAINT "patient_provider_assignments_assignedBy_fkey" FOREIGN KEY ("assignedBy") REFERENCES "public"."users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "public"."PatientProviderAssignments" ADD CONSTRAINT "PatientProviderAssignments_patientId_fkey" FOREIGN KEY ("patientId") REFERENCES "public"."Patients"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "public"."patient_provider_assignments" ADD CONSTRAINT "patient_provider_assignments_patientId_fkey" FOREIGN KEY ("patientId") REFERENCES "public"."patients"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "public"."PatientProviderAssignments" ADD CONSTRAINT "PatientProviderAssignments_providerId_fkey" FOREIGN KEY ("providerId") REFERENCES "public"."HealthcareProviders"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "public"."patient_provider_assignments" ADD CONSTRAINT "patient_provider_assignments_providerId_fkey" FOREIGN KEY ("providerId") REFERENCES "public"."healthcare_providers"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "public"."PatientProviderConsentHistory" ADD CONSTRAINT "PatientProviderConsentHistory_doctorId_fkey" FOREIGN KEY ("doctorId") REFERENCES "public"."Doctors"("id") ON DELETE SET NULL ON UPDATE NO ACTION;
+ALTER TABLE "public"."patient_provider_consent_history" ADD CONSTRAINT "patient_provider_consent_history_doctorId_fkey" FOREIGN KEY ("doctorId") REFERENCES "public"."doctors"("id") ON DELETE SET NULL ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "public"."PatientProviderConsentHistory" ADD CONSTRAINT "PatientProviderConsentHistory_hspId_fkey" FOREIGN KEY ("hspId") REFERENCES "public"."HSPs"("id") ON DELETE SET NULL ON UPDATE NO ACTION;
+ALTER TABLE "public"."patient_provider_consent_history" ADD CONSTRAINT "patient_provider_consent_history_hspId_fkey" FOREIGN KEY ("hspId") REFERENCES "public"."hsps"("id") ON DELETE SET NULL ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "public"."PatientProviderConsentHistory" ADD CONSTRAINT "PatientProviderConsentHistory_newProviderId_fkey" FOREIGN KEY ("newProviderId") REFERENCES "public"."Organizations"("id") ON DELETE CASCADE ON UPDATE NO ACTION;
+ALTER TABLE "public"."patient_provider_consent_history" ADD CONSTRAINT "patient_provider_consent_history_newProviderId_fkey" FOREIGN KEY ("newProviderId") REFERENCES "public"."organizations"("id") ON DELETE CASCADE ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "public"."PatientProviderConsentHistory" ADD CONSTRAINT "PatientProviderConsentHistory_patientId_fkey" FOREIGN KEY ("patientId") REFERENCES "public"."Patients"("id") ON DELETE CASCADE ON UPDATE NO ACTION;
+ALTER TABLE "public"."patient_provider_consent_history" ADD CONSTRAINT "patient_provider_consent_history_patientId_fkey" FOREIGN KEY ("patientId") REFERENCES "public"."patients"("id") ON DELETE CASCADE ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "public"."PatientProviderConsentHistory" ADD CONSTRAINT "PatientProviderConsentHistory_previousProviderId_fkey" FOREIGN KEY ("previousProviderId") REFERENCES "public"."Organizations"("id") ON DELETE SET NULL ON UPDATE NO ACTION;
+ALTER TABLE "public"."patient_provider_consent_history" ADD CONSTRAINT "patient_provider_consent_history_previousProviderId_fkey" FOREIGN KEY ("previousProviderId") REFERENCES "public"."organizations"("id") ON DELETE SET NULL ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "public"."PaymentMethods" ADD CONSTRAINT "PaymentMethods_patientId_fkey" FOREIGN KEY ("patientId") REFERENCES "public"."Patients"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "public"."payment_methods" ADD CONSTRAINT "payment_methods_patientId_fkey" FOREIGN KEY ("patientId") REFERENCES "public"."patients"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "public"."Payments" ADD CONSTRAINT "Payments_paymentMethodId_fkey" FOREIGN KEY ("paymentMethodId") REFERENCES "public"."PaymentMethods"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "public"."payments" ADD CONSTRAINT "payments_paymentMethodId_fkey" FOREIGN KEY ("paymentMethodId") REFERENCES "public"."payment_methods"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."Payments" ADD CONSTRAINT "Payments_patientId_fkey" FOREIGN KEY ("patientId") REFERENCES "public"."Patients"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "public"."payments" ADD CONSTRAINT "payments_patientId_fkey" FOREIGN KEY ("patientId") REFERENCES "public"."patients"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "public"."Payments" ADD CONSTRAINT "Payments_providerId_fkey" FOREIGN KEY ("providerId") REFERENCES "public"."HealthcareProviders"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "public"."payments" ADD CONSTRAINT "payments_providerId_fkey" FOREIGN KEY ("providerId") REFERENCES "public"."healthcare_providers"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "public"."Payments" ADD CONSTRAINT "Payments_subscriptionId_fkey" FOREIGN KEY ("subscriptionId") REFERENCES "public"."PatientSubscriptions"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "public"."payments" ADD CONSTRAINT "payments_subscriptionId_fkey" FOREIGN KEY ("subscriptionId") REFERENCES "public"."patient_subscriptions"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "public"."ProviderChanges" ADD CONSTRAINT "ProviderChanges_newProviderId_fkey" FOREIGN KEY ("newProviderId") REFERENCES "public"."Organizations"("id") ON DELETE CASCADE ON UPDATE NO ACTION;
+ALTER TABLE "public"."provider_changes" ADD CONSTRAINT "provider_changes_newProviderId_fkey" FOREIGN KEY ("newProviderId") REFERENCES "public"."organizations"("id") ON DELETE CASCADE ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "public"."ProviderChanges" ADD CONSTRAINT "ProviderChanges_previousProviderId_fkey" FOREIGN KEY ("previousProviderId") REFERENCES "public"."Organizations"("id") ON DELETE SET NULL ON UPDATE NO ACTION;
+ALTER TABLE "public"."provider_changes" ADD CONSTRAINT "provider_changes_previousProviderId_fkey" FOREIGN KEY ("previousProviderId") REFERENCES "public"."organizations"("id") ON DELETE SET NULL ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "public"."Providers" ADD CONSTRAINT "Providers_userId_fkey" FOREIGN KEY ("userId") REFERENCES "public"."Users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "public"."providers" ADD CONSTRAINT "providers_userId_fkey" FOREIGN KEY ("userId") REFERENCES "public"."users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "public"."ScheduledEvents" ADD CONSTRAINT "ScheduledEvents_carePlanId_fkey" FOREIGN KEY ("carePlanId") REFERENCES "public"."CarePlans"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "public"."scheduled_events" ADD CONSTRAINT "scheduled_events_carePlanId_fkey" FOREIGN KEY ("carePlanId") REFERENCES "public"."care_plans"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "public"."ScheduledEvents" ADD CONSTRAINT "ScheduledEvents_completedBy_fkey" FOREIGN KEY ("completedBy") REFERENCES "public"."Users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "public"."scheduled_events" ADD CONSTRAINT "scheduled_events_completedBy_fkey" FOREIGN KEY ("completedBy") REFERENCES "public"."users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "public"."ScheduledEvents" ADD CONSTRAINT "ScheduledEvents_patientId_fkey" FOREIGN KEY ("patientId") REFERENCES "public"."Patients"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "public"."scheduled_events" ADD CONSTRAINT "scheduled_events_patientId_fkey" FOREIGN KEY ("patientId") REFERENCES "public"."patients"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "public"."SecondaryDoctorAssignments" ADD CONSTRAINT "SecondaryDoctorAssignments_patientId_fkey" FOREIGN KEY ("patientId") REFERENCES "public"."Patients"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "public"."secondary_doctor_assignments" ADD CONSTRAINT "secondary_doctor_assignments_patientId_fkey" FOREIGN KEY ("patientId") REFERENCES "public"."patients"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."SecondaryDoctorAssignments" ADD CONSTRAINT "SecondaryDoctorAssignments_primaryDoctorId_fkey" FOREIGN KEY ("primaryDoctorId") REFERENCES "public"."Doctors"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "public"."secondary_doctor_assignments" ADD CONSTRAINT "secondary_doctor_assignments_primaryDoctorId_fkey" FOREIGN KEY ("primaryDoctorId") REFERENCES "public"."doctors"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."SecondaryDoctorAssignments" ADD CONSTRAINT "SecondaryDoctorAssignments_primaryDoctorProviderId_fkey" FOREIGN KEY ("primaryDoctorProviderId") REFERENCES "public"."Organizations"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "public"."secondary_doctor_assignments" ADD CONSTRAINT "secondary_doctor_assignments_primaryDoctorProviderId_fkey" FOREIGN KEY ("primaryDoctorProviderId") REFERENCES "public"."organizations"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."SecondaryDoctorAssignments" ADD CONSTRAINT "SecondaryDoctorAssignments_secondaryDoctorId_fkey" FOREIGN KEY ("secondaryDoctorId") REFERENCES "public"."Doctors"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "public"."secondary_doctor_assignments" ADD CONSTRAINT "secondary_doctor_assignments_secondaryDoctorId_fkey" FOREIGN KEY ("secondaryDoctorId") REFERENCES "public"."doctors"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."SecondaryDoctorAssignments" ADD CONSTRAINT "SecondaryDoctorAssignments_secondaryDoctorProviderId_fkey" FOREIGN KEY ("secondaryDoctorProviderId") REFERENCES "public"."Organizations"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "public"."secondary_doctor_assignments" ADD CONSTRAINT "secondary_doctor_assignments_secondaryDoctorProviderId_fkey" FOREIGN KEY ("secondaryDoctorProviderId") REFERENCES "public"."organizations"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."SecondaryDoctorAssignments" ADD CONSTRAINT "SecondaryDoctorAssignments_secondaryHspId_fkey" FOREIGN KEY ("secondaryHspId") REFERENCES "public"."HSPs"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "public"."secondary_doctor_assignments" ADD CONSTRAINT "secondary_doctor_assignments_secondaryHspId_fkey" FOREIGN KEY ("secondaryHspId") REFERENCES "public"."hsps"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."TreatmentPlans" ADD CONSTRAINT "TreatmentPlans_doctorId_fkey" FOREIGN KEY ("doctorId") REFERENCES "public"."Doctors"("id") ON DELETE NO ACTION ON UPDATE CASCADE;
+ALTER TABLE "public"."treatment_plans" ADD CONSTRAINT "treatment_plans_doctorId_fkey" FOREIGN KEY ("doctorId") REFERENCES "public"."doctors"("id") ON DELETE NO ACTION ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."TreatmentPlans" ADD CONSTRAINT "TreatmentPlans_organizationId_fkey" FOREIGN KEY ("organizationId") REFERENCES "public"."Organizations"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "public"."treatment_plans" ADD CONSTRAINT "treatment_plans_organizationId_fkey" FOREIGN KEY ("organizationId") REFERENCES "public"."organizations"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "public"."TreatmentPlans" ADD CONSTRAINT "TreatmentPlans_patientId_fkey" FOREIGN KEY ("patientId") REFERENCES "public"."Patients"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "public"."treatment_plans" ADD CONSTRAINT "treatment_plans_patientId_fkey" FOREIGN KEY ("patientId") REFERENCES "public"."patients"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."UserRoleAssignments" ADD CONSTRAINT "UserRoleAssignments_userIdentity_fkey" FOREIGN KEY ("userIdentity") REFERENCES "public"."Users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "public"."user_role_assignments" ADD CONSTRAINT "user_role_assignments_userIdentity_fkey" FOREIGN KEY ("userIdentity") REFERENCES "public"."users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "public"."VitalRequirements" ADD CONSTRAINT "VitalRequirements_carePlanId_fkey" FOREIGN KEY ("carePlanId") REFERENCES "public"."CarePlans"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "public"."vital_requirements" ADD CONSTRAINT "vital_requirements_carePlanId_fkey" FOREIGN KEY ("carePlanId") REFERENCES "public"."care_plans"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "public"."VitalRequirements" ADD CONSTRAINT "VitalRequirements_vitalTypeId_fkey" FOREIGN KEY ("vitalTypeId") REFERENCES "public"."VitalTypes"("id") ON DELETE NO ACTION ON UPDATE CASCADE;
+ALTER TABLE "public"."vital_requirements" ADD CONSTRAINT "vital_requirements_vitalTypeId_fkey" FOREIGN KEY ("vitalTypeId") REFERENCES "public"."vital_types"("id") ON DELETE NO ACTION ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."Vitals" ADD CONSTRAINT "Vitals_carePlanId_fkey" FOREIGN KEY ("carePlanId") REFERENCES "public"."CarePlans"("id") ON DELETE NO ACTION ON UPDATE CASCADE;
+ALTER TABLE "public"."vitals" ADD CONSTRAINT "vitals_carePlanId_fkey" FOREIGN KEY ("carePlanId") REFERENCES "public"."care_plans"("id") ON DELETE NO ACTION ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."Vitals" ADD CONSTRAINT "Vitals_vitalTemplateId_fkey" FOREIGN KEY ("vitalTemplateId") REFERENCES "public"."VitalTemplates"("id") ON DELETE NO ACTION ON UPDATE CASCADE;
+ALTER TABLE "public"."vitals" ADD CONSTRAINT "vitals_vitalTemplateId_fkey" FOREIGN KEY ("vitalTemplateId") REFERENCES "public"."vital_templates"("id") ON DELETE NO ACTION ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."PatientAllergies" ADD CONSTRAINT "PatientAllergies_patientId_fkey" FOREIGN KEY ("patientId") REFERENCES "public"."Patients"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "public"."patient_allergies" ADD CONSTRAINT "patient_allergies_patientId_fkey" FOREIGN KEY ("patientId") REFERENCES "public"."patients"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."PatientAllergies" ADD CONSTRAINT "PatientAllergies_verifiedBy_fkey" FOREIGN KEY ("verifiedBy") REFERENCES "public"."Users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "public"."patient_allergies" ADD CONSTRAINT "patient_allergies_verifiedBy_fkey" FOREIGN KEY ("verifiedBy") REFERENCES "public"."users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."MedicationSafetyAlerts" ADD CONSTRAINT "MedicationSafetyAlerts_patientId_fkey" FOREIGN KEY ("patientId") REFERENCES "public"."Patients"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "public"."medication_safety_alerts" ADD CONSTRAINT "medication_safety_alerts_patientId_fkey" FOREIGN KEY ("patientId") REFERENCES "public"."patients"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."MedicationSafetyAlerts" ADD CONSTRAINT "MedicationSafetyAlerts_medicationId_fkey" FOREIGN KEY ("medicationId") REFERENCES "public"."Medications"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "public"."medication_safety_alerts" ADD CONSTRAINT "medication_safety_alerts_medicationId_fkey" FOREIGN KEY ("medicationId") REFERENCES "public"."medications"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."MedicationSafetyAlerts" ADD CONSTRAINT "MedicationSafetyAlerts_drugInteractionId_fkey" FOREIGN KEY ("drugInteractionId") REFERENCES "public"."DrugInteractions"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "public"."medication_safety_alerts" ADD CONSTRAINT "medication_safety_alerts_drugInteractionId_fkey" FOREIGN KEY ("drugInteractionId") REFERENCES "public"."drug_interactions"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."MedicationSafetyAlerts" ADD CONSTRAINT "MedicationSafetyAlerts_patientAllergyId_fkey" FOREIGN KEY ("patientAllergyId") REFERENCES "public"."PatientAllergies"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "public"."medication_safety_alerts" ADD CONSTRAINT "medication_safety_alerts_patientAllergyId_fkey" FOREIGN KEY ("patientAllergyId") REFERENCES "public"."patient_allergies"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."MedicationSafetyAlerts" ADD CONSTRAINT "MedicationSafetyAlerts_resolvedBy_fkey" FOREIGN KEY ("resolvedBy") REFERENCES "public"."Users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "public"."medication_safety_alerts" ADD CONSTRAINT "medication_safety_alerts_resolvedBy_fkey" FOREIGN KEY ("resolvedBy") REFERENCES "public"."users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."MedicationSafetyAlerts" ADD CONSTRAINT "MedicationSafetyAlerts_createdBy_fkey" FOREIGN KEY ("createdBy") REFERENCES "public"."Users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "public"."medication_safety_alerts" ADD CONSTRAINT "medication_safety_alerts_createdBy_fkey" FOREIGN KEY ("createdBy") REFERENCES "public"."users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."EmergencyAlerts" ADD CONSTRAINT "EmergencyAlerts_patientId_fkey" FOREIGN KEY ("patientId") REFERENCES "public"."Patients"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "public"."emergency_alerts" ADD CONSTRAINT "emergency_alerts_patientId_fkey" FOREIGN KEY ("patientId") REFERENCES "public"."patients"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."EmergencyAlerts" ADD CONSTRAINT "EmergencyAlerts_vitalReadingId_fkey" FOREIGN KEY ("vitalReadingId") REFERENCES "public"."VitalReadings"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "public"."emergency_alerts" ADD CONSTRAINT "emergency_alerts_vitalReadingId_fkey" FOREIGN KEY ("vitalReadingId") REFERENCES "public"."vital_readings"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."EmergencyAlerts" ADD CONSTRAINT "EmergencyAlerts_acknowledgedBy_fkey" FOREIGN KEY ("acknowledgedBy") REFERENCES "public"."Users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "public"."emergency_alerts" ADD CONSTRAINT "emergency_alerts_acknowledgedBy_fkey" FOREIGN KEY ("acknowledgedBy") REFERENCES "public"."users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."EmergencyAlerts" ADD CONSTRAINT "EmergencyAlerts_resolvedBy_fkey" FOREIGN KEY ("resolvedBy") REFERENCES "public"."Users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "public"."emergency_alerts" ADD CONSTRAINT "emergency_alerts_resolvedBy_fkey" FOREIGN KEY ("resolvedBy") REFERENCES "public"."users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."VitalAlertRules" ADD CONSTRAINT "VitalAlertRules_createdBy_fkey" FOREIGN KEY ("createdBy") REFERENCES "public"."Users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "public"."vital_alert_rules" ADD CONSTRAINT "vital_alert_rules_createdBy_fkey" FOREIGN KEY ("createdBy") REFERENCES "public"."users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."EmergencyContacts" ADD CONSTRAINT "EmergencyContacts_patientId_fkey" FOREIGN KEY ("patientId") REFERENCES "public"."Patients"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "public"."emergency_contacts" ADD CONSTRAINT "emergency_contacts_patientId_fkey" FOREIGN KEY ("patientId") REFERENCES "public"."patients"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."VideoConsultations" ADD CONSTRAINT "VideoConsultations_doctorId_fkey" FOREIGN KEY ("doctorId") REFERENCES "public"."Doctors"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "public"."video_consultations" ADD CONSTRAINT "video_consultations_doctorId_fkey" FOREIGN KEY ("doctorId") REFERENCES "public"."doctors"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."VideoConsultations" ADD CONSTRAINT "VideoConsultations_patientId_fkey" FOREIGN KEY ("patientId") REFERENCES "public"."Patients"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "public"."video_consultations" ADD CONSTRAINT "video_consultations_patientId_fkey" FOREIGN KEY ("patientId") REFERENCES "public"."patients"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."VideoConsultations" ADD CONSTRAINT "VideoConsultations_appointmentId_fkey" FOREIGN KEY ("appointmentId") REFERENCES "public"."Appointments"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "public"."video_consultations" ADD CONSTRAINT "video_consultations_appointmentId_fkey" FOREIGN KEY ("appointmentId") REFERENCES "public"."appointments"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."VideoConsultations" ADD CONSTRAINT "VideoConsultations_createdBy_fkey" FOREIGN KEY ("createdBy") REFERENCES "public"."Users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "public"."video_consultations" ADD CONSTRAINT "video_consultations_createdBy_fkey" FOREIGN KEY ("createdBy") REFERENCES "public"."users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."ConsultationPrescriptions" ADD CONSTRAINT "ConsultationPrescriptions_consultationId_fkey" FOREIGN KEY ("consultationId") REFERENCES "public"."VideoConsultations"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "public"."consultation_prescriptions" ADD CONSTRAINT "consultation_prescriptions_consultationId_fkey" FOREIGN KEY ("consultationId") REFERENCES "public"."video_consultations"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."ConsultationNotes" ADD CONSTRAINT "ConsultationNotes_consultationId_fkey" FOREIGN KEY ("consultationId") REFERENCES "public"."VideoConsultations"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "public"."consultation_notes" ADD CONSTRAINT "consultation_notes_consultationId_fkey" FOREIGN KEY ("consultationId") REFERENCES "public"."video_consultations"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."ConsultationNotes" ADD CONSTRAINT "ConsultationNotes_createdBy_fkey" FOREIGN KEY ("createdBy") REFERENCES "public"."Users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "public"."consultation_notes" ADD CONSTRAINT "consultation_notes_createdBy_fkey" FOREIGN KEY ("createdBy") REFERENCES "public"."users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."LabOrders" ADD CONSTRAINT "LabOrders_patientId_fkey" FOREIGN KEY ("patientId") REFERENCES "public"."Patients"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "public"."lab_orders" ADD CONSTRAINT "lab_orders_patientId_fkey" FOREIGN KEY ("patientId") REFERENCES "public"."patients"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."LabOrders" ADD CONSTRAINT "LabOrders_doctorId_fkey" FOREIGN KEY ("doctorId") REFERENCES "public"."Doctors"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "public"."lab_orders" ADD CONSTRAINT "lab_orders_doctorId_fkey" FOREIGN KEY ("doctorId") REFERENCES "public"."doctors"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."LabOrders" ADD CONSTRAINT "LabOrders_consultationId_fkey" FOREIGN KEY ("consultationId") REFERENCES "public"."VideoConsultations"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "public"."lab_orders" ADD CONSTRAINT "lab_orders_consultationId_fkey" FOREIGN KEY ("consultationId") REFERENCES "public"."video_consultations"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."LabResults" ADD CONSTRAINT "LabResults_labOrderId_fkey" FOREIGN KEY ("labOrderId") REFERENCES "public"."LabOrders"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "public"."lab_results" ADD CONSTRAINT "lab_results_labOrderId_fkey" FOREIGN KEY ("labOrderId") REFERENCES "public"."lab_orders"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."PatientGameProfiles" ADD CONSTRAINT "PatientGameProfiles_patientId_fkey" FOREIGN KEY ("patientId") REFERENCES "public"."Patients"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "public"."patient_game_profiles" ADD CONSTRAINT "patient_game_profiles_patientId_fkey" FOREIGN KEY ("patientId") REFERENCES "public"."patients"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."GameBadgeAwards" ADD CONSTRAINT "GameBadgeAwards_patientId_fkey" FOREIGN KEY ("patientId") REFERENCES "public"."PatientGameProfiles"("patientId") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "public"."game_badge_awards" ADD CONSTRAINT "game_badge_awards_patientId_fkey" FOREIGN KEY ("patientId") REFERENCES "public"."patient_game_profiles"("patientId") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."GameChallengeProgress" ADD CONSTRAINT "GameChallengeProgress_patientId_fkey" FOREIGN KEY ("patientId") REFERENCES "public"."PatientGameProfiles"("patientId") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "public"."game_challenge_progress" ADD CONSTRAINT "game_challenge_progress_patientId_fkey" FOREIGN KEY ("patientId") REFERENCES "public"."patient_game_profiles"("patientId") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."ConnectedDevices" ADD CONSTRAINT "ConnectedDevices_patientId_fkey" FOREIGN KEY ("patientId") REFERENCES "public"."Patients"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "public"."connected_devices" ADD CONSTRAINT "connected_devices_patientId_fkey" FOREIGN KEY ("patientId") REFERENCES "public"."patients"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."ConnectedDevices" ADD CONSTRAINT "ConnectedDevices_addedBy_fkey" FOREIGN KEY ("addedBy") REFERENCES "public"."Users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "public"."connected_devices" ADD CONSTRAINT "connected_devices_addedBy_fkey" FOREIGN KEY ("addedBy") REFERENCES "public"."users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."DeviceReadings" ADD CONSTRAINT "DeviceReadings_deviceId_fkey" FOREIGN KEY ("deviceId") REFERENCES "public"."ConnectedDevices"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "public"."device_readings" ADD CONSTRAINT "device_readings_deviceId_fkey" FOREIGN KEY ("deviceId") REFERENCES "public"."connected_devices"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."DeviceReadings" ADD CONSTRAINT "DeviceReadings_patientId_fkey" FOREIGN KEY ("patientId") REFERENCES "public"."Patients"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "public"."device_readings" ADD CONSTRAINT "device_readings_patientId_fkey" FOREIGN KEY ("patientId") REFERENCES "public"."patients"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."DeviceReadings" ADD CONSTRAINT "DeviceReadings_vitalReadingId_fkey" FOREIGN KEY ("vitalReadingId") REFERENCES "public"."VitalReadings"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "public"."device_readings" ADD CONSTRAINT "device_readings_vitalReadingId_fkey" FOREIGN KEY ("vitalReadingId") REFERENCES "public"."vital_readings"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."_DeviceReadingToEmergencyAlert" ADD CONSTRAINT "_DeviceReadingToEmergencyAlert_A_fkey" FOREIGN KEY ("A") REFERENCES "public"."DeviceReadings"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "public"."_device_reading_to_emergency_alert" ADD CONSTRAINT "_device_reading_to_emergency_alert_A_fkey" FOREIGN KEY ("A") REFERENCES "public"."device_readings"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."_DeviceReadingToEmergencyAlert" ADD CONSTRAINT "_DeviceReadingToEmergencyAlert_B_fkey" FOREIGN KEY ("B") REFERENCES "public"."EmergencyAlerts"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "public"."_device_reading_to_emergency_alert" ADD CONSTRAINT "_device_reading_to_emergency_alert_B_fkey" FOREIGN KEY ("B") REFERENCES "public"."emergency_alerts"("id") ON DELETE CASCADE ON UPDATE CASCADE;
