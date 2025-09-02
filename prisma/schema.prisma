@@ -178,7 +178,7 @@ model VerificationToken {
   expires    DateTime
 
   @@unique([identifier, token])
-  @@map("verification_tokens")
+  @@map("verificationTokens")
 }
 
 model AccountLink {
@@ -197,7 +197,7 @@ model AccountLink {
   @@unique([provider, providerAccountId], map: "account_links_provider_account")
   @@index([userId], map: "account_links_user_id")
   @@index([provider], map: "account_links_provider")
-  @@map("account_links")
+  @@map("accountLinks")
 }
 
 model Patient {
@@ -335,7 +335,7 @@ model HealthcareProvider {
   @@index([specialties], type: Gin)
   @@index([verificationDate])
   @@index([organizationId, isVerified], map: "idx_providers_org_verified")
-  @@map("healthcare_providers")
+  @@map("healthcareProviders")
 }
 
 model Specialty {
@@ -459,7 +459,7 @@ model CarePlan {
   @@index([startDate])
   @@index([status])
   @@index([patientId, status, startDate], map: "idx_careplans_patient_status_start_fixed")
-  @@map("care_plans")
+  @@map("carePlans")
 }
 
 model Medicine {
@@ -572,7 +572,7 @@ model DoctorAvailability {
 
   @@index([doctorId, dayOfWeek])
   @@index([doctorId, isAvailable])
-  @@map("doctor_availability")
+  @@map("doctorAvailability")
 }
 
 model VitalType {
@@ -590,7 +590,7 @@ model VitalType {
   vitalRequirements VitalRequirement[]
 
   @@index([unit])
-  @@map("vital_types")
+  @@map("vitalTypes")
 }
 
 model VitalReading {
@@ -635,7 +635,7 @@ model VitalReading {
   @@index([patientId, vitalTypeId, readingTime], map: "vital_readings_patient_id_vital_type_id_reading_time")
   @@index([readingTime])
   @@index([vitalTypeId])
-  @@map("vital_readings")
+  @@map("vitalReadings")
 }
 
 model Symptom {
@@ -698,7 +698,7 @@ model AdherenceRecord {
   @@index([scheduledEventId])
   @@index([scheduledEventId, isCompleted, recordedAt], map: "idx_adherence_event_status_completed")
   @@index([patientId, dueAt, isCompleted], map: "idx_adherence_patient_due_status")
-  @@map("adherence_records")
+  @@map("adherenceRecords")
 }
 
 model ServicePlan {
@@ -728,7 +728,7 @@ model ServicePlan {
   @@index([price])
   @@index([providerId])
   @@index([serviceType])
-  @@map("service_plans")
+  @@map("servicePlans")
 }
 
 model PatientSubscription {
@@ -766,7 +766,7 @@ model PatientSubscription {
   @@index([status])
   @@index([stripeCustomerId])
   @@index([stripeSubscriptionId])
-  @@map("patient_subscriptions")
+  @@map("patientSubscriptions")
 }
 
 model PatientDoctorAssignment {
@@ -806,7 +806,7 @@ model PatientDoctorAssignment {
   @@index([isActive])
   @@index([patientConsentStatus])
   @@index([patientId])
-  @@map("patient_doctor_assignments")
+  @@map("patientDoctorAssignments")
 }
 
 model UserDevice {
@@ -829,7 +829,7 @@ model UserDevice {
   @@index([lastUsedAt])
   @@index([pushToken])
   @@index([userId])
-  @@map("user_devices")
+  @@map("userDevices")
 }
 
 model Notification {
@@ -939,13 +939,13 @@ model AuditLog {
   @@index([userId])
   @@index([userId, timestamp])
   @@index([userId, createdAt, action], map: "idx_audit_user_created_action")
-  @@map("audit_logs")
+  @@map("auditLogs")
 }
 
 model SequelizeMeta {
   name String @id @db.VarChar(255)
 
-  @@map("sequelize_meta")
+  @@map("sequelizeMeta")
 }
 
 model AppointmentSlot {
@@ -968,7 +968,7 @@ model AppointmentSlot {
   @@index([date, isAvailable])
   @@index([doctorId, date, startTime])
   @@index([doctorId, isAvailable])
-  @@map("appointment_slots")
+  @@map("appointmentSlots")
 }
 
 model CarePlanTemplate {
@@ -1004,7 +1004,7 @@ model CarePlanTemplate {
   @@index([organizationId])
   @@index([specialties], type: Gin)
   @@index([tags], type: Gin)
-  @@map("care_plan_templates")
+  @@map("carePlanTemplates")
 }
 
 model DashboardMetric {
@@ -1020,7 +1020,7 @@ model DashboardMetric {
 
   @@unique([entityType, entityId, metricType])
   @@index([calculatedAt, validUntil])
-  @@map("dashboard_metrics")
+  @@map("dashboardMetrics")
 }
 
 model Doctor {
@@ -1175,7 +1175,7 @@ model MedicationLog {
   @@index([adherenceStatus, scheduledAt])
   @@index([medicationId, scheduledAt])
   @@index([patientId, scheduledAt])
-  @@map("medication_logs")
+  @@map("medicationLogs")
 }
 
 model PatientAlert {
@@ -1199,7 +1199,7 @@ model PatientAlert {
   @@index([acknowledged, resolved])
   @@index([createdAt])
   @@index([patientId, alertType, severity])
-  @@map("patient_alerts")
+  @@map("patientAlerts")
 }
 
 model PatientConsentOtp {
@@ -1250,7 +1250,7 @@ model PatientConsentOtp {
   @@index([patientId])
   @@index([requestedByUserId])
   @@index([secondaryAssignmentId])
-  @@map("patient_consent_otps")
+  @@map("patientConsentOtps")
 }
 
 model PatientProviderAssignment {
@@ -1267,7 +1267,7 @@ model PatientProviderAssignment {
   healthcareProvider HealthcareProvider @relation(fields: [providerId], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
   @@unique([patientId, providerId, role, endedAt])
-  @@map("patient_provider_assignments")
+  @@map("patientProviderAssignments")
 }
 
 model PatientProviderConsentHistory {
@@ -1305,7 +1305,7 @@ model PatientProviderConsentHistory {
   @@index([hspId])
   @@index([newProviderId])
   @@index([patientId, status])
-  @@map("patient_provider_consent_history")
+  @@map("patientProviderConsentHistory")
 }
 
 model PaymentMethod {
@@ -1334,7 +1334,7 @@ model PaymentMethod {
   @@index([patientId])
   @@index([stripePaymentMethodId])
   @@index([type])
-  @@map("payment_methods")
+  @@map("paymentMethods")
 }
 
 model Payment {
@@ -1397,7 +1397,7 @@ model ProviderChange {
   @@index([newProviderId])
   @@index([practitionerType, practitionerId])
   @@index([status])
-  @@map("provider_changes")
+  @@map("providerChanges")
 }
 
 model Provider {
@@ -1435,7 +1435,7 @@ model ScheduleEvent {
   @@index([eventId, eventType])
   @@index([eventType, status, date, startTime])
   @@index([status, date])
-  @@map("schedule_events")
+  @@map("scheduleEvents")
 }
 
 model ScheduledEvent {
@@ -1464,7 +1464,7 @@ model ScheduledEvent {
   @@index([carePlanId, scheduledFor, eventType], map: "idx_events_careplan_time_type")
   @@index([patientId, scheduledFor, status], map: "idx_events_patient_time_status")
   @@index([carePlanId])
-  @@map("scheduled_events")
+  @@map("scheduledEvents")
 }
 
 model SecondaryDoctorAssignment {
@@ -1507,7 +1507,7 @@ model SecondaryDoctorAssignment {
   @@index([primaryDoctorId])
   @@index([secondaryDoctorId])
   @@index([secondaryHspId])
-  @@map("secondary_doctor_assignments")
+  @@map("secondaryDoctorAssignments")
 }
 
 model SymptomDatabase {
@@ -1527,7 +1527,7 @@ model SymptomDatabase {
   @@index([category])
   @@index([isActive])
   @@index([symptoms], type: Gin)
-  @@map("symptoms_database")
+  @@map("symptomsDatabase")
 }
 
 model TreatmentDatabase {
@@ -1558,7 +1558,7 @@ model TreatmentDatabase {
   @@index([isActive])
   @@index([severityLevel])
   @@index([treatmentType])
-  @@map("treatment_database")
+  @@map("treatmentDatabase")
 }
 
 model TreatmentPlan {
@@ -1612,7 +1612,7 @@ model TreatmentPlan {
   @@index([startDate])
   @@index([status])
   @@index([symptoms], type: Gin)
-  @@map("treatment_plans")
+  @@map("treatmentPlans")
 }
 
 model UserRoleAssignment {
@@ -1626,7 +1626,7 @@ model UserRoleAssignment {
   user         User                @relation(fields: [userIdentity], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
   @@index([userIdentity, linkedWith], map: "idx_userroles_identity_linked")
-  @@map("user_role_assignments")
+  @@map("userRoleAssignments")
 }
 
 model VitalRequirement {
@@ -1647,7 +1647,7 @@ model VitalRequirement {
   @@index([frequency])
   @@index([isCritical])
   @@index([vitalTypeId])
-  @@map("vital_requirements")
+  @@map("vitalRequirements")
 }
 
 model VitalTemplate {
@@ -1660,7 +1660,7 @@ model VitalTemplate {
   deletedAt DateTime?
   vitals    Vital[]
 
-  @@map("vital_templates")
+  @@map("vitalTemplates")
 }
 
 model Vital {
@@ -1829,9 +1829,9 @@ enum ProviderChangeStatus {
 enum ScheduleEventType {
   APPOINTMENT
   REMINDER
-  MEDICATION_REMINDER @map("medication-reminder")
+  MEDICATION_REMINDER @map("medicationReminder")
   VITALS
-  CAREPLAN_ACTIVATION @map("careplan-activation")
+  CAREPLAN_ACTIVATION @map("careplanActivation")
   DIET
   WORKOUT
 }
@@ -1900,7 +1900,7 @@ enum SecondaryDoctorAssignmentConsentStatus {
 enum ServicePlanBillingCycle {
   MONTHLY
   YEARLY
-  ONE_TIME @map("one-time")
+  ONE_TIME @map("oneTime")
   WEEKLY
 }
 
@@ -1969,7 +1969,7 @@ model DrugInteraction {
   @@unique([rxcuiOne, rxcuiTwo])
   @@index([severityLevel])
   @@index([drugNameOne, drugNameTwo])
-  @@map("drug_interactions")
+  @@map("drugInteractions")
 }
 
 model PatientAllergy {
@@ -1994,7 +1994,7 @@ model PatientAllergy {
 
   @@index([patientId, isActive])
   @@index([allergenType, allergenName])
-  @@map("patient_allergies")
+  @@map("patientAllergies")
 }
 
 model MedicationSafetyAlert {
@@ -2028,7 +2028,7 @@ model MedicationSafetyAlert {
   @@index([patientId, severity, resolved])
   @@index([alertType, createdAt])
   @@index([resolved, createdAt])
-  @@map("medication_safety_alerts")
+  @@map("medicationSafetyAlerts")
 }
 
 // ============================================================================
@@ -2068,7 +2068,7 @@ model EmergencyAlert {
   @@index([patientId, priorityLevel, acknowledged, resolved])
   @@index([alertType, createdAt])
   @@index([resolved, createdAt])
-  @@map("emergency_alerts")
+  @@map("emergencyAlerts")
 }
 
 model VitalAlertRule {
@@ -2098,7 +2098,7 @@ model VitalAlertRule {
 
   @@index([vitalType, isActive])
   @@index([alertLevel])
-  @@map("vital_alert_rules")
+  @@map("vitalAlertRules")
 }
 
 model EmergencyContact {
@@ -2123,7 +2123,7 @@ model EmergencyContact {
 
   @@index([patientId, priorityOrder])
   @@index([patientId, isActive])
-  @@map("emergency_contacts")
+  @@map("emergencyContacts")
 }
 
 // ============================================================================
@@ -2342,7 +2342,7 @@ model VideoConsultation {
   @@index([patientId, status])
   @@index([status, scheduledStart])
   @@index([consultationType, priority])
-  @@map("video_consultations")
+  @@map("videoConsultations")
 }
 
 model ConsultationPrescription {
@@ -2362,7 +2362,7 @@ model ConsultationPrescription {
   consultation         VideoConsultation @relation(fields: [consultationId], references: [id], onDelete: Cascade)
 
   @@index([consultationId])
-  @@map("consultation_prescriptions")
+  @@map("consultationPrescriptions")
 }
 
 model ConsultationNote {
@@ -2376,7 +2376,7 @@ model ConsultationNote {
   creator        User              @relation("ConsultationNoteCreatedBy", fields: [createdBy], references: [id])
 
   @@index([consultationId, noteType])
-  @@map("consultation_notes")
+  @@map("consultationNotes")
 }
 
 model LabOrder {
@@ -2411,7 +2411,7 @@ model LabOrder {
   @@index([patientId, status])
   @@index([doctorId, orderDate])
   @@index([status, expectedResultDate])
-  @@map("lab_orders")
+  @@map("labOrders")
 }
 
 model LabResult {
@@ -2438,7 +2438,7 @@ model LabResult {
   @@index([labOrderId])
   @@index([testName, resultDate])
   @@index([criticalFlag, resultDate])
-  @@map("lab_results")
+  @@map("labResults")
 }
 
 model PatientGameProfile {
@@ -2467,7 +2467,7 @@ model PatientGameProfile {
 
   @@index([totalPoints, currentLevel])
   @@index([patientId, lastActivity])
-  @@map("patient_game_profiles")
+  @@map("patientGameProfiles")
 }
 
 model GameBadgeAward {
@@ -2485,7 +2485,7 @@ model GameBadgeAward {
 
   @@index([patientId, awardedDate])
   @@index([badgeType])
-  @@map("game_badge_awards")
+  @@map("gameBadgeAwards")
 }
 
 model GameChallengeProgress {
@@ -2508,7 +2508,7 @@ model GameChallengeProgress {
 
   @@index([patientId, isCompleted])
   @@index([challengeType, endDate])
-  @@map("game_challenge_progress")
+  @@map("gameChallengeProgress")
 }
 
 model ConnectedDevice {
@@ -2542,7 +2542,7 @@ model ConnectedDevice {
   @@unique([patientId, deviceIdentifier])
   @@index([pluginId, deviceType])
   @@index([patientId, connectionStatus])
-  @@map("connected_devices")
+  @@map("connectedDevices")
 }
 
 model DeviceReading {
@@ -2582,7 +2582,7 @@ model DeviceReading {
   @@index([deviceId, measurementTimestamp])
   @@index([pluginId, readingType])
   @@index([triggeredAlerts, measurementTimestamp])
-  @@map("device_readings")
+  @@map("deviceReadings")
 }
 
 model DevicePlugin {
@@ -2603,7 +2603,7 @@ model DevicePlugin {
   lastUpdated      DateTime     @updatedAt
   usageCount       Int          @default(0)
 
-  @@map("device_plugins")
+  @@map("devicePlugins")
 }
 
 // Medical Device Integration Model
@@ -2644,7 +2644,7 @@ model MedicalDevice {
   @@index([deviceType])
   @@index([status])
   @@index([organizationId])
-  @@map("medical_devices")
+  @@map("medicalDevices")
 }
 
 // Electronic Prescription Management Model
@@ -2843,5 +2843,5 @@ model AdherenceLog {
   @@index([patientId, adherenceType, scheduledDatetime])
   @@index([relatedMedicationId, status, scheduledDatetime])
   @@index([patientId, status, createdAt])
-  @@map("adherence_logs")
+  @@map("adherenceLogs")
 }

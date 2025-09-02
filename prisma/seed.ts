@@ -915,7 +915,8 @@ export async function seedComprehensiveHealthcareData() {
                 console.log('✅ Created 3 adherence records');
             }
 
-            return { users: testUsers, provider };
+            const userCount = await tx.user.count();
+            return { users: { count: userCount }, provider };
         });
 
         const testUsers = { count: users.count };
