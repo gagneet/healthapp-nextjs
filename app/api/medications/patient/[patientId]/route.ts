@@ -5,8 +5,8 @@ import { handleApiError, formatApiSuccess } from '@/lib/api-services';
 import { prisma } from "@/lib/prisma";
 
 /**
- * GET /api/medications/[patientId]
- * Get medications for a specific patient
+ * GET /api/medications/patient/[patientId]
+ * Get all medications for a specific patient
  */
 export async function GET(
   request: NextRequest,

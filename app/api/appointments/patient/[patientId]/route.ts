@@ -5,7 +5,7 @@ import { handleApiError, formatApiSuccess } from '@/lib/api-services';
 import { prisma } from "@/lib/prisma";
 
 /**
- * GET /api/appointments/[patientId]
+ * GET /api/appointments/patient/[patientId]
  * Get appointments for a specific patient
  */
 export async function GET(
@@ -167,6 +167,6 @@ export async function GET(
 
   } catch (error) {
     console.error('Error fetching patient appointments:', error);
-    return NextResponse.json(handleApiError(error), { status: 500 });
+    return NextResponse.json(handleApiError(error), { status: 500 });  
   }
 }

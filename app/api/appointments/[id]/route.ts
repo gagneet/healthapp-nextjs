@@ -1,12 +1,156 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from "@/lib/auth";
-import { prisma } from '@/lib/prisma';
+import { checkRateLimit } from "@/lib/auth-helpers";
+import { handleApiError, formatApiSuccess } from '@/lib/api-services';
+import { prisma } from "@/lib/prisma";
 
 /**
  * GET /api/appointments/{id}
- * Get appointments for a specific patient
+ * Get a single appointment by its ID
  */
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+  try {
+    // Rate limiting
+    const clientIP = request.ip || request.headers.get('x-forwarded-for') || 'unknown';
+    if (!checkRateLimit(clientIP)) {
+      return NextResponse.json(handleApiError({
+        message: 'Too many requests. Please try again later.'
+      }), { status: 429 });
+    }
+
+    const session = await auth();
+    if (!session?.user) {
+      return NextResponse.json({
+        status: false,
+        statusCode: 401,
+        payload: { error: { status: 'unauthorized', message: 'Authentication required' } }
+      }, { status: 401 });
+    }
+
+    if (!['DOCTOR', 'HSP', 'PATIENT', 'admin'].includes(session.user.role)) {
+      return NextResponse.json({
+        status: false,
+        statusCode: 403,
+        payload: { error: { status: 'forbidden', message: 'Insufficient permissions' } }
+      }, { status: 403 });
+    }
+
+    const appointmentId = params.id;
+    const user = session.user;
+
+    // Get the appointment with all related data
+    const appointment = await prisma.appointment.findUnique({
+      where: {
+        id: appointmentId
+      },
+      include: {
+        doctor: {
+          include: {
+            user: {
+              select: {
+                firstName: true,
+                lastName: true,
+                email: true
+              }
+            },
+            organization: {
+              select: {
+                name: true,
+                type: true
+              }
+            }
+          }
+        },
+        patient: {
+          select: {
+            id: true,
+            userId: true,
+            primaryCareDoctorId: true
+          }
+        },
+        carePlan: {
+          select: {
+            id: true,
+            planName: true,
+            status: true
+          }
+        }
+      }
+    });
+
+    if (!appointment) {
+      return NextResponse.json(handleApiError({
+        message: 'Appointment not found'
+      }), { status: 404 });
+    }
+
+    // Authorization: Check if user has access to this appointment
+    let hasAccess = false;
+    
+    if (user.role === 'PATIENT' && user.patientId === appointment.patientId) {
+      hasAccess = true;
+    } else if (user.role === 'DOCTOR') {
+      // Check if doctor is the appointment's doctor
+      const doctorProfile = await prisma.doctor.findFirst({
+        where: { userId: user.id }
+      });
+      
+      if (doctorProfile && appointment.doctorId === doctorProfile.id) {
+        hasAccess = true;
+      }
+    } else if (['admin', 'HSP'].includes(user.role)) {
+      hasAccess = true;
+    }
+
+    if (!hasAccess) {
+      return NextResponse.json(handleApiError({
+        message: 'Access denied: You do not have permission to view this appointment'
+      }), { status: 403 });
+    }
+
+    // Transform the data
+    const transformedAppointment = {
+      id: appointment.id,
+      patientId: appointment.patientId,
+      doctorId: appointment.doctorId,
+      title: appointment.appointmentType || 'General Consultation',
+      type: appointment.appointmentType || 'consultation',
+      startTime: appointment.startTime.toISOString(),
+      endTime: appointment.endTime.toISOString(),
+      status: appointment.status,
+      notes: appointment.notes,
+      priority: appointment.priority,
+      isVirtual: appointment.isVirtual || false,
+      location: appointment.location,
+      doctor: appointment.doctor ? {
+        id: appointment.doctor.id,
+        name: `Dr. ${appointment.doctor.user.firstName} ${appointment.doctor.user.lastName}`,
+        firstName: appointment.doctor.user.firstName,
+        lastName: appointment.doctor.user.lastName,
+        email: appointment.doctor.user.email,
+        organization: appointment.doctor.organization
+      } : null,
+      carePlan: appointment.carePlan,
+      createdAt: appointment.createdAt.toISOString(),
+      updatedAt: appointment.updatedAt.toISOString()
+    };
+
+    return NextResponse.json(formatApiSuccess(
+      { appointment: transformedAppointment },
+      'Appointment retrieved successfully'
+    ));
+
+  } catch (error) {
+    console.error('Error fetching appointment:', error);
+    return NextResponse.json(handleApiError(error), { status: 500 });
+  }
+}
+
+/**
+ * PUT /api/appointments/{id}
+ * Update an appointment
+ */
+export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
   try {
     const session = await auth();
     if (!session?.user) {
@@ -17,92 +161,75 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       }, { status: 401 });
     }
 
-    // Only doctors and HSPs can access patient appointments
+    // Only doctors can update appointments
     if (!['DOCTOR', 'HSP'].includes(session.user.role)) {
       return NextResponse.json({
         status: false,
         statusCode: 403,
-        payload: { error: { status: 'forbidden', message: 'Only doctors and HSPs can access patient appointments' } }
+        payload: { error: { status: 'forbidden', message: 'Only doctors and HSPs can update appointments' } }
       }, { status: 403 });
     }
 
-    const { id: patientId } = params;
+    const appointmentId = params.id;
+    const body = await request.json();
 
-    // Get doctor ID if user is a doctor
-    let doctorId = null;
-    if (session.user.role === 'DOCTOR') {
-      const doctor = await prisma.doctor.findFirst({
-        where: { userId: session.user.id }
-      });
-      
-      if (!doctor) {
-        return NextResponse.json({
-          status: false,
-          statusCode: 404,
-          payload: { error: { status: 'not_found', message: 'Doctor profile not found' } }
-        }, { status: 404 });
-      }
-      
-      doctorId = doctor.id;
-    }
-
-    // Verify access to patient - patientId is the Patient primary key
-    const patient = await prisma.patient.findFirst({
-      where: { 
-        id: patientId,
-        ...(doctorId ? { primaryCareDoctorId: doctorId } : {})
+    // Get current appointment to verify access
+    const currentAppointment = await prisma.appointment.findUnique({
+      where: { id: appointmentId },
+      include: {
+        doctor: {
+          select: {
+            userId: true
+          }
+        }
       }
     });
 
-    if (!patient) {
-      return NextResponse.json({
-        status: false,
-        statusCode: 404,
-        payload: { error: { status: 'not_found', message: 'Patient not found or access denied' } }
-      }, { status: 404 });
+    if (!currentAppointment) {
+      return NextResponse.json(handleApiError({
+        message: 'Appointment not found'
+      }), { status: 404 });
     }
 
-    // Get appointments for this patient
-    const appointments = await prisma.appointment.findMany({
-      where: {
-        patientId: patient.id,
-        ...(doctorId ? { doctorId: doctorId } : {})
+    // Verify doctor has access (is the appointment's doctor)
+    if (session.user.role === 'DOCTOR' && currentAppointment.doctor.userId !== session.user.id) {
+      return NextResponse.json(handleApiError({
+        message: 'Access denied: You can only update your own appointments'
+      }), { status: 403 });
+    }
+
+    // Update appointment
+    const updatedAppointment = await prisma.appointment.update({
+      where: { id: appointmentId },
+      data: {
+        appointmentType: body.appointmentType,
+        startTime: body.startTime ? new Date(body.startTime) : undefined,
+        endTime: body.endTime ? new Date(body.endTime) : undefined,
+        notes: body.notes,
+        status: body.status,
+        priority: body.priority,
+        location: body.location,
+        isVirtual: body.isVirtual,
+        updatedAt: new Date()
       },
-      orderBy: {
-        startTime: 'desc'
-      }
-    });
-
-    // Transform to expected format
-    const formattedAppointments = appointments.map(appointment => ({
-      id: appointment.id,
-      title: appointment.description || 'Appointment',
-      type: 'consultation', // Defaulting as appointment_type is not in schema
-      startTime: appointment.startTime,
-      endTime: appointment.endTime,
-      status: appointment.status || 'scheduled',
-      isVirtual: (appointment.details as any)?.isVirtual || false, // Assuming isVirtual might be in details
-      notes: (appointment.details as any)?.notes,
-      createdAt: appointment.createdAt
-    }));
-
-    return NextResponse.json({
-      status: true,
-      statusCode: 200,
-      payload: {
-        data: {
-          appointments: formattedAppointments
+      include: {
+        doctor: {
+          include: {
+            user: true,
+            organization: true
+          }
         },
-        message: 'Patient appointments retrieved successfully'
+        carePlan: true
       }
     });
+
+    return NextResponse.json(formatApiSuccess(
+      { appointment: updatedAppointment },
+      'Appointment updated successfully'
+    ));
 
   } catch (error) {
-    console.error('Error fetching patient appointments:', error);
-    return NextResponse.json({
-      status: false,
-      statusCode: 500,
-      payload: { error: { status: 'error', message: 'Internal server error' } }
-    }, { status: 500 });
+    console.error('Error updating appointment:', error);
+    return NextResponse.json(handleApiError(error), { status: 500 });
   }
 }
