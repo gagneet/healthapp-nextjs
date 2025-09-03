@@ -109,15 +109,13 @@ async function verifyPatientAccess(patientId: string, doctorId: string | null, h
     whereClause.OR = [
       { primaryCareHspId: hspId },
       {
-        patientProviderAssignments: {
+        secondaryDoctorAssignments: {
           some: {
-            // hsp_id is not a valid field on PatientProviderAssignment. This seems to be a logic error.
-            // providerId: hspId,
-            hspId: hspId,
-            isActive: true
-          }
-        }
-      }
+            secondaryHspId: hspId,
+            isActive: true,
+          },
+        },
+      },
     ];
   }
 
@@ -156,8 +154,8 @@ async function fetchCarePlanData(patientId: string) {
         select: {
           id: true,
           patientId: true,
-          overallAdherenceScore: true,
-          prescriptions: true // Fetch prescriptions for the patient
+          overallAdherenceScore: true
+          // prescriptions: true // Fetch prescriptions for the patient -- Omitted to prevent crash due to missing table
         }
       }
     },

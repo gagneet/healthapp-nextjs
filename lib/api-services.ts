@@ -382,7 +382,7 @@ export async function getPatients(doctorId: string, pagination: {
               emergencyAlerts: {
                 where: {
                   resolved: false,
-                  severity: 'CRITICAL',
+                  priorityLevel: 'CRITICAL',
                 },
               },
             },
