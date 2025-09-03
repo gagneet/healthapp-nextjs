@@ -155,7 +155,7 @@ async function fetchCarePlanData(patientId: string) {
           id: true,
           patientId: true,
           overallAdherenceScore: true
-          // prescriptions: true // Fetch prescriptions for the patient -- Omitted to prevent crash due to missing table
+          // prescriptions: true // TODO: Re-enable when prescriptions table is available
         }
       }
     },
