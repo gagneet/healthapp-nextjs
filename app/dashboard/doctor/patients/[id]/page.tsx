@@ -288,7 +288,7 @@ export default function PatientDetailsPage() {
   const fetchMedications = useCallback(async () => {
     try {
       setLoadingStates(prev => ({ ...prev, carePlans: true }))
-      const response = await fetch(`/api/medications/${patientId}`, {
+      const response = await fetch(`/api/medications/patient/${patientId}`, {
         headers: {
           'Content-Type': 'application/json',
         },
@@ -313,7 +313,7 @@ export default function PatientDetailsPage() {
   const fetchVitals = useCallback(async () => {
     try {
       setLoadingStates(prev => ({ ...prev, vitals: true }))
-      const response = await fetch(`/api/vitals/${patientId}`, {
+      const response = await fetch(`/api/vitals/patient/${patientId}`, {
         headers: {
           'Content-Type': 'application/json',
         },
@@ -336,7 +336,7 @@ export default function PatientDetailsPage() {
   const fetchAppointments = useCallback(async () => {
     try {
       setLoadingStates(prev => ({ ...prev, appointments: true }))
-      const response = await fetch(`/api/appointments/${patientId}`, {
+      const response = await fetch(`/api/appointments/patient/${patientId}`, {
         headers: {
           'Content-Type': 'application/json',
         },

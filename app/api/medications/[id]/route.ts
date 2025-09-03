@@ -1,12 +1,147 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from "@/lib/auth";
-import { prisma } from '@/lib/prisma';
+import { checkRateLimit } from "@/lib/auth-helpers";
+import { handleApiError, formatApiSuccess } from '@/lib/api-services';
+import { prisma } from "@/lib/prisma";
 
 /**
  * GET /api/medications/{id}
- * Get medications for a specific patient
+ * Get a single medication by its ID
  */
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+  try {
+    // Rate limiting
+    const clientIP = request.ip || request.headers.get('x-forwarded-for') || 'unknown';
+    if (!checkRateLimit(clientIP)) {
+      return NextResponse.json(handleApiError({
+        message: 'Too many requests. Please try again later.'
+      }), { status: 429 });
+    }
+
+    const session = await auth();
+    if (!session?.user) {
+      return NextResponse.json({
+        status: false,
+        statusCode: 401,
+        payload: { error: { status: 'unauthorized', message: 'Authentication required' } }
+      }, { status: 401 });
+    }
+
+    if (!['DOCTOR', 'HSP', 'PATIENT', 'admin'].includes(session.user.role)) {
+      return NextResponse.json({
+        status: false,
+        statusCode: 403,
+        payload: { error: { status: 'forbidden', message: 'Insufficient permissions' } }
+      }, { status: 403 });
+    }
+
+    const medicationId = params.id;
+    const user = session.user;
+
+    // Get the medication with all related data
+    const medication = await prisma.medication.findUnique({
+      where: {
+        id: medicationId
+      },
+      include: {
+        medicine: {
+          select: {
+            name: true,
+            genericName: true,
+            brandNames: true,
+            dosageForm: true,
+            strength: true,
+            activeIngredient: true,
+            category: true,
+            description: true
+          }
+        },
+        carePlan: {
+          select: {
+            id: true,
+            name: true,
+            status: true
+          }
+        },
+        patient: {
+          select: {
+            id: true,
+            userId: true,
+            primaryCareDoctorId: true
+          }
+        }
+      }
+    });
+
+    if (!medication) {
+      return NextResponse.json(handleApiError({
+        message: 'Medication not found'
+      }), { status: 404 });
+    }
+
+    // Authorization: Check if user has access to this medication
+    let hasAccess = false;
+    
+    if (user.role === 'PATIENT' && user.patientId === medication.patientId) {
+      hasAccess = true;
+    } else if (user.role === 'DOCTOR') {
+      // Check if doctor is the patient's primary care doctor
+      const doctorProfile = await prisma.doctor.findFirst({
+        where: { userId: user.id }
+      });
+      
+      if (doctorProfile && medication.patient.primaryCareDoctorId === doctorProfile.id) {
+        hasAccess = true;
+      }
+    } else if (['admin', 'HSP'].includes(user.role)) {
+      hasAccess = true;
+    }
+
+    if (!hasAccess) {
+      return NextResponse.json(handleApiError({
+        message: 'Access denied: You do not have permission to view this medication'
+      }), { status: 403 });
+    }
+
+    // Transform the data
+    const transformedMedication = {
+      id: medication.id,
+      patientId: medication.patientId,
+      name: medication.medicine?.name || 'Unknown Medication',
+      genericName: medication.medicine?.genericName,
+      brandNames: medication.medicine?.brandNames,
+      dosage: medication.dosage,
+      frequency: medication.frequency,
+      startDate: medication.startDate?.toISOString(),
+      endDate: medication.endDate?.toISOString(),
+      lastTaken: medication.lastTaken?.toISOString(),
+      nextDue: medication.nextDue?.toISOString(),
+      adherenceRate: medication.adherenceRate,
+      isCritical: medication.isCritical,
+      notes: medication.notes,
+      status: medication.status,
+      carePlan: medication.carePlan,
+      medicine: medication.medicine,
+      createdAt: medication.createdAt.toISOString(),
+      updatedAt: medication.updatedAt.toISOString()
+    };
+
+    return NextResponse.json(formatApiSuccess(
+      { medication: transformedMedication },
+      'Medication retrieved successfully'
+    ));
+
+  } catch (error) {
+    console.error('Error fetching medication:', error);
+    return NextResponse.json(handleApiError(error), { status: 500 });
+  }
+}
+
+/**
+ * PUT /api/medications/{id}
+ * Update a medication
+ */
+export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
   try {
     const session = await auth();
     if (!session?.user) {
@@ -17,160 +152,73 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       }, { status: 401 });
     }
 
-    // Only doctors can access patient medications (HSPs cannot manage medication reminders per business rules)
+    // Only doctors can update medications
     if (session.user.role !== 'DOCTOR') {
       return NextResponse.json({
         status: false,
         statusCode: 403,
-        payload: { error: { status: 'forbidden', message: 'Only doctors can access patient medication reminders' } }
+        payload: { error: { status: 'forbidden', message: 'Only doctors can update medications' } }
       }, { status: 403 });
     }
 
-    const { id: patientId } = params;
+    const medicationId = params.id;
+    const body = await request.json();
 
-    // Get doctor ID if user is a doctor
-    let doctorId = null;
-    if (session.user.role === 'DOCTOR') {
-      const doctor = await prisma.doctor.findFirst({
-        where: { userId: session.user.id }
-      });
-      
-      if (!doctor) {
-        return NextResponse.json({
-          status: false,
-          statusCode: 404,
-          payload: { error: { status: 'not_found', message: 'Doctor profile not found' } }
-        }, { status: 404 });
-      }
-      
-      doctorId = doctor.id;
-    }
-
-    // Verify access to patient - patientId is the Patient primary key
-    const patient = await prisma.patient.findFirst({
-      where: { 
-        id: patientId,
-        ...(doctorId ? { primaryCareDoctorId: doctorId } : {})
-      }
-    });
-
-    if (!patient) {
-      return NextResponse.json({
-        status: false,
-        statusCode: 404,
-        payload: { error: { status: 'not_found', message: 'Patient not found or access denied' } }
-      }, { status: 404 });
-    }
-
-    // Get medication reminders for this patient through their care plans (proper business logic)
-    // Medications are linked through CarePlans as prescribedMedications (Medication Reminders)
-    const carePlansWithMedications = await prisma.carePlan.findMany({
-      where: {
-        patientId: patient.id,
-        // Only show care plans where the doctor has access (if user is doctor)
-        ...(doctorId ? { createdByDoctorId: doctorId } : {})
-      },
+    // Get current medication to verify access
+    const currentMedication = await prisma.medication.findUnique({
+      where: { id: medicationId },
       include: {
-        prescribedMedications: {
-          include: {
-            medicine: {
-              select: {
-                id: true,
-                name: true,
-                type: true,
-                description: true
-              }
-            },
-            medicationLogs: {
-              select: {
-                id: true,
-                scheduledAt: true,
-                takenAt: true,
-                adherenceStatus: true
-              },
-              orderBy: {
-                scheduledAt: 'desc'
-              },
-              take: 5 // Last 5 logs for adherence calculation
-            }
+        patient: {
+          select: {
+            primaryCareDoctorId: true
           }
         }
+      }
+    });
+
+    if (!currentMedication) {
+      return NextResponse.json(handleApiError({
+        message: 'Medication not found'
+      }), { status: 404 });
+    }
+
+    // Verify doctor has access
+    const doctorProfile = await prisma.doctor.findFirst({
+      where: { userId: session.user.id }
+    });
+
+    if (!doctorProfile || currentMedication.patient.primaryCareDoctorId !== doctorProfile.id) {
+      return NextResponse.json(handleApiError({
+        message: 'Access denied: You can only update medications for your patients'
+      }), { status: 403 });
+    }
+
+    // Update medication
+    const updatedMedication = await prisma.medication.update({
+      where: { id: medicationId },
+      data: {
+        dosage: body.dosage,
+        frequency: body.frequency,
+        startDate: body.startDate ? new Date(body.startDate) : undefined,
+        endDate: body.endDate ? new Date(body.endDate) : undefined,
+        notes: body.notes,
+        status: body.status,
+        isCritical: body.isCritical,
+        updatedAt: new Date()
       },
-      orderBy: {
-        createdAt: 'desc'
+      include: {
+        medicine: true,
+        carePlan: true
       }
     });
 
-    // Extract all medications from all care plans
-    const medications = carePlansWithMedications.flatMap(carePlan => 
-      carePlan.prescribedMedications.map(med => ({
-        ...med,
-        carePlan: {
-          id: carePlan.id,
-          title: carePlan.title,
-          status: carePlan.status,
-          description: carePlan.description
-        }
-      }))
-    );
-
-    // Transform to expected format following healthcare business logic
-    const formattedMedications = medications.map(med => {
-      // Calculate adherence rate from medication logs
-      const logs = med.medicationLogs || [];
-      const takenCount = logs.filter(log => log.adherenceStatus?.toUpperCase?.() === 'TAKEN' && log.takenAt).length;
-      const adherenceRate = logs.length > 0 ? Math.round((takenCount / logs.length) * 100) : 0;
-      
-      // Find last taken and next due
-      const lastTakenLog = logs.find(log => log.takenAt);
-      const nextScheduledLog = logs.find(log => !log.takenAt && log.scheduledAt > new Date());
-      
-      // Get medication details (dosage, frequency, etc. should be in Medication table)
-      const details = med.details as any || {};
-      
-      return {
-        id: med.id,
-        name: med.medicine?.name || 'Unknown Medication',
-        dosage: details.dosage || 'Dosage not specified',
-        frequency: details.frequency || 'Frequency not specified',
-        startDate: med.startDate,
-        endDate: med.endDate,
-        isCritical: details.isCritical || false,
-        lastTaken: lastTakenLog?.takenAt || null,
-        nextDue: nextScheduledLog?.scheduledAt || null,
-        adherenceRate: adherenceRate,
-        status: med.carePlan?.status || 'active',
-        instructions: med.description || med.medicine?.description,
-        carePlan: {
-          id: med.carePlan?.id,
-          title: med.carePlan?.title,
-          description: med.carePlan?.description
-        },
-        // Additional medication reminder properties
-        medicineType: med.medicine?.type,
-        participantId: med.participantId, // Patient ID
-        createdAt: med.createdAt,
-        updatedAt: med.updatedAt
-      };
-    });
-
-    return NextResponse.json({
-      status: true,
-      statusCode: 200,
-      payload: {
-        data: {
-          medications: formattedMedications
-        },
-        message: 'Patient medications retrieved successfully'
-      }
-    });
+    return NextResponse.json(formatApiSuccess(
+      { medication: updatedMedication },
+      'Medication updated successfully'
+    ));
 
   } catch (error) {
-    console.error('Error fetching patient medications:', error);
-    return NextResponse.json({
-      status: false,
-      statusCode: 500,
-      payload: { error: { status: 'error', message: 'Internal server error' } }
-    }, { status: 500 });
+    console.error('Error updating medication:', error);
+    return NextResponse.json(handleApiError(error), { status: 500 });
   }
 }

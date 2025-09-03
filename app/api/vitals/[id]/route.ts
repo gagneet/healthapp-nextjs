@@ -1,12 +1,138 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from "@/lib/auth";
-import { prisma } from '@/lib/prisma';
+import { checkRateLimit } from "@/lib/auth-helpers";
+import { handleApiError, formatApiSuccess } from '@/lib/api-services';
+import { prisma } from "@/lib/prisma";
 
 /**
  * GET /api/vitals/{id}
- * Get vital signs for a specific patient
+ * Get a single vital reading by its ID
  */
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+  try {
+    // Rate limiting
+    const clientIP = request.ip || request.headers.get('x-forwarded-for') || 'unknown';
+    if (!checkRateLimit(clientIP)) {
+      return NextResponse.json(handleApiError({
+        message: 'Too many requests. Please try again later.'
+      }), { status: 429 });
+    }
+
+    const session = await auth();
+    if (!session?.user) {
+      return NextResponse.json({
+        status: false,
+        statusCode: 401,
+        payload: { error: { status: 'unauthorized', message: 'Authentication required' } }
+      }, { status: 401 });
+    }
+
+    if (!['DOCTOR', 'HSP', 'PATIENT', 'admin'].includes(session.user.role)) {
+      return NextResponse.json({
+        status: false,
+        statusCode: 403,
+        payload: { error: { status: 'forbidden', message: 'Insufficient permissions' } }
+      }, { status: 403 });
+    }
+
+    const vitalReadingId = params.id;
+    const user = session.user;
+
+    // Get the vital reading with all related data
+    const vitalReading = await prisma.vitalReading.findUnique({
+      where: {
+        id: vitalReadingId
+      },
+      include: {
+        vitalType: {
+          select: {
+            name: true,
+            unit: true,
+            normalRangeMin: true,
+            normalRangeMax: true,
+            category: true,
+            description: true
+          }
+        },
+        patient: {
+          select: {
+            id: true,
+            userId: true,
+            primaryCareDoctorId: true
+          }
+        }
+      }
+    });
+
+    if (!vitalReading) {
+      return NextResponse.json(handleApiError({
+        message: 'Vital reading not found'
+      }), { status: 404 });
+    }
+
+    // Authorization: Check if user has access to this vital reading
+    let hasAccess = false;
+    
+    if (user.role === 'PATIENT' && user.patientId === vitalReading.patientId) {
+      hasAccess = true;
+    } else if (user.role === 'DOCTOR') {
+      // Check if doctor is the patient's primary care doctor
+      const doctorProfile = await prisma.doctor.findFirst({
+        where: { userId: user.id }
+      });
+      
+      if (doctorProfile && vitalReading.patient.primaryCareDoctorId === doctorProfile.id) {
+        hasAccess = true;
+      }
+    } else if (['admin', 'HSP'].includes(user.role)) {
+      hasAccess = true;
+    }
+
+    if (!hasAccess) {
+      return NextResponse.json(handleApiError({
+        message: 'Access denied: You do not have permission to view this vital reading'
+      }), { status: 403 });
+    }
+
+    // Transform the data
+    const transformedVital = {
+      id: vitalReading.id,
+      patientId: vitalReading.patientId,
+      type: vitalReading.vitalType?.name || 'Unknown Vital',
+      value: vitalReading.value,
+      systolicValue: vitalReading.systolicValue,
+      diastolicValue: vitalReading.diastolicValue,
+      unit: vitalReading.vitalType?.unit || '',
+      readingTime: vitalReading.readingTime.toISOString(),
+      isFlagged: vitalReading.isFlagged,
+      notes: vitalReading.notes,
+      recordedBy: vitalReading.recordedBy,
+      alertLevel: vitalReading.alertLevel,
+      alertReasons: vitalReading.alertReasons,
+      normalRange: {
+        min: vitalReading.vitalType?.normalRangeMin,
+        max: vitalReading.vitalType?.normalRangeMax
+      },
+      vitalType: vitalReading.vitalType,
+      createdAt: vitalReading.createdAt.toISOString()
+    };
+
+    return NextResponse.json(formatApiSuccess(
+      { vital: transformedVital },
+      'Vital reading retrieved successfully'
+    ));
+
+  } catch (error) {
+    console.error('Error fetching vital reading:', error);
+    return NextResponse.json(handleApiError(error), { status: 500 });
+  }
+}
+
+/**
+ * PUT /api/vitals/{id}
+ * Update a vital reading
+ */
+export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
   try {
     const session = await auth();
     if (!session?.user) {
@@ -17,110 +143,86 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       }, { status: 401 });
     }
 
-    // Only doctors and HSPs can access patient vitals
-    if (!['DOCTOR', 'HSP'].includes(session.user.role)) {
+    // Only doctors, HSPs, and patients can update vitals
+    if (!['DOCTOR', 'HSP', 'PATIENT'].includes(session.user.role)) {
       return NextResponse.json({
         status: false,
         statusCode: 403,
-        payload: { error: { status: 'forbidden', message: 'Only doctors and HSPs can access patient vitals' } }
+        payload: { error: { status: 'forbidden', message: 'Only doctors, HSPs, and patients can update vital readings' } }
       }, { status: 403 });
     }
 
-    const { id: patientId } = params;
+    const vitalReadingId = params.id;
+    const body = await request.json();
 
-    // Get doctor ID if user is a doctor
-    let doctorId = null;
-    if (session.user.role === 'DOCTOR') {
-      const doctor = await prisma.doctor.findFirst({
+    // Get current vital reading to verify access
+    const currentVital = await prisma.vitalReading.findUnique({
+      where: { id: vitalReadingId },
+      include: {
+        patient: {
+          select: {
+            primaryCareDoctorId: true,
+            userId: true
+          }
+        }
+      }
+    });
+
+    if (!currentVital) {
+      return NextResponse.json(handleApiError({
+        message: 'Vital reading not found'
+      }), { status: 404 });
+    }
+
+    // Verify user has access
+    let hasAccess = false;
+    
+    if (session.user.role === 'PATIENT' && session.user.patientId === currentVital.patientId) {
+      hasAccess = true;
+    } else if (session.user.role === 'DOCTOR') {
+      const doctorProfile = await prisma.doctor.findFirst({
         where: { userId: session.user.id }
       });
       
-      if (!doctor) {
-        return NextResponse.json({
-          status: false,
-          statusCode: 404,
-          payload: { error: { status: 'not_found', message: 'Doctor profile not found' } }
-        }, { status: 404 });
+      if (doctorProfile && currentVital.patient.primaryCareDoctorId === doctorProfile.id) {
+        hasAccess = true;
       }
-      
-      doctorId = doctor.id;
+    } else if (session.user.role === 'HSP') {
+      hasAccess = true; // HSPs can update vitals per business rules
     }
 
-    // Verify access to patient - patientId is the Patient primary key
-    const patient = await prisma.patient.findFirst({
-      where: { 
-        id: patientId,
-        ...(doctorId ? { primaryCareDoctorId: doctorId } : {})
-      }
-    });
-
-    if (!patient) {
-      return NextResponse.json({
-        status: false,
-        statusCode: 404,
-        payload: { error: { status: 'not_found', message: 'Patient not found or access denied' } }
-      }, { status: 404 });
+    if (!hasAccess) {
+      return NextResponse.json(handleApiError({
+        message: 'Access denied: You can only update vital readings for authorized patients'
+      }), { status: 403 });
     }
 
-    // Get vital readings for this patient
-    const vitals = await prisma.vitalReading.findMany({
-      where: {
-        patientId: patient.id
+    // Update vital reading
+    const updatedVital = await prisma.vitalReading.update({
+      where: { id: vitalReadingId },
+      data: {
+        value: body.value !== undefined ? body.value : undefined,
+        systolicValue: body.systolicValue !== undefined ? body.systolicValue : undefined,
+        diastolicValue: body.diastolicValue !== undefined ? body.diastolicValue : undefined,
+        notes: body.notes,
+        isFlagged: body.isFlagged !== undefined ? body.isFlagged : undefined,
+        alertLevel: body.alertLevel,
+        alertReasons: body.alertReasons,
+        readingTime: body.readingTime ? new Date(body.readingTime) : undefined,
+        updatedAt: new Date()
       },
       include: {
-        vitalType: {
-          select: {
-            id: true,
-            name: true,
-            unit: true,
-            normalRangeMin: true,
-            normalRangeMax: true,
-            description: true
-          }
-        }
-      },
-      orderBy: {
-        readingTime: 'desc'
-      },
-      take: 50 // Last 50 readings
-    });
-
-    // Transform to expected format
-    const formattedVitals = vitals.map((vital: any) => ({
-      id: vital.id,
-      type: vital.vitalType?.name || 'Unknown Vital',
-      value: vital.value?.toString() || '0',
-      unit: vital.vitalType?.unit || '',
-      readingTime: vital.readingTime,
-      isFlagged: vital.isFlagged || false,
-      normalRange: {
-        min: vital.vitalType?.normalRangeMin?.toString() || '0',
-        max: vital.vitalType?.normalRangeMax?.toString() || '100'
-      },
-      notes: vital.notes,
-      deviceInfo: vital.deviceInfo,
-      isValidated: vital.isValidated || false,
-      validatedBy: vital.validatedBy,
-      recorded_by: 'Patient' // Patient adherence - patients record their own vitals
-    }));
-
-    return NextResponse.json({
-      status: true,
-      statusCode: 200,
-      payload: {
-        data: {
-          vitals: formattedVitals
-        },
-        message: 'Patient vitals retrieved successfully'
+        vitalType: true
       }
     });
 
+    return NextResponse.json(formatApiSuccess(
+      { vital: updatedVital },
+      'Vital reading updated successfully'
+    ));
+
   } catch (error) {
-    console.error('Error fetching patient vitals:', error);
-    return NextResponse.json({
-      status: false,
-      statusCode: 500,
-      payload: { error: { status: 'error', message: 'Internal server error' } }
-    }, { status: 500 });
+    console.error('Error updating vital reading:', error);
+    return NextResponse.json(handleApiError(error), { status: 500 });
   }
 }
