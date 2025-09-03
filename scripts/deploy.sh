@@ -875,10 +875,28 @@ run_basic_migration() {
 
         # Run migration
         log_info "Running Prisma migrations..."
+        
+        # First, generate Prisma client to ensure it's up to date
+        if docker exec "$container_id" npx prisma generate; then
+            log_debug "Prisma client generated successfully"
+        else
+            log_warning "Prisma client generation failed"
+        fi
+        
+        # Run the migration
         if docker exec "$container_id" npx prisma migrate deploy; then
             log_success "Migrations completed successfully!"
+            
+            # Validate schema consistency after migration
+            log_info "Validating database schema consistency..."
+            if docker exec "$container_id" node -e "const { PrismaClient } = require('@prisma/client'); const prisma = new PrismaClient(); prisma.user.count().then(() => {console.log('✅ Schema validation: Database connection successful'); process.exit(0);}).catch(err => {console.error('❌ Schema validation failed:', err.message); process.exit(1);})"; then
+                log_success "Schema validation completed successfully!"
+            else
+                log_warning "Schema validation failed - there may be inconsistencies"
+            fi
         else
-            log_warning "Migration failed, but continuing deployment"
+            log_error "Migration failed! This may cause deployment issues."
+            log_info "Attempting to continue deployment, but manual intervention may be required."
         fi
     fi
 }

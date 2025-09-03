@@ -496,6 +496,8 @@ CREATE TABLE "public"."appointments" (
                                          "endTime" TIMESTAMP(3),
                                          "rrRule" VARCHAR(1000),
                                          "details" JSON,
+                                         "status" TEXT DEFAULT 'SCHEDULED',
+                                         "carePlanId" UUID,
                                          "createdAt" TIMESTAMP(3) NOT NULL,
                                          "updatedAt" TIMESTAMP(3) NOT NULL,
                                          "deletedAt" TIMESTAMP(3),
@@ -890,6 +892,7 @@ CREATE TABLE "public"."doctors" (
                                     "signatureData" TEXT,
                                     "gender" VARCHAR(20),
                                     "mobileNumber" VARCHAR(20),
+                                    "biography" TEXT,
 
                                     CONSTRAINT "doctors_pkey" PRIMARY KEY ("id")
 );
@@ -2815,6 +2818,9 @@ ALTER TABLE "public"."appointments" ADD CONSTRAINT "appointments_providerId_fkey
 
 -- AddForeignKey
 ALTER TABLE "public"."appointments" ADD CONSTRAINT "appointments_slotId_fkey" FOREIGN KEY ("slotId") REFERENCES "public"."appointmentSlots"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "public"."appointments" ADD CONSTRAINT "appointments_carePlanId_fkey" FOREIGN KEY ("carePlanId") REFERENCES "public"."carePlans"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "public"."doctorAvailability" ADD CONSTRAINT "doctor_availability_doctorId_fkey" FOREIGN KEY ("doctorId") REFERENCES "public"."users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;

@@ -5,6 +5,109 @@ import * as bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
 
+// 🔍 Schema Validation Function
+async function validateDatabaseSchema(): Promise<void> {
+  console.log('🔍 Validating database schema consistency...');
+  
+  const validationChecks = [
+    {
+      name: 'Users table',
+      check: async () => {
+        try {
+          await prisma.user.count();
+          return { success: true };
+        } catch (error: any) {
+          return { success: false, error: error.message };
+        }
+      }
+    },
+    {
+      name: 'Doctors table with biography column',
+      check: async () => {
+        try {
+          const result = await prisma.$queryRaw`
+            SELECT column_name FROM information_schema.columns 
+            WHERE table_name = 'doctors' AND column_name = 'biography'
+          `;
+          const hasColumn = Array.isArray(result) && result.length > 0;
+          return { 
+            success: hasColumn, 
+            error: hasColumn ? null : 'Biography column missing from doctors table' 
+          };
+        } catch (error: any) {
+          return { success: false, error: error.message };
+        }
+      }
+    },
+    {
+      name: 'Appointments table with status column',
+      check: async () => {
+        try {
+          const result = await prisma.$queryRaw`
+            SELECT column_name FROM information_schema.columns 
+            WHERE table_name = 'appointments' AND column_name = 'status'
+          `;
+          const hasColumn = Array.isArray(result) && result.length > 0;
+          return { 
+            success: hasColumn, 
+            error: hasColumn ? null : 'Status column missing from appointments table' 
+          };
+        } catch (error: any) {
+          return { success: false, error: error.message };
+        }
+      }
+    },
+    {
+      name: 'Appointments table with carePlanId column',
+      check: async () => {
+        try {
+          const result = await prisma.$queryRaw`
+            SELECT column_name FROM information_schema.columns 
+            WHERE table_name = 'appointments' AND column_name = 'carePlanId'
+          `;
+          const hasColumn = Array.isArray(result) && result.length > 0;
+          return { 
+            success: hasColumn, 
+            error: hasColumn ? null : 'CarePlanId column missing from appointments table' 
+          };
+        } catch (error: any) {
+          return { success: false, error: error.message };
+        }
+      }
+    }
+  ];
+
+  let validationErrors = [];
+  
+  for (const { name, check } of validationChecks) {
+    try {
+      const result = await check();
+      if (result.success) {
+        console.log(`✅ ${name}: OK`);
+      } else {
+        console.log(`❌ ${name}: ${result.error}`);
+        validationErrors.push(`${name}: ${result.error}`);
+      }
+    } catch (error: any) {
+      console.log(`❌ ${name}: Validation failed - ${error.message}`);
+      validationErrors.push(`${name}: ${error.message}`);
+    }
+  }
+
+  if (validationErrors.length > 0) {
+    console.log('\n❌ Schema validation failed with the following issues:');
+    validationErrors.forEach(error => console.log(`   • ${error}`));
+    console.log('\n💡 Troubleshooting suggestions:');
+    console.log('   1. Run: npx prisma migrate reset');
+    console.log('   2. Run: npx prisma migrate dev');
+    console.log('   3. Run: npx prisma generate');
+    console.log('   4. Check that migration files match schema.prisma\n');
+    throw new Error(`Schema validation failed: ${validationErrors.length} issues found`);
+  }
+  
+  console.log('✅ Database schema validation passed!');
+}
+
 // 🛠️ Helpers
 const getRandomPastDate = (minDaysAgo = 7, maxDaysAgo = 90): Date => {
   const now = new Date();
@@ -99,6 +202,9 @@ export async function seedComprehensiveHealthcareData() {
 
     try {
         await waitForTables();
+        
+        // Validate database schema before proceeding
+        await validateDatabaseSchema();
 
         // Always start with a clean database
         await cleanDatabase();
