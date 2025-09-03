@@ -211,9 +211,9 @@ export async function seedComprehensiveHealthcareData() {
 
         const { users, provider } = await prisma.$transaction(async (tx) => {
             // Password setup
-            const defaultPassword = process.env.SEED_DEFAULT_PASSWORD || 'TempPassword123!';
+            const defaultPassword = process.env.SEED_DEFAULT_PASSWORD || 'T3mpP@ssw0rd168!';
             const hashedPassword = await bcrypt.hash(defaultPassword, 12);
-            const basicDoctorPassword = await bcrypt.hash('TempPassword123!', 12);
+            const basicDoctorPassword = await bcrypt.hash('T3mpP@ssw0rd168!', 12);
 
             // Helper function to create user with Auth.js v5 fields and updated schema
             const createUserData = (userData: any) => ({
@@ -1026,7 +1026,7 @@ export async function seedComprehensiveHealthcareData() {
         });
 
         const testUsers = { count: users.count };
-        const defaultPassword = process.env.SEED_DEFAULT_PASSWORD || 'TempPassword123!';
+        const defaultPassword = process.env.SEED_DEFAULT_PASSWORD || 'T3mpP@ssw0rd168!';
 
         console.log(`\n🎉 Successfully seeded comprehensive healthcare test data!`);
         console.log(`📊 Summary:`);
@@ -1050,8 +1050,8 @@ export async function seedComprehensiveHealthcareData() {
         console.log(`   - Adherence Records: 3 ✅`);
         console.log(`   - Provider: ${provider ? '✅' : '⚠️'}`);
         console.log(`\n🔑 Login Credentials:`);
-        console.log(`   - Dr. Smith (3 patients + clinic): doctor@healthapp.com / TempPassword123!`);
-        console.log(`   - Dr. Doe (2 patients): doctor1@healthapp.com / TempPassword123!`);
+        console.log(`   - Dr. Smith (3 patients + clinic): doctor@healthapp.com / T3mpP@ssw0rd168!`);
+        console.log(`   - Dr. Doe (2 patients): doctor1@healthapp.com / T3mpP@ssw0rd168!`);
         console.log(`   - All other users: email / ${sanitize(defaultPassword)}`);
         console.log(`\n📈 Dashboard Data Ready:`);
         console.log(`   - Doctor Dashboards: Patient lists, appointments, medication tracking ✅`);

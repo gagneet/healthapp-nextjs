@@ -263,8 +263,8 @@ Next.js 14 Full-Stack Healthcare Platform
 ### 📱 **Test User Accounts** (Working as of January 2025)
 
 **Doctor Accounts** (Full Medical Privileges):
-- Email: `doctor@healthapp.com` / Password: `TempPassword123!`
-- Email: `doctor1@healthapp.com` / Password: `TempPassword123!`
+- Email: `doctor@healthapp.com` / Password: `T3mpP@ssw0rd168!`
+- Email: `doctor1@healthapp.com` / Password: `T3mpP@ssw0rd168!`
 
 **System Access**:
 - **Application**: http://localhost:3002 (Next.js full-stack)

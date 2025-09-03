@@ -224,11 +224,11 @@ npm run dev
 ### Test User Accounts
 
 **Doctor Accounts** (for testing healthcare provider features):
-- Email: `doctor@healthapp.com` / Password: `TempPassword123!`  
-- Email: `doctor1@healthapp.com` / Password: `TempPassword123!`
+- Email: `doctor@healthapp.com` / Password: `T3mpP@ssw0rd168!`  
+- Email: `doctor1@healthapp.com` / Password: `T3mpP@ssw0rd168!`
 
 **Other Test Accounts** (seeded with development data):
-- Various patient, HSP, and admin accounts with password: `TempPassword123!` (or from `SEED_DEFAULT_PASSWORD` env var)
+- Various patient, HSP, and admin accounts with password: `T3mpP@ssw0rd168!` (or from `SEED_DEFAULT_PASSWORD` env var)
 
 ### Administrative Interfaces (Docker Setup)
 - **Database Admin (PgAdmin)**: [http://localhost:5050](http://localhost:5050)

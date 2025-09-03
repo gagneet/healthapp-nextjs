@@ -436,10 +436,10 @@ I've systematically addressed all the issues from the logs you provided:
 2. ✅ Auth.js v5 Authentication Fixed
 
 - Issue: Password mismatch causing "Invalid credentials"
-- Root Cause: Seed file used 'T3mpP@ssw0rd2376!' but users expected 'TempPassword123!'
+- Root Cause: Seed file used 'T3mpP@ssw0rd2376!' but users expected 'T3mpP@ssw0rd168!'
 - Fixed: Added dedicated doctor accounts with consistent password:
-    - doctor@healthapp.com / TempPassword123!
-    - doctor1@healthapp.com / TempPassword123!
+    - doctor@healthapp.com / T3mpP@ssw0rd168!
+    - doctor1@healthapp.com / T3mpP@ssw0rd168!
     - Environment variable support: SEED_DEFAULT_PASSWORD
 
 3. ✅ TypeScript Consistency Fixed
@@ -472,7 +472,7 @@ I've systematically addressed all the issues from the logs you provided:
 
 🔧 Key Improvements Made:
 
-1. Password Authentication: TempPassword123! for doctor accounts
+1. Password Authentication: T3mpP@ssw0rd168! for doctor accounts
 2. Real Dashboard Data: Actual patient counts, appointments, care plans
 3. TypeScript Consistency: No more mixed JS/MJS files
 4. Proper Error Handling: Health checks gracefully handle missing tables
@@ -689,9 +689,9 @@ npm notice
 🎉 Successfully seeded comprehensive healthcare test data!
 📊 Summary:
    - Users: 10 (5 patients, 3 doctors, 1 HSP, 1 admin, 1 provider)
-   - Basic doctor credentials: doctor@healthapp.com / TempPassword123!
-   - Basic doctor credentials: doctor1@healthapp.com / TempPassword123!
-   - Other test credentials: email/TempPassword123! for all other users
+   - Basic doctor credentials: doctor@healthapp.com / T3mpP@ssw0rd168!
+   - Basic doctor credentials: doctor1@healthapp.com / T3mpP@ssw0rd168!
+   - Other test credentials: email/T3mpP@ssw0rd168! for all other users
 Seeding completed: {
   success: true,
   message: 'Comprehensive healthcare test data seeded successfully',
