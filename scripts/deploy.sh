@@ -384,7 +384,7 @@ setup_environment() {
     export HOST_PORT_BACKEND="${PORT_BACKEND:-3002}"
     export HOST_PORT_DB="${PORT_DB:-5432}"
     export HOST_PORT_REDIS="${PORT_REDIS:-6379}"
-    export HOST_PORT_PGADMIN="${PORT_PGADMIN:-5050}"
+    export HOST_PORT_PGADMIN="${PORT_PGADMIN:-8084}"
 
     # Application URLs
     export FRONTEND_URL="${FRONTEND_URL:-http://$DOMAIN:$HOST_PORT_FRONTEND}"
