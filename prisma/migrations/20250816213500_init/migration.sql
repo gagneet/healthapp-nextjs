@@ -1,3 +1,7 @@
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+CREATE EXTENSION IF NOT EXISTS "pgcrypto";
+CREATE EXTENSION IF NOT EXISTS "pg_trgm";
+
 -- CreateSchema
 CREATE SCHEMA IF NOT EXISTS "public";
 
@@ -3080,6 +3084,84 @@ ALTER TABLE "public"."vitals" ADD CONSTRAINT "vitals_carePlanId_fkey" FOREIGN KE
 -- AddForeignKey
 ALTER TABLE "public"."vitals" ADD CONSTRAINT "vitals_vitalTemplateId_fkey" FOREIGN KEY ("vitalTemplateId") REFERENCES "public"."vitalTemplates"("id") ON DELETE NO ACTION ON UPDATE CASCADE;
 
+-- CreateTable
+CREATE TABLE "public"."prescriptions" (
+    "id" UUID NOT NULL,
+    "patientId" UUID NOT NULL,
+    "prescribingDoctorId" UUID,
+    "prescribingHspId" UUID,
+    "organizationId" UUID,
+    "prescriptionNumber" VARCHAR(100) NOT NULL,
+    "externalPrescriptionId" VARCHAR(100),
+    "medicationName" VARCHAR(255) NOT NULL,
+    "genericName" VARCHAR(255),
+    "ndcNumber" VARCHAR(20),
+    "rxnormCode" VARCHAR(20),
+    "strength" VARCHAR(50) NOT NULL,
+    "dosageForm" VARCHAR(50) NOT NULL,
+    "routeOfAdministration" VARCHAR(30) NOT NULL,
+    "doseAmount" DECIMAL(10,3) NOT NULL,
+    "doseUnit" VARCHAR(20) NOT NULL,
+    "frequency" VARCHAR(50) NOT NULL,
+    "frequencyPerDay" INTEGER,
+    "dosingSchedule" JSONB NOT NULL DEFAULT '[]',
+    "sigInstructions" TEXT NOT NULL,
+    "patientInstructions" TEXT,
+    "foodInstructions" VARCHAR(100),
+    "quantityPrescribed" INTEGER NOT NULL,
+    "quantityUnit" VARCHAR(20) NOT NULL,
+    "daysSupply" INTEGER,
+    "refillsAllowed" INTEGER NOT NULL DEFAULT 0,
+    "refillsUsed" INTEGER NOT NULL DEFAULT 0,
+    "indication" VARCHAR(255),
+    "diagnosisCodes" TEXT[] NOT NULL DEFAULT ARRAY[]::TEXT[],
+    "isControlledSubstance" BOOLEAN NOT NULL DEFAULT false,
+    "deaSchedule" VARCHAR(5),
+    "prescribedDate" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "startDate" TIMESTAMP(3),
+    "endDate" TIMESTAMP(3),
+    "expirationDate" TIMESTAMP(3),
+    "status" VARCHAR(20) NOT NULL DEFAULT 'active',
+    "discontinuationReason" VARCHAR(100),
+    "pharmacyId" UUID,
+    "pharmacyName" VARCHAR(255),
+    "pharmacyPhone" VARCHAR(20),
+    "ePrescribingId" VARCHAR(100),
+    "transmittedToPharmacy" BOOLEAN NOT NULL DEFAULT false,
+    "transmissionDate" TIMESTAMP(3),
+    "estimatedCost" DECIMAL(10,2),
+    "insuranceCoverage" JSONB NOT NULL DEFAULT '{}',
+    "drugInteractions" JSONB NOT NULL DEFAULT '[]',
+    "allergyAlerts" JSONB NOT NULL DEFAULT '[]',
+    "warnings" JSONB NOT NULL DEFAULT '[]',
+    "prescriberNpi" VARCHAR(20),
+    "prescriberDea" VARCHAR(20),
+    "electronicSignature" TEXT,
+    "requiresMonitoring" BOOLEAN NOT NULL DEFAULT false,
+    "monitoringParameters" JSONB NOT NULL DEFAULT '[]',
+    "metadata" JSONB NOT NULL DEFAULT '{}',
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "deletedAt" TIMESTAMP(3),
+
+    CONSTRAINT "prescriptions_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateIndex
+CREATE UNIQUE INDEX "prescriptions_prescriptionNumber_key" ON "public"."prescriptions"("prescriptionNumber");
+
+-- AddForeignKey
+ALTER TABLE "public"."prescriptions" ADD CONSTRAINT "prescriptions_patientId_fkey" FOREIGN KEY ("patientId") REFERENCES "public"."patients"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "public"."prescriptions" ADD CONSTRAINT "prescriptions_prescribingDoctorId_fkey" FOREIGN KEY ("prescribingDoctorId") REFERENCES "public"."doctors"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "public"."prescriptions" ADD CONSTRAINT "prescriptions_prescribingHspId_fkey" FOREIGN KEY ("prescribingHspId") REFERENCES "public"."hsps"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "public"."prescriptions" ADD CONSTRAINT "prescriptions_organizationId_fkey" FOREIGN KEY ("organizationId") REFERENCES "public"."organizations"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
 -- AddForeignKey
 ALTER TABLE "public"."patientAllergies" ADD CONSTRAINT "patient_allergies_patientId_fkey" FOREIGN KEY ("patientId") REFERENCES "public"."patients"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
@@ -3184,3 +3266,5 @@ ALTER TABLE "public"."_device_reading_to_emergency_alert" ADD CONSTRAINT "_devic
 
 -- AddForeignKey
 ALTER TABLE "public"."_device_reading_to_emergency_alert" ADD CONSTRAINT "_device_reading_to_emergency_alert_B_fkey" FOREIGN KEY ("B") REFERENCES "public"."emergencyAlerts"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- Prescriptions table (formal prescription management)

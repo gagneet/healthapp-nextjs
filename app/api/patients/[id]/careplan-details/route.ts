@@ -109,15 +109,20 @@ async function verifyPatientAccess(patientId: string, doctorId: string | null, h
     whereClause.OR = [
       { primaryCareHspId: hspId },
       {
-        patientProviderAssignments: {
+        secondaryDoctorAssignments: {
           some: {
-            // hsp_id is not a valid field on PatientProviderAssignment. This seems to be a logic error.
-            // providerId: hspId,
-            hspId: hspId,
-            isActive: true
-          }
-        }
-      }
+            secondaryHspId: hspId,
+            isActive: true,
+            secondaryHsp: {
+              isAvailable: true,
+              user: {
+                role: 'HSP',
+                accountStatus: 'ACTIVE'
+              }
+            }
+          },
+        },
+      },
     ];
   }
 
