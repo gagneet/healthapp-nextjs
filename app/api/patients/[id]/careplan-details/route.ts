@@ -113,6 +113,13 @@ async function verifyPatientAccess(patientId: string, doctorId: string | null, h
           some: {
             secondaryHspId: hspId,
             isActive: true,
+            secondaryHsp: {
+              isAvailable: true,
+              user: {
+                role: 'HSP',
+                accountStatus: 'ACTIVE'
+              }
+            }
           },
         },
       },
@@ -154,8 +161,8 @@ async function fetchCarePlanData(patientId: string) {
         select: {
           id: true,
           patientId: true,
-          overallAdherenceScore: true
-          // prescriptions: true // TODO: Re-enable when prescriptions table is available
+          overallAdherenceScore: true,
+          prescriptions: true // Fetch prescriptions for the patient
         }
       }
     },

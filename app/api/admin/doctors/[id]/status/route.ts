@@ -103,7 +103,7 @@ export async function PUT(
             resource: `doctor_status_${params.id}`,
             accessGranted: true,
             timestamp: new Date(),
-            changes: {
+            dataChanges: {
               previousStatus: existingDoctor.user.accountStatus,
               newStatus: status || existingDoctor.user.accountStatus,
               previousVerified: existingDoctor.isVerified,
