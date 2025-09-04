@@ -59,13 +59,9 @@ export async function GET(
         medicine: {
           select: {
             name: true,
-            genericName: true,
-            brandNames: true,
-            dosageForm: true,
-            strength: true,
-            activeIngredient: true,
-            category: true,
-            description: true
+            type: true,
+            description: true,
+            details: true
           }
         },
         carePlan: {
@@ -82,26 +78,29 @@ export async function GET(
     });
 
     // Transform the data to match frontend expectations
-    const transformedMedications = medications.map(medication => ({
-      id: medication.id,
-      name: medication.medicine?.name || 'Unknown Medication',
-      genericName: medication.medicine?.genericName,
-      brandNames: medication.medicine?.brandNames,
-      dosage: medication.dosage,
-      frequency: medication.frequency,
-      startDate: medication.startDate?.toISOString(),
-      endDate: medication.endDate?.toISOString(),
-      lastTaken: medication.lastTaken?.toISOString(),
-      nextDue: medication.nextDue?.toISOString(),
-      adherenceRate: medication.adherenceRate,
-      isCritical: medication.isCritical,
-      notes: medication.notes,
-      status: medication.status,
-      carePlan: medication.carePlan,
-      medicine: medication.medicine,
-      createdAt: medication.createdAt.toISOString(),
-      updatedAt: medication.updatedAt.toISOString()
-    }));
+    const transformedMedications = medications.map(medication => {
+      const medicineDetails = medication.medicine?.details as any || {};
+      return {
+        id: medication.id,
+        name: medication.medicine?.name || 'Unknown Medication',
+        genericName: medicineDetails.genericName || null,
+        brandNames: medicineDetails.brand_names || null,
+        dosage: medication.dosage,
+        frequency: medication.frequency,
+        startDate: medication.startDate?.toISOString(),
+        endDate: medication.endDate?.toISOString(),
+        lastTaken: medication.lastTaken?.toISOString(),
+        nextDue: medication.nextDue?.toISOString(),
+        adherenceRate: medication.adherenceRate,
+        isCritical: medication.isCritical,
+        notes: medication.notes,
+        status: medication.status,
+        carePlan: medication.carePlan,
+        medicine: medication.medicine,
+        createdAt: medication.createdAt.toISOString(),
+        updatedAt: medication.updatedAt.toISOString()
+      };
+    });
 
     return NextResponse.json(formatApiSuccess(
       { medications: transformedMedications },

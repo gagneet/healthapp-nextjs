@@ -47,13 +47,9 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
         medicine: {
           select: {
             name: true,
-            genericName: true,
-            brandNames: true,
-            dosageForm: true,
-            strength: true,
-            activeIngredient: true,
-            category: true,
-            description: true
+            type: true,
+            description: true,
+            details: true
           }
         },
         carePlan: {
@@ -108,8 +104,8 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       id: medication.id,
       patientId: medication.patientId,
       name: medication.medicine?.name || 'Unknown Medication',
-      genericName: medication.medicine?.genericName,
-      brandNames: medication.medicine?.brandNames,
+      genericName: (medication.medicine?.details as any)?.genericName || null,
+      brandNames: (medication.medicine?.details as any)?.brand_names || null,
       dosage: medication.dosage,
       frequency: medication.frequency,
       startDate: medication.startDate?.toISOString(),

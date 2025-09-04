@@ -136,7 +136,7 @@ export async function GET(request: NextRequest) {
         medication: {
           include: {
             medicine: { 
-              select: { name: true, dosageForm: true, category: true }
+              select: { name: true, type: true, details: true }
             },
             patient: {
               include: {

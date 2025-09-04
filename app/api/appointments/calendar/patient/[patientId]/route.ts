@@ -212,7 +212,7 @@ export async function GET(
           ]
         },
         include: {
-          medicine: { select: { name: true, dosageForm: true } }
+          medicine: { select: { name: true, type: true, details: true } }
         }
       });
 
@@ -344,7 +344,7 @@ function generateMedicationEvents(medication: any, startDate: Date, endDate: Dat
           name: medication.medicine.name,
           dosage: medication.dosage,
           dosageUnit: medication.dosageUnit,
-          dosageForm: medication.medicine.dosageForm
+          dosageForm: (medication.medicine.details as any)?.dosage_form || null
         },
         metadata: {
           medicationId: medication.id,

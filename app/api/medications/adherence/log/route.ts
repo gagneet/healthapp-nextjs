@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
           }
         },
         medicine: { 
-          select: { name: true, dosageForm: true, category: true }
+          select: { name: true, type: true, details: true }
         }
       }
     });
@@ -201,7 +201,7 @@ export async function POST(request: NextRequest) {
       include: {
         medication: {
           include: {
-            medicine: { select: { name: true, dosageForm: true } },
+            medicine: { select: { name: true, type: true, details: true } },
             patient: {
               include: {
                 user: { select: { firstName: true, lastName: true } }
@@ -248,7 +248,7 @@ export async function POST(request: NextRequest) {
         id: adherenceLog.id,
         medication: {
           name: adherenceLog.medication.medicine.name,
-          dosageForm: adherenceLog.medication.medicine.dosageForm
+          dosageForm: (adherenceLog.medication.medicine.details as any)?.dosage_form || null
         },
         patient: {
           name: `${adherenceLog.medication.patient.user.firstName} ${adherenceLog.medication.patient.user.lastName}`
@@ -375,7 +375,7 @@ export async function GET(request: NextRequest) {
         include: {
           medication: {
             include: {
-              medicine: { select: { name: true, dosageForm: true, category: true } },
+              medicine: { select: { name: true, type: true, details: true } },
               patient: {
                 include: {
                   user: { select: { firstName: true, lastName: true } }
@@ -403,8 +403,8 @@ export async function GET(request: NextRequest) {
         medication: {
           id: log.medicationId,
           name: log.medication.medicine.name,
-          dosageForm: log.medication.medicine.dosageForm,
-          category: log.medication.medicine.category
+          dosageForm: (log.medication.medicine.details as any)?.dosage_form || null,
+          category: (log.medication.medicine.details as any)?.drug_class || null
         },
         patient: session.user.role !== 'PATIENT' ? {
           name: `${log.medication.patient.user.firstName} ${log.medication.patient.user.lastName}`

@@ -365,11 +365,11 @@ export async function getPatients(doctorId: string, pagination: {
           },
           appointments: {
             orderBy: {
-              startDate: 'desc',
+              startTime: 'desc',
             },
             take: 1,
             select: {
-              startDate: true,
+              startTime: true,
             },
           },
           adherenceRecords: {
@@ -382,7 +382,7 @@ export async function getPatients(doctorId: string, pagination: {
               emergencyAlerts: {
                 where: {
                   resolved: false,
-                  priorityLevel: 'CRITICAL',
+                  priorityLevel: 'HIGH',
                 },
               },
             },
@@ -746,7 +746,7 @@ export async function getDoctorDashboard(doctorUserId: string) {
           }
         }
       },
-      orderBy: { startDate: 'asc' },
+      orderBy: { startTime: 'asc' },
       take: 3
     });
 
