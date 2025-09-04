@@ -26,7 +26,12 @@ import BodyDiagramEnhanced from '@/components/ui/body-diagram-enhanced'
 import SymptomsTimeline from '@/components/ui/symptoms-timeline'
 
 // API Response types for patient data
-// This interface is now aligned with the actual API response for a single patient.
+// Updated: This interface was previously misaligned with the API response for a single patient.
+// - The field 'patientId' was added to match the API.
+// - The 'medicalRecordNumber' type was changed from 'string' to 'string | null' for accuracy.
+// - The 'user' object now includes 'accountStatus' and nullable fields for 'phone', 'dateOfBirth', and 'gender'.
+// - The fields 'adherenceRate', 'criticalAlerts', and 'createdAt' were added to reflect the latest API contract.
+// This alignment ensures type safety and consistency with the backend API.
 interface PatientAPIResponse {
   id: string;
   patientId: string;
