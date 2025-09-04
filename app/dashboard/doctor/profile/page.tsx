@@ -753,13 +753,13 @@ export default function DoctorProfilePage() {
               {(profile.professional.boardCertifications || []).map((cert, index) => {
                 if (typeof cert === 'string') {
                   return (
-                    <div key={index} className="border rounded-lg p-4 bg-green-50">
+                    <div key={cert} className="border rounded-lg p-4 bg-green-50">
                       <h4 className="font-medium text-gray-900">{cert}</h4>
                     </div>
                   )
                 }
                 return (
-                  <div key={index} className="border rounded-lg p-4 bg-green-50">
+                  <div key={cert.name || cert.credentialId || index} className="border rounded-lg p-4 bg-green-50">
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
                         <h4 className="font-medium text-gray-900">{cert.name}</h4>
