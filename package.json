@@ -44,7 +44,7 @@
     "db:studio": "npx prisma studio",
     "db:setup": "npm run db:generate && npm run migrate && npm run seed",
     "swagger": "npx next-swagger-doc -c next-swagger-doc.json -o ./swagger.json",
-    "postman": "openapi2postmanv2 -s ./swagger.json -o ./postman-collection.json"
+    "postman": "./node_modules/.bin/openapi2postmanv2 -s ./swagger.json -o ./postman-collection.json"
   },
   "devDependencies": {
     "@babel/preset-env": "^7.28.3",
