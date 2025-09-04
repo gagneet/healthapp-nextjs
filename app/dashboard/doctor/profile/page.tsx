@@ -253,6 +253,14 @@ export default function DoctorProfilePage() {
     )
   }
 
+  const renderValidatedDate = (dateString: string | undefined, prefix: string) => {
+    if (!dateString) return null;
+    if (isNaN(Date.parse(dateString))) {
+      return <p className="text-xs text-gray-500">{prefix}: Invalid date</p>;
+    }
+    return <p className="text-xs text-gray-500">{prefix}: {formatDate(dateString)}</p>;
+  };
+
   const EditableField = ({ 
     field, 
     value, 
@@ -695,7 +703,7 @@ export default function DoctorProfilePage() {
                 <h4 className="text-sm font-semibold text-gray-700 mb-3">Medical Degrees</h4>
                 <div className="space-y-3">
                   {(profile.professional.qualificationDetails || []).filter(q => q.type === 'degree').map((edu, index) => (
-                    <QualificationCard key={`degree-${edu.degree}-${index}`} {...edu} onEdit={() => {}} />
+                    <QualificationCard key={`degree-${edu.degree}-${index}`} {...edu} />
                   ))}
                 </div>
               </div>
@@ -705,7 +713,7 @@ export default function DoctorProfilePage() {
                 <h4 className="text-sm font-semibold text-gray-700 mb-3">Specializations & Residencies</h4>
                 <div className="space-y-3">
                   {(profile.professional.qualificationDetails || []).filter(q => q.type === 'specialization').map((spec, index) => (
-                    <QualificationCard key={`spec-${spec.degree}-${index}`} {...spec} onEdit={() => {}} />
+                    <QualificationCard key={`spec-${spec.degree}-${index}`} {...spec} />
                   ))}
                 </div>
               </div>
@@ -715,7 +723,7 @@ export default function DoctorProfilePage() {
                 <h4 className="text-sm font-semibold text-gray-700 mb-3">Continuing Education & Training</h4>
                 <div className="space-y-3">
                   {(profile.professional.qualificationDetails || []).filter(q => q.type === 'continuing_education').map((edu, index) => (
-                    <QualificationCard key={`edu-${edu.degree}-${index}`} {...edu} onEdit={() => {}} />
+                    <QualificationCard key={`edu-${edu.degree}-${index}`} {...edu} />
                   ))}
                 </div>
               </div>
@@ -742,34 +750,33 @@ export default function DoctorProfilePage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {(profile.professional.boardCertifications || []).map((cert, index) => (
-                <div key={index} className="border rounded-lg p-4 bg-green-50">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <h4 className="font-medium text-gray-900">{cert.name}</h4>
-                      {cert.issuer && <p className="text-sm text-gray-600">{cert.issuer}</p>}
-                      {cert.issueDate && !isNaN(Date.parse(cert.issueDate)) && (
-                        <p className="text-xs text-gray-500">Issued: {formatDate(cert.issueDate)}</p>
-                      )}
-                      {cert.issueDate && isNaN(Date.parse(cert.issueDate)) && (
-                        <p className="text-xs text-gray-500">Issued: Invalid date</p>
-                      )}
-                      {cert.expiryDate && !isNaN(Date.parse(cert.expiryDate)) && (
-                        <p className="text-xs text-gray-500">Expires: {formatDate(cert.expiryDate)}</p>
-                      )}
-                      {cert.expiryDate && isNaN(Date.parse(cert.expiryDate)) && (
-                        <p className="text-xs text-gray-500">Expires: Invalid date</p>
-                      )}
-                      {cert.credentialId && (
-                        <p className="text-xs text-gray-400 mt-1">ID: {cert.credentialId}</p>
-                      )}
+              {(profile.professional.boardCertifications || []).map((cert, index) => {
+                if (typeof cert === 'string') {
+                  return (
+                    <div key={index} className="border rounded-lg p-4 bg-green-50">
+                      <h4 className="font-medium text-gray-900">{cert}</h4>
                     </div>
-                    <button className="text-green-600 hover:text-green-700 p-1">
-                      <PencilIcon className="h-4 w-4" />
-                    </button>
+                  )
+                }
+                return (
+                  <div key={index} className="border rounded-lg p-4 bg-green-50">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <h4 className="font-medium text-gray-900">{cert.name}</h4>
+                        {cert.issuer && <p className="text-sm text-gray-600">{cert.issuer}</p>}
+                        {renderValidatedDate(cert.issueDate, "Issued")}
+                        {renderValidatedDate(cert.expiryDate, "Expires")}
+                        {cert.credentialId && (
+                          <p className="text-xs text-gray-400 mt-1">ID: {cert.credentialId}</p>
+                        )}
+                      </div>
+                      <button className="text-green-600 hover:text-green-700 p-1">
+                        <PencilIcon className="h-4 w-4" />
+                      </button>
+                    </div>
                   </div>
-                </div>
-              ))}
+                )
+              })}
               {(!profile.professional.boardCertifications || profile.professional.boardCertifications.length === 0) && (
                 <div className="text-center py-4">
                   <DocumentTextIcon className="mx-auto h-12 w-12 text-gray-400" />

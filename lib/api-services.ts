@@ -482,7 +482,10 @@ export async function getPatient(patientId: string) {
       id: patient.id,
       patientId: patient.patientId,
       medicalRecordNumber: patient.medicalRecordNumber,
+      primaryCareDoctorId: patient.primaryCareDoctorId,
+      userId: patient.userId,
       user: {
+        id: patient.user.id,
         firstName: patient.user.firstName,
         lastName: patient.user.lastName,
         email: patient.user.email,
