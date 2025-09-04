@@ -108,7 +108,7 @@ export async function GET(
         carePlan: {
           select: {
             id: true,
-            planName: true,
+            title: true,
             status: true
           }
         }

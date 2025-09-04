@@ -52,7 +52,7 @@ export async function GET(
     // Get medications for the specific patient
     const medications = await prisma.medication.findMany({
       where: {
-        patientId: patientId,
+        participantId: patientId,
         deletedAt: null // Only active medications
       },
       include: {
@@ -71,7 +71,7 @@ export async function GET(
         carePlan: {
           select: {
             id: true,
-            name: true,
+            title: true,
             status: true
           }
         }

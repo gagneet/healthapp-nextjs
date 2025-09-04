@@ -85,7 +85,6 @@ export async function GET(
             unit: true,
             normalRangeMin: true,
             normalRangeMax: true,
-            category: true,
             description: true
           }
         }
