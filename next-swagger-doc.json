@@ -1,0 +1,11 @@
+{
+  "apiFolder": "app/api",
+  "schemaFolders": [],
+  "definition": {
+    "openapi": "3.0.0",
+    "info": {
+      "title": "HealthApp API",
+      "version": "1.0"
+    }
+  }
+}

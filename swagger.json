@@ -1,0 +1,24 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "HealthApp API",
+    "version": "1.0"
+  },
+  "paths": {
+    "/api/health": {
+      "get": {
+        "description": "Returns the health status of the application",
+        "responses": {
+          "200": {
+            "description": "Application is healthy"
+          },
+          "503": {
+            "description": "Application is degraded"
+          }
+        }
+      }
+    }
+  },
+  "components": {},
+  "tags": []
+}

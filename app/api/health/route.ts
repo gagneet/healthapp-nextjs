@@ -4,8 +4,15 @@ import { prisma, checkDatabaseConnection } from '@/lib/prisma';
 import { handleApiError, formatApiSuccess } from '@/lib/api-services';
 
 /**
- * GET /api/health
- * Health check endpoint for the API with real database connection
+ * @swagger
+ * /api/health:
+ *   get:
+ *     description: Returns the health status of the application
+ *     responses:
+ *       200:
+ *         description: Application is healthy
+ *       503:
+ *         description: Application is degraded
  */
 export async function GET(request: NextRequest) {
   try {

@@ -42,7 +42,9 @@
     "db:pull": "npx prisma db pull",
     "db:push": "npx prisma db push",
     "db:studio": "npx prisma studio",
-    "db:setup": "npm run db:generate && npm run migrate && npm run seed"
+    "db:setup": "npm run db:generate && npm run migrate && npm run seed",
+    "swagger": "npx next-swagger-doc -c next-swagger-doc.json -o ./swagger.json",
+    "postman": "openapi2postmanv2 -s ./swagger.json -o ./postman-collection.json"
   },
   "devDependencies": {
     "@babel/preset-env": "^7.28.3",
@@ -76,6 +78,7 @@
     "@react-three/drei": "^9.122.0",
     "@react-three/fiber": "^8.18.0",
     "@types/qrcode": "^1.5.5",
+    "@types/swagger-ui-react": "^5.18.0",
     "@types/three": "^0.180.0",
     "autoprefixer": "^10.4.0",
     "axios": "^1.11.0",
@@ -92,8 +95,10 @@
     "moment": "^2.30.1",
     "next": "^14.2.32",
     "next-auth": "^5.0.0-beta.29",
+    "next-swagger-doc": "^0.4.1",
     "node-cron": "^3.0.3",
     "nodemailer": "^6.10.1",
+    "openapi-to-postmanv2": "^5.1.0",
     "otplib": "^12.0.1",
     "pg": "^8.16.3",
     "pg-hstore": "^2.3.4",
@@ -107,6 +112,7 @@
     "redis": "^5.6.1",
     "socket.io": "^4.7.5",
     "stripe": "^14.14.0",
+    "swagger-ui-react": "^5.28.1",
     "tailwind-merge": "^2.3.0",
     "tailwindcss": "^3.4.0",
     "three": "^0.180.0",
