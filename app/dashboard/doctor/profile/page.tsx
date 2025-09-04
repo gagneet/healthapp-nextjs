@@ -30,6 +30,24 @@ import { formatDate } from '@/lib/utils'
 import toast from 'react-hot-toast'
 import { QualificationCard } from '@/components/dashboard/QualificationCard';
 
+type Qualification = {
+  degree: string;
+  institution: string;
+  year: string;
+  type: 'degree' | 'specialization' | 'continuing_education';
+  honors?: string;
+  duration?: string;
+  credits?: string;
+};
+
+type Certification = {
+  name: string;
+  issuer?: string;
+  issueDate?: string;
+  expiryDate?: string;
+  credentialId?: string;
+};
+
 interface DoctorProfile {
   id: string;
   doctorId: string;
@@ -139,15 +157,16 @@ export default function DoctorProfilePage() {
     setTempValues({ [field]: currentValue })
   }
 
-  const handleSaveField = async (field: string) => {
+  const handleSaveField = async (field: string, valueToSave?: any) => {
     try {
       const fieldParts = field.split('.');
       const updateData: any = {};
       let currentLevel = updateData;
+      const value = valueToSave !== undefined ? valueToSave : tempValues[field];
 
       fieldParts.forEach((part, index) => {
         if (index === fieldParts.length - 1) {
-          currentLevel[part] = tempValues[field];
+          currentLevel[part] = value;
         } else {
           currentLevel[part] = {};
           currentLevel = currentLevel[part];
@@ -166,7 +185,7 @@ export default function DoctorProfilePage() {
           let currentLevel = newProfile;
           fieldParts.forEach((part:string, index:number) => {
             if (index === fieldParts.length - 1) {
-              currentLevel[part] = tempValues[field];
+              currentLevel[part] = value;
             } else {
               currentLevel = currentLevel[part];
             }
@@ -312,7 +331,7 @@ export default function DoctorProfilePage() {
   }: {
     isOpen: boolean
     onClose: () => void
-    onSave: (qualification: any) => void
+    onSave: (qualification: Qualification) => void
   }) => {
     const [degree, setDegree] = useState('')
     const [institution, setInstitution] = useState('')
@@ -335,7 +354,16 @@ export default function DoctorProfilePage() {
               <label className="block text-sm font-medium text-gray-700">Type</label>
               <select
                 value={type}
-                onChange={(e) => setType(e.target.value as any)}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  if (
+                    value === 'degree' ||
+                    value === 'specialization' ||
+                    value === 'continuing_education'
+                  ) {
+                    setType(value);
+                  }
+                }}
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
               >
                 <option value="degree">Medical Degree</option>
@@ -397,7 +425,7 @@ export default function DoctorProfilePage() {
   }: {
     isOpen: boolean
     onClose: () => void
-    onSave: (certification: any) => void
+    onSave: (certification: Certification) => void
   }) => {
     const [name, setName] = useState('')
     const [issuer, setIssuer] = useState('')
