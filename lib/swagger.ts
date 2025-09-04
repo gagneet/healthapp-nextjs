@@ -1,8 +1,7 @@
-import { createSwaggerSpec } from 'next-swagger-doc';
+import swaggerJsdoc from 'swagger-jsdoc';
 
 export const getApiDocs = async () => {
-  const spec = createSwaggerSpec({
-    apiFolder: 'app/api', // define api folder under app folder
+  const options = {
     definition: {
       openapi: '3.0.0',
       info: {
@@ -24,6 +23,9 @@ export const getApiDocs = async () => {
         },
       ],
     },
-  });
+    apis: ['./app/api-docs/swagger-definitions.js', './app/api/health/route.ts'], // files containing annotations
+  };
+
+  const spec = swaggerJsdoc(options);
   return spec;
 };
