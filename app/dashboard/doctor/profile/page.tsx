@@ -344,6 +344,10 @@ export default function DoctorProfilePage() {
     if (!isOpen) return null
 
     const handleSave = () => {
+      if (!degree || !institution || !year) {
+        toast.error('Please fill out all required fields.');
+        return;
+      }
       onSave({ degree, institution, year, type })
       onClose()
     }
@@ -437,6 +441,10 @@ export default function DoctorProfilePage() {
     if (!isOpen) return null
 
     const handleSave = () => {
+      if (!name) {
+        toast.error('Please provide a name for the certification.');
+        return;
+      }
       onSave({ name, issuer, issueDate })
       onClose()
     }
@@ -687,7 +695,7 @@ export default function DoctorProfilePage() {
                 <h4 className="text-sm font-semibold text-gray-700 mb-3">Medical Degrees</h4>
                 <div className="space-y-3">
                   {(profile.professional.qualificationDetails || []).filter(q => q.type === 'degree').map((edu, index) => (
-                    <QualificationCard key={index} {...edu} onEdit={() => {}} />
+                    <QualificationCard key={`degree-${edu.degree}-${index}`} {...edu} onEdit={() => {}} />
                   ))}
                 </div>
               </div>
@@ -697,7 +705,7 @@ export default function DoctorProfilePage() {
                 <h4 className="text-sm font-semibold text-gray-700 mb-3">Specializations & Residencies</h4>
                 <div className="space-y-3">
                   {(profile.professional.qualificationDetails || []).filter(q => q.type === 'specialization').map((spec, index) => (
-                    <QualificationCard key={index} {...spec} onEdit={() => {}} />
+                    <QualificationCard key={`spec-${spec.degree}-${index}`} {...spec} onEdit={() => {}} />
                   ))}
                 </div>
               </div>
@@ -707,7 +715,7 @@ export default function DoctorProfilePage() {
                 <h4 className="text-sm font-semibold text-gray-700 mb-3">Continuing Education & Training</h4>
                 <div className="space-y-3">
                   {(profile.professional.qualificationDetails || []).filter(q => q.type === 'continuing_education').map((edu, index) => (
-                    <QualificationCard key={index} {...edu} onEdit={() => {}} />
+                    <QualificationCard key={`edu-${edu.degree}-${index}`} {...edu} onEdit={() => {}} />
                   ))}
                 </div>
               </div>
@@ -740,8 +748,18 @@ export default function DoctorProfilePage() {
                     <div className="flex-1">
                       <h4 className="font-medium text-gray-900">{cert.name}</h4>
                       {cert.issuer && <p className="text-sm text-gray-600">{cert.issuer}</p>}
-                      {cert.issueDate && <p className="text-xs text-gray-500">Issued: {formatDate(cert.issueDate)}</p>}
-                      {cert.expiryDate && <p className="text-xs text-gray-500">Expires: {formatDate(cert.expiryDate)}</p>}
+                      {cert.issueDate && !isNaN(Date.parse(cert.issueDate)) && (
+                        <p className="text-xs text-gray-500">Issued: {formatDate(cert.issueDate)}</p>
+                      )}
+                      {cert.issueDate && isNaN(Date.parse(cert.issueDate)) && (
+                        <p className="text-xs text-gray-500">Issued: Invalid date</p>
+                      )}
+                      {cert.expiryDate && !isNaN(Date.parse(cert.expiryDate)) && (
+                        <p className="text-xs text-gray-500">Expires: {formatDate(cert.expiryDate)}</p>
+                      )}
+                      {cert.expiryDate && isNaN(Date.parse(cert.expiryDate)) && (
+                        <p className="text-xs text-gray-500">Expires: Invalid date</p>
+                      )}
                       {cert.credentialId && (
                         <p className="text-xs text-gray-400 mt-1">ID: {cert.credentialId}</p>
                       )}
