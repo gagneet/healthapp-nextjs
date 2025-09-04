@@ -433,22 +433,25 @@ export async function seedComprehensiveHealthcareData() {
             ];
 
             for (const doctorData of doctorsToCreate) {
-                const user = await tx.user.upsert({
-                    where: { id: doctorData.user.id },
-                    update: doctorData.user,
-                    create: doctorData.user,
-                });
-
-                const profileData = {
-                    ...doctorData.profile,
-                    userId: user.id,
-                };
-
-                await tx.doctor.upsert({
-                    where: { id: doctorData.profile.id },
-                    update: profileData,
-                    create: profileData,
-                });
+                try {
+                    const user = await tx.user.upsert({
+                        where: { id: doctorData.user.id },
+                        update: doctorData.user,
+                        create: doctorData.user,
+                    });
+                    const profileData = {
+                        ...doctorData.profile,
+                        userId: user.id,
+                    };
+                    await tx.doctor.upsert({
+                        where: { id: doctorData.profile.id },
+                        update: profileData,
+                        create: profileData,
+                    });
+                } catch (error) {
+                    console.error(`Failed to create/update doctor ${doctorData.user.id}:`, error);
+                    throw error; // Re-throw to trigger transaction rollback
+                }
             }
             console.log(`✅ Created doctor profiles`);
 

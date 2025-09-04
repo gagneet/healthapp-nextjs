@@ -87,25 +87,24 @@ export async function GET(
     const transformedMedications = medications.map(medication => {
       const medicineDetails = medication.medicine?.details as any || {};
       const medicationDetails = medication.details as any || {};
-
       return {
-        id: medication.id,
-        name: medication.medicine?.name || 'Unknown Medication',
-        genericName: medicineDetails.genericName,
-        brandNames: medicineDetails.brand_names,
-        dosage: medicationDetails.dosage,
-        frequency: medicationDetails.frequency,
-        startDate: medication.startDate?.toISOString(),
-        endDate: medication.endDate?.toISOString(),
-        lastTaken: medicationDetails.lastTaken,
-        nextDue: medicationDetails.nextDue,
-        adherenceRate: medicationDetails.adherenceRate,
-        isCritical: medicationDetails.isCritical,
-        notes: medicationDetails.notes,
-        status: medicationDetails.status,
-        carePlan: medication.carePlan,
-        createdAt: medication.createdAt.toISOString(),
-        updatedAt: medication.updatedAt.toISOString()
+          id: medication.id,
+          name: medication.medicine?.name || 'Unknown Medication',
+          genericName: medicineDetails.genericName || null,
+          brandNames: medicineDetails.brand_names || null,
+          dosage: medicationDetails.dosage || null,
+          frequency: medicationDetails.frequency || null,
+          startDate: medication.startDate?.toISOString(),
+          endDate: medication.endDate?.toISOString(),
+          lastTaken: medicationDetails.lastTaken || null,
+          nextDue: medicationDetails.nextDue || null,
+          adherenceRate: medicationDetails.adherenceRate || 0,
+          isCritical: medicationDetails.isCritical || false,
+          notes: medicationDetails.notes || '',
+          status: medicationDetails.status || 'ACTIVE',
+          carePlan: medication.carePlan,
+          createdAt: medication.createdAt.toISOString(),
+          updatedAt: medication.updatedAt.toISOString()
       };
     });
 
