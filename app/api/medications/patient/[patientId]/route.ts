@@ -55,13 +55,19 @@ export async function GET(
         participantId: patientId,
         deletedAt: null // Only active medications
       },
-      include: {
+      select: {
+        id: true,
+        startDate: true,
+        endDate: true,
+        details: true,
+        createdAt: true,
+        updatedAt: true,
         medicine: {
           select: {
             name: true,
             type: true,
             description: true,
-            details: true
+            details: true,
           }
         },
         carePlan: {
@@ -80,23 +86,24 @@ export async function GET(
     // Transform the data to match frontend expectations
     const transformedMedications = medications.map(medication => {
       const medicineDetails = medication.medicine?.details as any || {};
+      const medicationDetails = medication.details as any || {};
+
       return {
         id: medication.id,
         name: medication.medicine?.name || 'Unknown Medication',
-        genericName: medicineDetails.genericName || null,
-        brandNames: medicineDetails.brand_names || null,
-        dosage: medication.dosage,
-        frequency: medication.frequency,
+        genericName: medicineDetails.genericName,
+        brandNames: medicineDetails.brand_names,
+        dosage: medicationDetails.dosage,
+        frequency: medicationDetails.frequency,
         startDate: medication.startDate?.toISOString(),
         endDate: medication.endDate?.toISOString(),
-        lastTaken: medication.lastTaken?.toISOString(),
-        nextDue: medication.nextDue?.toISOString(),
-        adherenceRate: medication.adherenceRate,
-        isCritical: medication.isCritical,
-        notes: medication.notes,
-        status: medication.status,
+        lastTaken: medicationDetails.lastTaken,
+        nextDue: medicationDetails.nextDue,
+        adherenceRate: medicationDetails.adherenceRate,
+        isCritical: medicationDetails.isCritical,
+        notes: medicationDetails.notes,
+        status: medicationDetails.status,
         carePlan: medication.carePlan,
-        medicine: medication.medicine,
         createdAt: medication.createdAt.toISOString(),
         updatedAt: medication.updatedAt.toISOString()
       };

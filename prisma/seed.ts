@@ -432,17 +432,23 @@ export async function seedComprehensiveHealthcareData() {
                 }
             ];
 
-            for (const doctor of doctorsToCreate) {
-                const existingUser = await tx.user.findUnique({ where: { id: doctor.user.id } });
-                if (!existingUser) {
-                    const newUser = await tx.user.create({ data: doctor.user });
-                    await tx.doctor.create({ data: { ...doctor.profile, userId: newUser.id } });
-                } else {
-                    const existingProfile = await tx.doctor.findUnique({ where: { userId: existingUser.id } });
-                    if (!existingProfile) {
-                        await tx.doctor.create({ data: { ...doctor.profile, userId: existingUser.id } });
-                    }
-                }
+            for (const doctorData of doctorsToCreate) {
+                const user = await tx.user.upsert({
+                    where: { id: doctorData.user.id },
+                    update: doctorData.user,
+                    create: doctorData.user,
+                });
+
+                const profileData = {
+                    ...doctorData.profile,
+                    userId: user.id,
+                };
+
+                await tx.doctor.upsert({
+                    where: { id: doctorData.profile.id },
+                    update: profileData,
+                    create: profileData,
+                });
             }
             console.log(`✅ Created doctor profiles`);
 
