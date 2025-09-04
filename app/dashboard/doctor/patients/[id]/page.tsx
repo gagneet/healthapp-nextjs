@@ -26,37 +26,29 @@ import BodyDiagramEnhanced from '@/components/ui/body-diagram-enhanced'
 import SymptomsTimeline from '@/components/ui/symptoms-timeline'
 
 // API Response types for patient data
+// Updated: This interface was previously misaligned with the API response for a single patient.
+// - The field 'patientId' was added to match the API.
+// - The 'medicalRecordNumber' type was changed from 'string' to 'string | null' for accuracy.
+// - The 'user' object now includes 'accountStatus' and nullable fields for 'phone', 'dateOfBirth', and 'gender'.
+// - The fields 'adherenceRate', 'criticalAlerts', and 'createdAt' were added to reflect the latest API contract.
+// This alignment ensures type safety and consistency with the backend API.
 interface PatientAPIResponse {
-  patients: {
-    [key: string]: {
-      basic_info: {
-        id: string
-        userId: string
-        firstName: string
-        lastName: string
-        email?: string
-        gender?: string
-        medicalRecordNumber?: string
-        mobileNumber?: string
-        current_age?: number
-      }
-      medical_info?: {
-        allergies?: string[]
-        chronic_conditions?: string[]
-        current_medications?: string[]
-        family_medical_history?: any
-        emergency_contact?: any
-        insurance_info?: any
-      }
-      primary_doctor?: {
-        id: string
-        name: string
-        email: string
-      } | null
-      createdAt: string
-      updatedAt: string
-    }
-  }
+  id: string;
+  patientId: string;
+  medicalRecordNumber: string | null;
+  user: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    phone: string | null;
+    dateOfBirth: string | null;
+    gender: string | null;
+    accountStatus: string;
+  };
+  adherenceRate: number;
+  criticalAlerts: number;
+  createdAt: string;
 }
 
 // Mock data removed - using real API data only
@@ -254,31 +246,32 @@ export default function PatientDetailsPage() {
         throw new Error(`Failed to fetch patient data: ${response.statusText}`)
       }
 
-      const data: { payload: { data: PatientAPIResponse } } = await response.json()
-      const patientData = Object.values(data.payload.data.patients)[0]
-      
-      if (patientData) {
-        // Transform API response to match frontend Patient type
-        const transformedPatient: Patient = {
-          id: patientData.basic_info.id,
-          userId: patientData.basic_info.userId,
-          firstName: patientData.basic_info.firstName || '',
-          lastName: patientData.basic_info.lastName || '',
-          email: patientData.basic_info.email || '',
-          phone: patientData.basic_info.mobileNumber || '',
-          // date_of_birth not available in Patient type
-          gender: patientData.basic_info.gender || '',
-          medicalRecordNumber: patientData.basic_info.medicalRecordNumber || '',
-          lastVisit: '', // This might need to be calculated
-          nextAppointment: '', // This will come from appointments API
-          adherenceRate: 85, // This will need to be calculated
-          criticalAlerts: 0, // This will need to be calculated
-          status: 'active',
-          createdAt: patientData.createdAt,
-          profilePictureUrl: ''
-        }
-        setPatient(transformedPatient)
+      const data: { payload: { data: PatientAPIResponse } } = await response.json();
+      const patientData = data.payload.data;
+
+      if (!patientData) {
+        throw new Error('No patient data found');
       }
+
+      // Transform API response to match frontend Patient type
+      const transformedPatient: Patient = {
+        id: patientData.id,
+        userId: patientData.user.id, // Corrected: Use user.id for the user's ID
+        firstName: patientData.user.firstName || '',
+        lastName: patientData.user.lastName || '',
+        email: patientData.user.email || '',
+        phone: patientData.user.phone || '',
+        gender: patientData.user.gender || '',
+        medicalRecordNumber: patientData.medicalRecordNumber || '',
+        lastVisit: '', // Will be calculated from appointments
+        nextAppointment: '', // Will be calculated from appointments
+        adherenceRate: patientData.adherenceRate,
+        criticalAlerts: patientData.criticalAlerts,
+        status: patientData.user.accountStatus,
+        createdAt: patientData.createdAt,
+        profilePictureUrl: '', // Placeholder
+      };
+      setPatient(transformedPatient);
     } catch (err) {
       console.error('Error fetching patient data:', err)
       setError(err instanceof Error ? err.message : 'Failed to load patient data')
@@ -404,6 +397,28 @@ export default function PatientDetailsPage() {
       loadAllData()
     }
   }, [patientId, fetchPatientData, fetchMedications, fetchVitals, fetchAppointments, fetchCarePlans])
+
+  useEffect(() => {
+    if (appointments.length > 0) {
+      const now = new Date();
+      const pastAppointments = appointments
+        .filter(a => new Date(a.startTime) < now)
+        .sort((a, b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime());
+
+      const futureAppointments = appointments
+        .filter(a => new Date(a.startTime) >= now)
+        .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
+
+      setPatient(prev => {
+        if (!prev) return null;
+        return {
+          ...prev,
+          lastVisit: pastAppointments.length > 0 ? pastAppointments[0].startTime : '',
+          nextAppointment: futureAppointments.length > 0 ? futureAppointments[0].startTime : '',
+        };
+      });
+    }
+  }, [appointments]);
 
   if (isLoading) {
     return (

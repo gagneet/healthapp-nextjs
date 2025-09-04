@@ -28,6 +28,25 @@ import { userHelpers } from '@/types/auth'
 import { apiRequest } from '@/lib/api'
 import { formatDate } from '@/lib/utils'
 import toast from 'react-hot-toast'
+import { QualificationCard } from '@/components/dashboard/QualificationCard';
+
+type Qualification = {
+  degree: string;
+  institution: string;
+  year: string;
+  type: 'degree' | 'specialization' | 'continuing_education';
+  honors?: string;
+  duration?: string;
+  credits?: string;
+};
+
+type Certification = {
+  name: string;
+  issuer?: string;
+  issueDate?: string;
+  expiryDate?: string;
+  credentialId?: string;
+};
 
 interface DoctorProfile {
   id: string;
@@ -72,10 +91,20 @@ interface DoctorProfile {
         degree: string;
         institution: string;
         year: string;
+        type: 'degree' | 'specialization' | 'continuing_education';
+        honors?: string;
+        duration?: string;
+        credits?: string;
     }>;
     biography?: string;
     practiceAddress: any;
-    boardCertifications: string[];
+    boardCertifications: Array<{
+      name: string;
+      issuer?: string;
+      issueDate?: string;
+      expiryDate?: string;
+      credentialId?: string;
+    }>;
     languagesSpoken: string[];
   };
   statistics: {
@@ -128,15 +157,16 @@ export default function DoctorProfilePage() {
     setTempValues({ [field]: currentValue })
   }
 
-  const handleSaveField = async (field: string) => {
+  const handleSaveField = async (field: string, valueToSave?: any) => {
     try {
       const fieldParts = field.split('.');
       const updateData: any = {};
       let currentLevel = updateData;
+      const value = valueToSave !== undefined ? valueToSave : tempValues[field];
 
       fieldParts.forEach((part, index) => {
         if (index === fieldParts.length - 1) {
-          currentLevel[part] = tempValues[field];
+          currentLevel[part] = value;
         } else {
           currentLevel[part] = {};
           currentLevel = currentLevel[part];
@@ -152,11 +182,14 @@ export default function DoctorProfilePage() {
           // Deep copy to avoid direct state mutation
           const newProfile = structuredClone(prev);
 
-          let currentLevel = newProfile;
-          fieldParts.forEach((part:string, index:number) => {
+          let currentLevel: any = newProfile;
+          fieldParts.forEach((part: string, index: number) => {
             if (index === fieldParts.length - 1) {
-              currentLevel[part] = tempValues[field];
+              currentLevel[part] = value;
             } else {
+              if (!currentLevel[part]) {
+                currentLevel[part] = {};
+              }
               currentLevel = currentLevel[part];
             }
           });
@@ -219,6 +252,14 @@ export default function DoctorProfilePage() {
       </div>
     )
   }
+
+  const renderValidatedDate = (dateString: string | undefined, prefix: string) => {
+    if (!dateString) return null;
+    if (isNaN(Date.parse(dateString))) {
+      return <p className="text-xs text-gray-500">{prefix}: Invalid date</p>;
+    }
+    return <p className="text-xs text-gray-500">{prefix}: {formatDate(dateString)}</p>;
+  };
 
   const EditableField = ({ 
     field, 
@@ -294,8 +335,201 @@ export default function DoctorProfilePage() {
     )
   }
 
+  const AddQualificationModal = ({
+    isOpen,
+    onClose,
+    onSave,
+  }: {
+    isOpen: boolean
+    onClose: () => void
+    onSave: (qualification: Qualification) => void
+  }) => {
+    const [degree, setDegree] = useState('')
+    const [institution, setInstitution] = useState('')
+    const [year, setYear] = useState('')
+    const [type, setType] = useState<'degree' | 'specialization' | 'continuing_education'>('degree')
+
+    if (!isOpen) return null
+
+    const handleSave = () => {
+      if (!degree || !institution || !year) {
+        toast.error('Please fill out all required fields.');
+        return;
+      }
+      onSave({ degree, institution, year, type })
+      onClose()
+    }
+
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-md">
+          <h3 className="text-lg font-medium mb-4">Add Qualification</h3>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Type</label>
+              <select
+                value={type}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  if (
+                    value === 'degree' ||
+                    value === 'specialization' ||
+                    value === 'continuing_education'
+                  ) {
+                    setType(value);
+                  }
+                }}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              >
+                <option value="degree">Medical Degree</option>
+                <option value="specialization">Specialization / Residency</option>
+                <option value="continuing_education">Continuing Education</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Degree/Title</label>
+              <input
+                type="text"
+                value={degree}
+                onChange={(e) => setDegree(e.target.value)}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Institution</label>
+              <input
+                type="text"
+                value={institution}
+                onChange={(e) => setInstitution(e.target.value)}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Year</label>
+              <input
+                type="text"
+                value={year}
+                onChange={(e) => setYear(e.target.value)}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              />
+            </div>
+          </div>
+          <div className="mt-6 flex justify-end space-x-3">
+            <button
+              onClick={onClose}
+              className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleSave}
+              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+            >
+              Save
+            </button>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  const AddCertificationModal = ({
+    isOpen,
+    onClose,
+    onSave,
+  }: {
+    isOpen: boolean
+    onClose: () => void
+    onSave: (certification: Certification) => void
+  }) => {
+    const [name, setName] = useState('')
+    const [issuer, setIssuer] = useState('')
+    const [issueDate, setIssueDate] = useState('')
+
+    if (!isOpen) return null
+
+    const handleSave = () => {
+      if (!name) {
+        toast.error('Please provide a name for the certification.');
+        return;
+      }
+      onSave({ name, issuer, issueDate })
+      onClose()
+    }
+
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-md">
+          <h3 className="text-lg font-medium mb-4">Add Certification</h3>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Name</label>
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Issuer</label>
+              <input
+                type="text"
+                value={issuer}
+                onChange={(e) => setIssuer(e.target.value)}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Issue Date</label>
+              <input
+                type="date"
+                value={issueDate}
+                onChange={(e) => setIssueDate(e.target.value)}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              />
+            </div>
+          </div>
+          <div className="mt-6 flex justify-end space-x-3">
+            <button
+              onClick={onClose}
+              className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleSave}
+              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+            >
+              Save
+            </button>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-8">
+      <AddQualificationModal
+        isOpen={showAddQualificationModal}
+        onClose={() => setShowAddQualificationModal(false)}
+        onSave={(newQualification) => {
+          const updatedQualifications = [...(profile?.professional.qualificationDetails || []), newQualification];
+          handleSaveField('professional.qualificationDetails', updatedQualifications);
+          setShowAddQualificationModal(false);
+        }}
+      />
+      <AddCertificationModal
+        isOpen={showAddCertificationModal}
+        onClose={() => setShowAddCertificationModal(false)}
+        onSave={(newCertification) => {
+          const updatedCertifications = [...(profile?.professional.boardCertifications || []), newCertification];
+          handleSaveField('professional.boardCertifications', updatedCertifications);
+          setShowAddCertificationModal(false);
+        }}
+      />
+
       {/* Header */}
       <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg p-6 text-white">
         <div className="flex items-center space-x-6">
@@ -468,20 +702,8 @@ export default function DoctorProfilePage() {
               <div>
                 <h4 className="text-sm font-semibold text-gray-700 mb-3">Medical Degrees</h4>
                 <div className="space-y-3">
-                  {(profile.professional.qualificationDetails || []).filter(q => q.type === 'degree' || !q.type).map((edu, index) => (
-                    <div key={index} className="border-l-4 border-blue-500 bg-blue-50 p-4 rounded-r-lg">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <h4 className="font-medium text-gray-900">{edu.degree}</h4>
-                          <p className="text-sm text-gray-600">{edu.institution}</p>
-                          <p className="text-xs text-gray-500">{edu.year}</p>
-                          {edu.honors && <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 mt-1">{edu.honors}</span>}
-                        </div>
-                        <button className="text-blue-600 hover:text-blue-700 p-1">
-                          <PencilIcon className="h-4 w-4" />
-                        </button>
-                      </div>
-                    </div>
+                  {(profile.professional.qualificationDetails || []).filter(q => q.type === 'degree').map((edu, index) => (
+                    <QualificationCard key={`degree-${edu.degree}-${index}`} {...edu} />
                   ))}
                 </div>
               </div>
@@ -491,21 +713,7 @@ export default function DoctorProfilePage() {
                 <h4 className="text-sm font-semibold text-gray-700 mb-3">Specializations & Residencies</h4>
                 <div className="space-y-3">
                   {(profile.professional.qualificationDetails || []).filter(q => q.type === 'specialization').map((spec, index) => (
-                    <div key={index} className="border-l-4 border-green-500 bg-green-50 p-4 rounded-r-lg">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <h4 className="font-medium text-gray-900">{spec.degree}</h4>
-                          <p className="text-sm text-gray-600">{spec.institution}</p>
-                          <div className="flex items-center space-x-4 mt-1">
-                            <p className="text-xs text-gray-500">{spec.year}</p>
-                            {spec.duration && <p className="text-xs text-gray-500">({spec.duration})</p>}
-                          </div>
-                        </div>
-                        <button className="text-green-600 hover:text-green-700 p-1">
-                          <PencilIcon className="h-4 w-4" />
-                        </button>
-                      </div>
-                    </div>
+                    <QualificationCard key={`spec-${spec.degree}-${index}`} {...spec} />
                   ))}
                 </div>
               </div>
@@ -515,19 +723,7 @@ export default function DoctorProfilePage() {
                 <h4 className="text-sm font-semibold text-gray-700 mb-3">Continuing Education & Training</h4>
                 <div className="space-y-3">
                   {(profile.professional.qualificationDetails || []).filter(q => q.type === 'continuing_education').map((edu, index) => (
-                    <div key={index} className="border-l-4 border-purple-500 bg-purple-50 p-4 rounded-r-lg">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <h4 className="font-medium text-gray-900">{edu.degree}</h4>
-                          <p className="text-sm text-gray-600">{edu.institution}</p>
-                          <p className="text-xs text-gray-500">{edu.year}</p>
-                          {edu.credits && <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800 mt-1">{edu.credits} Credits</span>}
-                        </div>
-                        <button className="text-purple-600 hover:text-purple-700 p-1">
-                          <PencilIcon className="h-4 w-4" />
-                        </button>
-                      </div>
-                    </div>
+                    <QualificationCard key={`edu-${edu.degree}-${index}`} {...edu} />
                   ))}
                 </div>
               </div>
@@ -554,24 +750,33 @@ export default function DoctorProfilePage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {(profile.professional.boardCertifications || []).map((cert, index) => (
-                <div key={index} className="border rounded-lg p-4 bg-green-50">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <h4 className="font-medium text-gray-900">{cert.name || cert}</h4>
-                      {cert.issuer && <p className="text-sm text-gray-600">{cert.issuer}</p>}
-                      {cert.issueDate && <p className="text-xs text-gray-500">Issued: {cert.issueDate}</p>}
-                      {cert.expiryDate && <p className="text-xs text-gray-500">Expires: {cert.expiryDate}</p>}
-                      {cert.credentialId && (
-                        <p className="text-xs text-gray-400 mt-1">ID: {cert.credentialId}</p>
-                      )}
+              {(profile.professional.boardCertifications || []).map((cert, index) => {
+                if (typeof cert === 'string') {
+                  return (
+                    <div key={cert} className="border rounded-lg p-4 bg-green-50">
+                      <h4 className="font-medium text-gray-900">{cert}</h4>
                     </div>
-                    <button className="text-green-600 hover:text-green-700 p-1">
-                      <PencilIcon className="h-4 w-4" />
-                    </button>
+                  )
+                }
+                return (
+                  <div key={cert.name || cert.credentialId || index} className="border rounded-lg p-4 bg-green-50">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <h4 className="font-medium text-gray-900">{cert.name}</h4>
+                        {cert.issuer && <p className="text-sm text-gray-600">{cert.issuer}</p>}
+                        {renderValidatedDate(cert.issueDate, "Issued")}
+                        {renderValidatedDate(cert.expiryDate, "Expires")}
+                        {cert.credentialId && (
+                          <p className="text-xs text-gray-400 mt-1">ID: {cert.credentialId}</p>
+                        )}
+                      </div>
+                      <button className="text-green-600 hover:text-green-700 p-1">
+                        <PencilIcon className="h-4 w-4" />
+                      </button>
+                    </div>
                   </div>
-                </div>
-              ))}
+                )
+              })}
               {(!profile.professional.boardCertifications || profile.professional.boardCertifications.length === 0) && (
                 <div className="text-center py-4">
                   <DocumentTextIcon className="mx-auto h-12 w-12 text-gray-400" />
