@@ -19,7 +19,7 @@ export const QualificationCard = ({ degree, institution, year, onEdit, type }: Q
     degree: 'text-blue-600 hover:text-blue-700',
     specialization: 'text-green-600 hover:text-green-700',
     continuing_education: 'text-purple-600 hover:text-purple-700',
-  }
+  };
 
   return (
     <div className={`border-l-4 ${colorClasses[type]} p-4 rounded-r-lg`}>

@@ -182,11 +182,14 @@ export default function DoctorProfilePage() {
           // Deep copy to avoid direct state mutation
           const newProfile = structuredClone(prev);
 
-          let currentLevel = newProfile;
-          fieldParts.forEach((part:string, index:number) => {
+          let currentLevel: any = newProfile;
+          fieldParts.forEach((part: string, index: number) => {
             if (index === fieldParts.length - 1) {
               currentLevel[part] = value;
             } else {
+              if (!currentLevel[part]) {
+                currentLevel[part] = {};
+              }
               currentLevel = currentLevel[part];
             }
           });

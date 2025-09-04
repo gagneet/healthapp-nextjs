@@ -34,7 +34,7 @@ interface PatientAPIResponse {
   user: {
     id: string;
     firstName: string;
-    lastName:string;
+    lastName: string;
     email: string;
     phone: string | null;
     dateOfBirth: string | null;
