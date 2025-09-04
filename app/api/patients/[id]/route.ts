@@ -1,45 +1,46 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import { auth } from "@/lib/auth";
-import { getPatient, handleApiError, formatApiSuccess } from '@/lib/api-services';
+import { getPatient } from '@/lib/api-services';
+import { withErrorHandling, createSuccessResponse, createUnauthorizedResponse, createForbiddenResponse, HealthcareApiError, HealthcareErrorCodes, AuthorizationError } from '@/lib/api-response';
+import { prisma } from '@/lib/prisma';
 
 /**
  * GET /api/patients/[id]
  * Get detailed patient information by ID
  */
-export async function GET(
+export const GET = withErrorHandling(async (
   request: NextRequest,
   { params }: { params: { id: string } }
-) {
-  try {
-    // Authenticate user
-    const session = await auth();
-    if (!session?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-    if (!['DOCTOR', 'HSP', 'PATIENT', 'admin'].includes(session.user.role)) {
-      return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
-    }
-
-    const user = session.user;
-    const patientId = params.id;
-
-    // Additional authorization: patients can only access their own data
-    if (user.role === 'PATIENT' && user.patientId !== patientId) {
-      return NextResponse.json(handleApiError({
-        message: 'Access denied: You can only access your own patient data'
-      }), { status: 403 });
-    }
-
-    const patientData = await getPatient(patientId);
-    
-    if (!patientData) {
-      return NextResponse.json(handleApiError({
-        message: 'Patient not found'
-      }), { status: 404 });
-    }
-    
-    return NextResponse.json(formatApiSuccess(patientData, 'Patient data retrieved successfully'));
-  } catch (error) {
-    return NextResponse.json(handleApiError(error), { status: 500 });
+) => {
+  const session = await auth();
+  if (!session?.user) {
+    return createUnauthorizedResponse();
   }
-}
+
+  const { user } = session;
+  const patientId = params.id;
+
+  if (!['DOCTOR', 'HSP', 'PATIENT', 'admin'].includes(user.role)) {
+    return createForbiddenResponse("Insufficient permissions");
+  }
+
+  const patientData = await getPatient(patientId);
+
+  if (!patientData) {
+    throw new HealthcareApiError(HealthcareErrorCodes.PATIENT_NOT_FOUND, "Patient not found", 404);
+  }
+
+  // Authorization checks
+  if (user.role === 'PATIENT' && patientData.userId !== user.id) {
+    throw new AuthorizationError('Access denied: You can only access your own patient data');
+  }
+
+  if (user.role === 'DOCTOR') {
+    const doctor = await prisma.doctor.findUnique({ where: { userId: user.id } });
+    if (patientData.primaryCareDoctorId !== doctor?.id) {
+      throw new AuthorizationError('Access denied: You are not the primary care doctor for this patient');
+    }
+  }
+
+  return createSuccessResponse(patientData, 200);
+});
