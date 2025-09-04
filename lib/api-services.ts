@@ -452,6 +452,21 @@ export async function getPatient(patientId: string) {
       where: { id: patientId },
       include: {
         user: true,
+        adherenceRecords: {
+          select: {
+            isCompleted: true,
+          },
+        },
+        _count: {
+          select: {
+            emergencyAlerts: {
+              where: {
+                resolved: false,
+                priorityLevel: 'HIGH',
+              },
+            },
+          },
+        },
       },
     });
     
@@ -459,9 +474,9 @@ export async function getPatient(patientId: string) {
       return null;
     }
 
-    // TODO: Fix healthcareDb.getPatientAdherence
-    // Calculate adherence rate
-    // const adherenceData = await healthcareDb.getPatientAdherence(patientId);
+    const totalAdherence = patient.adherenceRecords.length;
+    const completedAdherence = patient.adherenceRecords.filter(r => r.isCompleted).length;
+    const adherenceRate = totalAdherence > 0 ? Math.round((completedAdherence / totalAdherence) * 100) : 0;
 
     return {
       id: patient.id,
@@ -474,6 +489,7 @@ export async function getPatient(patientId: string) {
         phone: patient.user.phone,
         dateOfBirth: patient.user.dateOfBirth,
         gender: patient.user.gender,
+        accountStatus: patient.user.accountStatus,
       },
       medicalInfo: {
         bloodType: patient.bloodType,
@@ -482,6 +498,8 @@ export async function getPatient(patientId: string) {
         height: patient.heightCm,
         weight: patient.weightKg,
       },
+      adherenceRate: adherenceRate,
+      criticalAlerts: patient._count.emergencyAlerts,
       // TODO: Restore full patient details when relationships are fixed
       careTeam: {
         primaryDoctor: null,
@@ -491,7 +509,6 @@ export async function getPatient(patientId: string) {
       medications: [],
       appointments: [],
       vitals: [],
-      adherence: { adherenceRate: 0, totalScheduled: 0, totalTaken: 0, missedDoses: 0, records: [] },
       symptoms: [],
     };
   } catch (error) {

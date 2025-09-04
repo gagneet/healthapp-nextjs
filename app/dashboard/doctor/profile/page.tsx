@@ -28,6 +28,7 @@ import { userHelpers } from '@/types/auth'
 import { apiRequest } from '@/lib/api'
 import { formatDate } from '@/lib/utils'
 import toast from 'react-hot-toast'
+import { QualificationCard } from '@/components/dashboard/QualificationCard';
 
 interface DoctorProfile {
   id: string;
@@ -79,7 +80,13 @@ interface DoctorProfile {
     }>;
     biography?: string;
     practiceAddress: any;
-    boardCertifications: string[];
+    boardCertifications: Array<{
+      name: string;
+      issuer?: string;
+      issueDate?: string;
+      expiryDate?: string;
+      credentialId?: string;
+    }>;
     languagesSpoken: string[];
   };
   statistics: {
@@ -383,6 +390,78 @@ export default function DoctorProfilePage() {
     )
   }
 
+  const AddCertificationModal = ({
+    isOpen,
+    onClose,
+    onSave,
+  }: {
+    isOpen: boolean
+    onClose: () => void
+    onSave: (certification: any) => void
+  }) => {
+    const [name, setName] = useState('')
+    const [issuer, setIssuer] = useState('')
+    const [issueDate, setIssueDate] = useState('')
+
+    if (!isOpen) return null
+
+    const handleSave = () => {
+      onSave({ name, issuer, issueDate })
+      onClose()
+    }
+
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-md">
+          <h3 className="text-lg font-medium mb-4">Add Certification</h3>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Name</label>
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Issuer</label>
+              <input
+                type="text"
+                value={issuer}
+                onChange={(e) => setIssuer(e.target.value)}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Issue Date</label>
+              <input
+                type="date"
+                value={issueDate}
+                onChange={(e) => setIssueDate(e.target.value)}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              />
+            </div>
+          </div>
+          <div className="mt-6 flex justify-end space-x-3">
+            <button
+              onClick={onClose}
+              className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleSave}
+              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+            >
+              Save
+            </button>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-8">
       <AddQualificationModal
@@ -392,6 +471,15 @@ export default function DoctorProfilePage() {
           const updatedQualifications = [...(profile?.professional.qualificationDetails || []), newQualification];
           handleSaveField('professional.qualificationDetails', updatedQualifications);
           setShowAddQualificationModal(false);
+        }}
+      />
+      <AddCertificationModal
+        isOpen={showAddCertificationModal}
+        onClose={() => setShowAddCertificationModal(false)}
+        onSave={(newCertification) => {
+          const updatedCertifications = [...(profile?.professional.boardCertifications || []), newCertification];
+          handleSaveField('professional.boardCertifications', updatedCertifications);
+          setShowAddCertificationModal(false);
         }}
       />
 
@@ -568,19 +656,7 @@ export default function DoctorProfilePage() {
                 <h4 className="text-sm font-semibold text-gray-700 mb-3">Medical Degrees</h4>
                 <div className="space-y-3">
                   {(profile.professional.qualificationDetails || []).filter(q => q.type === 'degree').map((edu, index) => (
-                    <div key={index} className="border-l-4 border-blue-500 bg-blue-50 p-4 rounded-r-lg">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <h4 className="font-medium text-gray-900">{edu.degree}</h4>
-                          <p className="text-sm text-gray-600">{edu.institution}</p>
-                          <p className="text-xs text-gray-500">{edu.year}</p>
-                          {edu.honors && <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 mt-1">{edu.honors}</span>}
-                        </div>
-                        <button className="text-blue-600 hover:text-blue-700 p-1">
-                          <PencilIcon className="h-4 w-4" />
-                        </button>
-                      </div>
-                    </div>
+                    <QualificationCard key={index} {...edu} onEdit={() => {}} />
                   ))}
                 </div>
               </div>
@@ -590,21 +666,7 @@ export default function DoctorProfilePage() {
                 <h4 className="text-sm font-semibold text-gray-700 mb-3">Specializations & Residencies</h4>
                 <div className="space-y-3">
                   {(profile.professional.qualificationDetails || []).filter(q => q.type === 'specialization').map((spec, index) => (
-                    <div key={index} className="border-l-4 border-green-500 bg-green-50 p-4 rounded-r-lg">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <h4 className="font-medium text-gray-900">{spec.degree}</h4>
-                          <p className="text-sm text-gray-600">{spec.institution}</p>
-                          <div className="flex items-center space-x-4 mt-1">
-                            <p className="text-xs text-gray-500">{spec.year}</p>
-                            {spec.duration && <p className="text-xs text-gray-500">({spec.duration})</p>}
-                          </div>
-                        </div>
-                        <button className="text-green-600 hover:text-green-700 p-1">
-                          <PencilIcon className="h-4 w-4" />
-                        </button>
-                      </div>
-                    </div>
+                    <QualificationCard key={index} {...spec} onEdit={() => {}} />
                   ))}
                 </div>
               </div>
@@ -614,19 +676,7 @@ export default function DoctorProfilePage() {
                 <h4 className="text-sm font-semibold text-gray-700 mb-3">Continuing Education & Training</h4>
                 <div className="space-y-3">
                   {(profile.professional.qualificationDetails || []).filter(q => q.type === 'continuing_education').map((edu, index) => (
-                    <div key={index} className="border-l-4 border-purple-500 bg-purple-50 p-4 rounded-r-lg">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <h4 className="font-medium text-gray-900">{edu.degree}</h4>
-                          <p className="text-sm text-gray-600">{edu.institution}</p>
-                          <p className="text-xs text-gray-500">{edu.year}</p>
-                          {edu.credits && <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800 mt-1">{edu.credits} Credits</span>}
-                        </div>
-                        <button className="text-purple-600 hover:text-purple-700 p-1">
-                          <PencilIcon className="h-4 w-4" />
-                        </button>
-                      </div>
-                    </div>
+                    <QualificationCard key={index} {...edu} onEdit={() => {}} />
                   ))}
                 </div>
               </div>
@@ -657,10 +707,10 @@ export default function DoctorProfilePage() {
                 <div key={index} className="border rounded-lg p-4 bg-green-50">
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
-                      <h4 className="font-medium text-gray-900">{cert.name || cert}</h4>
+                      <h4 className="font-medium text-gray-900">{cert.name}</h4>
                       {cert.issuer && <p className="text-sm text-gray-600">{cert.issuer}</p>}
-                      {cert.issueDate && <p className="text-xs text-gray-500">Issued: {cert.issueDate}</p>}
-                      {cert.expiryDate && <p className="text-xs text-gray-500">Expires: {cert.expiryDate}</p>}
+                      {cert.issueDate && <p className="text-xs text-gray-500">Issued: {formatDate(cert.issueDate)}</p>}
+                      {cert.expiryDate && <p className="text-xs text-gray-500">Expires: {formatDate(cert.expiryDate)}</p>}
                       {cert.credentialId && (
                         <p className="text-xs text-gray-400 mt-1">ID: {cert.credentialId}</p>
                       )}
