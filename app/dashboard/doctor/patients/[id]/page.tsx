@@ -26,37 +26,21 @@ import BodyDiagramEnhanced from '@/components/ui/body-diagram-enhanced'
 import SymptomsTimeline from '@/components/ui/symptoms-timeline'
 
 // API Response types for patient data
+// This interface is now aligned with the actual API response for a single patient.
 interface PatientAPIResponse {
-  patients: {
-    [key: string]: {
-      basic_info: {
-        id: string
-        userId: string
-        firstName: string
-        lastName: string
-        email?: string
-        gender?: string
-        medicalRecordNumber?: string
-        mobileNumber?: string
-        current_age?: number
-      }
-      medical_info?: {
-        allergies?: string[]
-        chronic_conditions?: string[]
-        current_medications?: string[]
-        family_medical_history?: any
-        emergency_contact?: any
-        insurance_info?: any
-      }
-      primary_doctor?: {
-        id: string
-        name: string
-        email: string
-      } | null
-      createdAt: string
-      updatedAt: string
-    }
-  }
+  id: string;
+  patientId: string;
+  medicalRecordNumber?: string;
+  user: {
+    firstName: string;
+    lastName: string;
+    email: string;
+    phone?: string;
+    dateOfBirth?: string;
+    gender?: string;
+  };
+  // Other fields from the API can be added here as needed.
+  createdAt: string;
 }
 
 // Mock data removed - using real API data only
@@ -254,30 +238,30 @@ export default function PatientDetailsPage() {
         throw new Error(`Failed to fetch patient data: ${response.statusText}`)
       }
 
-      const data: { payload: { data: PatientAPIResponse } } = await response.json()
-      const patientData = Object.values(data.payload.data.patients)[0]
-      
+      const data: { payload: { data: PatientAPIResponse } } = await response.json();
+      // The API returns the patient object directly in data.payload.data
+      const patientData = data.payload.data;
+
       if (patientData) {
         // Transform API response to match frontend Patient type
         const transformedPatient: Patient = {
-          id: patientData.basic_info.id,
-          userId: patientData.basic_info.userId,
-          firstName: patientData.basic_info.firstName || '',
-          lastName: patientData.basic_info.lastName || '',
-          email: patientData.basic_info.email || '',
-          phone: patientData.basic_info.mobileNumber || '',
-          // date_of_birth not available in Patient type
-          gender: patientData.basic_info.gender || '',
-          medicalRecordNumber: patientData.basic_info.medicalRecordNumber || '',
-          lastVisit: '', // This might need to be calculated
+          id: patientData.id,
+          userId: patientData.patientId, // Assuming patientId from API maps to userId
+          firstName: patientData.user.firstName || '',
+          lastName: patientData.user.lastName || '',
+          email: patientData.user.email || '',
+          phone: patientData.user.phone || '',
+          gender: patientData.user.gender || '',
+          medicalRecordNumber: patientData.medicalRecordNumber || '',
+          lastVisit: '', // This might need to be calculated or fetched from another source
           nextAppointment: '', // This will come from appointments API
-          adherenceRate: 85, // This will need to be calculated
-          criticalAlerts: 0, // This will need to be calculated
-          status: 'active',
+          adherenceRate: 85, // Placeholder: This will need to be calculated
+          criticalAlerts: 0, // Placeholder: This will need to be calculated
+          status: 'active', // Placeholder: Status might need to be determined
           createdAt: patientData.createdAt,
-          profilePictureUrl: ''
-        }
-        setPatient(transformedPatient)
+          profilePictureUrl: '', // Placeholder
+        };
+        setPatient(transformedPatient);
       }
     } catch (err) {
       console.error('Error fetching patient data:', err)
