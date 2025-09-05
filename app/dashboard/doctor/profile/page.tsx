@@ -189,8 +189,8 @@ export default function DoctorProfilePage() {
   const fetchDoctorProfile = async () => {
     try {
       const response = await apiRequest.get('/doctors/profile')
-      if ((response as any).status && (response as any).payload?.data) {
-        setProfile((response as any).payload.data)
+      if ((response as any).success && (response as any).data) {
+        setProfile((response as any).data)
       }
     } catch (error) {
       console.error('Failed to fetch doctor profile:', error)
