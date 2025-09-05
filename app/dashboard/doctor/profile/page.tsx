@@ -31,8 +31,9 @@ import toast from 'react-hot-toast'
 import { QualificationCard } from '@/components/dashboard/QualificationCard';
 
 type Qualification = {
+  id: string;
   degree: string;
-  institution: string;
+  institution:string;
   year: string;
   type: 'degree' | 'specialization' | 'continuing_education';
   honors?: string;
@@ -88,6 +89,7 @@ interface DoctorProfile {
       contactInfo: any;
     } | null;
     qualificationDetails: Array<{
+        id: string;
         degree: string;
         institution: string;
         year: string;
@@ -130,13 +132,59 @@ export default function DoctorProfilePage() {
   const [tempValues, setTempValues] = useState<any>({})
   
   // Modal states for the new sections
-  const [showAddQualificationModal, setShowAddQualificationModal] = useState(false)
+  const [isQualificationModalOpen, setIsQualificationModalOpen] = useState(false)
+  const [editingQualification, setEditingQualification] = useState<Qualification | null>(null)
+  const [pendingChanges, setPendingChanges] = useState<QualificationChangeRequest[]>([])
   const [showAddCertificationModal, setShowAddCertificationModal] = useState(false)
   const [showAddClinicModal, setShowAddClinicModal] = useState(false)
 
   useEffect(() => {
     fetchDoctorProfile()
+    fetchPendingChanges()
   }, [])
+
+  const fetchPendingChanges = async () => {
+    // Mock API call
+    const mockPendingChanges: QualificationChangeRequest[] = [
+      {
+        id: 'change1',
+        doctorId: 'doc1',
+        requesterId: 'doc1',
+        changeType: 'add',
+        status: 'pending',
+        requestedAt: new Date().toISOString(),
+        changes: {
+          degree: 'PhD in Neuroscience',
+          institution: 'Brain University',
+          year: '2023',
+          type: 'degree',
+        },
+      },
+      {
+        id: 'change2',
+        doctorId: 'doc1',
+        requesterId: 'doc1',
+        qualificationId: 'qual2',
+        changeType: 'edit',
+        status: 'pending',
+        requestedAt: new Date().toISOString(),
+        changes: {
+          year: '2020',
+        },
+      },
+      {
+        id: 'change3',
+        doctorId: 'doc1',
+        requesterId: 'doc1',
+        qualificationId: 'qual3',
+        changeType: 'delete',
+        status: 'pending',
+        requestedAt: new Date().toISOString(),
+        changes: {},
+      },
+    ];
+    setPendingChanges(mockPendingChanges);
+  }
 
   const fetchDoctorProfile = async () => {
     try {
@@ -212,6 +260,48 @@ export default function DoctorProfilePage() {
     setEditingField(null)
     setTempValues({})
   }
+
+  const handleEditQualification = (id: string) => {
+    const qualificationToEdit = profile?.professional.qualificationDetails.find(q => q.id === id);
+    if (qualificationToEdit) {
+      setEditingQualification(qualificationToEdit);
+      setIsQualificationModalOpen(true);
+    }
+  };
+
+  const submitQualificationChangeRequest = async (request: Omit<QualificationChangeRequest, 'id' | 'doctorId' | 'requesterId' | 'requestedAt' | 'status'>) => {
+    try {
+      // Validate request data
+      if (request.changeType === 'edit' && !request.qualificationId) {
+        throw new Error('Qualification ID is required for edit requests');
+      }
+      if (request.changeType === 'delete' && !request.qualificationId) {
+        throw new Error('Qualification ID is required for delete requests');
+      }
+
+      // Mock API call - in a real app, this would be an actual API request
+      console.log('Submitting qualification change request', request);
+      // const response = await apiRequest.post('/qualifications/change-requests', request);
+
+      // Assuming the mock API call is successful
+      toast.success('Your request has been submitted for approval.');
+      await fetchPendingChanges(); // Refresh the pending changes list
+
+    } catch (error) {
+      console.error('Error submitting qualification change:', error);
+      toast.error(error instanceof Error ? error.message : 'Failed to submit request. Please try again.');
+    }
+  };
+
+  const handleDeleteQualification = (id: string) => {
+    if (confirm('Are you sure you want to request deletion of this qualification?')) {
+      submitQualificationChangeRequest({
+        qualificationId: id,
+        changeType: 'delete',
+        changes: {},
+      });
+    }
+  };
 
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
@@ -335,19 +425,35 @@ export default function DoctorProfilePage() {
     )
   }
 
-  const AddQualificationModal = ({
+  const QualificationModal = ({
     isOpen,
     onClose,
     onSave,
+    initialData,
   }: {
     isOpen: boolean
     onClose: () => void
-    onSave: (qualification: Qualification) => void
+    onSave: (qualification: Partial<Qualification>) => void
+    initialData?: Qualification | null
   }) => {
-    const [degree, setDegree] = useState('')
-    const [institution, setInstitution] = useState('')
-    const [year, setYear] = useState('')
-    const [type, setType] = useState<'degree' | 'specialization' | 'continuing_education'>('degree')
+    const [degree, setDegree] = useState(initialData?.degree || '')
+    const [institution, setInstitution] = useState(initialData?.institution || '')
+    const [year, setYear] = useState(initialData?.year || '')
+    const [type, setType] = useState<'degree' | 'specialization' | 'continuing_education'>(initialData?.type ||'degree')
+
+    useEffect(() => {
+      if (initialData) {
+        setDegree(initialData.degree || '')
+        setInstitution(initialData.institution || '')
+        setYear(initialData.year || '')
+        setType(initialData.type || 'degree')
+      } else {
+        setDegree('')
+        setInstitution('')
+        setYear('')
+        setType('degree')
+      }
+    }, [initialData])
 
     if (!isOpen) return null
 
@@ -356,14 +462,14 @@ export default function DoctorProfilePage() {
         toast.error('Please fill out all required fields.');
         return;
       }
-      onSave({ degree, institution, year, type })
+      onSave({ id: initialData?.id, degree, institution, year, type })
       onClose()
     }
 
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
         <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-md">
-          <h3 className="text-lg font-medium mb-4">Add Qualification</h3>
+          <h3 className="text-lg font-medium mb-4">{initialData ? 'Edit Qualification' : 'Add Qualification'}</h3>
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700">Type</label>
@@ -511,14 +617,32 @@ export default function DoctorProfilePage() {
 
   return (
     <div className="space-y-8">
-      <AddQualificationModal
-        isOpen={showAddQualificationModal}
-        onClose={() => setShowAddQualificationModal(false)}
-        onSave={(newQualification) => {
-          const updatedQualifications = [...(profile?.professional.qualificationDetails || []), newQualification];
-          handleSaveField('professional.qualificationDetails', updatedQualifications);
-          setShowAddQualificationModal(false);
+      <QualificationModal
+        isOpen={isQualificationModalOpen}
+        onClose={() => {
+          setIsQualificationModalOpen(false)
+          setEditingQualification(null)
         }}
+        onSave={(qualification) => {
+          const { id, ...changes } = qualification;
+          if (id) {
+            // Editing existing qualification
+            submitQualificationChangeRequest({
+              qualificationId: id,
+              changeType: 'edit',
+              changes,
+            });
+          } else {
+            // Adding new qualification
+            submitQualificationChangeRequest({
+              changeType: 'add',
+              changes,
+            });
+          }
+          setIsQualificationModalOpen(false)
+          setEditingQualification(null)
+        }}
+        initialData={editingQualification}
       />
       <AddCertificationModal
         isOpen={showAddCertificationModal}
@@ -679,6 +803,36 @@ export default function DoctorProfilePage() {
           </CardContent>
         </Card>
 
+        {/* Pending Changes */}
+        {pendingChanges.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <ClockIcon className="h-5 w-5 mr-2" />
+                Pending Qualification Changes
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {pendingChanges.map((change) => (
+                  <div key={change.id} className="border rounded-lg p-4 bg-yellow-50">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <h4 className="font-medium text-gray-900 capitalize">{change.changeType} Request</h4>
+                        <p className="text-sm text-gray-600">Status: <span className="font-semibold">{change.status}</span></p>
+                          <p key={`${change.id}-${key}`} className="text-sm text-gray-600">
+                            <span className="capitalize">{key}:</span> {String(value)}
+                          </p>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Education & Qualifications */}
         <Card>
           <CardHeader>
@@ -688,7 +842,10 @@ export default function DoctorProfilePage() {
                 Education & Qualifications
               </div>
               <button 
-                onClick={() => setShowAddQualificationModal(true)}
+                onClick={() => {
+                  setEditingQualification(null);
+                  setIsQualificationModalOpen(true);
+                }}
                 className="inline-flex items-center px-3 py-1 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
               >
                 <PlusIcon className="h-4 w-4 mr-1" />
@@ -703,7 +860,12 @@ export default function DoctorProfilePage() {
                 <h4 className="text-sm font-semibold text-gray-700 mb-3">Medical Degrees</h4>
                 <div className="space-y-3">
                   {(profile.professional.qualificationDetails || []).filter(q => q.type === 'degree').map((edu, index) => (
-                    <QualificationCard key={`degree-${edu.degree}-${index}`} {...edu} />
+                    <QualificationCard
+                      key={edu.id}
+                      {...edu}
+                      onEdit={() => handleEditQualification(edu.id)}
+                      onDelete={() => handleDeleteQualification(edu.id)}
+                    />
                   ))}
                 </div>
               </div>
@@ -713,7 +875,12 @@ export default function DoctorProfilePage() {
                 <h4 className="text-sm font-semibold text-gray-700 mb-3">Specializations & Residencies</h4>
                 <div className="space-y-3">
                   {(profile.professional.qualificationDetails || []).filter(q => q.type === 'specialization').map((spec, index) => (
-                    <QualificationCard key={`spec-${spec.degree}-${index}`} {...spec} />
+                    <QualificationCard
+                      key={spec.id}
+                      {...spec}
+                      onEdit={() => handleEditQualification(spec.id)}
+                      onDelete={() => handleDeleteQualification(spec.id)}
+                    />
                   ))}
                 </div>
               </div>
@@ -723,7 +890,12 @@ export default function DoctorProfilePage() {
                 <h4 className="text-sm font-semibold text-gray-700 mb-3">Continuing Education & Training</h4>
                 <div className="space-y-3">
                   {(profile.professional.qualificationDetails || []).filter(q => q.type === 'continuing_education').map((edu, index) => (
-                    <QualificationCard key={`edu-${edu.degree}-${index}`} {...edu} />
+                    <QualificationCard
+                      key={edu.id}
+                      {...edu}
+                      onEdit={() => handleEditQualification(edu.id)}
+                      onDelete={() => handleDeleteQualification(edu.id)}
+                    />
                   ))}
                 </div>
               </div>
