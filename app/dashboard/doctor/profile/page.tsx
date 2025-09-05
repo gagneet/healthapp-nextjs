@@ -424,7 +424,7 @@ export default function DoctorProfilePage() {
     const [degree, setDegree] = useState(initialData?.degree || '')
     const [institution, setInstitution] = useState(initialData?.institution || '')
     const [year, setYear] = useState(initialData?.year || '')
-    const [type, setType] = useState<'degree' | 'specialization' | 'continuing_education'>(initialData?.type ||'degree')
+    const [type, setType] = useState<'degree' | 'specialization' | 'continuing_education'>(initialData?.type || 'degree')
 
     useEffect(() => {
       if (initialData) {
