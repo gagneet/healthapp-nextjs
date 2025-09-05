@@ -820,8 +820,7 @@ export default function DoctorProfilePage() {
                       <div className="flex-1">
                         <h4 className="font-medium text-gray-900 capitalize">{change.changeType} Request</h4>
                         <p className="text-sm text-gray-600">Status: <span className="font-semibold">{change.status}</span></p>
-                        {Object.entries(change.changes).map(([key, value]) => (
-                          <p key={key} className="text-sm text-gray-600">
+                          <p key={`${change.id}-${key}`} className="text-sm text-gray-600">
                             <span className="capitalize">{key}:</span> {String(value)}
                           </p>
                         ))}
