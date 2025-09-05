@@ -2,14 +2,24 @@
 
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useRouter } from 'next/navigation';
 import { CheckCircleIcon, XCircleIcon, ClockIcon } from '@heroicons/react/24/outline';
 import { QualificationChangeRequest } from '@/types/dashboard';
 import toast from 'react-hot-toast';
+import { RejectionModal } from '@/components/modals/RejectionModal';
+
+// Mock function to simulate checking admin access
+const verifyAdminAccess = async (): Promise<boolean> => {
+  // In a real app, this would involve checking a token, session, or making an API call
+  return new Promise(resolve => setTimeout(() => resolve(true), 500)); // Simulate a delay
+};
+
 
 export default function QualificationRequestsPage() {
   const [requests, setRequests] = useState<QualificationChangeRequest[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [rejectionModal, setRejectionModal] = useState({ isOpen: false, requestId: '' });
+  const router = useRouter();
 
   useEffect(() => {
     fetchQualificationRequests();
@@ -17,47 +27,58 @@ export default function QualificationRequestsPage() {
 
   const fetchQualificationRequests = async () => {
     setIsLoading(true);
-    // Mock API call
-    const mockRequests: QualificationChangeRequest[] = [
-      {
-        id: 'change1',
-        doctorId: 'doc1',
-        requesterId: 'doc1',
-        changeType: 'add',
-        status: 'pending',
-        requestedAt: new Date().toISOString(),
-        changes: {
-          degree: 'PhD in Neuroscience',
-          institution: 'Brain University',
-          year: '2023',
-          type: 'degree',
+    try {
+      const isAdmin = await verifyAdminAccess();
+      if (!isAdmin) {
+        throw new Error('Unauthorized');
+      }
+
+      // Mock API call
+      const mockRequests: QualificationChangeRequest[] = [
+        {
+          id: 'change1',
+          doctorId: 'doc1',
+          requesterId: 'doc1',
+          changeType: 'add',
+          status: 'pending',
+          requestedAt: new Date().toISOString(),
+          changes: {
+            degree: 'PhD in Neuroscience',
+            institution: 'Brain University',
+            year: '2023',
+            type: 'degree',
+          },
         },
-      },
-      {
-        id: 'change2',
-        doctorId: 'doc1',
-        requesterId: 'doc1',
-        qualificationId: 'qual2',
-        changeType: 'edit',
-        status: 'pending',
-        requestedAt: new Date().toISOString(),
-        changes: {
-          year: '2020',
+        {
+          id: 'change2',
+          doctorId: 'doc1',
+          requesterId: 'doc1',
+          qualificationId: 'qual2',
+          changeType: 'edit',
+          status: 'pending',
+          requestedAt: new Date().toISOString(),
+          changes: {
+            year: '2020',
+          },
         },
-      },
-      {
-        id: 'change3',
-        doctorId: 'doc1',
-        requesterId: 'doc1',
-        qualificationId: 'qual3',
-        changeType: 'delete',
-        status: 'pending',
-        requestedAt: new Date().toISOString(),
-        changes: {},
-      },
-    ];
-    setRequests(mockRequests);
-    setIsLoading(false);
+        {
+          id: 'change3',
+          doctorId: 'doc1',
+          requesterId: 'doc1',
+          qualificationId: 'qual3',
+          changeType: 'delete',
+          status: 'pending',
+          requestedAt: new Date().toISOString(),
+          changes: {},
+        },
+      ];
+      setRequests(mockRequests);
+    } catch (error) {
+      toast.error('Unauthorized access. Redirecting...');
+      router.push('/dashboard');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleApprove = async (requestId: string) => {
@@ -69,49 +90,6 @@ export default function QualificationRequestsPage() {
 
   const handleReject = (requestId: string) => {
     setRejectionModal({ isOpen: true, requestId });
-  };
-
-  const RejectionModal = ({ isOpen, onClose, onSubmit }) => {
-    const [reason, setReason] = useState('');
-
-    if (!isOpen) return null;
-
-    const handleSubmit = () => {
-      if (!reason) {
-        toast.error('Please provide a reason for rejection.');
-        return;
-      }
-      onSubmit(reason);
-    };
-
-    return (
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-md">
-          <h3 className="text-lg font-medium mb-4">Reject Qualification Request</h3>
-          <textarea
-            value={reason}
-            onChange={(e) => setReason(e.target.value)}
-            className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-            rows={4}
-            placeholder="Enter rejection reason..."
-          />
-          <div className="mt-6 flex justify-end space-x-3">
-            <button
-              onClick={onClose}
-              className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={handleSubmit}
-              className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
-            >
-              Reject
-            </button>
-          </div>
-        </div>
-      </div>
-    );
   };
 
   if (isLoading) {

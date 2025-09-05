@@ -270,12 +270,27 @@ export default function DoctorProfilePage() {
   };
 
   const submitQualificationChangeRequest = async (request: Omit<QualificationChangeRequest, 'id' | 'doctorId' | 'requesterId' | 'requestedAt' | 'status'>) => {
-    // Mock API call
-    console.log('Submitting qualification change request', request);
-    toast.success('Your request has been submitted for approval.');
-    // Here you would typically make an API call to the backend
-    // For now, we'll just log it and show a toast.
-    // We would also need to refetch pending changes to update the UI.
+    try {
+      // Validate request data
+      if (request.changeType === 'edit' && !request.qualificationId) {
+        throw new Error('Qualification ID is required for edit requests');
+      }
+      if (request.changeType === 'delete' && !request.qualificationId) {
+        throw new Error('Qualification ID is required for delete requests');
+      }
+
+      // Mock API call - in a real app, this would be an actual API request
+      console.log('Submitting qualification change request', request);
+      // const response = await apiRequest.post('/qualifications/change-requests', request);
+
+      // Assuming the mock API call is successful
+      toast.success('Your request has been submitted for approval.');
+      await fetchPendingChanges(); // Refresh the pending changes list
+
+    } catch (error) {
+      console.error('Error submitting qualification change:', error);
+      toast.error(error instanceof Error ? error.message : 'Failed to submit request. Please try again.');
+    }
   };
 
   const handleDeleteQualification = (id: string) => {
@@ -424,7 +439,7 @@ export default function DoctorProfilePage() {
     const [degree, setDegree] = useState(initialData?.degree || '')
     const [institution, setInstitution] = useState(initialData?.institution || '')
     const [year, setYear] = useState(initialData?.year || '')
-    const [type, setType] = useState<'degree' | 'specialization' | 'continuing_education'>(initialData?.type || 'degree')
+    const [type, setType] = useState<'degree' | 'specialization' | 'continuing_education'>(initialData?.type ||'degree')
 
     useEffect(() => {
       if (initialData) {

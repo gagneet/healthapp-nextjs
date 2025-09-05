@@ -26,10 +26,20 @@ export const QualificationCard = ({ id, degree, institution, year, type, onEdit,
           <p className="text-xs text-gray-500">{year}</p>
         </div>
         <div className="flex space-x-2">
-          <button onClick={() => onEdit(id)} className="text-blue-600 hover:text-blue-800">
+          <button
+            onClick={() => onEdit(id)}
+            className="text-blue-600 hover:text-blue-800"
+            aria-label="Edit qualification"
+            title="Edit qualification"
+          >
             <PencilIcon className="h-4 w-4" />
           </button>
-          <button onClick={() => onDelete(id)} className="text-red-600 hover:text-red-800">
+          <button
+            onClick={() => onDelete(id)}
+            className="text-red-600 hover:text-red-800"
+            aria-label="Delete qualification"
+            title="Delete qualification"
+          >
             <TrashIcon className="h-4 w-4" />
           </button>
         </div>
