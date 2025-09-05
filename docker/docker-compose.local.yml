@@ -1,9 +1,6 @@
-# docker-compose.local.yml
-# Local development setup with easy debugging
 version: '3.8'
 
 services:
-  # PostgreSQL Database
   postgres:
     image: postgres:17-alpine
     container_name: healthapp-postgres-local
@@ -11,9 +8,8 @@ services:
       POSTGRES_DB: healthapp_dev
       POSTGRES_USER: healthapp_user
       POSTGRES_PASSWORD: secure_pg_password
-      POSTGRES_INITDB_ARGS: "--auth-host=md5"
     ports:
-      - "5434:5432"  # Using 5434 to avoid conflicts
+      - "5434:5432"
     volumes:
       - postgres_local_data:/var/lib/postgresql/data
     healthcheck:
@@ -23,7 +19,6 @@ services:
       retries: 5
     restart: unless-stopped
 
-  # Redis Cache
   redis:
     image: redis:7.4-alpine
     container_name: healthapp-redis-local
@@ -33,122 +28,44 @@ services:
     volumes:
       - redis_local_data:/data
     healthcheck:
-      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      test: ["CMD", "redis-cli", "-p", "6379", "-a", "secure_redis_password", "ping"]
       interval: 10s
       timeout: 5s
       retries: 5
     restart: unless-stopped
 
-  # Backend API
-  backend:
+  app:
     build:
       context: ..
       dockerfile: docker/Dockerfile.local
-      target: backend-dev
-    container_name: healthapp-backend-local
+    container_name: healthapp-app-local
     environment:
       NODE_ENV: development
-      PORT: 3005
-      POSTGRES_HOST: postgres
-      POSTGRES_PORT: 5432
-      POSTGRES_DB: healthapp_dev
-      POSTGRES_USER: healthapp_user
-      POSTGRES_PASSWORD: secure_pg_password
-      REDIS_HOST: redis
-      REDIS_PORT: 6379
-      REDIS_PASSWORD: secure_redis_password
-      JWT_SECRET: local-dev-secret-key-12345
-      CORS_ORIGIN: "${FRONTEND_URL:-http://localhost:3002}"
-      FRONTEND_URL: "${FRONTEND_URL:-http://localhost:3002}"
+      DATABASE_URL: "postgresql://healthapp_user:secure_pg_password@postgres:5432/healthapp_dev"
+      REDIS_URL: "redis://:secure_redis_password@redis:6379"
+      NEXTAUTH_URL: "http://localhost:3002"
+      NEXTAUTH_SECRET: "localsecret" # Should be a long random string in production
       HOST_IP: ${HOST_IP:-192.168.0.148}
+      WDS_SOCKET_HOST: ${HOST_IP:-192.168.0.148}
+      WDS_SOCKET_PORT: 3002
     ports:
-      - "3005:3005"  # Backend port
+      - "3002:3002"
     volumes:
-      - ../src:/app/src
-      - ../package.json:/app/package.json
-      - ../tsconfig.backend.json:/app/tsconfig.backend.json
-      - backend_local_logs:/app/logs
+      - ../:/app
+      - /app/node_modules # Avoids overwriting node_modules with host's
+      - /app/.next
     depends_on:
       postgres:
         condition: service_healthy
       redis:
         condition: service_healthy
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3005/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-    restart: unless-stopped
-    command: npm run backend:prod
-
-  # Frontend (Next.js)
-  frontend:
-    build:
-      context: ..
-      dockerfile: docker/Dockerfile.local
-      target: frontend-dev
-    container_name: healthapp-frontend-local
-    environment:
-      NODE_ENV: development
-      PORT: 3002
-      BACKEND_URL: http://backend:3005
-      NEXT_PUBLIC_FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3002}
-      HOST_IP: ${HOST_IP:-192.168.0.148}
-      ALLOWED_DEV_ORIGINS: ${HOST_IP:-192.168.0.148}:3002,localhost:3002
-      # WebSocket configuration for HMR
-      WATCHPACK_POLLING: "true"
-      WDS_SOCKET_HOST: ${HOST_IP:-192.168.0.148}
-      WDS_SOCKET_PORT: 3002
-    ports:
-      - "3002:3002"  # Frontend port
-    volumes:
-      - ../app:/app/app
-      - ../components:/app/components
-      - ../lib:/app/lib
-      - ../hooks:/app/hooks
-      - ../public:/app/public
-      - ../types:/app/types
-      - ../package.json:/app/package.json
-      - ../next.config.js:/app/next.config.js
-      - ../tailwind.config.js:/app/tailwind.config.js
-      - ../tsconfig.json:/app/tsconfig.json
-      - ../.postcssrc.json:/app/.postcssrc.json
-    depends_on:
-      backend:
-        condition: service_healthy
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3002"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
     restart: unless-stopped
     command: npm run dev
-
-  # PgAdmin for database management
-  pgadmin:
-    image: dpage/pgadmin4:latest
-    container_name: healthapp-pgadmin-local
-    environment:
-      PGADMIN_DEFAULT_EMAIL: gagneet@silverfoxtechnologies.com.au
-      PGADMIN_DEFAULT_PASSWORD: PG@Adm1n%168$
-      PGADMIN_CONFIG_SERVER_MODE: 'False'
-    ports:
-      - "5050:80"
-    volumes:
-      - pgadmin_local_data:/var/lib/pgadmin
-    depends_on:
-      postgres:
-        condition: service_healthy
-    restart: unless-stopped
 
 volumes:
   postgres_local_data:
     driver: local
   redis_local_data:
-    driver: local
-  backend_local_logs:
-    driver: local
-  pgadmin_local_data:
     driver: local
 
 networks:
