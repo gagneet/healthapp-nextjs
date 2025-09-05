@@ -208,6 +208,28 @@ export interface Medicine {
   updatedAt: string
 }
 
+export interface QualificationChangeRequest {
+  id: string;
+  doctorId: string;
+  requesterId: string;
+  qualificationId?: string; // Optional because it could be a new qualification
+  changeType: 'add' | 'edit' | 'delete';
+  status: 'pending' | 'approved' | 'rejected';
+  rejectionReason?: string;
+  requestedAt: string;
+  reviewedBy?: string;
+  reviewedAt?: string;
+  changes: {
+    degree?: string;
+    institution?: string;
+    year?: string;
+    type?: 'degree' | 'specialization' | 'continuing_education';
+    honors?: string;
+    duration?: string;
+    credits?: string;
+  };
+}
+
 export interface Medication {
   id: string
   participantId: string
