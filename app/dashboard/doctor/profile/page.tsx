@@ -110,6 +110,12 @@ interface DoctorProfile {
       credentialId?: string;
     }>;
     languagesSpoken: string[];
+    associatedClinics?: Array<{
+      name: string;
+      address: string;
+      type: string;
+      schedule?: string;
+    }>;
   };
   statistics: {
     totalPatients: number;
@@ -194,7 +200,7 @@ export default function DoctorProfilePage() {
       setError(null);
       const response = await apiRequest.get<HealthcareApiResponse<DoctorProfile>>('/doctors/profile');
 
-      if (response.success === false) {
+      if (!response.success) {
         const errorMessage = response.error?.message || 'Unable to load profile data. Please try again.';
         setError(errorMessage);
         setProfile(null);
@@ -203,7 +209,25 @@ export default function DoctorProfilePage() {
       }
     } catch (error) {
       console.error('Failed to fetch doctor profile:', error);
-      setError('An error occurred while loading your profile. Please try again later.');
+      let errorMessage = 'An error occurred while loading your profile. Please try again later.';
+      if (error && typeof error === 'object') {
+        // Axios-style error with response
+        if ('response' in error && (error as any).response && typeof (error as any).response === 'object' && 'status' in (error as any).response) {
+          const status = (error as any).response.status;
+          if (status === 401 || status === 403) {
+            errorMessage = 'You are not authorized to view this profile. Please log in again.';
+          } else if (status >= 500) {
+            errorMessage = 'A server error occurred. Please try again later.';
+          } else if (status >= 400) {
+            errorMessage = 'A request error occurred. Please check your input or try again.';
+          }
+        } else if ('message' in error && typeof (error as any).message === 'string') {
+          if ((error as any).message.includes('Network Error') || (error as any).message.includes('Failed to fetch')) {
+            errorMessage = 'Network error: Please check your internet connection and try again.';
+          }
+        }
+      }
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -841,6 +865,7 @@ export default function DoctorProfilePage() {
                       <div className="flex-1">
                         <h4 className="font-medium text-gray-900 capitalize">{change.changeType} Request</h4>
                         <p className="text-sm text-gray-600">Status: <span className="font-semibold">{change.status}</span></p>
+                        {Object.entries(change.changes).map(([key, value]) => (
                           <p key={`${change.id}-${key}`} className="text-sm text-gray-600">
                             <span className="capitalize">{key}:</span> {String(value)}
                           </p>
