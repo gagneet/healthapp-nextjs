@@ -28,7 +28,7 @@ The local development environment consists of the following services:
 
 2.  **Configure Environment Variables:**
 
-    The `docker-compose.local.yml` file is configured to use your local IP address for hot-reloading. You can set the `HOST_IP` environment variable to your machine's IP address. If you don't set it, it will default to `198.168.0.148`.
+    The `docker-compose.local.yml` file is configured to use your local IP address for hot-reloading. You can set the `HOST_IP` environment variable to your machine's IP address. If you don't set it, it will default to `192.168.0.148`.
 
     To set the `HOST_IP` environment variable, you can create a `.env` file in the root of the project:
 
