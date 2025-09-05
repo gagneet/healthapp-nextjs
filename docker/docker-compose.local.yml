@@ -45,8 +45,8 @@ services:
       REDIS_URL: "redis://:secure_redis_password@redis:6379"
       NEXTAUTH_URL: "http://localhost:3002"
       NEXTAUTH_SECRET: "localsecret" # Should be a long random string in production
-      HOST_IP: ${HOST_IP:-198.168.0.148}
-      WDS_SOCKET_HOST: ${HOST_IP:-198.168.0.148}
+      HOST_IP: ${HOST_IP:-192.168.0.148}
+      WDS_SOCKET_HOST: ${HOST_IP:-192.168.0.148}
       WDS_SOCKET_PORT: 3002
     ports:
       - "3002:3002"
