@@ -193,11 +193,13 @@ export default function DoctorProfilePage() {
     try {
       setError(null);
       const response = await apiRequest.get<HealthcareApiResponse<DoctorProfile>>('/doctors/profile');
-      if (response.success && response.data) {
-        setProfile(response.data);
-      } else {
+
+      if (response.success === false) {
         const errorMessage = response.error?.message || 'Unable to load profile data. Please try again.';
         setError(errorMessage);
+        setProfile(null);
+      } else {
+        setProfile(response.data ?? null);
       }
     } catch (error) {
       console.error('Failed to fetch doctor profile:', error);
