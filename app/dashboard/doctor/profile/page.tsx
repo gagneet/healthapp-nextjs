@@ -20,12 +20,14 @@ import {
   CalendarIcon,
   StarIcon,
   UsersIcon,
-  PlusIcon
+  PlusIcon,
+  XCircleIcon
 } from '@heroicons/react/24/outline'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { useAuth } from '@/lib/auth-context'
 import { userHelpers } from '@/types/auth'
 import { apiRequest } from '@/lib/api'
+import { HealthcareApiResponse } from '@/lib/api-response'
 import { formatDate } from '@/lib/utils'
 import toast from 'react-hot-toast'
 import { QualificationCard } from '@/components/dashboard/QualificationCard';
@@ -127,6 +129,7 @@ export default function DoctorProfilePage() {
   const { user } = useAuth()
   const [profile, setProfile] = useState<DoctorProfile | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [isEditing, setIsEditing] = useState(false)
   const [editingField, setEditingField] = useState<string | null>(null)
   const [tempValues, setTempValues] = useState<any>({})
@@ -188,15 +191,19 @@ export default function DoctorProfilePage() {
 
   const fetchDoctorProfile = async () => {
     try {
-      const response = await apiRequest.get('/doctors/profile')
-      if ((response as any).success && (response as any).data) {
-        setProfile((response as any).data)
+      setError(null);
+      const response = await apiRequest.get<HealthcareApiResponse<DoctorProfile>>('/doctors/profile');
+      if (response.success && response.data) {
+        setProfile(response.data);
+      } else {
+        const errorMessage = response.error?.message || 'Unable to load profile data. Please try again.';
+        setError(errorMessage);
       }
     } catch (error) {
-      console.error('Failed to fetch doctor profile:', error)
-      toast.error('Failed to load profile')
+      console.error('Failed to fetch doctor profile:', error);
+      setError('An error occurred while loading your profile. Please try again later.');
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
   }
 
@@ -327,6 +334,18 @@ export default function DoctorProfilePage() {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-12">
+        <XCircleIcon className="mx-auto h-12 w-12 text-red-400" />
+        <h3 className="mt-2 text-sm font-medium text-red-900">Failed to load profile</h3>
+        <p className="mt-1 text-sm text-gray-500">
+          {error}
+        </p>
       </div>
     )
   }
