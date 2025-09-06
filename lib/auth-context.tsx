@@ -108,6 +108,14 @@ function AuthContextProvider({ children }: { children: React.ReactNode }) {
     
     logout: async () => {
       try {
+        // ✅ Clear all auth-related local storage
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem('accessToken')
+          localStorage.removeItem('refreshToken')
+          localStorage.removeItem('authToken')
+          localStorage.removeItem('user')
+        }
+
         await signOut({ 
           callbackUrl: '/auth/signin',
           redirect: true 
@@ -115,7 +123,9 @@ function AuthContextProvider({ children }: { children: React.ReactNode }) {
       } catch (error) {
         console.error('Logout error:', error)
         // Force redirect to signin page even if signOut fails
-        window.location.href = '/auth/signin'
+        if (typeof window !== 'undefined') {
+          window.location.href = '/auth/signin'
+        }
       }
     },
     

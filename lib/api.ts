@@ -163,20 +163,6 @@ export const authAPI = {
     }
   },
 
-  logout: async (): Promise<void> => {
-    try {
-      await api.post('/auth/logout')
-    } catch (error) {
-      // Even if logout fails, we should clear local storage
-      logger.error('Logout error:', error)
-    } finally {
-      if (typeof window !== 'undefined') {
-        localStorage.removeItem('authToken')
-        localStorage.removeItem('user')
-      }
-    }
-  },
-
   refreshToken: async (): Promise<AuthResponse> => {
     try {
       const response = await api.post('/auth/refresh-token')
