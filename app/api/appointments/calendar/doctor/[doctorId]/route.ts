@@ -239,7 +239,8 @@ function calculateDateRange(startDate?: string, endDate?: string, view: string =
         break;
       case 'week':
         calculatedStart = new Date(baseDate);
-        calculatedStart.setDate(baseDate.getDate() - baseDate.getDay()); // Start of week (Sunday)
+        // Note: Sunday is considered the start of the week (day 0).
+        calculatedStart.setDate(baseDate.getDate() - baseDate.getDay());
         calculatedStart.setHours(0, 0, 0, 0);
         calculatedEnd = new Date(calculatedStart);
         calculatedEnd.setDate(calculatedStart.getDate() + 6); // End of week (Saturday)
@@ -247,8 +248,11 @@ function calculateDateRange(startDate?: string, endDate?: string, view: string =
         break;
       case 'month':
       default:
-        calculatedStart = new Date(baseDate.getFullYear(), baseDate.getMonth(), 1); // First day of month
-        calculatedEnd = new Date(baseDate.getFullYear(), baseDate.getMonth() + 1, 0); // Last day of month
+        // First day of month
+        calculatedStart = new Date(baseDate.getFullYear(), baseDate.getMonth(), 1);
+        calculatedStart.setHours(0, 0, 0, 0);
+        // Last day of month
+        calculatedEnd = new Date(baseDate.getFullYear(), baseDate.getMonth() + 1, 0);
         calculatedEnd.setHours(23, 59, 59, 999);
         break;
     }
