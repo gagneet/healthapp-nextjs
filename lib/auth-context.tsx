@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, ReactNode, useEffect, useState } from 'react'
 import { useSession, SessionProvider, signOut, signIn } from 'next-auth/react'
+import { useRouter } from 'next/navigation'
 import { TransitionUser, userHelpers, HealthcareRole } from '@/types/auth'
 
 interface AuthContextType {
@@ -40,6 +41,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 function AuthContextProvider({ children }: { children: React.ReactNode }) {
   const { data: session, status } = useSession()
   const [user, setUser] = useState<TransitionUser | null>(null)
+  const router = useRouter()
 
   useEffect(() => {
     if (session?.user) {
@@ -108,14 +110,31 @@ function AuthContextProvider({ children }: { children: React.ReactNode }) {
     
     logout: async () => {
       try {
-        await signOut({ 
-          callbackUrl: '/auth/signin',
-          redirect: true 
-        })
+        // ✅ Clear all auth-related local storage
+        try {
+          if (typeof window !== 'undefined') {
+            localStorage.removeItem('accessToken')
+            localStorage.removeItem('refreshToken')
+            localStorage.removeItem('authToken')
+            localStorage.removeItem('user')
+          }
+        } catch (storageError) {
+          console.error("Failed to clear local storage:", storageError)
+        }
+
+        await signOut({ redirect: false })
+        router.push('/auth/signin')
       } catch (error) {
-        console.error('Logout error:', error)
-        // Force redirect to signin page even if signOut fails
-        window.location.href = '/auth/signin'
+import { useRouter } from 'next/router'
+
+// Add router to component
+const router = useRouter()
+
+// Replace window.location.href with router.push
+if (typeof window !== 'undefined') {
+  router.push('/auth/signin')
+}
+        router.push('/auth/signin')
       }
     },
     

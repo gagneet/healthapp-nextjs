@@ -2836,3 +2836,12 @@ model AdherenceLog {
   @@index([patientId, status, createdAt])
   @@map("adherenceLogs")
 }
+
+model BlacklistedToken {
+  jti       String   @id @db.VarChar(255)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([expiresAt])
+  @@map("blacklistedTokens")
+}
