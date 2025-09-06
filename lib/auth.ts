@@ -286,7 +286,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         });
         if (blacklistedToken) {
           console.log(`Attempt to use blacklisted token: ${token.jti}`);
-          throw new Error("Token is blacklisted");
+          throw new Error("Authentication failed");
         }
       }
 
