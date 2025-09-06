@@ -76,7 +76,7 @@ interface AssociatedClinic {
 }
 
 interface DoctorProfile {
-  id:string;
+  id: string;
   doctorId: string;
   user: {
     id:string;
@@ -418,6 +418,19 @@ export default function DoctorProfilePage() {
       return <p className="text-xs text-gray-500">{prefix}: Invalid date</p>;
     }
     return <p className="text-xs text-gray-500">{prefix}: {formatDate(dateString)}</p>;
+  };
+
+  const renderChangeValue = (value: any) => {
+    if (value === null || value === undefined) {
+      return 'N/A';
+    }
+    if (Array.isArray(value)) {
+      return value.join(', ');
+    }
+    if (typeof value === 'object') {
+      return Object.values(value).join(', ');
+    }
+    return String(value);
   };
 
   const EditableField = ({ 
@@ -891,9 +904,7 @@ export default function DoctorProfilePage() {
                         <p className="text-sm text-gray-600">Status: <span className="font-semibold">{change.status}</span></p>
                         {Object.entries(change.changes).map(([key, value]) => (
                           <p key={`${change.id}-${key}`} className="text-sm text-gray-600">
-                            <span className="capitalize">{key}:</span> {
-                              typeof value === 'object' ? JSON.stringify(value) : String(value)
-                            }
+                            <span className="capitalize">{key}:</span> {renderChangeValue(value)}
                           </p>
                         ))}
                       </div>
