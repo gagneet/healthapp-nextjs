@@ -125,15 +125,11 @@ function AuthContextProvider({ children }: { children: React.ReactNode }) {
         await signOut({ redirect: false })
         router.push('/auth/signin')
       } catch (error) {
-import { useRouter } from 'next/router'
-
-// Add router to component
-const router = useRouter()
-
-// Replace window.location.href with router.push
-if (typeof window !== 'undefined') {
-  router.push('/auth/signin')
-}
+        console.error('Logout error:', error instanceof Error ? error.message : String(error))
+        // Consider different error types
+        if (error instanceof Error && error.message.includes('network')) {
+          console.error('Network error during logout')
+        }
         router.push('/auth/signin')
       }
     },
