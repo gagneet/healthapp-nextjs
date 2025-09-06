@@ -32,6 +32,23 @@ import { formatDate } from '@/lib/utils'
 import toast from 'react-hot-toast'
 import { QualificationCard } from '@/components/dashboard/QualificationCard';
 
+interface ApiError {
+  response?: {
+    status: number;
+  };
+  message?: string;
+  code?: string;
+  name?: string;
+}
+
+function isApiError(error: unknown): error is ApiError {
+  return (
+    error !== null &&
+    typeof error === 'object' &&
+    ('response' in error || 'message' in error || 'code' in error || 'name' in error)
+  );
+}
+
 type Qualification = {
   id: string;
   degree: string;
@@ -51,11 +68,18 @@ type Certification = {
   credentialId?: string;
 };
 
+interface AssociatedClinic {
+  name: string;
+  address: string;
+  type: string;
+  schedule?: string;
+}
+
 interface DoctorProfile {
   id: string;
   doctorId: string;
   user: {
-    id: string;
+    id:string;
     email: string;
     name: string;
     image: string;
@@ -110,12 +134,7 @@ interface DoctorProfile {
       credentialId?: string;
     }>;
     languagesSpoken: string[];
-    associatedClinics?: Array<{
-      name: string;
-      address: string;
-      type: string;
-      schedule?: string;
-    }>;
+    associatedClinics?: AssociatedClinic[];
   };
   statistics: {
     totalPatients: number;
@@ -210,10 +229,10 @@ export default function DoctorProfilePage() {
     } catch (error) {
       console.error('Failed to fetch doctor profile:', error);
       let errorMessage = 'An error occurred while loading your profile. Please try again later.';
-      if (error && typeof error === 'object') {
-        // Axios-style error with response
-        if ('response' in error && (error as any).response && typeof (error as any).response === 'object' && 'status' in (error as any).response) {
-          const status = (error as any).response.status;
+
+      if (isApiError(error)) {
+        if (error.response?.status) {
+          const status = error.response.status;
           if (status === 401 || status === 403) {
             errorMessage = 'You are not authorized to view this profile. Please log in again.';
           } else if (status >= 500) {
@@ -221,10 +240,15 @@ export default function DoctorProfilePage() {
           } else if (status >= 400) {
             errorMessage = 'A request error occurred. Please check your input or try again.';
           }
-        } else if ('message' in error && typeof (error as any).message === 'string') {
-          if ((error as any).message.includes('Network Error') || (error as any).message.includes('Failed to fetch')) {
-            errorMessage = 'Network error: Please check your internet connection and try again.';
-          }
+        } else if (
+          // Check for Axios network error codes
+          (error.code && ['ECONNABORTED', 'ENOTFOUND', 'ERR_NETWORK'].includes(error.code)) ||
+          // Check for Fetch API network error (TypeError)
+          (error.name === 'TypeError') ||
+          // Fallback to string matching for message
+          (error.message && (error.message.includes('Network Error') || error.message.includes('Failed to fetch')))
+        ) {
+          errorMessage = 'Network error: Please check your internet connection and try again.';
         }
       }
       setError(errorMessage);
@@ -867,7 +891,9 @@ export default function DoctorProfilePage() {
                         <p className="text-sm text-gray-600">Status: <span className="font-semibold">{change.status}</span></p>
                         {Object.entries(change.changes).map(([key, value]) => (
                           <p key={`${change.id}-${key}`} className="text-sm text-gray-600">
-                            <span className="capitalize">{key}:</span> {String(value)}
+                            <span className="capitalize">{key}:</span> {
+                              typeof value === 'object' ? JSON.stringify(value) : String(value)
+                            }
                           </p>
                         ))}
                       </div>
