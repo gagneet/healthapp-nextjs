@@ -279,6 +279,17 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   
   callbacks: {
     async jwt({ token, user }) {
+      // Check if the token is blacklisted
+      if (token.jti) {
+        const blacklistedToken = await prisma.blacklistedToken.findUnique({
+          where: { jti: token.jti },
+        });
+        if (blacklistedToken) {
+          console.log(`Attempt to use blacklisted token: ${token.jti}`);
+          throw new Error("Token is blacklisted");
+        }
+      }
+
       // Initial sign in
       if (user) {
         const extendedUser = user as ExtendedUser
@@ -446,6 +457,20 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     },
     
     async signOut({ session, token }) {
+      if (token && token.jti && token.exp) {
+        try {
+          await prisma.blacklistedToken.create({
+            data: {
+              jti: token.jti,
+              expiresAt: new Date((token.exp as number) * 1000),
+            },
+          });
+          console.log(`Token ${token.jti} blacklisted.`);
+        } catch (error) {
+          console.error("Failed to blacklist token:", error);
+        }
+      }
+
       console.log(`User signed out: ${session?.user?.email || token?.email}`)
       
       try {

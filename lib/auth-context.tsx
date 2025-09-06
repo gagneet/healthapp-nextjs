@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, ReactNode, useEffect, useState } from 'react'
 import { useSession, SessionProvider, signOut, signIn } from 'next-auth/react'
+import { useRouter } from 'next/navigation'
 import { TransitionUser, userHelpers, HealthcareRole } from '@/types/auth'
 
 interface AuthContextType {
@@ -40,6 +41,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 function AuthContextProvider({ children }: { children: React.ReactNode }) {
   const { data: session, status } = useSession()
   const [user, setUser] = useState<TransitionUser | null>(null)
+  const router = useRouter()
 
   useEffect(() => {
     if (session?.user) {
@@ -109,23 +111,23 @@ function AuthContextProvider({ children }: { children: React.ReactNode }) {
     logout: async () => {
       try {
         // ✅ Clear all auth-related local storage
-        if (typeof window !== 'undefined') {
-          localStorage.removeItem('accessToken')
-          localStorage.removeItem('refreshToken')
-          localStorage.removeItem('authToken')
-          localStorage.removeItem('user')
+        try {
+          if (typeof window !== 'undefined') {
+            localStorage.removeItem('accessToken')
+            localStorage.removeItem('refreshToken')
+            localStorage.removeItem('authToken')
+            localStorage.removeItem('user')
+          }
+        } catch (storageError) {
+          console.error("Failed to clear local storage:", storageError)
         }
 
-        await signOut({ 
-          callbackUrl: '/auth/signin',
-          redirect: true 
-        })
+        await signOut({ redirect: false })
+        router.push('/auth/signin')
       } catch (error) {
         console.error('Logout error:', error)
         // Force redirect to signin page even if signOut fails
-        if (typeof window !== 'undefined') {
-          window.location.href = '/auth/signin'
-        }
+        router.push('/auth/signin')
       }
     },
     
