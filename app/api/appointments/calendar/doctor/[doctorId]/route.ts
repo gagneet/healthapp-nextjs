@@ -222,7 +222,7 @@ export async function GET(
 }
 
 function calculateDateRange(startDate?: string, endDate?: string, view: string = 'month') {
-  const now = new Date();
+  const baseDate = startDate ? new Date(startDate) : new Date();
   let calculatedStart: Date;
   let calculatedEnd: Date;
 
@@ -232,14 +232,14 @@ function calculateDateRange(startDate?: string, endDate?: string, view: string =
   } else {
     switch (view) {
       case 'day':
-        calculatedStart = new Date(now);
+        calculatedStart = new Date(baseDate);
         calculatedStart.setHours(0, 0, 0, 0);
         calculatedEnd = new Date(calculatedStart);
         calculatedEnd.setHours(23, 59, 59, 999);
         break;
       case 'week':
-        calculatedStart = new Date(now);
-        calculatedStart.setDate(now.getDate() - now.getDay()); // Start of week (Sunday)
+        calculatedStart = new Date(baseDate);
+        calculatedStart.setDate(baseDate.getDate() - baseDate.getDay()); // Start of week (Sunday)
         calculatedStart.setHours(0, 0, 0, 0);
         calculatedEnd = new Date(calculatedStart);
         calculatedEnd.setDate(calculatedStart.getDate() + 6); // End of week (Saturday)
@@ -247,8 +247,8 @@ function calculateDateRange(startDate?: string, endDate?: string, view: string =
         break;
       case 'month':
       default:
-        calculatedStart = new Date(now.getFullYear(), now.getMonth(), 1); // First day of month
-        calculatedEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0); // Last day of month
+        calculatedStart = new Date(baseDate.getFullYear(), baseDate.getMonth(), 1); // First day of month
+        calculatedEnd = new Date(baseDate.getFullYear(), baseDate.getMonth() + 1, 0); // Last day of month
         calculatedEnd.setHours(23, 59, 59, 999);
         break;
     }
