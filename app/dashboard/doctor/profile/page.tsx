@@ -32,6 +32,23 @@ import { formatDate } from '@/lib/utils'
 import toast from 'react-hot-toast'
 import { QualificationCard } from '@/components/dashboard/QualificationCard';
 
+interface ApiError {
+  response?: {
+    status: number;
+  };
+  message?: string;
+  code?: string;
+  name?: string;
+}
+
+function isApiError(error: unknown): error is ApiError {
+  return (
+    error !== null &&
+    typeof error === 'object' &&
+    ('response' in error || 'message' in error || 'code' in error || 'name' in error)
+  );
+}
+
 type Qualification = {
   id: string;
   degree: string;
@@ -51,11 +68,18 @@ type Certification = {
   credentialId?: string;
 };
 
+interface AssociatedClinic {
+  name: string;
+  address: string;
+  type: string;
+  schedule?: string;
+}
+
 interface DoctorProfile {
   id: string;
   doctorId: string;
   user: {
-    id: string;
+    id:string;
     email: string;
     name: string;
     image: string;
@@ -110,6 +134,7 @@ interface DoctorProfile {
       credentialId?: string;
     }>;
     languagesSpoken: string[];
+    associatedClinics?: AssociatedClinic[];
   };
   statistics: {
     totalPatients: number;
@@ -194,7 +219,7 @@ export default function DoctorProfilePage() {
       setError(null);
       const response = await apiRequest.get<HealthcareApiResponse<DoctorProfile>>('/doctors/profile');
 
-      if (response.success === false) {
+      if (!response.success) {
         const errorMessage = response.error?.message || 'Unable to load profile data. Please try again.';
         setError(errorMessage);
         setProfile(null);
@@ -203,7 +228,30 @@ export default function DoctorProfilePage() {
       }
     } catch (error) {
       console.error('Failed to fetch doctor profile:', error);
-      setError('An error occurred while loading your profile. Please try again later.');
+      let errorMessage = 'An error occurred while loading your profile. Please try again later.';
+
+      if (isApiError(error)) {
+        if (error.response?.status) {
+          const status = error.response.status;
+          if (status === 401 || status === 403) {
+            errorMessage = 'You are not authorized to view this profile. Please log in again.';
+          } else if (status >= 500) {
+            errorMessage = 'A server error occurred. Please try again later.';
+          } else if (status >= 400) {
+            errorMessage = 'A request error occurred. Please check your input or try again.';
+          }
+        } else if (
+          // Check for Axios network error codes
+          (error.code && ['ECONNABORTED', 'ENOTFOUND', 'ERR_NETWORK'].includes(error.code)) ||
+          // Check for Fetch API network error (TypeError)
+          (error.name === 'TypeError') ||
+          // Fallback to string matching for message
+          (error.message && (error.message.includes('Network Error') || error.message.includes('Failed to fetch')))
+        ) {
+          errorMessage = 'Network error: Please check your internet connection and try again.';
+        }
+      }
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -370,6 +418,19 @@ export default function DoctorProfilePage() {
       return <p className="text-xs text-gray-500">{prefix}: Invalid date</p>;
     }
     return <p className="text-xs text-gray-500">{prefix}: {formatDate(dateString)}</p>;
+  };
+
+  const renderChangeValue = (value: any) => {
+    if (value === null || value === undefined) {
+      return 'N/A';
+    }
+    if (Array.isArray(value)) {
+      return value.join(', ');
+    }
+    if (typeof value === 'object') {
+      return Object.values(value).join(', ');
+    }
+    return String(value);
   };
 
   const EditableField = ({ 
@@ -841,8 +902,9 @@ export default function DoctorProfilePage() {
                       <div className="flex-1">
                         <h4 className="font-medium text-gray-900 capitalize">{change.changeType} Request</h4>
                         <p className="text-sm text-gray-600">Status: <span className="font-semibold">{change.status}</span></p>
+                        {Object.entries(change.changes).map(([key, value]) => (
                           <p key={`${change.id}-${key}`} className="text-sm text-gray-600">
-                            <span className="capitalize">{key}:</span> {String(value)}
+                            <span className="capitalize">{key}:</span> {renderChangeValue(value)}
                           </p>
                         ))}
                       </div>
