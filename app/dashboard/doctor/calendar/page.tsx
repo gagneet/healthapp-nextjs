@@ -5,14 +5,27 @@ import { Button } from '@/components/ui/button'
 import { CalendarIcon, Plus, Clock, User, Users, Filter, ChevronDown, ChevronLeft, ChevronRight, Home } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { DayPilotCalendar, DayPilotMonth, DayPilot } from '@daypilot/daypilot-lite-react'
+import { useSession } from 'next-auth/react'
+import { format } from 'date-fns'
 
 interface Appointment {
-  id: number
-  patient_name: string
-  appointment_time: string
-  appointment_date: string
-  status: 'scheduled' | 'completed' | 'cancelled'
-  type: 'consultation' | 'follow-up' | 'emergency'
+  id: string;
+  title: string;
+  description: string | null;
+  startTime: string;
+  endTime: string;
+  status: 'scheduled' | 'completed' | 'cancelled' | 'rescheduled' | 'no_show' | 'in_progress';
+  appointmentType: 'consultation' | 'follow-up' | 'emergency' | 'check-up';
+  patient: {
+    id: string;
+    name: string;
+    email: string;
+  };
+  carePlan: {
+    id: string;
+    name: string;
+  } | null;
+  priority: string;
 }
 
 interface Patient {
@@ -35,6 +48,7 @@ interface DayPilotEvent {
 type ViewType = 'Month' | 'Week' | 'Days'
 
 export default function DoctorCalendarPage() {
+  const { data: session } = useSession()
   const [appointments, setAppointments] = useState<Appointment[]>([])
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0])
   const [isLoading, setIsLoading] = useState(true)
@@ -50,88 +64,71 @@ export default function DoctorCalendarPage() {
     locale: 'en-us'
   })
 
-  useEffect(() => {
-    // Simulate loading appointments - this would be replaced with actual API call
-    setIsLoading(true)
-    setTimeout(() => {
-      // Mock data for demonstration
-      const mockAppointments: Appointment[] = [
-        {
-          id: 1,
-          patient_name: 'John Doe',
-          appointment_time: '09:00',
-          appointment_date: selectedDate,
-          status: 'scheduled' as const,
-          type: 'consultation' as const
-        },
-        {
-          id: 2,
-          patient_name: 'Jane Smith',
-          appointment_time: '10:30',
-          appointment_date: selectedDate,
-          status: 'scheduled' as const,
-          type: 'follow-up' as const
-        },
-        {
-          id: 3,
-          patient_name: 'Mike Johnson',
-          appointment_time: '14:00',
-          appointment_date: selectedDate,
-          status: 'completed' as const,
-          type: 'consultation' as const
-        }
-      ]
-      setAppointments(mockAppointments)
-      setIsLoading(false)
-    }, 1000)
-  }, [selectedDate])
+  const [error, setError] = useState<string | null>(null)
 
-  // Load patients for dropdown (mock data - replace with API call)
   useEffect(() => {
-    const mockPatients: Patient[] = [
-      { id: '1', name: 'John Doe', medicalRecordNumber: 'MRN-001' },
-      { id: '2', name: 'Jane Smith', medicalRecordNumber: 'MRN-002' },
-      { id: '3', name: 'Mike Johnson', medicalRecordNumber: 'MRN-003' },
-      { id: '4', name: 'Sarah Wilson', medicalRecordNumber: 'MRN-004' },
-      { id: '5', name: 'David Brown', medicalRecordNumber: 'MRN-005' }
-    ]
-    setPatients(mockPatients)
-  }, [])
+    const fetchCalendarData = async () => {
+      if (!session?.user?.id) return
+
+      setIsLoading(true)
+      setError(null)
+
+      try {
+        const doctorId = session.user.id
+        const viewTypeMap: { [key in ViewType]: string } = {
+          Days: 'day',
+          Week: 'week',
+          Month: 'month',
+        }
+        const apiViewType = viewTypeMap[viewType]
+        const response = await fetch(`/api/appointments/calendar/doctor/${doctorId}?view=${apiViewType}&startDate=${calendarConfig.startDate}`)
+        const data = await response.json()
+
+        if (!response.ok) {
+          throw new Error(data.message || 'Failed to fetch calendar data')
+        }
+
+        if (data.calendar) {
+          const fetchedAppointments = data.calendar.events.filter((event: any) => event.type === 'appointment')
+          setAppointments(fetchedAppointments as Appointment[])
+
+          // Extract unique patients from appointments
+          const uniquePatients = (fetchedAppointments as Appointment[]).reduce((acc: Patient[], appointment: Appointment) => {
+            if (!acc.find(p => p.id === appointment.patient.id)) {
+              acc.push({
+                id: appointment.patient.id,
+                name: appointment.patient.name,
+                medicalRecordNumber: `MRN-${appointment.patient.id}`
+              })
+            }
+            return acc
+          }, [])
+          setPatients(uniquePatients)
+        }
+      } catch (error) {
+        console.error('Failed to fetch calendar data:', error)
+        setError(error instanceof Error ? error.message : 'An unknown error occurred')
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchCalendarData()
+  }, [session, selectedDate, viewType, calendarConfig.startDate])
 
   // Convert appointments to DayPilot events
   useEffect(() => {
     const convertAppointmentsToEvents = () => {
-      // Extended mock data for monthly view
-      const monthlyAppointments = [
-        // Current week
-        { id: 1, patient_name: 'John Doe', appointment_time: '09:00', appointment_date: selectedDate, status: 'scheduled', type: 'consultation' },
-        { id: 2, patient_name: 'Jane Smith', appointment_time: '10:30', appointment_date: selectedDate, status: 'scheduled', type: 'follow-up' },
-        // Add more appointments for the month
-        { id: 4, patient_name: 'Sarah Wilson', appointment_time: '14:00', appointment_date: getDateOffset(1), status: 'scheduled', type: 'consultation' },
-        { id: 5, patient_name: 'David Brown', appointment_time: '11:00', appointment_date: getDateOffset(3), status: 'completed', type: 'follow-up' },
-        { id: 6, patient_name: 'John Doe', appointment_time: '15:30', appointment_date: getDateOffset(7), status: 'scheduled', type: 'emergency' },
-        { id: 7, patient_name: 'Jane Smith', appointment_time: '09:30', appointment_date: getDateOffset(10), status: 'scheduled', type: 'consultation' },
-        { id: 8, patient_name: 'Mike Johnson', appointment_time: '13:00', appointment_date: getDateOffset(14), status: 'cancelled', type: 'follow-up' },
-      ]
-
-      const filteredAppointments = selectedPatient === 'all' 
-        ? monthlyAppointments 
-        : monthlyAppointments.filter(apt => {
-          const patient = patients.find(p => p.name === apt.patient_name)
-          // Ensure type-safe comparison between patient ID and selectedPatient
-          return patient?.id && String(patient.id) === selectedPatient
-        })
+      const filteredAppointments = selectedPatient === 'all'
+        ? appointments
+        : appointments.filter(apt => apt.patient.id === selectedPatient)
 
       const events: DayPilotEvent[] = filteredAppointments.map(appointment => {
-        const startDateTime = `${appointment.appointment_date}T${appointment.appointment_time}:00`
-        const endTime = addHours(appointment.appointment_time, 1)
-        const endDateTime = `${appointment.appointment_date}T${endTime}:00`
-
         return {
-          id: appointment.id.toString(),
-          text: `${appointment.patient_name} - ${appointment.type}`,
-          start: startDateTime,
-          end: endDateTime,
+          id: appointment.id,
+          text: `${appointment.patient.name} - ${appointment.appointmentType}`,
+          start: appointment.startTime,
+          end: appointment.endTime,
           backColor: getStatusBackColor(appointment.status),
           borderColor: getStatusBorderColor(appointment.status),
           fontColor: '#ffffff',
@@ -142,23 +139,10 @@ export default function DoctorCalendarPage() {
       setCalendarEvents(events)
     }
 
-    if (patients.length > 0) {
+    if (appointments.length > 0) {
       convertAppointmentsToEvents()
     }
-  }, [appointments, selectedDate, selectedPatient, patients])
-
-  // Helper functions
-  const getDateOffset = (days: number) => {
-    const date = new Date()
-    date.setDate(date.getDate() + days)
-    return date.toISOString().split('T')[0]
-  }
-
-  const addHours = (time: string, hours: number) => {
-    const [hour, minute] = time.split(':').map(Number)
-    const newHour = hour + hours
-    return `${newHour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`
-  }
+  }, [appointments, selectedPatient])
 
   const getStatusBackColor = (status: string) => {
     switch (status) {
@@ -254,7 +238,7 @@ export default function DoctorCalendarPage() {
     // Navigate to patient appointment page - replace with actual routing
     console.log('Navigate to patient appointment:', appointment)
     // Example: router.push(`/dashboard/doctor/patients/${appointment.patientId}/appointments/${appointment.id}`)
-    alert(`Clicked appointment: ${appointment.patient_name} - ${appointment.type}\\n\\nThis will navigate to the patient appointment page.`)
+    alert(`Clicked appointment: ${appointment.patient.name} - ${appointment.appointmentType}\\n\\nThis will navigate to the patient appointment page.`)
   }
 
   const handleTimeRangeSelected = (args: any) => {
@@ -307,6 +291,19 @@ export default function DoctorCalendarPage() {
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
           <p className="text-gray-600">Loading calendar...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center text-red-600">
+          <p>Error: {error}</p>
+          <Button onClick={() => window.location.reload()} className="mt-4">
+            Retry
+          </Button>
         </div>
       </div>
     )
@@ -383,20 +380,20 @@ export default function DoctorCalendarPage() {
                   >
                     <div className="flex items-center gap-4">
                       <div className="text-2xl">
-                        {getTypeIcon(appointment.type)}
+                        {getTypeIcon(appointment.appointmentType)}
                       </div>
                       <div>
                         <div className="flex items-center gap-2 mb-1">
                           <User className="h-4 w-4 text-gray-500" />
                           <span className="font-medium text-gray-900">
-                            {appointment.patient_name}
+                            {appointment.patient.name}
                           </span>
                         </div>
                         <div className="flex items-center gap-2 text-sm text-gray-600">
                           <Clock className="h-3 w-3" />
-                          <span>{appointment.appointment_time}</span>
+                          <span>{format(new Date(appointment.startTime), 'p')}</span>
                           <span className="text-gray-400">•</span>
-                          <span className="capitalize">{appointment.type}</span>
+                          <span className="capitalize">{appointment.appointmentType}</span>
                         </div>
                       </div>
                     </div>
@@ -575,10 +572,11 @@ export default function DoctorCalendarPage() {
                 />
               ) : (
                 <DayPilotCalendar
+                  key={viewType}
                   events={calendarEvents}
                   onEventClick={handleEventClick}
                   onTimeRangeSelected={handleTimeRangeSelected}
-                  {...({ config: {
+                  config={{
                     viewType: viewType === 'Days' ? 'Days' : 'Week',
                     startDate: calendarConfig.startDate,
                     locale: 'en-us',
@@ -599,7 +597,7 @@ export default function DoctorCalendarPage() {
                     showNonBusiness: true,
                     timeFormat: 'Clock12Hours',
                     eventRightClickHandling: 'ContextMenu'
-                  }} as any)}
+                  }}
                 />
               )}
             </div>
