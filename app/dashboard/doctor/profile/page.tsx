@@ -76,7 +76,7 @@ interface AssociatedClinic {
 }
 
 interface DoctorProfile {
-  id: string;
+  id:string;
   doctorId: string;
   user: {
     id:string;
