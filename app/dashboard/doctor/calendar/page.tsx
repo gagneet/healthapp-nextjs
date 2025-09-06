@@ -6,6 +6,7 @@ import { CalendarIcon, Plus, Clock, User, Users, Filter, ChevronDown, ChevronLef
 import { useState, useEffect } from 'react'
 import { DayPilotCalendar, DayPilotMonth, DayPilot } from '@daypilot/daypilot-lite-react'
 import { useSession } from 'next-auth/react'
+import { format } from 'date-fns'
 
 interface Appointment {
   id: string;
@@ -13,8 +14,8 @@ interface Appointment {
   description: string | null;
   startTime: string;
   endTime: string;
-  status: string;
-  appointmentType: string;
+  status: 'scheduled' | 'completed' | 'cancelled' | 'rescheduled' | 'no_show' | 'in_progress';
+  appointmentType: 'consultation' | 'follow-up' | 'emergency' | 'check-up';
   patient: {
     id: string;
     name: string;
@@ -63,22 +64,32 @@ export default function DoctorCalendarPage() {
     locale: 'en-us'
   })
 
+  const [error, setError] = useState<string | null>(null)
+
   useEffect(() => {
     const fetchCalendarData = async () => {
       if (!session?.user?.id) return
 
       setIsLoading(true)
+      setError(null)
+
       try {
         const doctorId = session.user.id
-        const response = await fetch(`/api/appointments/calendar/doctor/${doctorId}?view=${viewType.toLowerCase().slice(0, -1)}&startDate=${calendarConfig.startDate}`)
+        const viewTypeMap: { [key in ViewType]: string } = {
+          Days: 'day',
+          Week: 'week',
+          Month: 'month',
+        }
+        const apiViewType = viewTypeMap[viewType]
+        const response = await fetch(`/api/appointments/calendar/doctor/${doctorId}?view=${apiViewType}&startDate=${calendarConfig.startDate}`)
         const data = await response.json()
 
-        if (response.ok && data.calendar) {
-          const fetchedAppointments = data.calendar.events
-            .filter((event: any) => event.type === 'appointment')
-            .map((event: any) => ({
-              ...event,
-            }))
+        if (!response.ok) {
+          throw new Error(data.message || 'Failed to fetch calendar data')
+        }
+
+        if (data.calendar) {
+          const fetchedAppointments = data.calendar.events.filter((event: any) => event.type === 'appointment')
           setAppointments(fetchedAppointments as Appointment[])
 
           // Extract unique patients from appointments
@@ -87,7 +98,7 @@ export default function DoctorCalendarPage() {
               acc.push({
                 id: appointment.patient.id,
                 name: appointment.patient.name,
-                medicalRecordNumber: `MRN-${appointment.patient.id.substring(0, 5)}`
+                medicalRecordNumber: `MRN-${appointment.patient.id}`
               })
             }
             return acc
@@ -96,6 +107,7 @@ export default function DoctorCalendarPage() {
         }
       } catch (error) {
         console.error('Failed to fetch calendar data:', error)
+        setError(error instanceof Error ? error.message : 'An unknown error occurred')
       } finally {
         setIsLoading(false)
       }
@@ -284,6 +296,19 @@ export default function DoctorCalendarPage() {
     )
   }
 
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center text-red-600">
+          <p>Error: {error}</p>
+          <Button onClick={() => window.location.reload()} className="mt-4">
+            Retry
+          </Button>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -366,7 +391,7 @@ export default function DoctorCalendarPage() {
                         </div>
                         <div className="flex items-center gap-2 text-sm text-gray-600">
                           <Clock className="h-3 w-3" />
-                          <span>{new Date(appointment.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                          <span>{format(new Date(appointment.startTime), 'p')}</span>
                           <span className="text-gray-400">•</span>
                           <span className="capitalize">{appointment.appointmentType}</span>
                         </div>
@@ -551,7 +576,7 @@ export default function DoctorCalendarPage() {
                   events={calendarEvents}
                   onEventClick={handleEventClick}
                   onTimeRangeSelected={handleTimeRangeSelected}
-                  {...({ config: {
+                  config={{
                     viewType: viewType === 'Days' ? 'Days' : 'Week',
                     startDate: calendarConfig.startDate,
                     locale: 'en-us',
@@ -572,7 +597,7 @@ export default function DoctorCalendarPage() {
                     showNonBusiness: true,
                     timeFormat: 'Clock12Hours',
                     eventRightClickHandling: 'ContextMenu'
-                  }} as any)}
+                  }}
                 />
               )}
             </div>
