@@ -777,7 +777,7 @@ model PatientDoctorAssignment {
   assignmentType           PatientDoctorAssignmentType           @default(SPECIALIST)
   permissions              Json?                                 @default("{\"can_view_patient\": true, \"can_create_care_plans\": false, \"can_modify_care_plans\": false, \"can_prescribe\": false, \"can_order_tests\": false, \"can_access_full_history\": false}")
   specialtyFocus           String[]                              @default([])
-  carePlanIds              String[]                              @default([])
+  carePlanIds              String[]                              @default([]) @db.Uuid
   assignedByDoctorId       String?                               @db.Uuid
   assignedByAdminId        String?                               @db.Uuid
   patientConsentRequired   Boolean?                              @default(false)
@@ -939,6 +939,8 @@ model AuditLog {
   @@index([userId])
   @@index([userId, timestamp])
   @@index([userId, createdAt, action], map: "idx_audit_user_created_action")
+  @@index([entityType])
+  @@index([entityId])
   @@map("auditLogs")
 }
 

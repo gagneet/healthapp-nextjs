@@ -175,7 +175,7 @@ export const POST = withErrorHandling(async (request: NextRequest, { params }: {
         secondaryDoctorId: doctorId,
         assignmentType,
         assignmentReason,
-        specialtyFocus: specialtyFocus.length > 0 ? specialtyFocus : [],
+        specialtyFocus: specialtyFocus.length > 0 ? specialtyFocus : null,
         requiresConsent: needsConsent,
         consentStatus: needsConsent ? PatientConsentStatus.PENDING : PatientConsentStatus.GRANTED,
         accessGranted: !needsConsent,
