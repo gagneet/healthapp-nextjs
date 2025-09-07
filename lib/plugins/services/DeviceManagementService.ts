@@ -15,7 +15,7 @@ import {
   PluginError 
 } from '@/lib/plugins/core/DevicePlugin.interface';
 import { validateVitalData } from '@/lib/plugins/core/DataTransformer';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from '@/generated/prisma';
 
 export interface DeviceRegistration {
   id: string;

@@ -8,7 +8,7 @@
  * Schema introspected from existing PostgreSQL database with 46 healthcare models
  */
 
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from '@/generated/prisma';
 
 // Global variable to store the Prisma instance
 const globalForPrisma = globalThis as unknown as {
