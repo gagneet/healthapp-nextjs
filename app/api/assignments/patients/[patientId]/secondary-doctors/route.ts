@@ -15,13 +15,14 @@ import {
   withErrorHandling
 } from "@/lib/api-response"
 import { z } from "zod"
+import { PatientDoctorAssignmentType, PatientConsentStatus } from "@/generated/prisma";
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
 
 const AssignSecondaryDoctorSchema = z.object({
   doctorId: z.string().uuid("Doctor ID must be a valid UUID"),
-  assignmentType: z.enum(['specialist', 'substitute', 'transferred']),
+  assignmentType: z.nativeEnum(PatientDoctorAssignmentType),
   specialtyFocus: z.array(z.string()).optional().default([]),
   carePlanIds: z.array(z.string().uuid()).optional().default([]),
   assignmentReason: z.string().min(10, "Assignment reason must be at least 10 characters"),
@@ -81,7 +82,7 @@ export const POST = withErrorHandling(async (request: NextRequest, { params }: {
         user: {
           select: { firstName: true, lastName: true, email: true }
         },
-        organization: {
+        hsp: {
           select: { id: true, name: true }
         }
       }
@@ -118,10 +119,14 @@ export const POST = withErrorHandling(async (request: NextRequest, { params }: {
         user: {
           select: { firstName: true, lastName: true, email: true }
         },
-        specialty: {
-          select: { name: true, description: true }
+        specialties: {
+          include: {
+            specialty: {
+              select: { name: true, description: true }
+            }
+          }
         },
-        organization: {
+        hsp: {
           select: { id: true, name: true }
         }
       }
@@ -145,17 +150,17 @@ export const POST = withErrorHandling(async (request: NextRequest, { params }: {
     }
 
     // Determine if consent is required
-    const sameOrganization = primaryDoctor.organizationId === secondaryDoctor.organizationId
+    const sameOrganization = primaryDoctor.hspId === secondaryDoctor.hspId
     const needsConsent = requiresConsent !== undefined ? requiresConsent : !sameOrganization
 
     // Set assignment permissions based on type and same organization
     const finalPermissions = {
       canViewMedications: permissions.canViewMedications ?? true,
-      canPrescribe: permissions.canPrescribe ?? (assignmentType === 'transferred'),
+      canPrescribe: permissions.canPrescribe ?? (assignmentType === 'TRANSFERRED'),
       canViewVitals: permissions.canViewVitals ?? true,
-      canEditCarePlan: permissions.canEditCarePlan ?? (assignmentType !== 'specialist'),
+      canEditCarePlan: permissions.canEditCarePlan ?? (assignmentType !== 'SPECIALIST'),
       canViewLabResults: permissions.canViewLabResults ?? true,
-      accessLevel: permissions.accessLevel ?? (assignmentType === 'transferred' ? 'full' : 'limited')
+      accessLevel: permissions.accessLevel ?? (assignmentType === 'TRANSFERRED' ? 'full' : 'limited')
     }
 
     // Calculate expiration date (default 90 days)
@@ -170,14 +175,14 @@ export const POST = withErrorHandling(async (request: NextRequest, { params }: {
         secondaryDoctorId: doctorId,
         assignmentType,
         assignmentReason,
-        specialtyFocus: specialtyFocus.length > 0 ? specialtyFocus : null,
+        specialtyFocus,
         requiresConsent: needsConsent,
-        consentStatus: needsConsent ? 'pending' : 'granted',
+        consentStatus: needsConsent ? PatientConsentStatus.PENDING : PatientConsentStatus.GRANTED,
         accessGranted: !needsConsent,
         permissions: finalPermissions,
         expiresAt,
         notes,
-        createdBy: session.user.id,
+        createdById: session.user.id,
         isActive: true
       }
     })
@@ -208,14 +213,14 @@ export const POST = withErrorHandling(async (request: NextRequest, { params }: {
         id: primaryDoctor.id,
         name: `${primaryDoctor.user.firstName} ${primaryDoctor.user.lastName}`.trim(),
         email: primaryDoctor.user.email,
-        organization: primaryDoctor.organization?.name
+        organization: primaryDoctor.hsp?.name
       },
       secondary_doctor: {
         id: secondaryDoctor.id,
         name: `${secondaryDoctor.user.firstName} ${secondaryDoctor.user.lastName}`.trim(),
         email: secondaryDoctor.user.email,
-        specialty: secondaryDoctor.specialty?.name || 'General Practice',
-        organization: secondaryDoctor.organization?.name
+        specialty: secondaryDoctor.specialties?.[0]?.specialty?.name || 'General Practice',
+        organization: secondaryDoctor.hsp?.name
       },
       assignment_details: {
         assignmentType: assignmentType,
@@ -321,9 +326,7 @@ export const GET = withErrorHandling(async (request: NextRequest, { params }: { 
             user: {
               select: { firstName: true, lastName: true, email: true }
             },
-            specialty: {
-              select: { name: true }
-            }
+            specialties: { include: { specialty: { select: { name: true } } } }
           }
         },
         secondaryDoctor: {
@@ -331,10 +334,8 @@ export const GET = withErrorHandling(async (request: NextRequest, { params }: { 
             user: {
               select: { firstName: true, lastName: true, email: true }
             },
-            specialty: {
-              select: { name: true }
-            },
-            organization: {
+            specialties: { include: { specialty: { select: { name: true } } } },
+            hsp: {
               select: { name: true }
             }
           }
@@ -376,14 +377,14 @@ export const GET = withErrorHandling(async (request: NextRequest, { params }: { 
           id: assignment.primaryDoctor.id,
           name: `${assignment.primaryDoctor.user.firstName} ${assignment.primaryDoctor.user.lastName}`.trim(),
           email: assignment.primaryDoctor.user.email,
-          specialty: assignment.primaryDoctor.specialty?.name
+          specialty: assignment.primaryDoctor.specialties?.[0]?.specialty?.name
         } : null,
         secondary_doctor: assignment.secondaryDoctor ? {
           id: assignment.secondaryDoctor.id,
           name: `${assignment.secondaryDoctor.user.firstName} ${assignment.secondaryDoctor.user.lastName}`.trim(),
           email: assignment.secondaryDoctor.user.email,
-          specialty: assignment.secondaryDoctor.specialty?.name,
-          organization: assignment.secondaryDoctor.organization?.name
+          specialty: assignment.secondaryDoctor.specialties?.[0]?.specialty?.name,
+          organization: assignment.secondaryDoctor.hsp?.name
         } : null,
         permissions: assignment.permissions || {},
         consent_details: {
@@ -410,9 +411,9 @@ export const GET = withErrorHandling(async (request: NextRequest, { params }: { 
         a.consent_details.requiresConsent && !a.consent_details.accessGranted
       ).length,
       by_assignment_type: {
-        specialist: formattedAssignments.filter(a => a.assignmentType === 'specialist').length,
-        substitute: formattedAssignments.filter(a => a.assignmentType === 'substitute').length,
-        transferred: formattedAssignments.filter(a => a.assignmentType === 'transferred').length
+        specialist: formattedAssignments.filter(a => a.assignmentType === 'SPECIALIST').length,
+        substitute: formattedAssignments.filter(a => a.assignmentType === 'SUBSTITUTE').length,
+        transferred: formattedAssignments.filter(a => a.assignmentType === 'TRANSFERRED').length
       }
     }
 
@@ -430,7 +431,7 @@ export const GET = withErrorHandling(async (request: NextRequest, { params }: { 
         include_inactive: includeInactive,
         requesting_doctor: requestingDoctor ? {
           id: requestingDoctor.id,
-          name: `${session.user.firstName} ${session.user.lastName}`.trim()
+          name: `${session.user.name}`.trim()
         } : null
       }
     })

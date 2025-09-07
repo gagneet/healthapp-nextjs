@@ -180,3 +180,53 @@ The current `tsconfig.json` configuration is appropriate with `strict: true` ena
 
 ## Notes
 This analysis was generated from running `npm run lint` and `npm run type-check` on the Healthcare Management Platform codebase. All issues should be addressed systematically, starting with the critical TypeScript compilation errors that prevent successful builds.
+
+## Schema (prisma/schema.prisma)
+
+Field names in JSON defaults and string values:
+- 
+- JSON field values contain snake_case keys (e.g., time_zone, health_tips, medication_reminders, etc.)
+- Index map names use snake_case (e.g., organizations_is_active, users_email_verified)
+- Relation names use snake_case (e.g., "patients_linked_provider_idToorganizations")
+- String array values contain snake_case (e.g., "prescribe_medications", "order_tests")
+- Comment examples use snake_case (e.g., vital_check, care_plan_task)
+
+### Seed file (prisma/seed.ts)
+
+Object property names in seed data:
+- provider_type, license_number (lines 703-704)
+- wheelchair_accessible (line 750)
+- Medical data properties: brand_names, drug_class, common_dosages, side_effects (throughout medicine data)
+- Care plan properties: calories_per_day, carbohydrate_grams, protein_grams, fat_grams, meal_plan, target_heart_rate (throughout care plan data)
+- Medication properties: duration_days (throughout medication data)
+- Treatment properties: initial_dose, maximum_dose (throughout treatment data)
+
+These snake_case values are intentionally kept because they represent:
+
+1. JSON content values - Healthcare data standards often use snake_case
+2. Database index names - These are PostgreSQL naming conventions
+3. Relation constraint names - Database-level naming
+4. Medical terminology - Industry standard field names
+5. Seed data properties - Representing real-world healthcare data structures
+
+The model names and field names in the schema are properly using camelCase, which aligns with Prisma conventions. The remaining snake_case patterns are in data content, not the schema structure itself.
+
+### Key Findings
+
+579 total problems:
+
+- 47 ESLint errors (including 3 critical TypeScript compilation errors)
+- 532 ESLint warnings
+
+Critical Issues (Build Blockers):
+
+1. JSX Syntax Errors in app/dashboard/admin/qualifications/page.tsx and app/dashboard/doctor/profile/page.tsx - missing opening map functions
+2. Database Config Syntax Error in legacy archive file
+
+Major Categories:
+
+- 532 unused variable warnings (92% of all issues)
+- Module import violations in script files using CommonJS instead of ES6
+- Inconsistent code patterns across the codebase
+
+The summary.md file provides detailed breakdowns by category, impact assessment, recommended actions, and file-by-file analysis. The most urgent items are the 3 TypeScript compilation errors that prevent builds, followed by systematic cleanup of unused imports and variables.

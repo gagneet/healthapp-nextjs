@@ -27,7 +27,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       }, { status: 401 });
     }
 
-    if (!['DOCTOR', 'HSP', 'PATIENT', 'admin'].includes(session.user.role)) {
+    if (!['DOCTOR', 'HSP', 'PATIENT', 'ADMIN'].includes(session.user.role)) {
       return NextResponse.json({
         status: false,
         statusCode: 403,
@@ -65,13 +65,12 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
           select: {
             id: true,
             userId: true,
-            primaryCareDoctorId: true
           }
         },
         carePlan: {
           select: {
             id: true,
-            planName: true,
+            title: true,
             status: true
           }
         }
@@ -87,7 +86,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
     // Authorization: Check if user has access to this appointment
     let hasAccess = false;
     
-    if (user.role === 'PATIENT' && user.patientId === appointment.patientId) {
+    if (user.role === 'PATIENT' && (user as any).patientId === appointment.patientId) {
       hasAccess = true;
     } else if (user.role === 'DOCTOR') {
       // Check if doctor is the appointment's doctor
@@ -98,7 +97,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       if (doctorProfile && appointment.doctorId === doctorProfile.id) {
         hasAccess = true;
       }
-    } else if (['admin', 'HSP'].includes(user.role)) {
+    } else if (['ADMIN', 'HSP'].includes(user.role)) {
       hasAccess = true;
     }
 
@@ -113,15 +112,17 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       id: appointment.id,
       patientId: appointment.patientId,
       doctorId: appointment.doctorId,
-      title: appointment.appointmentType || 'General Consultation',
-      type: appointment.appointmentType || 'consultation',
-      startTime: appointment.startTime.toISOString(),
-      endTime: appointment.endTime.toISOString(),
+      title: appointment.description || 'General Consultation',
+      type: (appointment.details as any)?.appointmentType || 'consultation',
+      priority: (appointment.details as any)?.priority || 'routine',
+      isVirtual: (appointment.details as any)?.isVirtual || false,
+      startTime: appointment.startTime?.toISOString(),
+      endTime: appointment.endTime?.toISOString(),
       status: appointment.status,
-      notes: appointment.notes,
-      priority: appointment.priority,
-      isVirtual: appointment.isVirtual || false,
-      location: appointment.location,
+      appointmentType: (appointment.details as any)?.appointmentType || 'consultation',
+      priority: (appointment.details as any)?.priority || 'routine',
+      isVirtual: (appointment.details as any)?.isVirtual || false,
+      notes: appointment.description,
       doctor: appointment.doctor ? {
         id: appointment.doctor.id,
         name: `Dr. ${appointment.doctor.user.firstName} ${appointment.doctor.user.lastName}`,
@@ -192,7 +193,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     }
 
     // Verify doctor has access (is the appointment's doctor)
-    if (session.user.role === 'DOCTOR' && currentAppointment.doctor.userId !== session.user.id) {
+    if (session.user.role === 'DOCTOR' && currentAppointment.doctor?.userId !== session.user.id) {
       return NextResponse.json(handleApiError({
         message: 'Access denied: You can only update your own appointments'
       }), { status: 403 });
@@ -202,14 +203,10 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     const updatedAppointment = await prisma.appointment.update({
       where: { id: appointmentId },
       data: {
-        appointmentType: body.appointmentType,
         startTime: body.startTime ? new Date(body.startTime) : undefined,
         endTime: body.endTime ? new Date(body.endTime) : undefined,
-        notes: body.notes,
+        description: body.notes,
         status: body.status,
-        priority: body.priority,
-        location: body.location,
-        isVirtual: body.isVirtual,
         updatedAt: new Date()
       },
       include: {

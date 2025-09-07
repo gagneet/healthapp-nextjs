@@ -1,5 +1,6 @@
 generator client {
   provider = "prisma-client-js"
+  output   = "./generated/prisma"
 }
 
 datasource db {
@@ -796,7 +797,7 @@ model PatientDoctorAssignment {
   deletedAt                DateTime?
   assignedByAdmin          User?                                 @relation(fields: [assignedByAdminId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   assignedByDoctor         Doctor?                               @relation("AssignedByDoctorPatientDoctorAssignments", fields: [assignedByDoctorId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  doctor                   Doctor                                @relation(fields: [doctorId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  doctor                   Doctor                                @relation("DoctorAssignments", fields: [doctorId], references: [id], onDelete: Cascade, onUpdate: NoAction)
   patient                  Patient                               @relation(fields: [patientId], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
   @@index([doctorId, isActive, createdAt], map: "idx_assignments_doctor_active_created")
@@ -843,7 +844,7 @@ model Notification {
   message                String
   priority               String?        @default("MEDIUM") @db.VarChar(20)
   isUrgent               Boolean?       @default(false)
-  channels               String[]       @default(["PUSH"]) @db.VarChar(255)
+  channels               String[]       @default(["PUSH"])
   scheduledFor           DateTime?
   expiresAt              DateTime?
   status                 String?        @default("PENDING") @db.VarChar(20)
@@ -938,6 +939,9 @@ model AuditLog {
   @@index([userId])
   @@index([userId, timestamp])
   @@index([userId, createdAt, action], map: "idx_audit_user_created_action")
+  @@index([entityType])
+  @@index([entityId])
+  @@index([entityType, entityId])
   @@map("auditLogs")
 }
 
@@ -948,7 +952,7 @@ model SequelizeMeta {
 }
 
 model AppointmentSlot {
-  id                 String               @id @db.Uuid
+  id                 String               @id @default(uuid()) @db.Uuid
   doctorId           String               @db.Uuid
   date               DateTime             @db.Date
   startTime          DateTime             @db.Time(6)
@@ -1081,7 +1085,7 @@ model Doctor {
   primaryPatientConsentOtps           PatientConsentOtp[]             @relation("PrimaryDoctorPatientConsentOtps")
   secondaryPatientConsentOtps         PatientConsentOtp[]             @relation("SecondaryDoctorPatientConsentOtps")
   assignedPatientDoctorAssignments    PatientDoctorAssignment[]       @relation("AssignedByDoctorPatientDoctorAssignments")
-  doctorAssignments                   PatientDoctorAssignment[]
+  doctorAssignments                   PatientDoctorAssignment[]       @relation("DoctorAssignments")
   patientProviderConsentHistories     PatientProviderConsentHistory[]
   patients                            Patient[]
   primarySecondaryDoctorAssignments   SecondaryDoctorAssignment[]     @relation("PrimaryDoctorSecondaryDoctorAssignments")
@@ -1474,7 +1478,7 @@ model SecondaryDoctorAssignment {
   secondaryHspId            String?                                 @db.Uuid
   assignmentReason          String?
   specialtyFocus            String[]                                @default([])
-  carePlanIds               String[]                                @default([]) @db.Uuid
+  carePlanIds               String[]                                @default([])
   primaryDoctorProviderId   String?                                 @db.Uuid
   secondaryDoctorProviderId String?                                 @db.Uuid
   consentRequired           Boolean?                                @default(true)
@@ -1589,7 +1593,7 @@ model TreatmentPlan {
   outcome              String?
   emergencyContacts    Json?          @default("[]")
   warningSigns         String[]       @default([])
-  assignedHsps         String[]       @default([]) @db.Uuid
+  assignedHsps         String[]       @default([])
   careTeamNotes        Json?          @default("[]")
   createdAt            DateTime?
   updatedAt            DateTime?

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
+import { ConsultationStatus } from '@/generated/prisma';
 
 const rescheduleSchema = z.object({
   newStartTime: z.string().datetime(),
@@ -40,11 +41,11 @@ export async function PUT(
             organization: { select: { name: true, type: true } }
           }
         },
-        carePlan: { select: { id: true, planName: true } }
+        carePlan: { select: { id: true, title: true } }
       }
     });
 
-    if (!appointment) {
+    if (!appointment || !appointment.startTime || !appointment.endTime) {
       return NextResponse.json({ error: 'Appointment not found' }, { status: 404 });
     }
 
@@ -53,7 +54,7 @@ export async function PUT(
       session.user.id === appointment.patientId ||
       session.user.id === appointment.doctorId ||
       session.user.role === 'SYSTEM_ADMIN' ||
-      (session.user.role === 'HOSPITAL_ADMIN' && appointment.doctor.organizationId === session.user.organizationId)
+      (session.user.role === 'HOSPITAL_ADMIN' && appointment.doctor?.organizationId === session.user.organizationId)
     );
 
     if (!hasAccess) {
@@ -61,9 +62,9 @@ export async function PUT(
     }
 
     // Business rule validation: Check appointment status
-    if (!['SCHEDULED', 'CONFIRMED'].includes(appointment.status)) {
-      return NextResponse.json({ 
-        error: `Cannot reschedule appointment with status: ${appointment.status}` 
+    if (appointment.status !== ConsultationStatus.SCHEDULED) {
+      return NextResponse.json({
+        error: `Cannot reschedule appointment with status: ${appointment.status}`
       }, { status: 400 });
     }
 
@@ -71,25 +72,29 @@ export async function PUT(
     const now = new Date();
     const appointmentStart = new Date(appointment.startTime);
     const hoursUntilAppointment = (appointmentStart.getTime() - now.getTime()) / (1000 * 60 * 60);
-    
+
     if (hoursUntilAppointment < 24) {
       // For appointments < 24 hours, only doctors and hospital admins can reschedule
       if (!['DOCTOR', 'SYSTEM_ADMIN', 'HOSPITAL_ADMIN'].includes(session.user.role)) {
-        return NextResponse.json({ 
-          error: 'Cannot reschedule appointment less than 24 hours in advance. Contact your healthcare provider.' 
+        return NextResponse.json({
+          error: 'Cannot reschedule appointment less than 24 hours in advance. Contact your healthcare provider.'
         }, { status: 400 });
       }
     }
 
     // Validate new appointment time
     const newStart = new Date(validatedData.newStartTime);
-    const newEnd = validatedData.newEndTime ? 
-      new Date(validatedData.newEndTime) : 
+    const newEnd = validatedData.newEndTime ?
+      new Date(validatedData.newEndTime) :
       new Date(newStart.getTime() + (appointment.endTime.getTime() - appointment.startTime.getTime()));
 
     // Check if new time is in the future
     if (newStart <= now) {
       return NextResponse.json({ error: 'New appointment time must be in the future' }, { status: 400 });
+    }
+
+    if (!appointment.doctorId) {
+        return NextResponse.json({ error: 'Appointment has no doctor assigned' }, { status: 400 });
     }
 
     // Check for conflicts with doctor's schedule
@@ -101,16 +106,16 @@ export async function PUT(
     });
 
     if (conflictCheck.hasConflicts) {
-      return NextResponse.json({ 
+      return NextResponse.json({
         error: 'New time slot conflicts with existing appointments or doctor availability',
-        conflicts: conflictCheck.conflicts 
+        conflicts: conflictCheck.conflicts
       }, { status: 409 });
     }
 
     // Check if new time falls within doctor availability
     const dayOfWeek = newStart.getDay();
     const timeStr = newStart.toTimeString().substr(0, 5);
-    
+
     const doctorAvailability = await prisma.doctorAvailability.findFirst({
       where: {
         doctorId: appointment.doctorId,
@@ -122,8 +127,8 @@ export async function PUT(
     });
 
     if (!doctorAvailability) {
-      return NextResponse.json({ 
-        error: 'New time slot is outside doctor availability hours' 
+      return NextResponse.json({
+        error: 'New time slot is outside doctor availability hours'
       }, { status: 400 });
     }
 
@@ -132,7 +137,7 @@ export async function PUT(
       const carePlan = await prisma.carePlan.findUnique({
         where: { id: appointment.carePlanId }
       });
-      
+
       if (carePlan && hoursUntilAppointment < 24) {
         // Care plan appointments that are rescheduled < 24hrs may need special handling
         // Log this as a potential care plan disruption
@@ -147,10 +152,10 @@ export async function PUT(
         data: {
           startTime: newStart,
           endTime: newEnd,
-          status: 'RESCHEDULED',
-          notes: appointment.notes ? 
-            `${appointment.notes}\n\n[RESCHEDULED] ${validatedData.reason}` : 
-            `[RESCHEDULED] ${validatedData.reason}`,
+          status: ConsultationStatus.RESCHEDULED,
+          // notes: appointment.notes ?
+          //   `${appointment.notes}\n\n[RESCHEDULED] ${validatedData.reason}` :
+          //   `[RESCHEDULED] ${validatedData.reason}`,
           updatedAt: new Date()
         },
         include: {
@@ -170,13 +175,13 @@ export async function PUT(
       // Update appointment slot availability if applicable
       const originalSlot = await tx.appointmentSlot.findFirst({
         where: {
-          doctorId: appointment.doctorId,
-          startTime: appointment.startTime,
-          endTime: appointment.endTime
+          doctorId: appointment.doctorId!,
+          startTime: appointment.startTime!,
+          endTime: appointment.endTime!
         }
       });
 
-      if (originalSlot) {
+      if (originalSlot && originalSlot.bookedAppointments && originalSlot.maxAppointments) {
         // Decrease booked appointments for original slot
         await tx.appointmentSlot.update({
           where: { id: originalSlot.id },
@@ -189,13 +194,13 @@ export async function PUT(
 
       const newSlot = await tx.appointmentSlot.findFirst({
         where: {
-          doctorId: appointment.doctorId,
+          doctorId: appointment.doctorId!,
           startTime: newStart,
           endTime: newEnd
         }
       });
 
-      if (newSlot) {
+      if (newSlot && newSlot.bookedAppointments && newSlot.maxAppointments) {
         // Increase booked appointments for new slot
         await tx.appointmentSlot.update({
           where: { id: newSlot.id },
@@ -207,19 +212,24 @@ export async function PUT(
       }
 
       // Create audit log entry
-      await tx.appointmentAuditLog.create({
+      await tx.auditLog.create({
         data: {
-          appointmentId: appointment.id,
           action: 'RESCHEDULE',
-          performedBy: session.user.id,
-          details: {
+          resource: 'appointment',
+          entityId: appointment.id,
+          userId: session.user.id,
+          // userRole is a valid field in the AuditLog model, used for tracking who performed the action.
+          userRole: session.user.role,
+          patientId: appointment.patientId,
+          dataChanges: {
             originalStartTime: appointment.startTime,
             originalEndTime: appointment.endTime,
             newStartTime: newStart,
             newEndTime: newEnd,
             reason: validatedData.reason
           },
-          timestamp: new Date()
+          timestamp: new Date(),
+          accessGranted: true,
         }
       });
 
@@ -228,18 +238,18 @@ export async function PUT(
 
     // TODO: Send notifications if requested
     const notifications = [];
-    if (validatedData.notifyPatient) {
+    if (validatedData.notifyPatient && result.patient?.user?.email) {
       notifications.push({
         type: 'patient',
         email: result.patient.user.email,
         message: `Your appointment has been rescheduled to ${newStart.toLocaleString()}`
       });
     }
-    if (validatedData.notifyDoctor) {
+    if (validatedData.notifyDoctor && result.doctor?.user?.email) {
       notifications.push({
         type: 'doctor',
         email: result.doctor.user.email,
-        message: `Appointment with ${result.patient.user.firstName} ${result.patient.user.lastName} has been rescheduled to ${newStart.toLocaleString()}`
+        message: `Appointment with ${result.patient?.user?.firstName} ${result.patient?.user?.lastName} has been rescheduled to ${newStart.toLocaleString()}`
       });
     }
 
@@ -258,10 +268,10 @@ export async function PUT(
         status: result.status,
         reason: validatedData.reason,
         patient: {
-          name: `${result.patient.user.firstName} ${result.patient.user.lastName}`
+          name: `${result.patient?.user?.firstName} ${result.patient?.user?.lastName}`
         },
         doctor: {
-          name: `${result.doctor.user.firstName} ${result.doctor.user.lastName}`
+          name: `${result.doctor?.user?.firstName} ${result.doctor?.user?.lastName}`
         }
       },
       notifications: notifications.length > 0 ? notifications : undefined,
@@ -289,12 +299,12 @@ interface ConflictCheckParams {
 
 async function checkAppointmentConflicts(params: ConflictCheckParams) {
   const { doctorId, startTime, endTime, excludeAppointmentId } = params;
-  
+
   const conflictingAppointments = await prisma.appointment.findMany({
     where: {
       doctorId,
       id: excludeAppointmentId ? { not: excludeAppointmentId } : undefined,
-      status: { in: ['SCHEDULED', 'CONFIRMED', 'IN_PROGRESS', 'RESCHEDULED'] },
+      status: { in: [ConsultationStatus.SCHEDULED, ConsultationStatus.IN_PROGRESS, ConsultationStatus.RESCHEDULED] },
       OR: [
         {
           startTime: { lt: endTime },
@@ -323,7 +333,7 @@ async function checkAppointmentConflicts(params: ConflictCheckParams) {
         start: appt.startTime,
         end: appt.endTime
       },
-      patient: `${appt.patient.user.firstName} ${appt.patient.user.lastName}`,
+      patient: appt.patient?.user ? `${appt.patient.user.firstName} ${appt.patient.user.lastName}` : 'N/A',
       status: appt.status
     }))
   };

@@ -67,14 +67,14 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
     switch (session.user.role) {
       case 'DOCTOR':
         // Doctors can only see their assigned patients
-        whereClause.primary_doctor_id = session.user.profileId;
+        whereClause.primaryCareDoctorId = session.user.profileId;
         break;
       case 'HSP':
         // HSPs can see patients through care team assignments
         // TODO: Implement care team relationship filtering
-        whereClause.care_team = {
+        whereClause.careTeam = {
           some: {
-            hsp_id: session.user.profileId
+            hspId: session.user.profileId
           }
         };
         break;
@@ -84,7 +84,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
       case 'HOSPITAL_ADMIN':
         // Hospital admins can see patients in their organization
         if (session.user.organizationId) {
-          whereClause.organization_id = session.user.organizationId;
+          whereClause.organizationId = session.user.organizationId;
         }
         break;
       default:
@@ -118,14 +118,14 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
 
     // Apply doctor filter
     if (doctorFilter) {
-      whereClause.primary_doctor_id = doctorFilter;
+      whereClause.primaryCareDoctorId = doctorFilter;
     }
 
     // Apply status filter
     if (statusFilter) {
       whereClause.user = {
         ...whereClause.user,
-        accountStatus: statusFilter.toUpperCase()
+        accountStatus: statusFilter.toUpperCase() as any
       };
     }
 
@@ -144,9 +144,9 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
         id: true,
         patientId: true,
         medicalRecordNumber: true,
-        height_cm: true,
-        weight_kg: true,
-        blood_type: true,
+        heightCm: true,
+        weightKg: true,
+        bloodType: true,
         createdAt: true,
         updatedAt: true,
         user: {
@@ -165,7 +165,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
             emailVerifiedLegacy: true,
             // ✅ Additional fields
             phone: true,
-            date_of_birth: true,
+            dateOfBirth: true,
             gender: true,
             accountStatus: true,
             createdAt: true,
@@ -173,10 +173,10 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
           }
         },
         // Include primary doctor info
-        doctors: {
+        primaryCareDoctor: {
           select: {
             doctorId: true,
-            users_doctors_userIdTousers: {
+            user: {
               select: {
                 email: true,
                 // ✅ Auth.js v5 fields
@@ -198,15 +198,15 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
     const formattedPatients = patients.map(patient => {
       // ✅ Helper to get name with fallbacks
       const userName = patient.user.name || 
-                      patient.user.full_name ||
+                      patient.user.fullName ||
                       `${patient.user.firstName || ''} ${patient.user.lastName || ''}`.trim()
       
       const userImage = patient.user.image || patient.user.profilePictureUrl
       
-      const doctorName = patient.doctors ? 
-        (patient.doctors.users_doctors_userIdTousers.name ||
-         patient.doctors.users_doctors_userIdTousers.full_name ||
-         `${patient.doctors.users_doctors_userIdTousers.firstName || ''} ${patient.doctors.users_doctors_userIdTousers.lastName || ''}`.trim())
+      const doctorName = patient.primaryCareDoctor ?
+        (patient.primaryCareDoctor.user.name ||
+         patient.primaryCareDoctor.user.fullName ||
+         `${patient.primaryCareDoctor.user.firstName || ''} ${patient.primaryCareDoctor.user.lastName || ''}`.trim())
         : null
 
       return {
@@ -225,34 +225,34 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
           // ✅ Legacy fields (for backward compatibility)
           firstName: patient.user.firstName,
           lastName: patient.user.lastName,
-          fullName: patient.user.full_name,
+          fullName: patient.user.fullName,
           profilePictureUrl: patient.user.profilePictureUrl,
-          emailVerifiedLegacy: patient.user.email_verified,
+          emailVerifiedLegacy: patient.user.emailVerifiedLegacy,
           
           // ✅ Additional healthcare fields
           phone: patient.user.phone,
-          dateOfBirth: patient.user.date_of_birth,
+          dateOfBirth: patient.user.dateOfBirth,
           gender: patient.user.gender,
-          accountStatus: patient.user.account_status
+          accountStatus: patient.user.accountStatus
         },
-        primaryDoctor: patient.doctors ? {
-          doctorId: patient.doctors.doctorId,
+        primaryDoctor: patient.primaryCareDoctor ? {
+          doctorId: patient.primaryCareDoctor.doctorId,
           
           // ✅ Auth.js v5 standard fields (preferred)
           name: doctorName,
-          image: patient.doctors.users_doctors_userIdTousers.image || patient.doctors.users_doctors_userIdTousers.profilePictureUrl,
+          image: patient.primaryCareDoctor.user.image || patient.primaryCareDoctor.user.profilePictureUrl,
           
           // ✅ Legacy fields (for backward compatibility)  
-          firstName: patient.doctors.users_doctors_userIdTousers.firstName,
-          lastName: patient.doctors.users_doctors_userIdTousers.lastName,
-          fullName: patient.doctors.users_doctors_userIdTousers.full_name,
-          profilePictureUrl: patient.doctors.users_doctors_userIdTousers.profilePictureUrl,
+          firstName: patient.primaryCareDoctor.user.firstName,
+          lastName: patient.primaryCareDoctor.user.lastName,
+          fullName: patient.primaryCareDoctor.user.fullName,
+          profilePictureUrl: patient.primaryCareDoctor.user.profilePictureUrl,
           
-          email: patient.doctors.users_doctors_userIdTousers.email
+          email: patient.primaryCareDoctor.user.email
         } : null,
-        height: patient.height_cm,
-        weight: patient.weight_kg,
-        bloodType: patient.blood_type,
+        height: patient.heightCm,
+        weight: patient.weightKg,
+        bloodType: patient.bloodType,
         createdAt: patient.createdAt,
         updatedAt: patient.updatedAt
       }
@@ -334,9 +334,9 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
           emailVerifiedLegacy: false, // Legacy boolean field
           
           // ✅ Additional healthcare fields
-          middle_name: patientData.middleName,
+          middleName: patientData.middleName,
           phone: patientData.phone,
-          date_of_birth: patientData.dateOfBirth,
+          dateOfBirth: patientData.dateOfBirth,
           gender: patientData.gender,
           role: 'PATIENT',
           accountStatus: 'ACTIVE',
@@ -345,7 +345,7 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
           passwordHash: '$2b$12$defaulthash', // This should be a properly hashed temporary password
           twoFactorEnabled: false,
           failedLoginAttempts: 0,
-          password_changed_at: new Date(),
+          passwordResetExpires: new Date(),
           createdAt: new Date(),
           updatedAt: new Date()
         }
@@ -358,13 +358,13 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
           patientId: patientBusinessId,
           medicalRecordNumber: `MRN${Date.now()}`, // Generate unique MRN
           primaryCareDoctorId: patientData.primaryDoctorId,
-          height_cm: patientData.height,
-          weight_kg: patientData.weight,
-          blood_type: patientData.bloodType,
-          medical_history: patientData.medicalHistory,
+          heightCm: patientData.height,
+          weightKg: patientData.weight,
+          bloodType: patientData.bloodType,
+          medicalHistory: patientData.medicalHistory,
           allergies: patientData.allergies,
-          emergency_contacts: patientData.emergencyContact,
-          insurance_information: patientData.insuranceDetails,
+          emergencyContacts: patientData.emergencyContact,
+          insuranceInformation: patientData.insuranceDetails,
           createdAt: new Date(),
           updatedAt: new Date()
         }
@@ -375,7 +375,7 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
 
     // Format response
     // ✅ Format response with dual field support
-    const userName = result.user.name || result.user.full_name || `${result.user.firstName || ''} ${result.user.lastName || ''}`.trim()
+    const userName = result.user.name || result.user.fullName || `${result.user.firstName || ''} ${result.user.lastName || ''}`.trim()
     const userImage = result.user.image || result.user.profilePictureUrl
 
     const responseData = {
@@ -394,22 +394,22 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
         // ✅ Legacy fields (for backward compatibility)
         firstName: result.user.firstName,
         lastName: result.user.lastName,
-        fullName: result.user.full_name,
+        fullName: result.user.fullName,
         profilePictureUrl: result.user.profilePictureUrl,
-        emailVerifiedLegacy: result.user.email_verified,
+        emailVerifiedLegacy: result.user.emailVerifiedLegacy,
         
         // ✅ Additional healthcare fields
         phone: result.user.phone,
-        dateOfBirth: result.user.date_of_birth,
+        dateOfBirth: result.user.dateOfBirth,
         gender: result.user.gender,
-        accountStatus: result.user.account_status
+        accountStatus: result.user.accountStatus
       },
-      height: result.patient.height_cm,
-      weight: result.patient.weight_kg,
-      bloodType: result.patient.blood_type,
-      medicalHistory: result.patient.medical_history,
+      height: result.patient.heightCm,
+      weight: result.patient.weightKg,
+      bloodType: result.patient.bloodType,
+      medicalHistory: result.patient.medicalHistory,
       allergies: result.patient.allergies,
-      emergencyContact: result.patient.emergency_contacts,
+      emergencyContact: result.patient.emergencyContacts,
       createdAt: result.patient.createdAt
     };
 

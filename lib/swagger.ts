@@ -1,31 +1,9 @@
-import swaggerJsdoc from 'swagger-jsdoc';
+import { promises as fs } from 'fs';
+import path from 'path';
 
 export const getApiDocs = async () => {
-  const options = {
-    definition: {
-      openapi: '3.0.0',
-      info: {
-        title: 'HealthApp API',
-        version: '1.0',
-      },
-      components: {
-        securitySchemes: {
-          BearerAuth: {
-            type: 'http',
-            scheme: 'bearer',
-            bearerFormat: 'JWT',
-          },
-        },
-      },
-      security: [
-        {
-          BearerAuth: [],
-        },
-      ],
-    },
-    apis: ['./app/api-docs/swagger-definitions.js', './app/api/health/route.ts'], // files containing annotations
-  };
-
-  const spec = swaggerJsdoc(options);
+  const filePath = path.join(process.cwd(), 'public', 'swagger.json');
+  const fileContents = await fs.readFile(filePath, 'utf8');
+  const spec = JSON.parse(fileContents);
   return spec;
 };

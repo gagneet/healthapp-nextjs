@@ -61,9 +61,9 @@ export async function GET(
     }
 
     // Permission check: Patient themselves, their doctors, or admins can view calendar
-    const hasAccess = (
+    let hasAccess = (
       session.user.id === patient.userId ||
-      session.user.id === patient.primaryCareDoctorId ||
+      (patient.primaryCareDoctorId && session.user.id === patient.primaryCareDoctorId) ||
       session.user.role === 'SYSTEM_ADMIN' ||
       session.user.role === 'HOSPITAL_ADMIN'
     );
@@ -74,11 +74,11 @@ export async function GET(
         where: {
           patientId: patient.id,
           doctorId: session.user.id,
-          status: 'ACTIVE'
+          isActive: true
         }
       });
       if (doctorAccess) {
-        // hasAccess = true; // Handled by assignment
+        hasAccess = true;
       }
     }
 
@@ -98,7 +98,7 @@ export async function GET(
         id: patient.id,
         name: patient.user.name || `${patient.user.firstName} ${patient.user.lastName}`,
         email: patient.user.email,
-        primaryCareDoctor: patient.primaryCareDoctor ? {
+        primaryCareDoctor: patient.primaryCareDoctor?.user ? {
           name: `${patient.primaryCareDoctor.user.firstName} ${patient.primaryCareDoctor.user.lastName}`
         } : null
       },
@@ -129,7 +129,7 @@ export async function GET(
             }
           },
           carePlan: {
-            select: { id: true, planName: true }
+            select: { id: true, title: true }
           }
         },
         orderBy: { startTime: 'asc' }
@@ -138,25 +138,24 @@ export async function GET(
       calendarData.events.push(...appointments.map(appointment => ({
         id: appointment.id,
         type: 'appointment',
-        title: `${appointment.appointmentType} with Dr. ${appointment.doctor.user.firstName} ${appointment.doctor.user.lastName}`,
-        description: appointment.notes,
+        title: `${appointment.description || 'Appointment'} with Dr. ${appointment.doctor?.user.firstName} ${appointment.doctor?.user.lastName}`,
+        description: appointment.description,
         startTime: appointment.startTime,
         endTime: appointment.endTime,
         status: appointment.status,
-        appointmentType: appointment.appointmentType,
-        doctor: {
+        appointmentType: appointment.description,
+        doctor: appointment.doctor?.user ? {
           name: `Dr. ${appointment.doctor.user.firstName} ${appointment.doctor.user.lastName}`,
           organization: appointment.doctor.organization?.name
-        },
+        } : null,
         carePlan: appointment.carePlan ? {
           id: appointment.carePlan.id,
-          name: appointment.carePlan.planName
+          name: appointment.carePlan.title
         } : null,
-        priority: appointment.priority,
-        location: appointment.doctor.organization?.type === 'hospital' ? 'Hospital Visit' : 'Clinic Visit',
+        location: appointment.doctor?.organization?.type === 'hospital' ? 'Hospital Visit' : 'Clinic Visit',
         metadata: {
-          canReschedule: appointment.status === 'SCHEDULED' && appointment.startTime > new Date(Date.now() + 24 * 60 * 60 * 1000),
-          canCancel: appointment.status === 'SCHEDULED' && appointment.startTime > new Date(Date.now() + 30 * 60 * 1000)
+          canReschedule: appointment.status === 'SCHEDULED' && appointment.startTime && appointment.startTime > new Date(Date.now() + 24 * 60 * 60 * 1000),
+          canCancel: appointment.status === 'SCHEDULED' && appointment.startTime && appointment.startTime > new Date(Date.now() + 30 * 60 * 1000)
         }
       })));
     }
@@ -166,7 +165,7 @@ export async function GET(
       const careplanActivities = await prisma.carePlan.findMany({
         where: {
           patientId: patient.id,
-          isActive: true,
+          status: 'ACTIVE',
           OR: [
             { startDate: { lte: endDate } },
             { endDate: { gte: startDate } }
@@ -184,18 +183,16 @@ export async function GET(
       calendarData.events.push(...careplanActivities.map(plan => ({
         id: `careplan-${plan.id}`,
         type: 'care_plan',
-        title: `Care Plan: ${plan.planName}`,
+        title: `Care Plan: ${plan.title}`,
         description: plan.description,
         startTime: plan.startDate,
         endTime: plan.endDate || new Date(plan.startDate.getTime() + 60 * 60 * 1000), // 1 hour default
-        status: plan.planStatus,
-        doctor: {
+        status: plan.status,
+        doctor: plan.doctor?.user ? {
           name: `Dr. ${plan.doctor.user.firstName} ${plan.doctor.user.lastName}`
-        },
+        } : null,
         metadata: {
-          carePlanId: plan.id,
-          frequency: plan.frequency,
-          duration: plan.duration
+          carePlanId: plan.id
         }
       })));
     }
@@ -204,11 +201,16 @@ export async function GET(
     if (queryData.includeMedications) {
       const medications = await prisma.medication.findMany({
         where: {
-          patientId: patient.id,
-          isActive: true,
-          OR: [
+          participantId: patient.id,
+          // Only include medications that are "active" during the requested range
+          AND: [
             { startDate: { lte: endDate } },
-            { endDate: { gte: startDate } }
+            {
+              OR: [
+                { endDate: null },
+                { endDate: { gte: startDate } }
+              ]
+            }
           ]
         },
         include: {
@@ -227,26 +229,21 @@ export async function GET(
     if (queryData.includeVitalReminders) {
       const vitalTemplates = await prisma.vitalTemplate.findMany({
         where: {
-          OR: [
-            { isGlobal: true },
-            { 
-              carePlans: {
-                some: {
-                  patientId: patient.id,
-                  isActive: true
-                }
-              }
-            }
-          ]
-        }
+          vitals: {
+            some: {
+              carePlan: {
+                patientId: patient.id,
+                status: 'ACTIVE',
+              },
+            },
+          },
+        },
       });
 
       // Generate vital reminder events (simplified - would need more complex logic for frequencies)
       vitalTemplates.forEach(template => {
-        if (template.frequency === 'DAILY') {
-          const vitalEvents = generateDailyVitalReminders(template, startDate, endDate);
-          calendarData.events.push(...vitalEvents);
-        }
+        const vitalEvents = generateDailyVitalReminders(template, startDate, endDate);
+        calendarData.events.push(...vitalEvents);
       });
     }
 
@@ -254,7 +251,7 @@ export async function GET(
     const appointmentStats = {
       upcomingAppointments: calendarData.events.filter((e: any) => 
         e.type === 'appointment' && 
-        new Date(e.startTime) > new Date() &&
+        e.startTime && new Date(e.startTime) > new Date() &&
         e.status === 'SCHEDULED'
       ).length,
       completedAppointments: calendarData.events.filter((e: any) => 
@@ -322,7 +319,8 @@ function calculateDateRange(startDate?: string, endDate?: string, view: string =
 }
 
 function generateMedicationEvents(medication: any, startDate: Date, endDate: Date) {
-  const events = [];
+  const events: any[] = [];
+  if (!medication.startDate) return events;
   const medicationStart = new Date(Math.max(medication.startDate.getTime(), startDate.getTime()));
   const medicationEnd = medication.endDate ? 
     new Date(Math.min(medication.endDate.getTime(), endDate.getTime())) : 
@@ -359,7 +357,7 @@ function generateMedicationEvents(medication: any, startDate: Date, endDate: Dat
 }
 
 function generateDailyVitalReminders(template: any, startDate: Date, endDate: Date) {
-  const events = [];
+  const events: any[] = [];
   const currentDate = new Date(startDate);
   
   while (currentDate <= endDate) {

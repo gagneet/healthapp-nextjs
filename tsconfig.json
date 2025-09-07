@@ -29,9 +29,10 @@
       "@/hooks/*": ["./hooks/*"],
       "@/plugins/*": ["./lib/plugins/*"],
       "@/plugins/core/*": ["./lib/plugins/core/*"],
-      "@/plugins/devices/*": ["./lib/plugins/devices/*"]
+      "@/plugins/devices/*": ["./lib/plugins/devices/*"],
+      "@/generated/prisma": ["./generated/prisma"]
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
-  "exclude": ["node_modules", "src-express-backup"]
+  "exclude": ["node_modules", "src-express-backup", "archive"]
 }

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
+import { ConsultationStatus } from '@/generated/prisma';
 
 const conflictCheckSchema = z.object({
   doctorId: z.string().uuid(),
@@ -160,7 +161,7 @@ async function checkComprehensiveConflicts(params: ConflictCheckParams) {
       where: {
         doctorId: doctorUserId,
         id: excludeAppointmentId ? { not: excludeAppointmentId } : undefined,
-        status: { in: ['SCHEDULED', 'CONFIRMED', 'IN_PROGRESS', 'RESCHEDULED'] },
+        status: { in: [ConsultationStatus.SCHEDULED, ConsultationStatus.IN_PROGRESS, ConsultationStatus.RESCHEDULED] },
         OR: [
           {
             startTime: { lt: endTime },
@@ -174,26 +175,28 @@ async function checkComprehensiveConflicts(params: ConflictCheckParams) {
             user: { select: { firstName: true, lastName: true } }
           }
         },
-        carePlan: { select: { planName: true } }
+        carePlan: { select: { title: true } }
       }
     });
 
     if (appointmentConflicts.length > 0) {
       conflicts.hasConflicts = true;
       conflicts.conflictTypes.push('APPOINTMENT_OVERLAP');
-      conflicts.appointmentConflicts = appointmentConflicts.map(appt => ({
-        appointmentId: appt.id,
-        conflictTime: {
-          start: appt.startTime,
-          end: appt.endTime
-        },
-        patient: `${appt.patient.user.firstName} ${appt.patient.user.lastName}`,
-        appointmentType: appt.appointmentType,
-        status: appt.status,
-        priority: appt.priority,
-        isCarePlan: !!appt.carePlanId,
-        overlapDuration: calculateOverlap(startTime, endTime, appt.startTime, appt.endTime)
-      }));
+      conflicts.appointmentConflicts = appointmentConflicts
+        .filter(appt => appt.startTime && appt.endTime)
+        .map(appt => ({
+          appointmentId: appt.id,
+          conflictTime: {
+            start: appt.startTime,
+            end: appt.endTime
+          },
+          patient: appt.patient?.user ? `${appt.patient.user.firstName} ${appt.patient.user.lastName}` : 'N/A',
+          status: appt.status,
+          isCarePlan: !!appt.carePlanId,
+          // The non-null assertion is safe here because we have filtered for non-null startTime and endTime above.
+          overlapDuration: calculateOverlap(startTime, endTime, appt.startTime!, appt.endTime!)
+          // overlapDuration: calculateOverlap(startTime, endTime, appt.startTime, appt.endTime)
+        }));
     }
   }
 
@@ -309,14 +312,14 @@ async function checkComprehensiveConflicts(params: ConflictCheckParams) {
   });
 
   if (appointmentSlot) {
-    if (appointmentSlot.bookedAppointments >= appointmentSlot.maxAppointments) {
+    if ((appointmentSlot.bookedAppointments ?? 0) >= (appointmentSlot.maxAppointments ?? 1)) {
       conflicts.hasConflicts = true;
       conflicts.conflictTypes.push('SLOT_CAPACITY_EXCEEDED');
       conflicts.slotCapacityIssues.push({
         slotId: appointmentSlot.id,
         maxAppointments: appointmentSlot.maxAppointments,
         bookedAppointments: appointmentSlot.bookedAppointments,
-        availableSpots: appointmentSlot.maxAppointments - appointmentSlot.bookedAppointments
+        availableSpots: (appointmentSlot.maxAppointments ?? 1) - (appointmentSlot.bookedAppointments ?? 0)
       });
     }
   }

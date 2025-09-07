@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from "@/lib/auth";
 import { prisma } from '@/lib/prisma';
-import { Medication, Medicine, Prescription } from '@prisma/client';
+import { Medication, Medicine, Prescription } from '@/generated/prisma';
 
 // Define a type for the enhanced medication object
 type EnhancedMedication = Medication & {
