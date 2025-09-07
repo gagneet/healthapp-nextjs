@@ -88,7 +88,7 @@ export async function GET(
     if (queryData.includeAppointments) {
       const appointments = await prisma.appointment.findMany({
         where: {
-          doctorId: doctor.userId,
+          doctorId: doctor.id,
           startTime: {
             gte: startDate,
             lte: endDate
