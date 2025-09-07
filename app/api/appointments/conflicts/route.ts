@@ -196,6 +196,7 @@ async function checkComprehensiveConflicts(params: ConflictCheckParams) {
           // Using non-null assertion as per user suggestion after filtering for non-null values.
           // TypeScript doesn't narrow types within the map function in this context.
           overlapDuration: calculateOverlap(startTime, endTime, appt.startTime!, appt.endTime!)
+          // overlapDuration: calculateOverlap(startTime, endTime, appt.startTime, appt.endTime)
         }));
     }
   }

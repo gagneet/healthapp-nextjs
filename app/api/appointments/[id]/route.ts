@@ -119,6 +119,9 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       startTime: appointment.startTime?.toISOString(),
       endTime: appointment.endTime?.toISOString(),
       status: appointment.status,
+      appointmentType: (appointment.details as any)?.appointmentType || 'consultation',
+      priority: (appointment.details as any)?.priority || 'routine',
+      isVirtual: (appointment.details as any)?.isVirtual || false,
       notes: appointment.description,
       doctor: appointment.doctor ? {
         id: appointment.doctor.id,
