@@ -938,6 +938,8 @@ model AuditLog {
   @@index([userId])
   @@index([userId, timestamp])
   @@index([userId, createdAt, action], map: "idx_audit_user_created_action")
+  @@index([entityType])
+  @@index([entityId])
   @@map("auditLogs")
 }
 
