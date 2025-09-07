@@ -193,8 +193,7 @@ async function checkComprehensiveConflicts(params: ConflictCheckParams) {
           patient: appt.patient?.user ? `${appt.patient.user.firstName} ${appt.patient.user.lastName}` : 'N/A',
           status: appt.status,
           isCarePlan: !!appt.carePlanId,
-          // Using non-null assertion as per user suggestion after filtering for non-null values.
-          // TypeScript doesn't narrow types within the map function in this context.
+          // The non-null assertion is safe here because we have filtered for non-null startTime and endTime above.
           overlapDuration: calculateOverlap(startTime, endTime, appt.startTime!, appt.endTime!)
           // overlapDuration: calculateOverlap(startTime, endTime, appt.startTime, appt.endTime)
         }));
