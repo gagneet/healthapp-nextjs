@@ -1,6 +1,6 @@
 // lib/seed.ts - Comprehensive Healthcare Test Data Seeding with Updated Schema
 import { fileURLToPath, pathToFileURL } from 'url';
-import { PrismaClient, AdherenceType, UserRole, UserAccountStatus, UserGender, MedicationOrganizerType, MedicationLogAdherenceStatus } from '@prisma/client';
+import { PrismaClient, AdherenceType, UserRole, UserAccountStatus, UserGender, MedicationOrganizerType, MedicationLogAdherenceStatus } from '@/generated/prisma';
 import * as bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();

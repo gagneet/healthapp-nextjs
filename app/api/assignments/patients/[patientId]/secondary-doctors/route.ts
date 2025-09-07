@@ -15,7 +15,7 @@ import {
   withErrorHandling
 } from "@/lib/api-response"
 import { z } from "zod"
-import { PatientDoctorAssignmentType, PatientConsentStatus } from "@prisma/client";
+import { PatientDoctorAssignmentType, PatientConsentStatus } from "@/generated/prisma";
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -175,7 +175,7 @@ export const POST = withErrorHandling(async (request: NextRequest, { params }: {
         secondaryDoctorId: doctorId,
         assignmentType,
         assignmentReason,
-        specialtyFocus: specialtyFocus.length > 0 ? specialtyFocus : null,
+        specialtyFocus,
         requiresConsent: needsConsent,
         consentStatus: needsConsent ? PatientConsentStatus.PENDING : PatientConsentStatus.GRANTED,
         accessGranted: !needsConsent,
