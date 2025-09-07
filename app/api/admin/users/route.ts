@@ -77,28 +77,27 @@ export async function GET(request: NextRequest) {
           updatedAt: true,
           lastLoginAt: true,
           // Relations
-          doctors: {
+          doctorProfile: {
             select: {
               id: true,
               doctorId: true,
-              medical_license_number: true,
-              specialities: {
+              medicalLicenseNumber: true,
+              specialty: {
                 select: { name: true }
               }
             }
           },
-          patients: {
+          patientProfile: {
             select: {
               id: true,
               patientId: true,
               medicalRecordNumber: true
             }
           },
-          hsps: {
+          hspProfile: {
             select: {
               id: true,
-              hsp_id: true,
-              qualification: true
+              hspId: true
             }
           }
         },

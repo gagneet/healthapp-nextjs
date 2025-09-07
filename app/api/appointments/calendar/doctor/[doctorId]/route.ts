@@ -103,7 +103,7 @@ export async function GET(
             }
           },
           carePlan: {
-            select: { id: true, planName: true }
+            select: { id: true, title: true }
           }
         },
         orderBy: { startTime: 'asc' }
@@ -112,22 +112,20 @@ export async function GET(
       calendarData.events.push(...appointments.map(appointment => ({
         id: appointment.id,
         type: 'appointment',
-        title: `${appointment.appointmentType} - ${appointment.patient.user.firstName} ${appointment.patient.user.lastName}`,
-        description: appointment.notes,
+        title: `${appointment.description || 'Appointment'} - ${appointment.patient?.user.firstName} ${appointment.patient?.user.lastName}`,
+        description: appointment.description,
         startTime: appointment.startTime,
         endTime: appointment.endTime,
         status: appointment.status,
-        appointmentType: appointment.appointmentType,
-        patient: {
+        patient: appointment.patient ? {
           id: appointment.patient.id,
           name: `${appointment.patient.user.firstName} ${appointment.patient.user.lastName}`,
           email: appointment.patient.user.email
-        },
+        } : null,
         carePlan: appointment.carePlan ? {
           id: appointment.carePlan.id,
-          name: appointment.carePlan.planName
+          name: appointment.carePlan.title
         } : null,
-        priority: appointment.priority,
         metadata: {
           createdAt: appointment.createdAt,
           updatedAt: appointment.updatedAt
@@ -156,7 +154,7 @@ export async function GET(
         description: slot.notes,
         startTime: slot.startTime,
         endTime: slot.endTime,
-        availableSpots: slot.maxAppointments - slot.bookedAppointments,
+        availableSpots: (slot.maxAppointments || 0) - (slot.bookedAppointments || 0),
         maxAppointments: slot.maxAppointments,
         bookedAppointments: slot.bookedAppointments,
         slotType: slot.slotType,

@@ -176,7 +176,7 @@ export async function GET(
     // If specific date range requested, generate actual available slots
     if (queryData.startDate && queryData.endDate) {
       // This would be implemented in the slots API
-      formattedAvailability.requestedDateRange = {
+      (formattedAvailability as any).requestedDateRange = {
         startDate: queryData.startDate,
         endDate: queryData.endDate,
         note: 'Use /api/appointments/slots/available for actual time slots'
@@ -294,6 +294,7 @@ export async function POST(
               maxAppointmentsPerSlot: shift.maxAppointmentsPerSlot,
               breakStartTime,
               breakEndTime,
+              createdAt: new Date(),
             }
           });
           

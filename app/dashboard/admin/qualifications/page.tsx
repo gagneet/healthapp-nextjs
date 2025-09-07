@@ -143,6 +143,7 @@ export default function QualificationRequestsPage() {
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{request.changeType}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       <ul>
+                        {Object.entries(request.changes).map(([key, value]) => (
                           <li key={`${request.id}-${key}`}>
                             <span className="font-semibold">{key}:</span> {String(value)}
                           </li>

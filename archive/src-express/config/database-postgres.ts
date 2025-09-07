@@ -43,7 +43,7 @@ const databaseConfig: Options = {
   
   timezone: 'UTC',
   
-  logging: process.env.NODE_ENV === 'development' ? (msg: any) => logger.debug(msg: any) : false,
+  logging: process.env.NODE_ENV === 'development' ? (msg: any) => logger.debug(msg) : false,
   
   pool: {
     max: parseInt(process.env.DB_POOL_MAX || '150'),     // Increased for 500+ concurrent doctors

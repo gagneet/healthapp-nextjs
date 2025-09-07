@@ -119,14 +119,14 @@ model User {
   consultationNotesCreated    ConsultationNote[]          @relation("ConsultationNoteCreatedBy")
   adherenceLogsRecorded       AdherenceLog[]
 
-  @@index([email, accountStatus], map: "idx_users_email_status")
-  @@index([role, accountStatus], map: "idx_users_role_status")
-  @@index([accountStatus], map: "users_account_status")
+  // @@index([email, accountStatus], map: "idx_users_email_status")
+  // @@index([role, accountStatus], map: "idx_users_role_status")
+  // @@index([accountStatus], map: "users_account_status")
   @@index([emailVerifiedLegacy], map: "users_email_verified")
   @@index([fullName], map: "users_full_name")
   @@index([lastLoginAt], map: "users_last_login_at")
   @@index([phone], map: "users_phone")
-  @@index([role], map: "users_role")
+  // @@index([role], map: "users_role")
   @@map("users")
 }
 
@@ -503,7 +503,7 @@ model Medication {
   adherenceLogs  AdherenceLog[]
 
   @@index([medicineId])
-  @@index([organizerType, organizerId])
+  // @@index([organizerType, organizerId])
   @@index([participantId])
   @@map("medications")
 }
@@ -542,13 +542,13 @@ model Appointment {
   videoConsultations VideoConsultation[]
   adherenceLogs      AdherenceLog[]
 
-  @@index([organizerId, organizerType])
-  @@index([participantOneId, participantOneType])
-  @@index([participantTwoId, participantTwoType])
+  // @@index([organizerId, organizerType])
+  // @@index([participantOneId, participantOneType])
+  // @@index([participantTwoId, participantTwoType])
   @@index([slotId])
   @@index([startDate])
   @@index([carePlanId])
-  @@index([organizerType, organizerId, startTime], map: "idx_appointments_organizer_time")
+  // @@index([organizerType, organizerId, startTime], map: "idx_appointments_organizer_time")
   @@index([patientId, startTime], map: "idx_appointments_patient_time")
   @@index([providerId, startTime], map: "idx_appointments_provider_time")
   @@map("appointments")
@@ -627,7 +627,7 @@ model VitalReading {
   @@index([patientId, readingTime, vitalTypeId], map: "idx_vitals_patient_time_type")
   @@index([patientId, vitalTypeId, readingTime], map: "idx_vitals_patient_type_time_desc")
   @@index([readingTime, patientId], map: "idx_vitals_time_patient")
-  @@index([alertLevel])
+  // @@index([alertLevel])
   @@index([systolicValue, diastolicValue], map: "vital_readings_blood_pressure_idx")
   @@index([isFlagged])
   @@index([isValidated])
@@ -689,7 +689,7 @@ model AdherenceRecord {
   scheduledEvent   ScheduledEvent? @relation(fields: [scheduledEventId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   vitalReadings    VitalReading[]
 
-  @@index([adherenceType])
+  // @@index([adherenceType])
   @@index([dueAt])
   @@index([isCompleted, isMissed])
   @@index([patientId])
@@ -722,7 +722,7 @@ model ServicePlan {
   patientSubscriptions PatientSubscription[]
   healthcareProvider   HealthcareProvider      @relation(fields: [providerId], references: [id], onDelete: Cascade)
 
-  @@index([billingCycle])
+  // @@index([billingCycle])
   @@index([isActive])
   @@index([name])
   @@index([price])
@@ -763,7 +763,7 @@ model PatientSubscription {
   @@index([patientId, providerId])
   @@index([providerId])
   @@index([servicePlanId])
-  @@index([status])
+  // @@index([status])
   @@index([stripeCustomerId])
   @@index([stripeSubscriptionId])
   @@map("patientSubscriptions")
@@ -776,7 +776,7 @@ model PatientDoctorAssignment {
   assignmentType           PatientDoctorAssignmentType           @default(SPECIALIST)
   permissions              Json?                                 @default("{\"can_view_patient\": true, \"can_create_care_plans\": false, \"can_modify_care_plans\": false, \"can_prescribe\": false, \"can_order_tests\": false, \"can_access_full_history\": false}")
   specialtyFocus           String[]                              @default([])
-  carePlanIds              String[]                              @default([]) @db.Uuid
+  carePlanIds              String[]                              @default([])
   assignedByDoctorId       String?                               @db.Uuid
   assignedByAdminId        String?                               @db.Uuid
   patientConsentRequired   Boolean?                              @default(false)
@@ -796,15 +796,15 @@ model PatientDoctorAssignment {
   deletedAt                DateTime?
   assignedByAdmin          User?                                 @relation(fields: [assignedByAdminId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   assignedByDoctor         Doctor?                               @relation("AssignedByDoctorPatientDoctorAssignments", fields: [assignedByDoctorId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  doctor                   Doctor                                @relation(fields: [doctorId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  doctor                   Doctor                                @relation("DoctorAssignments", fields: [doctorId], references: [id], onDelete: Cascade, onUpdate: NoAction)
   patient                  Patient                               @relation(fields: [patientId], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
   @@index([doctorId, isActive, createdAt], map: "idx_assignments_doctor_active_created")
-  @@index([patientId, assignmentType, isActive], map: "idx_assignments_patient_type_active")
-  @@index([assignmentType])
+  // @@index([patientId, assignmentType, isActive], map: "idx_assignments_patient_type_active")
+  // @@index([assignmentType])
   @@index([doctorId])
   @@index([isActive])
-  @@index([patientConsentStatus])
+  // @@index([patientConsentStatus])
   @@index([patientId])
   @@map("patientDoctorAssignments")
 }
@@ -878,20 +878,20 @@ model Notification {
   relatedMedication      Medication?    @relation(fields: [relatedMedicationId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   relatedTreatmentPlan   TreatmentPlan? @relation(fields: [relatedTreatmentPlanId], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
-  @@index([type, priority, createdAt], map: "idx_notifications_type_priority_created")
+  // @@index([type, priority, createdAt], map: "idx_notifications_type_priority_created")
   @@index([doctorId])
   @@index([expiresAt])
   @@index([hspId])
   @@index([isUrgent])
   @@index([organizationId])
   @@index([patientId])
-  @@index([patientId, status, createdAt], map: "notifications_patient_id_status_created_at")
-  @@index([priority])
+  // @@index([patientId, status, createdAt], map: "notifications_patient_id_status_created_at")
+  // @@index([priority])
   @@index([requiresAction, actionTaken])
   @@index([scheduledFor])
-  @@index([status])
-  @@index([status, scheduledFor, expiresAt], map: "notifications_status_scheduled_for_expires_at")
-  @@index([type])
+  // @@index([status])
+  // @@index([status, scheduledFor, expiresAt], map: "notifications_status_scheduled_for_expires_at")
+  // @@index([type])
   @@map("notifications")
 }
 
@@ -924,15 +924,15 @@ model AuditLog {
   user           User?         @relation(fields: [userId], references: [id])
 
   @@index([accessGranted])
-  @@index([action])
+  // @@index([action])
   @@index([ipAddress])
   @@index([organizationId])
   @@index([patientId])
   @@index([patientId, phiAccessed, timestamp])
   @@index([phiAccessed])
   @@index([retentionDate])
-  @@index([riskLevel])
-  @@index([riskLevel, accessGranted, timestamp])
+  // @@index([riskLevel])
+  // @@index([riskLevel, accessGranted, timestamp])
   @@index([sessionId])
   @@index([timestamp])
   @@index([userId])
@@ -1081,7 +1081,7 @@ model Doctor {
   primaryPatientConsentOtps           PatientConsentOtp[]             @relation("PrimaryDoctorPatientConsentOtps")
   secondaryPatientConsentOtps         PatientConsentOtp[]             @relation("SecondaryDoctorPatientConsentOtps")
   assignedPatientDoctorAssignments    PatientDoctorAssignment[]       @relation("AssignedByDoctorPatientDoctorAssignments")
-  doctorAssignments                   PatientDoctorAssignment[]
+  doctorAssignments                   PatientDoctorAssignment[]       @relation("DoctorAssignments")
   patientProviderConsentHistories     PatientProviderConsentHistory[]
   patients                            Patient[]
   primarySecondaryDoctorAssignments   SecondaryDoctorAssignment[]     @relation("PrimaryDoctorSecondaryDoctorAssignments")
@@ -1394,8 +1394,8 @@ model ProviderChange {
 
   @@index([changeDate])
   @@index([newProviderId])
-  @@index([practitionerType, practitionerId])
-  @@index([status])
+  // @@index([practitionerType, practitionerId])
+  // @@index([status])
   @@map("providerChanges")
 }
 
@@ -1431,9 +1431,9 @@ model ScheduleEvent {
   updatedAt DateTime?
   deletedAt DateTime?
 
-  @@index([eventId, eventType])
-  @@index([eventType, status, date, startTime])
-  @@index([status, date])
+  // @@index([eventId, eventType])
+  // @@index([eventType, status, date, startTime])
+  // @@index([status, date])
   @@map("scheduleEvents")
 }
 
@@ -1460,8 +1460,8 @@ model ScheduledEvent {
   completedByUser  User?                   @relation(fields: [completedBy], references: [id], onDelete: NoAction, onUpdate: NoAction)
   patient          Patient                 @relation(fields: [patientId], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
-  @@index([carePlanId, scheduledFor, eventType], map: "idx_events_careplan_time_type")
-  @@index([patientId, scheduledFor, status], map: "idx_events_patient_time_status")
+  // @@index([carePlanId, scheduledFor, eventType], map: "idx_events_careplan_time_type")
+  // @@index([patientId, scheduledFor, status], map: "idx_events_patient_time_status")
   @@index([carePlanId])
   @@map("scheduledEvents")
 }
@@ -1500,7 +1500,7 @@ model SecondaryDoctorAssignment {
 
   @@index([accessGranted])
   @@index([consentExpiresAt])
-  @@index([consentStatus])
+  // @@index([consentStatus])
   @@index([isActive])
   @@index([patientId])
   @@index([primaryDoctorId])
