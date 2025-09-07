@@ -180,24 +180,27 @@ export async function DELETE(
       //   // });
       // }
 
-      // // Create audit log entry
-      // await tx.appointmentAuditLog.create({
-      //   data: {
-      //     appointmentId: appointment.id,
-      //     action: 'CANCEL',
-      //     performedBy: session.user.id,
-      //     details: {
-      //       originalStartTime: appointment.startTime,
-      //       originalEndTime: appointment.endTime,
-      //       cancellationPolicy,
-      //       finalStatus,
-      //       hoursUntilAppointment: Math.round(hoursUntilAppointment * 100) / 100,
-      //       reason: validatedData.reason,
-      //       cancelledBy: validatedData.cancelledBy || session.user.role
-      //     },
-      //     timestamp: new Date()
-      //   }
-      // });
+      // Create audit log entry
+      await tx.auditLog.create({
+        data: {
+          action: 'CANCEL',
+          resource: 'appointment',
+          entityId: appointment.id,
+          userId: session.user.id,
+          patientId: appointment.patientId,
+          dataChanges: {
+            originalStartTime: appointment.startTime,
+            originalEndTime: appointment.endTime,
+            cancellationPolicy,
+            finalStatus,
+            hoursUntilAppointment: Math.round(hoursUntilAppointment * 100) / 100,
+            reason: validatedData.reason,
+            cancelledBy: validatedData.cancelledBy || session.user.role
+          },
+          timestamp: new Date(),
+          accessGranted: true,
+        }
+      });
 
       // Handle potential refunds for paid appointments
       if (validatedData.allowRefund && hoursUntilAppointment >= 24) {

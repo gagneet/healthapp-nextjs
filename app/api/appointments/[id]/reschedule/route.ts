@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
-import { ConsultationStatus } from '@prisma/client';
+import { ConsultationStatus } from '@/generated/prisma';
 
 const rescheduleSchema = z.object({
   newStartTime: z.string().datetime(),
@@ -218,6 +218,8 @@ export async function PUT(
           resource: 'appointment',
           entityId: appointment.id,
           userId: session.user.id,
+          // userRole is a valid field in the AuditLog model, used for tracking who performed the action.
+          userRole: session.user.role,
           patientId: appointment.patientId,
           dataChanges: {
             originalStartTime: appointment.startTime,

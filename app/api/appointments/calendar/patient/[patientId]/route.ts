@@ -202,11 +202,15 @@ export async function GET(
       const medications = await prisma.medication.findMany({
         where: {
           participantId: patient.id,
-          // TODO: status is not a field on medication, need to clarify what to filter on
-          // status: 'ACTIVE',
-          OR: [
+          // Only include medications that are "active" during the requested range
+          AND: [
             { startDate: { lte: endDate } },
-            { endDate: { gte: startDate } }
+            {
+              OR: [
+                { endDate: null },
+                { endDate: { gte: startDate } }
+              ]
+            }
           ]
         },
         include: {

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
-import { ConsultationStatus } from '@prisma/client';
+import { ConsultationStatus } from '@/generated/prisma';
 
 const conflictCheckSchema = z.object({
   doctorId: z.string().uuid(),
@@ -182,17 +182,21 @@ async function checkComprehensiveConflicts(params: ConflictCheckParams) {
     if (appointmentConflicts.length > 0) {
       conflicts.hasConflicts = true;
       conflicts.conflictTypes.push('APPOINTMENT_OVERLAP');
-      conflicts.appointmentConflicts = appointmentConflicts.map(appt => ({
-        appointmentId: appt.id,
-        conflictTime: {
-          start: appt.startTime,
-          end: appt.endTime
-        },
-        patient: appt.patient?.user ? `${appt.patient.user.firstName} ${appt.patient.user.lastName}` : 'N/A',
-        status: appt.status,
-        isCarePlan: !!appt.carePlanId,
-        overlapDuration: calculateOverlap(startTime, endTime, appt.startTime!, appt.endTime!)
-      }));
+      conflicts.appointmentConflicts = appointmentConflicts
+        .filter(appt => appt.startTime && appt.endTime)
+        .map(appt => ({
+          appointmentId: appt.id,
+          conflictTime: {
+            start: appt.startTime,
+            end: appt.endTime
+          },
+          patient: appt.patient?.user ? `${appt.patient.user.firstName} ${appt.patient.user.lastName}` : 'N/A',
+          status: appt.status,
+          isCarePlan: !!appt.carePlanId,
+          // The non-null assertion is safe here because we have filtered for non-null startTime and endTime above.
+          overlapDuration: calculateOverlap(startTime, endTime, appt.startTime!, appt.endTime!)
+          // overlapDuration: calculateOverlap(startTime, endTime, appt.startTime, appt.endTime)
+        }));
     }
   }
 
