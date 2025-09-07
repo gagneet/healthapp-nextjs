@@ -11,7 +11,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { EyeIcon, EyeSlashIcon, HeartIcon } from '@heroicons/react/24/outline'
 import { signIn, useSession } from 'next-auth/react'
-import { UserRole } from '@/types/auth'
+import { HealthcareRole } from '@/types/auth'
 import toast from 'react-hot-toast'
 import { createLogger } from '@/lib/logger'
 
@@ -117,7 +117,7 @@ export default function LoginPage() {
   // Redirect if already authenticated
   useEffect(() => {
     if (session?.user) {
-      const redirectPath = getRedirectPathForRole(session.user.role as UserRole)
+      const redirectPath = getRedirectPathForRole(session.user.role as HealthcareRole)
       logger.debug('Auth state changed:', { isAuthenticated: !!session, userRole: session.user.role, redirectPath })
       logger.info('User is authenticated, redirecting to:', redirectPath)
       router.push(redirectPath)

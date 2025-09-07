@@ -84,11 +84,11 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
           patientId: patientId,
           isActive: true
         },
-        select: { secondaryDoctorId: true }
+        select: { doctorId: true }
       })
       
       excludedDoctorIds = existingAssignments
-        .map(a => a.secondaryDoctorId)
+        .map(a => a.doctorId)
         .filter(Boolean) as string[]
 
       if (excludedDoctorIds.length > 0) {
@@ -128,7 +128,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
         }
       },
       orderBy: [
-        { isAcceptingNewPatients: 'desc' },
+        { isAvailableOnline: 'desc' },
         { yearsOfExperience: 'desc' },
         { user: { lastName: 'asc' } }
       ]
@@ -137,11 +137,10 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
     // Get current workload for each doctor (active assignments)
     const doctorIds = availableDoctors.map(d => d.id)
     const workloadData = await prisma.patientDoctorAssignment.groupBy({
-      by: ['secondaryDoctorId'],
+      by: ['doctorId'],
       where: {
-        secondaryDoctorId: { in: doctorIds },
+        doctorId: { in: doctorIds },
         isActive: true,
-        accessGranted: true
       },
       _count: {
         id: true
@@ -149,8 +148,8 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
     })
 
     const workloadMap = workloadData.reduce((acc, item) => {
-      if (item.secondaryDoctorId) {
-        acc[item.secondaryDoctorId] = item._count.id
+      if (item.doctorId) {
+        acc[item.doctorId] = item._count?.id ?? 0
       }
       return acc
     }, {} as Record<string, number>)
@@ -177,13 +176,13 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
         },
         experience: {
           years: doctor.yearsOfExperience,
-          level: doctor.yearsOfExperience >= 15 ? 'Senior' : 
-                 doctor.yearsOfExperience >= 5 ? 'Experienced' : 'Junior'
+          level: (doctor.yearsOfExperience ?? 0) >= 15 ? 'Senior' :
+                 (doctor.yearsOfExperience ?? 0) >= 5 ? 'Experienced' : 'Junior'
         },
         availability: {
-          accepting_new_patients: doctor.isAcceptingNewPatients,
-          offers_online_consultations: doctor.offersOnlineConsultations || false,
-          emergency_availability: doctor.emergencyAvailability || false,
+          accepting_new_patients: doctor.isAvailableOnline ?? false,
+          offers_online_consultations: doctor.isAvailableOnline || false,
+          emergency_availability: false,
           current_secondary_assignments: currentWorkload,
           workload_level: currentWorkload >= 10 ? 'High' :
                          currentWorkload >= 5 ? 'Medium' : 'Low'
@@ -197,7 +196,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
           consent_reason: sameOrganization 
             ? 'Same organization - automatic access'
             : 'Different organization - patient consent required',
-          recommended_for_emergency: doctor.emergencyAvailability && currentWorkload < 5,
+          recommended_for_emergency: false,
           suitable_for_assignment_type: {
             specialist: doctor.specialty?.name !== 'General Practice',
             substitute: sameOrganization && currentWorkload < 8,
@@ -233,7 +232,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
       different_organization_count: filteredDoctors.length - recommendations.same_organization.length,
       specialties_available: [...new Set(filteredDoctors.map(d => d.specialty.name))],
       organizations_represented: [...new Set(filteredDoctors.map(d => d.organization.name))],
-      average_experience: filteredDoctors.reduce((sum, d) => sum + d.experience.years, 0) / filteredDoctors.length,
+      average_experience: filteredDoctors.reduce((sum, d) => sum + (d.experience.years ?? 0), 0) / (filteredDoctors.length || 1),
       workload_distribution: {
         low: filteredDoctors.filter(d => d.availability.workload_level === 'Low').length,
         medium: filteredDoctors.filter(d => d.availability.workload_level === 'Medium').length,

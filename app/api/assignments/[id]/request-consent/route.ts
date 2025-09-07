@@ -66,7 +66,7 @@ export const POST = withErrorHandling(async (request: NextRequest, { params }: {
       where: {
         id: assignmentId,
         OR: [
-          { primaryDoctorId: requestingDoctor.id },
+          { assignedByDoctorId: requestingDoctor.id },
           { doctorId: requestingDoctor.id }
         ]
       },
@@ -147,8 +147,8 @@ export const POST = withErrorHandling(async (request: NextRequest, { params }: {
         secondaryDoctorId: assignment.doctorId,
         otpCode,
         otpMethod: consentMethod === 'sms_otp' ? 'SMS' : consentMethod === 'email_otp' ? 'EMAIL' : 'BOTH',
-        patientPhone: assignment.patient.user.phone,
-        patientEmail: assignment.patient.user.email,
+        patientPhone: assignment.patient?.user.phone,
+        patientEmail: assignment.patient?.user.email,
         generatedAt: new Date(),
         expiresAt,
         requestedByUserId: session.user.id,
@@ -167,18 +167,18 @@ export const POST = withErrorHandling(async (request: NextRequest, { params }: {
     return createSuccessResponse({
       consent_request_sent: true,
       assignment_id: assignmentId,
-      patient: {
+      patient: assignment.patient?.user ? {
         id: assignment.patient.id,
         name: `${assignment.patient.user.firstName} ${assignment.patient.user.lastName}`.trim(),
         email: assignment.patient.user.email,
         phone: assignment.patient.user.phone
-      },
+      } : null,
       assignment_info: {
         assignmentType: assignment.assignmentType,
         assignment_reason: assignment.assignmentReason,
-        primary_doctor: assignment.assignedByDoctor ? 
+        primary_doctor: assignment.assignedByDoctor?.user ?
           `${assignment.assignedByDoctor.user.firstName} ${assignment.assignedByDoctor.user.lastName}`.trim() : null,
-        secondary_doctor: assignment.doctor ? 
+        secondary_doctor: assignment.doctor?.user ?
           `${assignment.doctor.user.firstName} ${assignment.doctor.user.lastName}`.trim() : null
       },
       otp_details: {

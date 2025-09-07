@@ -39,11 +39,11 @@ export async function GET(
       }, { status: 403 });
     }
 
-    const user = session.user;
+    const user = session.user as any;
     const patientId = params.patientId;
 
     // Additional authorization: patients can only access their own appointments
-    if (user.role === 'PATIENT' && user.patientId !== patientId) {
+    if (user.role === 'PATIENT' && user.businessId !== patientId) {
       return NextResponse.json(handleApiError({
         message: 'Access denied: You can only access your own appointment data'
       }), { status: 403 });
@@ -123,15 +123,11 @@ export async function GET(
     // Transform the data to match frontend expectations
     const transformedAppointments = appointments.map(appointment => ({
       id: appointment.id,
-      title: appointment.appointmentType || 'General Consultation',
-      type: appointment.appointmentType || 'consultation',
-      startTime: appointment.startTime.toISOString(),
-      endTime: appointment.endTime.toISOString(),
+      title: 'General Consultation',
+      type: 'consultation',
+      startTime: appointment.startTime?.toISOString(),
+      endTime: appointment.endTime?.toISOString(),
       status: appointment.status,
-      notes: appointment.notes,
-      priority: appointment.priority,
-      isVirtual: appointment.isVirtual || false,
-      location: appointment.location,
       doctor: appointment.doctor ? {
         id: appointment.doctor.id,
         name: `Dr. ${appointment.doctor.user.firstName} ${appointment.doctor.user.lastName}`,

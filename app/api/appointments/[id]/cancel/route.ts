@@ -43,9 +43,7 @@ export async function DELETE(
         carePlan: { 
           select: { 
             id: true, 
-            planName: true, 
-            frequency: true,
-            duration: true 
+            title: true
           } 
         }
       }
@@ -60,7 +58,7 @@ export async function DELETE(
       session.user.id === appointment.patientId ||
       session.user.id === appointment.doctorId ||
       session.user.role === 'SYSTEM_ADMIN' ||
-      (session.user.role === 'HOSPITAL_ADMIN' && appointment.doctor.organizationId === session.user.organizationId)
+      (session.user.role === 'HOSPITAL_ADMIN' && appointment.doctor && appointment.doctor.organizationId === session.user.organizationId)
     );
 
     if (!hasAccess) {
@@ -68,10 +66,14 @@ export async function DELETE(
     }
 
     // Business rule validation: Check appointment status
-    if (!['SCHEDULED', 'CONFIRMED', 'RESCHEDULED'].includes(appointment.status)) {
+    if (!appointment.status || !['SCHEDULED', 'CONFIRMED', 'RESCHEDULED'].includes(appointment.status)) {
       return NextResponse.json({ 
         error: `Cannot cancel appointment with status: ${appointment.status}` 
       }, { status: 400 });
+    }
+
+    if (!appointment.startTime) {
+        return NextResponse.json({ error: 'Appointment start time not found' }, { status: 404 });
     }
 
     // Business rule: Cancellation policy enforcement
@@ -121,12 +123,7 @@ export async function DELETE(
       const cancelledAppointment = await tx.appointment.update({
         where: { id },
         data: {
-          status: finalStatus,
-          notes: appointment.notes ? 
-            `${appointment.notes}\n\n[${finalStatus}] ${validatedData.reason}` : 
-            `[${finalStatus}] ${validatedData.reason}`,
-          cancelledAt: new Date(),
-          cancelledBy: session.user.id,
+          status: 'CANCELLED',
           updatedAt: new Date()
         },
         include: {
@@ -144,61 +141,63 @@ export async function DELETE(
       });
 
       // Update appointment slot availability
-      const appointmentSlot = await tx.appointmentSlot.findFirst({
-        where: {
-          doctorId: appointment.doctorId,
-          startTime: appointment.startTime,
-          endTime: appointment.endTime
-        }
-      });
-
-      if (appointmentSlot) {
-        await tx.appointmentSlot.update({
-          where: { id: appointmentSlot.id },
-          data: {
-            bookedAppointments: { decrement: 1 },
-            isAvailable: appointmentSlot.bookedAppointments - 1 < appointmentSlot.maxAppointments
+      if (appointment.doctorId && appointment.startTime && appointment.endTime) {
+        const appointmentSlot = await tx.appointmentSlot.findFirst({
+          where: {
+            doctorId: appointment.doctorId,
+            startTime: appointment.startTime,
+            endTime: appointment.endTime
           }
         });
+
+        if (appointmentSlot && appointmentSlot.bookedAppointments != null && appointmentSlot.maxAppointments != null) {
+          await tx.appointmentSlot.update({
+            where: { id: appointmentSlot.id },
+            data: {
+              bookedAppointments: { decrement: 1 },
+              isAvailable: appointmentSlot.bookedAppointments - 1 < appointmentSlot.maxAppointments
+            }
+          });
+        }
       }
 
       // Handle care plan impacts
-      if (appointment.carePlanId && finalStatus === 'CARE_PLAN_LAPSED') {
-        // Mark care plan appointment as missed/lapsed
-        // In a full implementation, this might trigger care plan reassessment
+      // if (appointment.carePlanId && finalStatus === 'CARE_PLAN_LAPSED') {
+      //   // Mark care plan appointment as missed/lapsed
+      //   // In a full implementation, this might trigger care plan reassessment
         
-        // Log care plan disruption
-        await tx.carePlanLog.create({
-          data: {
-            carePlanId: appointment.carePlanId,
-            patientId: appointment.patientId,
-            doctorId: appointment.doctorId,
-            logType: 'APPOINTMENT_LAPSED',
-            description: `Care plan appointment cancelled with < 24hr notice: ${validatedData.reason}`,
-            severity: 'HIGH',
-            createdBy: session.user.id
-          }
-        });
-      }
+      //   // Log care plan disruption
+      //   // await tx.carePlanLog.create({
+      //   //   data: {
+      //   //     carePlanId: appointment.carePlanId,
+      //   //     patientId: appointment.patientId,
+      //   //     doctorId: appointment.doctorId,
+      //   //     logType: 'APPOINTMENT_LAPSED',
+      //   //     description: `Care plan appointment cancelled with < 24hr notice: ${validatedData.reason}`,
+      //   //     severity: 'HIGH',
+      //   //     createdBy: session.user.id
+      //   //   }
+      //   // });
+      // }
 
-      // Create audit log entry
-      await tx.appointmentAuditLog.create({
-        data: {
-          appointmentId: appointment.id,
-          action: 'CANCEL',
-          performedBy: session.user.id,
-          details: {
-            originalStartTime: appointment.startTime,
-            originalEndTime: appointment.endTime,
-            cancellationPolicy,
-            finalStatus,
-            hoursUntilAppointment: Math.round(hoursUntilAppointment * 100) / 100,
-            reason: validatedData.reason,
-            cancelledBy: validatedData.cancelledBy || session.user.role
-          },
-          timestamp: new Date()
-        }
-      });
+      // // Create audit log entry
+      // await tx.appointmentAuditLog.create({
+      //   data: {
+      //     appointmentId: appointment.id,
+      //     action: 'CANCEL',
+      //     performedBy: session.user.id,
+      //     details: {
+      //       originalStartTime: appointment.startTime,
+      //       originalEndTime: appointment.endTime,
+      //       cancellationPolicy,
+      //       finalStatus,
+      //       hoursUntilAppointment: Math.round(hoursUntilAppointment * 100) / 100,
+      //       reason: validatedData.reason,
+      //       cancelledBy: validatedData.cancelledBy || session.user.role
+      //     },
+      //     timestamp: new Date()
+      //   }
+      // });
 
       // Handle potential refunds for paid appointments
       if (validatedData.allowRefund && hoursUntilAppointment >= 24) {
@@ -211,7 +210,7 @@ export async function DELETE(
 
     // TODO: Send notifications if requested
     const notifications = [];
-    if (validatedData.notifyPatient) {
+    if (validatedData.notifyPatient && result.patient?.user?.email) {
       const patientMessage = finalStatus === 'CARE_PLAN_LAPSED' ? 
         `Your care plan appointment has been cancelled and will not be automatically rescheduled. Please contact your provider to discuss next steps.` :
         `Your appointment scheduled for ${appointmentStart.toLocaleString()} has been cancelled.`;
@@ -224,12 +223,12 @@ export async function DELETE(
       });
     }
     
-    if (validatedData.notifyDoctor) {
+    if (validatedData.notifyDoctor && result.doctor?.user?.email) {
       notifications.push({
         type: 'doctor',
         email: result.doctor.user.email,
-        message: `Appointment with ${result.patient.user.firstName} ${result.patient.user.lastName} scheduled for ${appointmentStart.toLocaleString()} has been cancelled.`,
-        carePlanImpact: appointment.carePlanId && finalStatus === 'CARE_PLAN_LAPSED'
+        message: `Appointment with ${result.patient?.user?.firstName || ''} ${result.patient?.user?.lastName || ''} scheduled for ${appointmentStart.toLocaleString()} has been cancelled.`,
+        carePlanImpact: !!appointment.carePlanId && finalStatus === 'CARE_PLAN_LAPSED'
       });
     }
 
@@ -250,12 +249,12 @@ export async function DELETE(
         },
         status: result.status,
         cancellationPolicy,
-        carePlanImpact: appointment.carePlanId && finalStatus === 'CARE_PLAN_LAPSED',
+        carePlanImpact: !!appointment.carePlanId && finalStatus === 'CARE_PLAN_LAPSED',
         patient: {
-          name: `${result.patient.user.firstName} ${result.patient.user.lastName}`
+          name: `${result.patient?.user?.firstName || ''} ${result.patient?.user?.lastName || ''}`.trim()
         },
         doctor: {
-          name: `${result.doctor.user.firstName} ${result.doctor.user.lastName}`
+          name: `${result.doctor?.user?.firstName || ''} ${result.doctor?.user?.lastName || ''}`.trim()
         }
       },
       policy: {

@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
+import { AppointmentSlotType } from '@prisma/client';
+import { v4 as uuidv4 } from 'uuid';
 
 const generateSlotsSchema = z.object({
   doctorId: z.string().uuid(),
@@ -150,6 +152,7 @@ export async function POST(request: NextRequest) {
 
             // Create slot data
             const slotData = {
+              id: uuidv4(),
               doctorId: doctor.userId,
               date: new Date(currentDate.toDateString()), // Date only
               startTime: slotTime,
@@ -157,8 +160,9 @@ export async function POST(request: NextRequest) {
               maxAppointments: validatedData.maxAppointmentsPerSlot,
               bookedAppointments: 0,
               isAvailable: true,
-              slotType: 'regular',
-              notes: `Generated slot - Duration: ${slotDuration}min, Types: ${validatedData.appointmentTypes.join(', ')}`
+              slotType: AppointmentSlotType.REGULAR,
+              notes: `Generated slot - Duration: ${slotDuration}min, Types: ${validatedData.appointmentTypes.join(', ')}`,
+              createdAt: new Date()
             };
 
             slotsToCreate.push(slotData);
@@ -170,6 +174,7 @@ export async function POST(request: NextRequest) {
           // Generate emergency slots if requested
           if (validatedData.includeEmergencySlots && doctor.organization?.type === 'hospital') {
             const emergencySlotData = {
+              id: uuidv4(),
               doctorId: doctor.userId,
               date: new Date(currentDate.toDateString()),
               startTime: new Date(availEnd.getTime() - 15 * 60000),
@@ -177,8 +182,9 @@ export async function POST(request: NextRequest) {
               maxAppointments: 1,
               bookedAppointments: 0,
               isAvailable: true,
-              slotType: 'emergency',
-              notes: 'Emergency slot - 15 minutes'
+              slotType: AppointmentSlotType.EMERGENCY,
+              notes: 'Emergency slot - 15 minutes',
+              createdAt: new Date()
             };
 
             slotsToCreate.push(emergencySlotData);

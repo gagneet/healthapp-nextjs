@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
+import { ConsultationStatus } from '@prisma/client';
 
 const getAvailableSlotsSchema = z.object({
   doctorId: z.string().uuid(),
@@ -71,7 +72,7 @@ export async function GET(request: NextRequest) {
       appointmentType: queryData.appointmentType,
       includeEmergencySlots: queryData.includeEmergencySlots,
       timezone: queryData.timezone,
-      organizationType: doctor.organization?.type
+      organizationType: doctor.organization?.type ?? undefined
     });
 
     return NextResponse.json({
@@ -151,7 +152,7 @@ async function generateAvailableSlots(params: GenerateSlotsParams) {
         lte: endDate
       },
       status: {
-        in: ['SCHEDULED', 'CONFIRMED', 'IN_PROGRESS']
+        in: [ConsultationStatus.SCHEDULED, ConsultationStatus.IN_PROGRESS]
       }
     },
     select: {
@@ -233,6 +234,7 @@ async function generateAvailableSlots(params: GenerateSlotsParams) {
 
         // Check if slot conflicts with existing appointments
         const hasConflict = existingAppointments.some(appt => {
+          if (!appt.startTime || !appt.endTime) return false;
           return (slotTime >= appt.startTime && slotTime < appt.endTime) ||
                  (slotEndTime > appt.startTime && slotEndTime <= appt.endTime) ||
                  (slotTime <= appt.startTime && slotEndTime >= appt.endTime);
@@ -241,9 +243,10 @@ async function generateAvailableSlots(params: GenerateSlotsParams) {
         if (!hasConflict) {
           // Check if we can accommodate the appointment type
           const maxAppointments = avail.maxAppointmentsPerSlot || 1;
-          const conflictingAppointments = existingAppointments.filter(appt => 
-            slotTime >= appt.startTime && slotTime < appt.endTime
-          );
+          const conflictingAppointments = existingAppointments.filter(appt => {
+            if (!appt.startTime || !appt.endTime) return false;
+            return slotTime >= appt.startTime && slotTime < appt.endTime
+          });
 
           if (conflictingAppointments.length < maxAppointments) {
             slots.push({
@@ -281,6 +284,7 @@ async function generateAvailableSlots(params: GenerateSlotsParams) {
 
         // Check if emergency slot doesn't conflict
         const hasEmergencyConflict = existingAppointments.some(appt => {
+          if (!appt.startTime || !appt.endTime) return false;
           return (emergencySlot.startTime >= appt.startTime && emergencySlot.startTime < appt.endTime) ||
                  (emergencySlot.endTime > appt.startTime && emergencySlot.endTime <= appt.endTime);
         });
