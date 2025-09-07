@@ -218,6 +218,7 @@ export async function PUT(
           resource: 'appointment',
           entityId: appointment.id,
           userId: session.user.id,
+          // userRole is a valid field in the AuditLog model, used for tracking who performed the action.
           userRole: session.user.role,
           patientId: appointment.patientId,
           dataChanges: {
