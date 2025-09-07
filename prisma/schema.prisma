@@ -1,5 +1,6 @@
 generator client {
   provider = "prisma-client-js"
+  output   = "./generated/prisma"
 }
 
 datasource db {
@@ -843,7 +844,7 @@ model Notification {
   message                String
   priority               String?        @default("MEDIUM") @db.VarChar(20)
   isUrgent               Boolean?       @default(false)
-  channels               String[]       @default(["PUSH"]) @db.VarChar(255)
+  channels               String[]       @default(["PUSH"])
   scheduledFor           DateTime?
   expiresAt              DateTime?
   status                 String?        @default("PENDING") @db.VarChar(20)
@@ -1474,7 +1475,7 @@ model SecondaryDoctorAssignment {
   secondaryHspId            String?                                 @db.Uuid
   assignmentReason          String?
   specialtyFocus            String[]                                @default([])
-  carePlanIds               String[]                                @default([]) @db.Uuid
+  carePlanIds               String[]                                @default([])
   primaryDoctorProviderId   String?                                 @db.Uuid
   secondaryDoctorProviderId String?                                 @db.Uuid
   consentRequired           Boolean?                                @default(true)
@@ -1589,7 +1590,7 @@ model TreatmentPlan {
   outcome              String?
   emergencyContacts    Json?          @default("[]")
   warningSigns         String[]       @default([])
-  assignedHsps         String[]       @default([]) @db.Uuid
+  assignedHsps         String[]       @default([])
   careTeamNotes        Json?          @default("[]")
   createdAt            DateTime?
   updatedAt            DateTime?
