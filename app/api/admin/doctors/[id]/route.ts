@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from "@/lib/auth";
 import { prisma } from '@/lib/prisma';
+import { Prisma } from '@prisma/client';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -166,7 +167,7 @@ export async function PUT(
       }
     }
 
-    const result = await prisma.$transaction(async (tx) => {
+    const result = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       // Update user information
       const userUpdates: any = {};
       if (firstName !== undefined) {
@@ -342,7 +343,7 @@ export async function DELETE(
     }
 
     // Soft delete - set account as inactive instead of hard delete
-    await prisma.$transaction(async (tx) => {
+    await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       await tx.user.update({
         where: { id: existingDoctor.userId },
         data: { 

@@ -132,11 +132,11 @@ export async function GET(request: NextRequest) {
             totalPages: Math.ceil(totalCount / limit)
           },
           stats: {
-            byRole: userStats.reduce((acc, stat) => {
+            byRole: userStats.reduce((acc: Record<string, number>, stat: { role: string; _count: { id: number } }) => {
               acc[stat.role] = stat._count.id;
               return acc;
             }, {} as Record<string, number>),
-            byStatus: statusStats.reduce((acc, stat) => {
+            byStatus: statusStats.reduce((acc: Record<string, number>, stat: { accountStatus: string | null; _count: { id: number } }) => {
               if (stat.accountStatus) acc[stat.accountStatus] = stat._count?.id || 0;
               return acc;
             }, {} as Record<string, number>)

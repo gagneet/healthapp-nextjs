@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
+import { Prisma } from '@prisma/client';
 
 // Schema for setting doctor availability
 const setAvailabilitySchema = z.object({
@@ -150,7 +151,7 @@ export async function GET(
           dayOfWeek: dayIndex,
           dayName: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][dayIndex],
           isAvailable: dayAvailability.length > 0,
-          shifts: dayAvailability.map(avail => ({
+          shifts: dayAvailability.map((avail: any) => ({
             startTime: avail.startTime.toISOString().substr(11, 5), // HH:MM format
             endTime: avail.endTime.toISOString().substr(11, 5),
             slotDuration: avail.slotDuration || 30,
@@ -165,7 +166,7 @@ export async function GET(
       }),
       metadata: {
         lastUpdated: availability.length > 0 ? availability[0].updatedAt : null,
-        totalAvailableHours: availability.reduce((total, avail) => {
+        totalAvailableHours: availability.reduce((total: number, avail: any) => {
           const start = new Date(`2000-01-01T${avail.startTime.toISOString().substr(11, 8)}`);
           const end = new Date(`2000-01-01T${avail.endTime.toISOString().substr(11, 8)}`);
           return total + (end.getTime() - start.getTime()) / (1000 * 60 * 60);
@@ -258,7 +259,7 @@ export async function POST(
     }
 
     // Begin transaction to update availability
-    const result = await prisma.$transaction(async (tx) => {
+    const result = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       // Delete existing availability for this doctor
       await tx.doctorAvailability.deleteMany({
         where: { doctorId: doctor.userId }

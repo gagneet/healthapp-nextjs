@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from "@/lib/auth";
 import { prisma } from '@/lib/prisma';
+import { Prisma } from '@prisma/client';
 
 
 export async function GET(request: NextRequest) {
@@ -180,7 +181,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Use transaction to prevent race condition in slot booking
-    const appointment = await prisma.$transaction(async (tx) => {
+    const appointment = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       // Check if slot is available within transaction
       if (slotId) {
         const slot = await tx.appointmentSlot.findUnique({

@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
-import { ConsultationStatus } from '@/generated/prisma';
+import { Prisma } from '@prisma/client';
+import { AppointmentStatus } from '@prisma/client';
 
 const rescheduleSchema = z.object({
   newStartTime: z.string().datetime(),
@@ -62,7 +63,7 @@ export async function PUT(
     }
 
     // Business rule validation: Check appointment status
-    if (appointment.status !== ConsultationStatus.SCHEDULED) {
+    if (appointment.status !== AppointmentStatus.SCHEDULED) {
       return NextResponse.json({
         error: `Cannot reschedule appointment with status: ${appointment.status}`
       }, { status: 400 });
@@ -145,14 +146,14 @@ export async function PUT(
     }
 
     // Begin transaction for rescheduling
-    const result = await prisma.$transaction(async (tx) => {
+    const result = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       // Update the appointment
       const updatedAppointment = await tx.appointment.update({
         where: { id },
         data: {
           startTime: newStart,
           endTime: newEnd,
-          status: ConsultationStatus.RESCHEDULED,
+          status: AppointmentStatus.RESCHEDULED,
           // notes: appointment.notes ?
           //   `${appointment.notes}\n\n[RESCHEDULED] ${validatedData.reason}` :
           //   `[RESCHEDULED] ${validatedData.reason}`,
@@ -304,7 +305,7 @@ async function checkAppointmentConflicts(params: ConflictCheckParams) {
     where: {
       doctorId,
       id: excludeAppointmentId ? { not: excludeAppointmentId } : undefined,
-      status: { in: [ConsultationStatus.SCHEDULED, ConsultationStatus.IN_PROGRESS, ConsultationStatus.RESCHEDULED] },
+      status: { in: [AppointmentStatus.SCHEDULED, AppointmentStatus.IN_PROGRESS, AppointmentStatus.RESCHEDULED] },
       OR: [
         {
           startTime: { lt: endTime },
@@ -327,7 +328,7 @@ async function checkAppointmentConflicts(params: ConflictCheckParams) {
 
   return {
     hasConflicts: conflictingAppointments.length > 0,
-    conflicts: conflictingAppointments.map(appt => ({
+    conflicts: conflictingAppointments.map((appt: any) => ({
       appointmentId: appt.id,
       conflictTime: {
         start: appt.startTime,

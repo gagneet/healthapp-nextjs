@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from "@/lib/auth";
 import { prisma } from '@/lib/prisma';
+import { Prisma } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 import { randomUUID } from 'crypto';
 
@@ -221,7 +222,7 @@ export async function POST(request: NextRequest) {
     const hashedPassword = await bcrypt.hash(tempPassword, 12);
 
     // Create user and patient in transaction
-    const result = await prisma.$transaction(async (tx) => {
+    const result = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       const fullName = `${firstName} ${lastName}`.trim();
       const newUser = await tx.user.create({
         data: {
