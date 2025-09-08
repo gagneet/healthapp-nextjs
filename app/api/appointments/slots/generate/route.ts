@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
-import { AppointmentSlotType } from '@/generated/prisma';
+import { AppointmentSlotType } from '@prisma/client';
 
 const generateSlotsSchema = z.object({
   doctorId: z.string().uuid(),

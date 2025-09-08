@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
+import { Prisma } from '@prisma/client';
 
 const cancelSchema = z.object({
   reason: z.string().min(1, 'Reason is required for cancellation'),
@@ -118,7 +119,7 @@ export async function DELETE(
     }
 
     // Begin transaction for cancellation
-    const result = await prisma.$transaction(async (tx) => {
+    const result = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       // Update the appointment
       const cancelledAppointment = await tx.appointment.update({
         where: { id },

@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from "@/lib/auth";
 import { prisma } from '@/lib/prisma';
+import { Specialty, Doctor, User } from '@prisma/client';
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -182,12 +183,12 @@ export async function GET(request: NextRequest) {
       });
 
       detailedStats = {
-        topSpecialties: topSpecialties.map(spec => ({
+        topSpecialties: topSpecialties.map((spec: Specialty & { _count: { doctors: number } }) => ({
           id: spec.id,
           name: spec.name,
           doctorCount: spec._count.doctors
         })),
-        activeDoctors: activeDoctors.map(doc => ({
+        activeDoctors: activeDoctors.map((doc: Doctor & { user: { name: string, firstName: string, lastName: string }, specialty: { name: string }, _count: { appointments: number, doctorAssignments: number }}) => ({
           id: doc.id,
           doctorId: doc.doctorId,
           name: doc.user?.name ||
@@ -196,7 +197,7 @@ export async function GET(request: NextRequest) {
           appointmentCount: doc._count.appointments,
           assignmentCount: doc._count.doctorAssignments
         })),
-        recentActivity: recentActivity.map(user => ({
+        recentActivity: recentActivity.map((user: User) => ({
           id: user.id,
           email: user.email,
           name: user.name || `${user.firstName} ${user.lastName}`.trim(),
@@ -219,11 +220,11 @@ export async function GET(request: NextRequest) {
         totalSecondaryAssignments
       },
       userStatistics: {
-        byRole: usersByRole.reduce((acc, item) => {
+        byRole: usersByRole.reduce((acc: Record<string, number>, item: { role: string; _count: { id: number } }) => {
           acc[item.role] = item._count.id;
           return acc;
         }, {} as Record<string, number>),
-        byStatus: usersByStatus.reduce((acc, item) => {
+        byStatus: usersByStatus.reduce((acc: Record<string, number>, item: { accountStatus: string | null; _count: { id: number } }) => {
           if (item.accountStatus) acc[item.accountStatus] = item._count.id;
           return acc;
         }, {} as Record<string, number>),
@@ -238,19 +239,19 @@ export async function GET(request: NextRequest) {
         newCarePlans: recentCarePlans
       },
       appointmentStatistics: {
-        byStatus: appointmentsByStatus.reduce((acc, item) => {
+        byStatus: appointmentsByStatus.reduce((acc: Record<string, number>, item: { status: string | null; _count: number }) => {
           if (item.status) acc[item.status] = item._count || 0;
           return acc;
         }, {} as Record<string, number>)
       },
       carePlanStatistics: {
-        byStatus: carePlansByStatus.reduce((acc, item) => {
+        byStatus: carePlansByStatus.reduce((acc: Record<string, number>, item: { status: string | null; _count: { id: number } }) => {
           if (item.status) acc[item.status] = item._count.id;
           return acc;
         }, {} as Record<string, number>)
       },
       assignmentStatistics: {
-        byConsentStatus: assignmentsByStatus.reduce((acc, item) => {
+        byConsentStatus: assignmentsByStatus.reduce((acc: Record<string, number>, item: { consentStatus: string | null; _count: { id: number } }) => {
           acc[item.consentStatus || 'unknown'] = item._count.id;
           return acc;
         }, {} as Record<string, number>)
