@@ -49,6 +49,9 @@ ENV NEXT_FORCE_DYNAMIC=1
 # Generate Prisma client with build-time dummy database URL
 RUN npx prisma generate
 
+# Create symlink structure for @/generated/prisma path mapping
+RUN mkdir -p generated && ln -sf ../prisma/generated/prisma generated/prisma
+
 # Build Next.js standalone application
 RUN npm run build
 
@@ -70,6 +73,7 @@ COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
 
 # Copy Prisma client, lib directory, and FULL node_modules for seeding
+COPY --from=builder /app/prisma/generated ./prisma/generated
 COPY --from=builder /app/generated ./generated
 COPY --from=builder /app/lib ./lib
 COPY --from=builder /app/prisma ./prisma
