@@ -64,6 +64,30 @@ export function WorkoutPlanManager({ carePlan }: { carePlan: any }) {
     });
   };
 
+    const handleRemoveWorkoutPlan = async (workoutPlanId: string) => {
+        if(!confirm('Are you sure you want to remove this workout plan?')) return;
+
+        const promise = fetch(`/api/care-plans/${carePlan.id}/workout-plans/${workoutPlanId}`, {
+            method: 'DELETE',
+        }).then(res => {
+            if (res.status !== 204) {
+                return res.json().then(data => Promise.reject(data));
+            }
+            return res;
+        });
+
+        toast.promise(promise, {
+            loading: 'Removing workout plan...',
+            success: () => {
+                setAssociatedPlans((prev: any) => prev.filter((p: any) => p.workoutPlan.id !== workoutPlanId));
+                return 'Workout plan removed successfully!';
+            },
+            error: (err) => {
+                return err.payload?.error?.message || 'Failed to remove workout plan';
+            }
+        });
+    }
+
   if (isFetching) {
       return <p>Loading workout plans...</p>;
   }
@@ -75,7 +99,7 @@ export function WorkoutPlanManager({ carePlan }: { carePlan: any }) {
         {associatedPlans.map((plan: any) => (
           <li key={plan.workoutPlan.id} className="flex justify-between items-center p-2 border rounded-md">
             <p className="font-semibold">{plan.workoutPlan.name}</p>
-            {/* Add remove button here */}
+            <Button size="sm" variant="destructive" onClick={() => handleRemoveWorkoutPlan(plan.workoutPlan.id)}>Remove</Button>
           </li>
         ))}
       </ul>

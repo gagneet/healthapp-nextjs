@@ -64,6 +64,30 @@ export function DietPlanManager({ carePlan }: { carePlan: any }) {
     });
   };
 
+  const handleRemoveDietPlan = async (dietPlanId: string) => {
+      if(!confirm('Are you sure you want to remove this diet plan?')) return;
+
+      const promise = fetch(`/api/care-plans/${carePlan.id}/diet-plans/${dietPlanId}`, {
+          method: 'DELETE',
+      }).then(res => {
+          if (res.status !== 204) {
+              return res.json().then(data => Promise.reject(data));
+          }
+          return res;
+      });
+
+      toast.promise(promise, {
+          loading: 'Removing diet plan...',
+          success: () => {
+              setAssociatedPlans((prev: any) => prev.filter((p: any) => p.dietPlan.id !== dietPlanId));
+              return 'Diet plan removed successfully!';
+          },
+          error: (err) => {
+              return err.payload?.error?.message || 'Failed to remove diet plan';
+          }
+      });
+  }
+
   if (isFetching) {
       return <p>Loading diet plans...</p>;
   }
@@ -75,7 +99,7 @@ export function DietPlanManager({ carePlan }: { carePlan: any }) {
         {associatedPlans.map((plan: any) => (
           <li key={plan.dietPlan.id} className="flex justify-between items-center p-2 border rounded-md">
             <p className="font-semibold">{plan.dietPlan.name}</p>
-            {/* Add remove button here */}
+            <Button size="sm" variant="destructive" onClick={() => handleRemoveDietPlan(plan.dietPlan.id)}>Remove</Button>
           </li>
         ))}
       </ul>

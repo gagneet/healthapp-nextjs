@@ -9,6 +9,8 @@ import { DietPlanManager } from '@/components/care-plans/DietPlanManager';
 import { WorkoutPlanManager } from '@/components/care-plans/WorkoutPlanManager';
 import { VitalsManager } from '@/components/care-plans/VitalsManager';
 import { SymptomManager } from '@/components/care-plans/SymptomManager';
+import { PrescriptionManager } from '@/components/care-plans/PrescriptionManager';
+import { ReportManager } from '@/components/care-plans/ReportManager';
 
 // A simple tab component
 function Tabs({ tabs, activeTab, setActiveTab }: { tabs: string[], activeTab: string, setActiveTab: (tab: string) => void }) {
@@ -91,7 +93,7 @@ export default function CarePlanManagementPage() {
       return <div>No care plan found.</div>
   }
 
-  const tabs = ['Overview', 'Medications', 'Appointments', 'Vitals', 'Symptoms', 'Diets', 'Workouts'];
+  const tabs = ['Overview', 'Medications', 'Appointments', 'Vitals', 'Symptoms', 'Diets', 'Workouts', 'Prescriptions', 'Reports'];
 
   return (
     <div className="container mx-auto p-4">
@@ -124,6 +126,12 @@ export default function CarePlanManagementPage() {
             </TabPanel>
             <TabPanel active={activeTab === 'Workouts'} tabName="Workouts">
               <WorkoutPlanManager carePlan={carePlan} />
+            </TabPanel>
+            <TabPanel active={activeTab === 'Prescriptions'} tabName="Prescriptions">
+              <PrescriptionManager patientId={carePlan.patientId} />
+            </TabPanel>
+            <TabPanel active={activeTab === 'Reports'} tabName="Reports">
+              <ReportManager carePlan={carePlan} />
             </TabPanel>
           </div>
         </CardContent>

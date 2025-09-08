@@ -277,6 +277,7 @@ model Patient {
   prescriptions                 Prescription[]
   medicalDevices                MedicalDevice[]
   adherenceLogs                 AdherenceLog[]
+  reports                       Report[]
 
   @@index([primaryCareDoctorId, createdAt, isActive], map: "idx_patients_doctor_created_active")
   @@index([patientId, createdAt], map: "idx_patients_id_created")
@@ -450,6 +451,7 @@ model CarePlan {
   appointments              Appointment[]
   diets                     CarePlanToDietPlan[]
   workouts                  CarePlanToWorkoutPlan[]
+  reports                   Report[]
 
   @@index([chronicConditions], type: Gin)
   @@index([createdByDoctorId])
@@ -507,6 +509,17 @@ model CarePlanToWorkoutPlan {
   assignedBy  String
 
   @@id([carePlanId, workoutPlanId])
+}
+
+model Report {
+  id          String    @id @default(uuid()) @db.Uuid
+  patientId   String    @db.Uuid
+  carePlanId  String?   @db.Uuid
+  name        String
+  url         String
+  createdAt   DateTime  @default(now())
+  patient     Patient   @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  carePlan    CarePlan? @relation(fields: [carePlanId], references: [id])
 }
 
 model Medicine {

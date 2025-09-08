@@ -19,13 +19,9 @@ interface CarePlanTemplate {
   name: string;
   description: string;
   category: string;
-  duration: string;
-  carePlans: number;
-  vitals: number;
-  appointments: number;
-  popularity: number;
   lastUpdated: string;
   features: string[];
+  usageCount: number;
 }
 
 const categories = ['All', 'Cardiovascular', 'Endocrine', 'Respiratory', 'Nephrology', 'Rheumatology', 'Neurology', 'Oncology']
@@ -53,16 +49,9 @@ export default function CarePlanTemplatePage() {
           throw new Error('Failed to fetch templates')
         }
         const data = await response.json()
-        // The API returns 'conditions' but the frontend uses 'category'.
-        // I will map the fields for now. This should be harmonized later.
         const formattedTemplates = data.payload.map((t: any) => ({
             ...t,
             category: t.conditions?.[0] || 'General',
-            duration: '6 months', // Mocking this as it's not in the model
-            carePlans: 3, // Mocking
-            vitals: 5, // Mocking
-            appointments: 8, // Mocking
-            popularity: 75, // Mocking
             lastUpdated: new Date(t.updatedAt).toLocaleDateString(),
             features: t.templateData?.features || [],
         }))
@@ -122,9 +111,9 @@ export default function CarePlanTemplatePage() {
   }
 
   const getPopularityColor = (popularity: number) => {
-    if (popularity >= 90) return 'text-green-600 bg-green-100'
-    if (popularity >= 80) return 'text-blue-600 bg-blue-100'
-    if (popularity >= 70) return 'text-yellow-600 bg-yellow-100'
+    if (popularity >= 100) return 'text-green-600 bg-green-100'
+    if (popularity >= 50) return 'text-blue-600 bg-blue-100'
+    if (popularity >= 10) return 'text-yellow-600 bg-yellow-100'
     return 'text-gray-600 bg-gray-100'
   }
 
@@ -220,30 +209,14 @@ export default function CarePlanTemplatePage() {
                   </div>
                   <CardTitle className="text-lg">{template.name}</CardTitle>
                 </div>
-                <div className={`px-2 py-1 rounded-full text-xs font-medium ${getPopularityColor(template.popularity)}`}>
-                  {template.popularity}% used
+                <div className={`px-2 py-1 rounded-full text-xs font-medium ${getPopularityColor(template.usageCount)}`}>
+                  {template.usageCount} uses
                 </div>
               </div>
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-sm text-gray-600 line-clamp-3">{template.description}</p>
               
-              {/* Template Stats */}
-              <div className="grid grid-cols-3 gap-4 text-sm">
-                <div className="text-center">
-                  <div className="font-semibold text-gray-900">{template.carePlans}</div>
-                  <div className="text-gray-500">Medications</div>
-                </div>
-                <div className="text-center">
-                  <div className="font-semibold text-gray-900">{template.vitals}</div>
-                  <div className="text-gray-500">Vitals</div>
-                </div>
-                <div className="text-center">
-                  <div className="font-semibold text-gray-900">{template.appointments}</div>
-                  <div className="text-gray-500">Appointments</div>
-                </div>
-              </div>
-
               {/* Key Features */}
               <div className="space-y-2">
                 <h4 className="text-sm font-medium text-gray-900">Key Features:</h4>
@@ -262,10 +235,6 @@ export default function CarePlanTemplatePage() {
 
               {/* Template Info */}
               <div className="flex items-center justify-between text-xs text-gray-500 pt-2 border-t">
-                <div className="flex items-center">
-                  <ClockIcon className="h-3 w-3 mr-1" />
-                  {template.duration}
-                </div>
                 <div>Updated {template.lastUpdated}</div>
               </div>
 
@@ -343,12 +312,8 @@ export default function CarePlanTemplatePage() {
                           <div className="text-gray-600">{template.category}</div>
                         </div>
                         <div>
-                          <span className="font-medium">Duration:</span>
-                          <div className="text-gray-600">{template.duration}</div>
-                        </div>
-                        <div>
-                          <span className="font-medium">Popularity:</span>
-                          <div className="text-gray-600">{template.popularity}%</div>
+                          <span className="font-medium">Usage:</span>
+                          <div className="text-gray-600">{template.usageCount} times</div>
                         </div>
                         <div>
                           <span className="font-medium">Updated:</span>

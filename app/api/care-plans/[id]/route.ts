@@ -33,7 +33,11 @@ export const GET = withErrorHandling(async (
           user: true,
         },
       },
-      prescribedMedications: true,
+      prescribedMedications: {
+        include: {
+          medicine: true,
+        },
+      },
       appointments: true,
       symptoms: true,
       vitalRequirements: true,

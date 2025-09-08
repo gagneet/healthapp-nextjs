@@ -7,17 +7,10 @@ import { Label } from '@/components/ui/label';
 import toast from 'react-hot-toast';
 import { format } from 'date-fns';
 
-const mockVitalTypes = [
-    { id: '3c8c365b-6a84-4bb3-964a-435f35544770', name: 'Blood Pressure', unit: 'mmHg' },
-    { id: 'b4c8f7d6-a8f1-4f5a-b5e2-3e3a4b9c1d2e', name: 'Heart Rate', unit: 'bpm' },
-    { id: 'a1b2c3d4-e5f6-7890-1234-567890abcdef', name: 'Weight', unit: 'kg' },
-    { id: 'f0e9d8c7-b6a5-4321-fedc-ba9876543210', name: 'Blood Glucose', unit: 'mg/dL' },
-    { id: '98765432-10fe-dcba-9876-543210fedcba', name: 'Temperature', unit: '°C' },
-];
-
 export function VitalsManager({ carePlan }: { carePlan: any }) {
   const [requirements, setRequirements] = useState(carePlan.vitalRequirements);
   const [readings, setReadings] = useState<any[]>([]);
+  const [vitalTypes, setVitalTypes] = useState<any[]>([]);
   const [newRequirement, setNewRequirement] = useState({
     vitalTypeId: '',
     frequency: '',
@@ -29,10 +22,28 @@ export function VitalsManager({ carePlan }: { carePlan: any }) {
     readingTime: '',
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [isFetching, setIsFetching] = useState(true);
 
   useEffect(() => {
-    // In a real app, you would fetch the patient's vital readings here
-    // For now, we'll just use the ones from the care plan if they exist
+    const fetchVitalTypes = async () => {
+      setIsFetching(true);
+      try {
+        const response = await fetch('/api/vital-types');
+        if (!response.ok) {
+          throw new Error('Failed to fetch vital types');
+        }
+        const data = await response.json();
+        setVitalTypes(data.payload);
+      } catch (error) {
+        toast.error('Could not fetch vital types.');
+      } finally {
+        setIsFetching(false);
+      }
+    };
+    fetchVitalTypes();
+  }, []);
+
+  useEffect(() => {
     setReadings(carePlan.vitals || []);
   }, [carePlan.vitals]);
 
@@ -86,6 +97,14 @@ export function VitalsManager({ carePlan }: { carePlan: any }) {
     });
   };
 
+  const getVitalTypeName = (vitalTypeId: string) => {
+      return vitalTypes.find(vt => vt.id === vitalTypeId)?.name || 'Unknown Vital';
+  }
+
+  if (isFetching) {
+    return <p>Loading vital types...</p>;
+  }
+
   return (
     <div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -94,7 +113,7 @@ export function VitalsManager({ carePlan }: { carePlan: any }) {
           <ul className="mt-4 space-y-2">
             {requirements.map((req: any) => (
               <li key={req.id} className="p-2 border rounded-md">
-                <p className="font-semibold">{mockVitalTypes.find(vt => vt.id === req.vitalTypeId)?.name}</p>
+                <p className="font-semibold">{getVitalTypeName(req.vitalTypeId)}</p>
                 <p className="text-sm text-gray-500">{req.frequency}</p>
               </li>
             ))}
@@ -105,7 +124,7 @@ export function VitalsManager({ carePlan }: { carePlan: any }) {
               <Label>Vital Type</Label>
               <select onChange={(e) => setNewRequirement({...newRequirement, vitalTypeId: e.target.value})} className="w-full p-2 border rounded-md">
                   <option value="">Select a vital type</option>
-                  {mockVitalTypes.map(vt => <option key={vt.id} value={vt.id}>{vt.name}</option>)}
+                  {vitalTypes.map(vt => <option key={vt.id} value={vt.id}>{vt.name}</option>)}
               </select>
               <Label>Frequency</Label>
               <Input value={newRequirement.frequency} onChange={(e) => setNewRequirement({...newRequirement, frequency: e.target.value})} placeholder="e.g., Twice daily" />
@@ -120,7 +139,7 @@ export function VitalsManager({ carePlan }: { carePlan: any }) {
           <ul className="mt-4 space-y-2">
             {readings.map((reading: any) => (
               <li key={reading.id} className="p-2 border rounded-md">
-                <p className="font-semibold">{mockVitalTypes.find(vt => vt.id === reading.vitalTypeId)?.name}: {reading.value} {reading.unit}</p>
+                <p className="font-semibold">{getVitalTypeName(reading.vitalTypeId)}: {reading.value} {reading.unit}</p>
                 <p className="text-sm text-gray-500">Taken on {format(new Date(reading.readingTime), 'PPP p')}</p>
               </li>
             ))}
@@ -129,9 +148,9 @@ export function VitalsManager({ carePlan }: { carePlan: any }) {
             <h4 className="font-medium">Add New Reading</h4>
             <div className="space-y-2 mt-2">
               <Label>Vital Type</Label>
-              <select onChange={(e) => setNewReading({...newReading, vitalTypeId: e.target.value, unit: mockVitalTypes.find(vt => vt.id === e.target.value)?.unit || ''})} className="w-full p-2 border rounded-md">
+              <select onChange={(e) => setNewReading({...newReading, vitalTypeId: e.target.value, unit: vitalTypes.find(vt => vt.id === e.target.value)?.unit || ''})} className="w-full p-2 border rounded-md">
                   <option value="">Select a vital type</option>
-                  {requirements.map((req: any) => <option key={req.vitalTypeId} value={req.vitalTypeId}>{mockVitalTypes.find(vt => vt.id === req.vitalTypeId)?.name}</option>)}
+                  {requirements.map((req: any) => <option key={req.vitalTypeId} value={req.vitalTypeId}>{getVitalTypeName(req.vitalTypeId)}</option>)}
               </select>
               <Label>Value</Label>
               <Input value={newReading.value} onChange={(e) => setNewReading({...newReading, value: e.target.value})} />
