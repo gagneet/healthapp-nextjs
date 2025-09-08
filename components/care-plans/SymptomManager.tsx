@@ -138,7 +138,7 @@ export function SymptomManager({ carePlan }: { carePlan: any }) {
         {isAssigning && (
             <AssignDoctorModal
                 patientId={carePlan.patientId}
-                onAssign={() => {}}
+                onAssign={() => toast.success("Doctor assigned successfully!")}
                 onClose={() => setIsAssigning(false)}
             />
         )}

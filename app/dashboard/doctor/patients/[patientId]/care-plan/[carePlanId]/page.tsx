@@ -11,6 +11,7 @@ import { VitalsManager } from '@/components/care-plans/VitalsManager';
 import { SymptomManager } from '@/components/care-plans/SymptomManager';
 import { PrescriptionManager } from '@/components/care-plans/PrescriptionManager';
 import { ReportManager } from '@/components/care-plans/ReportManager';
+import ErrorBoundary from '@/components/ErrorBoundary';
 
 // A simple tab component
 function Tabs({ tabs, activeTab, setActiveTab }: { tabs: string[], activeTab: string, setActiveTab: (tab: string) => void }) {
@@ -105,34 +106,36 @@ export default function CarePlanManagementPage() {
         <CardContent>
           <Tabs tabs={tabs} activeTab={activeTab} setActiveTab={setActiveTab} />
           <div>
-            <TabPanel active={activeTab === 'Overview'} tabName="Overview">
-              <h2 className="text-lg font-medium">Overview</h2>
-              <p>{carePlan.description}</p>
-            </TabPanel>
-            <TabPanel active={activeTab === 'Medications'} tabName="Medications">
-              <MedicationManager carePlan={carePlan} />
-            </TabPanel>
-            <TabPanel active={activeTab === 'Appointments'} tabName="Appointments">
-              <AppointmentManager carePlan={carePlan} />
-            </TabPanel>
-            <TabPanel active={activeTab === 'Vitals'} tabName="Vitals">
-              <VitalsManager carePlan={carePlan} />
-            </TabPanel>
-            <TabPanel active={activeTab === 'Symptoms'} tabName="Symptoms">
-              <SymptomManager carePlan={carePlan} />
-            </TabPanel>
-            <TabPanel active={activeTab === 'Diets'} tabName="Diets">
-              <DietPlanManager carePlan={carePlan} />
-            </TabPanel>
-            <TabPanel active={activeTab === 'Workouts'} tabName="Workouts">
-              <WorkoutPlanManager carePlan={carePlan} />
-            </TabPanel>
-            <TabPanel active={activeTab === 'Prescriptions'} tabName="Prescriptions">
-              <PrescriptionManager patientId={carePlan.patientId} />
-            </TabPanel>
-            <TabPanel active={activeTab === 'Reports'} tabName="Reports">
-              <ReportManager carePlan={carePlan} />
-            </TabPanel>
+            <ErrorBoundary fallback={<p>Something went wrong in this section.</p>}>
+                <TabPanel active={activeTab === 'Overview'} tabName="Overview">
+                <h2 className="text-lg font-medium">Overview</h2>
+                <p>{carePlan.description}</p>
+                </TabPanel>
+                <TabPanel active={activeTab === 'Medications'} tabName="Medications">
+                <MedicationManager carePlan={carePlan} />
+                </TabPanel>
+                <TabPanel active={activeTab === 'Appointments'} tabName="Appointments">
+                <AppointmentManager carePlan={carePlan} />
+                </TabPanel>
+                <TabPanel active={activeTab === 'Vitals'} tabName="Vitals">
+                <VitalsManager carePlan={carePlan} />
+                </TabPanel>
+                <TabPanel active={activeTab === 'Symptoms'} tabName="Symptoms">
+                <SymptomManager carePlan={carePlan} />
+                </TabPanel>
+                <TabPanel active={activeTab === 'Diets'} tabName="Diets">
+                <DietPlanManager carePlan={carePlan} />
+                </TabPanel>
+                <TabPanel active={activeTab === 'Workouts'} tabName="Workouts">
+                <WorkoutPlanManager carePlan={carePlan} />
+                </TabPanel>
+                <TabPanel active={activeTab === 'Prescriptions'} tabName="Prescriptions">
+                <PrescriptionManager patientId={carePlan.patientId} />
+                </TabPanel>
+                <TabPanel active={activeTab === 'Reports'} tabName="Reports">
+                <ReportManager carePlan={carePlan} />
+                </TabPanel>
+            </ErrorBoundary>
           </div>
         </CardContent>
       </Card>

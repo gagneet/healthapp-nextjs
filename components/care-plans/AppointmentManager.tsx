@@ -88,6 +88,12 @@ export function AppointmentManager({ carePlan }: { carePlan: any }) {
 
   const handleAddAppointment = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (newAppointment.startTime >= newAppointment.endTime) {
+        toast.error("End time must be after start time.");
+        return;
+    }
+
     setIsLoading(true);
 
     const promise = fetch(`/api/care-plans/${carePlan.id}/appointments`, {

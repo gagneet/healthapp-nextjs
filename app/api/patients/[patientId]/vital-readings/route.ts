@@ -65,6 +65,35 @@ export const POST = withErrorHandling(async (
       // Further check if the patient is assigned to the doctor could be added here
   }
 
+  const vitalType = await prisma.vitalType.findUnique({
+    where: { id: vitalTypeId },
+  });
+
+  if (!vitalType) {
+    return createErrorResponse({ message: "Vital type not found" }, 404);
+  }
+
+  if (vitalType.normalRangeMin && value < vitalType.normalRangeMin) {
+    return createErrorResponse({ message: `Value is below the normal range of ${vitalType.normalRangeMin}` }, 400);
+  }
+  if (vitalType.normalRangeMax && value > vitalType.normalRangeMax) {
+      return createErrorResponse({ message: `Value is above the normal range of ${vitalType.normalRangeMax}` }, 400);
+  }
+
+  // Sanity checks for common vital types
+  if (vitalType.name === 'Temperature' && (value < 30 || value > 45)) {
+      return createErrorResponse({ message: 'Temperature reading is outside the normal human range.' }, 400);
+  }
+  if (vitalType.name === 'Heart Rate' && (value < 20 || value > 300)) {
+        return createErrorResponse({ message: 'Heart rate is outside the normal human range.' }, 400);
+  }
+  if (vitalType.name === 'Blood Pressure') {
+      // Assuming value is systolic. A more complex implementation would handle diastolic as well.
+      if (value < 50 || value > 300) {
+        return createErrorResponse({ message: 'Blood pressure reading is outside the normal human range.' }, 400);
+      }
+  }
+
 
   const vitalReading = await prisma.vitalReading.create({
     data: {

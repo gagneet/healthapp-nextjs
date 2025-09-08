@@ -56,6 +56,13 @@ export const POST = withErrorHandling(async (
     return createForbiddenResponse();
   }
 
+  const medicine = await prisma.medicine.findUnique({
+    where: { id: medicineId },
+  });
+  if (!medicine) {
+    return createErrorResponse({ message: "Medicine not found" }, 404);
+  }
+
   const medication = await prisma.medication.create({
     data: {
       carePlan: {

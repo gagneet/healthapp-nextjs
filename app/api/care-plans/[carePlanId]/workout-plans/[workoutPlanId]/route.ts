@@ -45,5 +45,5 @@ export const DELETE = withErrorHandling(async (
         },
     });
 
-    return createSuccessResponse({}, 204);
+    return new NextResponse(null, { status: 204 });
 });

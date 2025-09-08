@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -42,6 +42,12 @@ export function VitalsManager({ carePlan }: { carePlan: any }) {
     };
     fetchVitalTypes();
   }, []);
+
+  const vitalTypesMap = useMemo(() => {
+      const map = new Map();
+      vitalTypes.forEach(vt => map.set(vt.id, vt));
+      return map;
+  }, [vitalTypes]);
 
   useEffect(() => {
     setReadings(carePlan.vitals || []);
@@ -98,7 +104,7 @@ export function VitalsManager({ carePlan }: { carePlan: any }) {
   };
 
   const getVitalTypeName = (vitalTypeId: string) => {
-      return vitalTypes.find(vt => vt.id === vitalTypeId)?.name || 'Unknown Vital';
+      return vitalTypesMap.get(vitalTypeId)?.name || 'Unknown Vital';
   }
 
   if (isFetching) {
@@ -148,7 +154,7 @@ export function VitalsManager({ carePlan }: { carePlan: any }) {
             <h4 className="font-medium">Add New Reading</h4>
             <div className="space-y-2 mt-2">
               <Label>Vital Type</Label>
-              <select onChange={(e) => setNewReading({...newReading, vitalTypeId: e.target.value, unit: vitalTypes.find(vt => vt.id === e.target.value)?.unit || ''})} className="w-full p-2 border rounded-md">
+              <select onChange={(e) => setNewReading({...newReading, vitalTypeId: e.target.value, unit: vitalTypesMap.get(e.target.value)?.unit || ''})} className="w-full p-2 border rounded-md">
                   <option value="">Select a vital type</option>
                   {requirements.map((req: any) => <option key={req.vitalTypeId} value={req.vitalTypeId}>{getVitalTypeName(req.vitalTypeId)}</option>)}
               </select>

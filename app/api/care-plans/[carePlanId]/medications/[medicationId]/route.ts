@@ -103,5 +103,5 @@ export const DELETE = withErrorHandling(async (
         where: { id: medicationId },
     });
 
-    return createSuccessResponse({}, 204);
+    return new NextResponse(null, { status: 204 });
 });

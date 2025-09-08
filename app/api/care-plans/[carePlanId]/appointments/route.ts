@@ -54,6 +54,12 @@ export const POST = withErrorHandling(async (
     return createForbiddenResponse();
   }
 
+  const startDateTime = new Date(`${new Date(startDate).toISOString().split('T')[0]}T${startTime}`);
+  let endDateTime = new Date(`${new Date(startDate).toISOString().split('T')[0]}T${endTime}`);
+  if (endDateTime <= startDateTime) {
+    endDateTime.setDate(endDateTime.getDate() + 1);
+  }
+
   const appointment = await prisma.appointment.create({
     data: {
       carePlan: {
@@ -72,10 +78,10 @@ export const POST = withErrorHandling(async (
       organizerId: session.user.profileId,
       organizerType: 'DOCTOR',
       description,
-      startDate: new Date(startDate),
-      endDate: new Date(startDate), // Assuming appointments are single-day for now
-      startTime: new Date(`${new Date(startDate).toISOString().split('T')[0]}T${startTime}`),
-      endTime: new Date(`${new Date(startDate).toISOString().split('T')[0]}T${endTime}`),
+      startDate: startDateTime,
+      endDate: endDateTime,
+      startTime: startDateTime,
+      endTime: endDateTime,
       status: 'SCHEDULED'
     },
   });

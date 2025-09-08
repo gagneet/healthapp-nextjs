@@ -61,8 +61,7 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
   }
 
   // Create a new CarePlan from the template data
-  // The templateData is a JSON field, so we need to cast it
-  const templateData = template.templateData as any;
+  const templateData = template.templateData as any || {};
 
   const carePlan = await prisma.carePlan.create({
     data: {
@@ -75,11 +74,15 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
       title: template.name,
       description: template.description,
       startDate: new Date(),
-      // You can add more fields from the template here
-      // For example, if the template has a duration, you can calculate the end date
       status: "ACTIVE",
       priority: "MEDIUM",
-      details: templateData, // Copy the template data into the details field
+      chronicConditions: template.conditions,
+      longTermGoals: templateData.longTermGoals || [],
+      shortTermMilestones: templateData.shortTermMilestones || [],
+      interventions: templateData.interventions || [],
+      lifestyleModifications: templateData.lifestyleModifications || [],
+      monitoringParameters: templateData.monitoringParameters || [],
+      details: templateData,
     },
   });
 

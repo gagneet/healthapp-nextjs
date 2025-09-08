@@ -55,11 +55,19 @@ export const POST = withErrorHandling(async (
     return createForbiddenResponse();
   }
 
+  const vitalType = await prisma.vitalType.findUnique({
+    where: { id: vitalTypeId },
+  });
+  if (!vitalType) {
+    return createErrorResponse({ message: "Vital type not found" }, 404);
+  }
+
   const vitalRequirement = await prisma.vitalRequirement.create({
     data: {
       carePlanId,
       vitalTypeId,
       frequency,
+      // Prisma handles the Time type as a DateTime, so we use a dummy date.
       preferredTime: preferredTime ? new Date(`1970-01-01T${preferredTime}Z`) : null,
       isCritical,
       monitoringNotes,
