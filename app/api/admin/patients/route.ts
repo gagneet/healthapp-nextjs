@@ -2,7 +2,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from "@/lib/auth";
 import { prisma } from '@/lib/prisma';
-import { Prisma } from '@prisma/client';
+import { Prisma } from '@/prisma/generated/prisma';
 import bcrypt from 'bcryptjs';
 import { randomUUID } from 'crypto';
 
