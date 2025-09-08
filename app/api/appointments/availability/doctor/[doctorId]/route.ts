@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
-import { Prisma } from '@prisma/client';
+import { Prisma } from '@/prisma/generated/prisma';
 
 // Schema for setting doctor availability
 const setAvailabilitySchema = z.object({

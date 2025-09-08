@@ -3,7 +3,7 @@
  * Configures the testing environment for healthcare workflows
  */
 
-const { PrismaClient } = require('@prisma/client')
+const { PrismaClient } = require('@/prisma/generated/prisma')
 
 // Mock environment variables for testing
 process.env.NODE_ENV = 'test'

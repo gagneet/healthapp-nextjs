@@ -16,7 +16,7 @@ import {
   withErrorHandling
 } from "@/lib/api-response"
 import { z } from "zod"
-import { SecondaryDoctorAssignmentConsentStatus } from "@prisma/client";
+import { SecondaryDoctorAssignmentConsentStatus } from "@/prisma/generated/prisma";
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
