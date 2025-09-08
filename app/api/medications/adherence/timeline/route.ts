@@ -276,7 +276,7 @@ function processTimelineData(adherenceLogs: any[], granularity: string) {
           late: 0,
           adherenceRate: 0
         },
-        medications: new Set(),
+        carePlans: new Set(),
         patients: new Set()
       });
     }
@@ -295,7 +295,7 @@ function processTimelineData(adherenceLogs: any[], granularity: string) {
       isIoTVerified: !!log.deviceReading
     });
 
-    timeEntry.medications.add(log.medication.medicine.name);
+    timeEntry.carePlans.add(log.medication.medicine.name);
     timeEntry.patients.add(`${log.medication.patient.user.firstName} ${log.medication.patient.user.lastName}`);
     
     timeEntry.summary.total++;
@@ -320,7 +320,7 @@ function processTimelineData(adherenceLogs: any[], granularity: string) {
   // Convert map to array and convert Sets to arrays
   return Array.from(timelineMap.values()).map(entry => ({
     ...entry,
-    medications: Array.from(entry.medications),
+    carePlans: Array.from(entry.carePlans),
     patients: Array.from(entry.patients)
   })).sort((a, b) => a.period.localeCompare(b.period));
 }

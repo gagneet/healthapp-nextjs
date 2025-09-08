@@ -509,7 +509,7 @@ export async function getPatient(patientId: string) {
         careCoordinator: null,
       },
       carePlans: [],
-      medications: [],
+      carePlans: [],
       appointments: [],
       vitals: [],
       symptoms: [],
@@ -883,7 +883,7 @@ export async function getPatientDashboard(patientId: string) {
         adherenceScore: 0,
       },
       upcomingAppointments: [],
-      medications: [],
+      carePlans: [],
       recentVitals: [],
       carePlans: [],
       adherence: {
@@ -906,7 +906,7 @@ export async function getPatientDashboard(patientId: string) {
 export async function getMedications(searchParams: any) {
   // Mock medication search - replace with actual implementation
   return {
-    medications: [
+    carePlans: [
       {
         id: '1',
         name: 'Aspirin',
@@ -1161,7 +1161,7 @@ export async function createDrugInteraction(interactionData: {
  */
 export async function checkPatientDrugInteractions(params: {
   patientId: string;
-  medications: string[];
+  carePlans: string[];
   newMedication?: string;
   requestedBy: string;
 }) {
@@ -1170,7 +1170,7 @@ export async function checkPatientDrugInteractions(params: {
     
     // Get all medication combinations to check
     const medicationsToCheck = newMedication 
-      ? [...medications, newMedication]
+      ? [...carePlans, newMedication]
       : medications;
     
     const interactionResults = [];

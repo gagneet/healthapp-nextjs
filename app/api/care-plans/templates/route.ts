@@ -34,7 +34,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
   const paginationSchema = z.object({
     page: z.number().min(1).default(1),
     limit: z.number().min(1).max(100).default(20),
-    specialityId: z.string().optional(),
+    specialtyId: z.string().optional().transform(val => val ? parseInt(val, 10) : undefined),
     searchQuery: z.string().optional(),
     diagnosisCategory: z.string().optional(),
     sortBy: z.string().default('createdAt'),
@@ -44,7 +44,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
   const paginationResult = paginationSchema.safeParse({
     page: parseInt(searchParams.get('page') || '1'),
     limit: parseInt(searchParams.get('limit') || '20'),
-    specialityId: searchParams.get('speciality_id') || undefined,
+    specialtyId: searchParams.get('specialtyId') || undefined,
     searchQuery: searchParams.get('search') || undefined,
     diagnosisCategory: searchParams.get('diagnosis_category') || undefined,
     sortBy: searchParams.get('sortBy') || 'createdAt',
@@ -55,7 +55,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
     return createErrorResponse(paginationResult.error)
   }
 
-  const { page, limit, specialityId, searchQuery, diagnosisCategory, sortBy, sortOrder } = paginationResult.data
+  const { page, limit, specialtyId, searchQuery, diagnosisCategory, sortBy, sortOrder } = paginationResult.data
   const skip = (page - 1) * limit
 
   const whereClause: any = {
@@ -67,24 +67,24 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
       // Doctors can see templates for their specialty or general templates
       const doctor = await prisma.doctor.findUnique({
         where: { id: session.user.profileId! },
-        select: { speciality_id: true }
+        select: { specialtyId: true }
       })
 
-      if (doctor?.speciality_id) {
+      if (doctor?.specialtyId) {
         whereClause.OR = [
-          { speciality_id: doctor.speciality_id },
-          { speciality_id: null } // General templates
+          { specialtyId: doctor.specialtyId },
+          { specialtyId: null } // General templates
         ]
       }
     } else if (session.user.role === 'HSP') {
       // HSPs can see general templates only
-      whereClause.speciality_id = null
+      whereClause.specialtyId = null
     }
     // System admins can see all templates (no additional restrictions)
 
     // Apply specialty filter (for admins)
-    if (specialityId && session.user.role === 'SYSTEM_ADMIN') {
-      whereClause.speciality_id = parseInt(specialityId)
+    if (specialtyId && session.user.role === 'SYSTEM_ADMIN') {
+      whereClause.specialtyId = specialtyId
     }
 
     // Apply search filter
@@ -108,10 +108,10 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
     }
 
     // Get total count for pagination
-    const total = await prisma.care_plan_templates.count({ where: whereClause })
+    const total = await prisma.carePlanTemplate.count({ where: whereClause })
 
     // Fetch templates
-    const templates = await prisma.care_plan_templates.findMany({
+    const templates = await prisma.carePlanTemplate.findMany({
       where: whereClause,
       skip,
       take: limit,

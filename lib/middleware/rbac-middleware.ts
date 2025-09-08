@@ -324,7 +324,7 @@ async function performCustomValidation(
 
     // Medication endpoints
     if (endpoint.includes('/medications/')) {
-      const medication = await prisma.medications.findUnique({
+      const medication = await prisma.carePlans.findUnique({
         where: { id: resourceId },
         include: { care_plan: { select: { patientId: true } } }
       });

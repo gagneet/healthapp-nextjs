@@ -2,6 +2,35 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
+import { Prisma } from '@prisma/client';
+
+const patientDataPayload = Prisma.validator<Prisma.PatientFindUniqueArgs>()({
+  include: {
+    user: true,
+    vitalReadings: true,
+    carePlans: {
+      include: {
+        prescribedMedications: true,
+      },
+    },
+    treatmentPlans: true,
+    labOrders: {
+      include: {
+        results: true,
+      },
+    },
+    allergies: true,
+    secondaryDoctorAssignments: {
+      include: {
+        primaryDoctor: { include: { user: true } },
+        secondaryDoctor: { include: { user: true } },
+      },
+    },
+  },
+});
+
+type PatientData = Prisma.PatientGetPayload<typeof patientDataPayload>;
+
 
 // Clinical decision support analysis schema
 const clinicalAnalysisSchema = z.object({
@@ -20,7 +49,7 @@ const clinicalAnalysisSchema = z.object({
   }).optional(),
   includeData: z.object({
     vitals: z.boolean().default(true),
-    medications: z.boolean().default(true),
+    carePlans: z.boolean().default(true),
     diagnoses: z.boolean().default(true),
     labResults: z.boolean().default(true),
     hospitalizations: z.boolean().default(true),
@@ -54,10 +83,10 @@ export async function POST(request: NextRequest) {
     // Only doctors and HSPs can perform clinical decision support analysis
     const user = await prisma.user.findUnique({
       where: { id: session.user.id },
-      include: { doctor: true, hsp: true }
+      include: { doctorProfile: true, hspProfile: true }
     });
 
-    if (!user || (!user.doctor && !user.hsp)) {
+    if (!user || (!user.doctorProfile && !user.hspProfile)) {
       return NextResponse.json({ 
         error: 'Access denied. Only healthcare providers can perform clinical analysis.' 
       }, { status: 403 });
@@ -66,19 +95,32 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const validatedData = clinicalAnalysisSchema.parse(body);
 
-    // Verify patient access
-    const patientAccess = await prisma.patientDoctorAssignment.findFirst({
-      where: {
-        patientId: validatedData.patientId,
-        OR: [
-          { doctorId: user.doctor?.id },
-          { hspId: user.hsp?.id }
-        ],
-        status: 'ACTIVE'
-      }
+    const patient = await prisma.patient.findUnique({
+      where: { id: validatedData.patientId },
+      select: { primaryCareDoctorId: true }
     });
 
-    if (!patientAccess) {
+    if (!patient) {
+      return NextResponse.json({ error: 'Patient not found' }, { status: 404 });
+    }
+
+    // Verify patient access
+    let hasAccess = false;
+    if (user.doctorProfile && patient.primaryCareDoctorId === user.doctorProfile.id) {
+      hasAccess = true;
+    } else if (user.doctorProfile) {
+      const secondaryAssignment = await prisma.secondaryDoctorAssignment.findFirst({
+        where: {
+          patientId: validatedData.patientId,
+          secondaryDoctorId: user.doctorProfile.id,
+          isActive: true,
+          accessGranted: true
+        }
+      });
+      if (secondaryAssignment) hasAccess = true;
+    }
+
+    if (!hasAccess) {
       return NextResponse.json({ 
         error: 'Access denied. Patient not assigned to your care.' 
       }, { status: 403 });
@@ -90,6 +132,10 @@ export async function POST(request: NextRequest) {
       validatedData.includeData,
       validatedData.timeframe
     );
+
+    if (!patientData) {
+      return NextResponse.json({ error: 'Could not retrieve patient data' }, { status: 404 });
+    }
 
     // Perform the requested analysis
     let analysisResults;
@@ -131,25 +177,6 @@ export async function POST(request: NextRequest) {
     // Calculate quality scores and metrics
     const qualityMetrics = await calculateQualityMetrics(patientData, analysisResults);
 
-    // Create decision support record
-    const decisionSupport = await prisma.clinicalDecisionSupport.create({
-      data: {
-        patientId: validatedData.patientId,
-        providerId: session.user.id,
-        providerType: user.doctor ? 'DOCTOR' : 'HSP',
-        analysisType: validatedData.analysisType,
-        patientData: patientData,
-        analysisResults,
-        clinicalInsights,
-        actionItems,
-        recommendations,
-        qualityMetrics,
-        status: 'COMPLETED',
-        createdAt: new Date(),
-        updatedAt: new Date()
-      }
-    });
-
     // Generate clinical alerts for urgent findings
     const clinicalAlerts = await generateClinicalAlerts(
       analysisResults,
@@ -169,9 +196,10 @@ export async function POST(request: NextRequest) {
       data: {
         userId: session.user.id,
         action: 'CLINICAL_ANALYSIS_PERFORMED',
-        resourceType: 'ClinicalDecisionSupport',
-        resourceId: decisionSupport.id,
-        details: {
+        resource: 'ClinicalDecisionSupport',
+        entityId: validatedData.patientId,
+        entityType: 'Patient',
+        dataChanges: {
           patientId: validatedData.patientId,
           analysisType: validatedData.analysisType,
           alertCount: clinicalAlerts.length,
@@ -179,14 +207,17 @@ export async function POST(request: NextRequest) {
           qualityScore: qualityMetrics.overallScore
         },
         ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
-        userAgent: request.headers.get('user-agent') || 'unknown'
+        userAgent: request.headers.get('user-agent') || 'unknown',
+        phiAccessed: true,
+        accessGranted: true,
+        timestamp: new Date()
       }
     });
 
     return NextResponse.json({
       success: true,
       data: {
-        analysisId: decisionSupport.id,
+        analysisId: validatedData.patientId, // Using patientId as a reference
         analysisType: validatedData.analysisType,
         analysisResults,
         clinicalInsights,
@@ -240,35 +271,36 @@ async function gatherComprehensivePatientData(
           take: 100
         }
       }),
-      ...(includeData.medications && {
-        currentMedications: {
-          where: { status: 'ACTIVE' }
+      ...(includeData.carePlans && {
+        medications: {
+          where: { endDate: { gte: new Date() } } // Assuming active means not expired
         }
       }),
       ...(includeData.diagnoses && {
-        diagnoses: {
+        treatmentPlans: { // Using treatment plans as a proxy for diagnoses
           where: whereClause,
-          orderBy: { diagnosisDate: 'desc' }
+          orderBy: { createdAt: 'desc' }
         }
       }),
       ...(includeData.labResults && {
-        laboratoryResults: {
+        labOrders: {
           where: timeframe ? {
-            testDate: {
+            orderDate: {
               gte: new Date(timeframe.startDate),
               lte: new Date(timeframe.endDate)
             }
           } : {},
-          orderBy: { testDate: 'desc' }
+          orderBy: { orderDate: 'desc' },
+          include: { results: true }
         }
       }),
       allergies: true,
       medicalHistory: true,
-      assignments: {
-        where: { status: 'ACTIVE' },
+      secondaryDoctorAssignments: {
+        where: { isActive: true },
         include: {
-          doctor: { include: { user: true } },
-          hsp: { include: { user: true } }
+          primaryDoctor: { include: { user: true } },
+          secondaryDoctor: { include: { user: true } }
         }
       }
     }
@@ -278,13 +310,13 @@ async function gatherComprehensivePatientData(
 }
 
 // Perform comprehensive clinical review
-async function performComprehensiveReview(patientData: any, validatedData: any) {
+async function performComprehensiveReview(patientData: PatientData, validatedData: any) {
   const review = {
     patientSummary: {
-      age: calculateAge(patientData.dateOfBirth),
-      gender: patientData.gender,
-      chronicConditions: extractChronicConditions(patientData.diagnoses),
-      activeMedications: patientData.currentMedications?.length || 0,
+      age: patientData.user.dateOfBirth ? calculateAge(patientData.user.dateOfBirth) : null,
+      gender: patientData.user.gender,
+      chronicConditions: extractChronicConditions(patientData.treatmentPlans),
+      activeMedications: patientData.medications?.length || 0,
       recentVitals: analyzeRecentVitals(patientData.vitalReadings),
       riskFactors: identifyRiskFactors(patientData)
     },
@@ -292,10 +324,10 @@ async function performComprehensiveReview(patientData: any, validatedData: any) 
       overallHealth: assessOverallHealth(patientData),
       medicationCompliance: assessMedicationCompliance(patientData),
       vitalsTrends: analyzeVitalsTrends(patientData.vitalReadings),
-      labTrends: analyzeLabTrends(patientData.laboratoryResults)
+      labTrends: analyzeLabTrends(patientData.labOrders.flatMap(o => o.results))
     },
     careCoordination: {
-      providerTeam: mapProviderTeam(patientData.assignments),
+      providerTeam: mapProviderTeam(patientData.secondaryDoctorAssignments),
       lastEncounter: getLastEncounter(patientData),
       nextScheduledVisit: getNextScheduledVisit(patientData),
       careGaps: identifyBasicCareGaps(patientData)
@@ -306,11 +338,19 @@ async function performComprehensiveReview(patientData: any, validatedData: any) 
 }
 
 // Perform medication reconciliation
-async function performMedicationReconciliation(patientData: any) {
-  const medications = patientData.currentMedications || [];
+async function performMedicationReconciliation(patientData: PatientData) {
+  const medications = patientData.medications || [];
   
-  const reconciliation = {
-    activeMedications: medications.filter(med => med.status === 'ACTIVE'),
+  const reconciliation: {
+    activeMedications: any[];
+    duplicateTherapies: any[];
+    drugInteractions: any[];
+    dosageReviews: any[];
+    adherenceAssessment: any;
+    costOptimization: any[];
+    recommendations: { type: string; priority: string; message: string }[];
+  } = {
+    activeMedications: medications,
     duplicateTherapies: identifyDuplicateTherapies(medications),
     drugInteractions: await checkAllDrugInteractions(medications),
     dosageReviews: reviewDosages(medications, patientData),
@@ -340,32 +380,31 @@ async function performMedicationReconciliation(patientData: any) {
 }
 
 // Perform risk stratification
-async function performRiskStratification(patientData: any, riskFactors: any = {}) {
-  const riskAssessment = {
+async function performRiskStratification(patientData: PatientData, riskFactors: any = {}) {
+  const riskScores: Record<string, number | null> = {
     cardiovascularRisk: riskFactors.cardiovascular ? calculateCardiovascularRisk(patientData) : null,
     diabetesRisk: riskFactors.diabetes ? calculateDiabetesRisk(patientData) : null,
     fallRisk: riskFactors.falls ? calculateFallRisk(patientData) : null,
     infectionRisk: riskFactors.infection ? calculateInfectionRisk(patientData) : null,
     cognitiveRisk: riskFactors.cognitive ? calculateCognitiveRisk(patientData) : null,
-    overallRiskScore: 0,
-    riskLevel: 'LOW'
   };
 
-  // Calculate overall risk score
-  const riskScores = Object.values(riskAssessment)
-    .filter(score => typeof score === 'number' && score > 0);
+  const validScores = Object.values(riskScores).filter((v): v is number => typeof v === 'number');
   
-  if (riskScores.length > 0) {
-    riskAssessment.overallRiskScore = riskScores.reduce((sum, score) => sum + score, 0) / riskScores.length;
-  }
+  const overallRiskScore = validScores.length > 0
+    ? validScores.reduce((sum, score) => sum + score, 0) / validScores.length
+    : 0;
 
-  // Determine risk level
-  if (riskAssessment.overallRiskScore >= 0.8) riskAssessment.riskLevel = 'VERY_HIGH';
-  else if (riskAssessment.overallRiskScore >= 0.6) riskAssessment.riskLevel = 'HIGH';
-  else if (riskAssessment.overallRiskScore >= 0.4) riskAssessment.riskLevel = 'MODERATE';
-  else riskAssessment.riskLevel = 'LOW';
+  let riskLevel = 'LOW';
+  if (overallRiskScore >= 0.8) riskLevel = 'VERY_HIGH';
+  else if (overallRiskScore >= 0.6) riskLevel = 'HIGH';
+  else if (overallRiskScore >= 0.4) riskLevel = 'MODERATE';
 
-  return riskAssessment;
+  return {
+    ...riskScores,
+    overallRiskScore,
+    riskLevel,
+  };
 }
 
 // Perform care gap analysis
@@ -378,20 +417,20 @@ async function performCareGapAnalysis(patientData: any) {
     screenings: identifyScreeningGaps(patientData),
     vaccinations: identifyVaccinationGaps(patientData),
     totalGaps: 0,
-    priorityGaps: []
+    priorityGaps: [] as any[],
   };
 
   // Calculate total gaps
   careGaps.totalGaps = Object.values(careGaps)
-    .filter(gap => Array.isArray(gap))
+    .filter((gap): gap is any[] => Array.isArray(gap))
     .reduce((total, gaps) => total + gaps.length, 0);
 
   // Identify priority gaps
-  careGaps.priorityGaps = [
-    ...careGaps.preventiveServices.filter(g => g.priority === 'HIGH'),
-    ...careGaps.chronicDiseaseManagement.filter(g => g.priority === 'HIGH'),
-    ...careGaps.medicationManagement.filter(g => g.priority === 'HIGH')
-  ];
+  careGaps.priorityGaps.push(
+    ...(careGaps.preventiveServices.filter((g: any) => g.priority === 'HIGH')),
+    ...(careGaps.chronicDiseaseManagement.filter((g: any) => g.priority === 'HIGH')),
+    ...(careGaps.medicationManagement.filter((g: any) => g.priority === 'HIGH'))
+  );
 
   return careGaps;
 }
@@ -449,17 +488,19 @@ async function performPredictiveModeling(patientData: any) {
 }
 
 // Helper functions for analysis
-function calculateAge(birthDate: Date): number {
+function calculateAge(birthDate: Date | null): number | null {
+  if (!birthDate) return null;
   return new Date().getFullYear() - new Date(birthDate).getFullYear();
 }
 
-function extractChronicConditions(diagnoses: any[]): string[] {
+function extractChronicConditions(treatmentPlans: any[]): string[] {
+  if (!treatmentPlans) return [];
   const chronicConditions = ['diabetes', 'hypertension', 'copd', 'asthma', 'heart disease'];
-  return diagnoses
-    .filter(d => chronicConditions.some(condition => 
-      d.diagnosisName.toLowerCase().includes(condition)
+  return treatmentPlans
+    .filter(plan => plan.primaryDiagnosis && chronicConditions.some(condition =>
+      plan.primaryDiagnosis.toLowerCase().includes(condition)
     ))
-    .map(d => d.diagnosisName);
+    .map(plan => plan.primaryDiagnosis);
 }
 
 function analyzeRecentVitals(vitalReadings: any[]): any {
@@ -473,71 +514,71 @@ function analyzeRecentVitals(vitalReadings: any[]): any {
   };
 }
 
-function identifyRiskFactors(patientData: any): string[] {
+function identifyRiskFactors(patientData: PatientData): string[] {
   const riskFactors = [];
-  const age = calculateAge(patientData.dateOfBirth);
+  const age = calculateAge(patientData.user.dateOfBirth);
   
-  if (age > 65) riskFactors.push('Advanced age');
-  if (patientData.currentMedications?.length > 5) riskFactors.push('Polypharmacy');
-  if (patientData.diagnoses?.some(d => d.diagnosisName.toLowerCase().includes('diabetes'))) {
+  if (age && age > 65) riskFactors.push('Advanced age');
+  if (patientData.medications?.length > 5) riskFactors.push('Polypharmacy');
+  if (patientData.treatmentPlans?.some(p => p.primaryDiagnosis.toLowerCase().includes('diabetes'))) {
     riskFactors.push('Diabetes mellitus');
   }
   
   return riskFactors;
 }
 
-function assessOverallHealth(patientData: any): string {
-  let healthScore = 100;
-  
-  // Deduct points for chronic conditions
-  const chronicCount = extractChronicConditions(patientData.diagnoses || []).length;
-  healthScore -= chronicCount * 10;
-  
-  // Deduct points for medication count
-  const medCount = patientData.currentMedications?.length || 0;
-  if (medCount > 5) healthScore -= (medCount - 5) * 5;
-  
-  if (healthScore >= 80) return 'EXCELLENT';
-  if (healthScore >= 60) return 'GOOD';
-  if (healthScore >= 40) return 'FAIR';
-  return 'POOR';
+function assessOverallHealth(patientData: PatientData): string {
+    let healthScore = 100;
+
+    // Deduct points for chronic conditions
+    const chronicCount = extractChronicConditions(patientData.treatmentPlans || []).length;
+    healthScore -= chronicCount * 10;
+
+    // Deduct points for medication count
+    const medCount = patientData.medications?.length || 0;
+    if (medCount > 5) healthScore -= (medCount - 5) * 5;
+
+    if (healthScore >= 80) return 'EXCELLENT';
+    if (healthScore >= 60) return 'GOOD';
+    if (healthScore >= 40) return 'FAIR';
+    return 'POOR';
 }
 
-function calculateCardiovascularRisk(patientData: any): number {
+function calculateCardiovascularRisk(patientData: PatientData): number {
   let risk = 0;
-  const age = calculateAge(patientData.dateOfBirth);
+  const age = calculateAge(patientData.user.dateOfBirth);
   
-  if (age > 65) risk += 0.3;
-  if (patientData.diagnoses?.some(d => d.diagnosisName.toLowerCase().includes('hypertension'))) risk += 0.2;
-  if (patientData.diagnoses?.some(d => d.diagnosisName.toLowerCase().includes('diabetes'))) risk += 0.2;
+  if (age && age > 65) risk += 0.3;
+  if (patientData.treatmentPlans?.some(p => p.primaryDiagnosis.toLowerCase().includes('hypertension'))) risk += 0.2;
+  if (patientData.treatmentPlans?.some(p => p.primaryDiagnosis.toLowerCase().includes('diabetes'))) risk += 0.2;
   
   return Math.min(risk, 1.0);
 }
 
-function calculateDiabetesRisk(patientData: any): number {
+function calculateDiabetesRisk(patientData: PatientData): number {
   let risk = 0;
-  const age = calculateAge(patientData.dateOfBirth);
+  const age = calculateAge(patientData.user.dateOfBirth);
   
-  if (age > 45) risk += 0.2;
-  if (patientData.diagnoses?.some(d => d.diagnosisName.toLowerCase().includes('obesity'))) risk += 0.3;
-  if (patientData.diagnoses?.some(d => d.diagnosisName.toLowerCase().includes('hypertension'))) risk += 0.2;
+  if (age && age > 45) risk += 0.2;
+  if (patientData.treatmentPlans?.some(p => p.primaryDiagnosis.toLowerCase().includes('obesity'))) risk += 0.3;
+  if (patientData.treatmentPlans?.some(p => p.primaryDiagnosis.toLowerCase().includes('hypertension'))) risk += 0.2;
   
   return Math.min(risk, 1.0);
 }
 
-function calculateFallRisk(patientData: any): number {
+function calculateFallRisk(patientData: PatientData): number {
   let risk = 0;
-  const age = calculateAge(patientData.dateOfBirth);
+  const age = calculateAge(patientData.user.dateOfBirth);
   
-  if (age > 75) risk += 0.4;
-  if (patientData.currentMedications?.length > 5) risk += 0.2;
-  if (patientData.diagnoses?.some(d => d.diagnosisName.toLowerCase().includes('osteoporosis'))) risk += 0.3;
+  if (age && age > 75) risk += 0.4;
+  if (patientData.medications?.length > 5) risk += 0.2;
+  if (patientData.treatmentPlans?.some(p => p.primaryDiagnosis.toLowerCase().includes('osteoporosis'))) risk += 0.3;
   
   return Math.min(risk, 1.0);
 }
 
 // Additional helper functions would be implemented here...
-function generateClinicalInsights(analysisResults: any, patientData: any): Promise<any[]> {
+function generateClinicalInsights(analysisResults: any, patientData: PatientData): Promise<any[]> {
   return Promise.resolve([
     {
       category: 'MEDICATION_OPTIMIZATION',
@@ -570,7 +611,7 @@ function generateEvidenceBasedRecommendations(analysisResults: any, goals: strin
   ]);
 }
 
-function calculateQualityMetrics(patientData: any, analysisResults: any): Promise<any> {
+function calculateQualityMetrics(patientData: PatientData, analysisResults: any): Promise<any> {
   return Promise.resolve({
     overallScore: 85,
     domains: {
@@ -603,8 +644,10 @@ function generateExecutiveSummary(analysisResults: any, qualityMetrics: any): an
 }
 
 function prioritizeImplementation(actionItems: any[], recommendations: any[]): any[] {
-  return [...actionItems, ...recommendations].sort((a, b) => {
-    const priorityOrder = { 'URGENT': 0, 'HIGH': 1, 'MEDIUM': 2, 'LOW': 3 };
+  type Prioritizable = { priority: 'URGENT' | 'HIGH' | 'MEDIUM' | 'LOW' };
+  const priorityOrder: Record<Prioritizable['priority'], number> = { 'URGENT': 0, 'HIGH': 1, 'MEDIUM': 2, 'LOW': 3 };
+
+  return [...actionItems, ...recommendations].sort((a: Prioritizable, b: Prioritizable) => {
     return priorityOrder[a.priority] - priorityOrder[b.priority];
   });
 }
@@ -612,43 +655,43 @@ function prioritizeImplementation(actionItems: any[], recommendations: any[]): a
 // Additional helper function implementations would continue here...
 function identifyDuplicateTherapies(medications: any[]): any[] { return []; }
 function checkAllDrugInteractions(medications: any[]): Promise<any[]> { return Promise.resolve([]); }
-function reviewDosages(medications: any[], patientData: any): any[] { return []; }
+function reviewDosages(medications: any[], patientData: PatientData): any[] { return []; }
 function assessAdherence(medications: any[]): any { return {}; }
-function identifyPreventiveServiceGaps(patientData: any): any[] { return []; }
-function identifyChronicDiseaseGaps(patientData: any): any[] { return []; }
-function identifyMedicationGaps(patientData: any): any[] { return []; }
-function identifyFollowUpGaps(patientData: any): any[] { return []; }
-function identifyScreeningGaps(patientData: any): any[] { return []; }
-function identifyVaccinationGaps(patientData: any): any[] { return []; }
-function assessDiabetesControl(patientData: any): any { return {}; }
-function assessHypertensionControl(patientData: any): any { return {}; }
-function assessPreventiveScreenings(patientData: any): any { return {}; }
-function assessMedicationSafety(patientData: any): any { return {}; }
-function checkAllergyDocumentation(patientData: any): any { return {}; }
-function checkMedicationReconciliation(patientData: any): any { return {}; }
-function checkFallRiskAssessment(patientData: any): any { return {}; }
-function assessCareCoordination(patientData: any): any { return {}; }
-function assessCommunication(patientData: any): any { return {}; }
-function assessAccessToCare(patientData: any): any { return {}; }
-function calculateReadmissionRisk(patientData: any): number { return 0.2; }
-function identifyReadmissionRiskFactors(patientData: any): string[] { return []; }
-function suggestReadmissionPreventionInterventions(patientData: any): string[] { return []; }
-function calculateEmergencyVisitRisk(patientData: any): number { return 0.15; }
-function identifyEmergencyVisitRiskFactors(patientData: any): string[] { return []; }
-function suggestEmergencyPreventionMeasures(patientData: any): string[] { return []; }
-function predictDiseaseProgression(patientData: any): any[] { return []; }
-function assessComplicationRisk(patientData: any): any { return {}; }
-function suggestOptimalInterventionTiming(patientData: any): any { return {}; }
-function predictHealthcareCosts(patientData: any): any { return {}; }
-function identifyCostDrivers(patientData: any): string[] { return []; }
-function identifyCostOptimizations(patientData: any): any[] { return []; }
-function assessMedicationCompliance(patientData: any): string { return 'GOOD'; }
+function identifyPreventiveServiceGaps(patientData: PatientData): any[] { return []; }
+function identifyChronicDiseaseGaps(patientData: PatientData): any[] { return []; }
+function identifyMedicationGaps(patientData: PatientData): any[] { return []; }
+function identifyFollowUpGaps(patientData: PatientData): any[] { return []; }
+function identifyScreeningGaps(patientData: PatientData): any[] { return []; }
+function identifyVaccinationGaps(patientData: PatientData): any[] { return []; }
+function assessDiabetesControl(patientData: PatientData): any { return {}; }
+function assessHypertensionControl(patientData: PatientData): any { return {}; }
+function assessPreventiveScreenings(patientData: PatientData): any { return {}; }
+function assessMedicationSafety(patientData: PatientData): any { return {}; }
+function checkAllergyDocumentation(patientData: PatientData): any { return {}; }
+function checkMedicationReconciliation(patientData: PatientData): any { return {}; }
+function checkFallRiskAssessment(patientData: PatientData): any { return {}; }
+function assessCareCoordination(patientData: PatientData): any { return {}; }
+function assessCommunication(patientData: PatientData): any { return {}; }
+function assessAccessToCare(patientData: PatientData): any { return {}; }
+function calculateReadmissionRisk(patientData: PatientData): number { return 0.2; }
+function identifyReadmissionRiskFactors(patientData: PatientData): string[] { return []; }
+function suggestReadmissionPreventionInterventions(patientData: PatientData): string[] { return []; }
+function calculateEmergencyVisitRisk(patientData: PatientData): number { return 0.15; }
+function identifyEmergencyVisitRiskFactors(patientData: PatientData): string[] { return []; }
+function suggestEmergencyPreventionMeasures(patientData: PatientData): string[] { return []; }
+function predictDiseaseProgression(patientData: PatientData): any[] { return []; }
+function assessComplicationRisk(patientData: PatientData): any { return {}; }
+function suggestOptimalInterventionTiming(patientData: PatientData): any { return {}; }
+function predictHealthcareCosts(patientData: PatientData): any { return {}; }
+function identifyCostDrivers(patientData: PatientData): string[] { return []; }
+function identifyCostOptimizations(patientData: PatientData): any[] { return []; }
+function assessMedicationCompliance(patientData: PatientData): string { return 'GOOD'; }
 function analyzeVitalsTrends(vitalReadings: any[]): any { return {}; }
 function analyzeLabTrends(labResults: any[]): any { return {}; }
 function mapProviderTeam(assignments: any[]): any[] { return []; }
-function getLastEncounter(patientData: any): any { return null; }
-function getNextScheduledVisit(patientData: any): any { return null; }
-function identifyBasicCareGaps(patientData: any): any[] { return []; }
+function getLastEncounter(patientData: PatientData): any { return null; }
+function getNextScheduledVisit(patientData: PatientData): any { return null; }
+function identifyBasicCareGaps(patientData: PatientData): any[] { return []; }
 function analyzeTrends(readings: any[]): any { return {}; }
-function calculateInfectionRisk(patientData: any): number { return 0.1; }
-function calculateCognitiveRisk(patientData: any): number { return 0.1; }
+function calculateInfectionRisk(patientData: PatientData): number { return 0.1; }
+function calculateCognitiveRisk(patientData: PatientData): number { return 0.1; }

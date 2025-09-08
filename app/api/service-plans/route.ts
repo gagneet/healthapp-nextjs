@@ -96,7 +96,7 @@ export async function GET(request: NextRequest) {
           },
           _count: {
             select: {
-              patient_subscriptions: {
+              patientSubscription: {
                 where: {
                   status: 'ACTIVE'
                 }

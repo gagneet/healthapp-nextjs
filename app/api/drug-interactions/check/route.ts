@@ -11,7 +11,7 @@ import {
 /**
  * POST /api/drug-interactions/check
  * Check for drug interactions for a specific patient
- * Body: { patientId: string, medications: string[], newMedication?: string }
+ * Body: { patientId: string, carePlans: string[], newMedication?: string }
  */
 export async function POST(request: NextRequest) {
   try {

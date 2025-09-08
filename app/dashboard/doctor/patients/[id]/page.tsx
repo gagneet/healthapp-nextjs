@@ -291,8 +291,8 @@ export default function PatientDetailsPage() {
             if (response.ok) {
                 const data = await response.json()
                 // Transform the API response to match expected format
-                if (data.data?.medications) {
-                    setMedications(data.data.medications)
+                if (data.data?.carePlans) {
+                    setMedications(data.data.carePlans)
                 }
             }
         } catch (err) {

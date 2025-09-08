@@ -28,7 +28,7 @@ async function main() {
 async function parsePrismaSchema() {
   console.log('📖 Parsing Prisma schema for actual field names...');
   
-  const schemaPath = path.join(__dirname, '../prisma/schema.prisma');
+  const schemaPath = path.join(__dirname, '../../prisma/schema.prisma');
   const schemaContent = fs.readFileSync(schemaPath, 'utf-8');
   
   const modelRegex = /model\s+(\w+)\s*{([^{}]*(?:{[^{}]*}[^{}]*)*)}/g;
@@ -83,7 +83,7 @@ async function applySmartFixes() {
   const directories = ['app', 'lib', 'components'];
   
   for (const dir of directories) {
-    const fullPath = path.join(__dirname, '..', dir);
+    const fullPath = path.join(__dirname, '../../', dir);
     if (fs.existsSync(fullPath)) {
       await processDirectory(fullPath, smartMappings, results);
     }

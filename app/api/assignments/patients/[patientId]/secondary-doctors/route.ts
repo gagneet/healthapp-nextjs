@@ -5,6 +5,7 @@
  */
 
 import { NextRequest, NextResponse } from "next/server"
+import { randomUUID } from "node:crypto";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma"
 import { 
@@ -15,27 +16,17 @@ import {
   withErrorHandling
 } from "@/lib/api-response"
 import { z } from "zod"
-import { PatientDoctorAssignmentType, PatientConsentStatus } from "@prisma/client";
+import { SecondaryDoctorAssignmentConsentStatus } from "@prisma/client";
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
 
 const AssignSecondaryDoctorSchema = z.object({
   doctorId: z.string().uuid("Doctor ID must be a valid UUID"),
-  assignmentType: z.nativeEnum(PatientDoctorAssignmentType),
   specialtyFocus: z.array(z.string()).optional().default([]),
   carePlanIds: z.array(z.string().uuid()).optional().default([]),
   assignmentReason: z.string().min(10, "Assignment reason must be at least 10 characters"),
-  notes: z.string().optional(),
   requiresConsent: z.boolean().optional(),
-  permissions: z.object({
-    canViewMedications: z.boolean().optional().default(true),
-    canPrescribe: z.boolean().optional().default(false),
-    canViewVitals: z.boolean().optional().default(true),
-    canEditCarePlan: z.boolean().optional().default(false),
-    canViewLabResults: z.boolean().optional().default(true),
-    accessLevel: z.enum(['read_only', 'limited', 'full']).optional().default('limited')
-  }).optional().default({})
 })
 
 /**
@@ -65,13 +56,10 @@ export const POST = withErrorHandling(async (request: NextRequest, { params }: {
 
   const {
     doctorId,
-    assignmentType,
     specialtyFocus,
     carePlanIds,
     assignmentReason,
-    notes,
     requiresConsent,
-    permissions
   } = validationResult.data
 
   try {
@@ -82,8 +70,8 @@ export const POST = withErrorHandling(async (request: NextRequest, { params }: {
         user: {
           select: { firstName: true, lastName: true, email: true }
         },
-        hsp: {
-          select: { id: true, name: true }
+        hsps: {
+          select: { id: true, user: { select: { name: true } } }
         }
       }
     })
@@ -113,21 +101,17 @@ export const POST = withErrorHandling(async (request: NextRequest, { params }: {
     const secondaryDoctor = await prisma.doctor.findFirst({
       where: { 
         id: doctorId, 
-        isActive: true 
+        isVerified: true
       },
       include: {
         user: {
           select: { firstName: true, lastName: true, email: true }
         },
-        specialties: {
-          include: {
-            specialty: {
-              select: { name: true, description: true }
-            }
-          }
+        specialty: {
+          select: { name: true, description: true }
         },
-        hsp: {
-          select: { id: true, name: true }
+        hsps: {
+          select: { id: true, user: { select: { name: true } } }
         }
       }
     })
@@ -137,7 +121,7 @@ export const POST = withErrorHandling(async (request: NextRequest, { params }: {
     }
 
     // Check for existing active assignment
-    const existingAssignment = await prisma.patientDoctorAssignment.findFirst({
+    const existingAssignment = await prisma.secondaryDoctorAssignment.findFirst({
       where: {
         patientId: patientId,
         secondaryDoctorId: doctorId,
@@ -149,56 +133,34 @@ export const POST = withErrorHandling(async (request: NextRequest, { params }: {
       return createErrorResponse(new Error("Active assignment already exists between this patient and doctor"))
     }
 
-    // Determine if consent is required
-    const sameOrganization = primaryDoctor.hspId === secondaryDoctor.hspId
+    // Determine if consent is required by checking for shared organizations (HSPs)
+    const primaryDoctorHspIds = primaryDoctor.hsps.map(h => h.id);
+    const secondaryDoctorHspIds = secondaryDoctor.hsps.map(h => h.id);
+    const sameOrganization = primaryDoctorHspIds.some(id => secondaryDoctorHspIds.includes(id));
     const needsConsent = requiresConsent !== undefined ? requiresConsent : !sameOrganization
-
-    // Set assignment permissions based on type and same organization
-    const finalPermissions = {
-      canViewMedications: permissions.canViewMedications ?? true,
-      canPrescribe: permissions.canPrescribe ?? (assignmentType === 'TRANSFERRED'),
-      canViewVitals: permissions.canViewVitals ?? true,
-      canEditCarePlan: permissions.canEditCarePlan ?? (assignmentType !== 'SPECIALIST'),
-      canViewLabResults: permissions.canViewLabResults ?? true,
-      accessLevel: permissions.accessLevel ?? (assignmentType === 'TRANSFERRED' ? 'full' : 'limited')
-    }
 
     // Calculate expiration date (default 90 days)
     const expiresAt = new Date()
     expiresAt.setDate(expiresAt.getDate() + 90)
 
     // Create assignment
-    const assignment = await prisma.patientDoctorAssignment.create({
+    const newAssignmentId = randomUUID();
+    const assignment = await prisma.secondaryDoctorAssignment.create({
       data: {
-        patientId,
-        primaryDoctorId: primaryDoctor.id,
-        secondaryDoctorId: doctorId,
-        assignmentType,
+        id: newAssignmentId,
+        patient: { connect: { id: patientId } },
+        primaryDoctor: { connect: { id: primaryDoctor.id } },
+        secondaryDoctor: { connect: { id: doctorId } },
         assignmentReason,
         specialtyFocus,
-        requiresConsent: needsConsent,
-        consentStatus: needsConsent ? PatientConsentStatus.PENDING : PatientConsentStatus.GRANTED,
+        carePlanIds,
+        consentRequired: needsConsent,
+        consentStatus: needsConsent ? SecondaryDoctorAssignmentConsentStatus.PENDING : SecondaryDoctorAssignmentConsentStatus.GRANTED,
         accessGranted: !needsConsent,
-        permissions: finalPermissions,
-        expiresAt,
-        notes,
-        createdById: session.user.id,
+        consentExpiresAt: expiresAt,
         isActive: true
       }
     })
-
-    // Link care plans if specified
-    if (carePlanIds.length > 0) {
-      await prisma.carePlan.updateMany({
-        where: { 
-          id: { in: carePlanIds },
-          patientId: patientId
-        },
-        data: {
-          assignedDoctorId: doctorId
-        }
-      })
-    }
 
     const responseData = {
       assignment_id: assignment.id,
@@ -209,26 +171,23 @@ export const POST = withErrorHandling(async (request: NextRequest, { params }: {
         email: patient.user.email,
         phone: patient.user.phone
       },
-      primary_doctor: {
+      primaryDoctor: {
         id: primaryDoctor.id,
         name: `${primaryDoctor.user.firstName} ${primaryDoctor.user.lastName}`.trim(),
         email: primaryDoctor.user.email,
-        organization: primaryDoctor.hsp?.name
+        organization: primaryDoctor.hsps?.[0]?.user?.name
       },
       secondary_doctor: {
         id: secondaryDoctor.id,
         name: `${secondaryDoctor.user.firstName} ${secondaryDoctor.user.lastName}`.trim(),
         email: secondaryDoctor.user.email,
-        specialty: secondaryDoctor.specialties?.[0]?.specialty?.name || 'General Practice',
-        organization: secondaryDoctor.hsp?.name
+        specialty: secondaryDoctor.specialty?.name || 'General Practice',
+        organization: secondaryDoctor.hsps?.[0]?.user?.name
       },
       assignment_details: {
-        assignmentType: assignmentType,
         assignment_reason: assignmentReason,
         specialtyFocus: specialtyFocus,
-        permissions: finalPermissions,
-        expires_at: assignment.expiresAt,
-        notes: notes,
+        expires_at: assignment.consentExpiresAt,
         linked_care_plans: carePlanIds.length
       },
       consent_info: {
@@ -297,24 +256,21 @@ export const GET = withErrorHandling(async (request: NextRequest, { params }: { 
 
     // Check if requesting doctor has access to this patient
     if (requestingDoctor) {
-      const hasAccess = await prisma.patientDoctorAssignment.findFirst({
+      const isSecondaryDoctor = await prisma.secondaryDoctorAssignment.findFirst({
         where: {
           patientId: patientId,
-          OR: [
-            { primaryDoctorId: requestingDoctor.id },
-            { secondaryDoctorId: requestingDoctor.id }
-          ],
-          accessGranted: true
-        }
-      })
+          secondaryDoctorId: requestingDoctor.id,
+          accessGranted: true,
+        },
+      });
 
-      if (!hasAccess && patient.primaryCareDoctorId !== requestingDoctor.id) {
+      if (!isSecondaryDoctor && patient.primaryCareDoctorId !== requestingDoctor.id) {
         return createForbiddenResponse("Access denied to this patient's assignments")
       }
     }
 
     // Get assignments
-    const assignments = await prisma.patientDoctorAssignment.findMany({
+    const assignments = await prisma.secondaryDoctorAssignment.findMany({
       where: {
         patientId: patientId,
         secondaryDoctorId: { not: null },
@@ -326,7 +282,7 @@ export const GET = withErrorHandling(async (request: NextRequest, { params }: { 
             user: {
               select: { firstName: true, lastName: true, email: true }
             },
-            specialties: { include: { specialty: { select: { name: true } } } }
+            specialty: { select: { name: true } }
           }
         },
         secondaryDoctor: {
@@ -334,9 +290,11 @@ export const GET = withErrorHandling(async (request: NextRequest, { params }: { 
             user: {
               select: { firstName: true, lastName: true, email: true }
             },
-            specialties: { include: { specialty: { select: { name: true } } } },
-            hsp: {
-              select: { name: true }
+            specialty: { select: { name: true } },
+            hsps: {
+              select: {
+                user: { select: { name: true } }
+              }
             }
           }
         }
@@ -348,14 +306,14 @@ export const GET = withErrorHandling(async (request: NextRequest, { params }: { 
     const assignmentIds = assignments.map(a => a.id)
     const consentOtps = await prisma.patientConsentOtp.findMany({
       where: {
-        patientDoctorAssignmentId: { in: assignmentIds }
+        secondaryAssignmentId: { in: assignmentIds }
       },
       orderBy: { createdAt: 'desc' }
     })
 
     const consentMap = consentOtps.reduce((acc, otp) => {
-      if (!acc[otp.patientDoctorAssignmentId]) {
-        acc[otp.patientDoctorAssignmentId] = otp
+      if (otp.secondaryAssignmentId && !acc[otp.secondaryAssignmentId]) {
+        acc[otp.secondaryAssignmentId] = otp
       }
       return acc
     }, {} as Record<string, any>)
@@ -366,37 +324,34 @@ export const GET = withErrorHandling(async (request: NextRequest, { params }: { 
       
       return {
         assignment_id: assignment.id,
-        assignmentType: assignment.assignmentType,
         assignment_reason: assignment.assignmentReason,
         specialtyFocus: assignment.specialtyFocus || [],
         createdAt: assignment.createdAt,
-        expires_at: assignment.expiresAt,
+        expires_at: assignment.consentExpiresAt,
         isActive: assignment.isActive,
-        notes: assignment.notes,
-        primary_doctor: assignment.primaryDoctor ? {
+        primaryDoctor: assignment.primaryDoctor ? {
           id: assignment.primaryDoctor.id,
           name: `${assignment.primaryDoctor.user.firstName} ${assignment.primaryDoctor.user.lastName}`.trim(),
           email: assignment.primaryDoctor.user.email,
-          specialty: assignment.primaryDoctor.specialties?.[0]?.specialty?.name
+          specialty: assignment.primaryDoctor.specialty?.name
         } : null,
-        secondary_doctor: assignment.secondaryDoctor ? {
+        secondaryDoctor: assignment.secondaryDoctor ? {
           id: assignment.secondaryDoctor.id,
           name: `${assignment.secondaryDoctor.user.firstName} ${assignment.secondaryDoctor.user.lastName}`.trim(),
           email: assignment.secondaryDoctor.user.email,
-          specialty: assignment.secondaryDoctor.specialties?.[0]?.specialty?.name,
-          organization: assignment.secondaryDoctor.hsp?.name
+          specialty: assignment.secondaryDoctor.specialty?.name,
+          organization: assignment.secondaryDoctor.hsps?.[0]?.user?.name
         } : null,
-        permissions: assignment.permissions || {},
-        consent_details: {
-          requiresConsent: assignment.requiresConsent,
+        consentDetails: {
+          requiresConsent: assignment.consentRequired,
           consentStatus: assignment.consentStatus,
           accessGranted: assignment.accessGranted,
-          consent_granted_at: assignment.consentGrantedAt,
-          otp_info: consent ? {
-            has_active_otp: !consent.isVerified && new Date() < new Date(consent.expiresAt),
-            is_verified: consent.isVerified,
-            verification_attempts: consent.verificationAttempts,
-            last_otp_request: consent.createdAt
+          consentGrantedAt: assignment.accessGrantedAt,
+          otpInfo: consent ? {
+            hasActiveOtp: !consent.isVerified && consent.expiresAt && new Date() < new Date(consent.expiresAt),
+            isVerified: consent.isVerified,
+            attemptsCount: consent.attemptsCount,
+            lastOtpRequest: consent.createdAt
           } : null
         }
       }
@@ -406,15 +361,10 @@ export const GET = withErrorHandling(async (request: NextRequest, { params }: { 
     const summary = {
       total_assignments: formattedAssignments.length,
       active_assignments: formattedAssignments.filter(a => a.isActive).length,
-      granted_access: formattedAssignments.filter(a => a.consent_details.accessGranted).length,
+      granted_access: formattedAssignments.filter(a => a.consentDetails.accessGranted).length,
       pending_consent: formattedAssignments.filter(a => 
-        a.consent_details.requiresConsent && !a.consent_details.accessGranted
-      ).length,
-      by_assignment_type: {
-        specialist: formattedAssignments.filter(a => a.assignmentType === 'SPECIALIST').length,
-        substitute: formattedAssignments.filter(a => a.assignmentType === 'SUBSTITUTE').length,
-        transferred: formattedAssignments.filter(a => a.assignmentType === 'TRANSFERRED').length
-      }
+        a.consentDetails.requiresConsent && !a.consentDetails.accessGranted
+      ).length
     }
 
     return createSuccessResponse({

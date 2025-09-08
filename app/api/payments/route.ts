@@ -101,7 +101,7 @@ export async function GET(request: NextRequest) {
               }
             }
           },
-          patient_subscriptions: {
+          patientSubscription: {
             select: {
               id: true,
               status: true,
@@ -303,7 +303,7 @@ export async function POST(request: NextRequest) {
             }
           }
         },
-        patient_subscriptions: {
+        patientSubscription: {
           select: {
             id: true,
             service_plans: {

@@ -97,7 +97,7 @@ export async function POST(request: NextRequest) {
           otpCode: otp, // Remove this in production
           expiresAt: expiresAt,
           patientPhone: consentOTP.patientPhone,
-          consentMethod
+          consent_method
         },
         message: `OTP sent to patient's ${consent_method.toLowerCase()}`
       }

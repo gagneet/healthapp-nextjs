@@ -109,12 +109,12 @@ export async function GET(
     });
 
     return NextResponse.json(formatApiSuccess(
-      { medications: transformedMedications },
+      { carePlans: transformedMedications },
       'Patient medications retrieved successfully'
     ));
 
   } catch (error) {
-    console.error('Error fetching patient medications:', error);
+    console.error('Error fetching patient carePlans: ', error);
     return NextResponse.json(handleApiError(error), { status: 500 });
   }
 }

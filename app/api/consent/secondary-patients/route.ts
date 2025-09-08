@@ -171,7 +171,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
           date_of_birth: patient.dateOfBirth,
           gender: patient.gender
         },
-        primary_doctor: primaryDoctor ? {
+        doctors: primaryDoctor ? {
           id: primaryDoctor.id,
           name: `${primaryDoctor.user.firstName} ${primaryDoctor.user.lastName}`.trim(),
           email: primaryDoctor.user.email
