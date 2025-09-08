@@ -50,11 +50,20 @@ const registerSchema = z.object({
     }, "Age must be between 13 and 120 years"),
   // Healthcare-specific fields (optional during registration)
   medicalLicenseNumber: z.string().optional(),
-  specialtyId: z.string().uuid().optional(),
-  organizationId: z.string().uuid().optional()
+  specialtyId: z.number().int().optional(),
+  organizationId: z.string().uuid().optional(),
+  hspType: z.string().optional().default("GENERAL")
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Passwords don't match",
   path: ["confirmPassword"]
+}).refine((data) => {
+  if (data.role === 'DOCTOR') {
+    return !!data.medicalLicenseNumber;
+  }
+  return true;
+}, {
+  message: "Medical license number is required for doctors",
+  path: ["medicalLicenseNumber"],
 })
 
 // Rate limiting helper (simple in-memory implementation)
@@ -195,9 +204,9 @@ export async function POST(request: NextRequest) {
             data: {
               userId: newUser.id,
               doctorId: `DOC-${randomUUID().substring(0, 8).toUpperCase()}`,
-              medicalLicenseNumber: medicalLicenseNumber || null,
-              specialtyId: specialtyId || null,
-              organizationId: organizationId || null,
+              medicalLicenseNumber: medicalLicenseNumber!,
+              specialtyId: specialtyId,
+              organizationId: organizationId,
               yearsOfExperience: 0,
               consultationFee: 0,
               createdAt: new Date(),
@@ -223,6 +232,7 @@ export async function POST(request: NextRequest) {
             data: {
               userId: newUser.id,
               hspId: `HSP-${randomUUID().substring(0, 8).toUpperCase()}`,
+              hspType: validation.data.hspType,
               licenseNumber: null,
               certifications: [],
               yearsOfExperience: 0,

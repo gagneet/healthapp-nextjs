@@ -38,7 +38,7 @@ export async function GET(
             }
           }
         },
-        patient_subscriptions: {
+        patientSubscription: {
           select: {
             id: true,
             status: true,
@@ -257,7 +257,7 @@ export async function PUT(
             }
           }
         },
-        patient_subscriptions: {
+        patientSubscription: {
           select: {
             service_plans: {
               select: {

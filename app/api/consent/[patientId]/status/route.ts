@@ -169,7 +169,7 @@ export const GET = withErrorHandling(async (request: NextRequest, { params }: { 
         assignmentType: assignment.assignmentType,
         is_current_user: isCurrentUserAssignment,
         providers: {
-          primary_doctor: assignment.primaryDoctor ? {
+          doctors: assignment.primaryDoctor ? {
             id: assignment.primaryDoctor.id,
             name: `${assignment.primaryDoctor.user.firstName} ${assignment.primaryDoctor.user.lastName}`.trim(),
             email: assignment.primaryDoctor.user.email
@@ -226,7 +226,7 @@ export const GET = withErrorHandling(async (request: NextRequest, { params }: { 
 
     // Determine access type
     let accessType = 'none'
-    if (currentUserAssignments.some(a => a.providers.primary_doctor?.id === providerProfile?.id)) {
+    if (currentUserAssignments.some(a => a.providers.doctors?.id === providerProfile?.id)) {
       accessType = 'primary'
     } else if (currentUserAssignments.length > 0) {
       accessType = 'secondary'

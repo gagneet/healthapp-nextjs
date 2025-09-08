@@ -305,7 +305,7 @@ export async function GET(request: NextRequest, { params }: { params: { id:strin
           priority: carePlan.priority || 'medium',
           startDate: carePlan.startDate,
           endDate: carePlan.endDate,
-          medications: medications,
+          carePlans: medications,
           medicationsCount: medications.length,
           vitalsCount,
           appointmentsCount,

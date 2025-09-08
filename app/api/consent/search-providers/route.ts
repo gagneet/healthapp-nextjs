@@ -14,7 +14,7 @@ import {
   createForbiddenResponse,
   withErrorHandling
 } from "@/lib/api-response"
-import { SearchConditions, DoctorSearchFields, HSPSearchFields } from "@/lib/types";
+import { SearchConditions, DoctorSearchFields, HSPSearchFields } from "@/app/lib/types";
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'

@@ -98,7 +98,7 @@ async function applyFieldFixes(report) {
   const directories = ['app', 'lib', 'components'];
   
   for (const dir of directories) {
-    const fullPath = path.join(__dirname, '..', dir);
+    const fullPath = path.join(__dirname, '../../', dir);
     if (fs.existsSync(fullPath)) {
       await processDirectory(fullPath, priorityFields, results);
     }

@@ -188,7 +188,7 @@ export async function GET(request: NextRequest) {
       
       return {
         month: monthName,
-        medications: Math.floor(Math.random() * 100) + 50, // Mock data for now
+        carePlans: Math.floor(Math.random() * 100) + 50, // Mock data for now
         appointments: Math.floor(Math.random() * 50) + 20,
         vitals: Math.floor(Math.random() * 80) + 30
       };

@@ -3,7 +3,7 @@ import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 import { Prisma } from '@prisma/client';
-import { AppointmentStatus } from '@prisma/client';
+import { ConsultationStatus } from '@prisma/client';
 
 const rescheduleSchema = z.object({
   newStartTime: z.string().datetime(),
@@ -63,7 +63,7 @@ export async function PUT(
     }
 
     // Business rule validation: Check appointment status
-    if (appointment.status !== AppointmentStatus.SCHEDULED) {
+    if (appointment.status !== ConsultationStatus.SCHEDULED) {
       return NextResponse.json({
         error: `Cannot reschedule appointment with status: ${appointment.status}`
       }, { status: 400 });
@@ -153,7 +153,7 @@ export async function PUT(
         data: {
           startTime: newStart,
           endTime: newEnd,
-          status: AppointmentStatus.RESCHEDULED,
+          status: ConsultationStatus.RESCHEDULED,
           // notes: appointment.notes ?
           //   `${appointment.notes}\n\n[RESCHEDULED] ${validatedData.reason}` :
           //   `[RESCHEDULED] ${validatedData.reason}`,
@@ -305,7 +305,7 @@ async function checkAppointmentConflicts(params: ConflictCheckParams) {
     where: {
       doctorId,
       id: excludeAppointmentId ? { not: excludeAppointmentId } : undefined,
-      status: { in: [AppointmentStatus.SCHEDULED, AppointmentStatus.IN_PROGRESS, AppointmentStatus.RESCHEDULED] },
+      status: { in: [ConsultationStatus.SCHEDULED, ConsultationStatus.IN_PROGRESS, ConsultationStatus.RESCHEDULED] },
       OR: [
         {
           startTime: { lt: endTime },

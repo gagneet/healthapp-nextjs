@@ -183,12 +183,12 @@ export async function GET(request: NextRequest) {
       });
 
       detailedStats = {
-        topSpecialties: topSpecialties.map((spec: Specialty & { _count: { doctors: number } }) => ({
+        topSpecialties: topSpecialties.map((spec) => ({
           id: spec.id,
           name: spec.name,
           doctorCount: spec._count.doctors
         })),
-        activeDoctors: activeDoctors.map((doc: Doctor & { user: { name: string, firstName: string, lastName: string }, specialty: { name: string }, _count: { appointments: number, doctorAssignments: number }}) => ({
+        activeDoctors: activeDoctors.map((doc) => ({
           id: doc.id,
           doctorId: doc.doctorId,
           name: doc.user?.name ||
@@ -197,7 +197,7 @@ export async function GET(request: NextRequest) {
           appointmentCount: doc._count.appointments,
           assignmentCount: doc._count.doctorAssignments
         })),
-        recentActivity: recentActivity.map((user: User) => ({
+        recentActivity: recentActivity.map((user) => ({
           id: user.id,
           email: user.email,
           name: user.name || `${user.firstName} ${user.lastName}`.trim(),

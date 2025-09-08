@@ -14,7 +14,7 @@ const signUpSchema = z.object({
   password: z.string().min(12, "Password must be at least 12 characters"),
   firstName: z.string().min(1, "First name is required").trim(),
   lastName: z.string().min(1, "Last name is required").trim(),
-  role: z.enum(["DOCTOR", "PATIENT", "HSP", "ADMIN"]).default("PATIENT"),
+  role: z.enum(["SYSTEM_ADMIN", "HOSPITAL_ADMIN", "DOCTOR", "HSP", "PATIENT", "CAREGIVER"]).default("PATIENT"),
   phone: z.string().optional(),
 })
 
@@ -59,7 +59,7 @@ export async function POST(req: NextRequest) {
         firstName: firstName,
         lastName: lastName,
         fullName: `${firstName} ${lastName}`,
-        role: role as any,
+        role: role,
         phone,
         accountStatus: 'ACTIVE', // Set to PENDING_VERIFICATION if email verification required
         emailVerifiedLegacy: false, // Will be true after email verification
@@ -72,7 +72,7 @@ export async function POST(req: NextRequest) {
       user: {
         id: user.id,
         email: user.email,
-        name: user.full_name,
+        name: user.fullName,
         role: user.role
       }
     }, { status: 201 })
