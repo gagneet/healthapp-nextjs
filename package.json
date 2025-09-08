@@ -24,7 +24,7 @@
   "homepage": "https://github.com/gagneet/healthapp-nextjs#readme",
   "scripts": {
     "dev": "next dev -p 3002",
-    "build": "next build",
+    "build": "npm run db:generate && next build",
     "build:docker": "next build && echo 'Docker build completed - skipping static export for dynamic auth pages'",
     "start": "next start -p 3002",
     "lint": "eslint .",
