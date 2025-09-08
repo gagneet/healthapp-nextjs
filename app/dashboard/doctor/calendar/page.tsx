@@ -65,23 +65,46 @@ export default function DoctorCalendarPage() {
   })
 
   const [error, setError] = useState<string | null>(null)
+  const [doctorProfileId, setDoctorProfileId] = useState<string | null>(null)
+
+  // First, get the doctor profile ID from user ID
+  useEffect(() => {
+    const fetchDoctorProfile = async () => {
+      if (!session?.user?.id) return
+
+      try {
+        const response = await fetch(`/api/doctors/profile/${session.user.id}`)
+        const data = await response.json()
+        
+        if (response.ok && data.doctor) {
+          setDoctorProfileId(data.doctor.id)
+        } else {
+          setError('Doctor profile not found')
+        }
+      } catch (error) {
+        console.error('Failed to fetch doctor profile:', error)
+        setError('Failed to load doctor profile')
+      }
+    }
+
+    fetchDoctorProfile()
+  }, [session?.user?.id])
 
   useEffect(() => {
     const fetchCalendarData = async () => {
-      if (!session?.user?.id) return
+      if (!doctorProfileId) return
 
       setIsLoading(true)
       setError(null)
 
       try {
-        const doctorId = session.user.id
         const viewTypeMap: { [key in ViewType]: string } = {
           Days: 'day',
           Week: 'week',
           Month: 'month',
         }
         const apiViewType = viewTypeMap[viewType]
-        const response = await fetch(`/api/appointments/calendar/doctor/${doctorId}?view=${apiViewType}&startDate=${calendarConfig.startDate}`)
+        const response = await fetch(`/api/appointments/calendar/doctor/${doctorProfileId}?view=${apiViewType}&startDate=${calendarConfig.startDate}`)
         const data = await response.json()
 
         if (!response.ok) {
@@ -114,7 +137,7 @@ export default function DoctorCalendarPage() {
     }
 
     fetchCalendarData()
-  }, [session, selectedDate, viewType, calendarConfig.startDate])
+  }, [doctorProfileId, selectedDate, viewType, calendarConfig.startDate])
 
   // Convert appointments to DayPilot events
   useEffect(() => {
