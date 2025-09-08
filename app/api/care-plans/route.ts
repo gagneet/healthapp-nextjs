@@ -175,13 +175,78 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
  * Create new care plan with medical validation
  * Business Logic: Only doctors can create care plans
  */
+const createCarePlanSchema = z.object({
+  patientId: z.string().uuid(),
+  title: z.string().min(1, "Title is required"),
+  description: z.string().optional(),
+  startDate: z.string().datetime(),
+  endDate: z.string().datetime().optional(),
+  status: z.string().optional().default('ACTIVE'),
+  priority: z.string().optional().default('MEDIUM'),
+  // The old implementation had a 'details' blob. We'll map some of those fields.
+  // These can be expanded later.
+  clinicalNotes: z.string().optional(),
+  followUpAdvise: z.string().optional(),
+});
+
 export const POST = withErrorHandling(async (request: NextRequest) => {
-  return NextResponse.json({ 
-    status: false, 
-    statusCode: 501, 
-    payload: { error: { status: 'not_implemented', message: 'Care plan creation not yet implemented' } } 
-  }, { status: 501 });
-})
+  const session = await auth();
+  if (!session) {
+    return createUnauthorizedResponse();
+  }
+
+  if (session.user.role !== 'DOCTOR') {
+    return createForbiddenResponse("Only doctors can create care plans");
+  }
+
+  const body = await request.json();
+  const validationResult = createCarePlanSchema.safeParse(body);
+
+  if (!validationResult.success) {
+    return createErrorResponse(validationResult.error);
+  }
+
+  const { patientId, title, description, startDate, endDate, status, priority, clinicalNotes, followUpAdvise } = validationResult.data;
+
+  // Verify patient exists
+  const patient = await prisma.patient.findUnique({
+    where: { id: patientId },
+  });
+
+  if (!patient) {
+    return createErrorResponse({ message: "Patient not found" }, 404);
+  }
+
+  const doctorId = session.user.profileId;
+  if (!doctorId) {
+      return createErrorResponse({ message: "Doctor profile not found for the current user" }, 400);
+  }
+
+  const carePlan = await prisma.carePlan.create({
+    data: {
+      patient: {
+        connect: { id: patientId },
+      },
+      doctor: {
+        connect: { id: doctorId },
+      },
+      title,
+      description,
+      startDate: new Date(startDate),
+      endDate: endDate ? new Date(endDate) : null,
+      status,
+      priority,
+      details: {
+        // Storing extra details in the JSON blob for compatibility/flexibility
+        clinical_notes: clinicalNotes,
+        follow_up_advise: followUpAdvise,
+      },
+      // You can add more structured fields here as needed
+    },
+  });
+
+  return createSuccessResponse(carePlan, 201);
+});
 
 /**
  * PUT /api/care-plans
