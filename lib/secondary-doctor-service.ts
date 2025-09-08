@@ -4,7 +4,7 @@
  */
 
 import { prisma } from '@/lib/prisma';
-import { PatientDoctorAssignment } from '@prisma/client';
+import { PatientDoctorAssignment } from '../prisma/generated/prisma/index.js';
 
 // Assignment Types as per documentation
 export enum AssignmentType {

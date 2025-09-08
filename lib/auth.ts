@@ -12,7 +12,7 @@ import bcrypt from "bcryptjs"
 import { authenticator } from "otplib"
 import { prisma } from "@/lib/prisma"
 import { z } from "zod"
-import { UserRole, UserAccountStatus } from "@prisma/client"
+import { UserRole, UserAccountStatus } from "../prisma/generated/prisma/index.js"
 
 // Extended user interface for healthcare platform
 interface ExtendedUser {
