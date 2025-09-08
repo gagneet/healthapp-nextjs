@@ -196,7 +196,7 @@ const tabs = [
 
 export default function PatientDetailsPage() {
     const params = useParams()
-    const patientId = params.id as string
+    const patientId = params.patientId as string
     const [activeTab, setActiveTab] = useState('overview')
     const [patient, setPatient] = useState<Patient | null>(null)
     const [isLoading, setIsLoading] = useState(true)

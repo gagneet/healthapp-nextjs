@@ -379,6 +379,49 @@ exports.Prisma.CarePlanScalarFieldEnum = {
   deletedAt: 'deletedAt'
 };
 
+exports.Prisma.DietPlanScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  description: 'description',
+  type: 'type',
+  details: 'details',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.WorkoutPlanScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  description: 'description',
+  type: 'type',
+  details: 'details',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.CarePlanToDietPlanScalarFieldEnum = {
+  carePlanId: 'carePlanId',
+  dietPlanId: 'dietPlanId',
+  assignedAt: 'assignedAt',
+  assignedBy: 'assignedBy'
+};
+
+exports.Prisma.CarePlanToWorkoutPlanScalarFieldEnum = {
+  carePlanId: 'carePlanId',
+  workoutPlanId: 'workoutPlanId',
+  assignedAt: 'assignedAt',
+  assignedBy: 'assignedBy'
+};
+
+exports.Prisma.ReportScalarFieldEnum = {
+  id: 'id',
+  patientId: 'patientId',
+  carePlanId: 'carePlanId',
+  name: 'name',
+  url: 'url',
+  createdAt: 'createdAt'
+};
+
 exports.Prisma.MedicineScalarFieldEnum = {
   id: 'id',
   name: 'name',
@@ -2127,6 +2170,11 @@ exports.Prisma.ModelName = {
   Specialty: 'Specialty',
   Clinic: 'Clinic',
   CarePlan: 'CarePlan',
+  DietPlan: 'DietPlan',
+  WorkoutPlan: 'WorkoutPlan',
+  CarePlanToDietPlan: 'CarePlanToDietPlan',
+  CarePlanToWorkoutPlan: 'CarePlanToWorkoutPlan',
+  Report: 'Report',
   Medicine: 'Medicine',
   Medication: 'Medication',
   Appointment: 'Appointment',

@@ -11,17 +11,17 @@ import {
 
 export const GET = withErrorHandling(async (
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: { carePlanId: string } }
 ) => {
   const session = await auth();
   if (!session) {
     return createUnauthorizedResponse();
   }
 
-  const { id } = params;
+  const { carePlanId } = params;
 
   const carePlan = await prisma.carePlan.findUnique({
-    where: { id },
+    where: { id: carePlanId },
     include: {
       patient: {
         include: {

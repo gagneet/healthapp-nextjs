@@ -277,6 +277,7 @@ model Patient {
   prescriptions                 Prescription[]
   medicalDevices                MedicalDevice[]
   adherenceLogs                 AdherenceLog[]
+  reports                       Report[]
 
   @@index([primaryCareDoctorId, createdAt, isActive], map: "idx_patients_doctor_created_active")
   @@index([patientId, createdAt], map: "idx_patients_id_created")
@@ -393,54 +394,54 @@ model Clinic {
 }
 
 model CarePlan {
-  id                        String             @id @default(uuid()) @db.Uuid
-  patientId                 String             @db.Uuid
-  createdByDoctorId         String?            @db.Uuid
-  createdByHspId            String?            @db.Uuid
-  organizationId            String?            @db.Uuid
-  title                     String             @db.VarChar(255)
+  id                        String                  @id @default(uuid()) @db.Uuid
+  patientId                 String                  @db.Uuid
+  createdByDoctorId         String?                 @db.Uuid
+  createdByHspId            String?                 @db.Uuid
+  organizationId            String?                 @db.Uuid
+  title                     String                  @db.VarChar(255)
   description               String?
-  planType                  String?            @default("care_plan") @db.VarChar(20)
-  chronicConditions         String[]           @default([])
-  conditionSeverity         Json?              @default("{}")
-  riskFactors               Json?              @default("[]")
-  longTermGoals             Json?              @default("[]")
-  shortTermMilestones       Json?              @default("[]")
-  interventions             Json?              @default("[]")
-  lifestyleModifications    Json?              @default("[]")
-  monitoringParameters      Json?              @default("[]")
-  monitoringFrequency       Json?              @default("{}")
-  targetValues              Json?              @default("{}")
-  medications               Json?              @default("[]")
-  medicationManagement      Json?              @default("{}")
+  planType                  String?                 @default("care_plan") @db.VarChar(20)
+  chronicConditions         String[]                @default([])
+  conditionSeverity         Json?                   @default("{}")
+  riskFactors               Json?                   @default("[]")
+  longTermGoals             Json?                   @default("[]")
+  shortTermMilestones       Json?                   @default("[]")
+  interventions             Json?                   @default("[]")
+  lifestyleModifications    Json?                   @default("[]")
+  monitoringParameters      Json?                   @default("[]")
+  monitoringFrequency       Json?                   @default("{}")
+  targetValues              Json?                   @default("{}")
+  medications               Json?                   @default("[]")
+  medicationManagement      Json?                   @default("{}")
   startDate                 DateTime
   endDate                   DateTime?
-  reviewFrequencyMonths     Int?               @default(3)
+  reviewFrequencyMonths     Int?                    @default(3)
   nextReviewDate            DateTime?
-  status                    String?            @default("ACTIVE") @db.VarChar(20)
-  priority                  String?            @default("MEDIUM") @db.VarChar(20)
-  primaryCareManagerId      String?            @db.Uuid
-  careTeamMembers           Json?              @default("[]")
-  specialistReferrals       Json?              @default("[]")
-  patientEducationMaterials Json?              @default("[]")
-  selfManagementTasks       Json?              @default("[]")
-  patientGoals              Json?              @default("[]")
-  progressNotes             Json?              @default("[]")
-  outcomeMeasures           Json?              @default("{}")
-  qualityOfLifeScores       Json?              @default("{}")
-  emergencyActionPlan       Json?              @default("{}")
-  warningSigns              String[]           @default([])
-  emergencyContacts         Json?              @default("[]")
+  status                    String?                 @default("ACTIVE") @db.VarChar(20)
+  priority                  String?                 @default("MEDIUM") @db.VarChar(20)
+  primaryCareManagerId      String?                 @db.Uuid
+  careTeamMembers           Json?                   @default("[]")
+  specialistReferrals       Json?                   @default("[]")
+  patientEducationMaterials Json?                   @default("[]")
+  selfManagementTasks       Json?                   @default("[]")
+  patientGoals              Json?                   @default("[]")
+  progressNotes             Json?                   @default("[]")
+  outcomeMeasures           Json?                   @default("{}")
+  qualityOfLifeScores       Json?                   @default("{}")
+  emergencyActionPlan       Json?                   @default("{}")
+  warningSigns              String[]                @default([])
+  emergencyContacts         Json?                   @default("[]")
   details                   Json?
-  channelId                 String?            @db.VarChar(255)
+  channelId                 String?                 @db.VarChar(255)
   createdAt                 DateTime?
-  updatedAt                 DateTime?          @updatedAt
+  updatedAt                 DateTime?               @updatedAt
   deletedAt                 DateTime?
-  doctor                    Doctor?            @relation(fields: [createdByDoctorId], references: [id])
-  hsp                       Hsp?               @relation(fields: [createdByHspId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  organization              Organization?      @relation(fields: [organizationId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  patient                   Patient            @relation(fields: [patientId], references: [id], onDelete: Cascade)
-  prescribedMedications     Medication[]       @relation("prescribed_medications")
+  doctor                    Doctor?                 @relation(fields: [createdByDoctorId], references: [id])
+  hsp                       Hsp?                    @relation(fields: [createdByHspId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  organization              Organization?           @relation(fields: [organizationId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  patient                   Patient                 @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  prescribedMedications     Medication[]            @relation("prescribed_medications")
   notifications             Notification[]
   scheduledEvents           ScheduledEvent[]
   symptoms                  Symptom[]
@@ -448,6 +449,9 @@ model CarePlan {
   vitals                    Vital[]
   adherenceLogs             AdherenceLog[]
   appointments              Appointment[]
+  diets                     CarePlanToDietPlan[]
+  workouts                  CarePlanToWorkoutPlan[]
+  reports                   Report[]
 
   @@index([chronicConditions], type: Gin)
   @@index([createdByDoctorId])
@@ -461,6 +465,61 @@ model CarePlan {
   @@index([status])
   @@index([patientId, status, startDate], map: "idx_careplans_patient_status_start_fixed")
   @@map("carePlans")
+}
+
+model DietPlan {
+  id          String               @id @default(uuid()) @db.Uuid
+  name        String               @unique @db.VarChar(255)
+  description String?
+  type        String?              @db.VarChar(100)
+  details     Json?
+  createdAt   DateTime?            @default(now())
+  updatedAt   DateTime?            @updatedAt
+  carePlans   CarePlanToDietPlan[]
+}
+
+model WorkoutPlan {
+  id          String                  @id @default(uuid()) @db.Uuid
+  name        String                  @unique @db.VarChar(255)
+  description String?
+  type        String?                 @db.VarChar(100)
+  details     Json?
+  createdAt   DateTime?               @default(now())
+  updatedAt   DateTime?               @updatedAt
+  carePlans   CarePlanToWorkoutPlan[]
+}
+
+model CarePlanToDietPlan {
+  carePlan   CarePlan @relation(fields: [carePlanId], references: [id])
+  carePlanId String   @db.Uuid
+  dietPlan   DietPlan @relation(fields: [dietPlanId], references: [id])
+  dietPlanId String   @db.Uuid
+  assignedAt DateTime @default(now())
+  assignedBy String
+
+  @@id([carePlanId, dietPlanId])
+}
+
+model CarePlanToWorkoutPlan {
+  carePlan      CarePlan    @relation(fields: [carePlanId], references: [id])
+  carePlanId    String      @db.Uuid
+  workoutPlan   WorkoutPlan @relation(fields: [workoutPlanId], references: [id])
+  workoutPlanId String      @db.Uuid
+  assignedAt    DateTime    @default(now())
+  assignedBy    String
+
+  @@id([carePlanId, workoutPlanId])
+}
+
+model Report {
+  id         String    @id @default(uuid()) @db.Uuid
+  patientId  String    @db.Uuid
+  carePlanId String?   @db.Uuid
+  name       String
+  url        String
+  createdAt  DateTime  @default(now())
+  patient    Patient   @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  carePlan   CarePlan? @relation(fields: [carePlanId], references: [id])
 }
 
 model Medicine {

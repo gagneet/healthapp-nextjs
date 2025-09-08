@@ -10,7 +10,7 @@ import { prisma } from '@/lib/prisma';
  */
 export const GET = withErrorHandling(async (
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: { patientId: string } }
 ) => {
   const session = await auth();
   if (!session?.user) {
@@ -18,7 +18,7 @@ export const GET = withErrorHandling(async (
   }
 
   const { user } = session;
-  const patientId = params.id;
+  const patientId = params.patientId;
 
   if (!['DOCTOR', 'HSP', 'PATIENT', 'admin'].includes(user.role)) {
     return createForbiddenResponse("Insufficient permissions");
