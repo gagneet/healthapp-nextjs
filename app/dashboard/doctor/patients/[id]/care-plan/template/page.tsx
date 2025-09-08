@@ -8,130 +8,21 @@ import {
   PlusIcon,
   CheckIcon,
   ClockIcon,
-  HeartIcon,
-  BeakerIcon,
   EyeIcon,
   MagnifyingGlassIcon
 } from '@heroicons/react/24/outline'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import toast, { Toaster } from 'react-hot-toast';
 
-// Mock care plan templates - replace with actual API calls
-const mockTemplates = [
-  {
-    id: '1',
-    name: 'Diabetes Type 2 Management',
-    description: 'Comprehensive care plan for Type 2 diabetes patients including medication, lifestyle modifications, and monitoring',
-    category: 'Endocrine',
-    duration: '6 months',
-    carePlans: 3,
-    vitals: 5,
-    appointments: 8,
-    popularity: 95,
-    lastUpdated: '2025-01-15',
-    features: [
-      'Blood glucose monitoring protocol',
-      'HbA1c tracking schedule',
-      'Medication adjustment guidelines',
-      'Diet and exercise recommendations',
-      'Complication screening'
-    ]
-  },
-  {
-    id: '2',
-    name: 'Hypertension Management',
-    description: 'Evidence-based hypertension care plan with medication protocols and lifestyle interventions',
-    category: 'Cardiovascular',
-    duration: '3 months',
-    carePlans: 2,
-    vitals: 3,
-    appointments: 6,
-    popularity: 88,
-    lastUpdated: '2025-01-18',
-    features: [
-      'Blood pressure monitoring schedule',
-      'Antihypertensive medication protocols',
-      'Sodium restriction guidelines',
-      'Exercise prescription',
-      'Cardiovascular risk assessment'
-    ]
-  },
-  {
-    id: '3',
-    name: 'Chronic Heart Failure',
-    description: 'Comprehensive heart failure management with medication optimization and symptom monitoring',
-    category: 'Cardiovascular',
-    duration: '12 months',
-    carePlans: 4,
-    vitals: 6,
-    appointments: 12,
-    popularity: 82,
-    lastUpdated: '2025-01-10',
-    features: [
-      'Fluid balance monitoring',
-      'ACE inhibitor titration protocol',
-      'Daily weight tracking',
-      'Symptom assessment tools',
-      'Exercise tolerance evaluation'
-    ]
-  },
-  {
-    id: '4',
-    name: 'COPD Management',
-    description: 'Chronic obstructive pulmonary disease care plan with bronchodilator therapy and pulmonary rehabilitation',
-    category: 'Respiratory',
-    duration: '6 months',
-    carePlans: 3,
-    vitals: 4,
-    appointments: 8,
-    popularity: 76,
-    lastUpdated: '2025-01-12',
-    features: [
-      'Spirometry monitoring schedule',
-      'Inhaler technique assessment',
-      'Oxygen saturation tracking',
-      'Smoking cessation support',
-      'Exacerbation action plan'
-    ]
-  },
-  {
-    id: '5',
-    name: 'Chronic Kidney Disease',
-    description: 'CKD management plan focusing on progression prevention and complication management',
-    category: 'Nephrology',
-    duration: '12 months',
-    carePlans: 3,
-    vitals: 5,
-    appointments: 10,
-    popularity: 71,
-    lastUpdated: '2025-01-08',
-    features: [
-      'eGFR monitoring protocol',
-      'Mineral and bone disorder management',
-      'Anemia screening and treatment',
-      'Dietary protein restriction',
-      'Cardiovascular risk reduction'
-    ]
-  },
-  {
-    id: '6',
-    name: 'Rheumatoid Arthritis',
-    description: 'RA management with disease-modifying therapy and joint function preservation',
-    category: 'Rheumatology',
-    duration: '6 months',
-    carePlans: 4,
-    vitals: 3,
-    appointments: 9,
-    popularity: 68,
-    lastUpdated: '2025-01-05',
-    features: [
-      'Disease activity monitoring (DAS28)',
-      'DMARD therapy protocols',
-      'Joint function assessment',
-      'Infection screening',
-      'Bone health monitoring'
-    ]
-  }
-]
+interface CarePlanTemplate {
+  id: string;
+  name: string;
+  description: string;
+  category: string;
+  lastUpdated: string;
+  features: string[];
+  usageCount: number;
+}
 
 const categories = ['All', 'Cardiovascular', 'Endocrine', 'Respiratory', 'Nephrology', 'Rheumatology', 'Neurology', 'Oncology']
 
@@ -140,13 +31,42 @@ export default function CarePlanTemplatePage() {
   const router = useRouter()
   const patientId = params.id as string
   
+  const [templates, setTemplates] = useState<CarePlanTemplate[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [selectedCategory, setSelectedCategory] = useState('All')
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null)
   const [isCreating, setIsCreating] = useState(false)
 
+  useEffect(() => {
+    const fetchTemplates = async () => {
+      setIsLoading(true)
+      setError(null)
+      try {
+        const response = await fetch('/api/care-plans/templates')
+        if (!response.ok) {
+          throw new Error('Failed to fetch templates')
+        }
+        const data = await response.json()
+        const formattedTemplates = data.payload.map((t: any) => ({
+            ...t,
+            category: t.conditions?.[0] || 'General',
+            lastUpdated: new Date(t.updatedAt).toLocaleDateString(),
+            features: t.templateData?.features || [],
+        }))
+        setTemplates(formattedTemplates)
+      } catch (err: any) {
+        setError(err.message)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    fetchTemplates()
+  }, [])
+
   // Filter templates based on category and search
-  const filteredTemplates = mockTemplates.filter(template => {
+  const filteredTemplates = templates.filter(template => {
     const matchesCategory = selectedCategory === 'All' || template.category === selectedCategory
     const matchesSearch = template.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          template.description.toLowerCase().includes(searchTerm.toLowerCase())
@@ -155,21 +75,35 @@ export default function CarePlanTemplatePage() {
 
   const handleCreateFromTemplate = async (templateId: string) => {
     setIsCreating(true)
-    try {
-      // Mock API call to create care plan from template
-      console.log(`Creating care plan from template ${templateId} for patient ${patientId}`)
-      
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 2000))
-      
-      // Redirect to the new care plan
-      router.push(`/dashboard/doctor/patients/${patientId}/care-plan/123`) // Mock care plan ID
-    } catch (error) {
-      console.error('Error creating care plan from template:', error)
-      alert('Failed to create care plan. Please try again.')
-    } finally {
-      setIsCreating(false)
-    }
+
+    const promise = fetch('/api/care-plans/from-template', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            templateId,
+            patientId,
+        }),
+    }).then(async (res) => {
+        const data = await res.json();
+        if (!res.ok) {
+            throw new Error(data.payload?.error?.message || 'Failed to create care plan from template');
+        }
+        return data;
+    });
+
+    toast.promise(promise, {
+        loading: 'Creating care plan from template...',
+        success: (data) => {
+            router.push(`/dashboard/doctor/patients/${patientId}`);
+            return 'Care plan created successfully!';
+        },
+        error: (err) => {
+            setIsCreating(false)
+            return err.message
+        },
+    });
   }
 
   const handlePreviewTemplate = (templateId: string) => {
@@ -177,9 +111,9 @@ export default function CarePlanTemplatePage() {
   }
 
   const getPopularityColor = (popularity: number) => {
-    if (popularity >= 90) return 'text-green-600 bg-green-100'
-    if (popularity >= 80) return 'text-blue-600 bg-blue-100'
-    if (popularity >= 70) return 'text-yellow-600 bg-yellow-100'
+    if (popularity >= 100) return 'text-green-600 bg-green-100'
+    if (popularity >= 50) return 'text-blue-600 bg-blue-100'
+    if (popularity >= 10) return 'text-yellow-600 bg-yellow-100'
     return 'text-gray-600 bg-gray-100'
   }
 
@@ -196,8 +130,17 @@ export default function CarePlanTemplatePage() {
     }
   }
 
+  if (isLoading) {
+      return <div>Loading...</div>
+  }
+
+  if (error) {
+      return <div>Error: {error}</div>
+  }
+
   return (
     <div className="space-y-6">
+        <Toaster />
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4">
@@ -266,30 +209,14 @@ export default function CarePlanTemplatePage() {
                   </div>
                   <CardTitle className="text-lg">{template.name}</CardTitle>
                 </div>
-                <div className={`px-2 py-1 rounded-full text-xs font-medium ${getPopularityColor(template.popularity)}`}>
-                  {template.popularity}% used
+                <div className={`px-2 py-1 rounded-full text-xs font-medium ${getPopularityColor(template.usageCount)}`}>
+                  {template.usageCount} uses
                 </div>
               </div>
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-sm text-gray-600 line-clamp-3">{template.description}</p>
               
-              {/* Template Stats */}
-              <div className="grid grid-cols-3 gap-4 text-sm">
-                <div className="text-center">
-                  <div className="font-semibold text-gray-900">{template.carePlans}</div>
-                  <div className="text-gray-500">Medications</div>
-                </div>
-                <div className="text-center">
-                  <div className="font-semibold text-gray-900">{template.vitals}</div>
-                  <div className="text-gray-500">Vitals</div>
-                </div>
-                <div className="text-center">
-                  <div className="font-semibold text-gray-900">{template.appointments}</div>
-                  <div className="text-gray-500">Appointments</div>
-                </div>
-              </div>
-
               {/* Key Features */}
               <div className="space-y-2">
                 <h4 className="text-sm font-medium text-gray-900">Key Features:</h4>
@@ -308,10 +235,6 @@ export default function CarePlanTemplatePage() {
 
               {/* Template Info */}
               <div className="flex items-center justify-between text-xs text-gray-500 pt-2 border-t">
-                <div className="flex items-center">
-                  <ClockIcon className="h-3 w-3 mr-1" />
-                  {template.duration}
-                </div>
                 <div>Updated {template.lastUpdated}</div>
               </div>
 
@@ -375,7 +298,7 @@ export default function CarePlanTemplatePage() {
               </div>
               
               {(() => {
-                const template = mockTemplates.find(t => t.id === selectedTemplate)
+                const template = templates.find(t => t.id === selectedTemplate)
                 if (!template) return null
 
                 return (
@@ -389,12 +312,8 @@ export default function CarePlanTemplatePage() {
                           <div className="text-gray-600">{template.category}</div>
                         </div>
                         <div>
-                          <span className="font-medium">Duration:</span>
-                          <div className="text-gray-600">{template.duration}</div>
-                        </div>
-                        <div>
-                          <span className="font-medium">Popularity:</span>
-                          <div className="text-gray-600">{template.popularity}%</div>
+                          <span className="font-medium">Usage:</span>
+                          <div className="text-gray-600">{template.usageCount} times</div>
                         </div>
                         <div>
                           <span className="font-medium">Updated:</span>

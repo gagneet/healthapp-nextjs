@@ -277,6 +277,7 @@ model Patient {
   prescriptions                 Prescription[]
   medicalDevices                MedicalDevice[]
   adherenceLogs                 AdherenceLog[]
+  reports                       Report[]
 
   @@index([primaryCareDoctorId, createdAt, isActive], map: "idx_patients_doctor_created_active")
   @@index([patientId, createdAt], map: "idx_patients_id_created")
@@ -448,6 +449,9 @@ model CarePlan {
   vitals                    Vital[]
   adherenceLogs             AdherenceLog[]
   appointments              Appointment[]
+  diets                     CarePlanToDietPlan[]
+  workouts                  CarePlanToWorkoutPlan[]
+  reports                   Report[]
 
   @@index([chronicConditions], type: Gin)
   @@index([createdByDoctorId])
@@ -461,6 +465,61 @@ model CarePlan {
   @@index([status])
   @@index([patientId, status, startDate], map: "idx_careplans_patient_status_start_fixed")
   @@map("carePlans")
+}
+
+model DietPlan {
+  id          String    @id @default(uuid()) @db.Uuid
+  name        String    @unique @db.VarChar(255)
+  description String?
+  type        String?   @db.VarChar(100)
+  details     Json?
+  createdAt   DateTime? @default(now())
+  updatedAt   DateTime? @updatedAt
+  carePlans   CarePlanToDietPlan[]
+}
+
+model WorkoutPlan {
+  id          String    @id @default(uuid()) @db.Uuid
+  name        String    @unique @db.VarChar(255)
+  description String?
+  type        String?   @db.VarChar(100)
+  details     Json?
+  createdAt   DateTime? @default(now())
+  updatedAt   DateTime? @updatedAt
+  carePlans   CarePlanToWorkoutPlan[]
+}
+
+model CarePlanToDietPlan {
+  carePlan   CarePlan @relation(fields: [carePlanId], references: [id])
+  carePlanId String   @db.Uuid
+  dietPlan   DietPlan @relation(fields: [dietPlanId], references: [id])
+  dietPlanId String   @db.Uuid
+  assignedAt DateTime @default(now())
+  assignedBy String
+
+  @@id([carePlanId, dietPlanId])
+}
+
+model CarePlanToWorkoutPlan {
+  carePlan    CarePlan    @relation(fields: [carePlanId], references: [id])
+  carePlanId  String      @db.Uuid
+  workoutPlan WorkoutPlan @relation(fields: [workoutPlanId], references: [id])
+  workoutPlanId String    @db.Uuid
+  assignedAt  DateTime    @default(now())
+  assignedBy  String
+
+  @@id([carePlanId, workoutPlanId])
+}
+
+model Report {
+  id          String    @id @default(uuid()) @db.Uuid
+  patientId   String    @db.Uuid
+  carePlanId  String?   @db.Uuid
+  name        String
+  url         String
+  createdAt   DateTime  @default(now())
+  patient     Patient   @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  carePlan    CarePlan? @relation(fields: [carePlanId], references: [id])
 }
 
 model Medicine {

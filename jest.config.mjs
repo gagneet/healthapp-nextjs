@@ -11,7 +11,7 @@ const config = {
   testEnvironment: 'jest-environment-node',
   
   // Setup files
-  setupFilesAfterEnv: ['<rootDir>/tests/setup.js'],
+  setupFilesAfterEnv: ['<rootDir>/tests/setup.ts'],
   
   // Test patterns
   testMatch: [
