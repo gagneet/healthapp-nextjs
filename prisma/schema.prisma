@@ -476,6 +476,7 @@ model DietPlan {
   createdAt   DateTime? @default(now())
   updatedAt   DateTime? @updatedAt
   carePlans   CarePlanToDietPlan[]
+
 }
 
 model WorkoutPlan {
@@ -487,6 +488,7 @@ model WorkoutPlan {
   createdAt   DateTime? @default(now())
   updatedAt   DateTime? @updatedAt
   carePlans   CarePlanToWorkoutPlan[]
+
 }
 
 model CarePlanToDietPlan {

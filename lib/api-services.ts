@@ -8,9 +8,9 @@
 import { prisma, healthcareDb } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import type { User, Patient, Doctor, Hsp } from '../prisma/generated/prisma/index.js';
+import type { User, Patient, Doctor, Hsp } from '@/prisma/generated/prisma';
 import { randomUUID } from 'crypto';
-import { Prisma, UserRole } from '../prisma/generated/prisma/index.js';
+import { Prisma, UserRole } from '@/prisma/generated/prisma';
 
 const sanitizeLog = (input: string | null | undefined): string => {
   if (!input) return '';

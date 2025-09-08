@@ -987,22 +987,22 @@ export async function seedComprehensiveHealthcareData() {
             // Create Diet and Workout Plans
             console.log('🥗 Creating diet and workout plans...');
             const dietPlans = [
-                { id: 'd001', name: 'Balanced Diet', description: 'A balanced diet focusing on all major food groups.', type: 'General', details: { guidelines: 'Eat a variety of fruits, vegetables, grains, proteins, and dairy.' } },
-                { id: 'd002', name: 'Low-Carb Diet', description: 'A diet that restricts carbohydrates, such as those found in sugary foods, pasta, and bread.', type: 'Weight Loss', details: { guidelines: 'Focus on protein, healthy fats, and non-starchy vegetables.' } },
-                { id: 'd003', name: 'Mediterranean Diet', description: 'A diet inspired by the eating habits of Greece, Southern Italy, and Spain.', type: 'Heart Health', details: { guidelines: 'Emphasizes fruits, vegetables, whole grains, legumes, nuts, seeds, and healthy fats.' } },
-                { id: 'd004', name: 'Vegetarian Diet', description: 'A diet that excludes meat and fish.', type: 'Lifestyle', details: { guidelines: 'Focus on plant-based proteins like beans, lentils, tofu, and tempeh.' } },
+                { name: 'Balanced Diet', description: 'A balanced diet focusing on all major food groups.', type: 'General', details: { guidelines: 'Eat a variety of fruits, vegetables, grains, proteins, and dairy.' } },
+                { name: 'Low-Carb Diet', description: 'A diet that restricts carbohydrates, such as those found in sugary foods, pasta, and bread.', type: 'Weight Loss', details: { guidelines: 'Focus on protein, healthy fats, and non-starchy vegetables.' } },
+                { name: 'Mediterranean Diet', description: 'A diet inspired by the eating habits of Greece, Southern Italy, and Spain.', type: 'Heart Health', details: { guidelines: 'Emphasizes fruits, vegetables, whole grains, legumes, nuts, seeds, and healthy fats.' } },
+                { name: 'Vegetarian Diet', description: 'A diet that excludes meat and fish.', type: 'Lifestyle', details: { guidelines: 'Focus on plant-based proteins like beans, lentils, tofu, and tempeh.' } },
             ];
 
             const workoutPlans = [
-                { id: 'w001', name: 'Beginner Cardio', description: 'A 30-minute cardio workout for beginners.', type: 'Cardio', details: { routine: '5 min warmup, 20 min brisk walking or cycling, 5 min cool down.' } },
-                { id: 'w002', name: 'Full-Body Strength Training', description: 'A full-body workout using weights or bodyweight.', type: 'Strength', details: { routine: '3 sets of 10-12 reps of squats, push-ups, rows, and overhead press.' } },
-                { id: 'w003', name: 'Yoga and Flexibility', description: 'A relaxing yoga routine to improve flexibility and reduce stress.', type: 'Flexibility', details: { routine: 'A series of basic yoga poses and stretches held for 30 seconds each.' } },
-                { id: 'w004', name: 'High-Intensity Interval Training (HIIT)', description: 'A short, intense workout that alternates between high-intensity and low-intensity periods.', type: 'Cardio', details: { routine: '30 seconds of max effort (e.g., burpees, sprints) followed by 30 seconds of rest, repeated for 15 minutes.' } },
+                { name: 'Beginner Cardio', description: 'A 30-minute cardio workout for beginners.', type: 'Cardio', details: { routine: '5 min warmup, 20 min brisk walking or cycling, 5 min cool down.' } },
+                { name: 'Full-Body Strength Training', description: 'A full-body workout using weights or bodyweight.', type: 'Strength', details: { routine: '3 sets of 10-12 reps of squats, push-ups, rows, and overhead press.' } },
+                { name: 'Yoga and Flexibility', description: 'A relaxing yoga routine to improve flexibility and reduce stress.', type: 'Flexibility', details: { routine: 'A series of basic yoga poses and stretches held for 30 seconds each.' } },
+                { name: 'High-Intensity Interval Training (HIIT)', description: 'A short, intense workout that alternates between high-intensity and low-intensity periods.', type: 'Cardio', details: { routine: '30 seconds of max effort (e.g., burpees, sprints) followed by 30 seconds of rest, repeated for 15 minutes.' } },
             ];
 
             for (const plan of dietPlans) {
                 await tx.dietPlan.upsert({
-                    where: { id: plan.id },
+                    where: { name: plan.name },
                     update: {},
                     create: plan,
                 });
@@ -1010,7 +1010,7 @@ export async function seedComprehensiveHealthcareData() {
 
             for (const plan of workoutPlans) {
                 await tx.workoutPlan.upsert({
-                    where: { id: plan.id },
+                    where: { name: plan.name },
                     update: {},
                     create: plan,
                 });

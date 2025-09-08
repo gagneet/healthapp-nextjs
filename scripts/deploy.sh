@@ -889,7 +889,7 @@ run_basic_migration() {
             
             # Validate schema consistency after migration
             log_info "Validating database schema consistency..."
-            if docker exec "$container_id" node -e "const { PrismaClient } = require('@prisma/client'); const prisma = new PrismaClient(); prisma.user.count().then(() => {console.log('✅ Schema validation: Database connection successful'); process.exit(0);}).catch(err => {console.error('❌ Schema validation failed:', err.message); process.exit(1);})"; then
+            if docker exec "$container_id" node -e "const { PrismaClient } = require('./prisma/generated/prisma'); const prisma = new PrismaClient(); prisma.user.count().then(() => {console.log('✅ Schema validation: Database connection successful'); process.exit(0);}).catch(err => {console.error('❌ Schema validation failed:', err.message); process.exit(1);})"; then
                 log_success "Schema validation completed successfully!"
             else
                 log_warning "Schema validation failed - there may be inconsistencies"
