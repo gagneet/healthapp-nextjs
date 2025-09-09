@@ -13,9 +13,10 @@ import { authenticator } from "otplib"
 import { prisma } from "@/lib/prisma"
 import { z } from "zod"
 import { UserRole, UserAccountStatus } from '@/prisma/generated/prisma'
+import type { User } from "next-auth"
 
 // Extended user interface for healthcare platform
-interface ExtendedUser {
+interface ExtendedUser extends User {
     id: string
     role: UserRole
     businessId?: string
@@ -26,7 +27,7 @@ interface ExtendedUser {
     canPrescribeMedication?: boolean
     canAccessPatientData?: boolean
     canManageProviders?: boolean
-    [key: string]: any // For additional dynamic properties
+    canViewAllPatients?: boolean
 }
 
 // Credentials validation schema with enhanced security and 2FA
@@ -317,7 +318,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         async session({ session, token }) {
             // Send properties to the client
             if (token && session.user) {
-                const extendedUser = session.user as any
+                const extendedUser = session.user
                 extendedUser.id = token.id as string
                 extendedUser.role = token.role as UserRole
                 extendedUser.businessId = token.businessId as string | null

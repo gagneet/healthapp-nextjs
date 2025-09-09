@@ -46,12 +46,12 @@ export class ConsultationBookingService {
         data: {
           doctorId: data.doctorId,
           patientId: data.patientId,
-          organizer_type: 'DOCTOR',
-          organizer_id: data.doctorId,
-          participant_one_type: 'DOCTOR',
-          participant_one_id: data.doctorId,
-          participant_two_type: 'PATIENT',
-          participant_two_id: data.patientId,
+          organizerType: 'DOCTOR',
+          organizerId: data.doctorId,
+          participantOneType: 'DOCTOR',
+          participantOneId: data.doctorId,
+          participantTwoType: 'PATIENT',
+          participantTwoId: data.patientId,
           startTime: data.appointmentDate,
           endTime: new Date(data.appointmentDate.getTime() + (data.duration * 60 * 1000)),
           description: data.reason,
@@ -62,7 +62,6 @@ export class ConsultationBookingService {
             duration: data.duration
           },
           createdAt: new Date(),
-          updatedAt: new Date(),
         }
       });
 
@@ -125,16 +124,16 @@ export class ConsultationBookingService {
       const existingAppointments = await prisma.appointment.findMany({
         where: {
           doctorId: doctorId,
-          appointment_date: {
+          startTime: {
             gte: startOfDay,
             lt: endOfDay
           },
           status: {
-            in: ['scheduled', 'confirmed', 'in_progress']
+            in: ['SCHEDULED', 'CONFIRMED', 'IN_PROGRESS']
           }
         },
         orderBy: {
-          appointment_date: 'asc'
+          startTime: 'asc'
         }
       });
 
@@ -147,11 +146,12 @@ export class ConsultationBookingService {
         
         // Check if this slot conflicts with existing appointments
         const isConflicted = existingAppointments.some(appointment => {
-          const appointmentEnd = new Date(appointment.appointment_date.getTime() + (appointment.duration_minutes * 60 * 1000));
+          const appointmentStart = appointment.startTime || currentTime;
+          const appointmentEnd = appointment.endTime || new Date(appointmentStart.getTime() + (duration * 60 * 1000));
           return (
-            (currentTime >= appointment.appointment_date && currentTime < appointmentEnd) ||
-            (slotEnd > appointment.appointment_date && slotEnd <= appointmentEnd) ||
-            (currentTime <= appointment.appointment_date && slotEnd >= appointmentEnd)
+            (currentTime >= appointmentStart && currentTime < appointmentEnd) ||
+            (slotEnd > appointmentStart && slotEnd <= appointmentEnd) ||
+            (currentTime <= appointmentStart && slotEnd >= appointmentEnd)
           );
         });
 
@@ -196,18 +196,17 @@ export class ConsultationBookingService {
         where: {
           doctorId: doctorId,
           status: {
-            in: ['scheduled', 'confirmed', 'in_progress']
+            in: ['SCHEDULED', 'CONFIRMED', 'IN_PROGRESS']
           },
           AND: [
             {
-              appointment_date: {
+              startTime: {
                 lt: endTime
               }
             },
             {
-              // Calculate end time of existing appointment
-              appointment_date: {
-                gte: new Date(startTime.getTime() - (60 * 60 * 1000)) // Look back 1 hour max
+              endTime: {
+                gt: startTime
               }
             }
           ]
@@ -230,7 +229,7 @@ export class ConsultationBookingService {
       const appointment = await prisma.appointment.findUnique({
         where: { id: appointmentId },
         include: {
-          VideoConsultation: true
+          videoConsultations: true
         }
       });
 
@@ -249,11 +248,15 @@ export class ConsultationBookingService {
         };
       }
 
+      // Calculate duration from existing appointment
+      const currentDuration = appointment.startTime && appointment.endTime ? 
+        (appointment.endTime.getTime() - appointment.startTime.getTime()) / (1000 * 60) : 30;
+
       // Check if new slot is available
       const isAvailable = await this.isSlotAvailable(
-        appointment.doctorId,
+        appointment.doctorId!,
         newDateTime,
-        appointment.duration_minutes
+        currentDuration
       );
 
       if (!isAvailable) {
@@ -268,19 +271,18 @@ export class ConsultationBookingService {
         where: { id: appointmentId },
         data: {
           startTime: newDateTime,
-          status: 'scheduled',
-          updatedAt: new Date()
+          endTime: new Date(newDateTime.getTime() + (currentDuration * 60 * 1000)),
+          status: 'SCHEDULED'
         }
       });
 
       // Update video consultation if it exists
-      if (appointment.VideoConsultation && appointment.VideoConsultation.length > 0) {
+      if (appointment.videoConsultations && appointment.videoConsultations.length > 0) {
         await prisma.videoConsultation.update({
-          where: { id: appointment.VideoConsultation[0].id },
+          where: { id: appointment.videoConsultations[0].id },
           data: {
-            scheduled_start: newDateTime,
-            status: 'SCHEDULED',
-            updatedAt: new Date()
+            scheduledStartTime: newDateTime,
+            status: 'SCHEDULED'
           }
         });
       }
@@ -310,7 +312,7 @@ export class ConsultationBookingService {
       const appointment = await prisma.appointment.findUnique({
         where: { id: appointmentId },
         include: {
-          VideoConsultation: true
+          videoConsultations: true
         }
       });
 
@@ -333,19 +335,17 @@ export class ConsultationBookingService {
       const updatedAppointment = await prisma.appointment.update({
         where: { id: appointmentId },
         data: {
-          status: 'cancelled',
-          notes: reason ? `${appointment.notes || ''}\n\nCancellation reason: ${reason}` : appointment.notes,
-          updatedAt: new Date()
+          status: 'CANCELLED',
+          description: reason ? `${appointment.description || ''}\n\nCancellation reason: ${reason}` : appointment.description,
         }
       });
 
       // Update video consultation if it exists
-      if (appointment.VideoConsultation && appointment.VideoConsultation.length > 0) {
+      if (appointment.videoConsultations && appointment.videoConsultations.length > 0) {
         await prisma.videoConsultation.update({
-          where: { id: appointment.VideoConsultation[0].id },
+          where: { id: appointment.videoConsultations[0].id },
           data: {
-            status: 'cancelled',
-            updatedAt: new Date()
+            status: 'CANCELLED',
           }
         });
       }

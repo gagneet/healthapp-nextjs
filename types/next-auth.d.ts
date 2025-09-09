@@ -6,12 +6,13 @@
 
 import { DefaultSession, DefaultUser } from "next-auth"
 import { JWT } from "next-auth/jwt"
+import { UserRole, UserAccountStatus } from '@/prisma/generated/prisma'
 
-// Healthcare user roles
-type HealthcareRole = "DOCTOR" | "HSP" | "PATIENT" | "SYSTEM_ADMIN" | "HOSPITAL_ADMIN" | "CAREGIVER"
+// Healthcare user roles from Prisma
+type HealthcareRole = UserRole
 
-// Healthcare account status
-type AccountStatus = "ACTIVE" | "INACTIVE" | "SUSPENDED" | "PENDING_VERIFICATION" | "DEACTIVATED"
+// Healthcare account status from Prisma  
+type AccountStatus = UserAccountStatus
 
 // Healthcare profile data types
 interface DoctorProfile {

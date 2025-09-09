@@ -7,6 +7,8 @@ import {
   createUnauthorizedResponse,
   createForbiddenResponse,
   withErrorHandling,
+  HealthcareApiError,
+  HealthcareErrorCodes,
 } from "@/lib/api-response";
 import { z } from "zod";
 
@@ -48,10 +50,16 @@ export const PUT = withErrorHandling(async (
   });
 
   if (!appointment || appointment.carePlanId !== carePlanId) {
-      return createErrorResponse({ message: "Appointment not found in this care plan" }, 404);
+      return createErrorResponse(
+        new HealthcareApiError(
+          HealthcareErrorCodes.PATIENT_NOT_FOUND,
+          "Appointment not found in this care plan",
+          404
+        )
+      );
   }
 
-  if (appointment.carePlan.createdByDoctorId !== session.user.profileId) {
+  if (!appointment.carePlan || appointment.carePlan.createdByDoctorId !== session.user.profileId) {
       return createForbiddenResponse();
   }
 
@@ -93,10 +101,16 @@ export const DELETE = withErrorHandling(async (
     });
 
     if (!appointment || appointment.carePlanId !== carePlanId) {
-        return createErrorResponse({ message: "Appointment not found in this care plan" }, 404);
+        return createErrorResponse(
+          new HealthcareApiError(
+            HealthcareErrorCodes.PATIENT_NOT_FOUND,
+            "Appointment not found in this care plan",
+            404
+          )
+        );
     }
 
-    if (appointment.carePlan.createdByDoctorId !== session.user.profileId) {
+    if (!appointment.carePlan || appointment.carePlan.createdByDoctorId !== session.user.profileId) {
         return createForbiddenResponse();
     }
 

@@ -5,7 +5,7 @@ import { z } from 'zod';
 
 const recordVitalSchema = z.object({
   patientId: z.string().uuid(),
-  vitalTemplateId: z.string().uuid(),
+  vitalTypeId: z.string().uuid(),
   value: z.number().positive(),
   unit: z.string().min(1),
   deviceReadingId: z.string().uuid().optional(),
@@ -24,7 +24,7 @@ const recordVitalSchema = z.object({
 
 const getVitalsSchema = z.object({
   patientId: z.string().uuid().optional(),
-  vitalTemplateId: z.string().uuid().optional(),
+  vitalTypeId: z.string().uuid().optional(),
   startDate: z.string().date().optional(),
   endDate: z.string().date().optional(),
   alertLevel: z.enum(['NORMAL', 'WARNING', 'CRITICAL', 'EMERGENCY']).optional(),
@@ -89,19 +89,19 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Insufficient permissions to record vital signs' }, { status: 403 });
     }
 
-    // Get vital template for validation
-    const vitalTemplate = await prisma.vitalTemplate.findUnique({
-      where: { id: validatedData.vitalTemplateId }
+    // Get vital type for validation
+    const vitalType = await prisma.vitalType.findUnique({
+      where: { id: validatedData.vitalTypeId }
     });
 
-    if (!vitalTemplate) {
-      return NextResponse.json({ error: 'Vital template not found' }, { status: 404 });
+    if (!vitalType) {
+      return NextResponse.json({ error: 'Vital type not found' }, { status: 404 });
     }
 
     // Validate unit compatibility
-    if (validatedData.unit !== vitalTemplate.unit) {
+    if (validatedData.unit !== vitalType.unit) {
       return NextResponse.json({ 
-        error: `Unit mismatch: expected ${vitalTemplate.unit}, got ${validatedData.unit}` 
+        error: `Unit mismatch: expected ${vitalType.unit}, got ${validatedData.unit}` 
       }, { status: 400 });
     }
 
@@ -129,7 +129,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Calculate alert level based on vital value
-    const alertAnalysis = calculateVitalAlert(validatedData.value, vitalTemplate);
+    const alertAnalysis = calculateVitalAlert(validatedData.value, vitalType);
 
     // Create vital reading record
     const recordedAt = validatedData.recordedAt ? new Date(validatedData.recordedAt) : new Date();
@@ -137,26 +137,20 @@ export async function POST(request: NextRequest) {
     const vitalReading = await prisma.vitalReading.create({
       data: {
         patientId: validatedData.patientId,
-        vitalTemplateId: validatedData.vitalTemplateId,
+        vitalTypeId: validatedData.vitalTypeId,
         value: validatedData.value,
         unit: validatedData.unit,
-        deviceReadingId: validatedData.deviceReadingId,
         readingTime: recordedAt,
-        recordedBy: session.user.id,
         alertLevel: alertAnalysis.alertLevel,
         alertReasons: alertAnalysis.reasons,
         notes: validatedData.notes,
-        location: validatedData.location,
-        tags: validatedData.tags,
-        metadata: validatedData.metadata || {},
-        isVerified: !!deviceReading,
-        verifiedAt: deviceReading ? new Date() : null,
-        verifiedBy: deviceReading ? session.user.id : null,
+        deviceInfo: validatedData.metadata || {},
+        isValidated: !!deviceReading,
+        validatedBy: deviceReading ? session.user.profileId : null,
         createdAt: new Date(),
-        updatedAt: new Date()
       },
       include: {
-        vitalTemplate: { select: { name: true, category: true, unit: true } },
+        vitalType: { select: { name: true, unit: true } },
         patient: {
           include: {
             user: { select: { firstName: true, lastName: true } }
@@ -177,7 +171,7 @@ export async function POST(request: NextRequest) {
         patientId: validatedData.patientId,
         vitalReadingId: vitalReading.id,
         alertLevel: alertAnalysis.alertLevel,
-        vitalName: vitalTemplate.name,
+        vitalName: vitalType.name,
         value: validatedData.value,
         unit: validatedData.unit,
         reasons: alertAnalysis.reasons,
@@ -189,7 +183,7 @@ export async function POST(request: NextRequest) {
         await notifyHealthcareProviders({
           patientId: validatedData.patientId,
           alertLevel: alertAnalysis.alertLevel,
-          vitalName: vitalTemplate.name,
+          vitalName: vitalType.name,
           value: validatedData.value,
           unit: validatedData.unit,
           patientName: `${patient.user.firstName} ${patient.user.lastName}`
@@ -200,7 +194,7 @@ export async function POST(request: NextRequest) {
     // Calculate trends
     const trends = await calculateVitalTrends({
       patientId: validatedData.patientId,
-      vitalTemplateId: validatedData.vitalTemplateId,
+      vitalTypeId: validatedData.vitalTypeId,
       currentValue: validatedData.value,
       timeframe: '7d'
     });
@@ -209,7 +203,7 @@ export async function POST(request: NextRequest) {
       message: 'Vital signs recorded successfully',
       vitalReading: {
         id: vitalReading.id,
-        vitalTemplate: vitalReading.vitalTemplate,
+        vitalType: vitalReading.vitalType,
         patient: {
           name: `${vitalReading.patient.user.firstName} ${vitalReading.patient.user.lastName}`
         },
@@ -218,10 +212,10 @@ export async function POST(request: NextRequest) {
         recordedAt: vitalReading.readingTime,
         alertLevel: vitalReading.alertLevel,
         alertReasons: vitalReading.alertReasons,
-        isVerified: vitalReading.isVerified,
-        deviceInfo: vitalReading.deviceReading ? {
-          deviceName: vitalReading.deviceReading.medicalDevice.deviceName,
-          deviceType: vitalReading.deviceReading.medicalDevice.deviceType
+        isValidated: vitalReading.isValidated,
+        deviceInfo: deviceReading ? {
+          deviceName: deviceReading.medicalDevice.deviceName,
+          deviceType: deviceReading.medicalDevice.deviceType
         } : null,
         notes: vitalReading.notes,
         location: vitalReading.location,
@@ -234,7 +228,7 @@ export async function POST(request: NextRequest) {
         recommendedActions: alertCreated.recommendedActions
       } : null,
       trends: trends,
-      nextSteps: getVitalNextSteps(alertAnalysis.alertLevel, vitalTemplate.name, trends)
+      nextSteps: getVitalNextSteps(alertAnalysis.alertLevel, vitalType.name, trends)
     });
 
   } catch (error) {
