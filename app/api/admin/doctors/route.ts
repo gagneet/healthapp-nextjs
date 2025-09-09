@@ -49,7 +49,7 @@ export async function GET(request: NextRequest) {
     }
 
     const [doctors, totalCount] = await Promise.all([
-      prisma.doctor.findMany({
+      prisma.doctorProfile.findMany({
         where: whereClause,
         include: {
           user: {
@@ -92,7 +92,7 @@ export async function GET(request: NextRequest) {
         take: limit,
         orderBy: { createdAt: 'desc' }
       }),
-      prisma.doctor.count({ where: whereClause })
+      prisma.doctorProfile.count({ where: whereClause })
     ]);
 
     return NextResponse.json({
@@ -147,14 +147,14 @@ export async function POST(request: NextRequest) {
       firstName,
       lastName,
       mobileNumber,
-      date_of_birth,
+      dateOfBirth,
       gender,
       speciality_id,
-      medical_license_number,
-      years_of_experience,
+      medicalLicenseNumber,
+      yearsOfExperience,
       qualification_details,
       organization_id,
-      consultation_fee,
+      consultationFee,
     } = body;
 
     const existingUser = await prisma.user.findUnique({
@@ -184,7 +184,7 @@ export async function POST(request: NextRequest) {
           lastName: lastName,
           fullName: fullName,
           phone: mobileNumber,
-          dateOfBirth: date_of_birth ? new Date(date_of_birth) : null,
+          dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : null,
           gender,
           role: 'DOCTOR',
           accountStatus: 'ACTIVE',
@@ -199,11 +199,11 @@ export async function POST(request: NextRequest) {
           doctorId: `DOC-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 10000)).padStart(4, '0')}`,
           userId: newUser.id,
           specialtyId: speciality_id,
-          medicalLicenseNumber: medical_license_number,
-          yearsOfExperience: years_of_experience ? parseInt(years_of_experience) : null,
+          medicalLicenseNumber: medicalLicenseNumber,
+          yearsOfExperience: yearsOfExperience ? parseInt(yearsOfExperience) : null,
           qualificationDetails: qualification_details,
           organizationId: organization_id,
-          consultationFee: consultation_fee ? parseFloat(consultation_fee) : null,
+          consultationFee: consultationFee ? parseFloat(consultationFee) : null,
           mobileNumber: mobileNumber,
           gender,
           createdAt: new Date(),

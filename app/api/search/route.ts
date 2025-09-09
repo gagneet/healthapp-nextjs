@@ -152,7 +152,7 @@ async function searchPatients(searchValue: string, filters: SearchFilters, user:
   // Role-based filtering for patient search
   if (user.role === 'DOCTOR') {
     // Doctors can only search their assigned patients
-    const doctor = await prisma.doctor.findFirst({
+    const doctor = await prisma.doctorProfile.findFirst({
       where: { userId: user.id }
     });
     if (doctor) {
@@ -174,7 +174,7 @@ async function searchPatients(searchValue: string, filters: SearchFilters, user:
           lastName: true,
           email: true,
           phone: true,
-          date_of_birth: true,
+          dateOfBirth: true,
           gender: true
         }
       },
@@ -192,12 +192,12 @@ async function searchPatients(searchValue: string, filters: SearchFilters, user:
 }
 
 async function searchDoctors(searchValue: string, filters: SearchFilters) {
-  return await prisma.doctor.findMany({
+  return await prisma.doctorProfile.findMany({
     where: {
       OR: [
-        { users_Doctor_userIdTousers: { firstName: { contains: searchValue, mode: 'insensitive' } } },
-        { users_Doctor_userIdTousers: { lastName: { contains: searchValue, mode: 'insensitive' } } },
-        { medical_license_number: { contains: searchValue, mode: 'insensitive' } },
+        { user: { firstName: { contains: searchValue, mode: 'insensitive' } } },
+        { user: { lastName: { contains: searchValue, mode: 'insensitive' } } },
+        { medicalLicenseNumber: { contains: searchValue, mode: 'insensitive' } },
         { doctorId: { contains: searchValue, mode: 'insensitive' } }
       ]
     },
@@ -205,10 +205,10 @@ async function searchDoctors(searchValue: string, filters: SearchFilters) {
     select: {
       id: true,
       doctorId: true,
-      medical_license_number: true,
-      years_of_experience: true,
-      consultation_fee: true,
-      users_doctors_userIdTousers: {
+      medicalLicenseNumber: true,
+      yearsOfExperience: true,
+      consultationFee: true,
+      user: {
         select: {
           id: true,
           firstName: true,
@@ -217,7 +217,7 @@ async function searchDoctors(searchValue: string, filters: SearchFilters) {
           phone: true
         }
       },
-      specialities: {
+      specialty: {
         select: {
           id: true,
           name: true,
@@ -226,8 +226,8 @@ async function searchDoctors(searchValue: string, filters: SearchFilters) {
       }
     },
     orderBy: [
-      { users_doctors_userIdTousers: { firstName: 'asc' } },
-      { users_doctors_userIdTousers: { lastName: 'asc' } }
+      { user: { firstName: 'asc' } },
+      { user: { lastName: 'asc' } }
     ]
   });
 }

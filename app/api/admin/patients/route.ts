@@ -57,7 +57,7 @@ export async function GET(request: NextRequest) {
 
     // Role-based filtering
     if (session.user.role === 'DOCTOR') {
-      const doctor = await prisma.doctor.findFirst({
+      const doctor = await prisma.doctorProfile.findFirst({
         where: { userId: session.user.id }
       });
       if (doctor) {
@@ -182,7 +182,7 @@ export async function POST(request: NextRequest) {
       firstName,
       lastName,
       phone,
-      date_of_birth,
+      dateOfBirth,
       gender,
       primaryCareDoctorId,
       organization_id,
@@ -235,7 +235,7 @@ export async function POST(request: NextRequest) {
           lastName: lastName,
           fullName: fullName,
           phone,
-          dateOfBirth: date_of_birth ? new Date(date_of_birth) : null,
+          dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : null,
           gender,
           role: 'PATIENT',
           accountStatus: 'ACTIVE',

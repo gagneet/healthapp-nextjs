@@ -131,7 +131,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
 
     // Transform to expected format
     const responseData = {
-      specialities: scoredSpecialities.reduce((acc: any, specialty: any) => {
+      specialty: scoredSpecialities.reduce((acc: any, specialty: any) => {
         const doctorInfo = includeAvailability ? {
           doctor_count: specialty.doctors?.length || 0,
           accepting_new_patients: specialty.doctors?.filter((d: any) => d.isAcceptingNewPatients).length || 0,
@@ -168,7 +168,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
 
     // Generate search insights
     const insights = includeAvailability ? {
-      total_specialities: scoredSpecialities.length,
+      total_specialty: scoredSpecialities.length,
       totalDoctors: scoredSpecialities.reduce((sum: number, s: any) => sum + (s.doctors?.length || 0), 0),
       accepting_new_patients: scoredSpecialities.reduce((sum: number, s: any) => 
         sum + (s.doctors?.filter((d: any) => d.isAcceptingNewPatients).length || 0), 0),
@@ -176,7 +176,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
         [...new Set(scoredSpecialities.flatMap((s: any) => 
           s.doctors?.map((d: any) => d.organizationId).filter(Boolean) || []
         ))].length,
-      popular_specialities: scoredSpecialities
+      popular_specialty: scoredSpecialities
         .sort((a: any, b: any) => (b.doctors?.length || 0) - (a.doctors?.length || 0))
         .slice(0, 5)
         .map((s: any) => ({
@@ -184,7 +184,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
           doctor_count: s.doctors?.length || 0
         }))
     } : {
-      total_specialities: scoredSpecialities.length
+      total_specialty: scoredSpecialities.length
     }
 
     return createSuccessResponse({

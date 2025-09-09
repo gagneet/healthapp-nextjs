@@ -38,7 +38,7 @@ export async function GET(request: NextRequest) {
     });
 
     // Verify doctor exists and user has access to check conflicts
-    const doctor = await prisma.doctor.findUnique({
+    const doctor = await prisma.doctorProfile.findUnique({
       where: { id: queryData.doctorId },
       include: {
         user: { select: { firstName: true, lastName: true, email: true } },

@@ -29,7 +29,7 @@ export async function GET(
       }, { status: 403 });
     }
 
-    const doctor = await prisma.doctor.findUnique({
+    const doctor = await prisma.doctorProfile.findUnique({
       where: { id: params.id },
       include: {
         user: {
@@ -126,17 +126,17 @@ export async function PUT(
       mobileNumber,
       gender,
       speciality_id,
-      medical_license_number,
-      years_of_experience,
+      medicalLicenseNumber,
+      yearsOfExperience,
       qualification_details,
       organization_id,
-      consultation_fee,
+      consultationFee,
       is_verified,
       account_status
     } = body;
 
     // Check if doctor exists
-    const existingDoctor = await prisma.doctor.findUnique({
+    const existingDoctor = await prisma.doctorProfile.findUnique({
       where: { id: params.id },
       include: { user: true }
     });
@@ -150,10 +150,10 @@ export async function PUT(
     }
 
     // Check for medical license number conflicts if being changed
-    if (medical_license_number && medical_license_number !== existingDoctor.medicalLicenseNumber) {
-      const licenseConflict = await prisma.doctor.findFirst({
+    if (medicalLicenseNumber && medicalLicenseNumber !== existingDoctor.medicalLicenseNumber) {
+      const licenseConflict = await prisma.doctorProfile.findFirst({
         where: { 
-          medicalLicenseNumber: medical_license_number,
+          medicalLicenseNumber: medicalLicenseNumber,
           id: { not: params.id }
         }
       });
@@ -205,11 +205,11 @@ export async function PUT(
       if (speciality_id !== undefined) {
         doctorUpdates.specialtyId = speciality_id;
       }
-      if (medical_license_number !== undefined) {
-        doctorUpdates.medicalLicenseNumber = medical_license_number;
+      if (medicalLicenseNumber !== undefined) {
+        doctorUpdates.medicalLicenseNumber = medicalLicenseNumber;
       }
-      if (years_of_experience !== undefined) {
-        doctorUpdates.yearsOfExperience = years_of_experience;
+      if (yearsOfExperience !== undefined) {
+        doctorUpdates.yearsOfExperience = yearsOfExperience;
       }
       if (qualification_details !== undefined) {
         doctorUpdates.qualificationDetails = qualification_details;
@@ -217,8 +217,8 @@ export async function PUT(
       if (organization_id !== undefined) {
         doctorUpdates.organizationId = organization_id;
       }
-      if (consultation_fee !== undefined) {
-        doctorUpdates.consultationFee = consultation_fee;
+      if (consultationFee !== undefined) {
+        doctorUpdates.consultationFee = consultationFee;
       }
       if (mobileNumber !== undefined) {
         doctorUpdates.mobileNumber = mobileNumber;
@@ -300,7 +300,7 @@ export async function DELETE(
     }
 
     // Check if doctor exists
-    const existingDoctor = await prisma.doctor.findUnique({
+    const existingDoctor = await prisma.doctorProfile.findUnique({
       where: { id: params.id },
       include: { user: true }
     });

@@ -13,7 +13,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
     return createUnauthorizedResponse();
   }
 
-  const doctors = await prisma.doctor.findMany({
+  const doctors = await prisma.doctorProfile.findMany({
       include: {
           user: true,
       }

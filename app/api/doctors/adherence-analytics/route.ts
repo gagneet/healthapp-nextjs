@@ -31,7 +31,7 @@ export async function GET(request: NextRequest) {
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - days);
 
-    const doctor = await prisma.doctor.findFirst({
+    const doctor = await prisma.doctorProfile.findFirst({
       where: { userId: session.user.id }
     });
 

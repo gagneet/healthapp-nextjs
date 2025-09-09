@@ -81,7 +81,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
         doctorWhere.AND.push({ organizationId });
       }
 
-      const doctors = await prisma.doctor.findMany({
+      const doctors = await prisma.doctorProfile.findMany({
         where: doctorWhere,
         take: limit,
         include: {
@@ -127,7 +127,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
         organization_id: doctor.organizationId,
         experience_years: doctor.yearsOfExperience,
         accepting_new_patients: doctor.isAcceptingNewPatients,
-        consultation_fee: doctor.consultationFee,
+        consultationFee: doctor.consultationFee,
         isActive: doctor.isActive,
         type: 'doctor',
         availability_info: {
@@ -158,7 +158,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
         hspWhere.AND.push({ organizationId });
       }
 
-      const hsps = await prisma.hsp.findMany({
+      const hsps = await prisma.hspProfile.findMany({
         where: hspWhere,
         take: limit,
         include: {
@@ -202,7 +202,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
 
     // Get current user's organization for context
     const currentUserProfile = session.user.role === 'DOCTOR' 
-      ? await prisma.doctor.findFirst({ 
+      ? await prisma.doctorProfile.findFirst({ 
           where: { userId: session.user.id },
           include: { organization: { select: { id: true, name: true } } }
         })

@@ -68,8 +68,8 @@ export const POST = withErrorHandling(async (request: NextRequest, { params }: {
     let providerProfile = null
     if (session.user.role !== 'PATIENT') {
       providerProfile = session.user.role === 'DOCTOR' 
-        ? await prisma.doctor.findFirst({ where: { userId: session.user.id } })
-        : await prisma.hsp.findFirst({ where: { userId: session.user.id } })
+        ? await prisma.doctorProfile.findFirst({ where: { userId: session.user.id } })
+        : await prisma.hspProfile.findFirst({ where: { userId: session.user.id } })
 
       if (!providerProfile) {
         return createErrorResponse(new Error("Healthcare provider profile not found"))

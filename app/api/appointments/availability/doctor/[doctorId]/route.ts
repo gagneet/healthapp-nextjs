@@ -77,7 +77,7 @@ export async function GET(
     });
 
     // Verify doctor exists and user has access
-    const doctor = await prisma.doctor.findUnique({
+    const doctor = await prisma.doctorProfile.findUnique({
       where: { id: doctorId },
       include: {
         user: { select: { name: true, email: true } },
@@ -213,7 +213,7 @@ export async function POST(
     const validatedData = setAvailabilitySchema.parse(body);
 
     // Verify doctor exists and user has permission to set availability
-    const doctor = await prisma.doctor.findUnique({
+    const doctor = await prisma.doctorProfile.findUnique({
       where: { id: doctorId },
       include: {
         user: { select: { name: true, email: true } },

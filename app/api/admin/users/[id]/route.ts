@@ -180,7 +180,7 @@ export async function PUT(
       firstName,
       lastName,
       phone,
-      date_of_birth,
+      dateOfBirth,
       gender,
       role,
       account_status,
@@ -244,7 +244,7 @@ export async function PUT(
     }
 
     if (phone !== undefined) updateData.phone = phone;
-    if (date_of_birth !== undefined) updateData.dateOfBirth = date_of_birth ? new Date(date_of_birth) : null;
+    if (dateOfBirth !== undefined) updateData.dateOfBirth = dateOfBirth ? new Date(dateOfBirth) : null;
     if (gender !== undefined) updateData.gender = gender;
     
     // Admin-only fields

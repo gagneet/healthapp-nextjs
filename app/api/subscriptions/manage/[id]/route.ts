@@ -216,7 +216,7 @@ async function calculateUsageStatistics(subscriptionId: string, organizationId?:
   if (organizationId) {
     // Organization usage
     const [doctorCount, patientCount, appointmentCount, storageUsed] = await Promise.all([
-      prisma.doctor.count({ where: { organizationId } }),
+      prisma.doctorProfile.count({ where: { organizationId } }),
       prisma.patient.count({
         where: {
           OR: [

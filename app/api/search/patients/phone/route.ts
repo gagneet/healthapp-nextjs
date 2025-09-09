@@ -116,7 +116,7 @@ export async function POST(request: NextRequest) {
             lastName: true,
             email: true,
             phone: true,
-            date_of_birth: true,
+            dateOfBirth: true,
             gender: true,
             accountStatus: true
           }

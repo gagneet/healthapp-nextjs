@@ -48,10 +48,10 @@ export async function POST(request: NextRequest) {
     // Only doctors and HSPs can perform clinical assessments
     const user = await prisma.user.findUnique({
       where: { id: session.user.id },
-      include: { doctor: true, hsp: true }
+      include: { doctorProfile: true, hsp: true }
     });
 
-    if (!user || (!user.doctor && !user.hsp)) {
+    if (!user || (!user.doctorProfile && !user.hsp)) {
       return NextResponse.json({ 
         error: 'Access denied. Only healthcare providers can perform clinical assessments.' 
       }, { status: 403 });

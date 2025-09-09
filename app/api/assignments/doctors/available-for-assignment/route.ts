@@ -45,7 +45,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
 
   try {
     // Get requesting doctor profile
-    const requestingDoctor = await prisma.doctor.findFirst({
+    const requestingDoctor = await prisma.doctorProfile.findFirst({
       where: { userId: session.user.id },
       include: {
         organization: {
@@ -100,7 +100,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
     }
 
     // Get available doctors
-    const availableDoctors = await prisma.doctor.findMany({
+    const availableDoctors = await prisma.doctorProfile.findMany({
       where: whereConditions,
       take: limit,
       include: {
@@ -188,7 +188,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
                          currentWorkload >= 5 ? 'Medium' : 'Low'
         },
         fees: {
-          consultation_fee: doctor.consultationFee,
+          consultationFee: doctor.consultationFee,
           currency: 'USD' // Could be configurable
         },
         assignment_suitability: {

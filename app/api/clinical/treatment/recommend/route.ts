@@ -47,10 +47,10 @@ export async function POST(request: NextRequest) {
     // Only doctors can create treatment recommendations
     const user = await prisma.user.findUnique({
       where: { id: session.user.id },
-      include: { doctor: true }
+      include: { doctorProfile: true }
     });
 
-    if (!user?.doctor) {
+    if (!user?.doctorProfile) {
       return NextResponse.json({ 
         error: 'Access denied. Only doctors can create treatment recommendations.' 
       }, { status: 403 });
@@ -65,9 +65,10 @@ export async function POST(request: NextRequest) {
       include: {
         patient: {
           include: {
-            assignments: {
+            user: true,
+            patientDoctorAssignments: {
               where: {
-                doctorId: user.doctor.id,
+                doctorId: user.doctorProfile.id,
                 status: 'ACTIVE'
               }
             }
@@ -76,7 +77,7 @@ export async function POST(request: NextRequest) {
       }
     });
 
-    if (!diagnosis || diagnosis.patient.assignments.length === 0) {
+    if (!diagnosis || diagnosis.patient.patientDoctorAssignments.length === 0) {
       return NextResponse.json({ 
         error: 'Diagnosis not found or access denied.' 
       }, { status: 404 });
@@ -129,7 +130,7 @@ export async function POST(request: NextRequest) {
       data: {
         diagnosisId: validatedData.diagnosisId,
         patientId: validatedData.patientId,
-        doctorId: user.doctor.id,
+        doctorId: user.doctorProfile.id,
         selectedDiagnosis: validatedData.selectedDiagnosis,
         patientFactors: validatedData.patientFactors,
         treatmentGoals: validatedData.treatmentGoals,

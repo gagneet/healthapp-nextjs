@@ -34,10 +34,10 @@ export async function POST(request: NextRequest) {
     // Only doctors can make diagnosis suggestions
     const user = await prisma.user.findUnique({
       where: { id: session.user.id },
-      include: { doctor: true }
+      include: { doctorProfile: true }
     });
 
-    if (!user?.doctor) {
+    if (!user?.doctorProfile) {
       return NextResponse.json({ 
         error: 'Access denied. Only doctors can create diagnosis suggestions.' 
       }, { status: 403 });
@@ -50,11 +50,12 @@ export async function POST(request: NextRequest) {
     const assessment = await prisma.symptomAssessment.findUnique({
       where: { id: validatedData.assessmentId },
       include: {
-        patient: {
-          include: {
-            assignments: {
+        patient: { 
+          include: { 
+            user: true,
+            patientDoctorAssignments: {
               where: {
-                doctorId: user.doctor.id,
+                doctorId: user.doctorProfile.id,
                 status: 'ACTIVE'
               }
             }
@@ -63,7 +64,7 @@ export async function POST(request: NextRequest) {
       }
     });
 
-    if (!assessment || assessment.patient.assignments.length === 0) {
+    if (!assessment || assessment.patient.patientDoctorAssignments.length === 0) {
       return NextResponse.json({ 
         error: 'Assessment not found or access denied.' 
       }, { status: 404 });
@@ -98,7 +99,7 @@ export async function POST(request: NextRequest) {
       data: {
         assessmentId: validatedData.assessmentId,
         patientId: validatedData.patientId,
-        doctorId: user.doctor.id,
+        doctorId: user.doctorProfile.id,
         clinicalFindings: validatedData.clinicalFindings,
         diagnosticTests: validatedData.diagnosticTests || [],
         diagnosisSuggestions: scoredSuggestions,

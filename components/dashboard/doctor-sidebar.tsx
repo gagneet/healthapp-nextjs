@@ -18,7 +18,7 @@ import {
   Bars3Icon,
 } from '@heroicons/react/24/outline'
 import { useAuth } from '@/lib/auth-context'
-import { userHelpers } from '@/types/auth'
+import { userHelpers } from '@/lib/auth'
 import NotificationDrawer from './notification-drawer'
 
 interface SidebarProps {

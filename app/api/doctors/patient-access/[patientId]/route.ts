@@ -30,7 +30,7 @@ export async function GET(request: NextRequest, { params }: { params: { patientI
     const { patientId } = params;
 
     // Get doctor profile
-    const doctor = await prisma.doctor.findFirst({
+    const doctor = await prisma.doctorProfile.findFirst({
       where: { userId: session.user.id }
     });
 

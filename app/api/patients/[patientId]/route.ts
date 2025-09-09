@@ -36,7 +36,7 @@ export const GET = withErrorHandling(async (
   }
 
   if (user.role === 'DOCTOR') {
-    const doctor = await prisma.doctor.findUnique({ where: { userId: user.id } });
+    const doctor = await prisma.doctorProfile.findUnique({ where: { userId: user.id } });
     if (patientData.primaryCareDoctorId !== doctor?.id) {
       throw new AuthorizationError('Access denied: You are not the primary care doctor for this patient');
     }

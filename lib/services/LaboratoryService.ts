@@ -227,7 +227,7 @@ export class LaboratoryService {
                   firstName: true,
                   lastName: true,
                   email: true,
-                  date_of_birth: true,
+                  dateOfBirth: true,
                   gender: true
                 }
               }
@@ -377,7 +377,7 @@ export class LaboratoryService {
                 select: {
                   firstName: true,
                   lastName: true,
-                  date_of_birth: true
+                  dateOfBirth: true
                 }
               }
             }
@@ -490,13 +490,13 @@ export class LaboratoryService {
         patient: {
           id: order.patient.user.id,
           name: `${order.patient.user.firstName} ${order.patient.user.lastName}`,
-          dateOfBirth: order.patient.user.date_of_birth,
+          dateOfBirth: order.patient.user.dateOfBirth,
           gender: order.patient.user.gender,
         },
         physician: {
           id: order.doctor.user.id,
           name: `${order.doctor.user.firstName} ${order.doctor.user.lastName}`,
-          npi: order.doctor.medical_license_number,
+          npi: order.doctor.medicalLicenseNumber,
         },
         tests: order.ordered_tests,
         priority: order.priority,

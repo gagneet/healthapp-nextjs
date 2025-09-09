@@ -39,7 +39,7 @@ export async function GET(request: NextRequest) {
       }
       whereClause.patientId = patient.id;
     } else if (user!.role === 'DOCTOR') {
-      const doctor = await prisma.doctor.findFirst({
+      const doctor = await prisma.doctorProfile.findFirst({
         where: { userId: user!.id }
       });
       if (!doctor) {
@@ -319,7 +319,7 @@ export async function PUT(request: NextRequest) {
         }, { status: 403 });
       }
     } else if (user!.role === 'DOCTOR') {
-      const doctor = await prisma.doctor.findFirst({
+      const doctor = await prisma.doctorProfile.findFirst({
         where: { userId: user!.id }
       });
       if (!doctor || appointment.doctorId !== doctor.id) {

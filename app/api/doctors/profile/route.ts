@@ -37,7 +37,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
     const targetUserId = session.user.id!
 
     // Fetch basic doctor information
-    const doctor = await prisma.doctor.findUnique({
+    const doctor = await prisma.doctorProfile.findUnique({
       where: { userId: targetUserId },
       include: {
         user: true,
@@ -219,7 +219,7 @@ export const PUT = withErrorHandling(async (request: NextRequest) => {
         }
     }
 
-    const updatedDoctor = await prisma.doctor.update({
+    const updatedDoctor = await prisma.doctorProfile.update({
         where: { userId: session.user.id },
         data: updatePayload,
     });

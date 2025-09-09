@@ -120,7 +120,7 @@ export class VideoConsultationService {
             select: {
               id: true,
               user: { select: { firstName: true, lastName: true, email: true } },
-              date_of_birth: true,
+              dateOfBirth: true,
             }
           },
           appointment: {

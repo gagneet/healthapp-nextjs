@@ -5,7 +5,7 @@
  * using Prisma ORM for type-safe database operations.
  */
 
-import { prisma, healthcareDb } from '@/lib/prisma';
+import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import type { User, Patient, Doctor, Hsp } from '@/prisma/generated/prisma';

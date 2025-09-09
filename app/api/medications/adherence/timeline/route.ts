@@ -5,7 +5,7 @@ import { z } from 'zod';
 
 const timelineQuerySchema = z.object({
   patientId: z.string().uuid().optional(),
-  medicationId: z.string().uuid().optional(),
+  relatedMedicationId: z.string().uuid().optional(),
   startDate: z.string().date().optional(),
   endDate: z.string().date().optional(),
   granularity: z.enum(['daily', 'weekly', 'monthly']).default('daily'),
@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
     
     const queryData = timelineQuerySchema.parse({
       patientId: searchParams.get('patientId') || undefined,
-      medicationId: searchParams.get('medicationId') || undefined,
+      relatedMedicationId: searchParams.get('relatedMedicationId') || undefined,
       startDate: searchParams.get('startDate') || undefined,
       endDate: searchParams.get('endDate') || undefined,
       granularity: searchParams.get('granularity') || 'daily',
@@ -125,8 +125,8 @@ export async function GET(request: NextRequest) {
       }
     };
 
-    if (queryData.medicationId) {
-      medicationFilter.medicationId = queryData.medicationId;
+    if (queryData.relatedMedicationId) {
+      medicationFilter.relatedMedicationId = queryData.relatedMedicationId;
     }
 
     // Get adherence logs
@@ -190,7 +190,7 @@ export async function GET(request: NextRequest) {
       timeline: timelineData,
       summary: {
         totalLogs: adherenceLogs.length,
-        uniqueMedications: new Set(adherenceLogs.map(log => log.medicationId)).size,
+        uniqueMedications: new Set(adherenceLogs.map(log => log.relatedMedicationId)).size,
         uniquePatients: session.user.role === 'PATIENT' ? 1 : new Set(adherenceLogs.map(log => log.medication.patientId)).size,
         datesCovered: Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24))
       }
@@ -417,7 +417,7 @@ async function getAdherenceAlerts(patientFilter: any, medicationFilter: any) {
   const recentMissed = await prisma.adherenceLog.count({
     where: {
       ...patientFilter,
-      adherenceStatus: 'MISSED',
+      status: 'missed',
       scheduledTime: {
         gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) // Last 7 days
       }
@@ -426,7 +426,7 @@ async function getAdherenceAlerts(patientFilter: any, medicationFilter: any) {
 
   // Get medications with low adherence
   const lowAdherenceMeds = await prisma.adherenceLog.groupBy({
-    by: ['medicationId'],
+    by: ['relatedMedicationId'],
     where: {
       ...patientFilter,
       scheduledTime: {
@@ -434,10 +434,10 @@ async function getAdherenceAlerts(patientFilter: any, medicationFilter: any) {
       }
     },
     _count: {
-      adherenceStatus: true
+      status: true
     },
     having: {
-      adherenceStatus: {
+      status: {
         _count: {
           gte: 5 // At least 5 logs
         }

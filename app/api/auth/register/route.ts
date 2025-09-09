@@ -134,7 +134,7 @@ export async function POST(request: NextRequest) {
 
     // For DOCTOR registrations, validate medical license if provided
     if (role === "DOCTOR" && medicalLicenseNumber) {
-      const existingDoctor = await prisma.doctor.findFirst({
+      const existingDoctor = await prisma.doctorProfile.findFirst({
         where: { medicalLicenseNumber: medicalLicenseNumber }
       })
       

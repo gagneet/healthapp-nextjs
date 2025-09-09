@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
     if (session.user.role !== 'DOCTOR') {
       // Check if HSP has prescribe capability
       if (session.user.role === 'HSP') {
-        const hsp = await prisma.hsp.findUnique({
+        const hsp = await prisma.hspProfile.findUnique({
           where: { userId: session.user.id },
         });
         
@@ -74,11 +74,11 @@ export async function POST(request: NextRequest) {
 
     // Get prescriber information
     const prescriber = session.user.role === 'DOCTOR' 
-      ? await prisma.doctor.findUnique({
+      ? await prisma.doctorProfile.findUnique({
           where: { userId: session.user.id },
           include: { organization: true, user: true },
         })
-      : await prisma.hsp.findUnique({
+      : await prisma.hspProfile.findUnique({
           where: { userId: session.user.id },
           include: { organization: true, user: true },
         });
@@ -259,7 +259,7 @@ export async function GET(request: NextRequest) {
     const whereClause: any = {};
 
     if (session.user.role === 'DOCTOR') {
-      const doctor = await prisma.doctor.findUnique({
+      const doctor = await prisma.doctorProfile.findUnique({
         where: { userId: session.user.id },
       });
       if (!doctor) {
@@ -267,7 +267,7 @@ export async function GET(request: NextRequest) {
       }
       whereClause.prescribingDoctorId = doctor.id;
     } else if (session.user.role === 'HSP') {
-      const hsp = await prisma.hsp.findUnique({
+      const hsp = await prisma.hspProfile.findUnique({
         where: { userId: session.user.id },
       });
       if (!hsp) {

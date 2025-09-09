@@ -40,9 +40,9 @@ export const GET = withErrorHandling(async (request: NextRequest, { params }: { 
   try {
     // Get healthcare provider profile
     const providerProfile = session.user.role === 'DOCTOR' 
-      ? await prisma.doctor.findFirst({ where: { userId: session.user.id } })
+      ? await prisma.doctorProfile.findFirst({ where: { userId: session.user.id } })
       : session.user.role === 'HSP'
-      ? await prisma.hsp.findFirst({ where: { userId: session.user.id } })
+      ? await prisma.hspProfile.findFirst({ where: { userId: session.user.id } })
       : null
 
     if (!providerProfile && session.user.role !== 'SYSTEM_ADMIN') {

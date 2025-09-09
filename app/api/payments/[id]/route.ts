@@ -91,7 +91,7 @@ export async function GET(
         }, { status: 403 });
       }
     } else if (session.user.role === 'DOCTOR') {
-      const doctor = await prisma.doctor.findFirst({
+      const doctor = await prisma.doctorProfile.findFirst({
         where: { userId: session.user.id }
       });
       
@@ -193,7 +193,7 @@ export async function PUT(
 
     // Check permissions for doctors
     if (session.user.role === 'DOCTOR') {
-      const doctor = await prisma.doctor.findFirst({
+      const doctor = await prisma.doctorProfile.findFirst({
         where: { userId: session.user.id }
       });
       const patient = await prisma.patient.findUnique({
@@ -342,7 +342,7 @@ export async function DELETE(
 
     // Check permissions for doctors
     if (session.user.role === 'DOCTOR') {
-      const doctor = await prisma.doctor.findFirst({
+      const doctor = await prisma.doctorProfile.findFirst({
         where: { userId: session.user.id }
       });
       const patient = await prisma.patient.findUnique({

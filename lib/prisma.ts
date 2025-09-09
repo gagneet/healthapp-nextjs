@@ -134,8 +134,8 @@ export const healthcareDb = {
           include: {
             doctor: {
               include: {
-                users_Doctor_userIdTousers: true,
-                specialities: true,
+                user: true,
+                specialty: true,
               },
             },
           },
@@ -144,7 +144,7 @@ export const healthcareDb = {
           include: {
             Doctor: {
               include: {
-                users_Doctor_userIdTousers: true,
+                user: true,
               },
             },
           },

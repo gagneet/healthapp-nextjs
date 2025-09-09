@@ -7,7 +7,7 @@ interface LogFilter {
   patientId?: string;
   relatedMedicationId?: string;
   status?: string;
-  logMethod?: string;
+  recordedBy?: string;
   scheduledDatetime?: {
     gte?: Date;
     lte?: Date;
@@ -221,9 +221,9 @@ export async function POST(request: NextRequest) {
 
     // Check if this creates any adherence alerts
     const shouldCreateAlert = await checkForAdherenceAlerts({
-      medicationId: validatedData.medicationId,
+      medicationId: validatedData.relatedMedicationId,
       patientId: medication.patientId,
-      adherenceStatus: validatedData.status,
+      status: validatedData.status,
       recentLogs: 5 // Check last 5 logs
     });
 
@@ -231,7 +231,7 @@ export async function POST(request: NextRequest) {
     if (shouldCreateAlert) {
       alert = await createAdherenceAlert({
         patientId: medication.patientId,
-        medicationId: validatedData.medicationId,
+        medicationId: validatedData.relatedMedicationId,
         alertType: shouldCreateAlert.type,
         severity: shouldCreateAlert.severity,
         message: shouldCreateAlert.message
@@ -300,7 +300,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     
     const queryData = getLogsSchema.parse({
-      medicationId: searchParams.get('medicationId') || undefined,
+      relatedMedicationId: searchParams.get('medicationId') || undefined,
       patientId: searchParams.get('patientId') || undefined,
       startDate: searchParams.get('startDate') || undefined,
       endDate: searchParams.get('endDate') || undefined,
@@ -444,10 +444,10 @@ export async function GET(request: NextRequest) {
 async function checkForAdherenceAlerts(params: {
   medicationId: string;
   patientId: string;
-  adherenceStatus: string;
+  status: string;
   recentLogs: number;
 }) {
-  const { medicationId, patientId, adherenceStatus, recentLogs } = params;
+  const { medicationId, patientId, status, recentLogs } = params;
 
   // Get recent adherence logs
   const recent = await prisma.adherenceLog.findMany({

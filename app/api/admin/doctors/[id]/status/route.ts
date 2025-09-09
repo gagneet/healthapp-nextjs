@@ -43,7 +43,7 @@ export async function PUT(
     }
 
     // Check if doctor exists
-    const existingDoctor = await prisma.doctor.findUnique({
+    const existingDoctor = await prisma.doctorProfile.findUnique({
       where: { id: params.id },
       include: { user: true }
     });

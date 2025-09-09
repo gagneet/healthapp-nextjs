@@ -42,7 +42,7 @@ export async function GET(request: NextRequest) {
       }
       whereClause.patientId = patient.id;
     } else if (session.user.role === 'DOCTOR') {
-      const doctor = await prisma.doctor.findFirst({
+      const doctor = await prisma.doctorProfile.findFirst({
         where: { userId: session.user.id }
       });
       if (doctor && !patientId) {
@@ -254,7 +254,7 @@ export async function POST(request: NextRequest) {
 
     // Check if user has permission to process payment for this subscription
     if (session.user.role === 'DOCTOR') {
-      const doctor = await prisma.doctor.findFirst({
+      const doctor = await prisma.doctorProfile.findFirst({
         where: { userId: session.user.id }
       });
       const patient = await prisma.patient.findUnique({

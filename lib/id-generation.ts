@@ -78,7 +78,7 @@ async function generateBusinessId(config: {
     
     switch (config.tableName) {
       case 'doctors':
-        const doctors = await prisma.doctor.findMany({
+        const doctors = await prisma.doctorProfile.findMany({
           where: {
             doctorId: {
               startsWith: yearPrefix
@@ -92,7 +92,7 @@ async function generateBusinessId(config: {
         break;
         
       case 'hsps':
-        const hsps = await prisma.hsp.findMany({
+        const hsps = await prisma.hspProfile.findMany({
           where: {
             hsp_id: {
               startsWith: yearPrefix

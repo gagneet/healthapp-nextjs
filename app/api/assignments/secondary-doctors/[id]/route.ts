@@ -116,7 +116,7 @@ export async function GET(
         }, { status: 403 });
       }
     } else if (session.user.role === 'DOCTOR') {
-      const doctor = await prisma.doctor.findFirst({
+      const doctor = await prisma.doctorProfile.findFirst({
         where: { userId: session.user.id }
       });
       if (!doctor || (assignment.primaryDoctorId !== doctor.id && assignment.secondaryDoctorId !== doctor.id)) {
@@ -197,7 +197,7 @@ export async function PUT(
     }
 
     if (session.user.role === 'DOCTOR') {
-      const doctor = await prisma.doctor.findFirst({
+      const doctor = await prisma.doctorProfile.findFirst({
         where: { userId: session.user.id }
       });
       if (!doctor || existingAssignment.primaryDoctorId !== doctor.id) {
@@ -339,7 +339,7 @@ export async function DELETE(
     }
 
     if (session.user.role === 'DOCTOR') {
-      const doctor = await prisma.doctor.findFirst({
+      const doctor = await prisma.doctorProfile.findFirst({
         where: { userId: session.user.id }
       });
       if (!doctor || existingAssignment.primaryDoctorId !== doctor.id) {

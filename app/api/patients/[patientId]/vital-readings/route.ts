@@ -56,7 +56,7 @@ export const POST = withErrorHandling(async (
   }
 
   if (isDoctor) {
-      const doctor = await prisma.doctor.findUnique({
+      const doctor = await prisma.doctorProfile.findUnique({
           where: { id: session.user.profileId! }
       });
       if (!doctor) {

@@ -182,7 +182,7 @@ export async function POST(request: NextRequest) {
       firstName,
       lastName,
       phone,
-      date_of_birth,
+      dateOfBirth,
       gender,
       role,
       account_status = 'ACTIVE'
@@ -238,7 +238,7 @@ export async function POST(request: NextRequest) {
         lastName: lastName,
         fullName: fullName,
         phone,
-        dateOfBirth: date_of_birth ? new Date(date_of_birth) : null,
+        dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : null,
         gender,
         role,
         accountStatus: account_status,

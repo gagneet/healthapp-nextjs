@@ -38,8 +38,8 @@ export async function POST(req: NextRequest) {
                 medications: { include: { medicine: true } },
                 carePlans: {
                     include: {
-                        diets: { include: { dietPlan: true } },
-                        workouts: { include: { workoutPlan: true } },
+                        carePlanToDietPlans: { include: { dietPlan: true } },
+                        carePlanToWorkoutPlans: { include: { workoutPlan: true } },
                     },
                 },
                 vitalReadings: { include: { vitalType: true }, orderBy: { readingTime: 'desc' }, take: 20 },
@@ -102,7 +102,7 @@ export async function POST(req: NextRequest) {
         }
 
         // --- Diet Plans ---
-        const dietPlans = patient.carePlans.flatMap(cp => cp.diets.map(d => d.dietPlan));
+        const dietPlans = patient.carePlans.flatMap(cp => cp.carePlanToDietPlans.map(d => d.dietPlan));
         if (dietPlans.length > 0) {
             doc.setFontSize(16);
             doc.text('Diet Plans', 14, lastY);
@@ -122,7 +122,7 @@ export async function POST(req: NextRequest) {
         }
 
         // --- Workout Plans ---
-        const workoutPlans = patient.carePlans.flatMap(cp => cp.workouts.map(w => w.workoutPlan));
+        const workoutPlans = patient.carePlans.flatMap(cp => cp.carePlanToWorkoutPlans.map(w => w.workoutPlan));
         if (workoutPlans.length > 0) {
             doc.setFontSize(16);
             doc.text('Workout Plans', 14, lastY);

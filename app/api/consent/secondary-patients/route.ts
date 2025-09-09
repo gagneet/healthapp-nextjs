@@ -59,8 +59,8 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
   try {
     // Get the healthcare provider profile
     const providerProfile = session.user.role === 'DOCTOR' 
-      ? await prisma.doctor.findFirst({ where: { userId: session.user.id } })
-      : await prisma.hsp.findFirst({ where: { userId: session.user.id } })
+      ? await prisma.doctorProfile.findFirst({ where: { userId: session.user.id } })
+      : await prisma.hspProfile.findFirst({ where: { userId: session.user.id } })
 
     if (!providerProfile) {
       return createErrorResponse(new Error("Healthcare provider profile not found"))
@@ -168,7 +168,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
           name: `${patient.user.firstName} ${patient.user.lastName}`.trim(),
           email: patient.user.email,
           phone: patient.user.phone,
-          date_of_birth: patient.dateOfBirth,
+          dateOfBirth: patient.dateOfBirth,
           gender: patient.gender
         },
         doctors: primaryDoctor ? {
