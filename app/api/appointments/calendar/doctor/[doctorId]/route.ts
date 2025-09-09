@@ -116,7 +116,9 @@ export async function GET(
         description: appointment.description,
         startTime: appointment.startTime,
         endTime: appointment.endTime,
-        status: appointment.status,
+        status: appointment.status?.toLowerCase() || 'scheduled',
+        appointmentType: 'consultation', // Default to consultation since field doesn't exist in schema
+        priority: 'normal', // Default priority
         patient: appointment.patient ? {
           id: appointment.patient.id,
           name: `${appointment.patient.user.firstName} ${appointment.patient.user.lastName}`,

@@ -16,6 +16,7 @@ const IMPLEMENTED_ROUTES = {
     '/dashboard/doctor/patients',
     '/dashboard/doctor/patients/new',
     '/dashboard/doctor/patients/[id]',
+    '/dashboard/doctor/patients/[id]/care-plan/new',
     '/dashboard/doctor/patients/[id]/care-plan/template',
     '/dashboard/doctor/templates',
     '/dashboard/doctor/services',

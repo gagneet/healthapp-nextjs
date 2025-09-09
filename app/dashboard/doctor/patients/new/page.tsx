@@ -543,28 +543,20 @@ export default function AddPatientPage() {
       const lastName = nameParts[nameParts.length - 1] || ''
       const middleName = nameParts.length > 2 ? nameParts.slice(1, -1).join(' ') : nameParts[1] || ''
       
-      // Map gender from frontend format to backend format
-      const genderMapping = {
-        'MALE': 'm',
-        'FEMALE': 'f',
-        'OTHER': 'o'
-      }
-      
       const patientData = {
-        // User fields (snake_case for backend)
+        // User fields matching API schema
         firstName: firstName,
-        middle_name: middleName || '',
+        middleName: middleName || '',
         lastName: lastName,
         email: formData.email || '',
-        mobileNumber: formData.mobileNumber,
-        gender: (genderMapping as any)[formData.gender] || '',
-        dob: processedDateOfBirth,
-        address: formData.address || '',
+        phone: formData.mobileNumber,
+        gender: formData.gender as 'MALE' | 'FEMALE' | 'OTHER', // Keep uppercase values for API
+        dateOfBirth: processedDateOfBirth,
         
         // Patient-specific fields
         medicalRecordNumber: formData.patientId.trim() || null, // Include custom patient ID
-        height_cm: parseFloat(formData.heightCm) || null,
-        weight_kg: parseFloat(formData.weightKg) || null,
+        height: parseFloat(formData.heightCm) || null,
+        weight: parseFloat(formData.weightKg) || null,
         allergies: Array.isArray(formData.allergies) ? formData.allergies.join(', ') : (formData.allergies || ''),
         comorbidities: Array.isArray(formData.comorbidities) ? formData.comorbidities.join(', ') : (formData.comorbidities || ''),
         emergency_contacts: (formData.emergencyContactNumber || formData.emergencyContactDetails) ? [{
