@@ -29,7 +29,7 @@ export const DELETE = withErrorHandling(async (
     });
 
     if (!carePlan) {
-        return createErrorResponse({ message: "Care plan not found" }, 404);
+        return createErrorResponse(new Error("Care plan not found"));
     }
 
     if (carePlan.createdByDoctorId !== session.user.profileId) {

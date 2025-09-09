@@ -56,7 +56,7 @@ export const GET = withErrorHandling(async (
   });
 
   if (!carePlan) {
-    return createErrorResponse({ message: "Care plan not found" }, 404);
+    return createErrorResponse(new Error("Care plan not found"));
   }
 
   // Basic authorization: only the patient, the creating doctor, or an admin can view

@@ -49,7 +49,7 @@ export const PUT = withErrorHandling(async (
   });
 
   if (!medication || medication.carePlanId !== carePlanId) {
-      return createErrorResponse({ message: "Medication not found in this care plan" }, 404);
+      return createErrorResponse(new Error("Medication not found in this care plan"));
   }
 
   if (medication.carePlan.createdByDoctorId !== session.user.profileId) {
@@ -92,7 +92,7 @@ export const DELETE = withErrorHandling(async (
     });
 
     if (!medication || medication.carePlanId !== carePlanId) {
-        return createErrorResponse({ message: "Medication not found in this care plan" }, 404);
+        return createErrorResponse(new Error("Medication not found in this care plan"));
     }
 
     if (medication.carePlan.createdByDoctorId !== session.user.profileId) {

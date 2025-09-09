@@ -31,10 +31,10 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
     const carePlanId = formData.get("carePlanId") as string | undefined;
 
     if (!file) {
-        return createErrorResponse({ message: "File is required" }, 400);
+        return createErrorResponse(new Error("File is required"));
     }
     if (!patientId) {
-        return createErrorResponse({ message: "patientId is required" }, 400);
+        return createErrorResponse(new Error("patientId is required"));
     }
 
     const buffer = Buffer.from(await file.arrayBuffer());

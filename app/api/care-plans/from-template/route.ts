@@ -40,7 +40,7 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
   });
 
   if (!template) {
-    return createErrorResponse({ message: "Template not found" }, 404);
+    return createErrorResponse(new Error("Template not found"));
   }
 
   // Fetch the patient
@@ -49,14 +49,13 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
   });
 
   if (!patient) {
-    return createErrorResponse({ message: "Patient not found" }, 404);
+    return createErrorResponse(new Error("Patient not found"));
   }
 
   const doctorId = session.user.profileId;
   if (!doctorId) {
     return createErrorResponse(
-      { message: "Doctor profile not found for the current user" },
-      400
+      new Error("Doctor profile not found for the current user")
     );
   }
 

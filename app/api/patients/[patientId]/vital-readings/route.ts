@@ -45,7 +45,7 @@ export const POST = withErrorHandling(async (
   });
 
   if (!patient) {
-    return createErrorResponse({ message: "Patient not found" }, 404);
+    return createErrorResponse(new Error("Patient not found"));
   }
 
   const isDoctor = session.user.role === "DOCTOR";
@@ -60,7 +60,7 @@ export const POST = withErrorHandling(async (
           where: { id: session.user.profileId! }
       });
       if (!doctor) {
-          return createErrorResponse({ message: "Doctor profile not found" }, 400);
+          return createErrorResponse(new Error("Doctor profile not found"));
       }
       // Further check if the patient is assigned to the doctor could be added here
   }
@@ -70,27 +70,27 @@ export const POST = withErrorHandling(async (
   });
 
   if (!vitalType) {
-    return createErrorResponse({ message: "Vital type not found" }, 404);
+    return createErrorResponse(new Error("Vital type not found"));
   }
 
   if (vitalType.normalRangeMin && value < vitalType.normalRangeMin) {
-    return createErrorResponse({ message: `Value is below the normal range of ${vitalType.normalRangeMin}` }, 400);
+    return createErrorResponse(new Error(`Value is below the normal range of ${vitalType.normalRangeMin}`));
   }
   if (vitalType.normalRangeMax && value > vitalType.normalRangeMax) {
-      return createErrorResponse({ message: `Value is above the normal range of ${vitalType.normalRangeMax}` }, 400);
+      return createErrorResponse(new Error(`Value is above the normal range of ${vitalType.normalRangeMax}`));
   }
 
   // Sanity checks for common vital types
   if (vitalType.name === 'Temperature' && (value < 30 || value > 45)) {
-      return createErrorResponse({ message: 'Temperature reading is outside the normal human range.' }, 400);
+      return createErrorResponse(new Error('Temperature reading is outside the normal human range.'));
   }
   if (vitalType.name === 'Heart Rate' && (value < 20 || value > 300)) {
-        return createErrorResponse({ message: 'Heart rate is outside the normal human range.' }, 400);
+        return createErrorResponse(new Error('Heart rate is outside the normal human range.'));
   }
   if (vitalType.name === 'Blood Pressure') {
       // Assuming value is systolic. A more complex implementation would handle diastolic as well.
       if (value < 50 || value > 300) {
-        return createErrorResponse({ message: 'Blood pressure reading is outside the normal human range.' }, 400);
+        return createErrorResponse(new Error('Blood pressure reading is outside the normal human range.'));
       }
   }
 

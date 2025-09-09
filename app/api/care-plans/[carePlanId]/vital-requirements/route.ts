@@ -48,7 +48,7 @@ export const POST = withErrorHandling(async (
   });
 
   if (!carePlan) {
-    return createErrorResponse({ message: "Care plan not found" }, 404);
+    return createErrorResponse(new Error("Care plan not found"));
   }
 
   if (carePlan.createdByDoctorId !== session.user.profileId) {
@@ -59,7 +59,7 @@ export const POST = withErrorHandling(async (
     where: { id: vitalTypeId },
   });
   if (!vitalType) {
-    return createErrorResponse({ message: "Vital type not found" }, 404);
+    return createErrorResponse(new Error("Vital type not found"));
   }
 
   const vitalRequirement = await prisma.vitalRequirement.create({

@@ -214,12 +214,12 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
   });
 
   if (!patient) {
-    return createErrorResponse({ message: "Patient not found" }, 404);
+    return createErrorResponse(new Error("Patient not found"));
   }
 
   const doctorId = session.user.profileId;
   if (!doctorId) {
-      return createErrorResponse({ message: "Doctor profile not found for the current user" }, 400);
+      return createErrorResponse(new Error("Doctor profile not found for the current user"));
   }
 
   const carePlan = await prisma.carePlan.create({
