@@ -13,7 +13,7 @@ const nextConfig = {
   },
   
   typescript: {
-    ignoreBuildErrors: true, // Temporarily ignore TypeScript errors for production build
+    // TypeScript errors will be checked
   },
   
   eslint: {
