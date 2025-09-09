@@ -289,7 +289,7 @@ async function validateUserEligibility(user: any, plan: any, organizationId?: st
     }
 
     // Check for bulk discount eligibility
-    const doctorCount = await prisma.doctorProfile.count({
+    const doctorCount = await prisma.doctor.count({
       where: { organizationId: organization.id }
     });
 

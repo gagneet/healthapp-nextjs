@@ -45,9 +45,9 @@ export async function GET(request: NextRequest) {
       totalSecondaryAssignments
     ] = await Promise.all([
       prisma.user.count(),
-      prisma.doctorProfile.count(),
+      prisma.doctor.count(),
       prisma.patient.count(),
-      prisma.hspProfile.count(),
+      prisma.hsp.count(),
       prisma.appointment.count(),
       prisma.carePlan.count(),
       prisma.medication.count(),
@@ -134,7 +134,7 @@ export async function GET(request: NextRequest) {
         take: 10
       });
 
-      const activeDoctors = await prisma.doctorProfile.findMany({
+      const activeDoctors = await prisma.doctor.findMany({
         select: {
           id: true,
           doctorId: true,

@@ -45,7 +45,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
 
   try {
     // Get requesting doctor profile
-    const requestingDoctor = await prisma.doctorProfile.findFirst({
+    const requestingDoctor = await prisma.doctor.findFirst({
       where: { userId: session.user.id },
       include: {
         organization: {
@@ -100,7 +100,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
     }
 
     // Get available doctors
-    const availableDoctors = await prisma.doctorProfile.findMany({
+    const availableDoctors = await prisma.doctor.findMany({
       where: whereConditions,
       take: limit,
       include: {

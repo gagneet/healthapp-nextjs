@@ -90,7 +90,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       hasAccess = true;
     } else if (user.role === 'DOCTOR') {
       // Check if doctor is the appointment's doctor
-      const doctorProfile = await prisma.doctorProfile.findFirst({
+      const doctorProfile = await prisma.doctor.findFirst({
         where: { userId: user.id }
       });
       

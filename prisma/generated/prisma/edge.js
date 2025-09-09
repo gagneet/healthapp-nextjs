@@ -2232,7 +2232,7 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "C:\\Users\\gagneet\\source\\repos\\hobby-projects\\health-management\\healthapp-nextjs\\prisma\\generated\\prisma",
+      "value": "/home/gagneet/healthapp-nextjs/prisma/generated/prisma",
       "fromEnvVar": null
     },
     "config": {
@@ -2241,12 +2241,12 @@ const config = {
     "binaryTargets": [
       {
         "fromEnvVar": null,
-        "value": "windows",
+        "value": "debian-openssl-3.0.x",
         "native": true
       }
     ],
     "previewFeatures": [],
-    "sourceFilePath": "C:\\Users\\gagneet\\source\\repos\\hobby-projects\\health-management\\healthapp-nextjs\\prisma\\schema.prisma",
+    "sourceFilePath": "/home/gagneet/healthapp-nextjs/prisma/schema.prisma",
     "isCustomOutput": true
   },
   "relativeEnvPaths": {

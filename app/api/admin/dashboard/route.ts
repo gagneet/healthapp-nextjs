@@ -54,13 +54,13 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
       prisma.user.count(),
       
       // Total doctors
-      prisma.doctorProfile.count(),
+      prisma.doctor.count(),
       
       // Total patients
       prisma.patient.count(),
       
       // Total HSPs
-      prisma.hspProfile.count(),
+      prisma.hsp.count(),
       
       // Total providers
       prisma.healthcareProvider.count(),

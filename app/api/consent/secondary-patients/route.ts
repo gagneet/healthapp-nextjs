@@ -59,7 +59,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
   try {
     // Get the healthcare provider profile
     const providerProfile = session.user.role === 'DOCTOR' 
-      ? await prisma.doctorProfile.findFirst({ where: { userId: session.user.id } })
+      ? await prisma.doctor.findFirst({ where: { userId: session.user.id } })
       : await prisma.hspProfile.findFirst({ where: { userId: session.user.id } })
 
     if (!providerProfile) {

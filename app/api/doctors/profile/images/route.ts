@@ -62,7 +62,7 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
 
     const fileUrl = `/uploads/doctors/${uniqueFilename}`;
 
-    const updatedDoctor = await prisma.doctorProfile.update({
+    const updatedDoctor = await prisma.doctor.update({
       where: { userId: session.user.id },
       data: {
         profilePictureUrl: fileUrl,

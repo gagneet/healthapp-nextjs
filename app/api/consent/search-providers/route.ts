@@ -81,7 +81,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
         doctorWhere.AND.push({ organizationId });
       }
 
-      const doctors = await prisma.doctorProfile.findMany({
+      const doctors = await prisma.doctor.findMany({
         where: doctorWhere,
         take: limit,
         include: {
@@ -202,7 +202,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
 
     // Get current user's organization for context
     const currentUserProfile = session.user.role === 'DOCTOR' 
-      ? await prisma.doctorProfile.findFirst({ 
+      ? await prisma.doctor.findFirst({ 
           where: { userId: session.user.id },
           include: { organization: { select: { id: true, name: true } } }
         })

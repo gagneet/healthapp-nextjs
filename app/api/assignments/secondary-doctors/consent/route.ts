@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
 
     // Verify user has permission to request consent for this assignment
     if (session.user.role === 'DOCTOR') {
-      const doctor = await prisma.doctorProfile.findFirst({
+      const doctor = await prisma.doctor.findFirst({
         where: { userId: session.user.id }
       });
       if (!doctor || doctor.id !== assignment.primaryDoctorId) {

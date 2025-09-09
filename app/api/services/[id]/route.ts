@@ -29,7 +29,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
     const { id: serviceId } = params;
 
     // Get doctor profile
-    const doctor = await prisma.doctorProfile.findFirst({
+    const doctor = await prisma.doctor.findFirst({
       where: { userId: session.user.id }
     });
 
@@ -154,7 +154,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     }
 
     // Get doctor profile
-    const doctor = await prisma.doctorProfile.findFirst({
+    const doctor = await prisma.doctor.findFirst({
       where: { userId: session.user.id }
     });
 
@@ -245,7 +245,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
     const { id: serviceId } = params;
 
     // Get doctor profile
-    const doctor = await prisma.doctorProfile.findFirst({
+    const doctor = await prisma.doctor.findFirst({
       where: { userId: session.user.id }
     });
 

@@ -47,11 +47,15 @@ export const POST = withErrorHandling(async (
   });
 
   if (!carePlan) {
-    return createErrorResponse({ message: "Care plan not found" }, 404);
+    return createErrorResponse(new Error("Care plan not found"));
   }
 
   if (carePlan.createdByDoctorId !== session.user.profileId) {
     return createForbiddenResponse();
+  }
+
+  if (!session.user.profileId) {
+    return createErrorResponse(new Error("User profile not found"));
   }
 
   const startDateTime = new Date(`${new Date(startDate).toISOString().split('T')[0]}T${startTime}`);
@@ -82,7 +86,8 @@ export const POST = withErrorHandling(async (
       endDate: endDateTime,
       startTime: startDateTime,
       endTime: endDateTime,
-      status: 'SCHEDULED'
+      status: 'SCHEDULED',
+      createdAt: new Date()
     },
   });
 

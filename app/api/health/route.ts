@@ -59,7 +59,7 @@ export async function GET(request: NextRequest) {
         const [userCount, patientCount, doctorCount] = await Promise.all([
           prisma.user.count().catch(() => null),
           prisma.patient.count().catch(() => null), 
-          prisma.doctorProfile.count().catch(() => null)
+          prisma.doctor.count().catch(() => null)
         ]);
         
         // If all queries succeeded, schema exists

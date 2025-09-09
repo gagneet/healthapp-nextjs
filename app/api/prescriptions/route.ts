@@ -74,7 +74,7 @@ export async function POST(request: NextRequest) {
 
     // Get prescriber information
     const prescriber = session.user.role === 'DOCTOR' 
-      ? await prisma.doctorProfile.findUnique({
+      ? await prisma.doctor.findUnique({
           where: { userId: session.user.id },
           include: { organization: true, user: true },
         })
@@ -259,7 +259,7 @@ export async function GET(request: NextRequest) {
     const whereClause: any = {};
 
     if (session.user.role === 'DOCTOR') {
-      const doctor = await prisma.doctorProfile.findUnique({
+      const doctor = await prisma.doctor.findUnique({
         where: { userId: session.user.id },
       });
       if (!doctor) {

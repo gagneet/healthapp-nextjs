@@ -49,7 +49,7 @@ export async function GET(request: NextRequest) {
     }
 
     const [doctors, totalCount] = await Promise.all([
-      prisma.doctorProfile.findMany({
+      prisma.doctor.findMany({
         where: whereClause,
         include: {
           user: {
@@ -92,7 +92,7 @@ export async function GET(request: NextRequest) {
         take: limit,
         orderBy: { createdAt: 'desc' }
       }),
-      prisma.doctorProfile.count({ where: whereClause })
+      prisma.doctor.count({ where: whereClause })
     ]);
 
     return NextResponse.json({

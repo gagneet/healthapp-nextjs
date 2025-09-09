@@ -229,7 +229,7 @@ export async function GET(
     if (queryData.includeVitalReminders) {
       const vitalTypes = await prisma.vitalType.findMany({
         where: {
-          vitals: {
+          vitalRequirements: {
             some: {
               carePlan: {
                 patientId: patient.id,

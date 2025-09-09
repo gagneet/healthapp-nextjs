@@ -111,7 +111,7 @@ export class SecondaryDoctorService {
       }
 
       // Validate doctor exists
-      const doctor = await prisma.doctorProfile.findUnique({
+      const doctor = await prisma.doctor.findUnique({
         where: { id: request.doctorId },
         include: {
           organization: true
@@ -426,7 +426,7 @@ export class SecondaryDoctorService {
       }
     });
 
-    const doctor = await prisma.doctorProfile.findUnique({
+    const doctor = await prisma.doctor.findUnique({
       where: { id: doctorId },
       include: { organization: true }
     });

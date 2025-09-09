@@ -77,7 +77,7 @@ export const POST = withErrorHandling(async (request: NextRequest, { params }: {
 
   try {
     // Get primary doctor profile
-    const primaryDoctor = await prisma.doctorProfile.findFirst({
+    const primaryDoctor = await prisma.doctor.findFirst({
       where: { userId: session.user.id },
       include: {
         user: {
@@ -119,7 +119,7 @@ export const POST = withErrorHandling(async (request: NextRequest, { params }: {
     let providerType = ''
 
     if (secondaryDoctorId) {
-      secondaryProvider = await prisma.doctorProfile.findFirst({
+      secondaryProvider = await prisma.doctor.findFirst({
         where: { id: secondaryDoctorId, isActive: true },
         include: {
           user: {

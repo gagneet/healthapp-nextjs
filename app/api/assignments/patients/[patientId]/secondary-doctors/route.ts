@@ -64,7 +64,7 @@ export const POST = withErrorHandling(async (request: NextRequest, { params }: {
 
   try {
     // Get primary doctor profile
-    const primaryDoctor = await prisma.doctorProfile.findFirst({
+    const primaryDoctor = await prisma.doctor.findFirst({
       where: { userId: session.user.id },
       include: {
         user: {
@@ -98,7 +98,7 @@ export const POST = withErrorHandling(async (request: NextRequest, { params }: {
     }
 
     // Verify secondary doctor exists and is active
-    const secondaryDoctor = await prisma.doctorProfile.findFirst({
+    const secondaryDoctor = await prisma.doctor.findFirst({
       where: { 
         id: doctorId, 
         isVerified: true
@@ -237,7 +237,7 @@ export const GET = withErrorHandling(async (request: NextRequest, { params }: { 
   try {
     // Get requesting doctor's profile
     const requestingDoctor = session.user.role === 'DOCTOR'
-      ? await prisma.doctorProfile.findFirst({ where: { userId: session.user.id } })
+      ? await prisma.doctor.findFirst({ where: { userId: session.user.id } })
       : null
 
     // Verify access to patient

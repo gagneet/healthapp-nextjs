@@ -51,7 +51,7 @@ export async function GET(request: NextRequest) {
     if (user.role === 'DOCTOR') {
       // Import prisma locally to get doctor profile ID
       const { prisma } = await import('@/lib/prisma');
-      const doctorProfile = await prisma.doctorProfile.findFirst({
+      const doctorProfile = await prisma.doctor.findFirst({
         where: { userId: user.id || user.userId }
       });
       

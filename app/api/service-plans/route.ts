@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
 
     // Role-based filtering
     if (session.user.role === 'DOCTOR') {
-      const doctor = await prisma.doctorProfile.findFirst({
+      const doctor = await prisma.doctor.findFirst({
         where: { userId: session.user.id }
       });
       if (doctor?.organization_id) {
@@ -213,7 +213,7 @@ export async function POST(request: NextRequest) {
     // Permission check for non-admins
     if (!['SYSTEM_ADMIN', 'HOSPITAL_ADMIN'].includes(session.user.role)) {
       if (session.user.role === 'DOCTOR') {
-        const doctor = await prisma.doctorProfile.findFirst({
+        const doctor = await prisma.doctor.findFirst({
           where: { userId: session.user.id }
         });
         if (!doctor || doctor.organization_id !== provider_id) {

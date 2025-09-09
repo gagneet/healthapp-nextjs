@@ -57,7 +57,7 @@ export async function GET(request: NextRequest) {
 
     // Role-based filtering
     if (session.user.role === 'DOCTOR') {
-      const doctor = await prisma.doctorProfile.findFirst({
+      const doctor = await prisma.doctor.findFirst({
         where: { userId: session.user.id }
       });
       if (doctor) {

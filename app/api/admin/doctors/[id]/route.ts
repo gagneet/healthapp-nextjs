@@ -29,7 +29,7 @@ export async function GET(
       }, { status: 403 });
     }
 
-    const doctor = await prisma.doctorProfile.findUnique({
+    const doctor = await prisma.doctor.findUnique({
       where: { id: params.id },
       include: {
         user: {
@@ -136,7 +136,7 @@ export async function PUT(
     } = body;
 
     // Check if doctor exists
-    const existingDoctor = await prisma.doctorProfile.findUnique({
+    const existingDoctor = await prisma.doctor.findUnique({
       where: { id: params.id },
       include: { user: true }
     });
@@ -151,7 +151,7 @@ export async function PUT(
 
     // Check for medical license number conflicts if being changed
     if (medicalLicenseNumber && medicalLicenseNumber !== existingDoctor.medicalLicenseNumber) {
-      const licenseConflict = await prisma.doctorProfile.findFirst({
+      const licenseConflict = await prisma.doctor.findFirst({
         where: { 
           medicalLicenseNumber: medicalLicenseNumber,
           id: { not: params.id }
@@ -300,7 +300,7 @@ export async function DELETE(
     }
 
     // Check if doctor exists
-    const existingDoctor = await prisma.doctorProfile.findUnique({
+    const existingDoctor = await prisma.doctor.findUnique({
       where: { id: params.id },
       include: { user: true }
     });

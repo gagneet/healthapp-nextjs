@@ -53,7 +53,7 @@ export const POST = withErrorHandling(async (request: NextRequest, { params }: {
 
   try {
     // Get requesting doctor profile
-    const requestingDoctor = await prisma.doctorProfile.findFirst({
+    const requestingDoctor = await prisma.doctor.findFirst({
       where: { userId: session.user.id }
     })
 

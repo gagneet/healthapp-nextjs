@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
     const validatedData = generateSlotsSchema.parse(body);
 
     // Verify doctor exists and user has permission to generate slots
-    const doctor = await prisma.doctorProfile.findUnique({
+    const doctor = await prisma.doctor.findUnique({
       where: { id: validatedData.doctorId },
       include: {
         user: { select: { name: true, email: true } },

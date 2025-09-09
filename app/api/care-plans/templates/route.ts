@@ -65,7 +65,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
     // Business Logic: Role-based access to templates
     if (session.user.role === 'DOCTOR') {
       // Doctors can see templates for their specialty or general templates
-      const doctor = await prisma.doctorProfile.findUnique({
+      const doctor = await prisma.doctor.findUnique({
         where: { id: session.user.profileId! },
         select: { specialtyId: true }
       })

@@ -152,7 +152,7 @@ async function searchPatients(searchValue: string, filters: SearchFilters, user:
   // Role-based filtering for patient search
   if (user.role === 'DOCTOR') {
     // Doctors can only search their assigned patients
-    const doctor = await prisma.doctorProfile.findFirst({
+    const doctor = await prisma.doctor.findFirst({
       where: { userId: user.id }
     });
     if (doctor) {
@@ -192,7 +192,7 @@ async function searchPatients(searchValue: string, filters: SearchFilters, user:
 }
 
 async function searchDoctors(searchValue: string, filters: SearchFilters) {
-  return await prisma.doctorProfile.findMany({
+  return await prisma.doctor.findMany({
     where: {
       OR: [
         { user: { firstName: { contains: searchValue, mode: 'insensitive' } } },

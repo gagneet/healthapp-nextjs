@@ -77,7 +77,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       hasAccess = true;
     } else if (user.role === 'DOCTOR') {
       // Check if doctor is the patient's primary care doctor
-      const doctorProfile = await prisma.doctorProfile.findFirst({
+      const doctorProfile = await prisma.doctor.findFirst({
         where: { userId: user.id }
       });
       
@@ -180,7 +180,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     if (session.user.role === 'PATIENT' && session.user.patientId === currentVital.patientId) {
       hasAccess = true;
     } else if (session.user.role === 'DOCTOR') {
-      const doctorProfile = await prisma.doctorProfile.findFirst({
+      const doctorProfile = await prisma.doctor.findFirst({
         where: { userId: session.user.id }
       });
       
