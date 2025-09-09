@@ -384,9 +384,15 @@ exports.Prisma.DietPlanScalarFieldEnum = {
   name: 'name',
   description: 'description',
   type: 'type',
+  totalCalories: 'totalCalories',
+  startDate: 'startDate',
+  endDate: 'endDate',
   details: 'details',
+  expiredOn: 'expiredOn',
+  isActive: 'isActive',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  deletedAt: 'deletedAt'
 };
 
 exports.Prisma.WorkoutPlanScalarFieldEnum = {
@@ -394,9 +400,16 @@ exports.Prisma.WorkoutPlanScalarFieldEnum = {
   name: 'name',
   description: 'description',
   type: 'type',
+  totalCalories: 'totalCalories',
+  startDate: 'startDate',
+  endDate: 'endDate',
+  time: 'time',
   details: 'details',
+  expiredOn: 'expiredOn',
+  isActive: 'isActive',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  deletedAt: 'deletedAt'
 };
 
 exports.Prisma.CarePlanToDietPlanScalarFieldEnum = {
