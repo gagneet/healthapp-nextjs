@@ -111,7 +111,7 @@ export async function POST(request: NextRequest) {
       deviceReading = await prisma.deviceReading.findUnique({
         where: { id: validatedData.deviceReadingId },
         include: {
-          medicalDevice: { select: { deviceName: true, deviceType: true, serialNumber: true } }
+          device: { select: { deviceName: true, deviceType: true, serialNumber: true } }
         }
       });
       
@@ -120,7 +120,7 @@ export async function POST(request: NextRequest) {
       }
 
       // Verify device reading timestamp is recent (within 1 hour)
-      const readingAge = Date.now() - deviceReading.recordedAt.getTime();
+      const readingAge = Date.now() - deviceReading.createdAt.getTime();
       if (readingAge > 60 * 60 * 1000) {
         return NextResponse.json({ 
           error: 'Device reading is too old. Please use a recent reading.' 
@@ -214,8 +214,8 @@ export async function POST(request: NextRequest) {
         alertReasons: vitalReading.alertReasons,
         isValidated: vitalReading.isValidated,
         deviceInfo: deviceReading ? {
-          deviceName: deviceReading.medicalDevice.deviceName,
-          deviceType: deviceReading.medicalDevice.deviceType
+          deviceName: deviceReading.device.deviceName,
+          deviceType: deviceReading.device.deviceType
         } : null,
         notes: vitalReading.notes,
         location: vitalReading.location,
@@ -251,7 +251,7 @@ export async function GET(request: NextRequest) {
     
     const queryData = getVitalsSchema.parse({
       patientId: searchParams.get('patientId') || undefined,
-      vitalTemplateId: searchParams.get('vitalTemplateId') || undefined,
+      vitalTypeId: searchParams.get('vitalTypeId') || undefined,
       startDate: searchParams.get('startDate') || undefined,
       endDate: searchParams.get('endDate') || undefined,
       alertLevel: searchParams.get('alertLevel') || undefined,
@@ -308,8 +308,8 @@ export async function GET(request: NextRequest) {
     }
 
     // Add additional filters
-    if (queryData.vitalTemplateId) {
-      vitalsFilter.vitalTemplateId = queryData.vitalTemplateId;
+    if (queryData.vitalTypeId) {
+      vitalsFilter.vitalTypeId = queryData.vitalTypeId;
     }
 
     if (queryData.alertLevel) {
@@ -331,7 +331,7 @@ export async function GET(request: NextRequest) {
       prisma.vitalReading.findMany({
         where: vitalsFilter,
         include: {
-          vitalTemplate: { select: { name: true, category: true, unit: true, normalRange: true } },
+          vitalType: { select: { name: true, unit: true, normalRangeMin: true, normalRangeMax: true, description: true } },
           patient: session.user.role !== 'PATIENT' ? {
             include: {
               user: { select: { firstName: true, lastName: true } }
@@ -339,7 +339,7 @@ export async function GET(request: NextRequest) {
           } : false,
           deviceReading: queryData.includeDeviceInfo ? {
             include: {
-              medicalDevice: { select: { deviceName: true, deviceType: true, serialNumber: true } }
+              device: { select: { deviceName: true, deviceType: true, serialNumber: true } }
             }
           } : false
         },
@@ -354,7 +354,7 @@ export async function GET(request: NextRequest) {
       message: 'Vital readings retrieved successfully',
       vitals: vitals.map(vital => ({
         id: vital.id,
-        vitalTemplate: vital.vitalTemplate,
+        vitalType: vital.vitalType,
         patient: vital.patient ? {
           name: `${vital.patient.user.firstName} ${vital.patient.user.lastName}`
         } : undefined,
@@ -363,12 +363,12 @@ export async function GET(request: NextRequest) {
         recordedAt: vital.readingTime,
         alertLevel: vital.alertLevel,
         alertReasons: vital.alertReasons,
-        isVerified: vital.isVerified,
-        verifiedAt: vital.verifiedAt,
+        isValidated: vital.isValidated,
+        validatedAt: vital.validatedAt,
         deviceInfo: vital.deviceReading ? {
-          deviceName: vital.deviceReading.medicalDevice.deviceName,
-          deviceType: vital.deviceReading.medicalDevice.deviceType,
-          serialNumber: vital.deviceReading.medicalDevice.serialNumber
+          deviceName: vital.deviceReading.device.deviceName,
+          deviceType: vital.deviceReading.device.deviceType,
+          serialNumber: vital.deviceReading.device.serialNumber
         } : null,
         notes: vital.notes,
         location: vital.location,
@@ -397,8 +397,8 @@ export async function GET(request: NextRequest) {
   }
 }
 
-function calculateVitalAlert(value: number, vitalTemplate: any) {
-  const normalRange = vitalTemplate.normalRange || {};
+function calculateVitalAlert(value: number, vitalType: any) {
+  const normalRange = { min: vitalType.normalRangeMin, max: vitalType.normalRangeMax };
   
   let alertLevel = 'NORMAL';
   const reasons = [];
@@ -408,11 +408,11 @@ function calculateVitalAlert(value: number, vitalTemplate: any) {
   if (normalRange.min !== null && value < normalRange.min) {
     if (value < normalRange.min * 0.8) {
       alertLevel = 'CRITICAL';
-      reasons.push(`Value significantly below normal range (${normalRange.min}${vitalTemplate.unit})`);
+      reasons.push(`Value significantly below normal range (${normalRange.min}${vitalType.unit})`);
       recommendedActions.push('Immediate medical consultation required');
     } else {
       alertLevel = 'WARNING';
-      reasons.push(`Value below normal range (${normalRange.min}${vitalTemplate.unit})`);
+      reasons.push(`Value below normal range (${normalRange.min}${vitalType.unit})`); 
       recommendedActions.push('Monitor closely and consult healthcare provider');
     }
   }
@@ -420,17 +420,17 @@ function calculateVitalAlert(value: number, vitalTemplate: any) {
   if (normalRange.max !== null && value > normalRange.max) {
     if (value > normalRange.max * 1.2) {
       alertLevel = 'CRITICAL';
-      reasons.push(`Value significantly above normal range (${normalRange.max}${vitalTemplate.unit})`);
+      reasons.push(`Value significantly above normal range (${normalRange.max}${vitalType.unit})`);
       recommendedActions.push('Immediate medical consultation required');
     } else {
       alertLevel = 'WARNING';
-      reasons.push(`Value above normal range (${normalRange.max}${vitalTemplate.unit})`);
+      reasons.push(`Value above normal range (${normalRange.max}${vitalType.unit})`); 
       recommendedActions.push('Monitor closely and consult healthcare provider');
     }
   }
 
   // Check emergency thresholds
-  if (vitalTemplate.name.toLowerCase().includes('blood pressure')) {
+  if (vitalType.name.toLowerCase().includes('blood pressure')) {
     if (value > 180) {
       alertLevel = 'EMERGENCY';
       reasons.push('Hypertensive crisis detected');
@@ -438,7 +438,7 @@ function calculateVitalAlert(value: number, vitalTemplate: any) {
     }
   }
 
-  if (vitalTemplate.name.toLowerCase().includes('heart rate')) {
+  if (vitalType.name.toLowerCase().includes('heart rate')) {
     if (value > 120 || value < 50) {
       alertLevel = value > 150 || value < 40 ? 'EMERGENCY' : 'CRITICAL';
       reasons.push(`${value > 120 ? 'Tachycardia' : 'Bradycardia'} detected`);
@@ -459,12 +459,12 @@ async function createVitalAlert(params: {
   reasons: string[];
   recommendedActions: string[];
 }) {
-  return await prisma.vitalAlert.create({
+  return await prisma.patientAlert.create({
     data: {
       patientId: params.patientId,
       vitalReadingId: params.vitalReadingId,
-      alertLevel: params.alertLevel,
-      vitalType: params.vitalName,
+      severity: params.alertLevel,
+      alertType: 'VITALS',
       message: `${params.vitalName}: ${params.value}${params.unit} - ${params.reasons.join(', ')}`,
       reasons: params.reasons,
       recommendedActions: params.recommendedActions,
@@ -494,7 +494,7 @@ async function notifyHealthcareProviders(params: {
 
 async function calculateVitalTrends(params: {
   patientId: string;
-  vitalTemplateId: string;
+  vitalTypeId: string;
   currentValue: number;
   timeframe: string;
 }) {
@@ -504,7 +504,7 @@ async function calculateVitalTrends(params: {
   const historicalReadings = await prisma.vitalReading.findMany({
     where: {
       patientId: params.patientId,
-      vitalTemplateId: params.vitalTemplateId,
+      vitalTypeId: params.vitalTypeId,
       readingTime: { gte: startDate }
     },
     orderBy: { readingTime: 'asc' },

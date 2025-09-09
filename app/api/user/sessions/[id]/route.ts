@@ -20,7 +20,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
     const { id: sessionId } = params;
 
     // Verify session belongs to current user
-    const targetSession = await prisma.Session.findFirst({
+    const targetSession = await prisma.session.findFirst({
       where: {
         id: sessionId,
         userId: session.user.id
@@ -36,7 +36,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
     }
 
     // Delete the session
-    await prisma.Session.delete({
+    await prisma.session.delete({
       where: { id: sessionId }
     });
 

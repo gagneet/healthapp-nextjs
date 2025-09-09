@@ -149,7 +149,7 @@ export async function GET(request: NextRequest) {
         },
         deviceReading: {
           include: {
-            medicalDevice: { 
+            device: { 
               select: { deviceName: true, deviceType: true }
             }
           }
@@ -288,7 +288,7 @@ function processTimelineData(adherenceLogs: any[], granularity: string) {
       patientName: `${log.medication.patient.user.firstName} ${log.medication.patient.user.lastName}`,
       scheduledTime: log.scheduledTime,
       actualTime: log.actualTime,
-      status: log.adherenceStatus,
+      status: log.status,
       dosage: log.dosageTaken,
       method: log.logMethod,
       notes: log.notes,
@@ -299,7 +299,7 @@ function processTimelineData(adherenceLogs: any[], granularity: string) {
     timeEntry.patients.add(`${log.medication.patient.user.firstName} ${log.medication.patient.user.lastName}`);
     
     timeEntry.summary.total++;
-    switch (log.adherenceStatus) {
+    switch (log.status) {
       case 'TAKEN':
         timeEntry.summary.taken++;
         break;
@@ -343,9 +343,9 @@ function calculateAdherenceAnalytics(adherenceLogs: any[], startDate: Date, endD
   let iotVerified = 0;
 
   adherenceLogs.forEach(log => {
-    statusCounts[log.adherenceStatus as keyof typeof statusCounts]++;
+    statusCounts[log.status as keyof typeof statusCounts]++;
     
-    if (log.adherenceStatus === 'LATE' && log.actualTime && log.scheduledTime) {
+    if (log.status === 'LATE' && log.actualTime && log.scheduledTime) {
       const delay = (new Date(log.actualTime).getTime() - new Date(log.scheduledTime).getTime()) / (1000 * 60);
       totalDelay += delay;
       delayCount++;

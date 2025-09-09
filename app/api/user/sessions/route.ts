@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Get all active sessions for this user from Auth.js Session table
-    const sessions = await prisma.Session.findMany({
+    const sessions = await prisma.session.findMany({
       where: {
         userId: session.user.id,
         expires: {
@@ -97,7 +97,7 @@ export async function DELETE(request: NextRequest) {
                                request.cookies.get('__Secure-next-auth.session-token')?.value;
 
     // Delete all sessions except the current one
-    const deleteResult = await prisma.Session.deleteMany({
+    const deleteResult = await prisma.session.deleteMany({
       where: {
         userId: session.user.id,
         sessionToken: {

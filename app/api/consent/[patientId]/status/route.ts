@@ -143,15 +143,15 @@ export const GET = withErrorHandling(async (request: NextRequest, { params }: { 
     const assignmentIds = assignments.map(a => a.id)
     const consentOtps = await prisma.patientConsentOtp.findMany({
       where: {
-        patientDoctorAssignmentId: { in: assignmentIds }
+        secondaryAssignmentId: { in: assignmentIds }
       },
       orderBy: { createdAt: 'desc' }
     })
 
     // Map consent status to assignments
     const consentMap = consentOtps.reduce((acc, otp) => {
-      if (!acc[otp.patientDoctorAssignmentId]) {
-        acc[otp.patientDoctorAssignmentId] = otp
+      if (!acc[otp.secondaryAssignmentId]) {
+        acc[otp.secondaryAssignmentId] = otp
       }
       return acc
     }, {} as Record<string, any>)

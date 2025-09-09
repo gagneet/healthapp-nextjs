@@ -15,26 +15,26 @@ interface LogFilter {
 }
 
 const logAdherenceSchema = z.object({
-  medicationId: z.string().uuid(),
-  scheduledTime: z.string().datetime(),
-  actualTime: z.string().datetime().optional(),
-  adherenceStatus: z.enum(['TAKEN', 'MISSED', 'LATE', 'PARTIAL']),
-  dosageTaken: z.number().positive().optional(),
-  notes: z.string().optional(),
-  logMethod: z.enum(['MANUAL', 'IOT_DEVICE', 'SMARTPHONE_APP', 'CAREGIVER']).default('MANUAL'),
+  relatedMedicationId: z.string().uuid(),
+  scheduledDatetime: z.string().datetime(),
+  actualDatetime: z.string().datetime().optional(),
+  status: z.enum(['taken', 'missed', 'late', 'partial']),
+  actualDose: z.number().positive().optional(),
+  patientNotes: z.string().optional(),
+  recordedBy: z.enum(['manual', 'iot_device', 'smartphone_app', 'caregiver']).default('manual'),
   deviceReadingId: z.string().uuid().optional(),
-  sideEffects: z.array(z.string()).optional(),
+  sideEffectsReported: z.array(z.string()).optional(),
   location: z.string().optional(),
   reminderEffectiveness: z.enum(['HELPFUL', 'NOT_HELPFUL', 'NO_REMINDER']).optional()
 });
 
 const getLogsSchema = z.object({
-  medicationId: z.string().uuid().optional(),
+  relatedMedicationId: z.string().uuid().optional(),
   patientId: z.string().uuid().optional(),
   startDate: z.string().date().optional(),
   endDate: z.string().date().optional(),
-  status: z.enum(['TAKEN', 'MISSED', 'LATE', 'PARTIAL']).optional(),
-  logMethod: z.enum(['MANUAL', 'IOT_DEVICE', 'SMARTPHONE_APP', 'CAREGIVER']).optional(),
+  status: z.enum(['taken', 'missed', 'late', 'partial']).optional(),
+  recordedBy: z.enum(['manual', 'iot_device', 'smartphone_app', 'caregiver']).optional(),
   limit: z.number().int().positive().max(1000).default(100),
   offset: z.number().int().nonnegative().default(0)
 });
@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
 
     // Verify medication exists and user has access
     const medication = await prisma.medication.findUnique({
-      where: { id: validatedData.medicationId },
+      where: { id: validatedData.relatedMedicationId },
       include: {
         patient: {
           include: {
@@ -104,8 +104,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate business rules
-    const scheduledTime = new Date(validatedData.scheduledTime);
-    const actualTime = validatedData.actualTime ? new Date(validatedData.actualTime) : null;
+    const scheduledTime = new Date(validatedData.scheduledDatetime);
+    const actualTime = validatedData.actualDatetime ? new Date(validatedData.actualDatetime) : null;
     const now = new Date();
 
     // Check if scheduled time is within medication period
@@ -122,25 +122,25 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate adherence status logic
-    if (validatedData.adherenceStatus === 'TAKEN' && actualTime && actualTime > scheduledTime) {
+    if (validatedData.status === 'taken' && actualTime && actualTime > scheduledTime) {
       const delayMinutes = (actualTime.getTime() - scheduledTime.getTime()) / (1000 * 60);
       if (delayMinutes > 60) { // More than 1 hour late
         return NextResponse.json({ 
-          error: 'Medication taken more than 1 hour late should be logged as LATE status' 
+          error: 'Medication taken more than 1 hour late should be logged as late status' 
         }, { status: 400 });
       }
     }
 
-    if (validatedData.adherenceStatus === 'LATE' && (!actualTime || actualTime <= scheduledTime)) {
+    if (validatedData.status === 'late' && (!actualTime || actualTime <= scheduledTime)) {
       return NextResponse.json({ 
-        error: 'LATE status requires actualTime to be after scheduledTime' 
+        error: 'late status requires actualDatetime to be after scheduledDatetime' 
       }, { status: 400 });
     }
 
     // Check for duplicate logs
     const existingLog = await prisma.adherenceLog.findFirst({
       where: {
-        relatedMedicationId: validatedData.medicationId,
+        relatedMedicationId: validatedData.relatedMedicationId,
         scheduledDatetime: scheduledTime
       }
     });
@@ -150,7 +150,7 @@ export async function POST(request: NextRequest) {
         error: 'Adherence already logged for this medication at this scheduled time',
         existingLog: {
           id: existingLog.id,
-          status: existingLog.adherenceStatus,
+          status: existingLog.status,
           loggedAt: existingLog.createdAt
         }
       }, { status: 409 });
@@ -162,7 +162,7 @@ export async function POST(request: NextRequest) {
       deviceReading = await prisma.deviceReading.findUnique({
         where: { id: validatedData.deviceReadingId },
         include: {
-          medicalDevice: { select: { deviceName: true, deviceType: true } }
+          device: { select: { deviceName: true, deviceType: true } }
         }
       });
       
@@ -171,7 +171,7 @@ export async function POST(request: NextRequest) {
       }
       
       // Verify device reading matches medication timing
-      const readingTime = new Date(deviceReading.recordedAt);
+      const readingTime = new Date(deviceReading.createdAt);
       const timeDiff = Math.abs(readingTime.getTime() - (actualTime?.getTime() || scheduledTime.getTime()));
       if (timeDiff > 30 * 60 * 1000) { // More than 30 minutes difference
         return NextResponse.json({ 
@@ -185,16 +185,16 @@ export async function POST(request: NextRequest) {
       data: {
         patientId: medication.patientId,
         adherenceType: 'medication',
-        relatedMedicationId: validatedData.medicationId,
+        relatedMedicationId: validatedData.relatedMedicationId,
         scheduledDatetime: scheduledTime,
         actualDatetime: actualTime,
-        status: validatedData.adherenceStatus.toLowerCase(),
+        status: validatedData.status,
         prescribedDose: medication.dosage,
-        actualDose: validatedData.dosageTaken,
-        notes: validatedData.notes,
-        logMethod: validatedData.logMethod,
+        actualDose: validatedData.actualDose,
+        patientNotes: validatedData.patientNotes,
+        recordedBy: validatedData.recordedBy,
         deviceReadingId: validatedData.deviceReadingId,
-        sideEffects: validatedData.sideEffects || [],
+        sideEffectsReported: validatedData.sideEffectsReported || [],
         location: validatedData.location,
         reminderEffectiveness: validatedData.reminderEffectiveness,
         recordedByUserId: loggedBy,
@@ -223,7 +223,7 @@ export async function POST(request: NextRequest) {
     const shouldCreateAlert = await checkForAdherenceAlerts({
       medicationId: validatedData.medicationId,
       patientId: medication.patientId,
-      adherenceStatus: validatedData.adherenceStatus,
+      adherenceStatus: validatedData.status,
       recentLogs: 5 // Check last 5 logs
     });
 
@@ -259,7 +259,7 @@ export async function POST(request: NextRequest) {
         actualTime: adherenceLog.actualDatetime,
         status: adherenceLog.status,
         dosageTaken: adherenceLog.actualDose,
-        logMethod: adherenceLog.logMethod,
+        recordedBy: adherenceLog.recordedBy,
         isIoTVerified: false, // Remove device reading for now
         deviceInfo: null,
         loggedAt: adherenceLog.createdAt
@@ -305,7 +305,7 @@ export async function GET(request: NextRequest) {
       startDate: searchParams.get('startDate') || undefined,
       endDate: searchParams.get('endDate') || undefined,
       status: searchParams.get('status') || undefined,
-      logMethod: searchParams.get('logMethod') || undefined,
+      recordedBy: searchParams.get('recordedBy') || undefined,
       limit: parseInt(searchParams.get('limit') || '100'),
       offset: parseInt(searchParams.get('offset') || '0')
     });
@@ -357,9 +357,9 @@ export async function GET(request: NextRequest) {
     }
 
     // Add additional filters
-    if (queryData.medicationId) logFilter.relatedMedicationId = queryData.medicationId;
+    if (queryData.relatedMedicationId) logFilter.relatedMedicationId = queryData.relatedMedicationId;
     if (queryData.status) logFilter.status = queryData.status.toLowerCase();
-    if (queryData.logMethod) logFilter.logMethod = queryData.logMethod;
+    if (queryData.recordedBy) logFilter.recordedBy = queryData.recordedBy;
     if (queryData.startDate || queryData.endDate) {
       logFilter.scheduledDatetime = {
         ...(queryData.startDate && { gte: new Date(queryData.startDate) }),
@@ -413,14 +413,14 @@ export async function GET(request: NextRequest) {
         status: log.status,
         dosageTaken: log.actualDose,
         notes: log.notes,
-        logMethod: log.logMethod,
-        sideEffects: log.sideEffects,
+        recordedBy: log.recordedBy,
+        sideEffectsReported: log.sideEffectsReported,
         location: log.location,
         reminderEffectiveness: log.reminderEffectiveness,
         isIoTVerified: !!log.deviceReading,
         deviceInfo: log.deviceReading ? {
-          deviceName: log.deviceReading.medicalDevice.deviceName,
-          deviceType: log.deviceReading.medicalDevice.deviceType
+          deviceName: log.deviceReading.device.deviceName,
+          deviceType: log.deviceReading.device.deviceType
         } : null,
         loggedAt: log.createdAt
       })),
@@ -463,7 +463,7 @@ async function checkForAdherenceAlerts(params: {
 
   // Check for patterns that warrant alerts
   const missedCount = recent.filter(log => log.status === 'missed').length;
-  const lateCount = recent.filter(log => log.status === 'delayed').length;
+  const lateCount = recent.filter(log => log.status === 'late').length;
 
   if (missedCount >= 3) {
     return {
@@ -491,11 +491,11 @@ async function createAdherenceAlert(params: {
   severity: string;
   message: string;
 }) {
-  return await prisma.adherenceAlert.create({
+  return await prisma.patientAlert.create({
     data: {
       patientId: params.patientId,
       medicationId: params.medicationId,
-      alertType: params.alertType,
+      alertType: 'MEDICATION',
       severity: params.severity,
       message: params.message,
       isActive: true,
@@ -517,7 +517,7 @@ async function calculateRecentAdherenceRate(medicationId: string, days: number) 
   if (logs.length === 0) return 0;
 
   const takenOrLate = logs.filter(log => 
-    log.status === 'completed' || log.status === 'delayed'
+    log.status === 'taken' || log.status === 'late'
   ).length;
 
   return Math.round((takenOrLate / logs.length) * 100);
@@ -549,7 +549,7 @@ async function calculateAdherenceStreak(medicationId: string) {
 
   let streak = 0;
   for (const log of recentLogs) {
-    if (log.status === 'completed' || log.status === 'delayed') {
+    if (log.status === 'taken' || log.status === 'late') {
       streak++;
     } else {
       break;

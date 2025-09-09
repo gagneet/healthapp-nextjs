@@ -227,7 +227,7 @@ export async function GET(
 
     // Get vital reading reminders if requested
     if (queryData.includeVitalReminders) {
-      const vitalTemplates = await prisma.vitalTemplate.findMany({
+      const vitalTypes = await prisma.vitalType.findMany({
         where: {
           vitals: {
             some: {
@@ -241,7 +241,7 @@ export async function GET(
       });
 
       // Generate vital reminder events (simplified - would need more complex logic for frequencies)
-      vitalTemplates.forEach(template => {
+      vitalTypes.forEach(template => {
         const vitalEvents = generateDailyVitalReminders(template, startDate, endDate);
         calendarData.events.push(...vitalEvents);
       });
@@ -368,14 +368,14 @@ function generateDailyVitalReminders(template: any, startDate: Date, endDate: Da
       description: `Time to record your ${template.name} reading`,
       startTime: new Date(currentDate.getTime() + 8 * 60 * 60 * 1000), // 8 AM default
       endTime: new Date(currentDate.getTime() + 8 * 60 * 60 * 1000 + 30 * 60 * 1000), // 30 min window
-      vitalTemplate: {
+      vitalType: {
         id: template.id,
         name: template.name,
         unit: template.unit,
         category: template.category
       },
       metadata: {
-        vitalTemplateId: template.id,
+        vitalTypeId: template.id,
         canRecord: true
       }
     });
