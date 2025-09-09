@@ -55,7 +55,7 @@ export const POST = withErrorHandling(async (
   }
 
   const startDateTime = new Date(`${new Date(startDate).toISOString().split('T')[0]}T${startTime}`);
-  let endDateTime = new Date(`${new Date(startDate).toISOString().split('T')[0]}T${endTime}`);
+  const endDateTime = new Date(`${new Date(startDate).toISOString().split('T')[0]}T${endTime}`);
   if (endDateTime <= startDateTime) {
     endDateTime.setDate(endDateTime.getDate() + 1);
   }

@@ -472,10 +472,14 @@ npx prisma migrate deploy      # Apply migrations in production
 npx prisma db seed            # Seed database with initial data
 npx prisma studio             # Open Prisma Studio (database GUI)
 
-# Code Quality
-npm run lint                  # Run Next.js ESLint
-npm run type-check            # TypeScript type checking
-npm run lint:fix              # Auto-fix ESLint issues
+# Code Quality & Validation
+npm run lint                  # Auto-fix ESLint issues (recommended)
+npm run lint:check            # Check ESLint without fixing  
+npm run type-check            # Full Next.js build with TypeScript validation (CORRECT METHOD)
+npm run type-check:tsc        # Direct TypeScript check (may show false positives)
+npm run type-check:fast       # Quick lint check for development
+npm run validate              # Complete validation (lint + build)
+npm run dev:validate          # Development validation with auto-fixes
 
 # Testing
 npm test                     # Run Jest test suite
@@ -768,7 +772,8 @@ This application has been **successfully migrated to Auth.js v5** with comprehen
 - Implement proper healthcare role-based access control
 - Write tests for healthcare business logic
 - Update documentation for API changes
-- Run `npm run lint` and `npm run type-check` before committing
+- Run `npm run validate` before committing (includes both linting and TypeScript validation)
+- Use `npm run dev:validate` during development for auto-fixes
 
 ## 📝 Documentation
 

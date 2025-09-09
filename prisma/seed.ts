@@ -77,7 +77,7 @@ async function validateDatabaseSchema(): Promise<void> {
     }
   ];
 
-  let validationErrors = [];
+  const validationErrors = [];
   
   for (const { name, check } of validationChecks) {
     try {

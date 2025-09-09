@@ -9,12 +9,20 @@ Healthcare Management Platform guidance for Claude Code.
 ## Development Commands
 
 ```bash
-# Core Commands
-npm run dev build start lint type-check
+# Core Commands - CORRECT TOOLS FOR NEXT.JS PROJECT
+npm run dev build start lint validate dev:validate
 npx prisma generate migrate dev deploy db seed studio
 ./scripts/deploy-local.sh start --migrate --seed
 ./scripts/deploy.sh {dev|test|prod} deploy
-npm test test:watch test:coverage lint:fix
+npm test test:watch test:coverage
+
+# Validation Commands (UPDATED FOR NEXT.JS COMPATIBILITY)
+npm run validate              # Complete validation (lint + TypeScript via Next.js build)
+npm run dev:validate          # Development validation with auto-fixes
+npm run type-check            # TypeScript validation via Next.js build (CORRECT METHOD)
+npm run type-check:tsc        # Direct tsc check (may show false module resolution errors)
+npm run lint                  # Auto-fix ESLint issues (recommended)
+npm run lint:check            # Check ESLint without auto-fixing
 ```
 
 ## Architecture
@@ -53,8 +61,27 @@ npm test test:watch test:coverage lint:fix
 **Database**: Prisma migrations only (never sync), environment variables
 **API**: Thin controllers, service layer logic, Auth.js v5 auth, consistent responses
 **Frontend**: Next.js 14 App Router, TypeScript, role-based access, rewrites not API routes
-**Quality**: `npm run lint type-check` before commits, Jest with TypeScript
-**Environment**: PostgreSQL, JWT_SECRET, CORS URLs, AWS S3, Redis, Docker HOST_IP
+**Quality**: `npm run validate` before commits (includes Next.js build + lint), Jest with TypeScript
+**Environment**: PostgreSQL, NEXTAUTH_SECRET, CORS URLs, AWS S3, Redis, Docker HOST_IP
+
+## CRITICAL: TypeScript Validation Best Practices
+
+⚠️ **IMPORTANT**: For Next.js projects, NEVER use direct `tsc --noEmit` for error validation.
+
+**✅ CORRECT METHOD**: Use Next.js build system for TypeScript validation:
+- `npm run validate` - Complete validation pipeline
+- `npm run type-check` - Next.js build with TypeScript checking
+- `npm run dev:validate` - Development validation with auto-fixes
+
+**❌ PROBLEMATIC**: Direct TypeScript compiler:
+- `tsc --noEmit` - Shows false module resolution errors in Next.js
+- Cannot resolve `@/` path mappings correctly
+- Creates 800+ false positive errors
+
+**Why**: Next.js has its own TypeScript integration that handles:
+- Path mapping resolution (`@/` imports)
+- Next.js-specific types and modules
+- Proper compilation context for App Router
 
 ## Implementation Status
 
