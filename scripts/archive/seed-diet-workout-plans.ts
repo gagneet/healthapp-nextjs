@@ -1,6 +1,6 @@
 #!/usr/bin/env npx tsx
 
-import { PrismaClient } from '../prisma/generated/prisma/index.js';
+import { PrismaClient } from 'prisma-client-7e72d2f550c5ff4f73ac96df23033c6f3479aae70fdddbbe64c5fd8a64d30539';
 
 const prisma = new PrismaClient();
 
