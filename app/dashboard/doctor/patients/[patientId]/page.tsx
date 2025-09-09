@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { useParams } from 'next/navigation'
+import { useParams, useRouter, useSearchParams, usePathname } from 'next/navigation'
 import Link from 'next/link'
 import {
     ArrowLeftIcon,
@@ -24,6 +24,7 @@ import { formatDate, formatDateTime, getInitials, getAdherenceColor, getPriority
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 import BodyDiagramEnhanced from '@/components/ui/body-diagram-enhanced'
 import SymptomsTimeline from '@/components/ui/symptoms-timeline'
+import UploadReportModal from '@/components/modals/UploadReportModal'
 
 // API Response types for patient data
 // Updated: This interface was previously misaligned with the API response for a single patient.
@@ -185,19 +186,14 @@ const symptoms = [
 
 // Vital signs chart data will be generated from real vital readings
 
-const tabs = [
-    { id: 'overview', name: 'Overview' },
-    { id: 'medications', name: 'Medications' },
-    { id: 'vitals', name: 'Vitals' },
-    { id: 'appointments', name: 'Appointments' },
-    { id: 'symptoms', name: 'Symptoms' },
-    { id: 'care-plans', name: 'Care Plans' },
-]
-
 export default function PatientDetailsPage() {
     const params = useParams()
+    const router = useRouter()
+    const pathname = usePathname()
+    const searchParams = useSearchParams()
     const patientId = params.patientId as string
-    const [activeTab, setActiveTab] = useState('overview')
+
+    const [activeTab, setActiveTab] = useState(searchParams.get('tab') || 'overview')
     const [patient, setPatient] = useState<Patient | null>(null)
     const [isLoading, setIsLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
@@ -224,12 +220,46 @@ export default function PatientDetailsPage() {
     const [showWorkoutModal, setShowWorkoutModal] = useState(false)
     const [showReportsModal, setShowReportsModal] = useState(false)
     const [showPrescriptionModal, setShowPrescriptionModal] = useState(false)
+    const [isGeneratingPdf, setIsGeneratingPdf] = useState(false)
     const [showTeamModal, setShowTeamModal] = useState(false)
     const [showSubscriptionModal, setShowSubscriptionModal] = useState(false)
 
     // Body diagram and symptoms states
     const [bodyView, setBodyView] = useState<'front' | 'back' | 'left' | 'right'>('front')
     const [highlightedSymptom, setHighlightedSymptom] = useState<string | null>(null)
+
+    const handleGeneratePrescription = async () => {
+        setIsGeneratingPdf(true);
+        try {
+            const response = await fetch('/api/prescriptions/generate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ patientId }),
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to generate PDF');
+            }
+
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `prescription-${patientId}.pdf`;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            window.URL.revokeObjectURL(url);
+
+        } catch (error) {
+            console.error('Error generating prescription PDF:', error);
+            // You might want to show a toast notification here
+        } finally {
+            setIsGeneratingPdf(false);
+        }
+    };
 
     // API call functions
     const fetchPatientData = useCallback(async () => {
@@ -371,6 +401,20 @@ export default function PatientDetailsPage() {
             setLoadingStates(prev => ({ ...prev, carePlans: false }))
         }
     }, [patientId])
+
+    useEffect(() => {
+        const currentTab = searchParams.get('tab') || 'overview';
+        setActiveTab(currentTab);
+    }, [searchParams]);
+
+    const createQueryString = useCallback(
+        (name: string, value: string) => {
+            const params = new URLSearchParams(searchParams.toString())
+            params.set(name, value)
+            return params.toString()
+        },
+        [searchParams]
+    )
 
     useEffect(() => {
         const loadAllData = async () => {
@@ -563,10 +607,11 @@ export default function PatientDetailsPage() {
                     {/* Advanced Actions */}
                     <div className="flex space-x-2">
                         <button
-                            onClick={() => setShowPrescriptionModal(true)}
-                            className="inline-flex items-center px-3 py-2 border border-purple-300 text-sm font-medium rounded-md text-purple-700 bg-purple-50 hover:bg-purple-100"
+                            onClick={handleGeneratePrescription}
+                            disabled={isGeneratingPdf}
+                            className="inline-flex items-center px-3 py-2 border border-purple-300 text-sm font-medium rounded-md text-purple-700 bg-purple-50 hover:bg-purple-100 disabled:bg-gray-200 disabled:cursor-not-allowed"
                         >
-                            Generate Prescription
+                            {isGeneratingPdf ? 'Generating...' : 'Generate Prescription'}
                         </button>
                         <button
                             onClick={() => setShowReportsModal(true)}
@@ -594,9 +639,9 @@ export default function PatientDetailsPage() {
                         { id: 'team', name: 'Care Team', icon: '👥' },
                         { id: 'subscriptions', name: 'Services', icon: '🔔' }
                     ].map((tab) => (
-                        <button
+                        <Link
                             key={tab.id}
-                            onClick={() => setActiveTab(tab.id)}
+                            href={pathname + '?' + createQueryString('tab', tab.id)}
                             className={`whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm ${
                                 activeTab === tab.id
                                     ? 'border-blue-500 text-blue-600'
@@ -605,24 +650,9 @@ export default function PatientDetailsPage() {
                         >
                             <span className="mr-2">{tab.icon}</span>
                             {tab.name}
-                        </button>
+                        </Link>
                     ))}
                 </nav>
-            </div>
-
-            {/* Original content continues here */}
-            <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-4">
-                    <div className="flex space-x-3">
-                        <Link
-                            href={`/dashboard/doctor/patients/${patient.id}/care-plan/new`}
-                            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
-                        >
-                            <PlusIcon className="h-4 w-4 mr-2" />
-                            New Care Plan
-                        </Link>
-                    </div>
-                </div>
             </div>
 
             {/* Patient Summary Cards */}
@@ -740,6 +770,15 @@ export default function PatientDetailsPage() {
 
             {/* Tab Content */}
             <div className="mt-6">
+                <UploadReportModal
+                    isOpen={showReportsModal}
+                    onClose={() => setShowReportsModal(false)}
+                    patientId={patient.id}
+                    onUploadSuccess={() => {
+                        console.log('Upload successful, refresh reports list here');
+                        // You could add a function here to re-fetch the reports
+                    }}
+                />
                 {activeTab === 'overview' && (
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         {/* Patient Information */}
