@@ -56,6 +56,10 @@ export const POST = withErrorHandling(async (
     return createForbiddenResponse();
   }
 
+  if (!session.user.profileId) {
+    return createErrorResponse(new Error("User profile not found"));
+  }
+
   const medicine = await prisma.medicine.findUnique({
     where: { id: medicineId },
   });
@@ -79,6 +83,7 @@ export const POST = withErrorHandling(async (
       endDate: endDate ? new Date(endDate) : undefined,
       rrRule,
       details,
+      createdAt: new Date(),
     },
   });
 

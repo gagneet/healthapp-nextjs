@@ -52,7 +52,7 @@ export const PUT = withErrorHandling(async (
       return createErrorResponse(new Error("Medication not found in this care plan"));
   }
 
-  if (medication.carePlan.createdByDoctorId !== session.user.profileId) {
+  if (!medication.carePlan || medication.carePlan.createdByDoctorId !== session.user.profileId) {
       return createForbiddenResponse();
   }
 
@@ -95,7 +95,7 @@ export const DELETE = withErrorHandling(async (
         return createErrorResponse(new Error("Medication not found in this care plan"));
     }
 
-    if (medication.carePlan.createdByDoctorId !== session.user.profileId) {
+    if (!medication.carePlan || medication.carePlan.createdByDoctorId !== session.user.profileId) {
         return createForbiddenResponse();
     }
 

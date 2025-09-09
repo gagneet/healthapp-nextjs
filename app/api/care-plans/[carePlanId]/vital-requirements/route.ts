@@ -64,6 +64,7 @@ export const POST = withErrorHandling(async (
 
   const vitalRequirement = await prisma.vitalRequirement.create({
     data: {
+      id: crypto.randomUUID(),
       carePlanId,
       vitalTypeId,
       frequency,
@@ -71,6 +72,7 @@ export const POST = withErrorHandling(async (
       preferredTime: preferredTime ? new Date(`1970-01-01T${preferredTime}Z`) : null,
       isCritical,
       monitoringNotes,
+      createdAt: new Date(),
     },
   });
 
