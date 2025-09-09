@@ -469,10 +469,10 @@ model CarePlan {
 
 model DietPlan {
   id            String               @id @default(uuid()) @db.Uuid
-  name          String               @unique @db.VarChar(1000)
+  name          String               @unique @db.VarChar(255)
   description   String?
   type          String?              @db.VarChar(100)
-  totalCalories Float?               @map("total_calories")
+  totalCalories Decimal?             @map("total_calories") @db.Decimal(6, 2) // Range: 0.00 - 9999.99 calories
   startDate     DateTime?            @map("start_date") @db.Date
   endDate       DateTime?            @map("end_date") @db.Date
   details       Json?
@@ -483,26 +483,28 @@ model DietPlan {
   deletedAt     DateTime?            @map("deleted_at")
   carePlans     CarePlanToDietPlan[]
 
+  @@index([type])
   @@map("DietPlan")
 }
 
 model WorkoutPlan {
-  id            String                  @id @default(uuid()) @db.Uuid
-  name          String                  @unique @db.VarChar(255)
-  description   String?
-  type          String?                 @db.VarChar(100)
-  totalCalories Float?                  @map("total_calories")
-  startDate     DateTime?               @map("start_date") @db.Date
-  endDate       DateTime?               @map("end_date") @db.Date
-  time          DateTime?               @map("time")
-  details       Json?
-  expiredOn     DateTime?               @map("expired_on") @db.Date
-  isActive      Boolean                 @default(true) @map("is_active")
-  createdAt     DateTime                @default(now()) @map("created_at")
-  updatedAt     DateTime                @updatedAt @map("updated_at")
-  deletedAt     DateTime?               @map("deleted_at")
-  carePlans     CarePlanToWorkoutPlan[]
+  id             String                  @id @default(uuid()) @db.Uuid
+  name           String                  @unique @db.VarChar(255)
+  description    String?
+  type           String?                 @db.VarChar(100)
+  caloriesBurned Decimal?                @map("calories_burned") @db.Decimal(6, 2) // Range: 0.00 - 9999.99 calories burned
+  startDate      DateTime?               @map("start_date") @db.Date
+  endDate        DateTime?               @map("end_date") @db.Date
+  time           DateTime?               @map("time")
+  details        Json?
+  expiredOn      DateTime?               @map("expired_on") @db.Date
+  isActive       Boolean                 @default(true) @map("is_active")
+  createdAt      DateTime                @default(now()) @map("created_at")
+  updatedAt      DateTime                @updatedAt @map("updated_at")
+  deletedAt      DateTime?               @map("deleted_at")
+  carePlans      CarePlanToWorkoutPlan[]
 
+  @@index([type])
   @@map("WorkoutPlan")
 }
 

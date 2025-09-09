@@ -400,7 +400,7 @@ exports.Prisma.WorkoutPlanScalarFieldEnum = {
   name: 'name',
   description: 'description',
   type: 'type',
-  totalCalories: 'totalCalories',
+  caloriesBurned: 'caloriesBurned',
   startDate: 'startDate',
   endDate: 'endDate',
   time: 'time',

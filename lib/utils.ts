@@ -76,3 +76,37 @@ export function getStatusColor(status: string) {
       return 'text-blue-600 bg-blue-100'
   }
 }
+
+// Validation functions for health data
+export function validateCalories(calories: number | null | undefined): boolean {
+  if (calories === null || calories === undefined) return true // Allow null/undefined
+  return calories >= 0 && calories <= 9999.99
+}
+
+export function validateCaloriesBurned(caloriesBurned: number | null | undefined): boolean {
+  if (caloriesBurned === null || caloriesBurned === undefined) return true // Allow null/undefined
+  return caloriesBurned >= 0 && caloriesBurned <= 9999.99
+}
+
+export function getCaloriesValidationError(calories: number | null | undefined, fieldName = 'Calories'): string | null {
+  if (calories === null || calories === undefined) return null
+  if (calories < 0) return `${fieldName} cannot be negative`
+  if (calories > 9999.99) return `${fieldName} cannot exceed 9,999.99`
+  return null
+}
+
+// Appointment status validation
+export const VALID_APPOINTMENT_STATUSES = ['scheduled', 'completed', 'cancelled', 'no-show'] as const
+export type AppointmentStatus = typeof VALID_APPOINTMENT_STATUSES[number]
+
+export function validateAppointmentStatus(status: string | undefined | null): status is AppointmentStatus {
+  if (!status) return false
+  return VALID_APPOINTMENT_STATUSES.includes(status.toLowerCase() as AppointmentStatus)
+}
+
+export function sanitizeAppointmentStatus(status: string | undefined | null): AppointmentStatus {
+  if (validateAppointmentStatus(status)) {
+    return status.toLowerCase() as AppointmentStatus
+  }
+  return 'scheduled' // Default fallback
+}
