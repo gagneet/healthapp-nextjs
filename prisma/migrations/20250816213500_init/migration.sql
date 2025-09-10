@@ -288,6 +288,8 @@ CREATE TABLE "public"."patients" (
     "heightCm" DECIMAL(5,2),
     "weightKg" DECIMAL(5,2),
     "bloodType" VARCHAR(5),
+    "dateOfBirth" DATE,
+    "gender" VARCHAR(20),
     "primaryLanguage" VARCHAR(10) DEFAULT 'en',
     "riskLevel" VARCHAR(20) DEFAULT 'low',
     "riskFactors" JSONB DEFAULT '[]',
