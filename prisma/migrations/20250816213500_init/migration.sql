@@ -402,6 +402,8 @@ CREATE TABLE "public"."carePlans" (
     "patientId" UUID NOT NULL,
     "createdByDoctorId" UUID,
     "createdByHspId" UUID,
+    "assignedDoctorId" UUID,
+    "assignedHspId" UUID,
     "organizationId" UUID,
     "title" VARCHAR(255) NOT NULL,
     "description" TEXT,
@@ -900,6 +902,10 @@ CREATE TABLE "public"."doctors" (
     "gender" VARCHAR(20),
     "mobileNumber" VARCHAR(20),
     "biography" TEXT,
+    "isAcceptingNewPatients" BOOLEAN DEFAULT true,
+    "offersOnlineConsultations" BOOLEAN DEFAULT false,
+    "emergencyAvailability" BOOLEAN DEFAULT false,
+    "isActive" BOOLEAN DEFAULT true,
 
     CONSTRAINT "doctors_pkey" PRIMARY KEY ("id")
 );
@@ -937,6 +943,7 @@ CREATE TABLE "public"."hsps" (
     "averageRating" DECIMAL(3,2),
     "totalReviews" INTEGER DEFAULT 0,
     "isAvailable" BOOLEAN DEFAULT true,
+    "isActive" BOOLEAN DEFAULT true,
     "createdAt" TIMESTAMP(3),
     "updatedAt" TIMESTAMP(3),
     "deletedAt" TIMESTAMP(3),
@@ -2100,6 +2107,10 @@ CREATE INDEX "carePlans_createdByDoctorId_idx" ON "public"."carePlans"("createdB
 
 -- CreateIndex
 CREATE INDEX "carePlans_createdByHspId_idx" ON "public"."carePlans"("createdByHspId");
+-- CreateIndex
+CREATE INDEX "carePlans_assignedDoctorId_idx" ON "public"."carePlans"("assignedDoctorId");
+-- CreateIndex
+CREATE INDEX "carePlans_assignedHspId_idx" ON "public"."carePlans"("assignedHspId");
 
 -- CreateIndex
 CREATE INDEX "carePlans_monitoringParameters_idx" ON "public"."carePlans" USING GIN ("monitoringParameters");
@@ -3042,6 +3053,10 @@ ALTER TABLE "public"."carePlans" ADD CONSTRAINT "carePlans_createdByDoctorId_fke
 
 -- AddForeignKey
 ALTER TABLE "public"."carePlans" ADD CONSTRAINT "carePlans_createdByHspId_fkey" FOREIGN KEY ("createdByHspId") REFERENCES "public"."hsps"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+-- AddForeignKey
+ALTER TABLE "public"."carePlans" ADD CONSTRAINT "carePlans_assignedDoctorId_fkey" FOREIGN KEY ("assignedDoctorId") REFERENCES "public"."doctors"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+-- AddForeignKey
+ALTER TABLE "public"."carePlans" ADD CONSTRAINT "carePlans_assignedHspId_fkey" FOREIGN KEY ("assignedHspId") REFERENCES "public"."hsps"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
 ALTER TABLE "public"."carePlans" ADD CONSTRAINT "carePlans_organizationId_fkey" FOREIGN KEY ("organizationId") REFERENCES "public"."organizations"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
