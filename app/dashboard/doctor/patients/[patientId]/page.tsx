@@ -749,24 +749,13 @@ export default function PatientDetailsPage() {
                 </CardContent>
             </Card>
 
-            {/* Tabs */}
-            <div className="border-b border-gray-200">
-                <nav className="-mb-px flex space-x-8">
-                    {tabs.map((tab) => (
-                        <button
-                            key={tab.id}
-                            onClick={() => setActiveTab(tab.id)}
-                            className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                                activeTab === tab.id
-                                    ? 'border-blue-500 text-blue-600'
-                                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                            }`}
-                        >
-                            {tab.name}
-                        </button>
-                    ))}
-                </nav>
-            </div>
+            {/*
+              NOTE: The following 'Tabs' section was intentionally removed.
+              This component had two tab implementations, and this one was a broken,
+              redundant remnant that caused a "ReferenceError: tabs is not defined".
+              A complete and functional tab implementation exists above this section,
+              so this unused code block was removed to fix the crash.
+            */}
 
             {/* Tab Content */}
             <div className="mt-6">
