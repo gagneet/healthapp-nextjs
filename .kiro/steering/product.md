@@ -19,6 +19,7 @@ This is a production-ready healthcare management system built with Next.js 14 fu
 - **DOCTOR**: Full medical privileges including prescriptions, diagnoses, and care plan management
 - **HSP** (Health Service Provider): Limited privileges - cannot prescribe medications but can manage care plans
 - **PATIENT**: Read-only access to own medical data with ability to record vitals and symptoms
+- **HOSPITAL_ADMIN**: Hospital & Doctor administration access for user and organization management
 - **SYSTEM_ADMIN**: Full system administration access for user and organization management
 
 ## Healthcare Compliance
