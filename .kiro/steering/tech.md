@@ -31,6 +31,7 @@
 ## Common Commands
 
 ### Development
+
 ```bash
 npm run dev                    # Start development server (port 3002)
 npm run build                  # Build production bundle
@@ -40,6 +41,7 @@ npm run type-check             # Full TypeScript validation via Next.js build
 ```
 
 ### Database Management (Prisma)
+
 ```bash
 npx prisma generate            # Generate Prisma client
 npx prisma migrate dev         # Create and apply migration
@@ -49,6 +51,7 @@ npx prisma studio             # Open database GUI
 ```
 
 ### Testing
+
 ```bash
 npm test                      # Run Jest test suite
 npm run test:watch           # Run tests in watch mode
@@ -56,6 +59,7 @@ npm run test:coverage        # Generate coverage report
 ```
 
 ### Deployment (Universal Scripts)
+
 ```bash
 ./scripts/deploy.sh dev deploy --migrate --seed    # Local development
 ./scripts/deploy.sh test deploy --migrate --seed   # Test environment
