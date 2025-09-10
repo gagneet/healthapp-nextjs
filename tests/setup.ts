@@ -7,7 +7,7 @@ const { PrismaClient } = require('@/prisma/generated/prisma')
 
 // Mock environment variables for testing
 process.env.NODE_ENV = 'test'
-process.env.DATABASE_URL = process.env.DATABASE_URL || 'postgresql://healthapp_user:secure_pg_password@localhost:5434/healthapp_test?schema=public'
+process.env.DATABASE_URL = process.env.DATABASE_URL || "postgresql://healthapp_user:secure_test_postgres@postgres:5432/healthapp_test?schema=public"
 process.env.NEXTAUTH_SECRET = 'test-secret-key'
 process.env.JWT_SECRET = 'test-jwt-secret'
 process.env.NEXTAUTH_URL = 'http://localhost:3000'

@@ -2303,7 +2303,7 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "/home/gagneet/healthapp-nextjs/prisma/generated/prisma",
+      "value": "/app/prisma/generated/prisma",
       "fromEnvVar": null
     },
     "config": {
@@ -2317,7 +2317,7 @@ const config = {
       }
     ],
     "previewFeatures": [],
-    "sourceFilePath": "/home/gagneet/healthapp-nextjs/prisma/schema.prisma",
+    "sourceFilePath": "/app/prisma/schema.prisma",
     "isCustomOutput": true
   },
   "relativeEnvPaths": {
@@ -2331,7 +2331,7 @@ const config = {
     "db"
   ],
   "activeProvider": "postgresql",
-  "postinstall": false,
+  "postinstall": true,
   "inlineDatasources": {
     "db": {
       "url": {
