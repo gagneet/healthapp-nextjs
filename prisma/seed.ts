@@ -1,142 +1,163 @@
 // lib/seed.ts - Comprehensive Healthcare Test Data Seeding with Updated Schema
-import { fileURLToPath, pathToFileURL } from 'url';
-import { PrismaClient, AdherenceType, UserRole, UserAccountStatus, UserGender, MedicationOrganizerType, MedicationLogAdherenceStatus } from './generated/prisma/index.js';
+import {fileURLToPath, pathToFileURL} from 'url';
+import {
+    PrismaClient,
+    AdherenceType,
+    UserRole,
+    UserAccountStatus,
+    UserGender,
+    MedicationOrganizerType,
+    MedicationLogAdherenceStatus
+} from './generated/prisma/index.js';
 import * as bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
 
 // 🔍 Schema Validation Function
 async function validateDatabaseSchema(): Promise<void> {
-  console.log('🔍 Validating database schema consistency...');
-  
-  const validationChecks = [
-    {
-      name: 'Users table',
-      check: async () => {
-        try {
-          await prisma.user.count();
-          return { success: true };
-        } catch (error: any) {
-          return { success: false, error: error.message };
-        }
-      }
-    },
-    {
-      name: 'Doctors table with biography column',
-      check: async () => {
-        try {
-          const result = await prisma.$queryRaw`
-            SELECT column_name FROM information_schema.columns 
-            WHERE table_name = 'doctors' AND column_name = 'biography'
-          `;
-          const hasColumn = Array.isArray(result) && result.length > 0;
-          return { 
-            success: hasColumn, 
-            error: hasColumn ? null : 'Biography column missing from doctors table' 
-          };
-        } catch (error: any) {
-          return { success: false, error: error.message };
-        }
-      }
-    },
-    {
-      name: 'Appointments table with status column',
-      check: async () => {
-        try {
-          const result = await prisma.$queryRaw`
-            SELECT column_name FROM information_schema.columns 
-            WHERE table_name = 'appointments' AND column_name = 'status'
-          `;
-          const hasColumn = Array.isArray(result) && result.length > 0;
-          return { 
-            success: hasColumn, 
-            error: hasColumn ? null : 'Status column missing from appointments table' 
-          };
-        } catch (error: any) {
-          return { success: false, error: error.message };
-        }
-      }
-    },
-    {
-      name: 'Appointments table with carePlanId column',
-      check: async () => {
-        try {
-          const result = await prisma.$queryRaw`
-            SELECT column_name FROM information_schema.columns 
-            WHERE table_name = 'appointments' AND column_name = 'carePlanId'
-          `;
-          const hasColumn = Array.isArray(result) && result.length > 0;
-          return { 
-            success: hasColumn, 
-            error: hasColumn ? null : 'CarePlanId column missing from appointments table' 
-          };
-        } catch (error: any) {
-          return { success: false, error: error.message };
-        }
-      }
-async function checkColumnExists(tableName: string, columnName: string): Promise<{ success: boolean; error: string | null }> {
-  try {
-    const result = await prisma.$queryRaw`
-      SELECT column_name FROM information_schema.columns
-      WHERE table_name = ${tableName} AND column_name = ${columnName}
-    `;
-    const hasColumn = Array.isArray(result) && result.length > 0;
-    return {
-      success: hasColumn,
-      error: hasColumn ? null : `${columnName} column missing from ${tableName} table`
-    };
-  } catch (error: any) {
-    return { success: false, error: error.message };
-  }
-}
+    console.log('🔍 Validating database schema consistency...');
 
-const schemaChecks = [
-  {
-    name: 'Patients table with dateOfBirth column',
-    check: () => checkColumnExists('patients', 'dateOfBirth')
-  },
-  {
-    name: 'Patients table with gender column',
-    check: () => checkColumnExists('patients', 'gender')
-  }
-];
-  const validationErrors = [];
-  
-  for (const { name, check } of validationChecks) {
-    try {
-      const result = await check();
-      if (result.success) {
-        console.log(`✅ ${name}: OK`);
-      } else {
-        console.log(`❌ ${name}: ${result.error}`);
-        validationErrors.push(`${name}: ${result.error}`);
-      }
-    } catch (error: any) {
-      console.log(`❌ ${name}: Validation failed - ${error.message}`);
-      validationErrors.push(`${name}: ${error.message}`);
+    const validationChecks = [
+        {
+            name: 'Users table',
+            check: async () => {
+                try {
+                    await prisma.user.count();
+                    return {success: true};
+                } catch (error: any) {
+                    return {success: false, error: error.message};
+                }
+            }
+        },
+        {
+            name: 'Doctors table with biography column',
+            check: async () => {
+                try {
+                    const result = await prisma.$queryRaw`
+                        SELECT column_name
+                        FROM information_schema.columns
+                        WHERE table_name = 'doctors'
+                          AND column_name = 'biography'
+                    `;
+                    const hasColumn = Array.isArray(result) && result.length > 0;
+                    return {
+                        success: hasColumn,
+                        error: hasColumn ? null : 'Biography column missing from doctors table'
+                    };
+                } catch (error: any) {
+                    return {success: false, error: error.message};
+                }
+            }
+        },
+        {
+            name: 'Appointments table with status column',
+            check: async () => {
+                try {
+                    const result = await prisma.$queryRaw`
+                        SELECT column_name
+                        FROM information_schema.columns
+                        WHERE table_name = 'appointments'
+                          AND column_name = 'status'
+                    `;
+                    const hasColumn = Array.isArray(result) && result.length > 0;
+                    return {
+                        success: hasColumn,
+                        error: hasColumn ? null : 'Status column missing from appointments table'
+                    };
+                } catch (error: any) {
+                    return {success: false, error: error.message};
+                }
+            }
+        },
+        {
+            name: 'Appointments table with carePlanId column',
+            check: async () => {
+                try {
+                    const result = await prisma.$queryRaw`
+                        SELECT column_name
+                        FROM information_schema.columns
+                        WHERE table_name = 'appointments'
+                          AND column_name = 'carePlanId'
+                    `;
+                    const hasColumn = Array.isArray(result) && result.length > 0;
+                    return {
+                        success: hasColumn,
+                        error: hasColumn ? null : 'CarePlanId column missing from appointments table'
+                    };
+                } catch (error: any) {
+                    return {success: false, error: error.message};
+                }
+            }
+        }];
+
+    async function checkColumnExists(tableName: string, columnName: string): Promise<{
+        success: boolean;
+        error: string | null
+    }> {
+        try {
+            const result = await prisma.$queryRaw`
+                SELECT column_name
+                FROM information_schema.columns
+                WHERE table_name = ${tableName}
+                  AND column_name = ${columnName}
+            `;
+            const hasColumn = Array.isArray(result) && result.length > 0;
+            return {
+                success: hasColumn,
+                error: hasColumn ? null : `${columnName} column missing from ${tableName} table`
+            };
+        } catch (error: any) {
+            return {success: false, error: error.message};
+        }
     }
-  }
 
-  if (validationErrors.length > 0) {
-    console.log('\n❌ Schema validation failed with the following issues:');
-    validationErrors.forEach(error => console.log(`   • ${error}`));
-    console.log('\n💡 Troubleshooting suggestions:');
-    console.log('   1. Run: npx prisma migrate reset');
-    console.log('   2. Run: npx prisma migrate dev');
-    console.log('   3. Run: npx prisma generate');
-    console.log('   4. Check that migration files match schema.prisma\n');
-    throw new Error(`Schema validation failed: ${validationErrors.length} issues found`);
-  }
-  
-  console.log('✅ Database schema validation passed!');
+    const schemaChecks = [
+        {
+            name: 'Patients table with dateOfBirth column',
+            check: () => checkColumnExists('patients', 'dateOfBirth')
+        },
+        {
+            name: 'Patients table with gender column',
+            check: () => checkColumnExists('patients', 'gender')
+        }
+    ];
+    const validationErrors = [];
+
+    for (const {name, check} of validationChecks) {
+        try {
+            const result = await check();
+            if (result.success) {
+                console.log(`✅ ${name}: OK`);
+            } else {
+                console.log(`❌ ${name}: ${result.error}`);
+                validationErrors.push(`${name}: ${result.error}`);
+            }
+        } catch (error: any) {
+            console.log(`❌ ${name}: Validation failed - ${error.message}`);
+            validationErrors.push(`${name}: ${error.message}`);
+        }
+    }
+
+    if (validationErrors.length > 0) {
+        console.log('\n❌ Schema validation failed with the following issues:');
+        validationErrors.forEach(error => console.log(`   • ${error}`));
+        console.log('\n💡 Troubleshooting suggestions:');
+        console.log('   1. Run: npx prisma migrate reset');
+        console.log('   2. Run: npx prisma migrate dev');
+        console.log('   3. Run: npx prisma generate');
+        console.log('   4. Check that migration files match schema.prisma\n');
+        throw new Error(`Schema validation failed: ${validationErrors.length} issues found`);
+    }
+
+    console.log('✅ Database schema validation passed!');
 }
 
 // 🛠️ Helpers
 const getRandomPastDate = (minDaysAgo = 7, maxDaysAgo = 90): Date => {
-  const now = new Date();
-  const minDate = new Date(now.getTime() - maxDaysAgo * 86400000);
-  const maxDate = new Date(now.getTime() - minDaysAgo * 86400000);
-  return new Date(minDate.getTime() + Math.random() * (maxDate.getTime() - minDate.getTime()));
+    const now = new Date();
+    const minDate = new Date(now.getTime() - maxDaysAgo * 86400000);
+    const maxDate = new Date(now.getTime() - minDaysAgo * 86400000);
+    return new Date(minDate.getTime() + Math.random() * (maxDate.getTime() - minDate.getTime()));
 };
 
 const getRecentDate = (): Date => getRandomPastDate(1, 7);
@@ -145,47 +166,47 @@ const getTodayDate = (): Date => new Date();
 
 // Database cleanup function to remove all existing data
 async function cleanDatabase() {
-  console.log('🧹 Cleaning database - removing all existing data...');
-  
-  try {
-    // Delete in reverse dependency order to avoid foreign key constraints
-    // Use error handling for each operation to continue even if tables don't exist
-    
-    const cleanupOperations = [
-      () => prisma.adherenceRecord.deleteMany({}),
-      () => prisma.medication.deleteMany({}),
-      () => prisma.vital.deleteMany({}),
-      () => prisma.symptom.deleteMany({}),
-      () => prisma.carePlan.deleteMany({}),
-      () => prisma.appointment.deleteMany({}),
-      () => prisma.clinic.deleteMany({}),
-      () => prisma.patient.deleteMany({}),
-      () => prisma.doctor.deleteMany({}),
-      () => prisma.hsp.deleteMany({}),
-      () => prisma.provider.deleteMany({}),
-      () => prisma.medicine.deleteMany({}),
-      () => prisma.vitalTemplate.deleteMany({}),
-      () => prisma.symptomDatabase.deleteMany({}),
-      () => prisma.treatmentDatabase.deleteMany({}),
-      () => prisma.specialty.deleteMany({}),
-      () => prisma.organization.deleteMany({}),
-      () => prisma.user.deleteMany({})
-    ];
-    
-    for (const operation of cleanupOperations) {
-      try {
-        await operation();
-      } catch (error: any) {
-        // Continue with next operation even if current fails
-        console.log(`⚠️ Cleanup operation failed (continuing): ${error.message}`);
-      }
+    console.log('🧹 Cleaning database - removing all existing data...');
+
+    try {
+        // Delete in reverse dependency order to avoid foreign key constraints
+        // Use error handling for each operation to continue even if tables don't exist
+
+        const cleanupOperations = [
+            () => prisma.adherenceRecord.deleteMany({}),
+            () => prisma.medication.deleteMany({}),
+            () => prisma.vital.deleteMany({}),
+            () => prisma.symptom.deleteMany({}),
+            () => prisma.carePlan.deleteMany({}),
+            () => prisma.appointment.deleteMany({}),
+            () => prisma.clinic.deleteMany({}),
+            () => prisma.patient.deleteMany({}),
+            () => prisma.doctor.deleteMany({}),
+            () => prisma.hsp.deleteMany({}),
+            () => prisma.provider.deleteMany({}),
+            () => prisma.medicine.deleteMany({}),
+            () => prisma.vitalTemplate.deleteMany({}),
+            () => prisma.symptomDatabase.deleteMany({}),
+            () => prisma.treatmentDatabase.deleteMany({}),
+            () => prisma.specialty.deleteMany({}),
+            () => prisma.organization.deleteMany({}),
+            () => prisma.user.deleteMany({})
+        ];
+
+        for (const operation of cleanupOperations) {
+            try {
+                await operation();
+            } catch (error: any) {
+                // Continue with next operation even if current fails
+                console.log(`⚠️ Cleanup operation failed (continuing): ${error.message}`);
+            }
+        }
+
+        console.log('✅ Database cleaned successfully');
+    } catch (error: any) {
+        console.error('❌ Error cleaning database:', error.message);
+        throw error;
     }
-    
-    console.log('✅ Database cleaned successfully');
-  } catch (error: any) {
-    console.error('❌ Error cleaning database:', error.message);
-    throw error;
-  }
 }
 
 // Add retry logic and table verification
@@ -214,10 +235,10 @@ async function generateSecurePasswordHash(password: string): Promise<string> {
 }
 
 const sanitize = (input: any) => {
-  if (typeof input === 'string') {
-    return input.replace(/(\r\n|\n|\r)/gm, "");
-  }
-  return input;
+    if (typeof input === 'string') {
+        return input.replace(/(\r\n|\n|\r)/gm, "");
+    }
+    return input;
 }
 
 export async function seedComprehensiveHealthcareData() {
@@ -225,14 +246,14 @@ export async function seedComprehensiveHealthcareData() {
 
     try {
         await waitForTables();
-        
+
         // Validate database schema before proceeding
         await validateDatabaseSchema();
 
         // Always start with a clean database
         await cleanDatabase();
 
-        const { users, provider } = await prisma.$transaction(async (tx) => {
+        const {users, provider} = await prisma.$transaction(async (tx) => {
             // Password setup
             const defaultPassword = process.env.SEED_DEFAULT_PASSWORD || 'T3mpP@ssw0rd168!';
             const hashedPassword = await bcrypt.hash(defaultPassword, 12);
@@ -294,7 +315,7 @@ export async function seedComprehensiveHealthcareData() {
             // Create One Organization
             console.log('🏥 Creating organization...');
             const organization = await tx.organization.upsert({
-                where: { id: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11' },
+                where: {id: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'},
                 update: {},
                 create: {
                     id: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
@@ -324,22 +345,22 @@ export async function seedComprehensiveHealthcareData() {
             // Create Eleven Medical Specialties
             console.log('🩺 Creating 11 medical specialties...');
             const specialties = [
-                { name: 'Cardiology', description: 'Heart and cardiovascular system specialist' },
-                { name: 'Endocrinology', description: 'Hormonal disorders and diabetes specialist' },
-                { name: 'General Medicine', description: 'General medical practice' },
-                { name: 'Pediatrics', description: 'Children\'s health specialist' },
-                { name: 'Orthopedics', description: 'Bone, joint, and muscle specialist' },
-                { name: 'Dermatology', description: 'Skin conditions specialist' },
-                { name: 'Neurology', description: 'Brain and nervous system specialist' },
-                { name: 'Psychiatry', description: 'Mental health specialist' },
-                { name: 'Gynecology', description: 'Women\'s reproductive health specialist' },
-                { name: 'Ophthalmology', description: 'Eye and vision specialist' },
-                { name: 'Emergency Medicine', description: 'Emergency and acute care specialist' }
+                {name: 'Cardiology', description: 'Heart and cardiovascular system specialist'},
+                {name: 'Endocrinology', description: 'Hormonal disorders and diabetes specialist'},
+                {name: 'General Medicine', description: 'General medical practice'},
+                {name: 'Pediatrics', description: 'Children\'s health specialist'},
+                {name: 'Orthopedics', description: 'Bone, joint, and muscle specialist'},
+                {name: 'Dermatology', description: 'Skin conditions specialist'},
+                {name: 'Neurology', description: 'Brain and nervous system specialist'},
+                {name: 'Psychiatry', description: 'Mental health specialist'},
+                {name: 'Gynecology', description: 'Women\'s reproductive health specialist'},
+                {name: 'Ophthalmology', description: 'Eye and vision specialist'},
+                {name: 'Emergency Medicine', description: 'Emergency and acute care specialist'}
             ];
 
             for (const spec of specialties) {
                 await tx.specialty.upsert({
-                    where: { name: spec.name },
+                    where: {name: spec.name},
                     update: {},
                     create: {
                         name: spec.name,
@@ -353,9 +374,9 @@ export async function seedComprehensiveHealthcareData() {
             console.log(`✅ Created ${specialties.length} medical specialties`);
 
             // Get the created specialties for doctor profiles
-            const cardiologySpec = await tx.specialty.findFirst({ where: { name: 'Cardiology' } });
-            const endocrinologySpec = await tx.specialty.findFirst({ where: { name: 'Endocrinology' } });
-            const generalMedSpec = await tx.specialty.findFirst({ where: { name: 'General Medicine' } });
+            const cardiologySpec = await tx.specialty.findFirst({where: {name: 'Cardiology'}});
+            const endocrinologySpec = await tx.specialty.findFirst({where: {name: 'Endocrinology'}});
+            const generalMedSpec = await tx.specialty.findFirst({where: {name: 'General Medicine'}});
 
             // Create Doctors and their profiles
             console.log('👨‍⚕️ Creating 3 doctors and their profiles...');
@@ -458,7 +479,7 @@ export async function seedComprehensiveHealthcareData() {
             for (const doctorData of doctorsToCreate) {
                 try {
                     const user = await tx.user.upsert({
-                        where: { id: doctorData.user.id },
+                        where: {id: doctorData.user.id},
                         update: doctorData.user,
                         create: doctorData.user,
                     });
@@ -467,7 +488,7 @@ export async function seedComprehensiveHealthcareData() {
                         userId: user.id,
                     };
                     await tx.doctor.upsert({
-                        where: { id: doctorData.profile.id },
+                        where: {id: doctorData.profile.id},
                         update: profileData,
                         create: profileData,
                     });
@@ -514,14 +535,14 @@ export async function seedComprehensiveHealthcareData() {
             ];
 
             for (const hsp of hspsToCreate) {
-                const existingUser = await tx.user.findUnique({ where: { id: hsp.user.id } });
+                const existingUser = await tx.user.findUnique({where: {id: hsp.user.id}});
                 if (!existingUser) {
-                    const newUser = await tx.user.create({ data: hsp.user });
-                    await tx.hsp.create({ data: { ...hsp.profile, userId: newUser.id } });
+                    const newUser = await tx.user.create({data: hsp.user});
+                    await tx.hsp.create({data: {...hsp.profile, userId: newUser.id}});
                 } else {
-                    const existingProfile = await tx.hsp.findUnique({ where: { userId: existingUser.id } });
+                    const existingProfile = await tx.hsp.findUnique({where: {userId: existingUser.id}});
                     if (!existingProfile) {
-                        await tx.hsp.create({ data: { ...hsp.profile, userId: existingUser.id } });
+                        await tx.hsp.create({data: {...hsp.profile, userId: existingUser.id}});
                     }
                 }
             }
@@ -554,9 +575,22 @@ export async function seedComprehensiveHealthcareData() {
                         dateOfBirth: new Date('1985-06-15'),
                         gender: 'FEMALE',
                         primaryLanguage: 'en',
-                        allergies: [ { name: 'Penicillin', severity: 'severe', reaction: 'rash' }, { name: 'Shellfish', severity: 'moderate', reaction: 'hives' } ],
-                        medicalHistory: [ { condition: 'Type 2 Diabetes', diagnosed: '2022-03-15', status: 'active' }, { condition: 'Hypertension', diagnosed: '2021-08-20', status: 'controlled' } ],
-                        emergencyContacts: [ { name: 'John Johnson', relationship: 'spouse', phone: '+1-555-0103', primary: true } ],
+                        allergies: [{name: 'Penicillin', severity: 'severe', reaction: 'rash'}, {
+                            name: 'Shellfish',
+                            severity: 'moderate',
+                            reaction: 'hives'
+                        }],
+                        medicalHistory: [{
+                            condition: 'Type 2 Diabetes',
+                            diagnosed: '2022-03-15',
+                            status: 'active'
+                        }, {condition: 'Hypertension', diagnosed: '2021-08-20', status: 'controlled'}],
+                        emergencyContacts: [{
+                            name: 'John Johnson',
+                            relationship: 'spouse',
+                            phone: '+1-555-0103',
+                            primary: true
+                        }],
                         overallAdherenceScore: 85.5,
                         createdAt: getRandomPastDate(20, 70),
                         updatedAt: getRecentDate()
@@ -589,8 +623,17 @@ export async function seedComprehensiveHealthcareData() {
                         gender: 'MALE',
                         primaryLanguage: 'en',
                         allergies: [],
-                        medicalHistory: [ { condition: 'Hypertension', diagnosed: '2020-05-10', status: 'active' }, { condition: 'High Cholesterol', diagnosed: '2019-11-15', status: 'controlled' } ],
-                        emergencyContacts: [ { name: 'Lisa Chen', relationship: 'wife', phone: '+1-555-0104', primary: true } ],
+                        medicalHistory: [{
+                            condition: 'Hypertension',
+                            diagnosed: '2020-05-10',
+                            status: 'active'
+                        }, {condition: 'High Cholesterol', diagnosed: '2019-11-15', status: 'controlled'}],
+                        emergencyContacts: [{
+                            name: 'Lisa Chen',
+                            relationship: 'wife',
+                            phone: '+1-555-0104',
+                            primary: true
+                        }],
                         overallAdherenceScore: 92.0,
                         createdAt: getRandomPastDate(18, 68),
                         updatedAt: getRecentDate()
@@ -622,9 +665,18 @@ export async function seedComprehensiveHealthcareData() {
                         dateOfBirth: new Date('1990-09-10'),
                         gender: 'FEMALE',
                         primaryLanguage: 'en',
-                        allergies: [ { name: 'Latex', severity: 'mild', reaction: 'skin irritation' } ],
-                        medicalHistory: [ { condition: 'Coronary Artery Disease', diagnosed: '2023-01-10', status: 'managed' } ],
-                        emergencyContacts: [ { name: 'David Williams', relationship: 'father', phone: '+1-555-0106', primary: true } ],
+                        allergies: [{name: 'Latex', severity: 'mild', reaction: 'skin irritation'}],
+                        medicalHistory: [{
+                            condition: 'Coronary Artery Disease',
+                            diagnosed: '2023-01-10',
+                            status: 'managed'
+                        }],
+                        emergencyContacts: [{
+                            name: 'David Williams',
+                            relationship: 'father',
+                            phone: '+1-555-0106',
+                            primary: true
+                        }],
                         overallAdherenceScore: 78.5,
                         createdAt: getRandomPastDate(16, 66),
                         updatedAt: getRecentDate()
@@ -657,8 +709,17 @@ export async function seedComprehensiveHealthcareData() {
                         gender: 'MALE',
                         primaryLanguage: 'en',
                         allergies: [],
-                        medicalHistory: [ { condition: 'Type 2 Diabetes', diagnosed: '2020-08-15', status: 'controlled' }, { condition: 'Diabetic Neuropathy', diagnosed: '2022-11-20', status: 'active' } ],
-                        emergencyContacts: [ { name: 'Mary Brown', relationship: 'wife', phone: '+1-555-0107', primary: true } ],
+                        medicalHistory: [{
+                            condition: 'Type 2 Diabetes',
+                            diagnosed: '2020-08-15',
+                            status: 'controlled'
+                        }, {condition: 'Diabetic Neuropathy', diagnosed: '2022-11-20', status: 'active'}],
+                        emergencyContacts: [{
+                            name: 'Mary Brown',
+                            relationship: 'wife',
+                            phone: '+1-555-0107',
+                            primary: true
+                        }],
                         overallAdherenceScore: 88.2,
                         createdAt: getRandomPastDate(14, 64),
                         updatedAt: getRecentDate()
@@ -690,9 +751,18 @@ export async function seedComprehensiveHealthcareData() {
                         dateOfBirth: new Date('1995-04-20'),
                         gender: 'FEMALE',
                         primaryLanguage: 'en',
-                        allergies: [ { name: 'Aspirin', severity: 'severe', reaction: 'stomach upset' } ],
-                        medicalHistory: [ { condition: 'Hypothyroidism', diagnosed: '2021-06-30', status: 'active' }, { condition: 'Prediabetes', diagnosed: '2023-02-15', status: 'monitoring' } ],
-                        emergencyContacts: [ { name: 'Thomas Davis', relationship: 'brother', phone: '+1-555-0108', primary: true } ],
+                        allergies: [{name: 'Aspirin', severity: 'severe', reaction: 'stomach upset'}],
+                        medicalHistory: [{
+                            condition: 'Hypothyroidism',
+                            diagnosed: '2021-06-30',
+                            status: 'active'
+                        }, {condition: 'Prediabetes', diagnosed: '2023-02-15', status: 'monitoring'}],
+                        emergencyContacts: [{
+                            name: 'Thomas Davis',
+                            relationship: 'brother',
+                            phone: '+1-555-0108',
+                            primary: true
+                        }],
                         overallAdherenceScore: 95.1,
                         createdAt: getRandomPastDate(12, 62),
                         updatedAt: getRecentDate()
@@ -702,14 +772,14 @@ export async function seedComprehensiveHealthcareData() {
 
             // Simplified patient creation loop
             for (const patient of patientsToCreate) {
-                const existingUser = await tx.user.findUnique({ where: { id: patient.user.id } });
+                const existingUser = await tx.user.findUnique({where: {id: patient.user.id}});
                 if (!existingUser) {
-                    const newUser = await tx.user.create({ data: patient.user });
-                    await tx.patient.create({ data: { ...patient.profile, userId: newUser.id } });
+                    const newUser = await tx.user.create({data: patient.user});
+                    await tx.patient.create({data: {...patient.profile, userId: newUser.id}});
                 } else {
-                    const existingProfile = await tx.patient.findUnique({ where: { userId: existingUser.id } });
+                    const existingProfile = await tx.patient.findUnique({where: {userId: existingUser.id}});
                     if (!existingProfile) {
-                        await tx.patient.create({ data: { ...patient.profile, userId: existingUser.id } });
+                        await tx.patient.create({data: {...patient.profile, userId: existingUser.id}});
                     }
                 }
             }
@@ -721,7 +791,7 @@ export async function seedComprehensiveHealthcareData() {
             let provider;
             try {
                 provider = await tx.provider.upsert({
-                    where: { id: '10101010-1010-1010-1010-101010101011' },
+                    where: {id: '10101010-1010-1010-1010-101010101011'},
                     update: {},
                     create: {
                         id: '10101010-1010-1010-1010-101010101011',
@@ -751,7 +821,7 @@ export async function seedComprehensiveHealthcareData() {
             // Create clinic for Doctor 1
             console.log('🏥 Creating clinic for Dr. Smith...');
             await tx.clinic.upsert({
-                where: { id: '00000000-0000-0000-0000-000000000501' },
+                where: {id: '00000000-0000-0000-0000-000000000501'},
                 update: {},
                 create: {
                     id: '00000000-0000-0000-0000-000000000501',
@@ -795,21 +865,151 @@ export async function seedComprehensiveHealthcareData() {
             // Create 10 comprehensive medicines
             console.log('💊 Creating 10 comprehensive medicines...');
             const medicines = [
-                { id: '550e8400-e29b-41d4-a716-446655440001', name: 'Metformin', type: 'tablet', description: 'First-line medication for type 2 diabetes management', details: { genericName: 'Metformin Hydrochloride', brand_names: ['Glucophage', 'Fortamet', 'Glumetza'], drug_class: 'Biguanide', common_dosages: ['500mg', '850mg', '1000mg'], side_effects: ['Nausea', 'Diarrhea', 'Stomach upset'], contraindications: ['Severe kidney disease', 'Liver disease'] } },
-                { id: '550e8400-e29b-41d4-a716-446655440002', name: 'Lisinopril', type: 'tablet', description: 'ACE inhibitor for high blood pressure and heart failure', details: { genericName: 'Lisinopril', brand_names: ['Prinivil', 'Zestril'], drug_class: 'ACE Inhibitor', common_dosages: ['2.5mg', '5mg', '10mg', '20mg'], side_effects: ['Dry cough', 'Dizziness', 'Headache'], contraindications: ['Pregnancy', 'History of angioedema'] } },
-                { id: '550e8400-e29b-41d4-a716-446655440003', name: 'Aspirin', type: 'tablet', description: 'Pain relief and cardiovascular protection', details: { genericName: 'Acetylsalicylic Acid', brand_names: ['Bayer', 'Bufferin', 'Ecotrin'], drug_class: 'NSAID/Antiplatelet', common_dosages: ['81mg', '325mg', '500mg'], side_effects: ['Stomach irritation', 'Bleeding'], contraindications: ['Active bleeding', 'Severe asthma'] } },
-                { id: '550e8400-e29b-41d4-a716-446655440004', name: 'Amlodipine', type: 'tablet', description: 'Calcium channel blocker for high blood pressure', details: { genericName: 'Amlodipine Besylate', brand_names: ['Norvasc', 'Katerzia'], drug_class: 'Calcium Channel Blocker', common_dosages: ['2.5mg', '5mg', '10mg'], side_effects: ['Ankle swelling', 'Dizziness'], contraindications: ['Severe aortic stenosis'] } },
-                { id: '550e8400-e29b-41d4-a716-446655440005', name: 'Simvastatin', type: 'tablet', description: 'Statin medication for high cholesterol', details: { genericName: 'Simvastatin', brand_names: ['Zocor', 'FloLipid'], drug_class: 'HMG-CoA Reductase Inhibitor', common_dosages: ['5mg', '10mg', '20mg', '40mg'], side_effects: ['Muscle pain', 'Liver enzyme elevation'], contraindications: ['Active liver disease', 'Pregnancy'] } },
-                { id: '550e8400-e29b-41d4-a716-446655440006', name: 'Omeprazole', type: 'capsule', description: 'Proton pump inhibitor for acid reflux', details: { genericName: 'Omeprazole', brand_names: ['Prilosec', 'Zegerid'], drug_class: 'Proton Pump Inhibitor', common_dosages: ['10mg', '20mg', '40mg'], side_effects: ['Headache', 'Nausea', 'Diarrhea'], contraindications: ['Hypersensitivity to benzimidazoles'] } },
-                { id: '550e8400-e29b-41d4-a716-446655440007', name: 'Albuterol', type: 'inhaler', description: 'Bronchodilator for asthma and COPD', details: { genericName: 'Albuterol Sulfate', brand_names: ['ProAir', 'Ventolin', 'Proventil'], drug_class: 'Short-Acting Beta2 Agonist', common_dosages: ['90mcg/puff', '108mcg/puff'], side_effects: ['Tremor', 'Nervousness'], contraindications: ['Hypersensitivity to albuterol'] } },
-                { id: '550e8400-e29b-41d4-a716-446655440008', name: 'Levothyroxine', type: 'tablet', description: 'Thyroid hormone replacement therapy', details: { genericName: 'Levothyroxine Sodium', brand_names: ['Synthroid', 'Levoxyl', 'Tirosint'], drug_class: 'Thyroid Hormone', common_dosages: ['25mcg', '50mcg', '75mcg', '100mcg'], side_effects: ['Heart palpitations', 'Weight loss'], contraindications: ['Untreated adrenal insufficiency'] } },
-                { id: '550e8400-e29b-41d4-a716-446655440009', name: 'Sertraline', type: 'tablet', description: 'SSRI antidepressant for depression and anxiety', details: { genericName: 'Sertraline Hydrochloride', brand_names: ['Zoloft', 'Lustral'], drug_class: 'SSRI', common_dosages: ['25mg', '50mg', '100mg'], side_effects: ['Nausea', 'Sexual dysfunction'], contraindications: ['MAO inhibitor use'] } },
-                { id: '550e8400-e29b-41d4-a716-446655440010', name: 'Ibuprofen', type: 'tablet', description: 'Anti-inflammatory pain and fever reducer', details: { genericName: 'Ibuprofen', brand_names: ['Advil', 'Motrin', 'Nuprin'], drug_class: 'NSAID', common_dosages: ['200mg', '400mg', '600mg'], side_effects: ['Stomach upset', 'Kidney problems'], contraindications: ['Heart disease', 'Active ulcers'] } }
+                {
+                    id: '550e8400-e29b-41d4-a716-446655440001',
+                    name: 'Metformin',
+                    type: 'tablet',
+                    description: 'First-line medication for type 2 diabetes management',
+                    details: {
+                        genericName: 'Metformin Hydrochloride',
+                        brand_names: ['Glucophage', 'Fortamet', 'Glumetza'],
+                        drug_class: 'Biguanide',
+                        common_dosages: ['500mg', '850mg', '1000mg'],
+                        side_effects: ['Nausea', 'Diarrhea', 'Stomach upset'],
+                        contraindications: ['Severe kidney disease', 'Liver disease']
+                    }
+                },
+                {
+                    id: '550e8400-e29b-41d4-a716-446655440002',
+                    name: 'Lisinopril',
+                    type: 'tablet',
+                    description: 'ACE inhibitor for high blood pressure and heart failure',
+                    details: {
+                        genericName: 'Lisinopril',
+                        brand_names: ['Prinivil', 'Zestril'],
+                        drug_class: 'ACE Inhibitor',
+                        common_dosages: ['2.5mg', '5mg', '10mg', '20mg'],
+                        side_effects: ['Dry cough', 'Dizziness', 'Headache'],
+                        contraindications: ['Pregnancy', 'History of angioedema']
+                    }
+                },
+                {
+                    id: '550e8400-e29b-41d4-a716-446655440003',
+                    name: 'Aspirin',
+                    type: 'tablet',
+                    description: 'Pain relief and cardiovascular protection',
+                    details: {
+                        genericName: 'Acetylsalicylic Acid',
+                        brand_names: ['Bayer', 'Bufferin', 'Ecotrin'],
+                        drug_class: 'NSAID/Antiplatelet',
+                        common_dosages: ['81mg', '325mg', '500mg'],
+                        side_effects: ['Stomach irritation', 'Bleeding'],
+                        contraindications: ['Active bleeding', 'Severe asthma']
+                    }
+                },
+                {
+                    id: '550e8400-e29b-41d4-a716-446655440004',
+                    name: 'Amlodipine',
+                    type: 'tablet',
+                    description: 'Calcium channel blocker for high blood pressure',
+                    details: {
+                        genericName: 'Amlodipine Besylate',
+                        brand_names: ['Norvasc', 'Katerzia'],
+                        drug_class: 'Calcium Channel Blocker',
+                        common_dosages: ['2.5mg', '5mg', '10mg'],
+                        side_effects: ['Ankle swelling', 'Dizziness'],
+                        contraindications: ['Severe aortic stenosis']
+                    }
+                },
+                {
+                    id: '550e8400-e29b-41d4-a716-446655440005',
+                    name: 'Simvastatin',
+                    type: 'tablet',
+                    description: 'Statin medication for high cholesterol',
+                    details: {
+                        genericName: 'Simvastatin',
+                        brand_names: ['Zocor', 'FloLipid'],
+                        drug_class: 'HMG-CoA Reductase Inhibitor',
+                        common_dosages: ['5mg', '10mg', '20mg', '40mg'],
+                        side_effects: ['Muscle pain', 'Liver enzyme elevation'],
+                        contraindications: ['Active liver disease', 'Pregnancy']
+                    }
+                },
+                {
+                    id: '550e8400-e29b-41d4-a716-446655440006',
+                    name: 'Omeprazole',
+                    type: 'capsule',
+                    description: 'Proton pump inhibitor for acid reflux',
+                    details: {
+                        genericName: 'Omeprazole',
+                        brand_names: ['Prilosec', 'Zegerid'],
+                        drug_class: 'Proton Pump Inhibitor',
+                        common_dosages: ['10mg', '20mg', '40mg'],
+                        side_effects: ['Headache', 'Nausea', 'Diarrhea'],
+                        contraindications: ['Hypersensitivity to benzimidazoles']
+                    }
+                },
+                {
+                    id: '550e8400-e29b-41d4-a716-446655440007',
+                    name: 'Albuterol',
+                    type: 'inhaler',
+                    description: 'Bronchodilator for asthma and COPD',
+                    details: {
+                        genericName: 'Albuterol Sulfate',
+                        brand_names: ['ProAir', 'Ventolin', 'Proventil'],
+                        drug_class: 'Short-Acting Beta2 Agonist',
+                        common_dosages: ['90mcg/puff', '108mcg/puff'],
+                        side_effects: ['Tremor', 'Nervousness'],
+                        contraindications: ['Hypersensitivity to albuterol']
+                    }
+                },
+                {
+                    id: '550e8400-e29b-41d4-a716-446655440008',
+                    name: 'Levothyroxine',
+                    type: 'tablet',
+                    description: 'Thyroid hormone replacement therapy',
+                    details: {
+                        genericName: 'Levothyroxine Sodium',
+                        brand_names: ['Synthroid', 'Levoxyl', 'Tirosint'],
+                        drug_class: 'Thyroid Hormone',
+                        common_dosages: ['25mcg', '50mcg', '75mcg', '100mcg'],
+                        side_effects: ['Heart palpitations', 'Weight loss'],
+                        contraindications: ['Untreated adrenal insufficiency']
+                    }
+                },
+                {
+                    id: '550e8400-e29b-41d4-a716-446655440009',
+                    name: 'Sertraline',
+                    type: 'tablet',
+                    description: 'SSRI antidepressant for depression and anxiety',
+                    details: {
+                        genericName: 'Sertraline Hydrochloride',
+                        brand_names: ['Zoloft', 'Lustral'],
+                        drug_class: 'SSRI',
+                        common_dosages: ['25mg', '50mg', '100mg'],
+                        side_effects: ['Nausea', 'Sexual dysfunction'],
+                        contraindications: ['MAO inhibitor use']
+                    }
+                },
+                {
+                    id: '550e8400-e29b-41d4-a716-446655440010',
+                    name: 'Ibuprofen',
+                    type: 'tablet',
+                    description: 'Anti-inflammatory pain and fever reducer',
+                    details: {
+                        genericName: 'Ibuprofen',
+                        brand_names: ['Advil', 'Motrin', 'Nuprin'],
+                        drug_class: 'NSAID',
+                        common_dosages: ['200mg', '400mg', '600mg'],
+                        side_effects: ['Stomach upset', 'Kidney problems'],
+                        contraindications: ['Heart disease', 'Active ulcers']
+                    }
+                }
             ];
 
             for (const med of medicines) {
                 await tx.medicine.upsert({
-                    where: { id: med.id },
+                    where: {id: med.id},
                     update: {},
                     create: {
                         ...med,
@@ -826,16 +1026,219 @@ export async function seedComprehensiveHealthcareData() {
             // Create comprehensive care plans for all patients
             console.log('🩺 Creating comprehensive care plans for all patients...');
             const createdPatients = await tx.patient.findMany({
-                select: { id: true, userId: true },
-                orderBy: { createdAt: 'asc' }
+                select: {id: true, userId: true},
+                orderBy: {createdAt: 'asc'}
             });
 
             const carePlanData = [
-                { patientId: createdPatients[0]?.id, createdByDoctorId: '00000000-0000-0000-0000-000000000011', organizationId: organization.id, title: 'Diabetes & Hypertension Management Plan', description: 'Comprehensive care plan for managing Type 2 diabetes and hypertension with lifestyle modifications and medication adherence.', chronicConditions: ['Type 2 Diabetes', 'Hypertension'], conditionSeverity: { 'Type 2 Diabetes': 'moderate', 'Hypertension': 'mild' }, longTermGoals: ['Maintain HbA1c below 7.0%', 'Keep blood pressure under 130/80 mmHg', 'Achieve weight loss of 10-15 pounds', 'Improve cardiovascular fitness'], lifestyleModifications: [{ type: 'diet', details: { calories_per_day: 1800, carbohydrate_grams: 180, protein_grams: 120, fat_grams: 60, meal_plan: { breakfast: 'Oatmeal with berries, Greek yogurt', lunch: 'Grilled chicken salad with olive oil dressing', dinner: 'Baked salmon, steamed vegetables, quinoa', snacks: 'Apple with almonds, carrot sticks' }, restrictions: ['Low sodium', 'Limited refined sugars', 'Complex carbohydrates only'] } }, { type: 'exercise', details: { frequency: '5 days per week', duration: '45 minutes', activities: { cardio: 'Brisk walking 30 min, 4x/week', strength: 'Light weights 2x/week', flexibility: 'Yoga 15 min daily' }, target_heart_rate: '120-140 bpm', progression: 'Increase walking duration by 5 min every 2 weeks' } }], startDate: getRandomPastDate(30, 60), endDate: getFutureDate(180), status: 'ACTIVE', priority: 'HIGH' },
-                { patientId: createdPatients[1]?.id, createdByDoctorId: '00000000-0000-0000-0000-000000000011', organizationId: organization.id, title: 'Hypertension & Cholesterol Control Plan', description: 'Cardiovascular health management focusing on blood pressure control and cholesterol reduction.', chronicConditions: ['Hypertension', 'High Cholesterol'], conditionSeverity: { 'Hypertension': 'moderate', 'High Cholesterol': 'mild' }, longTermGoals: ['Reduce blood pressure to <130/80 mmHg', 'Lower LDL cholesterol below 100 mg/dL', 'Maintain healthy weight', 'Increase physical activity'], lifestyleModifications: [{ type: 'diet', details: { calories_per_day: 2000, sodium_mg: 1500, fiber_grams: 35, meal_plan: { breakfast: 'Whole grain cereal with low-fat milk', lunch: 'Turkey and avocado wrap with vegetables', dinner: 'Lean beef, sweet potato, green beans', snacks: 'Mixed nuts, fresh fruit' }, restrictions: ['Low sodium', 'Low saturated fat', 'Heart-healthy fats'] } }, { type: 'exercise', details: { frequency: '4 days per week', duration: '40 minutes', activities: { cardio: 'Cycling or swimming 30 min, 3x/week', strength: 'Resistance bands 2x/week', flexibility: 'Stretching routine daily' }, target_heart_rate: '125-145 bpm' } }], startDate: getRandomPastDate(25, 55), endDate: getFutureDate(120), status: 'ACTIVE', priority: 'MEDIUM' },
-                { patientId: createdPatients[2]?.id, createdByDoctorId: '00000000-0000-0000-0000-000000000011', organizationId: organization.id, title: 'Coronary Heart Disease Management', description: 'Cardiac rehabilitation and lifestyle modification program for coronary artery disease.', chronicConditions: ['Coronary Artery Disease'], conditionSeverity: { 'Coronary Artery Disease': 'severe' }, longTermGoals: ['Improve cardiac function and endurance', 'Prevent further coronary events', 'Manage stress and anxiety', 'Optimize medication adherence'], lifestyleModifications: [{ type: 'diet', details: { calories_per_day: 1600, sodium_mg: 1200, cholesterol_mg: 200, meal_plan: { breakfast: 'Oatmeal with walnuts and berries', lunch: 'Grilled fish with quinoa salad', dinner: 'Vegetable stir-fry with tofu', snacks: 'Greek yogurt, handful of almonds' }, restrictions: ['Very low sodium', 'Low cholesterol', 'Omega-3 rich foods'] } }, { type: 'exercise', details: { frequency: '6 days per week', duration: '30 minutes', activities: { cardio: 'Supervised walking program 3x/week', strength: 'Light resistance training 2x/week', flexibility: 'Gentle yoga daily', stress_management: 'Meditation 10 min daily' }, target_heart_rate: '100-120 bpm' } }], startDate: getRandomPastDate(20, 50), endDate: getFutureDate(365), status: 'ACTIVE', priority: 'HIGH' },
-                { patientId: createdPatients[3]?.id, createdByDoctorId: '00000000-0000-0000-0000-000000000022', organizationId: organization.id, title: 'Diabetes & Neuropathy Care Plan', description: 'Comprehensive diabetes management with focus on neuropathy prevention and pain management.', chronicConditions: ['Type 2 Diabetes', 'Diabetic Neuropathy'], conditionSeverity: { 'Type 2 Diabetes': 'moderate', 'Diabetic Neuropathy': 'mild' }, longTermGoals: ['Maintain stable blood glucose levels', 'Prevent neuropathy progression', 'Manage neuropathic pain', 'Improve quality of life'], lifestyleModifications: [{ type: 'diet', details: { calories_per_day: 2200, carbohydrate_grams: 200, protein_grams: 140, meal_plan: { breakfast: 'Scrambled eggs with whole wheat toast', lunch: 'Chicken and vegetable soup with crackers', dinner: 'Grilled pork tenderloin with roasted vegetables', snacks: 'Cheese and whole grain crackers' }, restrictions: ['Consistent carbohydrate timing', 'Limited simple sugars'] } }, { type: 'exercise', details: { frequency: '3 days per week', duration: '30 minutes', activities: { cardio: 'Low-impact water aerobics 2x/week', strength: 'Chair exercises 2x/week', flexibility: 'Foot and ankle exercises daily' }, special_considerations: ['Foot care routine', 'Check feet daily for injuries'] } }], startDate: getRandomPastDate(18, 48), endDate: getFutureDate(180), status: 'ACTIVE', priority: 'MEDIUM' },
-                { patientId: createdPatients[4]?.id, createdByDoctorId: '00000000-0000-0000-0000-000000000022', organizationId: organization.id, title: 'Thyroid & Pre-diabetes Management', description: 'Hormone optimization and diabetes prevention through lifestyle intervention.', chronicConditions: ['Hypothyroidism', 'Prediabetes'], conditionSeverity: { 'Hypothyroidism': 'mild', 'Prediabetes': 'mild' }, longTermGoals: ['Normalize thyroid hormone levels', 'Prevent progression to Type 2 diabetes', 'Maintain healthy weight', 'Optimize energy levels'], lifestyleModifications: [{ type: 'diet', details: { calories_per_day: 1500, iodine_mcg: 150, fiber_grams: 30, meal_plan: { breakfast: 'Greek yogurt with granola and fruit', lunch: 'Lentil soup with whole grain roll', dinner: 'Baked chicken breast with brown rice', snacks: 'Apple with peanut butter' }, restrictions: ['Thyroid-supporting foods', 'Low glycemic index'] } }, { type: 'exercise', details: { frequency: '5 days per week', duration: '35 minutes', activities: { cardio: 'Dance fitness 3x/week', strength: 'Bodyweight exercises 2x/week', flexibility: 'Pilates 2x/week' }, target_heart_rate: '130-150 bpm' } }], startDate: getRandomPastDate(15, 45), endDate: getFutureDate(270), status: 'ACTIVE', priority: 'MEDIUM' }
+                {
+                    patientId: createdPatients[0]?.id,
+                    createdByDoctorId: '00000000-0000-0000-0000-000000000011',
+                    organizationId: organization.id,
+                    title: 'Diabetes & Hypertension Management Plan',
+                    description: 'Comprehensive care plan for managing Type 2 diabetes and hypertension with lifestyle modifications and medication adherence.',
+                    chronicConditions: ['Type 2 Diabetes', 'Hypertension'],
+                    conditionSeverity: {'Type 2 Diabetes': 'moderate', 'Hypertension': 'mild'},
+                    longTermGoals: ['Maintain HbA1c below 7.0%', 'Keep blood pressure under 130/80 mmHg', 'Achieve weight loss of 10-15 pounds', 'Improve cardiovascular fitness'],
+                    lifestyleModifications: [{
+                        type: 'diet',
+                        details: {
+                            calories_per_day: 1800,
+                            carbohydrate_grams: 180,
+                            protein_grams: 120,
+                            fat_grams: 60,
+                            meal_plan: {
+                                breakfast: 'Oatmeal with berries, Greek yogurt',
+                                lunch: 'Grilled chicken salad with olive oil dressing',
+                                dinner: 'Baked salmon, steamed vegetables, quinoa',
+                                snacks: 'Apple with almonds, carrot sticks'
+                            },
+                            restrictions: ['Low sodium', 'Limited refined sugars', 'Complex carbohydrates only']
+                        }
+                    }, {
+                        type: 'exercise',
+                        details: {
+                            frequency: '5 days per week',
+                            duration: '45 minutes',
+                            activities: {
+                                cardio: 'Brisk walking 30 min, 4x/week',
+                                strength: 'Light weights 2x/week',
+                                flexibility: 'Yoga 15 min daily'
+                            },
+                            target_heart_rate: '120-140 bpm',
+                            progression: 'Increase walking duration by 5 min every 2 weeks'
+                        }
+                    }],
+                    startDate: getRandomPastDate(30, 60),
+                    endDate: getFutureDate(180),
+                    status: 'ACTIVE',
+                    priority: 'HIGH'
+                },
+                {
+                    patientId: createdPatients[1]?.id,
+                    createdByDoctorId: '00000000-0000-0000-0000-000000000011',
+                    organizationId: organization.id,
+                    title: 'Hypertension & Cholesterol Control Plan',
+                    description: 'Cardiovascular health management focusing on blood pressure control and cholesterol reduction.',
+                    chronicConditions: ['Hypertension', 'High Cholesterol'],
+                    conditionSeverity: {'Hypertension': 'moderate', 'High Cholesterol': 'mild'},
+                    longTermGoals: ['Reduce blood pressure to <130/80 mmHg', 'Lower LDL cholesterol below 100 mg/dL', 'Maintain healthy weight', 'Increase physical activity'],
+                    lifestyleModifications: [{
+                        type: 'diet',
+                        details: {
+                            calories_per_day: 2000,
+                            sodium_mg: 1500,
+                            fiber_grams: 35,
+                            meal_plan: {
+                                breakfast: 'Whole grain cereal with low-fat milk',
+                                lunch: 'Turkey and avocado wrap with vegetables',
+                                dinner: 'Lean beef, sweet potato, green beans',
+                                snacks: 'Mixed nuts, fresh fruit'
+                            },
+                            restrictions: ['Low sodium', 'Low saturated fat', 'Heart-healthy fats']
+                        }
+                    }, {
+                        type: 'exercise',
+                        details: {
+                            frequency: '4 days per week',
+                            duration: '40 minutes',
+                            activities: {
+                                cardio: 'Cycling or swimming 30 min, 3x/week',
+                                strength: 'Resistance bands 2x/week',
+                                flexibility: 'Stretching routine daily'
+                            },
+                            target_heart_rate: '125-145 bpm'
+                        }
+                    }],
+                    startDate: getRandomPastDate(25, 55),
+                    endDate: getFutureDate(120),
+                    status: 'ACTIVE',
+                    priority: 'MEDIUM'
+                },
+                {
+                    patientId: createdPatients[2]?.id,
+                    createdByDoctorId: '00000000-0000-0000-0000-000000000011',
+                    organizationId: organization.id,
+                    title: 'Coronary Heart Disease Management',
+                    description: 'Cardiac rehabilitation and lifestyle modification program for coronary artery disease.',
+                    chronicConditions: ['Coronary Artery Disease'],
+                    conditionSeverity: {'Coronary Artery Disease': 'severe'},
+                    longTermGoals: ['Improve cardiac function and endurance', 'Prevent further coronary events', 'Manage stress and anxiety', 'Optimize medication adherence'],
+                    lifestyleModifications: [{
+                        type: 'diet',
+                        details: {
+                            calories_per_day: 1600,
+                            sodium_mg: 1200,
+                            cholesterol_mg: 200,
+                            meal_plan: {
+                                breakfast: 'Oatmeal with walnuts and berries',
+                                lunch: 'Grilled fish with quinoa salad',
+                                dinner: 'Vegetable stir-fry with tofu',
+                                snacks: 'Greek yogurt, handful of almonds'
+                            },
+                            restrictions: ['Very low sodium', 'Low cholesterol', 'Omega-3 rich foods']
+                        }
+                    }, {
+                        type: 'exercise',
+                        details: {
+                            frequency: '6 days per week',
+                            duration: '30 minutes',
+                            activities: {
+                                cardio: 'Supervised walking program 3x/week',
+                                strength: 'Light resistance training 2x/week',
+                                flexibility: 'Gentle yoga daily',
+                                stress_management: 'Meditation 10 min daily'
+                            },
+                            target_heart_rate: '100-120 bpm'
+                        }
+                    }],
+                    startDate: getRandomPastDate(20, 50),
+                    endDate: getFutureDate(365),
+                    status: 'ACTIVE',
+                    priority: 'HIGH'
+                },
+                {
+                    patientId: createdPatients[3]?.id,
+                    createdByDoctorId: '00000000-0000-0000-0000-000000000022',
+                    organizationId: organization.id,
+                    title: 'Diabetes & Neuropathy Care Plan',
+                    description: 'Comprehensive diabetes management with focus on neuropathy prevention and pain management.',
+                    chronicConditions: ['Type 2 Diabetes', 'Diabetic Neuropathy'],
+                    conditionSeverity: {'Type 2 Diabetes': 'moderate', 'Diabetic Neuropathy': 'mild'},
+                    longTermGoals: ['Maintain stable blood glucose levels', 'Prevent neuropathy progression', 'Manage neuropathic pain', 'Improve quality of life'],
+                    lifestyleModifications: [{
+                        type: 'diet',
+                        details: {
+                            calories_per_day: 2200,
+                            carbohydrate_grams: 200,
+                            protein_grams: 140,
+                            meal_plan: {
+                                breakfast: 'Scrambled eggs with whole wheat toast',
+                                lunch: 'Chicken and vegetable soup with crackers',
+                                dinner: 'Grilled pork tenderloin with roasted vegetables',
+                                snacks: 'Cheese and whole grain crackers'
+                            },
+                            restrictions: ['Consistent carbohydrate timing', 'Limited simple sugars']
+                        }
+                    }, {
+                        type: 'exercise',
+                        details: {
+                            frequency: '3 days per week',
+                            duration: '30 minutes',
+                            activities: {
+                                cardio: 'Low-impact water aerobics 2x/week',
+                                strength: 'Chair exercises 2x/week',
+                                flexibility: 'Foot and ankle exercises daily'
+                            },
+                            special_considerations: ['Foot care routine', 'Check feet daily for injuries']
+                        }
+                    }],
+                    startDate: getRandomPastDate(18, 48),
+                    endDate: getFutureDate(180),
+                    status: 'ACTIVE',
+                    priority: 'MEDIUM'
+                },
+                {
+                    patientId: createdPatients[4]?.id,
+                    createdByDoctorId: '00000000-0000-0000-0000-000000000022',
+                    organizationId: organization.id,
+                    title: 'Thyroid & Pre-diabetes Management',
+                    description: 'Hormone optimization and diabetes prevention through lifestyle intervention.',
+                    chronicConditions: ['Hypothyroidism', 'Prediabetes'],
+                    conditionSeverity: {'Hypothyroidism': 'mild', 'Prediabetes': 'mild'},
+                    longTermGoals: ['Normalize thyroid hormone levels', 'Prevent progression to Type 2 diabetes', 'Maintain healthy weight', 'Optimize energy levels'],
+                    lifestyleModifications: [{
+                        type: 'diet',
+                        details: {
+                            calories_per_day: 1500,
+                            iodine_mcg: 150,
+                            fiber_grams: 30,
+                            meal_plan: {
+                                breakfast: 'Greek yogurt with granola and fruit',
+                                lunch: 'Lentil soup with whole grain roll',
+                                dinner: 'Baked chicken breast with brown rice',
+                                snacks: 'Apple with peanut butter'
+                            },
+                            restrictions: ['Thyroid-supporting foods', 'Low glycemic index']
+                        }
+                    }, {
+                        type: 'exercise',
+                        details: {
+                            frequency: '5 days per week',
+                            duration: '35 minutes',
+                            activities: {
+                                cardio: 'Dance fitness 3x/week',
+                                strength: 'Bodyweight exercises 2x/week',
+                                flexibility: 'Pilates 2x/week'
+                            },
+                            target_heart_rate: '130-150 bpm'
+                        }
+                    }],
+                    startDate: getRandomPastDate(15, 45),
+                    endDate: getFutureDate(270),
+                    status: 'ACTIVE',
+                    priority: 'MEDIUM'
+                }
             ];
 
             // Create care plans
@@ -854,20 +1257,86 @@ export async function seedComprehensiveHealthcareData() {
             // Create symptoms for each patient
             console.log('🩺 Creating patient symptoms...');
             const symptomData = [
-                { patientId: createdPatients[0]?.id, name: 'Excessive thirst', severity: 'moderate', frequency: 'daily', duration: '2-3 hours' },
-                { patientId: createdPatients[0]?.id, name: 'Frequent urination', severity: 'mild', frequency: 'multiple times daily', duration: 'ongoing' },
-                { patientId: createdPatients[0]?.id, name: 'Fatigue after meals', severity: 'moderate', frequency: 'after meals', duration: '1-2 hours' },
-                { patientId: createdPatients[1]?.id, name: 'Morning headaches', severity: 'mild', frequency: '3-4 times per week', duration: '30-60 minutes' },
-                { patientId: createdPatients[1]?.id, name: 'Dizziness when standing', severity: 'mild', frequency: 'occasionally', duration: 'few seconds' },
-                { patientId: createdPatients[2]?.id, name: 'Chest tightness with activity', severity: 'moderate', frequency: 'during exercise', duration: '5-10 minutes' },
-                { patientId: createdPatients[2]?.id, name: 'Shortness of breath', severity: 'mild', frequency: 'with exertion', duration: 'until rest' },
-                { patientId: createdPatients[3]?.id, name: 'Tingling in feet', severity: 'moderate', frequency: 'daily', duration: 'intermittent throughout day' },
-                { patientId: createdPatients[3]?.id, name: 'Burning sensation in hands', severity: 'mild', frequency: 'evenings', duration: '2-3 hours' },
-                { patientId: createdPatients[4]?.id, name: 'Feeling cold', severity: 'mild', frequency: 'daily', duration: 'most of the day' },
-                { patientId: createdPatients[4]?.id, name: 'Dry skin and hair', severity: 'mild', frequency: 'constant', duration: 'ongoing' }
+                {
+                    patientId: createdPatients[0]?.id,
+                    name: 'Excessive thirst',
+                    severity: 'moderate',
+                    frequency: 'daily',
+                    duration: '2-3 hours'
+                },
+                {
+                    patientId: createdPatients[0]?.id,
+                    name: 'Frequent urination',
+                    severity: 'mild',
+                    frequency: 'multiple times daily',
+                    duration: 'ongoing'
+                },
+                {
+                    patientId: createdPatients[0]?.id,
+                    name: 'Fatigue after meals',
+                    severity: 'moderate',
+                    frequency: 'after meals',
+                    duration: '1-2 hours'
+                },
+                {
+                    patientId: createdPatients[1]?.id,
+                    name: 'Morning headaches',
+                    severity: 'mild',
+                    frequency: '3-4 times per week',
+                    duration: '30-60 minutes'
+                },
+                {
+                    patientId: createdPatients[1]?.id,
+                    name: 'Dizziness when standing',
+                    severity: 'mild',
+                    frequency: 'occasionally',
+                    duration: 'few seconds'
+                },
+                {
+                    patientId: createdPatients[2]?.id,
+                    name: 'Chest tightness with activity',
+                    severity: 'moderate',
+                    frequency: 'during exercise',
+                    duration: '5-10 minutes'
+                },
+                {
+                    patientId: createdPatients[2]?.id,
+                    name: 'Shortness of breath',
+                    severity: 'mild',
+                    frequency: 'with exertion',
+                    duration: 'until rest'
+                },
+                {
+                    patientId: createdPatients[3]?.id,
+                    name: 'Tingling in feet',
+                    severity: 'moderate',
+                    frequency: 'daily',
+                    duration: 'intermittent throughout day'
+                },
+                {
+                    patientId: createdPatients[3]?.id,
+                    name: 'Burning sensation in hands',
+                    severity: 'mild',
+                    frequency: 'evenings',
+                    duration: '2-3 hours'
+                },
+                {
+                    patientId: createdPatients[4]?.id,
+                    name: 'Feeling cold',
+                    severity: 'mild',
+                    frequency: 'daily',
+                    duration: 'most of the day'
+                },
+                {
+                    patientId: createdPatients[4]?.id,
+                    name: 'Dry skin and hair',
+                    severity: 'mild',
+                    frequency: 'constant',
+                    duration: 'ongoing'
+                }
             ];
 
-            const severityMap: { [key: string]: number } = { mild: 1, moderate: 2, severe: 3 };
+            const severityMap: { [key: string]: number } = {mild: 1, moderate: 2, severe: 3};
 
             for (const symptom of symptomData) {
                 if (symptom.patientId) {
@@ -890,15 +1359,15 @@ export async function seedComprehensiveHealthcareData() {
             // Create 4 vital templates
             console.log('📊 Creating 4 vital templates...');
             const vitalTemplates = [
-                { id: '550e8400-e29b-41d4-a716-446655440020', name: 'Blood Pressure', unit: 'mmHg' },
-                { id: '550e8400-e29b-41d4-a716-446655440021', name: 'Heart Rate', unit: 'bpm' },
-                { id: '550e8400-e29b-41d4-a716-446655440022', name: 'Weight', unit: 'kg' },
-                { id: '550e8400-e29b-41d4-a716-446655440023', name: 'Blood Glucose', unit: 'mg/dL' }
+                {id: '550e8400-e29b-41d4-a716-446655440020', name: 'Blood Pressure', unit: 'mmHg'},
+                {id: '550e8400-e29b-41d4-a716-446655440021', name: 'Heart Rate', unit: 'bpm'},
+                {id: '550e8400-e29b-41d4-a716-446655440022', name: 'Weight', unit: 'kg'},
+                {id: '550e8400-e29b-41d4-a716-446655440023', name: 'Blood Glucose', unit: 'mg/dL'}
             ];
 
             for (const template of vitalTemplates) {
                 await tx.vitalTemplate.upsert({
-                    where: { id: template.id },
+                    where: {id: template.id},
                     update: {},
                     create: {
                         ...template,
@@ -914,25 +1383,220 @@ export async function seedComprehensiveHealthcareData() {
             console.log('💊 Creating 3 medication reminders per patient...');
             const medicationReminderData = [
                 // Patient 1
-                { participantId: createdPatients[0]?.id, medicineId: '550e8400-e29b-41d4-a716-446655440001', organizerType: 'DOCTOR' as MedicationOrganizerType, organizerId: '00000000-0000-0000-0000-000000000011', details: { dosage: '500mg', frequency: 'Twice daily with meals', duration_days: 90, instructions: 'Take with breakfast and dinner to reduce stomach upset. Monitor blood sugar levels.' }, startDate: getRandomPastDate(20, 40), endDate: getFutureDate(70) },
-                { participantId: createdPatients[0]?.id, medicineId: '550e8400-e29b-41d4-a716-446655440002', organizerType: 'DOCTOR' as MedicationOrganizerType, organizerId: '00000000-0000-0000-0000-000000000011', details: { dosage: '10mg', frequency: 'Once daily in the morning', duration_days: 90, instructions: 'Take at same time each morning. Monitor blood pressure regularly.' }, startDate: getRandomPastDate(18, 38), endDate: getFutureDate(72) },
-                { participantId: createdPatients[0]?.id, medicineId: '550e8400-e29b-41d4-a716-446655440003', organizerType: 'DOCTOR' as MedicationOrganizerType, organizerId: '00000000-0000-0000-0000-000000000011', details: { dosage: '81mg', frequency: 'Once daily with food', duration_days: 90, instructions: 'Low-dose aspirin for cardiovascular protection. Take with food to prevent stomach irritation.' }, startDate: getRandomPastDate(16, 36), endDate: getFutureDate(74) },
+                {
+                    participantId: createdPatients[0]?.id,
+                    medicineId: '550e8400-e29b-41d4-a716-446655440001',
+                    organizerType: 'DOCTOR' as MedicationOrganizerType,
+                    organizerId: '00000000-0000-0000-0000-000000000011',
+                    details: {
+                        dosage: '500mg',
+                        frequency: 'Twice daily with meals',
+                        duration_days: 90,
+                        instructions: 'Take with breakfast and dinner to reduce stomach upset. Monitor blood sugar levels.'
+                    },
+                    startDate: getRandomPastDate(20, 40),
+                    endDate: getFutureDate(70)
+                },
+                {
+                    participantId: createdPatients[0]?.id,
+                    medicineId: '550e8400-e29b-41d4-a716-446655440002',
+                    organizerType: 'DOCTOR' as MedicationOrganizerType,
+                    organizerId: '00000000-0000-0000-0000-000000000011',
+                    details: {
+                        dosage: '10mg',
+                        frequency: 'Once daily in the morning',
+                        duration_days: 90,
+                        instructions: 'Take at same time each morning. Monitor blood pressure regularly.'
+                    },
+                    startDate: getRandomPastDate(18, 38),
+                    endDate: getFutureDate(72)
+                },
+                {
+                    participantId: createdPatients[0]?.id,
+                    medicineId: '550e8400-e29b-41d4-a716-446655440003',
+                    organizerType: 'DOCTOR' as MedicationOrganizerType,
+                    organizerId: '00000000-0000-0000-0000-000000000011',
+                    details: {
+                        dosage: '81mg',
+                        frequency: 'Once daily with food',
+                        duration_days: 90,
+                        instructions: 'Low-dose aspirin for cardiovascular protection. Take with food to prevent stomach irritation.'
+                    },
+                    startDate: getRandomPastDate(16, 36),
+                    endDate: getFutureDate(74)
+                },
                 // Patient 2
-                { participantId: createdPatients[1]?.id, medicineId: '550e8400-e29b-41d4-a716-446655440004', organizerType: 'DOCTOR' as MedicationOrganizerType, organizerId: '00000000-0000-0000-0000-000000000011', details: { dosage: '5mg', frequency: 'Once daily', duration_days: 90, instructions: 'Take at the same time each day. May cause ankle swelling - report if persistent.' }, startDate: getRandomPastDate(22, 42), endDate: getFutureDate(68) },
-                { participantId: createdPatients[1]?.id, medicineId: '550e8400-e29b-41d4-a716-446655440005', organizerType: 'DOCTOR' as MedicationOrganizerType, organizerId: '00000000-0000-0000-0000-000000000011', details: { dosage: '20mg', frequency: 'Once daily in the evening', duration_days: 90, instructions: 'Take in the evening with or without food. Report any unexplained muscle pain.' }, startDate: getRandomPastDate(24, 44), endDate: getFutureDate(66) },
-                { participantId: createdPatients[1]?.id, medicineId: '550e8400-e29b-41d4-a716-446655440003', organizerType: 'DOCTOR' as MedicationOrganizerType, organizerId: '00000000-0000-0000-0000-000000000011', details: { dosage: '81mg', frequency: 'Once daily with breakfast', duration_days: 90, instructions: 'Cardioprotective dose. Take with food to minimize stomach irritation.' }, startDate: getRandomPastDate(20, 40), endDate: getFutureDate(70) },
+                {
+                    participantId: createdPatients[1]?.id,
+                    medicineId: '550e8400-e29b-41d4-a716-446655440004',
+                    organizerType: 'DOCTOR' as MedicationOrganizerType,
+                    organizerId: '00000000-0000-0000-0000-000000000011',
+                    details: {
+                        dosage: '5mg',
+                        frequency: 'Once daily',
+                        duration_days: 90,
+                        instructions: 'Take at the same time each day. May cause ankle swelling - report if persistent.'
+                    },
+                    startDate: getRandomPastDate(22, 42),
+                    endDate: getFutureDate(68)
+                },
+                {
+                    participantId: createdPatients[1]?.id,
+                    medicineId: '550e8400-e29b-41d4-a716-446655440005',
+                    organizerType: 'DOCTOR' as MedicationOrganizerType,
+                    organizerId: '00000000-0000-0000-0000-000000000011',
+                    details: {
+                        dosage: '20mg',
+                        frequency: 'Once daily in the evening',
+                        duration_days: 90,
+                        instructions: 'Take in the evening with or without food. Report any unexplained muscle pain.'
+                    },
+                    startDate: getRandomPastDate(24, 44),
+                    endDate: getFutureDate(66)
+                },
+                {
+                    participantId: createdPatients[1]?.id,
+                    medicineId: '550e8400-e29b-41d4-a716-446655440003',
+                    organizerType: 'DOCTOR' as MedicationOrganizerType,
+                    organizerId: '00000000-0000-0000-0000-000000000011',
+                    details: {
+                        dosage: '81mg',
+                        frequency: 'Once daily with breakfast',
+                        duration_days: 90,
+                        instructions: 'Cardioprotective dose. Take with food to minimize stomach irritation.'
+                    },
+                    startDate: getRandomPastDate(20, 40),
+                    endDate: getFutureDate(70)
+                },
                 // Patient 3
-                { participantId: createdPatients[2]?.id, medicineId: '550e8400-e29b-41d4-a716-446655440002', organizerType: 'DOCTOR' as MedicationOrganizerType, organizerId: '00000000-0000-0000-0000-000000000011', details: { dosage: '5mg', frequency: 'Once daily', duration_days: 90, instructions: 'For heart protection and blood pressure control. Take consistently at same time.' }, startDate: getRandomPastDate(26, 46), endDate: getFutureDate(64) },
-                { participantId: createdPatients[2]?.id, medicineId: '550e8400-e29b-41d4-a716-446655440005', organizerType: 'DOCTOR' as MedicationOrganizerType, organizerId: '00000000-0000-0000-0000-000000000011', details: { dosage: '40mg', frequency: 'Once daily in the evening', duration_days: 90, instructions: 'High-intensity statin for coronary disease. Monitor for muscle symptoms.' }, startDate: getRandomPastDate(24, 44), endDate: getFutureDate(66) },
-                { participantId: createdPatients[2]?.id, medicineId: '550e8400-e29b-41d4-a716-446655440003', organizerType: 'DOCTOR' as MedicationOrganizerType, organizerId: '00000000-0000-0000-0000-000000000011', details: { dosage: '81mg', frequency: 'Once daily with dinner', duration_days: 90, instructions: 'Essential for coronary disease management. Take with food consistently.' }, startDate: getRandomPastDate(22, 42), endDate: getFutureDate(68) },
+                {
+                    participantId: createdPatients[2]?.id,
+                    medicineId: '550e8400-e29b-41d4-a716-446655440002',
+                    organizerType: 'DOCTOR' as MedicationOrganizerType,
+                    organizerId: '00000000-0000-0000-0000-000000000011',
+                    details: {
+                        dosage: '5mg',
+                        frequency: 'Once daily',
+                        duration_days: 90,
+                        instructions: 'For heart protection and blood pressure control. Take consistently at same time.'
+                    },
+                    startDate: getRandomPastDate(26, 46),
+                    endDate: getFutureDate(64)
+                },
+                {
+                    participantId: createdPatients[2]?.id,
+                    medicineId: '550e8400-e29b-41d4-a716-446655440005',
+                    organizerType: 'DOCTOR' as MedicationOrganizerType,
+                    organizerId: '00000000-0000-0000-0000-000000000011',
+                    details: {
+                        dosage: '40mg',
+                        frequency: 'Once daily in the evening',
+                        duration_days: 90,
+                        instructions: 'High-intensity statin for coronary disease. Monitor for muscle symptoms.'
+                    },
+                    startDate: getRandomPastDate(24, 44),
+                    endDate: getFutureDate(66)
+                },
+                {
+                    participantId: createdPatients[2]?.id,
+                    medicineId: '550e8400-e29b-41d4-a716-446655440003',
+                    organizerType: 'DOCTOR' as MedicationOrganizerType,
+                    organizerId: '00000000-0000-0000-0000-000000000011',
+                    details: {
+                        dosage: '81mg',
+                        frequency: 'Once daily with dinner',
+                        duration_days: 90,
+                        instructions: 'Essential for coronary disease management. Take with food consistently.'
+                    },
+                    startDate: getRandomPastDate(22, 42),
+                    endDate: getFutureDate(68)
+                },
                 // Patient 4
-                { participantId: createdPatients[3]?.id, medicineId: '550e8400-e29b-41d4-a716-446655440001', organizerType: 'DOCTOR' as MedicationOrganizerType, organizerId: '00000000-0000-0000-0000-000000000022', details: { dosage: '1000mg', frequency: 'Twice daily with meals', duration_days: 90, instructions: 'Extended-release formula. Take with breakfast and dinner.' }, startDate: getRandomPastDate(28, 48), endDate: getFutureDate(62) },
-                { participantId: createdPatients[3]?.id, medicineId: '550e8400-e29b-41d4-a716-446655440008', organizerType: 'DOCTOR' as MedicationOrganizerType, organizerId: '00000000-0000-0000-0000-000000000022', details: { dosage: '300mg', frequency: 'Three times daily', duration_days: 90, instructions: 'For diabetic neuropathy pain. Start with bedtime dose, gradually increase as tolerated.' }, startDate: getRandomPastDate(26, 46), endDate: getFutureDate(64) }, // Using Levothyroxine as Gabapentin substitute
-                { participantId: createdPatients[3]?.id, medicineId: '550e8400-e29b-41d4-a716-446655440010', organizerType: 'DOCTOR' as MedicationOrganizerType, organizerId: '00000000-0000-0000-0000-000000000022', details: { dosage: '400mg', frequency: 'As needed, up to 3 times daily', duration_days: 30, instructions: 'For pain relief. Take with food. Do not exceed 1200mg per day.' }, startDate: getRandomPastDate(15, 30), endDate: getFutureDate(15) },
+                {
+                    participantId: createdPatients[3]?.id,
+                    medicineId: '550e8400-e29b-41d4-a716-446655440001',
+                    organizerType: 'DOCTOR' as MedicationOrganizerType,
+                    organizerId: '00000000-0000-0000-0000-000000000022',
+                    details: {
+                        dosage: '1000mg',
+                        frequency: 'Twice daily with meals',
+                        duration_days: 90,
+                        instructions: 'Extended-release formula. Take with breakfast and dinner.'
+                    },
+                    startDate: getRandomPastDate(28, 48),
+                    endDate: getFutureDate(62)
+                },
+                {
+                    participantId: createdPatients[3]?.id,
+                    medicineId: '550e8400-e29b-41d4-a716-446655440008',
+                    organizerType: 'DOCTOR' as MedicationOrganizerType,
+                    organizerId: '00000000-0000-0000-0000-000000000022',
+                    details: {
+                        dosage: '300mg',
+                        frequency: 'Three times daily',
+                        duration_days: 90,
+                        instructions: 'For diabetic neuropathy pain. Start with bedtime dose, gradually increase as tolerated.'
+                    },
+                    startDate: getRandomPastDate(26, 46),
+                    endDate: getFutureDate(64)
+                }, // Using Levothyroxine as Gabapentin substitute
+                {
+                    participantId: createdPatients[3]?.id,
+                    medicineId: '550e8400-e29b-41d4-a716-446655440010',
+                    organizerType: 'DOCTOR' as MedicationOrganizerType,
+                    organizerId: '00000000-0000-0000-0000-000000000022',
+                    details: {
+                        dosage: '400mg',
+                        frequency: 'As needed, up to 3 times daily',
+                        duration_days: 30,
+                        instructions: 'For pain relief. Take with food. Do not exceed 1200mg per day.'
+                    },
+                    startDate: getRandomPastDate(15, 30),
+                    endDate: getFutureDate(15)
+                },
                 // Patient 5
-                { participantId: createdPatients[4]?.id, medicineId: '550e8400-e29b-41d4-a716-446655440008', organizerType: 'DOCTOR' as MedicationOrganizerType, organizerId: '00000000-0000-0000-0000-000000000022', details: { dosage: '75mcg', frequency: 'Once daily in the morning', duration_days: 90, instructions: 'Take on empty stomach, 30-60 minutes before breakfast. Avoid calcium/iron supplements.' }, startDate: getRandomPastDate(30, 50), endDate: getFutureDate(60) },
-                { participantId: createdPatients[4]?.id, medicineId: '550e8400-e29b-41d4-a716-446655440001', organizerType: 'DOCTOR' as MedicationOrganizerType, organizerId: '00000000-0000-0000-0000-000000000022', details: { dosage: '500mg', frequency: 'Once daily with dinner', duration_days: 90, instructions: 'For prediabetes management. Start low dose to minimize GI side effects.' }, startDate: getRandomPastDate(20, 35), endDate: getFutureDate(75) },
-                { participantId: createdPatients[4]?.id, medicineId: '550e8400-e29b-41d4-a716-446655440006', organizerType: 'DOCTOR' as MedicationOrganizerType, organizerId: '00000000-0000-0000-0000-000000000022', details: { dosage: '20mg', frequency: 'Once daily before breakfast', duration_days: 60, instructions: 'For acid reflux related to thyroid medication. Take 30 minutes before eating.' }, startDate: getRandomPastDate(25, 40), endDate: getFutureDate(35) }
+                {
+                    participantId: createdPatients[4]?.id,
+                    medicineId: '550e8400-e29b-41d4-a716-446655440008',
+                    organizerType: 'DOCTOR' as MedicationOrganizerType,
+                    organizerId: '00000000-0000-0000-0000-000000000022',
+                    details: {
+                        dosage: '75mcg',
+                        frequency: 'Once daily in the morning',
+                        duration_days: 90,
+                        instructions: 'Take on empty stomach, 30-60 minutes before breakfast. Avoid calcium/iron supplements.'
+                    },
+                    startDate: getRandomPastDate(30, 50),
+                    endDate: getFutureDate(60)
+                },
+                {
+                    participantId: createdPatients[4]?.id,
+                    medicineId: '550e8400-e29b-41d4-a716-446655440001',
+                    organizerType: 'DOCTOR' as MedicationOrganizerType,
+                    organizerId: '00000000-0000-0000-0000-000000000022',
+                    details: {
+                        dosage: '500mg',
+                        frequency: 'Once daily with dinner',
+                        duration_days: 90,
+                        instructions: 'For prediabetes management. Start low dose to minimize GI side effects.'
+                    },
+                    startDate: getRandomPastDate(20, 35),
+                    endDate: getFutureDate(75)
+                },
+                {
+                    participantId: createdPatients[4]?.id,
+                    medicineId: '550e8400-e29b-41d4-a716-446655440006',
+                    organizerType: 'DOCTOR' as MedicationOrganizerType,
+                    organizerId: '00000000-0000-0000-0000-000000000022',
+                    details: {
+                        dosage: '20mg',
+                        frequency: 'Once daily before breakfast',
+                        duration_days: 60,
+                        instructions: 'For acid reflux related to thyroid medication. Take 30 minutes before eating.'
+                    },
+                    startDate: getRandomPastDate(25, 40),
+                    endDate: getFutureDate(35)
+                }
             ];
 
             for (const medData of medicationReminderData) {
@@ -953,16 +1617,81 @@ export async function seedComprehensiveHealthcareData() {
             console.log('🩺 Creating 5 symptoms/conditions...');
             try {
                 const symptomsData = [
-                    { id: '550e8400-e29b-41d4-a716-446655440030', diagnosisName: 'Type 2 Diabetes', symptoms: ['Excessive thirst', 'Frequent urination', 'Unexplained weight loss', 'Increased hunger', 'Fatigue'], category: 'Endocrine', severityIndicators: { mild: ['Mild thirst', 'Occasional fatigue'], moderate: ['Increased hunger', 'Blurred vision'], severe: ['Unexplained weight loss', 'Frequent urination'] }, commonAgeGroups: ['adults', 'elderly'], genderSpecific: 'both', isActive: true },
-                    { id: '550e8400-e29b-41d4-a716-446655440031', diagnosisName: 'Hypertension', symptoms: ['Headaches', 'Dizziness', 'Chest pain', 'Nosebleeds', 'Shortness of breath'], category: 'Cardiovascular', severityIndicators: { mild: ['Occasional headaches'], moderate: ['Regular headaches', 'Chest discomfort'], severe: ['Severe headaches', 'Chest pain', 'Shortness of breath'] }, commonAgeGroups: ['adults', 'elderly'], genderSpecific: 'both', isActive: true },
-                    { id: '550e8400-e29b-41d4-a716-446655440032', diagnosisName: 'Asthma', symptoms: ['Wheezing', 'Coughing', 'Chest tightness', 'Shortness of breath'], category: 'Respiratory', severityIndicators: { mild: ['Occasional wheezing'], moderate: ['Regular shortness of breath'], severe: ['Difficulty speaking', 'Severe breathing problems'] }, commonAgeGroups: ['children', 'adults'], genderSpecific: 'both', isActive: true },
-                    { id: '550e8400-e29b-41d4-a716-446655440033', diagnosisName: 'Depression', symptoms: ['Persistent sadness', 'Loss of interest', 'Fatigue', 'Sleep disturbances', 'Appetite changes'], category: 'Mental Health', severityIndicators: { mild: ['Occasional sadness'], moderate: ['Regular mood changes'], severe: ['Persistent hopelessness', 'Thoughts of self-harm'] }, commonAgeGroups: ['adolescents', 'adults', 'elderly'], genderSpecific: 'both', isActive: true },
-                    { id: '550e8400-e29b-41d4-a716-446655440034', diagnosisName: 'Anxiety Disorder', symptoms: ['Excessive worry', 'Restlessness', 'Fatigue', 'Difficulty concentrating', 'Irritability', 'Muscle tension'], category: 'Mental Health', severityIndicators: { mild: ['Occasional worry'], moderate: ['Regular anxiety'], severe: ['Panic attacks', 'Unable to perform daily activities'] }, commonAgeGroups: ['adolescents', 'adults'], genderSpecific: 'both', isActive: true }
+                    {
+                        id: '550e8400-e29b-41d4-a716-446655440030',
+                        diagnosisName: 'Type 2 Diabetes',
+                        symptoms: ['Excessive thirst', 'Frequent urination', 'Unexplained weight loss', 'Increased hunger', 'Fatigue'],
+                        category: 'Endocrine',
+                        severityIndicators: {
+                            mild: ['Mild thirst', 'Occasional fatigue'],
+                            moderate: ['Increased hunger', 'Blurred vision'],
+                            severe: ['Unexplained weight loss', 'Frequent urination']
+                        },
+                        commonAgeGroups: ['adults', 'elderly'],
+                        genderSpecific: 'both',
+                        isActive: true
+                    },
+                    {
+                        id: '550e8400-e29b-41d4-a716-446655440031',
+                        diagnosisName: 'Hypertension',
+                        symptoms: ['Headaches', 'Dizziness', 'Chest pain', 'Nosebleeds', 'Shortness of breath'],
+                        category: 'Cardiovascular',
+                        severityIndicators: {
+                            mild: ['Occasional headaches'],
+                            moderate: ['Regular headaches', 'Chest discomfort'],
+                            severe: ['Severe headaches', 'Chest pain', 'Shortness of breath']
+                        },
+                        commonAgeGroups: ['adults', 'elderly'],
+                        genderSpecific: 'both',
+                        isActive: true
+                    },
+                    {
+                        id: '550e8400-e29b-41d4-a716-446655440032',
+                        diagnosisName: 'Asthma',
+                        symptoms: ['Wheezing', 'Coughing', 'Chest tightness', 'Shortness of breath'],
+                        category: 'Respiratory',
+                        severityIndicators: {
+                            mild: ['Occasional wheezing'],
+                            moderate: ['Regular shortness of breath'],
+                            severe: ['Difficulty speaking', 'Severe breathing problems']
+                        },
+                        commonAgeGroups: ['children', 'adults'],
+                        genderSpecific: 'both',
+                        isActive: true
+                    },
+                    {
+                        id: '550e8400-e29b-41d4-a716-446655440033',
+                        diagnosisName: 'Depression',
+                        symptoms: ['Persistent sadness', 'Loss of interest', 'Fatigue', 'Sleep disturbances', 'Appetite changes'],
+                        category: 'Mental Health',
+                        severityIndicators: {
+                            mild: ['Occasional sadness'],
+                            moderate: ['Regular mood changes'],
+                            severe: ['Persistent hopelessness', 'Thoughts of self-harm']
+                        },
+                        commonAgeGroups: ['adolescents', 'adults', 'elderly'],
+                        genderSpecific: 'both',
+                        isActive: true
+                    },
+                    {
+                        id: '550e8400-e29b-41d4-a716-446655440034',
+                        diagnosisName: 'Anxiety Disorder',
+                        symptoms: ['Excessive worry', 'Restlessness', 'Fatigue', 'Difficulty concentrating', 'Irritability', 'Muscle tension'],
+                        category: 'Mental Health',
+                        severityIndicators: {
+                            mild: ['Occasional worry'],
+                            moderate: ['Regular anxiety'],
+                            severe: ['Panic attacks', 'Unable to perform daily activities']
+                        },
+                        commonAgeGroups: ['adolescents', 'adults'],
+                        genderSpecific: 'both',
+                        isActive: true
+                    }
                 ];
 
                 for (const symptom of symptomsData) {
                     await tx.symptomDatabase.upsert({
-                        where: { id: symptom.id },
+                        where: {id: symptom.id},
                         update: {},
                         create: {
                             ...symptom,
@@ -981,8 +1710,14 @@ export async function seedComprehensiveHealthcareData() {
             console.log('🔗 Creating provider relationships...');
             try {
                 if (provider) {
-                    await tx.doctor.update({ where: { id: '00000000-0000-0000-0000-000000000011' }, data: { organizationId: organization.id, updatedAt: getRecentDate() } });
-                    await tx.doctor.update({ where: { id: '00000000-0000-0000-0000-000000000033' }, data: { organizationId: organization.id, updatedAt: getRecentDate() } });
+                    await tx.doctor.update({
+                        where: {id: '00000000-0000-0000-0000-000000000011'},
+                        data: {organizationId: organization.id, updatedAt: getRecentDate()}
+                    });
+                    await tx.doctor.update({
+                        where: {id: '00000000-0000-0000-0000-000000000033'},
+                        data: {organizationId: organization.id, updatedAt: getRecentDate()}
+                    });
                     console.log(`✅ Linked Provider Admin to 2 doctors (1 with patients, 1 without)`);
                 }
             } catch (error: any) {
@@ -993,16 +1728,90 @@ export async function seedComprehensiveHealthcareData() {
             console.log('💉 Creating 5 treatments...');
             try {
                 const treatmentsData = [
-                    { id: '550e8400-e29b-41d4-a716-446655440040', treatmentName: 'Metformin Therapy', treatmentType: 'medication', description: 'First-line medication for Type 2 diabetes management', applicableConditions: ['Type 2 Diabetes', 'Pre-diabetes'], duration: 'Long-term', frequency: 'Twice daily with meals', dosageInfo: { initial_dose: '500mg twice daily', maximum_dose: '2000mg daily', titration: 'Increase by 500mg weekly as tolerated' }, category: 'Antidiabetic', severityLevel: 'moderate', isActive: true },
-                    { id: '550e8400-e29b-41d4-a716-446655440041', treatmentName: 'ACE Inhibitor Therapy', treatmentType: 'medication', description: 'First-line treatment for hypertension', applicableConditions: ['Hypertension', 'Heart Failure'], duration: 'Long-term', frequency: 'Once daily', dosageInfo: { initial_dose: '5mg daily', maximum_dose: '40mg daily', titration: 'Increase every 1-2 weeks' }, category: 'Cardiovascular', severityLevel: 'moderate', isActive: true },
-                    { id: '550e8400-e29b-41d4-a716-446655440042', treatmentName: 'Inhaled Bronchodilator Therapy', treatmentType: 'medication', description: 'Short-acting beta2 agonist for asthma', applicableConditions: ['Asthma', 'COPD'], duration: 'As needed', frequency: '2 puffs every 4-6 hours as needed', dosageInfo: { initial_dose: '90mcg (2 puffs) as needed', maximum_dose: '12 puffs per day' }, category: 'Respiratory', severityLevel: 'mild_to_moderate', isActive: true },
-                    { id: '550e8400-e29b-41d4-a716-446655440043', treatmentName: 'Cognitive Behavioral Therapy', treatmentType: 'therapy', description: 'Evidence-based psychotherapy for depression and anxiety', applicableConditions: ['Depression', 'Anxiety Disorder', 'PTSD'], duration: '12-20 sessions over 3-6 months', frequency: 'Weekly sessions initially', dosageInfo: { initial_dose: '45-50 minute sessions weekly', titration: 'Adjust frequency based on progress' }, category: 'Mental Health', severityLevel: 'mild_to_severe', isActive: true },
-                    { id: '550e8400-e29b-41d4-a716-446655440044', treatmentName: 'Lifestyle Modification Program', treatmentType: 'lifestyle', description: 'Comprehensive diet and exercise program', applicableConditions: ['Type 2 Diabetes', 'Hypertension', 'Obesity'], duration: 'Ongoing lifestyle changes', frequency: 'Daily adherence', dosageInfo: { initial_dose: '30 minutes moderate exercise, 5 days/week', maximum_dose: '60+ minutes daily as tolerated' }, category: 'Lifestyle', severityLevel: 'all_levels', isActive: true }
+                    {
+                        id: '550e8400-e29b-41d4-a716-446655440040',
+                        treatmentName: 'Metformin Therapy',
+                        treatmentType: 'medication',
+                        description: 'First-line medication for Type 2 diabetes management',
+                        applicableConditions: ['Type 2 Diabetes', 'Pre-diabetes'],
+                        duration: 'Long-term',
+                        frequency: 'Twice daily with meals',
+                        dosageInfo: {
+                            initial_dose: '500mg twice daily',
+                            maximum_dose: '2000mg daily',
+                            titration: 'Increase by 500mg weekly as tolerated'
+                        },
+                        category: 'Antidiabetic',
+                        severityLevel: 'moderate',
+                        isActive: true
+                    },
+                    {
+                        id: '550e8400-e29b-41d4-a716-446655440041',
+                        treatmentName: 'ACE Inhibitor Therapy',
+                        treatmentType: 'medication',
+                        description: 'First-line treatment for hypertension',
+                        applicableConditions: ['Hypertension', 'Heart Failure'],
+                        duration: 'Long-term',
+                        frequency: 'Once daily',
+                        dosageInfo: {
+                            initial_dose: '5mg daily',
+                            maximum_dose: '40mg daily',
+                            titration: 'Increase every 1-2 weeks'
+                        },
+                        category: 'Cardiovascular',
+                        severityLevel: 'moderate',
+                        isActive: true
+                    },
+                    {
+                        id: '550e8400-e29b-41d4-a716-446655440042',
+                        treatmentName: 'Inhaled Bronchodilator Therapy',
+                        treatmentType: 'medication',
+                        description: 'Short-acting beta2 agonist for asthma',
+                        applicableConditions: ['Asthma', 'COPD'],
+                        duration: 'As needed',
+                        frequency: '2 puffs every 4-6 hours as needed',
+                        dosageInfo: {initial_dose: '90mcg (2 puffs) as needed', maximum_dose: '12 puffs per day'},
+                        category: 'Respiratory',
+                        severityLevel: 'mild_to_moderate',
+                        isActive: true
+                    },
+                    {
+                        id: '550e8400-e29b-41d4-a716-446655440043',
+                        treatmentName: 'Cognitive Behavioral Therapy',
+                        treatmentType: 'therapy',
+                        description: 'Evidence-based psychotherapy for depression and anxiety',
+                        applicableConditions: ['Depression', 'Anxiety Disorder', 'PTSD'],
+                        duration: '12-20 sessions over 3-6 months',
+                        frequency: 'Weekly sessions initially',
+                        dosageInfo: {
+                            initial_dose: '45-50 minute sessions weekly',
+                            titration: 'Adjust frequency based on progress'
+                        },
+                        category: 'Mental Health',
+                        severityLevel: 'mild_to_severe',
+                        isActive: true
+                    },
+                    {
+                        id: '550e8400-e29b-41d4-a716-446655440044',
+                        treatmentName: 'Lifestyle Modification Program',
+                        treatmentType: 'lifestyle',
+                        description: 'Comprehensive diet and exercise program',
+                        applicableConditions: ['Type 2 Diabetes', 'Hypertension', 'Obesity'],
+                        duration: 'Ongoing lifestyle changes',
+                        frequency: 'Daily adherence',
+                        dosageInfo: {
+                            initial_dose: '30 minutes moderate exercise, 5 days/week',
+                            maximum_dose: '60+ minutes daily as tolerated'
+                        },
+                        category: 'Lifestyle',
+                        severityLevel: 'all_levels',
+                        isActive: true
+                    }
                 ];
 
                 for (const treatment of treatmentsData) {
                     await tx.treatmentDatabase.upsert({
-                        where: { id: treatment.id },
+                        where: {id: treatment.id},
                         update: {},
                         create: {
                             ...treatment,
@@ -1020,22 +1829,62 @@ export async function seedComprehensiveHealthcareData() {
             // Create Diet and Workout Plans
             console.log('🥗 Creating diet and workout plans...');
             const dietPlans = [
-                { name: 'Balanced Diet', description: 'A balanced diet focusing on all major food groups.', type: 'General', details: { guidelines: 'Eat a variety of fruits, vegetables, grains, proteins, and dairy.' } },
-                { name: 'Low-Carb Diet', description: 'A diet that restricts carbohydrates, such as those found in sugary foods, pasta, and bread.', type: 'Weight Loss', details: { guidelines: 'Focus on protein, healthy fats, and non-starchy vegetables.' } },
-                { name: 'Mediterranean Diet', description: 'A diet inspired by the eating habits of Greece, Southern Italy, and Spain.', type: 'Heart Health', details: { guidelines: 'Emphasizes fruits, vegetables, whole grains, legumes, nuts, seeds, and healthy fats.' } },
-                { name: 'Vegetarian Diet', description: 'A diet that excludes meat and fish.', type: 'Lifestyle', details: { guidelines: 'Focus on plant-based proteins like beans, lentils, tofu, and tempeh.' } },
+                {
+                    name: 'Balanced Diet',
+                    description: 'A balanced diet focusing on all major food groups.',
+                    type: 'General',
+                    details: {guidelines: 'Eat a variety of fruits, vegetables, grains, proteins, and dairy.'}
+                },
+                {
+                    name: 'Low-Carb Diet',
+                    description: 'A diet that restricts carbohydrates, such as those found in sugary foods, pasta, and bread.',
+                    type: 'Weight Loss',
+                    details: {guidelines: 'Focus on protein, healthy fats, and non-starchy vegetables.'}
+                },
+                {
+                    name: 'Mediterranean Diet',
+                    description: 'A diet inspired by the eating habits of Greece, Southern Italy, and Spain.',
+                    type: 'Heart Health',
+                    details: {guidelines: 'Emphasizes fruits, vegetables, whole grains, legumes, nuts, seeds, and healthy fats.'}
+                },
+                {
+                    name: 'Vegetarian Diet',
+                    description: 'A diet that excludes meat and fish.',
+                    type: 'Lifestyle',
+                    details: {guidelines: 'Focus on plant-based proteins like beans, lentils, tofu, and tempeh.'}
+                },
             ];
 
             const workoutPlans = [
-                { name: 'Beginner Cardio', description: 'A 30-minute cardio workout for beginners.', type: 'Cardio', details: { routine: '5 min warmup, 20 min brisk walking or cycling, 5 min cool down.' } },
-                { name: 'Full-Body Strength Training', description: 'A full-body workout using weights or bodyweight.', type: 'Strength', details: { routine: '3 sets of 10-12 reps of squats, push-ups, rows, and overhead press.' } },
-                { name: 'Yoga and Flexibility', description: 'A relaxing yoga routine to improve flexibility and reduce stress.', type: 'Flexibility', details: { routine: 'A series of basic yoga poses and stretches held for 30 seconds each.' } },
-                { name: 'High-Intensity Interval Training (HIIT)', description: 'A short, intense workout that alternates between high-intensity and low-intensity periods.', type: 'Cardio', details: { routine: '30 seconds of max effort (e.g., burpees, sprints) followed by 30 seconds of rest, repeated for 15 minutes.' } },
+                {
+                    name: 'Beginner Cardio',
+                    description: 'A 30-minute cardio workout for beginners.',
+                    type: 'Cardio',
+                    details: {routine: '5 min warmup, 20 min brisk walking or cycling, 5 min cool down.'}
+                },
+                {
+                    name: 'Full-Body Strength Training',
+                    description: 'A full-body workout using weights or bodyweight.',
+                    type: 'Strength',
+                    details: {routine: '3 sets of 10-12 reps of squats, push-ups, rows, and overhead press.'}
+                },
+                {
+                    name: 'Yoga and Flexibility',
+                    description: 'A relaxing yoga routine to improve flexibility and reduce stress.',
+                    type: 'Flexibility',
+                    details: {routine: 'A series of basic yoga poses and stretches held for 30 seconds each.'}
+                },
+                {
+                    name: 'High-Intensity Interval Training (HIIT)',
+                    description: 'A short, intense workout that alternates between high-intensity and low-intensity periods.',
+                    type: 'Cardio',
+                    details: {routine: '30 seconds of max effort (e.g., burpees, sprints) followed by 30 seconds of rest, repeated for 15 minutes.'}
+                },
             ];
 
             for (const plan of dietPlans) {
                 await tx.dietPlan.upsert({
-                    where: { name: plan.name },
+                    where: {name: plan.name},
                     update: {},
                     create: plan,
                 });
@@ -1043,7 +1892,7 @@ export async function seedComprehensiveHealthcareData() {
 
             for (const plan of workoutPlans) {
                 await tx.workoutPlan.upsert({
-                    where: { name: plan.name },
+                    where: {name: plan.name},
                     update: {},
                     create: plan,
                 });
@@ -1053,21 +1902,48 @@ export async function seedComprehensiveHealthcareData() {
             // Create 3 appointments
             console.log('📅 Creating 3 appointments...');
             const patientsForAppointments = await tx.patient.findMany({
-                select: { id: true },
+                select: {id: true},
                 take: 3,
-                orderBy: { createdAt: 'asc' }
+                orderBy: {createdAt: 'asc'}
             });
 
             if (patientsForAppointments.length >= 3) {
                 const appointmentsData = [
-                    { id: '00000000-0000-0000-0000-000000000301', doctorId: '00000000-0000-0000-0000-000000000011', patientId: patientsForAppointments[0].id, startDate: getTodayDate(), startTime: new Date(new Date().setHours(9, 0, 0, 0)), endTime: new Date(new Date().setHours(9, 30, 0, 0)), description: 'Routine checkup and medication review', createdAt: getRecentDate() },
-                    { id: '00000000-0000-0000-0000-000000000302', doctorId: '00000000-0000-0000-0000-000000000011', patientId: patientsForAppointments[1].id, startDate: getTodayDate(), startTime: new Date(new Date().setHours(14, 0, 0, 0)), endTime: new Date(new Date().setHours(14, 30, 0, 0)), description: 'Follow-up for hypertension management', createdAt: getRecentDate() },
-                    { id: '00000000-0000-0000-0000-000000000303', doctorId: '00000000-0000-0000-0000-000000000022', patientId: patientsForAppointments[2].id, startDate: getFutureDate(1), startTime: new Date(getFutureDate(1).setHours(10, 0, 0, 0)), endTime: new Date(getFutureDate(1).setHours(10, 30, 0, 0)), description: 'Diabetes management consultation', createdAt: getRecentDate() }
+                    {
+                        id: '00000000-0000-0000-0000-000000000301',
+                        doctorId: '00000000-0000-0000-0000-000000000011',
+                        patientId: patientsForAppointments[0].id,
+                        startDate: getTodayDate(),
+                        startTime: new Date(new Date().setHours(9, 0, 0, 0)),
+                        endTime: new Date(new Date().setHours(9, 30, 0, 0)),
+                        description: 'Routine checkup and medication review',
+                        createdAt: getRecentDate()
+                    },
+                    {
+                        id: '00000000-0000-0000-0000-000000000302',
+                        doctorId: '00000000-0000-0000-0000-000000000011',
+                        patientId: patientsForAppointments[1].id,
+                        startDate: getTodayDate(),
+                        startTime: new Date(new Date().setHours(14, 0, 0, 0)),
+                        endTime: new Date(new Date().setHours(14, 30, 0, 0)),
+                        description: 'Follow-up for hypertension management',
+                        createdAt: getRecentDate()
+                    },
+                    {
+                        id: '00000000-0000-0000-0000-000000000303',
+                        doctorId: '00000000-0000-0000-0000-000000000022',
+                        patientId: patientsForAppointments[2].id,
+                        startDate: getFutureDate(1),
+                        startTime: new Date(getFutureDate(1).setHours(10, 0, 0, 0)),
+                        endTime: new Date(getFutureDate(1).setHours(10, 30, 0, 0)),
+                        description: 'Diabetes management consultation',
+                        createdAt: getRecentDate()
+                    }
                 ];
 
                 for (const apt of appointmentsData) {
                     await tx.appointment.upsert({
-                        where: { id: apt.id },
+                        where: {id: apt.id},
                         update: {},
                         create: apt
                     });
@@ -1080,14 +1956,44 @@ export async function seedComprehensiveHealthcareData() {
             console.log('📋 Creating 3 adherence records...');
             if (createdPatients.length >= 2) {
                 const adherenceData = [
-                    { id: '00000000-0000-0000-0000-000000000401', patientId: createdPatients[0].id, adherenceType: 'MEDICATION' as AdherenceType, dueAt: getRandomPastDate(1, 7), recordedAt: getRandomPastDate(1, 7), isCompleted: true, isMissed: false, createdAt: getRandomPastDate(1, 7), updatedAt: getRecentDate() },
-                    { id: '00000000-0000-0000-0000-000000000402', patientId: createdPatients[1].id, adherenceType: 'VITAL_CHECK' as AdherenceType, dueAt: getRandomPastDate(2, 8), recordedAt: getRandomPastDate(2, 8), isCompleted: true, isMissed: false, createdAt: getRandomPastDate(2, 8), updatedAt: getRecentDate() },
-                    { id: '00000000-0000-0000-0000-000000000403', patientId: createdPatients.length >= 3 ? createdPatients[2].id : createdPatients[0].id, adherenceType: 'APPOINTMENT' as AdherenceType, dueAt: getRandomPastDate(3, 9), recordedAt: null, isCompleted: false, isMissed: true, createdAt: getRandomPastDate(3, 9), updatedAt: getRecentDate() }
+                    {
+                        id: '00000000-0000-0000-0000-000000000401',
+                        patientId: createdPatients[0].id,
+                        adherenceType: 'MEDICATION' as AdherenceType,
+                        dueAt: getRandomPastDate(1, 7),
+                        recordedAt: getRandomPastDate(1, 7),
+                        isCompleted: true,
+                        isMissed: false,
+                        createdAt: getRandomPastDate(1, 7),
+                        updatedAt: getRecentDate()
+                    },
+                    {
+                        id: '00000000-0000-0000-0000-000000000402',
+                        patientId: createdPatients[1].id,
+                        adherenceType: 'VITAL_CHECK' as AdherenceType,
+                        dueAt: getRandomPastDate(2, 8),
+                        recordedAt: getRandomPastDate(2, 8),
+                        isCompleted: true,
+                        isMissed: false,
+                        createdAt: getRandomPastDate(2, 8),
+                        updatedAt: getRecentDate()
+                    },
+                    {
+                        id: '00000000-0000-0000-0000-000000000403',
+                        patientId: createdPatients.length >= 3 ? createdPatients[2].id : createdPatients[0].id,
+                        adherenceType: 'APPOINTMENT' as AdherenceType,
+                        dueAt: getRandomPastDate(3, 9),
+                        recordedAt: null,
+                        isCompleted: false,
+                        isMissed: true,
+                        createdAt: getRandomPastDate(3, 9),
+                        updatedAt: getRecentDate()
+                    }
                 ];
 
                 for (const record of adherenceData) {
                     await tx.adherenceRecord.upsert({
-                        where: { id: record.id },
+                        where: {id: record.id},
                         update: {},
                         create: record
                     });
@@ -1097,10 +2003,10 @@ export async function seedComprehensiveHealthcareData() {
             }
 
             const userCount = await tx.user.count();
-            return { users: { count: userCount }, provider };
+            return {users: {count: userCount}, provider};
         });
 
-        const testUsers = { count: users.count };
+        const testUsers = {count: users.count};
         const defaultPassword = process.env.SEED_DEFAULT_PASSWORD || 'T3mpP@ssw0rd168!';
 
         console.log(`\n🎉 Successfully seeded comprehensive healthcare test data!`);
