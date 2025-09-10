@@ -74,45 +74,32 @@ async function validateDatabaseSchema(): Promise<void> {
           return { success: false, error: error.message };
         }
       }
-    },
-    {
-      name: 'Patients table with dateOfBirth column',
-      check: async () => {
-        try {
-          const result = await prisma.$queryRaw`
-            SELECT column_name FROM information_schema.columns
-            WHERE table_name = 'patients' AND column_name = 'dateOfBirth'
-          `;
-          const hasColumn = Array.isArray(result) && result.length > 0;
-          return {
-            success: hasColumn,
-            error: hasColumn ? null : 'dateOfBirth column missing from patients table'
-          };
-        } catch (error: any) {
-          return { success: false, error: error.message };
-        }
-      }
-    },
-    {
-      name: 'Patients table with gender column',
-      check: async () => {
-        try {
-          const result = await prisma.$queryRaw`
-            SELECT column_name FROM information_schema.columns
-            WHERE table_name = 'patients' AND column_name = 'gender'
-          `;
-          const hasColumn = Array.isArray(result) && result.length > 0;
-          return {
-            success: hasColumn,
-            error: hasColumn ? null : 'gender column missing from patients table'
-          };
-        } catch (error: any) {
-          return { success: false, error: error.message };
-        }
-      }
-    }
-  ];
+async function checkColumnExists(tableName: string, columnName: string): Promise<{ success: boolean; error: string | null }> {
+  try {
+    const result = await prisma.$queryRaw`
+      SELECT column_name FROM information_schema.columns
+      WHERE table_name = ${tableName} AND column_name = ${columnName}
+    `;
+    const hasColumn = Array.isArray(result) && result.length > 0;
+    return {
+      success: hasColumn,
+      error: hasColumn ? null : `${columnName} column missing from ${tableName} table`
+    };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
 
+const schemaChecks = [
+  {
+    name: 'Patients table with dateOfBirth column',
+    check: () => checkColumnExists('patients', 'dateOfBirth')
+  },
+  {
+    name: 'Patients table with gender column',
+    check: () => checkColumnExists('patients', 'gender')
+  }
+];
   const validationErrors = [];
   
   for (const { name, check } of validationChecks) {
