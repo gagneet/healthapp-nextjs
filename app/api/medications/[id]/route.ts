@@ -55,7 +55,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
         carePlan: {
           select: {
             id: true,
-            name: true,
+            title: true,
             status: true
           }
         },
