@@ -70,7 +70,21 @@ export default function DoctorCalendarPage() {
   // First, get the doctor profile ID from user ID
   useEffect(() => {
     const fetchDoctorProfile = async () => {
-      if (!session?.user?.id) return
+      if (!session) {
+        if (session === null) {
+          // Session is loaded, but user is not authenticated
+          setError("You must be logged in to view the calendar.");
+          setIsLoading(false);
+        }
+        // If session is undefined, it's still loading, so we wait.
+        return;
+      }
+
+      if (!session.user?.id) {
+        setError("User ID not found in session.");
+        setIsLoading(false);
+        return;
+      }
 
       try {
         const response = await fetch(`/api/doctors/profile/${session.user.id}`)
@@ -79,16 +93,18 @@ export default function DoctorCalendarPage() {
         if (response.ok && data.doctor) {
           setDoctorProfileId(data.doctor.id)
         } else {
-          setError('Doctor profile not found')
+          setError(data.message || 'Doctor profile not found')
+          setIsLoading(false)
         }
       } catch (error) {
         console.error('Failed to fetch doctor profile:', error)
         setError('Failed to load doctor profile')
+        setIsLoading(false)
       }
     }
 
     fetchDoctorProfile()
-  }, [session?.user?.id])
+  }, [session])
 
   useEffect(() => {
     const fetchCalendarData = async () => {
