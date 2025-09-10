@@ -37,7 +37,7 @@ export const GET = withErrorHandling(async (
 
   try {
     // Fetch doctor by user ID
-    const doctor = await prisma.doctor.findUnique({
+    const doctor = await prisma.doctor.findFirst({
       where: { userId },
       include: {
         user: {
