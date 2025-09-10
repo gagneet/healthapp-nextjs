@@ -749,6 +749,13 @@ export default function PatientDetailsPage() {
                 </CardContent>
             </Card>
 
+            {/*
+              NOTE: The following 'Tabs' section was intentionally removed.
+              This component had two tab implementations, and this one was a broken,
+              redundant remnant that caused a "ReferenceError: tabs is not defined".
+              A complete and functional tab implementation exists above this section,
+              so this unused code block was removed to fix the crash.
+            */}
 
             {/* Tab Content */}
             <div className="mt-6">
