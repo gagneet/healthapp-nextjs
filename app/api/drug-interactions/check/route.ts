@@ -50,9 +50,9 @@ export async function POST(request: NextRequest) {
 
     const interactionResults = await checkPatientDrugInteractions({
       patientId,
-      medications,
+      carePlans: medications, // medications is actually care plans array based on function signature
       newMedication,
-      requestedBy: user.id || user.userId
+      requestedBy: user.id || (user as any).userId
     });
     
     return NextResponse.json(formatApiSuccess(interactionResults, 'Drug interaction check completed'));

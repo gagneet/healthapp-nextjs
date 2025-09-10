@@ -87,7 +87,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Add verification information
-    allergyData.verifiedBy = user.id || user.userId;
+    allergyData.verifiedBy = user.id || (user as any).userId;
     allergyData.isVerified = true;
     allergyData.verificationDate = new Date().toISOString();
 

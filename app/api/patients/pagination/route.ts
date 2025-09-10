@@ -47,12 +47,12 @@ export async function GET(request: NextRequest) {
     };
 
     // For doctors, we need to get the doctor profile ID, not the user ID
-    let doctorId = user.id || user.userId;
+    let doctorId = user.id || (user as any).userId;
     if (user.role === 'DOCTOR') {
       // Import prisma locally to get doctor profile ID
       const { prisma } = await import('@/lib/prisma');
       const doctorProfile = await prisma.doctor.findFirst({
-        where: { userId: user.id || user.userId }
+        where: { userId: user.id || (user as any).userId }
       });
       
       if (!doctorProfile) {

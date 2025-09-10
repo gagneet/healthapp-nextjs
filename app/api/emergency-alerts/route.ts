@@ -80,7 +80,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Add creation metadata
-    alertData.createdBy = user.id || user.userId;
+    alertData.createdBy = user.id || (user as any).userId;
     alertData.triggeredAt = new Date().toISOString();
 
     const newAlert = await createEmergencyAlert(alertData);

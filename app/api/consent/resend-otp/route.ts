@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
     // Check if user has permission to resend (primary doctor or admin)
     if (
       consentOtp.secondaryDoctorAssignment.primaryDoctorId !== session.user.id &&
-      session.user.role !== 'ADMIN'
+      session.user.role !== 'SYSTEM_ADMIN'
     ) {
       return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 });
     }

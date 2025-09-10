@@ -61,7 +61,7 @@ export async function POST(request: NextRequest) {
     const medicationData = await request.json();
 
     // Add created by information
-    medicationData.createdBy = user.id || user.userId;
+    medicationData.createdBy = user.id || (user as any).userId;
 
     const newMedication = await createMedication(medicationData);
     

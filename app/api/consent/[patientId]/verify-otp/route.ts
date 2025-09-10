@@ -69,7 +69,7 @@ export const POST = withErrorHandling(async (request: NextRequest, { params }: {
     if (session.user.role !== 'PATIENT') {
       providerProfile = session.user.role === 'DOCTOR' 
         ? await prisma.doctor.findFirst({ where: { userId: session.user.id } })
-        : await prisma.hspProfile.findFirst({ where: { userId: session.user.id } })
+        : await prisma.hsp.findFirst({ where: { userId: session.user.id } })
 
       if (!providerProfile) {
         return createErrorResponse(new Error("Healthcare provider profile not found"))
@@ -123,8 +123,8 @@ export const POST = withErrorHandling(async (request: NextRequest, { params }: {
       // Find the most recent active assignment requiring consent
       const assignmentWhere: any = {
         patientId: patientId,
-        requiresConsent: true,
-        consentStatus: 'pending',
+        patientConsentRequired: true,
+        patientConsentStatus: 'PENDING',
         isActive: true
       }
 
@@ -201,7 +201,7 @@ export const POST = withErrorHandling(async (request: NextRequest, { params }: {
         data: {
           verificationAttempts: { increment: 1 },
           // Block OTP if max attempts reached
-          isBlocked: otpRecord.verificationAttempts >= 2 // 3 attempts total (0, 1, 2)
+          isBlocked: (otpRecord.verificationAttempts || 0) >= 2 // 3 attempts total (0, 1, 2)
         }
       })
 
@@ -209,7 +209,7 @@ export const POST = withErrorHandling(async (request: NextRequest, { params }: {
         return createErrorResponse(new Error("OTP verification blocked due to too many incorrect attempts. Please request a new OTP."))
       }
 
-      return createErrorResponse(new Error(`Incorrect OTP. ${2 - updatedOtp.verificationAttempts} attempts remaining.`))
+      return createErrorResponse(new Error(`Incorrect OTP. ${2 - (updatedOtp.verificationAttempts || 0)} attempts remaining.`))
     }
 
     // OTP is correct - verify it and grant access
@@ -229,7 +229,7 @@ export const POST = withErrorHandling(async (request: NextRequest, { params }: {
       await tx.patientDoctorAssignment.update({
         where: { id: assignment.id },
         data: {
-          consentStatus: 'granted',
+          patientConsentStatus: 'GRANTED',
           accessGranted: true,
           consentGrantedAt: new Date(),
           consentGrantedBy: session.user.id

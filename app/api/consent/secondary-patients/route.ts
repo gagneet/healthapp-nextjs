@@ -60,7 +60,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
     // Get the healthcare provider profile
     const providerProfile = session.user.role === 'DOCTOR' 
       ? await prisma.doctor.findFirst({ where: { userId: session.user.id } })
-      : await prisma.hspProfile.findFirst({ where: { userId: session.user.id } })
+      : await prisma.hsp.findFirst({ where: { userId: session.user.id } })
 
     if (!providerProfile) {
       return createErrorResponse(new Error("Healthcare provider profile not found"))
@@ -148,7 +148,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
 
     // Map consent status to assignments
     const consentMap = consentOtps.reduce((acc, otp) => {
-      if (!acc[otp.patientDoctorAssignmentId]) {
+      if (otp.patientDoctorAssignmentId && !acc[otp.patientDoctorAssignmentId]) {
         acc[otp.patientDoctorAssignmentId] = otp
       }
       return acc
@@ -185,8 +185,8 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
           expires_at: assignment.expiresAt
         },
         consentStatus: {
-          status: assignment.consentStatus || 'pending',
-          requiresConsent: assignment.requiresConsent,
+          status: assignment.patientConsentStatus || 'pending',
+          patientConsentRequired: assignment.patientConsentRequired,
           otp_generated: !!consent,
           otp_verified: consent?.isVerified || false,
           otp_expires_at: consent?.expiresAt || null,

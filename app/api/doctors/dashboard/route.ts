@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
     }
 
     const user = session.user;
-    const dashboardData = await getDoctorDashboard(user.id || user.userId);
+    const dashboardData = await getDoctorDashboard(user.id || (user as any).userId);
     
     return NextResponse.json(formatApiSuccess(dashboardData, 'Dashboard data retrieved successfully'));
   } catch (error) {

@@ -106,7 +106,7 @@ export async function POST(request: NextRequest) {
       failed: Math.ceil(rxcuiList.length * 0.2),
       duplicates: Math.floor(rxcuiList.length * 0.1),
       newInteractions: Math.floor(rxcuiList.length * 2.5), // Average interactions per drug
-      importedBy: user.id || user.userId,
+      importedBy: user.id || (user as any).userId,
       importTimestamp: new Date().toISOString(),
       failedRxcuis: rxcuiList.slice(0, Math.ceil(rxcuiList.length * 0.2)), // Mock failed ones
     };

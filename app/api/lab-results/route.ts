@@ -37,7 +37,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid request body', details: validation.error.flatten() }, { status: 400 });
     }
 
-    const result = await LaboratoryService.processLabResults(validation.data);
+    // Convert date strings to Date objects
+    const processedData = {
+      ...validation.data,
+      collectedAt: validation.data.collectedAt ? new Date(validation.data.collectedAt) : undefined,
+      processedAt: validation.data.processedAt ? new Date(validation.data.processedAt) : undefined,
+    };
+    
+    const result = await LaboratoryService.processLabResults(processedData);
 
     if (!result.success) {
       return NextResponse.json({ error: result.error }, { status: 500 });

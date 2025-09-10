@@ -223,7 +223,7 @@ export const PUT = withErrorHandling(async (request: NextRequest) => {
         where: { userId: session.user.id },
         data: updatePayload,
     });
-    return createSuccessResponse(updatedDoctor, "Profile updated successfully");
+    return createSuccessResponse({ ...updatedDoctor, message: "Profile updated successfully" });
   } catch (error) {
     console.error("Failed to update doctor profile:", error)
     throw error

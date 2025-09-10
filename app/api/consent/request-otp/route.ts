@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if user is the primary doctor or admin
-    if (assignment.primaryDoctorId !== session.user.id && session.user.role !== 'ADMIN') {
+    if (assignment.primaryDoctorId !== session.user.id && session.user.role !== 'SYSTEM_ADMIN') {
       return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 });
     }
 

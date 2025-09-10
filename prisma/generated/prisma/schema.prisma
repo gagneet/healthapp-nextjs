@@ -58,68 +58,71 @@ model User {
   emailVerified DateTime? @db.Timestamptz(6)
 
   // Healthcare-specific fields
-  role                        UserRole
-  accountStatus               UserAccountStatus?          @default(PENDING_VERIFICATION)
-  firstName                   String?                     @db.VarChar(100)
-  lastName                    String?                     @db.VarChar(100)
-  middleName                  String?                     @db.VarChar(100)
-  phone                       String?                     @db.VarChar(20)
-  dateOfBirth                 DateTime?                   @db.Date
-  gender                      UserGender?
-  emailVerifiedLegacy         Boolean?                    @default(false)
-  emailVerificationToken      String?                     @db.VarChar(255)
-  passwordResetToken          String?                     @db.VarChar(255)
-  passwordResetExpires        DateTime?                   @db.Timestamptz(6)
-  twoFactorEnabled            Boolean?                    @default(false)
-  twoFactorSecret             String?                     @db.VarChar(255)
-  failedLoginAttempts         Int?                        @default(0)
-  lockedUntil                 DateTime?                   @db.Timestamptz(6)
-  lastLoginAt                 DateTime?                   @db.Timestamptz(6)
-  profilePictureUrl           String?                     @db.VarChar(500)
-  timezone                    String?                     @default("UTC") @db.VarChar(50)
-  locale                      String?                     @default("en") @db.VarChar(10)
-  preferences                 Json?
-  termsAcceptedAt             DateTime?                   @db.Timestamptz(6)
-  privacyPolicyAcceptedAt     DateTime?                   @db.Timestamptz(6)
-  hipaaConsentDate            DateTime?                   @db.Timestamptz(6)
-  createdAt                   DateTime?                   @db.Timestamptz(6)
-  updatedAt                   DateTime?                   @updatedAt @db.Timestamptz(6)
-  deletedAt                   DateTime?                   @db.Timestamptz(6)
-  fullName                    String?                     @db.VarChar(255)
-  appointmentSlots            AppointmentSlot[]
-  appointments                Appointment[]
-  auditLogs                   AuditLog[]
-  carePlanTemplates           CarePlanTemplate[]
-  doctorAvailabilities        DoctorAvailability[]
-  doctorProfile               Doctor?                     @relation("UserDoctorProfile")
-  verifiedDoctors             Doctor[]                    @relation("UserVerifiedDoctors")
-  healthcareProvider          HealthcareProvider?
-  verifiedHealthcareProviders HealthcareProvider[]        @relation("UserVerifiedHealthcareProviders")
-  hspProfile                  Hsp?                        @relation("UserHspProfile")
-  verifiedHsps                Hsp[]                       @relation("UserVerifiedHsps")
-  notifications               Notification[]
-  patientConsentOtps          PatientConsentOtp[]         @relation("RequestedByUser")
-  patientDoctorAssignments    PatientDoctorAssignment[]
-  patientProviderAssignments  PatientProviderAssignment[]
-  patientProfile              Patient?
-  providers                   Provider[]
-  scheduledEvents             ScheduledEvent[]
-  userDevices                 UserDevice[]
-  userRoles                   UserRoleAssignment[]
-  accounts                    Account[]
-  sessions                    Session[]
-  accountLinks                AccountLink[]
-  verifiedPatientAllergies    PatientAllergy[]
-  resolvedMedicationAlerts    MedicationSafetyAlert[]
-  createdMedicationAlerts     MedicationSafetyAlert[]     @relation("SafetyAlertCreatedBy")
-  acknowledgedEmergencyAlerts EmergencyAlert[]            @relation("EmergencyAlertAcknowledged")
-  resolvedEmergencyAlerts     EmergencyAlert[]            @relation("EmergencyAlertResolved")
-  vitalAlertRules             VitalAlertRule[]
-  addedDevices                ConnectedDevice[]
-  createdConsultations        VideoConsultation[]         @relation("ConsultationCreatedBy")
-  consultationNotesCreated    ConsultationNote[]          @relation("ConsultationNoteCreatedBy")
-  adherenceLogsRecorded       AdherenceLog[]
-  reviewedClinicalDiagnoses   ClinicalDiagnosis[]
+  role                            UserRole
+  accountStatus                   UserAccountStatus?          @default(PENDING_VERIFICATION)
+  firstName                       String?                     @db.VarChar(100)
+  lastName                        String?                     @db.VarChar(100)
+  middleName                      String?                     @db.VarChar(100)
+  phone                           String?                     @db.VarChar(20)
+  dateOfBirth                     DateTime?                   @db.Date
+  gender                          UserGender?
+  emailVerifiedLegacy             Boolean?                    @default(false)
+  emailVerificationToken          String?                     @db.VarChar(255)
+  passwordResetToken              String?                     @db.VarChar(255)
+  passwordResetExpires            DateTime?                   @db.Timestamptz(6)
+  twoFactorEnabled                Boolean?                    @default(false)
+  twoFactorSecret                 String?                     @db.VarChar(255)
+  failedLoginAttempts             Int?                        @default(0)
+  lockedUntil                     DateTime?                   @db.Timestamptz(6)
+  lastLoginAt                     DateTime?                   @db.Timestamptz(6)
+  profilePictureUrl               String?                     @db.VarChar(500)
+  timezone                        String?                     @default("UTC") @db.VarChar(50)
+  locale                          String?                     @default("en") @db.VarChar(10)
+  preferences                     Json?
+  termsAcceptedAt                 DateTime?                   @db.Timestamptz(6)
+  privacyPolicyAcceptedAt         DateTime?                   @db.Timestamptz(6)
+  hipaaConsentDate                DateTime?                   @db.Timestamptz(6)
+  createdAt                       DateTime?                   @db.Timestamptz(6)
+  updatedAt                       DateTime?                   @updatedAt @db.Timestamptz(6)
+  deletedAt                       DateTime?                   @db.Timestamptz(6)
+  fullName                        String?                     @db.VarChar(255)
+  appointmentSlots                AppointmentSlot[]
+  appointments                    Appointment[]
+  auditLogs                       AuditLog[]
+  carePlanTemplates               CarePlanTemplate[]
+  doctorAvailabilities            DoctorAvailability[]
+  doctorProfile                   Doctor?                     @relation("UserDoctorProfile")
+  verifiedDoctors                 Doctor[]                    @relation("UserVerifiedDoctors")
+  healthcareProvider              HealthcareProvider?
+  verifiedHealthcareProviders     HealthcareProvider[]        @relation("UserVerifiedHealthcareProviders")
+  hspProfile                      Hsp?                        @relation("UserHspProfile")
+  verifiedHsps                    Hsp[]                       @relation("UserVerifiedHsps")
+  notifications                   Notification[]
+  patientConsentOtps              PatientConsentOtp[]         @relation("RequestedByUser")
+  patientDoctorAssignments        PatientDoctorAssignment[]
+  patientProviderAssignments      PatientProviderAssignment[]
+  patientProfile                  Patient?
+  providers                       Provider[]
+  scheduledEvents                 ScheduledEvent[]
+  userDevices                     UserDevice[]
+  userRoles                       UserRoleAssignment[]
+  accounts                        Account[]
+  sessions                        Session[]
+  accountLinks                    AccountLink[]
+  verifiedPatientAllergies        PatientAllergy[]
+  resolvedMedicationAlerts        MedicationSafetyAlert[]
+  createdMedicationAlerts         MedicationSafetyAlert[]     @relation("SafetyAlertCreatedBy")
+  acknowledgedEmergencyAlerts     EmergencyAlert[]            @relation("EmergencyAlertAcknowledged")
+  resolvedEmergencyAlerts         EmergencyAlert[]            @relation("EmergencyAlertResolved")
+  vitalAlertRules                 VitalAlertRule[]
+  addedDevices                    ConnectedDevice[]
+  createdConsultations            VideoConsultation[]         @relation("ConsultationCreatedBy")
+  consultationNotesCreated        ConsultationNote[]          @relation("ConsultationNoteCreatedBy")
+  adherenceLogsRecorded           AdherenceLog[]
+  reviewedClinicalDiagnoses       ClinicalDiagnosis[]
+  createdPatientDoctorAssignments PatientDoctorAssignment[]   @relation("CreatedByUserPatientDoctorAssignments")
+  consentGrantedAssignments       PatientDoctorAssignment[]   @relation("ConsentGrantedByUser")
+  verifiedPatientConsentOtps      PatientConsentOtp[]         @relation("VerifiedByUser")
 
   @@index([email, accountStatus], map: "idx_users_email_status")
   @@index([role, accountStatus], map: "idx_users_role_status")
@@ -216,6 +219,8 @@ model Patient {
   heightCm                      Decimal?                            @db.Decimal(5, 2)
   weightKg                      Decimal?                            @db.Decimal(5, 2)
   bloodType                     String?                             @db.VarChar(5)
+  dateOfBirth                   DateTime?                           @db.Date
+  gender                        String?                             @db.VarChar(20)
   primaryLanguage               String?                             @default("en") @db.VarChar(10)
   riskLevel                     String?                             @default("low") @db.VarChar(20)
   riskFactors                   Json?                               @default("[]")
@@ -401,6 +406,8 @@ model CarePlan {
   patientId                 String                  @db.Uuid
   createdByDoctorId         String?                 @db.Uuid
   createdByHspId            String?                 @db.Uuid
+  assignedDoctorId          String?                 @db.Uuid
+  assignedHspId             String?                 @db.Uuid
   organizationId            String?                 @db.Uuid
   title                     String                  @db.VarChar(255)
   description               String?
@@ -455,10 +462,14 @@ model CarePlan {
   diets                     CarePlanToDietPlan[]
   workouts                  CarePlanToWorkoutPlan[]
   reports                   Report[]
+  assignedDoctor            Doctor?                 @relation("AssignedDoctorCarePlans", fields: [assignedDoctorId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  assignedHsp               Hsp?                    @relation("AssignedHspCarePlans", fields: [assignedHspId], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
   @@index([chronicConditions], type: Gin)
   @@index([createdByDoctorId])
   @@index([createdByHspId])
+  @@index([assignedDoctorId])
+  @@index([assignedHspId])
   @@index([monitoringParameters], type: Gin)
   @@index([nextReviewDate])
   @@index([organizationId])
@@ -855,6 +866,9 @@ model PatientDoctorAssignment {
   id                       String                                @id @default(uuid()) @db.Uuid
   patientId                String                                @db.Uuid
   doctorId                 String                                @db.Uuid
+  primaryDoctorId          String?                               @db.Uuid
+  secondaryDoctorId        String?                               @db.Uuid
+  secondaryHspId           String?                               @db.Uuid
   assignmentType           PatientDoctorAssignmentType           @default(SPECIALIST)
   permissions              Json?                                 @default("{\"can_view_patient\": true, \"can_create_care_plans\": false, \"can_modify_care_plans\": false, \"can_prescribe\": false, \"can_order_tests\": false, \"can_access_full_history\": false}")
   specialtyFocus           String[]                              @default([])
@@ -863,22 +877,32 @@ model PatientDoctorAssignment {
   assignedByAdminId        String?                               @db.Uuid
   patientConsentRequired   Boolean?                              @default(false)
   patientConsentStatus     PatientDoctorAssignmentConsentStatus? @default(NOT_REQUIRED)
+  accessGranted            Boolean?                              @default(false)
   consentMethod            String?                               @db.VarChar(20)
   consentOtp               String?                               @db.VarChar(10)
   consentOtpExpiresAt      DateTime?
   consentGrantedAt         DateTime?
+  consentGrantedBy         String?                               @db.Uuid
   assignmentStartDate      DateTime?
   assignmentEndDate        DateTime?
+  expiresAt                DateTime?
   isActive                 Boolean?                              @default(true)
   assignmentReason         String?
   notes                    String?
   requiresSameOrganization Boolean?                              @default(false)
+  createdBy                String?                               @db.Uuid
   createdAt                DateTime?
   updatedAt                DateTime?                             @updatedAt
   deletedAt                DateTime?
   assignedByAdmin          User?                                 @relation(fields: [assignedByAdminId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   assignedByDoctor         Doctor?                               @relation("AssignedByDoctorPatientDoctorAssignments", fields: [assignedByDoctorId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  createdByUser            User?                                 @relation("CreatedByUserPatientDoctorAssignments", fields: [createdBy], references: [id], onDelete: NoAction, onUpdate: NoAction)
   doctor                   Doctor                                @relation("DoctorAssignments", fields: [doctorId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  primaryDoctor            Doctor?                               @relation("PrimaryDoctorAssignments", fields: [primaryDoctorId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  secondaryDoctor          Doctor?                               @relation("SecondaryDoctorAssignments", fields: [secondaryDoctorId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  secondaryHsp             Hsp?                                  @relation("SecondaryHspAssignments", fields: [secondaryHspId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  consentGrantedByUser     User?                                 @relation("ConsentGrantedByUser", fields: [consentGrantedBy], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  consentOtps              PatientConsentOtp[]                   @relation("PatientDoctorAssignmentOtps")
   patient                  Patient                               @relation(fields: [patientId], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
   @@index([doctorId, isActive, createdAt], map: "idx_assignments_doctor_active_created")
@@ -1141,6 +1165,10 @@ model Doctor {
   averageRating                       Decimal?                        @db.Decimal(3, 2)
   totalReviews                        Int?                            @default(0)
   isAvailableOnline                   Boolean?                        @default(true)
+  isAcceptingNewPatients              Boolean?                        @default(true)
+  offersOnlineConsultations           Boolean?                        @default(false)
+  emergencyAvailability               Boolean?                        @default(false)
+  isActive                            Boolean?                        @default(true)
   createdAt                           DateTime?
   updatedAt                           DateTime?
   deletedAt                           DateTime?
@@ -1167,6 +1195,9 @@ model Doctor {
   secondaryPatientConsentOtps         PatientConsentOtp[]             @relation("SecondaryDoctorPatientConsentOtps")
   assignedPatientDoctorAssignments    PatientDoctorAssignment[]       @relation("AssignedByDoctorPatientDoctorAssignments")
   doctorAssignments                   PatientDoctorAssignment[]       @relation("DoctorAssignments")
+  primaryDoctorAssignments            PatientDoctorAssignment[]       @relation("PrimaryDoctorAssignments")
+  secondaryDoctorAssignments          PatientDoctorAssignment[]       @relation("SecondaryDoctorAssignments")
+  assignedCarePlans                   CarePlan[]                      @relation("AssignedDoctorCarePlans")
   patientProviderConsentHistories     PatientProviderConsentHistory[]
   patients                            Patient[]
   primarySecondaryDoctorAssignments   SecondaryDoctorAssignment[]     @relation("PrimaryDoctorSecondaryDoctorAssignments")
@@ -1219,10 +1250,12 @@ model Hsp {
   averageRating                   Decimal?                        @db.Decimal(3, 2)
   totalReviews                    Int?                            @default(0)
   isAvailable                     Boolean?                        @default(true)
+  isActive                        Boolean?                        @default(true)
   createdAt                       DateTime?
   updatedAt                       DateTime?
   deletedAt                       DateTime?
   carePlans                       CarePlan[]
+  assignedCarePlans               CarePlan[]                      @relation("AssignedHspCarePlans")
   organization                    Organization?                   @relation(fields: [organizationId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   supervisingDoctor               Doctor?                         @relation(fields: [supervisingDoctorId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   user                            User                            @relation("UserHspProfile", fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction)
@@ -1232,6 +1265,7 @@ model Hsp {
   patientProviderConsentHistories PatientProviderConsentHistory[]
   patients                        Patient[]
   secondaryDoctorAssignments      SecondaryDoctorAssignment[]
+  secondaryHspAssignments         PatientDoctorAssignment[]       @relation("SecondaryHspAssignments")
   prescriptions                   Prescription[]
 
   @@index([departments], type: Gin)
@@ -1291,20 +1325,25 @@ model PatientAlert {
 model PatientConsentOtp {
   id                        String                    @id @db.Uuid
   secondaryAssignmentId     String                    @db.Uuid
+  patientDoctorAssignmentId String?                   @db.Uuid
   patientId                 String                    @db.Uuid
   primaryDoctorId           String                    @db.Uuid
   secondaryDoctorId         String?                   @db.Uuid
   secondaryHspId            String?                   @db.Uuid
   otpCode                   String                    @db.VarChar(10)
   otpMethod                 PatientConsentOtpMethod?  @default(BOTH)
+  consentMethod             String?                   @db.VarChar(50)
   patientPhone              String?                   @db.VarChar(20)
   patientEmail              String?                   @db.VarChar(255)
   generatedAt               DateTime?
   expiresAt                 DateTime
   attemptsCount             Int?                      @default(0)
+  verificationAttempts      Int?                      @default(0)
   maxAttempts               Int?                      @default(3)
   isVerified                Boolean?                  @default(false)
   verifiedAt                DateTime?
+  verifiedBy                String?                   @db.Uuid
+  verificationMethod        String?                   @db.VarChar(50)
   isExpired                 Boolean?                  @default(false)
   isBlocked                 Boolean?                  @default(false)
   blockedAt                 DateTime?
@@ -1317,13 +1356,17 @@ model PatientConsentOtp {
   emailSent                 Boolean?                  @default(false)
   emailSentAt               DateTime?
   emailError                String?
+  customMessage             String?
+  notes                     String?
   createdAt                 DateTime?
   updatedAt                 DateTime?
   deletedAt                 DateTime?
   patient                   Patient                   @relation(fields: [patientId], references: [id], onDelete: Cascade)
   primaryDoctor             Doctor                    @relation("PrimaryDoctorPatientConsentOtps", fields: [primaryDoctorId], references: [id], onDelete: Cascade)
   requestedByUser           User                      @relation("RequestedByUser", fields: [requestedByUserId], references: [id], onDelete: Cascade)
+  verifiedByUser            User?                     @relation("VerifiedByUser", fields: [verifiedBy], references: [id], onDelete: NoAction, onUpdate: NoAction)
   secondaryDoctorAssignment SecondaryDoctorAssignment @relation(fields: [secondaryAssignmentId], references: [id], onDelete: Cascade)
+  patientDoctorAssignment   PatientDoctorAssignment?  @relation("PatientDoctorAssignmentOtps", fields: [patientDoctorAssignmentId], references: [id], onDelete: Cascade)
   secondaryDoctor           Doctor?                   @relation("SecondaryDoctorPatientConsentOtps", fields: [secondaryDoctorId], references: [id], onDelete: Cascade)
   secondaryHsp              Hsp?                      @relation(fields: [secondaryHspId], references: [id], onDelete: Cascade)
 

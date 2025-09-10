@@ -44,7 +44,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
     }
 
     let result;
-    const userId = user.id || user.userId;
+    const userId = user.id || (user as any).userId;
 
     // Handle different action types
     switch (body.action) {

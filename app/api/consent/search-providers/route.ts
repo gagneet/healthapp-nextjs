@@ -49,7 +49,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
   }
 
   try {
-    const results = { doctors: [], hsps: [] }
+    const results: { doctors: any[], hsps: any[] } = { doctors: [], hsps: [] }
 
     // Search doctors
     if (type === 'doctor' || type === 'both') {
@@ -158,7 +158,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
         hspWhere.AND.push({ organizationId });
       }
 
-      const hsps = await prisma.hspProfile.findMany({
+      const hsps = await prisma.hsp.findMany({
         where: hspWhere,
         take: limit,
         include: {
@@ -196,7 +196,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
         experience_years: hsp.yearsOfExperience,
         isActive: hsp.isActive,
         type: 'hsp',
-        specialization_areas: hsp.specializationAreas || []
+        specialization_areas: hsp.specializations || []
       }))
     }
 
@@ -214,12 +214,12 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
     if (currentOrgId) {
       results.doctors.forEach((doctor: any) => {
         doctor.same_organization = doctor.organization_id === currentOrgId
-        doctor.requiresConsent = doctor.organization_id !== currentOrgId
+        doctor.patientConsentRequired = doctor.organization_id !== currentOrgId
       })
 
       results.hsps.forEach((hsp: any) => {
         hsp.same_organization = hsp.organization_id === currentOrgId
-        hsp.requiresConsent = hsp.organization_id !== currentOrgId
+        hsp.patientConsentRequired = hsp.organization_id !== currentOrgId
       })
     }
 

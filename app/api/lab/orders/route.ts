@@ -101,7 +101,7 @@ export async function GET(request: NextRequest) {
       status: 'success',
       data: result.orders,
       meta: {
-        totalOrders: result.orders.length,
+        totalOrders: result.orders?.length || 0,
         userRole,
         status: status || 'all'
       },

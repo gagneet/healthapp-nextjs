@@ -56,7 +56,7 @@ export const POST = withErrorHandling(async (request: NextRequest, { params }: {
     // Get healthcare provider profile
     const providerProfile = session.user.role === 'DOCTOR' 
       ? await prisma.doctor.findFirst({ where: { userId: session.user.id } })
-      : await prisma.hspProfile.findFirst({ where: { userId: session.user.id } })
+      : await prisma.hsp.findFirst({ where: { userId: session.user.id } })
 
     if (!providerProfile) {
       return createErrorResponse(new Error("Healthcare provider profile not found"))
@@ -98,8 +98,8 @@ export const POST = withErrorHandling(async (request: NextRequest, { params }: {
             { secondaryDoctorId: providerProfile.id },
             { secondaryHspId: providerProfile.id }
           ],
-          requiresConsent: true,
-          consentStatus: 'pending',
+          patientConsentRequired: true,
+          patientConsentStatus: 'PENDING',
           isActive: true
         },
         include: {
@@ -124,11 +124,11 @@ export const POST = withErrorHandling(async (request: NextRequest, { params }: {
       return createErrorResponse(new Error("No assignment found requiring consent for this patient"))
     }
 
-    if (!assignment.requiresConsent) {
+    if (!assignment.patientConsentRequired) {
       return createErrorResponse(new Error("Consent not required for this assignment"))
     }
 
-    if (assignment.consentStatus === 'granted') {
+    if (assignment.patientConsentStatus === 'GRANTED') {
       return createErrorResponse(new Error("Consent already granted for this assignment"))
     }
 
@@ -158,7 +158,7 @@ export const POST = withErrorHandling(async (request: NextRequest, { params }: {
           verificationAttempts: 0,
           isBlocked: false,
           consentMethod: consentMethod,
-          requestedBy: session.user.id,
+          requestedByUserId: session.user.id,
           customMessage: message
         }
       })
@@ -166,11 +166,15 @@ export const POST = withErrorHandling(async (request: NextRequest, { params }: {
       // Create new OTP record
       otpRecord = await prisma.patientConsentOtp.create({
         data: {
+          id: crypto.randomUUID(),
+          secondaryAssignmentId: crypto.randomUUID(), // Generate a temporary ID
           patientDoctorAssignmentId: assignment.id,
+          patientId: assignment.patientId,
+          primaryDoctorId: assignment.primaryDoctorId || assignment.doctorId,
           otpCode: otpCode,
           expiresAt: expiresAt,
           consentMethod: consentMethod,
-          requestedBy: session.user.id,
+          requestedByUserId: session.user.id,
           customMessage: message,
           isVerified: false,
           isBlocked: false,
@@ -224,7 +228,7 @@ export const POST = withErrorHandling(async (request: NextRequest, { params }: {
         expires_at: otpRecord.expiresAt,
         remaining_time_seconds: remainingTimeSeconds,
         consent_method: consentMethod,
-        verification_attempts_remaining: 3 - otpRecord.verificationAttempts
+        verification_attempts_remaining: 3 - (otpRecord.verificationAttempts || 0)
       },
       delivery_info: deliveryInfo[consentMethod],
       provider_info: {

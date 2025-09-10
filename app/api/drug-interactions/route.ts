@@ -70,7 +70,7 @@ export async function POST(request: NextRequest) {
     const interactionData = await request.json();
 
     // Add created by information
-    interactionData.createdBy = user.id || user.userId;
+    interactionData.createdBy = user.id || (user as any).userId;
 
     const newInteraction = await createDrugInteraction(interactionData);
     

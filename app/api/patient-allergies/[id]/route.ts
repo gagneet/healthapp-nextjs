@@ -44,7 +44,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     }
 
     // Add update metadata
-    updateData.lastModifiedBy = user.id || user.userId;
+    updateData.lastModifiedBy = user.id || (user as any).userId;
     updateData.lastModified = new Date().toISOString();
 
     const updatedAllergy = await updatePatientAllergy(id, updateData);
@@ -84,7 +84,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
     const deletionReason = body.reason || 'Removed by healthcare provider';
 
     const result = await deletePatientAllergy(id, {
-      deletedBy: user.id || user.userId,
+      deletedBy: user.id || (user as any).userId,
       deletionReason,
     });
     
@@ -122,7 +122,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
     const verificationNotes = body.notes || '';
 
     const verifiedAllergy = await verifyPatientAllergy(id, {
-      verifiedBy: user.id || user.userId,
+      verifiedBy: user.id || (user as any).userId,
       verificationNotes,
     });
     

@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if OTP is blocked due to too many attempts
-    if (consentOtp.isBlocked || (consentOtp.attemptsCount >= consentOtp.maxAttempts)) {
+    if (consentOtp.isBlocked || ((consentOtp.attemptsCount || 0) >= (consentOtp.maxAttempts || 3))) {
       return NextResponse.json({ error: 'OTP is blocked due to too many attempts' }, { status: 400 });
     }
 
@@ -91,9 +91,9 @@ export async function POST(request: NextRequest) {
       prisma.secondaryDoctorAssignment.update({
         where: { id: consentOtp.secondaryAssignmentId },
         data: {
-          patientConsentStatus: 'GRANTED',
-          patientConsentGrantedAt: new Date(),
-          patientConsentMethod: 'OTP_VERIFICATION',
+          consentStatus: 'GRANTED',
+          accessGranted: true,
+          accessGrantedAt: new Date(),
         },
       }),
     ]);

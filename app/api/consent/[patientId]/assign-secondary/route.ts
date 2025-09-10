@@ -25,7 +25,7 @@ const AssignSecondarySchema = z.object({
   assignmentReason: z.string().min(10, "Assignment reason must be at least 10 characters"),
   specialtyFocus: z.array(z.string()).optional().default([]),
   carePlanIds: z.array(z.string().uuid()).optional().default([]),
-  requiresConsent: z.boolean().optional(),
+  patientConsentRequired: z.boolean().optional(),
   expiresInDays: z.number().min(1).max(365).optional().default(90),
   notes: z.string().optional()
 })
@@ -61,7 +61,7 @@ export const POST = withErrorHandling(async (request: NextRequest, { params }: {
     assignmentReason,
     specialtyFocus,
     carePlanIds,
-    requiresConsent,
+    patientConsentRequired,
     expiresInDays,
     notes
   } = validationResult.data
@@ -138,7 +138,7 @@ export const POST = withErrorHandling(async (request: NextRequest, { params }: {
     }
 
     if (secondaryHspId) {
-      secondaryProvider = await prisma.hspProfile.findFirst({
+      secondaryProvider = await prisma.hsp.findFirst({
         where: { id: secondaryHspId, isActive: true },
         include: {
           user: {
@@ -169,7 +169,7 @@ export const POST = withErrorHandling(async (request: NextRequest, { params }: {
 
     // Determine if consent is required (different organization = consent required)
     const sameOrganization = primaryDoctor?.organizationId === secondaryProvider!.organizationId
-    const needsConsent = requiresConsent !== undefined ? requiresConsent : !sameOrganization
+    const needsConsent = patientConsentRequired !== undefined ? patientConsentRequired : !sameOrganization
 
     // Calculate expiration date
     const expiresAt = new Date()
@@ -179,18 +179,18 @@ export const POST = withErrorHandling(async (request: NextRequest, { params }: {
     const assignment = await prisma.patientDoctorAssignment.create({
       data: {
         patientId,
+        doctorId: secondaryDoctorId || secondaryHspId || primaryDoctor?.id || '',
         primaryDoctorId: primaryDoctor?.id || null,
         ...(secondaryDoctorId && { secondaryDoctorId }),
         ...(secondaryHspId && { secondaryHspId }),
-        assignmentType: 'secondary_care',
+        assignmentType: 'SPECIALIST',
         assignmentReason,
-        specialtyFocus: specialtyFocus.length > 0 ? specialtyFocus : null,
-        requiresConsent: needsConsent,
-        consentStatus: needsConsent ? 'pending' : 'granted',
-        accessGranted: !needsConsent,
-        expiresAt,
+        specialtyFocus: specialtyFocus.length > 0 ? specialtyFocus : [],
+        patientConsentRequired: needsConsent,
+        patientConsentStatus: needsConsent ? 'PENDING' : 'NOT_REQUIRED',
         notes,
         createdBy: session.user.id,
+        assignedByAdminId: session.user.id,
         isActive: true
       }
     })
@@ -234,9 +234,9 @@ export const POST = withErrorHandling(async (request: NextRequest, { params }: {
         notes: notes
       },
       consent_info: {
-        requiresConsent: needsConsent,
-        consentStatus: assignment.consentStatus,
-        accessGranted: assignment.accessGranted,
+        patientConsentRequired: needsConsent,
+        consentStatus: assignment.patientConsentStatus,
+        accessGranted: !needsConsent,
         same_organization: sameOrganization,
         reason: sameOrganization 
           ? 'Same organization - automatic access granted'

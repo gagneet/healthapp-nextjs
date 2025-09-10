@@ -38,7 +38,7 @@ export async function GET(request: NextRequest) {
       status: 'success',
       data: result.data,
       meta: {
-        count: result.data.length,
+        count: result.data?.length || 0,
         userRole: session.user.role
       },
       message: result.message

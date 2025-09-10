@@ -80,11 +80,11 @@ export async function GET(request: NextRequest) {
       isBlocked: record.isBlocked,
       attemptsCount: record.attemptsCount,
       maxAttempts: record.maxAttempts,
-      requestedBy: {
+      requestedByUserId: {
         name: record.requestedByUser.name,
         email: record.requestedByUser.email,
       },
-      assignmentStatus: record.secondaryDoctorAssignment.patientConsentStatus,
+      assignmentStatus: record.secondaryDoctorAssignment.consentStatus,
       assignmentActive: record.secondaryDoctorAssignment.isActive,
     }));
 

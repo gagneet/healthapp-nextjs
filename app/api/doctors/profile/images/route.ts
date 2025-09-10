@@ -74,7 +74,7 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
       }
     });
 
-    return createSuccessResponse({ imageUrl: fileUrl }, "Image uploaded successfully");
+    return createSuccessResponse({ imageUrl: fileUrl, message: "Image uploaded successfully" });
 
   } catch (error) {
     console.error("Failed to upload image:", error)
