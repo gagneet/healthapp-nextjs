@@ -74,6 +74,42 @@ async function validateDatabaseSchema(): Promise<void> {
           return { success: false, error: error.message };
         }
       }
+    },
+    {
+      name: 'Patients table with dateOfBirth column',
+      check: async () => {
+        try {
+          const result = await prisma.$queryRaw`
+            SELECT column_name FROM information_schema.columns
+            WHERE table_name = 'patients' AND column_name = 'dateOfBirth'
+          `;
+          const hasColumn = Array.isArray(result) && result.length > 0;
+          return {
+            success: hasColumn,
+            error: hasColumn ? null : 'dateOfBirth column missing from patients table'
+          };
+        } catch (error: any) {
+          return { success: false, error: error.message };
+        }
+      }
+    },
+    {
+      name: 'Patients table with gender column',
+      check: async () => {
+        try {
+          const result = await prisma.$queryRaw`
+            SELECT column_name FROM information_schema.columns
+            WHERE table_name = 'patients' AND column_name = 'gender'
+          `;
+          const hasColumn = Array.isArray(result) && result.length > 0;
+          return {
+            success: hasColumn,
+            error: hasColumn ? null : 'gender column missing from patients table'
+          };
+        } catch (error: any) {
+          return { success: false, error: error.message };
+        }
+      }
     }
   ];
 
@@ -528,6 +564,8 @@ export async function seedComprehensiveHealthcareData() {
                         heightCm: 165.0,
                         weightKg: 68.5,
                         bloodType: 'A+',
+                        dateOfBirth: new Date('1985-06-15'),
+                        gender: 'FEMALE',
                         primaryLanguage: 'en',
                         allergies: [ { name: 'Penicillin', severity: 'severe', reaction: 'rash' }, { name: 'Shellfish', severity: 'moderate', reaction: 'hives' } ],
                         medicalHistory: [ { condition: 'Type 2 Diabetes', diagnosed: '2022-03-15', status: 'active' }, { condition: 'Hypertension', diagnosed: '2021-08-20', status: 'controlled' } ],
@@ -560,6 +598,8 @@ export async function seedComprehensiveHealthcareData() {
                         heightCm: 178.0,
                         weightKg: 82.3,
                         bloodType: 'O-',
+                        dateOfBirth: new Date('1978-03-22'),
+                        gender: 'MALE',
                         primaryLanguage: 'en',
                         allergies: [],
                         medicalHistory: [ { condition: 'Hypertension', diagnosed: '2020-05-10', status: 'active' }, { condition: 'High Cholesterol', diagnosed: '2019-11-15', status: 'controlled' } ],
@@ -592,6 +632,8 @@ export async function seedComprehensiveHealthcareData() {
                         heightCm: 162.0,
                         weightKg: 55.2,
                         bloodType: 'B+',
+                        dateOfBirth: new Date('1990-09-10'),
+                        gender: 'FEMALE',
                         primaryLanguage: 'en',
                         allergies: [ { name: 'Latex', severity: 'mild', reaction: 'skin irritation' } ],
                         medicalHistory: [ { condition: 'Coronary Artery Disease', diagnosed: '2023-01-10', status: 'managed' } ],
@@ -624,6 +666,8 @@ export async function seedComprehensiveHealthcareData() {
                         heightCm: 175.0,
                         weightKg: 88.7,
                         bloodType: 'AB+',
+                        dateOfBirth: new Date('1965-12-05'),
+                        gender: 'MALE',
                         primaryLanguage: 'en',
                         allergies: [],
                         medicalHistory: [ { condition: 'Type 2 Diabetes', diagnosed: '2020-08-15', status: 'controlled' }, { condition: 'Diabetic Neuropathy', diagnosed: '2022-11-20', status: 'active' } ],
@@ -656,6 +700,8 @@ export async function seedComprehensiveHealthcareData() {
                         heightCm: 158.0,
                         weightKg: 52.1,
                         bloodType: 'O+',
+                        dateOfBirth: new Date('1995-04-20'),
+                        gender: 'FEMALE',
                         primaryLanguage: 'en',
                         allergies: [ { name: 'Aspirin', severity: 'severe', reaction: 'stomach upset' } ],
                         medicalHistory: [ { condition: 'Hypothyroidism', diagnosed: '2021-06-30', status: 'active' }, { condition: 'Prediabetes', diagnosed: '2023-02-15', status: 'monitoring' } ],
