@@ -46,33 +46,29 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const validatedData = diagnosisSuggestionSchema.parse(body);
 
-    // Verify assessment exists and doctor has access
-    const assessment = await prisma.symptomAssessment.findUnique({
-      where: { id: validatedData.assessmentId },
-      include: {
-        patient: { 
-          include: { 
-            user: true,
-            patientDoctorAssignments: {
-              where: {
-                doctorId: user.doctorProfile.id,
-                status: 'ACTIVE'
-              }
-            }
+    // Verify patient exists and doctor has access
+    const patient = await prisma.patient.findUnique({
+      where: { id: validatedData.patientId },
+      include: { 
+        user: true,
+        patientDoctorAssignments: {
+          where: {
+            doctorId: user.doctorProfile.id,
+            isActive: true
           }
         }
       }
     });
 
-    if (!assessment || assessment.patient.patientDoctorAssignments.length === 0) {
+    if (!patient || patient.patientDoctorAssignments.length === 0) {
       return NextResponse.json({ 
-        error: 'Assessment not found or access denied.' 
+        error: 'Patient not found or access denied.' 
       }, { status: 404 });
     }
 
     // Generate evidence-based diagnosis suggestions
     const diagnosisSuggestions = await generateDiagnosisSuggestions(
-      assessment,
+      patient,
       validatedData
     );
 
@@ -85,13 +81,13 @@ export async function POST(request: NextRequest) {
     // Generate treatment recommendations for top diagnoses
     const treatmentRecommendations = await generateTreatmentRecommendations(
       scoredSuggestions.slice(0, 3), // Top 3 diagnoses
-      assessment.patientId
+      patient.id
     );
 
     // Check for drug interactions if medications are involved
     const drugInteractions = await checkDrugInteractions(
       treatmentRecommendations,
-      assessment.patientId
+      patient.id
     );
 
     // Create clinical diagnosis record
@@ -123,18 +119,21 @@ export async function POST(request: NextRequest) {
     await prisma.auditLog.create({
       data: {
         userId: session.user.id,
-        action: 'DIAGNOSIS_SUGGESTION_CREATED',
-        resourceType: 'ClinicalDiagnosis',
-        resourceId: diagnosisRecord.id,
-        details: {
+        action: 'CREATE',
+        resource: 'ClinicalDiagnosis',
+        entityId: diagnosisRecord.id,
+        patientId: validatedData.patientId,
+        phiAccessed: true,
+        accessGranted: true,
+        dataChanges: {
           patientId: validatedData.patientId,
-          assessmentId: validatedData.assessmentId,
           topDiagnosis: scoredSuggestions[0]?.diagnosis || 'Unknown',
           confidenceScore: scoredSuggestions[0]?.confidence || 0,
           alertCount: alerts.length
         },
         ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
-        userAgent: request.headers.get('user-agent') || 'unknown'
+        userAgent: request.headers.get('user-agent') || 'unknown',
+        timestamp: new Date()
       }
     });
 
@@ -272,8 +271,8 @@ async function generateTreatmentRecommendations(
   const patient = await prisma.patient.findUnique({
     where: { id: patientId },
     include: {
-      currentMedications: true,
-      allergies: true
+      user: true,
+      patientAllergies: true
     }
   });
   
@@ -337,13 +336,12 @@ async function checkDrugInteractions(
   treatments: Array<any>,
   patientId: string
 ): Promise<Array<any>> {
-  const interactions = [];
+  const interactions: any[] = [];
   
   // Get current medications
-  const currentMeds = await prisma.medicationList.findMany({
+  const currentMeds = await prisma.medication.findMany({
     where: {
-      patientId,
-      status: 'ACTIVE'
+      participantId: patientId
     }
   });
   
@@ -352,7 +350,7 @@ async function checkDrugInteractions(
     if (treatment.category === 'MEDICATION') {
       currentMeds.forEach(med => {
         // Example interaction check
-        if (treatment.details.includes('Warfarin') && med.medicationName.includes('Aspirin')) {
+        if (treatment.details && treatment.details.includes('Warfarin') && med.description?.includes('Aspirin')) {
           interactions.push({
             severity: 'MAJOR',
             drug1: 'Warfarin',
@@ -417,7 +415,7 @@ async function generateClinicalAlerts(
 
 // Helper functions
 function checkContraindications(medication: string, patient: any): Array<string> {
-  const contraindications = [];
+  const contraindications: string[] = [];
   
   if (patient?.allergies) {
     patient.allergies.forEach((allergy: any) => {

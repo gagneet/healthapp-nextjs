@@ -69,7 +69,7 @@ export async function POST(request: NextRequest) {
             patientDoctorAssignments: {
               where: {
                 doctorId: user.doctorProfile.id,
-                status: 'ACTIVE'
+                isActive: true
               }
             }
           }
@@ -104,7 +104,7 @@ export async function POST(request: NextRequest) {
     // Perform comprehensive drug interaction checking
     const drugInteractionAnalysis = await performDrugInteractionAnalysis(
       rankedTreatments,
-      patientProfile.currentMedications
+      Array.isArray(patientProfile?.currentMedications) ? patientProfile.currentMedications : []
     );
 
     // Generate dosing recommendations based on patient factors
@@ -128,21 +128,20 @@ export async function POST(request: NextRequest) {
     // Create treatment plan record
     const treatmentPlan = await prisma.treatmentPlan.create({
       data: {
-        diagnosisId: validatedData.diagnosisId,
+        id: crypto.randomUUID(),
         patientId: validatedData.patientId,
         doctorId: user.doctorProfile.id,
-        selectedDiagnosis: validatedData.selectedDiagnosis,
-        patientFactors: validatedData.patientFactors,
+        title: `Treatment Plan - ${validatedData.selectedDiagnosis.diagnosis || 'Clinical Assessment'}`,
+        primaryDiagnosis: validatedData.selectedDiagnosis.diagnosis || 'Unspecified',
         treatmentGoals: validatedData.treatmentGoals,
-        recommendedTreatments: rankedTreatments,
-        drugInteractions: drugInteractionAnalysis,
-        dosingRecommendations,
-        monitoringProtocols,
-        patientEducation,
-        status: 'DRAFT',
-        evidenceLevel: calculateEvidenceLevel(rankedTreatments),
-        createdAt: new Date(),
-        updatedAt: new Date()
+        interventions: {
+          recommendedTreatments: rankedTreatments,
+          drugInteractions: drugInteractionAnalysis,
+          dosingRecommendations,
+          monitoringProtocols,
+          patientEducation
+        },
+        createdAt: new Date()
       }
     });
 
@@ -164,8 +163,8 @@ export async function POST(request: NextRequest) {
       data: {
         userId: session.user.id,
         action: 'TREATMENT_PLAN_CREATED',
-        resourceType: 'TreatmentPlan',
-        resourceId: treatmentPlan.id,
+        resource: 'TreatmentPlan',
+        entityId: treatmentPlan.id,
         details: {
           patientId: validatedData.patientId,
           diagnosisId: validatedData.diagnosisId,

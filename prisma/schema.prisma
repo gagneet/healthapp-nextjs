@@ -119,6 +119,7 @@ model User {
   createdConsultations        VideoConsultation[]         @relation("ConsultationCreatedBy")
   consultationNotesCreated    ConsultationNote[]          @relation("ConsultationNoteCreatedBy")
   adherenceLogsRecorded       AdherenceLog[]
+  reviewedClinicalDiagnoses   ClinicalDiagnosis[]
 
   @@index([email, accountStatus], map: "idx_users_email_status")
   @@index([role, accountStatus], map: "idx_users_role_status")
@@ -278,6 +279,8 @@ model Patient {
   medicalDevices                MedicalDevice[]
   adherenceLogs                 AdherenceLog[]
   reports                       Report[]
+  symptomAssessments            SymptomAssessment[]
+  clinicalDiagnoses             ClinicalDiagnosis[]
 
   @@index([primaryCareDoctorId, createdAt, isActive], map: "idx_patients_doctor_created_active")
   @@index([patientId, createdAt], map: "idx_patients_id_created")
@@ -1172,6 +1175,8 @@ model Doctor {
   treatmentPlans                      TreatmentPlan[]
   videoConsultations                  VideoConsultation[]
   labOrders                           LabOrder[]
+  symptomAssessments                  SymptomAssessment[]
+  clinicalDiagnoses                   ClinicalDiagnosis[]
 
   @@index([boardCertifications], type: Gin)
   @@index([gender])
@@ -2926,4 +2931,76 @@ model BlacklistedToken {
 
   @@index([expiresAt])
   @@map("blacklistedTokens")
+}
+
+// Clinical Assessment and Diagnosis Models
+model SymptomAssessment {
+  id                   String             @id @default(uuid()) @db.Uuid
+  patientId            String             @db.Uuid
+  doctorId             String             @db.Uuid
+  assessmentDate       DateTime           @default(now())
+  chiefComplaint       String?            @db.Text
+  presentIllnessHistory String?           @db.Text
+  symptoms             Json               @default("[]") // Array of symptom objects
+  physicalFindings     Json               @default("{}")
+  vitalSigns           Json               @default("{}")
+  reviewOfSystems      Json               @default("{}")
+  status               String             @default("IN_PROGRESS") @db.VarChar(20) // IN_PROGRESS, COMPLETED, PENDING_REVIEW
+  priority             String             @default("ROUTINE") @db.VarChar(20) // ROUTINE, URGENT, EMERGENCY
+  notes                String?            @db.Text
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+  deletedAt            DateTime?
+
+  // Relations
+  patient              Patient            @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  doctor               Doctor             @relation(fields: [doctorId], references: [id])
+  clinicalDiagnoses    ClinicalDiagnosis[]
+
+  @@index([patientId])
+  @@index([doctorId])
+  @@index([assessmentDate])
+  @@index([status])
+  @@map("symptomAssessments")
+}
+
+model ClinicalDiagnosis {
+  id                        String             @id @default(uuid()) @db.Uuid
+  assessmentId              String?            @db.Uuid
+  patientId                 String             @db.Uuid
+  doctorId                  String             @db.Uuid
+  primaryDiagnosis          String?            @db.VarChar(500)
+  secondaryDiagnoses        Json               @default("[]") // Array of diagnosis strings
+  icd10Codes                Json               @default("[]") // Array of ICD-10 codes
+  clinicalFindings          Json               @default("{}")
+  diagnosticTests           Json               @default("[]") // Array of test objects
+  diagnosisSuggestions      Json               @default("[]") // Array of AI/system generated suggestions
+  treatmentRecommendations  Json               @default("[]") // Array of treatment options
+  drugInteractions          Json               @default("[]") // Array of drug interaction warnings
+  confidenceScore           Decimal?           @db.Decimal(3, 2) // 0.00 to 1.00
+  status                    String             @default("PENDING_REVIEW") @db.VarChar(20) // DRAFT, PENDING_REVIEW, CONFIRMED, REVISED
+  reviewedAt                DateTime?
+  reviewedBy                String?            @db.Uuid
+  clinicalNotes             String?            @db.Text
+  followUpRequired          Boolean            @default(false)
+  followUpDate              DateTime?
+  severity                  String?            @default("MODERATE") @db.VarChar(20) // MILD, MODERATE, SEVERE, CRITICAL
+  isActive                  Boolean            @default(true)
+  createdAt                 DateTime           @default(now())
+  updatedAt                 DateTime           @updatedAt
+  deletedAt                 DateTime?
+
+  // Relations
+  patient                   Patient            @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  doctor                    Doctor             @relation(fields: [doctorId], references: [id])
+  reviewedByUser            User?              @relation(fields: [reviewedBy], references: [id])
+  symptomAssessment         SymptomAssessment? @relation(fields: [assessmentId], references: [id])
+
+  @@index([patientId])
+  @@index([doctorId])
+  @@index([status])
+  @@index([createdAt])
+  @@index([isActive])
+  @@index([followUpRequired, followUpDate])
+  @@map("clinicalDiagnoses")
 }

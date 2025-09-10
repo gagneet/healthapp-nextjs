@@ -1729,6 +1729,52 @@ exports.Prisma.BlacklistedTokenScalarFieldEnum = {
   createdAt: 'createdAt'
 };
 
+exports.Prisma.SymptomAssessmentScalarFieldEnum = {
+  id: 'id',
+  patientId: 'patientId',
+  doctorId: 'doctorId',
+  assessmentDate: 'assessmentDate',
+  chiefComplaint: 'chiefComplaint',
+  presentIllnessHistory: 'presentIllnessHistory',
+  symptoms: 'symptoms',
+  physicalFindings: 'physicalFindings',
+  vitalSigns: 'vitalSigns',
+  reviewOfSystems: 'reviewOfSystems',
+  status: 'status',
+  priority: 'priority',
+  notes: 'notes',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  deletedAt: 'deletedAt'
+};
+
+exports.Prisma.ClinicalDiagnosisScalarFieldEnum = {
+  id: 'id',
+  assessmentId: 'assessmentId',
+  patientId: 'patientId',
+  doctorId: 'doctorId',
+  primaryDiagnosis: 'primaryDiagnosis',
+  secondaryDiagnoses: 'secondaryDiagnoses',
+  icd10Codes: 'icd10Codes',
+  clinicalFindings: 'clinicalFindings',
+  diagnosticTests: 'diagnosticTests',
+  diagnosisSuggestions: 'diagnosisSuggestions',
+  treatmentRecommendations: 'treatmentRecommendations',
+  drugInteractions: 'drugInteractions',
+  confidenceScore: 'confidenceScore',
+  status: 'status',
+  reviewedAt: 'reviewedAt',
+  reviewedBy: 'reviewedBy',
+  clinicalNotes: 'clinicalNotes',
+  followUpRequired: 'followUpRequired',
+  followUpDate: 'followUpDate',
+  severity: 'severity',
+  isActive: 'isActive',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  deletedAt: 'deletedAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -2247,7 +2293,9 @@ exports.Prisma.ModelName = {
   MedicalDevice: 'MedicalDevice',
   Prescription: 'Prescription',
   AdherenceLog: 'AdherenceLog',
-  BlacklistedToken: 'BlacklistedToken'
+  BlacklistedToken: 'BlacklistedToken',
+  SymptomAssessment: 'SymptomAssessment',
+  ClinicalDiagnosis: 'ClinicalDiagnosis'
 };
 
 /**
