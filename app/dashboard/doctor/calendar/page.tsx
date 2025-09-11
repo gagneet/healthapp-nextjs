@@ -93,14 +93,12 @@ export default function DoctorCalendarPage() {
 
       try {
         const response = await fetch(`/api/doctors/profile/${session.user.businessId}`)
-        const data = await response.json()
+        const apiResponse = await response.json()
         
-        if (response.ok && data.doctor) {
-          setDoctorProfileId(data.doctor.id)
+        if (response.ok && apiResponse.success && apiResponse.data?.doctor) {
+          setDoctorProfileId(apiResponse.data.doctor.id)
         } else {
-          const errorMessage = response.ok
-            ? 'Doctor profile not found'
-            : `Failed to fetch profile: ${response.status} ${data.message || ''}`
+          const errorMessage = apiResponse.error?.message || 'Doctor profile not found'
           setError(errorMessage)
           setIsLoading(false)
         }
