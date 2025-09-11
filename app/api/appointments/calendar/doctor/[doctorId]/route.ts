@@ -84,15 +84,17 @@ export async function GET(
       events: []
     };
 
+    const dateRangeFilter = {
+      gte: startDate,
+      lte: endDate,
+    };
+
     // Get appointments for the date range
     if (queryData.includeAppointments) {
       const appointments = await prisma.appointment.findMany({
         where: {
           doctorId: doctor.id,
-          startTime: {
-            gte: startDate,
-            lte: endDate
-          }
+          startTime: dateRangeFilter,
         },
         include: {
           patient: {
@@ -140,10 +142,7 @@ export async function GET(
       const availableSlots = await prisma.appointmentSlot.findMany({
         where: {
           doctorId: doctor.id,
-          date: {
-            gte: startDate,
-            lte: endDate
-          },
+          date: dateRangeFilter,
           isAvailable: true
         },
         orderBy: [{ date: 'asc' }, { startTime: 'asc' }]
