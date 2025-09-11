@@ -78,8 +78,8 @@ export default function DoctorCalendarPage() {
         setIsLoading(false);
         return false;
       }
-      if (!session.user?.id) {
-        setError("User ID not found in session.");
+      if (!session.user?.businessId) {
+        setError("Doctor ID not found in session.");
         setIsLoading(false);
         return false;
       }
@@ -92,7 +92,7 @@ export default function DoctorCalendarPage() {
       }
 
       try {
-        const response = await fetch(`/api/doctors/profile/${session.user.id}`)
+        const response = await fetch(`/api/doctors/profile/${session.user.businessId}`)
         const data = await response.json()
         
         if (response.ok && data.doctor) {
