@@ -84,15 +84,17 @@ export async function GET(
       events: []
     };
 
+    const dateRangeFilter = {
+      gte: startDate,
+      lte: endDate,
+    };
+
     // Get appointments for the date range
     if (queryData.includeAppointments) {
       const appointments = await prisma.appointment.findMany({
         where: {
           doctorId: doctor.id,
-          startTime: {
-            gte: startDate,
-            lte: endDate
-          }
+          startTime: dateRangeFilter,
         },
         include: {
           patient: {
@@ -139,11 +141,8 @@ export async function GET(
     if (queryData.includeAvailability) {
       const availableSlots = await prisma.appointmentSlot.findMany({
         where: {
-          doctorId: doctor.userId,
-          date: {
-            gte: startDate,
-            lte: endDate
-          },
+          doctorId: doctor.id,
+          date: dateRangeFilter,
           isAvailable: true
         },
         orderBy: [{ date: 'asc' }, { startTime: 'asc' }]
@@ -169,7 +168,7 @@ export async function GET(
 
     // Get doctor weekly availability pattern
     const weeklyAvailability = await prisma.doctorAvailability.findMany({
-      where: { doctorId: doctor.userId },
+      where: { doctorId: doctor.id },
       orderBy: [{ dayOfWeek: 'asc' }, { startTime: 'asc' }]
     });
 

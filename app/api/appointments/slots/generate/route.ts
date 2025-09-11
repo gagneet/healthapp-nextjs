@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
 
     // Get doctor availability to base slot generation on
     const availability = await prisma.doctorAvailability.findMany({
-      where: { doctorId: doctor.userId },
+      where: { doctorId: doctor.id },
       orderBy: [{ dayOfWeek: 'asc' }, { startTime: 'asc' }]
     });
 
@@ -68,7 +68,7 @@ export async function POST(request: NextRequest) {
       if (validatedData.overwriteExisting) {
         await tx.appointmentSlot.deleteMany({
           where: {
-            doctorId: doctor.userId,
+            doctorId: doctor.id,
             date: {
               gte: new Date(validatedData.startDate),
               lte: new Date(validatedData.endDate)
@@ -151,7 +151,7 @@ export async function POST(request: NextRequest) {
 
             // Create slot data
             const slotData = {
-              doctorId: doctor.userId,
+              doctorId: doctor.id,
               date: new Date(currentDate.toDateString()), // Date only
               startTime: slotTime,
               endTime: slotEndTime,
@@ -172,7 +172,7 @@ export async function POST(request: NextRequest) {
           // Generate emergency slots if requested
           if (validatedData.includeEmergencySlots && doctor.organization?.type === 'hospital') {
             const emergencySlotData = {
-              doctorId: doctor.userId,
+              doctorId: doctor.id,
               date: new Date(currentDate.toDateString()),
               startTime: new Date(availEnd.getTime() - 15 * 60000),
               endTime: new Date(availEnd),
@@ -198,7 +198,7 @@ export async function POST(request: NextRequest) {
         if (!validatedData.overwriteExisting) {
           const existingSlots = await tx.appointmentSlot.findMany({
             where: {
-              doctorId: doctor.userId,
+              doctorId: doctor.id,
               date: {
                 gte: new Date(validatedData.startDate),
                 lte: new Date(validatedData.endDate)
