@@ -286,10 +286,63 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
     return createForbiddenResponse("Only doctors and administrators can create patient records")
   }
 
+  // Get doctor profile if user is a doctor
+  let doctorId: string | undefined = undefined
+  if (session.user.role === 'DOCTOR') {
+    const doctorProfile = await prisma.doctor.findUnique({
+      where: { userId: session.user.id }
+    })
+    if (!doctorProfile) {
+      return createErrorResponse(new Error("Doctor profile not found"), 400)
+    }
+    doctorId = doctorProfile.id
+  }
+
   const body = await request.json()
-  const validationResult = PatientSchema.safeParse(body)
+  
+  // Transform the frontend data to match our schema
+  const transformedData = {
+    // Required fields
+    firstName: body.firstName || '',
+    lastName: body.lastName || '',
+    middleName: body.middleName || undefined,
+    email: body.email || '',
+    phone: body.phone || '',
+    dateOfBirth: body.dateOfBirth ? new Date(body.dateOfBirth).toISOString() : undefined,
+    gender: body.gender || undefined,
+    
+    // Optional physical measurements - convert null to undefined
+    height: body.height !== null && body.height !== '' ? Number(body.height) : undefined,
+    weight: body.weight !== null && body.weight !== '' ? Number(body.weight) : undefined,
+    bloodType: body.bloodType || undefined,
+    
+    // Set primary doctor to the current user if they're a doctor
+    primaryDoctorId: doctorId,
+    
+    // Medical history - handle string or array format
+    medicalHistory: [],
+    allergies: [],
+    
+    // Emergency contact - transform from form structure
+    emergencyContact: (body.emergency_contacts && body.emergency_contacts.length > 0) ? {
+      name: body.emergency_contacts[0].name || 'Emergency Contact',
+      relationship: body.emergency_contacts[0].relationship || 'Emergency Contact',
+      phone: body.emergency_contacts[0].contact_number || body.emergencyContactNumber || '',
+      email: undefined
+    } : undefined,
+    
+    // Insurance details - transform from form structure
+    insuranceDetails: body.insurance_information ? {
+      provider: body.insurance_information.primary?.insurance_company || '',
+      policyNumber: body.insurance_information.primary?.policy_number || '',
+      groupNumber: body.insurance_information.primary?.group_number || ''
+    } : undefined
+  }
+
+  const validationResult = PatientSchema.safeParse(transformedData)
 
   if (!validationResult.success) {
+    console.error('Validation failed:', validationResult.error.issues)
     return createErrorResponse(validationResult.error)
   }
 
@@ -361,10 +414,10 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
           heightCm: patientData.height,
           weightKg: patientData.weight,
           bloodType: patientData.bloodType,
-          medicalHistory: patientData.medicalHistory,
-          allergies: patientData.allergies,
-          emergencyContacts: patientData.emergencyContact,
-          insuranceInformation: patientData.insuranceDetails,
+          medicalHistory: patientData.medicalHistory || [],
+          allergies: patientData.allergies || [],
+          emergencyContacts: patientData.emergencyContact ? [patientData.emergencyContact] : [],
+          insuranceInformation: patientData.insuranceDetails || {},
           createdAt: new Date(),
           updatedAt: new Date()
         }
