@@ -13,6 +13,8 @@ import {
   withErrorHandling
 } from "@/lib/api-response"
 
+export const dynamic = 'force-dynamic'; // Prevent caching
+
 /**
  * GET /api/doctors/profile/[userId]
  * Retrieve doctor profile by user ID
@@ -35,9 +37,11 @@ export const GET = withErrorHandling(async (
     return createErrorResponse(new Error("Access denied"), 403)
   }
 
+  console.log("Doctor Profile User ID: ", userId);
+
   try {
     // Fetch doctor by user ID
-    const doctor = await prisma.doctor.findFirst({
+    const doctor = await prisma.doctor.findUnique({
       where: { userId },
       include: {
         user: {
@@ -67,6 +71,8 @@ export const GET = withErrorHandling(async (
         }
       }
     })
+
+    console.log("Doctor Profile ID fetched: ", doctor ? doctor.id : "Not Found");
 
     if (!doctor) {
       return createErrorResponse(new Error("Doctor profile not found"), 404)
