@@ -204,11 +204,13 @@ export default function PatientDetailsPage() {
     const [appointments, setAppointments] = useState<Appointment[]>([])
     const [carePlans, setCarePlans] = useState<CarePlan[]>([])
     const [symptoms, setSymptoms] = useState<any[]>([])
+    const [reports, setReports] = useState<Report[]>([])
     const [loadingStates, setLoadingStates] = useState({
         carePlans: false,
         vitals: false,
         appointments: false,
-        symptoms: false
+        symptoms: false,
+        reports: false
     })
 
     // Modal states for comprehensive functionality
@@ -402,6 +404,21 @@ export default function PatientDetailsPage() {
         }
     }, [patientId])
 
+    const fetchReports = useCallback(async () => {
+        try {
+            setLoadingStates(prev => ({ ...prev, reports: true }));
+            const response = await fetch(`/api/reports?patientId=${patientId}`);
+            if (response.ok) {
+                const data = await response.json();
+                setReports(data.data);
+            }
+        } catch (err) {
+            console.error('Error fetching reports:', err);
+        } finally {
+            setLoadingStates(prev => ({ ...prev, reports: false }));
+        }
+    }, [patientId]);
+
     useEffect(() => {
         const currentTab = searchParams.get('tab') || 'overview';
         setActiveTab(currentTab);
@@ -428,7 +445,8 @@ export default function PatientDetailsPage() {
                     fetchMedications(),
                     fetchVitals(),
                     fetchAppointments(),
-                    fetchCarePlans()
+                    fetchCarePlans(),
+                    fetchReports()
                 ])
             } catch (err) {
                 setError(err instanceof Error ? err.message : 'Failed to load data')
@@ -440,7 +458,7 @@ export default function PatientDetailsPage() {
         if (patientId) {
             loadAllData()
         }
-    }, [patientId, fetchPatientData, fetchMedications, fetchVitals, fetchAppointments, fetchCarePlans])
+    }, [patientId, fetchPatientData, fetchMedications, fetchVitals, fetchAppointments, fetchCarePlans, fetchReports])
 
     useEffect(() => {
         if (appointments.length > 0) {
@@ -764,8 +782,8 @@ export default function PatientDetailsPage() {
                     onClose={() => setShowReportsModal(false)}
                     patientId={patient.id}
                     onUploadSuccess={() => {
-                        console.log('Upload successful, refresh reports list here');
-                        // You could add a function here to re-fetch the reports
+                        console.log('Upload successful, refreshing reports list.');
+                        fetchReports();
                     }}
                 />
                 {activeTab === 'overview' && (
@@ -1572,35 +1590,40 @@ export default function PatientDetailsPage() {
                                 </button>
                             </CardHeader>
                             <CardContent>
-                                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                                    {[
-                                        { name: 'Blood Test Results', type: 'Lab Report', date: '2025-01-20', size: '2.3 MB', format: 'PDF' },
-                                        { name: 'Chest X-Ray', type: 'Imaging', date: '2025-01-18', size: '5.1 MB', format: 'DICOM' },
-                                        { name: 'ECG Report', type: 'Diagnostic', date: '2025-01-15', size: '1.8 MB', format: 'PDF' },
-                                        { name: 'MRI Scan', type: 'Imaging', date: '2025-01-10', size: '15.2 MB', format: 'DICOM' },
-                                        { name: 'Prescription', type: 'Medication', date: '2025-01-22', size: '0.5 MB', format: 'PDF' },
-                                        { name: 'Consultation Notes', type: 'Clinical', date: '2025-01-22', size: '0.8 MB', format: 'PDF' }
-                                    ].map((report, index) => (
-                                        <div key={index} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
-                                            <div className="flex items-start justify-between">
-                                                <div className="flex-1">
-                                                    <h4 className="font-medium text-gray-900 text-sm">{report.name}</h4>
-                                                    <p className="text-xs text-gray-600 mt-1">{report.type}</p>
-                                                    <div className="flex items-center space-x-2 mt-2 text-xs text-gray-500">
-                                                        <span>{report.date}</span>
-                                                        <span>•</span>
-                                                        <span>{report.size}</span>
-                                                        <span>•</span>
-                                                        <span>{report.format}</span>
+                                {loadingStates.reports ? (
+                                    <div className="flex items-center justify-center py-8">
+                                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                                        <p className="ml-3 text-gray-600">Loading reports...</p>
+                                    </div>
+                                ) : reports.length === 0 ? (
+                                    <div className="text-center py-8">
+                                        <p className="text-gray-500">No reports found for this patient.</p>
+                                        <p className="text-sm text-gray-400 mt-1">Click Upload Report to add one.</p>
+                                    </div>
+                                ) : (
+                                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                                        {reports.map((report) => (
+                                            <div key={report.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                                                <div className="flex items-start justify-between">
+                                                    <div className="flex-1">
+                                                        <h4 className="font-medium text-gray-900 text-sm">{report.name}</h4>
+                                                        <p className="text-xs text-gray-600 mt-1">{report.type || 'Document'}</p>
+                                                        <div className="flex items-center space-x-2 mt-2 text-xs text-gray-500">
+                                                            <span>{formatDate(report.createdAt)}</span>
+                                                            <span>•</span>
+                                                            <span>{report.size || 'N/A'}</span>
+                                                            <span>•</span>
+                                                            <span>{report.format || 'PDF'}</span>
+                                                        </div>
                                                     </div>
+                                                    <a href={report.url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-700 text-sm">
+                                                        View
+                                                    </a>
                                                 </div>
-                                                <button className="text-blue-600 hover:text-blue-700 text-sm">
-                                                    View
-                                                </button>
                                             </div>
-                                        </div>
-                                    ))}
-                                </div>
+                                        ))}
+                                    </div>
+                                )}
                             </CardContent>
                         </Card>
                     </div>

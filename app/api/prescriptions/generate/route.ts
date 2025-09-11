@@ -35,9 +35,13 @@ export async function POST(req: NextRequest) {
             where: { id: patientId },
             include: {
                 user: true,
-                medications: { include: { medicine: true } },
                 carePlans: {
                     include: {
+                        prescribedMedications: {
+                            include: {
+                                medicine: true,
+                            },
+                        },
                         carePlanToDietPlans: { include: { dietPlan: true } },
                         carePlanToWorkoutPlans: { include: { workoutPlan: true } },
                     },
@@ -82,10 +86,11 @@ export async function POST(req: NextRequest) {
         let lastY = (doc as any).lastAutoTable.finalY + 15;
 
         // --- Medications ---
-        if (patient.medications.length > 0) {
+        const medications = patient.carePlans.flatMap(cp => cp.prescribedMedications);
+        if (medications.length > 0) {
             doc.setFontSize(16);
             doc.text('Medications', 14, lastY);
-            const medicationData = patient.medications.map(med => [
+            const medicationData = medications.map(med => [
                 med.medicine.name,
                 med.description || 'N/A',
                 med.startDate ? new Date(med.startDate).toLocaleDateString() : 'N/A',

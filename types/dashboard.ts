@@ -208,6 +208,16 @@ export interface Medicine {
   updatedAt: string
 }
 
+export interface Report {
+  id: string;
+  name: string;
+  url: string;
+  createdAt: string;
+  type?: string;
+  size?: string;
+  format?: string;
+}
+
 export interface QualificationChangeRequest {
   id: string;
   doctorId: string;

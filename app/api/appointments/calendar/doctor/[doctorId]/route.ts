@@ -4,8 +4,8 @@ import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 
 const calendarQuerySchema = z.object({
-  startDate: z.string().date().optional(),
-  endDate: z.string().date().optional(),
+  startDate: z.string().optional(),
+  endDate: z.string().optional(),
   view: z.enum(['month', 'week', 'day']).default('month'),
   includeAvailability: z.boolean().default(true),
   includeAppointments: z.boolean().default(true),
