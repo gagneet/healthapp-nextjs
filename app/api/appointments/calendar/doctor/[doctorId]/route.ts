@@ -139,7 +139,7 @@ export async function GET(
     if (queryData.includeAvailability) {
       const availableSlots = await prisma.appointmentSlot.findMany({
         where: {
-          doctorId: doctor.userId,
+          doctorId: doctor.id,
           date: {
             gte: startDate,
             lte: endDate
@@ -169,7 +169,7 @@ export async function GET(
 
     // Get doctor weekly availability pattern
     const weeklyAvailability = await prisma.doctorAvailability.findMany({
-      where: { doctorId: doctor.userId },
+      where: { doctorId: doctor.id },
       orderBy: [{ dayOfWeek: 'asc' }, { startTime: 'asc' }]
     });
 

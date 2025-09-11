@@ -102,7 +102,7 @@ export async function GET(
 
     // Get doctor availability records
     const availability = await prisma.doctorAvailability.findMany({
-      where: { doctorId: doctor.userId },
+      where: { doctorId: doctor.id },
       orderBy: [{ dayOfWeek: 'asc' }, { startTime: 'asc' }]
     });
 
@@ -262,7 +262,7 @@ export async function POST(
     const result = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       // Delete existing availability for this doctor
       await tx.doctorAvailability.deleteMany({
-        where: { doctorId: doctor.userId }
+        where: { doctorId: doctor.id }
       });
 
       // Create new availability records
@@ -286,7 +286,7 @@ export async function POST(
 
           const availabilityRecord = await tx.doctorAvailability.create({
             data: {
-              doctorId: doctor.userId,
+              doctorId: doctor.id,
               dayOfWeek: daySchedule.dayOfWeek,
               startTime,
               endTime,
