@@ -4,8 +4,8 @@ import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 
 const calendarQuerySchema = z.object({
-  startDate: z.string().date().optional(),
-  endDate: z.string().date().optional(),
+  startDate: z.string().regex(/^\\d{4}-\\d{2}-\\d{2}$/, { message: "Invalid startDate format, expected YYYY-MM-DD" }).optional(),
+  endDate: z.string().regex(/^\\d{4}-\\d{2}-\\d{2}$/, { message: "Invalid endDate format, expected YYYY-MM-DD" }).optional(),
   view: z.enum(['month', 'week', 'day']).default('month'),
   includeAvailability: z.boolean().default(true),
   includeAppointments: z.boolean().default(true),

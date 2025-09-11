@@ -19,6 +19,53 @@ const s3Client = new S3Client({
     },
 });
 
+const getReportsSchema = z.object({
+  patientId: z.string().uuid(),
+});
+
+export const GET = withErrorHandling(async (request: NextRequest) => {
+  const session = await auth();
+  if (!session) {
+    return createUnauthorizedResponse();
+  }
+
+  const { searchParams } = new URL(request.url);
+  const validation = getReportsSchema.safeParse({
+    patientId: searchParams.get('patientId'),
+  });
+
+  if (!validation.success) {
+    return createErrorResponse(new Error("Invalid patientId"), 400);
+  }
+
+  const { patientId } = validation.data;
+
+  // Fetch the patient to check for authorization
+  const patient = await prisma.patient.findUnique({
+      where: { id: patientId },
+      select: { primaryCareDoctorId: true }
+  });
+
+  if (!patient) {
+      return createErrorResponse(new Error("Patient not found"), 404);
+  }
+
+  const isPrimaryDoctor = patient.primaryCareDoctorId === session.user.profileId;
+  const isAdmin = session.user.role === 'SYSTEM_ADMIN';
+
+  if (!isPrimaryDoctor && !isAdmin) {
+      return createForbiddenResponse();
+  }
+
+  const reports = await prisma.report.findMany({
+    where: { patientId },
+    orderBy: { createdAt: 'desc' },
+  });
+
+  return createSuccessResponse(reports);
+});
+
+
 export const POST = withErrorHandling(async (request: NextRequest) => {
     const session = await auth();
     if (!session) {
