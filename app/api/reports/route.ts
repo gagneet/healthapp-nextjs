@@ -40,6 +40,23 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
 
   const { patientId } = validation.data;
 
+  // Fetch the patient to check for authorization
+  const patient = await prisma.patient.findUnique({
+      where: { id: patientId },
+      select: { primaryCareDoctorId: true }
+  });
+
+  if (!patient) {
+      return createErrorResponse(new Error("Patient not found"), 404);
+  }
+
+  const isPrimaryDoctor = patient.primaryCareDoctorId === session.user.profileId;
+  const isAdmin = session.user.role === 'SYSTEM_ADMIN';
+
+  if (!isPrimaryDoctor && !isAdmin) {
+      return createForbiddenResponse();
+  }
+
   const reports = await prisma.report.findMany({
     where: { patientId },
     orderBy: { createdAt: 'desc' },

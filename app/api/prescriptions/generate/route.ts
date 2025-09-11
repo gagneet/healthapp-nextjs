@@ -86,7 +86,7 @@ export async function POST(req: NextRequest) {
         let lastY = (doc as any).lastAutoTable.finalY + 15;
 
         // --- Medications ---
-        const medications = patient.carePlans.flatMap(cp => cp.prescribedMedications);
+        const medications = patient.carePlans?.flatMap(cp => cp.prescribedMedications ?? []) ?? [];
         if (medications.length > 0) {
             doc.setFontSize(16);
             doc.text('Medications', 14, lastY);

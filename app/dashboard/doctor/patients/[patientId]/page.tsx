@@ -18,7 +18,8 @@ import {
     Medication,
     VitalReading,
     Appointment,
-    Symptom
+    Symptom,
+    Report
 } from '@/types/dashboard'
 import { formatDate, formatDateTime, getInitials, getAdherenceColor, getPriorityColor } from '@/lib/utils'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
@@ -441,13 +442,20 @@ export default function PatientDetailsPage() {
             try {
                 await fetchPatientData()
                 // Load additional data in parallel
-                await Promise.allSettled([
+                const results = await Promise.allSettled([
                     fetchMedications(),
                     fetchVitals(),
                     fetchAppointments(),
                     fetchCarePlans(),
                     fetchReports()
-                ])
+                ]);
+
+                const failedPromises = results.filter(result => result.status === 'rejected');
+                if (failedPromises.length > 0) {
+                    console.error("Some data failed to load:", failedPromises);
+                    // Optionally set a non-blocking error message
+                    setError("Some parts of the patient data could not be loaded. Please try refreshing the page.");
+                }
             } catch (err) {
                 setError(err instanceof Error ? err.message : 'Failed to load data')
             } finally {
