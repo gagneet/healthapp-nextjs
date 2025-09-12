@@ -612,6 +612,8 @@ model Appointment {
   providerId         String?                        @db.Uuid
   providerName       String?                        @db.VarChar(100)
   description        String?                        @db.VarChar(1000)
+  appointmentType    String                         @default("consultation")
+  notes              String?
   startDate          DateTime?                      @db.Date
   endDate            DateTime?                      @db.Date
   startTime          DateTime?

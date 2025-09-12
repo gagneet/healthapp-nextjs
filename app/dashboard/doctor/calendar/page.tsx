@@ -7,8 +7,10 @@ import { CalendarIcon, Plus, Clock, User, Users, Filter, ChevronDown, ChevronLef
 import { useState, useEffect, useMemo, useCallback } from 'react'
 import { DayPilotCalendar, DayPilotMonth, DayPilot } from '@daypilot/daypilot-lite-react'
 import toast from 'react-hot-toast'
+import CreateAppointmentModal from '@/components/modals/CreateAppointmentModal'
 import { useSession } from 'next-auth/react'
-import { format } from 'date-fns'
+import { format, startOfWeek, isSameDay } from 'date-fns'
+import { AvailabilitySchedule } from '@/lib/types'
 
 interface Appointment {
   id: string;
@@ -65,8 +67,10 @@ export default function DoctorCalendarPage() {
   const { data: session } = useSession()
   const router = useRouter()
   const [appointments, setAppointments] = useState<Appointment[]>([])
+  const [statsAppointments, setStatsAppointments] = useState<Appointment[]>([])
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0])
   const [isLoading, setIsLoading] = useState(true)
+  const [isStatsLoading, setIsStatsLoading] = useState(true)
   
   // DayPilot Calendar state
   const [calendarEvents, setCalendarEvents] = useState<DayPilotEvent[]>([])
@@ -81,6 +85,11 @@ export default function DoctorCalendarPage() {
 
   const [error, setError] = useState<string | null>(null)
   const [doctorProfileId, setDoctorProfileId] = useState<string | null>(null)
+  const [availabilitySchedule, setAvailabilitySchedule] = useState<AvailabilitySchedule | null>(null)
+
+  // Modal state
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [selectedTimeRange, setSelectedTimeRange] = useState<{ start: Date | null, end: Date | null }>({ start: null, end: null })
 
   // First, get the doctor profile ID from user ID
   useEffect(() => {
@@ -119,6 +128,7 @@ export default function DoctorCalendarPage() {
         }
 
         setDoctorProfileId(apiResponse.data.doctor.id);
+        setAvailabilitySchedule(apiResponse.data.doctor.availabilitySchedule);
       } catch (error) {
         console.error('Failed to fetch doctor profile:', error);
         setError(error instanceof Error ? error.message : 'An unknown error occurred');
@@ -129,54 +139,85 @@ export default function DoctorCalendarPage() {
     fetchDoctorProfile()
   }, [session])
 
-  useEffect(() => {
-    const fetchCalendarData = async () => {
-      if (!doctorProfileId) return
+  const fetchCalendarData = useCallback(async () => {
+    if (!doctorProfileId) return
 
-      setIsLoading(true)
-      setError(null)
+    setIsLoading(true)
+    setError(null)
 
-      try {
-        const viewTypeMap: { [key in ViewType]: string } = {
-          Days: 'day',
-          Week: 'week',
-          Month: 'month',
-        }
-        const apiViewType = viewTypeMap[viewType]
-        const response = await fetch(`/api/appointments/calendar/doctor/${doctorProfileId}?view=${apiViewType}&startDate=${calendarConfig.startDate}`)
-        const data = await response.json()
-
-        if (!response.ok) {
-          throw new Error(data.message || 'Failed to fetch calendar data')
-        }
-
-        if (data.calendar) {
-          const fetchedAppointments = data.calendar.events.filter((event: any) => event.type === 'appointment')
-          setAppointments(fetchedAppointments as Appointment[])
-
-          // Extract unique patients from appointments
-          const uniquePatients = (fetchedAppointments as Appointment[]).reduce((acc: Patient[], appointment: Appointment) => {
-            if (!acc.find(p => p.id === appointment.patient.id)) {
-              acc.push({
-                id: appointment.patient.id,
-                name: appointment.patient.name,
-                medicalRecordNumber: `MRN-${appointment.patient.id}`
-              })
-            }
-            return acc
-          }, [])
-          setPatients(uniquePatients)
-        }
-      } catch (error) {
-        console.error('Failed to fetch calendar data:', error)
-        setError(error instanceof Error ? error.message : 'An unknown error occurred')
-      } finally {
-        setIsLoading(false)
+    try {
+      const viewTypeMap: { [key in ViewType]: string } = {
+        Days: 'day',
+        Week: 'week',
+        Month: 'month',
       }
-    }
+      const apiViewType = viewTypeMap[viewType]
+      const response = await fetch(`/api/appointments/calendar/doctor/${doctorProfileId}?view=${apiViewType}&startDate=${calendarConfig.startDate}`)
+      const data = await response.json()
 
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to fetch calendar data')
+      }
+
+      if (data.calendar) {
+        const fetchedAppointments = data.calendar.events.filter((event: any) => event.type === 'appointment')
+        setAppointments(fetchedAppointments as Appointment[])
+
+        // Extract unique patients from appointments
+        const uniquePatients = (fetchedAppointments as Appointment[]).reduce((acc: Patient[], appointment: Appointment) => {
+          if (!acc.find(p => p.id === appointment.patient.id)) {
+            acc.push({
+              id: appointment.patient.id,
+              name: appointment.patient.name,
+              medicalRecordNumber: `MRN-${appointment.patient.id}`
+            })
+          }
+          return acc
+        }, [])
+        setPatients(uniquePatients)
+      }
+    } catch (error) {
+      console.error('Failed to fetch calendar data:', error)
+      setError(error instanceof Error ? error.message : 'An unknown error occurred')
+    } finally {
+      setIsLoading(false)
+    }
+  }, [doctorProfileId, viewType, calendarConfig.startDate])
+
+  useEffect(() => {
     fetchCalendarData()
-  }, [doctorProfileId, selectedDate, viewType, calendarConfig.startDate])
+  }, [fetchCalendarData])
+
+  const fetchStatsData = useCallback(async () => {
+    if (!doctorProfileId) return
+    setIsStatsLoading(true)
+    try {
+      // Fetch appointments for the current week for stats
+      const weekStartDate = startOfWeek(new Date(), { weekStartsOn: 1 /* Monday */ });
+      const response = await fetch(`/api/appointments/calendar/doctor/${doctorProfileId}?view=week&startDate=${weekStartDate.toISOString().split('T')[0]}`)
+      const data = await response.json()
+
+      if (response.ok && data.calendar) {
+        const weeklyAppointments = data.calendar.events.filter((event: any) => event.type === 'appointment')
+        setStatsAppointments(weeklyAppointments)
+      } else {
+        console.error('Failed to fetch stats data:', data.message || 'Unknown error')
+      }
+    } catch (error) {
+      console.error('Error fetching stats data:', error)
+    } finally {
+      setIsStatsLoading(false)
+    }
+  }, [doctorProfileId])
+
+  useEffect(() => {
+    fetchStatsData()
+  }, [fetchStatsData])
+
+  const handleAppointmentCreated = () => {
+    fetchCalendarData()
+    fetchStatsData()
+  }
 
   // Convert appointments to DayPilot events
   useEffect(() => {
@@ -310,30 +351,39 @@ export default function DoctorCalendarPage() {
   }
 
   const handleTimeRangeSelected = (args: any) => {
-    // Handle new appointment creation
-    console.log('Create new appointment:', args.start, args.end)
-    // Example: Open appointment creation modal
-    
-    const startDate = new Date(args.start)
-    const endDate = new Date(args.end)
-    
-    if (viewType === 'Month') {
-      // For monthly view, show day-level appointment creation
-      alert(`Create new appointment on ${startDate.toDateString()}`)
-      // Clear selection for monthly view
+    const start = new Date(args.start)
+    const end = new Date(args.end)
+
+    // Prevent opening modal for month view day clicks, which don't have a time range
+    if (viewType === 'Month' && start.getTime() === end.getTime()) {
       if (args.calendar && args.calendar.clearSelection) {
         args.calendar.clearSelection()
       }
-    } else {
-      // For weekly/daily view, show time-specific appointment creation
-      const timeRange = `${startDate.toLocaleTimeString()} - ${endDate.toLocaleTimeString()}`
-      alert(`Create new appointment from ${timeRange} on ${startDate.toDateString()}`)
-      // Clear selection for calendar view
-      if (args.calendar && args.calendar.clearSelection) {
-        args.calendar.clearSelection()
-      }
+      return
+    }
+
+    setSelectedTimeRange({ start, end })
+    setIsModalOpen(true)
+
+    // Clear selection from calendar
+    if (args.calendar && args.calendar.clearSelection) {
+      args.calendar.clearSelection()
     }
   }
+
+  const todaysScheduledCount = useMemo(() => {
+    const today = new Date();
+    return statsAppointments.filter(a => isSameDay(new Date(a.startTime), today) && a.status === 'scheduled').length
+  }, [statsAppointments])
+
+  const todaysCompletedCount = useMemo(() => {
+    const today = new Date();
+    return statsAppointments.filter(a => isSameDay(new Date(a.startTime), today) && a.status === 'completed').length
+  }, [statsAppointments])
+
+  const thisWeekCount = useMemo(() => {
+    return statsAppointments.length
+  }, [statsAppointments])
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -489,7 +539,7 @@ export default function DoctorCalendarPage() {
               <div>
                 <p className="text-sm font-medium text-gray-600">Today&apos;s Appointments</p>
                 <p className="text-2xl font-bold text-gray-900">
-                  {appointments.filter(a => a.status === 'scheduled').length}
+                  {isStatsLoading ? '...' : todaysScheduledCount}
                 </p>
               </div>
               <div className="h-8 w-8 bg-blue-100 rounded-full flex items-center justify-center">
@@ -505,7 +555,7 @@ export default function DoctorCalendarPage() {
               <div>
                 <p className="text-sm font-medium text-gray-600">Completed Today</p>
                 <p className="text-2xl font-bold text-gray-900">
-                  {appointments.filter(a => a.status === 'completed').length}
+                  {isStatsLoading ? '...' : todaysCompletedCount}
                 </p>
               </div>
               <div className="h-8 w-8 bg-green-100 rounded-full flex items-center justify-center">
@@ -520,7 +570,9 @@ export default function DoctorCalendarPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">This Week</p>
-                <p className="text-2xl font-bold text-gray-900">12</p>
+                <p className="text-2xl font-bold text-gray-900">
+                  {isStatsLoading ? '...' : thisWeekCount}
+                </p>
               </div>
               <div className="h-8 w-8 bg-purple-100 rounded-full flex items-center justify-center">
                 <User className="h-4 w-4 text-purple-600" />
@@ -607,12 +659,12 @@ export default function DoctorCalendarPage() {
                 {new Date(calendarConfig.startDate).toLocaleDateString('en-US', {
                   year: 'numeric',
                   month: 'long',
-                  ...(viewType !== 'Month' && { day: 'numeric' })
+                  ...((viewType !== 'Month' && viewType !== 'Monthly') && { day: 'numeric' })
                 })}
               </div>
             </div>
             <div style={{ height: `${getCalendarHeight()}px` }}>
-              {viewType === 'Month' ? (
+                      {(viewType === 'Month' || viewType === 'Monthly') ? (
                 <DayPilotMonth
                   startDate={calendarConfig.startDate}
                   events={calendarEvents}
@@ -644,28 +696,20 @@ export default function DoctorCalendarPage() {
                   events={calendarEvents}
                   onEventClick={handleEventClick}
                   onTimeRangeSelected={handleTimeRangeSelected}
-                  config={useMemo(() => ({
-                    viewType: 'Days',
-                    startDate: calendarConfig.startDate,
-                    locale: 'en-us',
-                    heightSpec: 'Fixed',
-                    height: getCalendarHeight(),
-                    days: viewType === 'Week' ? 7 : 1,
-                    cellHeight: viewType === 'Week' ? 60 : 40,
-                    eventHeight: 25,
-                    timeRangeSelectedHandling: 'Enabled',
-                    eventClickHandling: 'Enabled',
-                    selectMode: 'Hour',
-                    showToolTip: false,
-                    eventBorderColor: '#1f2937',
-                    headerDateFormat: viewType === 'Week' ? 'MMMM yyyy' : 'MMMM d, yyyy',
-                    hourWidth: 60,
-                    businessHoursStart: '07:00',
-                    businessHoursEnd: '20:00',
-                    showNonBusiness: true,
-                    timeFormat: 'Clock12Hours',
-                    eventRightClickHandling: 'ContextMenu'
-                  }), [calendarConfig.startDate, viewType, getCalendarHeight])}
+                  // viewType: 'Days' shows daily view, 'Week' shows weekly view
+                  viewType={viewType === 'Days' ? 'Days' : 'Week'}
+                  startDate={calendarConfig.startDate}
+                  locale="en-us"
+                  heightSpec="Full"
+                  height={getCalendarHeight()}
+                  days={viewType === 'Days' ? 1 : 7}
+                  cellHeight={viewType === 'Week' ? 60 : 40}
+                  timeRangeSelectedHandling="Enabled"
+                  eventClickHandling="Enabled"
+                  showToolTip={false}
+                  headerDateFormat={viewType === 'Week' ? 'MMMM yyyy' : 'MMMM d, yyyy'}
+                  hourWidth={60}
+                  timeFormat="Clock12Hours"
                 />
               )}
             </div>
@@ -710,6 +754,17 @@ export default function DoctorCalendarPage() {
           </CardContent>
         </Card>
       </div>
+
+      <CreateAppointmentModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        startTime={selectedTimeRange.start}
+        endTime={selectedTimeRange.end}
+        patients={patients}
+        onAppointmentCreated={handleAppointmentCreated}
+        doctorProfileId={doctorProfileId}
+        availabilitySchedule={availabilitySchedule}
+      />
     </div>
   )
 }
