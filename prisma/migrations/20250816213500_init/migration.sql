@@ -499,6 +499,8 @@ CREATE TABLE "public"."appointments" (
     "providerId" UUID,
     "providerName" VARCHAR(100),
     "description" VARCHAR(1000),
+    "appointmentType" TEXT NOT NULL DEFAULT 'consultation',
+    "notes" TEXT,
     "startDate" DATE,
     "endDate" DATE,
     "startTime" TIMESTAMP(3),
