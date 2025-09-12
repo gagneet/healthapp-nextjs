@@ -1,10 +1,12 @@
 'use client'
 
+import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { CalendarIcon, Plus, Clock, User, Users, Filter, ChevronDown, ChevronLeft, ChevronRight, Home } from 'lucide-react'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import { DayPilotCalendar, DayPilotMonth, DayPilot } from '@daypilot/daypilot-lite-react'
+import toast from 'react-hot-toast'
 import { useSession } from 'next-auth/react'
 import { format } from 'date-fns'
 
@@ -35,20 +37,33 @@ interface Patient {
 }
 
 interface DayPilotEvent {
-  id: string
-  text: string
-  start: string
-  end: string
-  backColor?: string
-  borderColor?: string
-  fontColor?: string
-  data?: any
+  id: string;
+  text: string;
+  start: string;
+  end: string;
+  backColor?: string;
+  borderColor?: string;
+  fontColor?: string;
+  patient: {
+    id: string;
+    name: string;
+    email: string;
+  };
+  appointmentType: 'consultation' | 'follow-up' | 'emergency' | 'check-up';
+  status: 'scheduled' | 'completed' | 'cancelled' | 'rescheduled' | 'no_show' | 'in_progress';
+}
+
+interface HandleEventClickArgs {
+  e: {
+    data: DayPilotEvent;
+  };
 }
 
 type ViewType = 'Month' | 'Week' | 'Days'
 
 export default function DoctorCalendarPage() {
   const { data: session } = useSession()
+  const router = useRouter()
   const [appointments, setAppointments] = useState<Appointment[]>([])
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0])
   const [isLoading, setIsLoading] = useState(true)
@@ -179,7 +194,9 @@ export default function DoctorCalendarPage() {
           backColor: getStatusBackColor(appointment.status),
           borderColor: getStatusBorderColor(appointment.status),
           fontColor: '#ffffff',
-          data: appointment
+          patient: appointment.patient,
+          appointmentType: appointment.appointmentType,
+          status: appointment.status,
         }
       })
 
@@ -265,14 +282,14 @@ export default function DoctorCalendarPage() {
   }
 
   // Get calendar height based on view type
-  const getCalendarHeight = () => {
+  const getCalendarHeight = useCallback(() => {
     switch (viewType) {
       case 'Month': return 600
       case 'Week': return 700
       case 'Days': return 800
       default: return 600
     }
-  }
+  }, [viewType])
 
   // Get days count for daily view
   const getDaysCount = () => {
@@ -280,12 +297,16 @@ export default function DoctorCalendarPage() {
   }
 
   // DayPilot event handlers
-  const handleEventClick = (args: any) => {
-    const appointment = args.e.data
-    // Navigate to patient appointment page - replace with actual routing
-    console.log('Navigate to patient appointment:', appointment)
-    // Example: router.push(`/dashboard/doctor/patients/${appointment.patientId}/appointments/${appointment.id}`)
-    alert(`Clicked appointment: ${appointment.patient.name} - ${appointment.appointmentType}\\n\\nThis will navigate to the patient appointment page.`)
+  const handleEventClick = (args: HandleEventClickArgs) => {
+    const appointment = args.e.data;
+
+    if (appointment && appointment.patient && appointment.patient.id) {
+      console.log('Navigating to patient:', appointment.patient.id)
+      router.push(`/dashboard/doctor/patients/${appointment.patient.id}?appointment=${appointment.id}`)
+    } else {
+      console.error('Navigation failed: appointment data or patient ID is missing.', args.e.data)
+      toast.error('Could not navigate to appointment details. Data is missing.')
+    }
   }
 
   const handleTimeRangeSelected = (args: any) => {
@@ -623,13 +644,13 @@ export default function DoctorCalendarPage() {
                   events={calendarEvents}
                   onEventClick={handleEventClick}
                   onTimeRangeSelected={handleTimeRangeSelected}
-                  config={{
-                    viewType: viewType === 'Days' ? 'Days' : 'Week',
+                  config={useMemo(() => ({
+                    viewType: 'Days',
                     startDate: calendarConfig.startDate,
                     locale: 'en-us',
                     heightSpec: 'Fixed',
                     height: getCalendarHeight(),
-                    days: viewType === 'Days' ? 1 : 7,
+                    days: viewType === 'Week' ? 7 : 1,
                     cellHeight: viewType === 'Week' ? 60 : 40,
                     eventHeight: 25,
                     timeRangeSelectedHandling: 'Enabled',
@@ -644,7 +665,7 @@ export default function DoctorCalendarPage() {
                     showNonBusiness: true,
                     timeFormat: 'Clock12Hours',
                     eventRightClickHandling: 'ContextMenu'
-                  }}
+                  }), [calendarConfig.startDate, viewType, getCalendarHeight])}
                 />
               )}
             </div>
