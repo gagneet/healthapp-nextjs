@@ -28,8 +28,8 @@ export type HSPSearchFields = {
 };
 
 export interface DaySchedule {
-  start: string;
-  end: string;
+  start: `${number}:${number}`; // HH:mm format
+  end: `${number}:${number}`;   // HH:mm format
   available: boolean;
 }
 

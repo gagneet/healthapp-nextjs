@@ -5,6 +5,42 @@ import { X } from 'lucide-react'
 import { APPOINTMENT_TYPES, AppointmentType } from '@/lib/constants'
 import { AvailabilitySchedule } from '@/lib/types'
 
+const isWithinBusinessHours = (
+  startTime: Date,
+  endTime: Date,
+  availabilitySchedule: AvailabilitySchedule
+): { isValid: boolean; error?: string } => {
+  const dayOfWeek = startTime.toLocaleString('en-US', { weekday: 'long' }).toLowerCase();
+  const daySchedule = availabilitySchedule[dayOfWeek as keyof AvailabilitySchedule];
+
+  if (!daySchedule || !daySchedule.available) {
+    return { isValid: false, error: 'The selected day is not available for appointments.' };
+  }
+
+  const appointmentStartTime = startTime.getHours() * 60 + startTime.getMinutes();
+  const appointmentEndTime = endTime.getHours() * 60 + endTime.getMinutes();
+
+  const [startHour, startMinute] = daySchedule.start.split(':').map(Number);
+  const [endHour, endMinute] = daySchedule.end.split(':').map(Number);
+
+  if (isNaN(startHour) || isNaN(startMinute) || isNaN(endHour) || isNaN(endMinute)) {
+    console.error('Invalid time format in availability schedule:', daySchedule);
+    return { isValid: false, error: 'Could not validate business hours due to an internal error.' };
+  }
+
+  const businessStartTime = startHour * 60 + startMinute;
+  const businessEndTime = endHour * 60 + endMinute;
+
+  if (appointmentStartTime < businessStartTime || appointmentEndTime > businessEndTime) {
+    return {
+      isValid: false,
+      error: `Appointments are only available between ${daySchedule.start} and ${daySchedule.end}.`
+    };
+  }
+
+  return { isValid: true };
+};
+
 interface Patient {
   id: string
   name: string
@@ -89,26 +125,10 @@ export default function CreateAppointmentModal({
       return
     }
 
-    if (availabilitySchedule) {
-      const dayOfWeek = startTime.toLocaleString('en-us', { weekday: 'long' }).toLowerCase();
-      const daySchedule = availabilitySchedule[dayOfWeek];
-
-      if (!daySchedule || !daySchedule.available) {
-        toast.error('The selected day is not available for appointments.');
-        return;
-      }
-
-      const appointmentStartTime = startTime.getHours() * 60 + startTime.getMinutes();
-      const appointmentEndTime = endTime.getHours() * 60 + endTime.getMinutes();
-
-      const [startHour, startMinute] = daySchedule.start.split(':').map(Number);
-      const businessStartTime = startHour * 60 + startMinute;
-
-      const [endHour, endMinute] = daySchedule.end.split(':').map(Number);
-      const businessEndTime = endHour * 60 + endMinute;
-
-      if (appointmentStartTime < businessStartTime || appointmentEndTime > businessEndTime) {
-        toast.error(`Appointments are only available between ${daySchedule.start} and ${daySchedule.end}.`);
+    if (availabilitySchedule && startTime && endTime) {
+      const validation = isWithinBusinessHours(startTime, endTime, availabilitySchedule);
+      if (!validation.isValid) {
+        toast.error(validation.error || 'The selected time is not available.');
         return;
       }
     }
