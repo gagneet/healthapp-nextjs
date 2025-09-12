@@ -586,110 +586,102 @@ export default function DoctorCalendarPage() {
           </div>
         </div>
 
-        {/* DayPilot Calendar */}
-        <Card>
-          <CardContent className="p-6">
-            {/* Calendar Navigation Controls */}
-            <div className="flex items-center justify-between mb-4 pb-4 border-b">
-              <div className="flex items-center gap-2">
-                <Button variant="outline" size="sm" onClick={handlePreviousClick}>
-                  <ChevronLeft className="h-4 w-4" />
-                </Button>
-                <Button variant="outline" size="sm" onClick={handleTodayClick}>
-                  <Home className="h-4 w-4 mr-1" />
-                  Today
-                </Button>
-                <Button variant="outline" size="sm" onClick={handleNextClick}>
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
-              </div>
-              <div className="text-lg font-semibold text-gray-900">
-                {new Date(calendarConfig.startDate).toLocaleDateString('en-US', {
-                  year: 'numeric',
-                  month: 'long',
-                  ...(viewType !== 'Month' && { day: 'numeric' })
-                })}
-              </div>
-            </div>
-            <div style={{ height: `${getCalendarHeight()}px` }}>
-              {viewType === 'Month' ? (
-                <DayPilotMonth
-                  startDate={calendarConfig.startDate}
-                  events={calendarEvents}
-                  onEventClick={handleEventClick}
-                  onTimeRangeSelected={handleTimeRangeSelected}
-                  {...({ config: {
-                    startDate: calendarConfig.startDate,
-                    locale: 'en-us',
-                    heightSpec: 'Fixed',
-                    height: getCalendarHeight(),
-                    cellHeight: 80,
-                    eventHeight: 25,
-                    timeRangeSelectedHandling: 'Enabled',
-                    eventClickHandling: 'Enabled',
-                    showToolTip: false,
-                    eventBorderColor: '#1f2937',
-                    headerDateFormat: 'MMMM yyyy',
-                    dayHeaderHeight: 30,
-                    weekStarts: 0, // Sunday = 0, Monday = 1
-                    showWeekNumbers: false,
-                    businessBeginsHour: 7,
-                    businessEndsHour: 20,
-                    eventStackingLineHeight: 20
-                  }} as any)}
-                />
-              ) : (
-                <DayPilotCalendar
-                  key={viewType}
-                  events={calendarEvents}
-                  onEventClick={handleEventClick}
-                  onTimeRangeSelected={handleTimeRangeSelected}
-                  config={useMemo(() => ({
-                    viewType: 'Days',
-                    startDate: calendarConfig.startDate,
-                    locale: 'en-us',
-                    heightSpec: 'Fixed',
-                    height: getCalendarHeight(),
-                    days: viewType === 'Week' ? 7 : 1,
-                    cellHeight: viewType === 'Week' ? 60 : 40,
-                    eventHeight: 25,
-                    timeRangeSelectedHandling: 'Enabled',
-                    eventClickHandling: 'Enabled',
-                    selectMode: 'Hour',
-                    showToolTip: false,
-                    eventBorderColor: '#1f2937',
-                    headerDateFormat: viewType === 'Week' ? 'MMMM yyyy' : 'MMMM d, yyyy',
-                    hourWidth: 60,
-                    businessHoursStart: '07:00',
-                    businessHoursEnd: '20:00',
-                    showNonBusiness: true,
-                    timeFormat: 'Clock12Hours',
-                    eventRightClickHandling: 'ContextMenu'
-                  }), [calendarConfig.startDate, viewType, getCalendarHeight])}
-                />
-              )}
-            </div>
-            
-            {/* Calendar Legend */}
-            <div className="mt-4 pt-4 border-t border-gray-200">
-              <div className="flex flex-wrap items-center gap-6">
-                <h4 className="text-sm font-medium text-gray-700">Legend:</h4>
-                <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 bg-blue-500 rounded"></div>
-                  <span className="text-sm text-gray-600">Scheduled</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 bg-green-500 rounded"></div>
-                  <span className="text-sm text-gray-600">Completed</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 bg-red-500 rounded"></div>
-                  <span className="text-sm text-gray-600">Cancelled</span>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+          {/* DayPilot Calendar */}
+          <Card>
+              <CardContent className="p-6">
+                  {/* Calendar Navigation Controls */}
+                  <div className="flex items-center justify-between mb-4 pb-4 border-b">
+                      <div className="flex items-center gap-2">
+                          <Button variant="outline" size="sm" onClick={handlePreviousClick}>
+                              <ChevronLeft className="h-4 w-4" />
+                          </Button>
+                          <Button variant="outline" size="sm" onClick={handleTodayClick}>
+                              <Home className="h-4 w-4 mr-1" />
+                              Today
+                          </Button>
+                          <Button variant="outline" size="sm" onClick={handleNextClick}>
+                              <ChevronRight className="h-4 w-4" />
+                          </Button>
+                      </div>
+                      <div className="text-lg font-semibold text-gray-900">
+                          {new Date(calendarConfig.startDate).toLocaleDateString('en-US', {
+                              year: 'numeric',
+                              month: 'long',
+                              ...((viewType !== 'Month' && viewType !== 'Monthly') && { day: 'numeric' })
+                          })}
+                      </div>
+                  </div>
+                  <div style={{ height: `${getCalendarHeight()}px` }}>
+                      {(viewType === 'Month' || viewType === 'Monthly') ? (
+                          <DayPilotMonth
+                              startDate={calendarConfig.startDate}
+                              events={calendarEvents}
+                              onEventClick={handleEventClick}
+                              onTimeRangeSelected={handleTimeRangeSelected}
+                              {...({ config: {
+                                      startDate: calendarConfig.startDate,
+                                      locale: 'en-us',
+                                      heightSpec: 'Fixed',
+                                      height: getCalendarHeight(),
+                                      cellHeight: 80,
+                                      eventHeight: 25,
+                                      timeRangeSelectedHandling: 'Enabled',
+                                      eventClickHandling: 'Enabled',
+                                      showToolTip: false,
+                                      eventBorderColor: '#1f2937',
+                                      headerDateFormat: 'MMMM yyyy',
+                                      dayHeaderHeight: 30,
+                                      weekStarts: 0, // Sunday = 0, Monday = 1
+                                      showWeekNumbers: false,
+                                      businessBeginsHour: 7,
+                                      businessEndsHour: 20,
+                                      eventStackingLineHeight: 20
+                                  }} as any)}
+                          />
+                      ) : (
+                          <DayPilotCalendar
+                              key={viewType}
+                              events={calendarEvents}
+                              onEventClick={handleEventClick}
+                              onTimeRangeSelected={handleTimeRangeSelected}
+                              // viewType: 'Days' shows daily view, 'Week' shows weekly view
+                              viewType={viewType === 'Days' ? 'Days' : 'Week'}
+                              startDate={calendarConfig.startDate}
+                              locale="en-us"
+                              heightSpec="Full"
+                              height={getCalendarHeight()}
+                              days={viewType === 'Days' ? 1 : 7}
+                              cellHeight={viewType === 'Week' ? 60 : 40}
+                              timeRangeSelectedHandling="Enabled"
+                              eventClickHandling="Enabled"
+                              showToolTip={false}
+                              headerDateFormat={viewType === 'Week' ? 'MMMM yyyy' : 'MMMM d, yyyy'}
+                              hourWidth={60}
+                              timeFormat="Clock12Hours"
+                          />
+                      )}
+                  </div>
+
+                  {/* Calendar Legend */}
+                  <div className="mt-4 pt-4 border-t border-gray-200">
+                      <div className="flex flex-wrap items-center gap-6">
+                          <h4 className="text-sm font-medium text-gray-700">Legend:</h4>
+                          <div className="flex items-center gap-2">
+                              <div className="w-4 h-4 bg-blue-500 rounded"></div>
+                              <span className="text-sm text-gray-600">Scheduled</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                              <div className="w-4 h-4 bg-green-500 rounded"></div>
+                              <span className="text-sm text-gray-600">Completed</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                              <div className="w-4 h-4 bg-red-500 rounded"></div>
+                              <span className="text-sm text-gray-600">Cancelled</span>
+                          </div>
+                      </div>
+                  </div>
+              </CardContent>
+          </Card>
 
         {/* Enhanced Features Info */}
         <Card className="bg-green-50 border-green-200">
