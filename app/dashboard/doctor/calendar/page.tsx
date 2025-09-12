@@ -74,12 +74,12 @@ export default function DoctorCalendarPage() {
         return false; // Session still loading
       }
       if (session === null) {
-        setError("You must be logged in to view the calendar.");
+        setError("Please sign in to access the calendar.");
         setIsLoading(false);
         return false;
       }
       if (!session.user?.businessId) {
-        setError("Doctor ID not found in session.");
+        setError("Doctor profile not properly configured. Please contact support.");
         setIsLoading(false);
         return false;
       }
@@ -92,20 +92,22 @@ export default function DoctorCalendarPage() {
       }
 
       try {
-        const response = await fetch(`/api/doctors/profile/${session.user.businessId}`)
-        const apiResponse = await response.json()
-        
-        if (response.ok && apiResponse.success && apiResponse.data?.doctor) {
-          setDoctorProfileId(apiResponse.data.doctor.id)
-        } else {
-          const errorMessage = apiResponse.error?.message || 'Doctor profile not found'
-          setError(errorMessage)
-          setIsLoading(false)
+        const response = await fetch(`/api/doctors/profile/${session.user.businessId}`);
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.error?.message || `Failed to fetch doctor profile: ${response.status}`);
         }
+        
+        const apiResponse = await response.json();
+        if (!apiResponse.success || !apiResponse.data?.doctor) {
+          throw new Error(apiResponse.error?.message || 'Doctor profile data not found in response');
+        }
+
+        setDoctorProfileId(apiResponse.data.doctor.id);
       } catch (error) {
-        console.error('Failed to fetch doctor profile:', error)
-        setError('Failed to load doctor profile')
-        setIsLoading(false)
+        console.error('Failed to fetch doctor profile:', error);
+        setError(error instanceof Error ? error.message : 'An unknown error occurred');
+        setIsLoading(false);
       }
     }
 

@@ -30,7 +30,10 @@ export const GET = withErrorHandling(async (
     return createUnauthorizedResponse()
   }
 
-  const { doctorId } = params
+  const { doctorId } = params;
+  if (!doctorId || typeof doctorId !== 'string') {
+    return createErrorResponse(new Error('Invalid doctor ID format'), 400);
+  }
 
   // Only allow access to own profile for doctors
   if (session.user.role === 'DOCTOR' && session.user.businessId !== doctorId) {
