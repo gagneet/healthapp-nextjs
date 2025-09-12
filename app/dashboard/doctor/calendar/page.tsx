@@ -1,5 +1,6 @@
 'use client'
 
+import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { CalendarIcon, Plus, Clock, User, Users, Filter, ChevronDown, ChevronLeft, ChevronRight, Home } from 'lucide-react'
@@ -49,6 +50,7 @@ type ViewType = 'Month' | 'Week' | 'Days'
 
 export default function DoctorCalendarPage() {
   const { data: session } = useSession()
+  const router = useRouter()
   const [appointments, setAppointments] = useState<Appointment[]>([])
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0])
   const [isLoading, setIsLoading] = useState(true)
@@ -281,11 +283,16 @@ export default function DoctorCalendarPage() {
 
   // DayPilot event handlers
   const handleEventClick = (args: any) => {
-    const appointment = args.e.data
-    // Navigate to patient appointment page - replace with actual routing
-    console.log('Navigate to patient appointment:', appointment)
-    // Example: router.push(`/dashboard/doctor/patients/${appointment.patientId}/appointments/${appointment.id}`)
-    alert(`Clicked appointment: ${appointment.patient.name} - ${appointment.appointmentType}\\n\\nThis will navigate to the patient appointment page.`)
+    const eventData = args.e.data
+    const appointment = eventData.data; // The actual appointment data
+
+    if (appointment && appointment.patient && appointment.patient.id) {
+      console.log('Navigating to patient:', appointment.patient.id)
+      router.push(`/dashboard/doctor/patients/${appointment.patient.id}?appointment=${appointment.id}`)
+    } else {
+      console.error('Navigation failed: appointment data or patient ID is missing.', eventData)
+      alert('Could not navigate to appointment details. Data is missing.')
+    }
   }
 
   const handleTimeRangeSelected = (args: any) => {
@@ -624,12 +631,12 @@ export default function DoctorCalendarPage() {
                   onEventClick={handleEventClick}
                   onTimeRangeSelected={handleTimeRangeSelected}
                   config={{
-                    viewType: viewType === 'Days' ? 'Days' : 'Week',
+                    viewType: 'Days',
                     startDate: calendarConfig.startDate,
                     locale: 'en-us',
                     heightSpec: 'Fixed',
                     height: getCalendarHeight(),
-                    days: viewType === 'Days' ? 1 : 7,
+                    days: viewType === 'Week' ? 7 : 1,
                     cellHeight: viewType === 'Week' ? 60 : 40,
                     eventHeight: 25,
                     timeRangeSelectedHandling: 'Enabled',
