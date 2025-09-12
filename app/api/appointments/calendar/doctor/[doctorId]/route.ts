@@ -7,9 +7,9 @@ const calendarQuerySchema = z.object({
   startDate: z.string().regex(/^\\d{4}-\\d{2}-\\d{2}$/, { message: "Invalid startDate format, expected YYYY-MM-DD" }).optional(),
   endDate: z.string().regex(/^\\d{4}-\\d{2}-\\d{2}$/, { message: "Invalid endDate format, expected YYYY-MM-DD" }).optional(),
   view: z.enum(['month', 'week', 'day']).default('month'),
-  includeAvailability: z.boolean().default(true),
-  includeAppointments: z.boolean().default(true),
-  includeBlockedSlots: z.boolean().default(false),
+  includeAvailability: z.preprocess(val => val !== 'false', z.boolean()).default(true),
+  includeAppointments: z.preprocess(val => val !== 'false', z.boolean()).default(true),
+  includeBlockedSlots: z.preprocess(val => val === 'true', z.boolean()).default(false),
   timezone: z.string().default('UTC')
 });
 
@@ -26,15 +26,22 @@ export async function GET(
     const { doctorId } = params;
     const { searchParams } = new URL(request.url);
     
-    const queryData = calendarQuerySchema.parse({
-      startDate: searchParams.get('startDate') || undefined,
-      endDate: searchParams.get('endDate') || undefined,
-      view: searchParams.get('view') || 'month',
-      includeAvailability: searchParams.get('includeAvailability') !== 'false',
-      includeAppointments: searchParams.get('includeAppointments') !== 'false',
-      includeBlockedSlots: searchParams.get('includeBlockedSlots') === 'true',
-      timezone: searchParams.get('timezone') || 'UTC'
-    });
+    const queryParams = {
+      startDate: searchParams.get('startDate'),
+      endDate: searchParams.get('endDate'),
+      view: searchParams.get('view'),
+      includeAvailability: searchParams.get('includeAvailability'),
+      includeAppointments: searchParams.get('includeAppointments'),
+      includeBlockedSlots: searchParams.get('includeBlockedSlots'),
+      timezone: searchParams.get('timezone')
+    };
+
+    // Filter out null values so Zod can apply defaults
+    const nonNullParams = Object.fromEntries(
+      Object.entries(queryParams).filter(([, v]) => v !== null)
+    );
+
+    const queryData = calendarQuerySchema.parse(nonNullParams);
 
     // Verify doctor exists and user has access
     const doctor = await prisma.doctor.findUnique({

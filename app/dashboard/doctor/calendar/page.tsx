@@ -74,12 +74,12 @@ export default function DoctorCalendarPage() {
         return false; // Session still loading
       }
       if (session === null) {
-        setError("You must be logged in to view the calendar.");
+        setError("Please sign in to access the calendar.");
         setIsLoading(false);
         return false;
       }
-      if (!session.user?.id) {
-        setError("User ID not found in session.");
+      if (!session.user?.businessId) {
+        setError("Doctor profile not properly configured. Please contact support.");
         setIsLoading(false);
         return false;
       }
@@ -92,22 +92,22 @@ export default function DoctorCalendarPage() {
       }
 
       try {
-        const response = await fetch(`/api/doctors/profile/${session.user.id}`)
-        const data = await response.json()
-        
-        if (response.ok && data.doctor) {
-          setDoctorProfileId(data.doctor.id)
-        } else {
-          const errorMessage = response.ok
-            ? 'Doctor profile not found'
-            : `Failed to fetch profile: ${response.status} ${data.message || ''}`
-          setError(errorMessage)
-          setIsLoading(false)
+        const response = await fetch(`/api/doctors/profile/${session.user.businessId}`);
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({ message: 'Failed to parse error response' }));
+          throw new Error(errorData.error?.message || errorData.message || `Failed to fetch doctor profile: ${response.status}`);
         }
+        
+        const apiResponse = await response.json();
+        if (!apiResponse.success || !apiResponse.data?.doctor) {
+          throw new Error(apiResponse.error?.message || 'Doctor profile data not found in response');
+        }
+
+        setDoctorProfileId(apiResponse.data.doctor.id);
       } catch (error) {
-        console.error('Failed to fetch doctor profile:', error)
-        setError('Failed to load doctor profile')
-        setIsLoading(false)
+        console.error('Failed to fetch doctor profile:', error);
+        setError(error instanceof Error ? error.message : 'An unknown error occurred');
+        setIsLoading(false);
       }
     }
 

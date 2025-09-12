@@ -1,6 +1,6 @@
 /**
- * Doctor Profile API Route by User ID
- * Gets doctor profile using the user ID (for internal lookups)
+ * Doctor Profile API Route by Doctor ID
+ * Gets doctor profile using the doctor ID (business ID)
  */
 
 import { NextRequest, NextResponse } from "next/server"
@@ -16,13 +16,13 @@ import {
 export const dynamic = 'force-dynamic'; // Prevent caching
 
 /**
- * GET /api/doctors/profile/[userId]
- * Retrieve doctor profile by user ID
+ * GET /api/doctors/profile/[doctorId]
+ * Retrieve doctor profile by doctor ID
  * Business Logic: Only allow if the user is requesting their own profile or has admin access
  */
 export const GET = withErrorHandling(async (
   request: NextRequest,
-  { params }: { params: { userId: string } }
+  { params }: { params: { doctorId: string } }
 ) => {
   const session = await auth()
   
@@ -30,19 +30,22 @@ export const GET = withErrorHandling(async (
     return createUnauthorizedResponse()
   }
 
-  const { userId } = params
+  const { doctorId } = params;
+  if (!doctorId || typeof doctorId !== 'string') {
+    return createErrorResponse(new Error('Invalid doctor ID format'), 400);
+  }
 
   // Only allow access to own profile for doctors
-  if (session.user.role === 'DOCTOR' && session.user.id !== userId) {
+  if (session.user.role === 'DOCTOR' && session.user.businessId !== doctorId) {
     return createErrorResponse(new Error("Access denied"), 403)
   }
 
-  console.log("Doctor Profile User ID: ", userId);
+  console.log("Doctor Profile Doctor ID: ", doctorId);
 
   try {
-    // Fetch doctor by user ID
+    // Fetch doctor by doctor ID
     const doctor = await prisma.doctor.findUnique({
-      where: { userId },
+      where: { doctorId },
       include: {
         user: {
           select: {
