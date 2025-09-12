@@ -3,6 +3,43 @@ import toast from 'react-hot-toast'
 import { Button } from '@/components/ui/button'
 import { X } from 'lucide-react'
 import { APPOINTMENT_TYPES, AppointmentType } from '@/lib/constants'
+import { AvailabilitySchedule } from '@/lib/types'
+
+const isWithinBusinessHours = (
+  startTime: Date,
+  endTime: Date,
+  availabilitySchedule: AvailabilitySchedule
+): { isValid: boolean; error?: string } => {
+  const dayOfWeek = startTime.toLocaleString('en-US', { weekday: 'long' }).toLowerCase();
+  const daySchedule = availabilitySchedule[dayOfWeek as keyof AvailabilitySchedule];
+
+  if (!daySchedule || !daySchedule.available) {
+    return { isValid: false, error: 'The selected day is not available for appointments.' };
+  }
+
+  const appointmentStartTime = startTime.getHours() * 60 + startTime.getMinutes();
+  const appointmentEndTime = endTime.getHours() * 60 + endTime.getMinutes();
+
+  const [startHour, startMinute] = daySchedule.start.split(':').map(Number);
+  const [endHour, endMinute] = daySchedule.end.split(':').map(Number);
+
+  if (isNaN(startHour) || isNaN(startMinute) || isNaN(endHour) || isNaN(endMinute)) {
+    console.error('Invalid time format in availability schedule:', daySchedule);
+    return { isValid: false, error: 'Could not validate business hours due to an internal error.' };
+  }
+
+  const businessStartTime = startHour * 60 + startMinute;
+  const businessEndTime = endHour * 60 + endMinute;
+
+  if (appointmentStartTime < businessStartTime || appointmentEndTime > businessEndTime) {
+    return {
+      isValid: false,
+      error: `Appointments are only available between ${daySchedule.start} and ${daySchedule.end}.`
+    };
+  }
+
+  return { isValid: true };
+};
 
 interface Patient {
   id: string
@@ -17,6 +54,7 @@ interface CreateAppointmentModalProps {
   patients: Patient[]
   onAppointmentCreated: () => void
   doctorProfileId: string | null
+  availabilitySchedule: AvailabilitySchedule | null
 }
 
 export default function CreateAppointmentModal({
@@ -27,6 +65,7 @@ export default function CreateAppointmentModal({
   patients,
   onAppointmentCreated,
   doctorProfileId,
+  availabilitySchedule,
 }: CreateAppointmentModalProps) {
   const [patientId, setPatientId] = useState('')
   const [appointmentType, setAppointmentType] = useState<AppointmentType>('consultation')
@@ -86,10 +125,16 @@ export default function CreateAppointmentModal({
       return
     }
 
+    if (availabilitySchedule && startTime && endTime) {
+      const validation = isWithinBusinessHours(startTime, endTime, availabilitySchedule);
+      if (!validation.isValid) {
+        toast.error(validation.error || 'The selected time is not available.');
+        return;
+      }
+    }
+
     setIsLoading(true)
     try {
-      // TODO: Backend needs to be updated to accept appointmentType and notes.
-      // The `description` field is being deprecated in favor of structured data.
       const response = await fetch('/api/appointments', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

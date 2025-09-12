@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from "@/lib/auth";
 import { prisma } from '@/lib/prisma';
 import { Prisma } from '@/prisma/generated/prisma';
+import { APPOINTMENT_TYPES } from '@/lib/constants';
 
 
 export async function GET(request: NextRequest) {
@@ -162,9 +163,18 @@ export async function POST(request: NextRequest) {
       doctorId,
       startTime,
       endTime,
-      description,
+      appointmentType,
+      notes,
       slotId,
     } = body;
+
+    if (!APPOINTMENT_TYPES.find(t => t.id === appointmentType)) {
+      return NextResponse.json({
+        status: false,
+        statusCode: 400,
+        payload: { error: { status: 'bad_request', message: 'Invalid appointment type' } }
+      }, { status: 400 });
+    }
 
     // Validate user permissions
     if (user!.role === 'PATIENT') {
@@ -206,7 +216,8 @@ export async function POST(request: NextRequest) {
           doctorId: doctorId,
           startTime: new Date(startTime),
           endTime: new Date(endTime),
-          description: description || 'Appointment',
+          appointmentType: appointmentType,
+          notes: notes,
           status: 'SCHEDULED',
           slotId: slotId,
           createdAt: new Date(),
