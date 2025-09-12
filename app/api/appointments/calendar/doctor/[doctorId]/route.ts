@@ -4,8 +4,20 @@ import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 
 const calendarQuerySchema = z.object({
-  startDate: z.string().regex(/^\\d{4}-\\d{2}-\\d{2}$/, { message: "Invalid startDate format, expected YYYY-MM-DD" }).optional(),
-  endDate: z.string().regex(/^\\d{4}-\\d{2}-\\d{2}$/, { message: "Invalid endDate format, expected YYYY-MM-DD" }).optional(),
+  startDate: z.string().optional().refine((val) => {
+    if (!val) return true; // Allow optional
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(val)) return false;
+    const [year, month, day] = val.split('-').map(Number);
+    const date = new Date(Date.UTC(year, month - 1, day));
+    return date.getUTCFullYear() === year && date.getUTCMonth() === month - 1 && date.getUTCDate() === day;
+  }, { message: "Invalid startDate format, expected YYYY-MM-DD" }),
+  endDate: z.string().optional().refine((val) => {
+    if (!val) return true; // Allow optional
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(val)) return false;
+    const [year, month, day] = val.split('-').map(Number);
+    const date = new Date(Date.UTC(year, month - 1, day));
+    return date.getUTCFullYear() === year && date.getUTCMonth() === month - 1 && date.getUTCDate() === day;
+  }, { message: "Invalid endDate format, expected YYYY-MM-DD" }),
   view: z.enum(['month', 'week', 'day']).default('month'),
   includeAvailability: z.preprocess(val => val !== 'false', z.boolean()).default(true),
   includeAppointments: z.preprocess(val => val !== 'false', z.boolean()).default(true),
@@ -228,38 +240,43 @@ export async function GET(
 }
 
 function calculateDateRange(startDate?: string, endDate?: string, view: string = 'month') {
-  const baseDate = startDate ? new Date(startDate) : new Date();
+  // If startDate is provided, parse it as UTC to avoid timezone issues.
+  // Otherwise, use the current date.
+  const baseDate = startDate ? new Date(`${startDate}T00:00:00Z`) : new Date();
+
   let calculatedStart: Date;
   let calculatedEnd: Date;
 
   if (startDate && endDate) {
-    calculatedStart = new Date(startDate);
-    calculatedEnd = new Date(endDate);
+    // Also parse these as UTC
+    calculatedStart = new Date(`${startDate}T00:00:00Z`);
+    calculatedEnd = new Date(`${endDate}T23:59:59.999Z`);
   } else {
     switch (view) {
       case 'day':
-        calculatedStart = new Date(baseDate);
-        calculatedStart.setHours(0, 0, 0, 0);
-        calculatedEnd = new Date(calculatedStart);
-        calculatedEnd.setHours(23, 59, 59, 999);
+        calculatedStart = new Date(baseDate.getTime());
+        calculatedStart.setUTCHours(0, 0, 0, 0);
+        calculatedEnd = new Date(calculatedStart.getTime());
+        calculatedEnd.setUTCHours(23, 59, 59, 999);
         break;
       case 'week':
-        calculatedStart = new Date(baseDate);
+        calculatedStart = new Date(baseDate.getTime());
         // Note: Sunday is considered the start of the week (day 0).
-        calculatedStart.setDate(baseDate.getDate() - baseDate.getDay());
-        calculatedStart.setHours(0, 0, 0, 0);
-        calculatedEnd = new Date(calculatedStart);
-        calculatedEnd.setDate(calculatedStart.getDate() + 6); // End of week (Saturday)
-        calculatedEnd.setHours(23, 59, 59, 999);
+        calculatedStart.setUTCDate(calculatedStart.getUTCDate() - calculatedStart.getUTCDay());
+        calculatedStart.setUTCHours(0, 0, 0, 0);
+
+        calculatedEnd = new Date(calculatedStart.getTime());
+        calculatedEnd.setUTCDate(calculatedStart.getUTCDate() + 6); // End of week (Saturday)
+        calculatedEnd.setUTCHours(23, 59, 59, 999);
         break;
       case 'month':
       default:
         // First day of month
-        calculatedStart = new Date(baseDate.getFullYear(), baseDate.getMonth(), 1);
-        calculatedStart.setHours(0, 0, 0, 0);
+        calculatedStart = new Date(Date.UTC(baseDate.getUTCFullYear(), baseDate.getUTCMonth(), 1));
+
         // Last day of month
-        calculatedEnd = new Date(baseDate.getFullYear(), baseDate.getMonth() + 1, 0);
-        calculatedEnd.setHours(23, 59, 59, 999);
+        calculatedEnd = new Date(Date.UTC(baseDate.getUTCFullYear(), baseDate.getUTCMonth() + 1, 0));
+        calculatedEnd.setUTCHours(23, 59, 59, 999);
         break;
     }
   }
