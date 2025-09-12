@@ -4,8 +4,9 @@ import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { CalendarIcon, Plus, Clock, User, Users, Filter, ChevronDown, ChevronLeft, ChevronRight, Home } from 'lucide-react'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import { DayPilotCalendar, DayPilotMonth, DayPilot } from '@daypilot/daypilot-lite-react'
+import toast from 'react-hot-toast'
 import { useSession } from 'next-auth/react'
 import { format } from 'date-fns'
 
@@ -35,15 +36,19 @@ interface Patient {
   medicalRecordNumber: string
 }
 
-interface DayPilotEvent {
-  id: string
+type DayPilotEvent = Appointment & {
   text: string
   start: string
   end: string
   backColor?: string
   borderColor?: string
   fontColor?: string
-  data?: any
+}
+
+interface HandleEventClickArgs {
+  e: {
+    data: DayPilotEvent;
+  };
 }
 
 type ViewType = 'Month' | 'Week' | 'Days'
@@ -174,14 +179,13 @@ export default function DoctorCalendarPage() {
 
       const events: DayPilotEvent[] = filteredAppointments.map(appointment => {
         return {
-          id: appointment.id,
+          ...appointment,
           text: `${appointment.patient.name} - ${appointment.appointmentType}`,
           start: appointment.startTime,
           end: appointment.endTime,
           backColor: getStatusBackColor(appointment.status),
           borderColor: getStatusBorderColor(appointment.status),
           fontColor: '#ffffff',
-          data: appointment
         }
       })
 
@@ -267,14 +271,14 @@ export default function DoctorCalendarPage() {
   }
 
   // Get calendar height based on view type
-  const getCalendarHeight = () => {
+  const getCalendarHeight = useCallback(() => {
     switch (viewType) {
       case 'Month': return 600
       case 'Week': return 700
       case 'Days': return 800
       default: return 600
     }
-  }
+  }, [viewType])
 
   // Get days count for daily view
   const getDaysCount = () => {
@@ -282,16 +286,15 @@ export default function DoctorCalendarPage() {
   }
 
   // DayPilot event handlers
-  const handleEventClick = (args: any) => {
-    const eventData = args.e.data
-    const appointment = eventData.data; // The actual appointment data
+  const handleEventClick = (args: HandleEventClickArgs) => {
+    const appointment = args.e.data;
 
     if (appointment && appointment.patient && appointment.patient.id) {
       console.log('Navigating to patient:', appointment.patient.id)
       router.push(`/dashboard/doctor/patients/${appointment.patient.id}?appointment=${appointment.id}`)
     } else {
-      console.error('Navigation failed: appointment data or patient ID is missing.', eventData)
-      alert('Could not navigate to appointment details. Data is missing.')
+      console.error('Navigation failed: appointment data or patient ID is missing.', args.e.data)
+      toast.error('Could not navigate to appointment details. Data is missing.')
     }
   }
 
@@ -630,7 +633,7 @@ export default function DoctorCalendarPage() {
                   events={calendarEvents}
                   onEventClick={handleEventClick}
                   onTimeRangeSelected={handleTimeRangeSelected}
-                  config={{
+                  config={useMemo(() => ({
                     viewType: 'Days',
                     startDate: calendarConfig.startDate,
                     locale: 'en-us',
@@ -651,7 +654,7 @@ export default function DoctorCalendarPage() {
                     showNonBusiness: true,
                     timeFormat: 'Clock12Hours',
                     eventRightClickHandling: 'ContextMenu'
-                  }}
+                  }), [calendarConfig.startDate, viewType, getCalendarHeight])}
                 />
               )}
             </div>
