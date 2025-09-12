@@ -2,22 +2,24 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
+import { startOfMonth, endOfMonth, startOfWeek, endOfWeek, startOfDay, endOfDay } from 'date-fns';
+
+const isValidDate = (val: string) => {
+  // This validation is for a string, so we don't need to check for !val.
+  // The .optional() chain handles cases where the field is not provided.
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(val)) return false;
+  const [year, month, day] = val.split('-').map(Number);
+  const date = new Date(Date.UTC(year, month - 1, day));
+  return date.getUTCFullYear() === year && date.getUTCMonth() === month - 1 && date.getUTCDate() === day;
+};
 
 const calendarQuerySchema = z.object({
-  startDate: z.string().optional().refine((val) => {
-    if (!val) return true; // Allow optional
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(val)) return false;
-    const [year, month, day] = val.split('-').map(Number);
-    const date = new Date(Date.UTC(year, month - 1, day));
-    return date.getUTCFullYear() === year && date.getUTCMonth() === month - 1 && date.getUTCDate() === day;
-  }, { message: "Invalid startDate format, expected YYYY-MM-DD" }),
-  endDate: z.string().optional().refine((val) => {
-    if (!val) return true; // Allow optional
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(val)) return false;
-    const [year, month, day] = val.split('-').map(Number);
-    const date = new Date(Date.UTC(year, month - 1, day));
-    return date.getUTCFullYear() === year && date.getUTCMonth() === month - 1 && date.getUTCDate() === day;
-  }, { message: "Invalid endDate format, expected YYYY-MM-DD" }),
+  startDate: z.string().refine(isValidDate, {
+    message: "Invalid startDate, expected valid date in YYYY-MM-DD format",
+  }).optional(),
+  endDate: z.string().refine(isValidDate, {
+    message: "Invalid endDate, expected valid date in YYYY-MM-DD format",
+  }).optional(),
   view: z.enum(['month', 'week', 'day']).default('month'),
   includeAvailability: z.preprocess(val => val !== 'false', z.boolean()).default(true),
   includeAppointments: z.preprocess(val => val !== 'false', z.boolean()).default(true),
@@ -241,42 +243,32 @@ export async function GET(
 
 function calculateDateRange(startDate?: string, endDate?: string, view: string = 'month') {
   // If startDate is provided, parse it as UTC to avoid timezone issues.
-  // Otherwise, use the current date.
+  // Otherwise, use the current date. Using `new Date(YYYY-MM-DDTHH:mm:ssZ)` is a
+  // reliable way to parse as UTC without external libraries.
   const baseDate = startDate ? new Date(`${startDate}T00:00:00Z`) : new Date();
 
   let calculatedStart: Date;
   let calculatedEnd: Date;
 
   if (startDate && endDate) {
-    // Also parse these as UTC
-    calculatedStart = new Date(`${startDate}T00:00:00Z`);
-    calculatedEnd = new Date(`${endDate}T23:59:59.999Z`);
+    // If a specific range is provided, use it.
+    calculatedStart = startOfDay(new Date(`${startDate}T00:00:00Z`));
+    calculatedEnd = endOfDay(new Date(`${endDate}T00:00:00Z`));
   } else {
     switch (view) {
       case 'day':
-        calculatedStart = new Date(baseDate.getTime());
-        calculatedStart.setUTCHours(0, 0, 0, 0);
-        calculatedEnd = new Date(calculatedStart.getTime());
-        calculatedEnd.setUTCHours(23, 59, 59, 999);
+        calculatedStart = startOfDay(baseDate);
+        calculatedEnd = endOfDay(baseDate);
         break;
       case 'week':
-        calculatedStart = new Date(baseDate.getTime());
-        // Note: Sunday is considered the start of the week (day 0).
-        calculatedStart.setUTCDate(calculatedStart.getUTCDate() - calculatedStart.getUTCDay());
-        calculatedStart.setUTCHours(0, 0, 0, 0);
-
-        calculatedEnd = new Date(calculatedStart.getTime());
-        calculatedEnd.setUTCDate(calculatedStart.getUTCDate() + 6); // End of week (Saturday)
-        calculatedEnd.setUTCHours(23, 59, 59, 999);
+        // date-fns `startOfWeek` defaults to Sunday, which matches our requirement.
+        calculatedStart = startOfWeek(baseDate);
+        calculatedEnd = endOfWeek(baseDate);
         break;
       case 'month':
       default:
-        // First day of month
-        calculatedStart = new Date(Date.UTC(baseDate.getUTCFullYear(), baseDate.getUTCMonth(), 1));
-
-        // Last day of month
-        calculatedEnd = new Date(Date.UTC(baseDate.getUTCFullYear(), baseDate.getUTCMonth() + 1, 0));
-        calculatedEnd.setUTCHours(23, 59, 59, 999);
+        calculatedStart = startOfMonth(baseDate);
+        calculatedEnd = endOfMonth(baseDate);
         break;
     }
   }
