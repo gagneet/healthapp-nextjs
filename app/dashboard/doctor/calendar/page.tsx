@@ -94,8 +94,8 @@ export default function DoctorCalendarPage() {
       try {
         const response = await fetch(`/api/doctors/profile/${session.user.businessId}`);
         if (!response.ok) {
-          const errorData = await response.json().catch(() => ({}));
-          throw new Error(errorData.error?.message || `Failed to fetch doctor profile: ${response.status}`);
+          const errorData = await response.json().catch(() => ({ message: 'Failed to parse error response' }));
+          throw new Error(errorData.error?.message || errorData.message || `Failed to fetch doctor profile: ${response.status}`);
         }
         
         const apiResponse = await response.json();
