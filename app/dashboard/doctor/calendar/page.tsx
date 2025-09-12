@@ -36,13 +36,21 @@ interface Patient {
   medicalRecordNumber: string
 }
 
-type DayPilotEvent = Appointment & {
-  text: string
-  start: string
-  end: string
-  backColor?: string
-  borderColor?: string
-  fontColor?: string
+interface DayPilotEvent {
+  id: string;
+  text: string;
+  start: string;
+  end: string;
+  backColor?: string;
+  borderColor?: string;
+  fontColor?: string;
+  patient: {
+    id: string;
+    name: string;
+    email: string;
+  };
+  appointmentType: 'consultation' | 'follow-up' | 'emergency' | 'check-up';
+  status: 'scheduled' | 'completed' | 'cancelled' | 'rescheduled' | 'no_show' | 'in_progress';
 }
 
 interface HandleEventClickArgs {
@@ -179,13 +187,16 @@ export default function DoctorCalendarPage() {
 
       const events: DayPilotEvent[] = filteredAppointments.map(appointment => {
         return {
-          ...appointment,
+          id: appointment.id,
           text: `${appointment.patient.name} - ${appointment.appointmentType}`,
           start: appointment.startTime,
           end: appointment.endTime,
           backColor: getStatusBackColor(appointment.status),
           borderColor: getStatusBorderColor(appointment.status),
           fontColor: '#ffffff',
+          patient: appointment.patient,
+          appointmentType: appointment.appointmentType,
+          status: appointment.status,
         }
       })
 
