@@ -9,7 +9,7 @@ import { DayPilotCalendar, DayPilotMonth, DayPilot } from '@daypilot/daypilot-li
 import toast from 'react-hot-toast'
 import CreateAppointmentModal from '@/components/modals/CreateAppointmentModal'
 import { useSession } from 'next-auth/react'
-import { format } from 'date-fns'
+import { format, startOfWeek, isSameDay } from 'date-fns'
 
 interface Appointment {
   id: string;
@@ -69,6 +69,7 @@ export default function DoctorCalendarPage() {
   const [statsAppointments, setStatsAppointments] = useState<Appointment[]>([])
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0])
   const [isLoading, setIsLoading] = useState(true)
+  const [isStatsLoading, setIsStatsLoading] = useState(true)
   
   // DayPilot Calendar state
   const [calendarEvents, setCalendarEvents] = useState<DayPilotEvent[]>([])
@@ -186,10 +187,10 @@ export default function DoctorCalendarPage() {
 
   const fetchStatsData = useCallback(async () => {
     if (!doctorProfileId) return
-
+    setIsStatsLoading(true)
     try {
       // Fetch appointments for the current week for stats
-      const weekStartDate = new Date()
+      const weekStartDate = startOfWeek(new Date(), { weekStartsOn: 1 /* Monday */ });
       const response = await fetch(`/api/appointments/calendar/doctor/${doctorProfileId}?view=week&startDate=${weekStartDate.toISOString().split('T')[0]}`)
       const data = await response.json()
 
@@ -201,6 +202,8 @@ export default function DoctorCalendarPage() {
       }
     } catch (error) {
       console.error('Error fetching stats data:', error)
+    } finally {
+      setIsStatsLoading(false)
     }
   }, [doctorProfileId])
 
@@ -365,13 +368,14 @@ export default function DoctorCalendarPage() {
     }
   }
 
-  const todayDateStr = new Date().toISOString().split('T')[0]
   const todaysScheduledCount = useMemo(() => {
-    return statsAppointments.filter(a => a.startTime.startsWith(todayDateStr) && a.status === 'scheduled').length
+    const today = new Date();
+    return statsAppointments.filter(a => isSameDay(new Date(a.startTime), today) && a.status === 'scheduled').length
   }, [statsAppointments])
 
   const todaysCompletedCount = useMemo(() => {
-    return statsAppointments.filter(a => a.startTime.startsWith(todayDateStr) && a.status === 'completed').length
+    const today = new Date();
+    return statsAppointments.filter(a => isSameDay(new Date(a.startTime), today) && a.status === 'completed').length
   }, [statsAppointments])
 
   const thisWeekCount = useMemo(() => {
@@ -532,7 +536,7 @@ export default function DoctorCalendarPage() {
               <div>
                 <p className="text-sm font-medium text-gray-600">Today&apos;s Appointments</p>
                 <p className="text-2xl font-bold text-gray-900">
-                  {todaysScheduledCount}
+                  {isStatsLoading ? '...' : todaysScheduledCount}
                 </p>
               </div>
               <div className="h-8 w-8 bg-blue-100 rounded-full flex items-center justify-center">
@@ -548,7 +552,7 @@ export default function DoctorCalendarPage() {
               <div>
                 <p className="text-sm font-medium text-gray-600">Completed Today</p>
                 <p className="text-2xl font-bold text-gray-900">
-                  {todaysCompletedCount}
+                  {isStatsLoading ? '...' : todaysCompletedCount}
                 </p>
               </div>
               <div className="h-8 w-8 bg-green-100 rounded-full flex items-center justify-center">
@@ -563,7 +567,9 @@ export default function DoctorCalendarPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">This Week</p>
-                <p className="text-2xl font-bold text-gray-900">{thisWeekCount}</p>
+                <p className="text-2xl font-bold text-gray-900">
+                  {isStatsLoading ? '...' : thisWeekCount}
+                </p>
               </div>
               <div className="h-8 w-8 bg-purple-100 rounded-full flex items-center justify-center">
                 <User className="h-4 w-4 text-purple-600" />
