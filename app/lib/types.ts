@@ -24,5 +24,21 @@ export type HSPSearchFields = {
     lastName?: { contains: string; mode: 'insensitive' };
     email?: { contains: string; mode: 'insensitive' };
   };
-  licenseNumber?: { contains: string; mode: 'insensitive' };
+  licenseNumber?: { contains:string; mode: 'insensitive' };
 };
+
+export interface DaySchedule {
+  start: string;
+  end: string;
+  available: boolean;
+}
+
+export interface AvailabilitySchedule {
+  monday?: DaySchedule;
+  tuesday?: DaySchedule;
+  wednesday?: DaySchedule;
+  thursday?: DaySchedule;
+  friday?: DaySchedule;
+  saturday?: DaySchedule;
+  sunday?: DaySchedule;
+}

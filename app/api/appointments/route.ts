@@ -162,7 +162,8 @@ export async function POST(request: NextRequest) {
       doctorId,
       startTime,
       endTime,
-      description,
+      appointmentType,
+      notes,
       slotId,
     } = body;
 
@@ -206,7 +207,8 @@ export async function POST(request: NextRequest) {
           doctorId: doctorId,
           startTime: new Date(startTime),
           endTime: new Date(endTime),
-          description: description || 'Appointment',
+          appointmentType: appointmentType,
+          notes: notes,
           status: 'SCHEDULED',
           slotId: slotId,
           createdAt: new Date(),

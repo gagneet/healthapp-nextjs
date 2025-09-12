@@ -3,6 +3,7 @@ import toast from 'react-hot-toast'
 import { Button } from '@/components/ui/button'
 import { X } from 'lucide-react'
 import { APPOINTMENT_TYPES, AppointmentType } from '@/lib/constants'
+import { AvailabilitySchedule } from '@/lib/types'
 
 interface Patient {
   id: string
@@ -17,6 +18,7 @@ interface CreateAppointmentModalProps {
   patients: Patient[]
   onAppointmentCreated: () => void
   doctorProfileId: string | null
+  availabilitySchedule: AvailabilitySchedule | null
 }
 
 export default function CreateAppointmentModal({
@@ -27,6 +29,7 @@ export default function CreateAppointmentModal({
   patients,
   onAppointmentCreated,
   doctorProfileId,
+  availabilitySchedule,
 }: CreateAppointmentModalProps) {
   const [patientId, setPatientId] = useState('')
   const [appointmentType, setAppointmentType] = useState<AppointmentType>('consultation')
@@ -86,10 +89,32 @@ export default function CreateAppointmentModal({
       return
     }
 
+    if (availabilitySchedule) {
+      const dayOfWeek = startTime.toLocaleString('en-us', { weekday: 'long' }).toLowerCase();
+      const daySchedule = availabilitySchedule[dayOfWeek];
+
+      if (!daySchedule || !daySchedule.available) {
+        toast.error('The selected day is not available for appointments.');
+        return;
+      }
+
+      const appointmentStartTime = startTime.getHours() * 60 + startTime.getMinutes();
+      const appointmentEndTime = endTime.getHours() * 60 + endTime.getMinutes();
+
+      const [startHour, startMinute] = daySchedule.start.split(':').map(Number);
+      const businessStartTime = startHour * 60 + startMinute;
+
+      const [endHour, endMinute] = daySchedule.end.split(':').map(Number);
+      const businessEndTime = endHour * 60 + endMinute;
+
+      if (appointmentStartTime < businessStartTime || appointmentEndTime > businessEndTime) {
+        toast.error(`Appointments are only available between ${daySchedule.start} and ${daySchedule.end}.`);
+        return;
+      }
+    }
+
     setIsLoading(true)
     try {
-      // TODO: Backend needs to be updated to accept appointmentType and notes.
-      // The `description` field is being deprecated in favor of structured data.
       const response = await fetch('/api/appointments', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

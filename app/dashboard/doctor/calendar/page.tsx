@@ -10,6 +10,7 @@ import toast from 'react-hot-toast'
 import CreateAppointmentModal from '@/components/modals/CreateAppointmentModal'
 import { useSession } from 'next-auth/react'
 import { format, startOfWeek, isSameDay } from 'date-fns'
+import { AvailabilitySchedule } from '@/lib/types'
 
 interface Appointment {
   id: string;
@@ -84,6 +85,7 @@ export default function DoctorCalendarPage() {
 
   const [error, setError] = useState<string | null>(null)
   const [doctorProfileId, setDoctorProfileId] = useState<string | null>(null)
+  const [availabilitySchedule, setAvailabilitySchedule] = useState<AvailabilitySchedule | null>(null)
 
   // Modal state
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -126,6 +128,7 @@ export default function DoctorCalendarPage() {
         }
 
         setDoctorProfileId(apiResponse.data.doctor.id);
+        setAvailabilitySchedule(apiResponse.data.doctor.availabilitySchedule);
       } catch (error) {
         console.error('Failed to fetch doctor profile:', error);
         setError(error instanceof Error ? error.message : 'An unknown error occurred');
@@ -760,6 +763,7 @@ export default function DoctorCalendarPage() {
         patients={patients}
         onAppointmentCreated={handleAppointmentCreated}
         doctorProfileId={doctorProfileId}
+        availabilitySchedule={availabilitySchedule}
       />
     </div>
   )
