@@ -669,6 +669,7 @@ export default function AddPatientPage() {
                   value={formData.countryCode}
                   onChange={(e) => setFormData(prev => ({ ...prev, countryCode: e.target.value }))}
                   className="border border-gray-300 rounded-lg px-3 py-2"
+                  title="Select country code"
                 >
                   {COUNTRY_CODES.map(country => (
                     <option key={country.code} value={country.code}>
@@ -819,6 +820,7 @@ export default function AddPatientPage() {
                       }
                     }}
                     className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                    aria-label="Allow editing patient ID"
                   />
                   <label htmlFor="editPatientId" className="text-sm text-gray-600 cursor-pointer">
                     {isPatientIdEditable ? '🔓 Editing enabled' : '🔒 Allow editing'}
@@ -1176,6 +1178,7 @@ export default function AddPatientPage() {
                         }
                       }))}
                       className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      title="Select relationship to primary insurance subscriber"
                     >
                       <option value="self">Self</option>
                       <option value="spouse">Spouse</option>
@@ -1200,6 +1203,7 @@ export default function AddPatientPage() {
                         }
                       }))}
                       className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      title="Select primary insurance effective date"
                     />
                   </div>
                   
@@ -1218,6 +1222,7 @@ export default function AddPatientPage() {
                         }
                       }))}
                       className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      title="Select primary insurance expiration date"
                     />
                   </div>
                   
@@ -1363,6 +1368,7 @@ export default function AddPatientPage() {
                         }
                       }))}
                       className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                      title="Select relationship to secondary insurance subscriber"
                     >
                       <option value="self">Self</option>
                       <option value="spouse">Spouse</option>
@@ -1390,6 +1396,7 @@ export default function AddPatientPage() {
                       }
                     }))}
                     className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    title="Select insurance coverage type"
                   >
                     <option value="">Select coverage type</option>
                     <option value="individual">Individual</option>
@@ -1663,6 +1670,7 @@ export default function AddPatientPage() {
                 value={formData.treatment}
                 onChange={(e) => setFormData(prev => ({ ...prev, treatment: e.target.value }))}
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                title="Select treatment option"
               >
                 <option value="">Select treatment</option>
                 {TREATMENT_OPTIONS.map(treatment => (
@@ -1688,6 +1696,7 @@ export default function AddPatientPage() {
                   value={conditionsSearch}
                   onChange={(e) => setConditionsSearch(e.target.value)}
                   className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                  aria-label="Search medical conditions by code or name"
                 />
               </div>
               
@@ -1695,6 +1704,7 @@ export default function AddPatientPage() {
                 value={formData.condition}
                 onChange={(e) => setFormData(prev => ({ ...prev, condition: e.target.value, treatment: '' }))}
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                title="Select medical condition"
               >
                 <option value="">Select condition</option>
                 {CONDITIONS_OPTIONS
