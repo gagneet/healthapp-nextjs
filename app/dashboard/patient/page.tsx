@@ -3,30 +3,30 @@
 // Force dynamic rendering for authenticated pages
 export const dynamic = 'force-dynamic'
 
-import { useState, useEffect, useCallback } from 'react'
-import Link from 'next/link'
-import dynamicImport from 'next/dynamic'
-import {
-  PlusIcon,
-  ExclamationTriangleIcon,
-  CalendarIcon,
-  ClockIcon,
-  CheckIcon,
-  BeakerIcon,
-  HeartIcon,
-  UserIcon,
-  DocumentTextIcon,
-  BellIcon,
-  ChartBarIcon,
-  PlayIcon,
-  XMarkIcon,
-  CameraIcon,
-} from '@heroicons/react/24/outline'
+import AppointmentsList from '@/components/patient/appointments-list'
+import HealthSummary from '@/components/patient/health-summary'
+import MedicationTracker from '@/components/patient/medication-tracker'
+import VitalsRecorder from '@/components/patient/vitals-recorder'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { useAuth } from '@/lib/auth-context'
-import { userHelpers } from '@/types/auth'
-import { formatDate, formatDateTime } from '@/lib/utils'
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell } from 'recharts'
+import { formatDateTime } from '@/lib/utils'
+import {
+  BeakerIcon,
+  CalendarIcon,
+  ChartBarIcon,
+  CheckIcon,
+  ClockIcon,
+  DocumentTextIcon,
+  ExclamationTriangleIcon,
+  HeartIcon,
+  PlayIcon,
+  PlusIcon,
+  UserIcon,
+  XMarkIcon
+} from '@heroicons/react/24/outline'
+import dynamicImport from 'next/dynamic'
+import { useCallback, useEffect, useState } from 'react'
+import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts'
 // Dynamically import the SymptomReporter to prevent SSR/hydration issues
 const SymptomReporter = dynamicImport(() => import('@/components/patient/symptom-reporter'), {
   ssr: false,
@@ -125,6 +125,8 @@ export default function PatientDashboard() {
   const [isLoading, setIsLoading] = useState(true)
   const [dashboardData, setDashboardData] = useState<PatientDashboardData | null>(null)
   const [showSymptomReporter, setShowSymptomReporter] = useState(false)
+  const [showVitalsRecorder, setShowVitalsRecorder] = useState(false)
+  const [showMedicationTracker, setShowMedicationTracker] = useState(false)
   const [activeView, setActiveView] = useState<'overview' | 'medications' | 'vitals' | 'activities'>('overview')
 
   const fetchDashboardData = useCallback(async () => {
@@ -133,7 +135,7 @@ export default function PatientDashboard() {
     setIsLoading(true)
     try {
       // This would normally be an API call to your backend
-      const response = await fetch(`/api/patient/dashboard/${user.id}`, {
+      const response = await fetch(`/api/patient/dashboard/${user.profileId}`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
           'Content-Type': 'application/json'
@@ -162,15 +164,10 @@ export default function PatientDashboard() {
 
   const handleCompleteEvent = async (eventId: string) => {
     try {
-      const response = await fetch(`/api/patient/events/${eventId}/complete`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ completed_at: new Date().toISOString() })
-      })
-      
-      if (response.ok) {
-        fetchDashboardData() // Refresh data
-      }
+      // TODO: Implement patient events API endpoints
+      console.log('Complete event:', eventId)
+      // For now, just refresh the dashboard data
+      fetchDashboardData()
     } catch (error) {
       console.error('Failed to complete event:', error)
     }
@@ -178,15 +175,10 @@ export default function PatientDashboard() {
 
   const handleMarkMissed = async (eventId: string) => {
     try {
-      const response = await fetch(`/api/patient/events/${eventId}/missed`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ missed_at: new Date().toISOString() })
-      })
-      
-      if (response.ok) {
-        fetchDashboardData() // Refresh data
-      }
+      // TODO: Implement patient events API endpoints
+      console.log('Mark missed event:', eventId)
+      // For now, just refresh the dashboard data
+      fetchDashboardData()
     } catch (error) {
       console.error('Failed to mark event as missed:', error)
     }
@@ -299,13 +291,29 @@ export default function PatientDashboard() {
             <h1 className="text-3xl font-bold text-gray-900">Patient Dashboard</h1>
             <p className="text-gray-600 mt-1">Manage your medications, track vitals, and stay healthy</p>
           </div>
-          <button
-            onClick={() => setShowSymptomReporter(true)}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center"
-          >
-            <PlusIcon className="h-5 w-5 mr-2" />
-            Report Symptom
-          </button>
+          <div className="flex space-x-3">
+            <button
+              onClick={() => setShowMedicationTracker(true)}
+              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center"
+            >
+              <BeakerIcon className="h-5 w-5 mr-2" />
+              Log Medication
+            </button>
+            <button
+              onClick={() => setShowVitalsRecorder(true)}
+              className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 flex items-center"
+            >
+              <HeartIcon className="h-5 w-5 mr-2" />
+              Record Vitals
+            </button>
+            <button
+              onClick={() => setShowSymptomReporter(true)}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center"
+            >
+              <PlusIcon className="h-5 w-5 mr-2" />
+              Report Symptom
+            </button>
+          </div>
         </div>
 
         {/* Alerts Section */}
@@ -424,6 +432,16 @@ export default function PatientDashboard() {
                     </PieChart>
                   </ResponsiveContainer>
                 </div>
+              </CardContent>
+            </Card>
+
+            {/* Health Summary */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Recent Health Metrics</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <HealthSummary patientId={user?.profileId} />
               </CardContent>
             </Card>
           </div>
@@ -550,6 +568,21 @@ export default function PatientDashboard() {
           </Card>
         </div>
 
+        {/* Upcoming Appointments Section */}
+        <div className="mt-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <CalendarIcon className="h-5 w-5 mr-2" />
+                Upcoming Appointments
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <AppointmentsList patientId={user?.profileId} limit={5} />
+            </CardContent>
+          </Card>
+        </div>
+
         {/* Symptom Reporter Modal */}
         <SymptomReporter
           isOpen={showSymptomReporter}
@@ -558,10 +591,55 @@ export default function PatientDashboard() {
             console.log('Symptom reported:', symptom)
             setShowSymptomReporter(false)
             // Optionally refresh dashboard data
+            fetchDashboardData()
           }}
-          patientId={user?.id}
+          patientId={user?.profileId}
           gender={user?.gender === 'FEMALE' ? 'female' : 'male'}
         />
+
+        {/* Vitals Recorder Modal */}
+        <VitalsRecorder
+          isOpen={showVitalsRecorder}
+          onClose={() => setShowVitalsRecorder(false)}
+          onVitalRecorded={(vital) => {
+            console.log('Vital recorded:', vital)
+            setShowVitalsRecorder(false)
+            fetchDashboardData()
+          }}
+          patientId={user?.profileId}
+        />
+
+        {/* Medication Tracker Modal */}
+        <MedicationTracker
+          isOpen={showMedicationTracker}
+          onClose={() => setShowMedicationTracker(false)}
+          onMedicationTaken={(medication) => {
+            console.log('Medication taken:', medication)
+            setShowMedicationTracker(false)
+            fetchDashboardData()
+          }}
+          patientId={user?.profileId}
+        />
+      </div>
+
+      {/* Mobile Quick Actions Floating Button */}
+      <div className="fixed bottom-20 right-4 md:hidden">
+        <div className="flex flex-col space-y-2">
+          <button
+            onClick={() => setShowMedicationTracker(true)}
+            className="p-3 bg-green-600 text-white rounded-full shadow-lg hover:bg-green-700"
+            title="Log Medication"
+          >
+            <BeakerIcon className="h-6 w-6" />
+          </button>
+          <button
+            onClick={() => setShowVitalsRecorder(true)}
+            className="p-3 bg-purple-600 text-white rounded-full shadow-lg hover:bg-purple-700"
+            title="Record Vitals"
+          >
+            <HeartIcon className="h-6 w-6" />
+          </button>
+        </div>
       </div>
 
       {/* Mobile Bottom Navigation */}
@@ -579,6 +657,10 @@ export default function PatientDashboard() {
               onClick={() => {
                 if (tab.id === 'symptoms') {
                   setShowSymptomReporter(true)
+                } else if (tab.id === 'medications') {
+                  setShowMedicationTracker(true)
+                } else if (tab.id === 'vitals') {
+                  setShowVitalsRecorder(true)
                 } else {
                   setActiveView(tab.id as any)
                 }

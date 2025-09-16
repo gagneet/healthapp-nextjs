@@ -1,15 +1,14 @@
 // lib/seed.ts - Comprehensive Healthcare Test Data Seeding with Updated Schema
-import {fileURLToPath, pathToFileURL} from 'url';
+import * as bcrypt from 'bcryptjs';
+import { pathToFileURL } from 'url';
 import {
-    PrismaClient,
     AdherenceType,
-    UserRole,
+    MedicationOrganizerType,
+    PrismaClient,
     UserAccountStatus,
     UserGender,
-    MedicationOrganizerType,
-    MedicationLogAdherenceStatus
+    UserRole
 } from './generated/prisma/index.js';
-import * as bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
 
@@ -549,6 +548,49 @@ export async function seedComprehensiveHealthcareData() {
             console.log('✅ Created HSP profiles');
 
             const patientsToCreate = [
+                {
+                    user: createUserData({
+                        id: '99999999-9999-9999-9999-999999999999',
+                        email: 'patient@healthapp.com',
+                        passwordHash: hashedPassword,
+                        role: 'PATIENT' as UserRole,
+                        firstName: 'John',
+                        lastName: 'Doe',
+                        phone: '+1-555-0100',
+                        dateOfBirth: new Date('1990-01-15'),
+                        gender: 'MALE' as UserGender,
+                        accountStatus: 'ACTIVE' as UserAccountStatus,
+                        emailVerifiedLegacy: true,
+                        createdAt: getRandomPastDate(20, 80),
+                        updatedAt: getRecentDate(),
+                    }),
+                    profile: {
+                        patientId: 'PAT-2025-000',
+                        organizationId: organization.id,
+                        primaryCareDoctorId: '00000000-0000-0000-0000-000000000011',
+                        heightCm: 175.0,
+                        weightKg: 75.0,
+                        bloodType: 'O+',
+                        dateOfBirth: new Date('1990-01-15'),
+                        gender: 'MALE',
+                        primaryLanguage: 'en',
+                        allergies: [{name: 'Peanuts', severity: 'severe', reaction: 'anaphylaxis'}],
+                        medicalHistory: [{
+                            condition: 'Asthma',
+                            diagnosed: '2020-05-10',
+                            status: 'controlled'
+                        }],
+                        emergencyContacts: [{
+                            name: 'Jane Doe',
+                            relationship: 'spouse',
+                            phone: '+1-555-0199',
+                            primary: true
+                        }],
+                        overallAdherenceScore: 92.0,
+                        createdAt: getRandomPastDate(20, 70),
+                        updatedAt: getRecentDate()
+                    }
+                },
                 {
                     user: createUserData({
                         id: '77777777-7777-7777-7777-777777777777',

@@ -1,7 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server';
 import { auth } from "@/lib/auth";
+import { NextRequest, NextResponse } from 'next/server';
 
-import { getPatientDashboard, handleApiError, formatApiSuccess } from '@/lib/api-services';
+import { formatApiSuccess, getPatientDashboard, handleApiError } from '@/lib/api-services';
 
 /**
  * GET /api/patient/dashboard/[id]
@@ -25,7 +25,7 @@ export async function GET(
     const patientId = params.id;
 
     // Patients can only access their own dashboard
-    if (user.role === 'PATIENT' && user.patientId !== patientId) {
+    if (user.role === 'PATIENT' && user.profileId !== patientId) {
       return NextResponse.json(handleApiError({
         message: 'Access denied: You can only access your own dashboard'
       }), { status: 403 });

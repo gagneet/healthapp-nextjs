@@ -6,11 +6,10 @@
  */
 
 import { prisma } from '@/lib/prisma';
-import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
-import type { User, Patient, Doctor, Hsp } from '@/prisma/generated/prisma';
-import { randomUUID } from 'crypto';
 import { Prisma, UserRole } from '@/prisma/generated/prisma';
+import bcrypt from 'bcryptjs';
+import { randomUUID } from 'crypto';
+import jwt from 'jsonwebtoken';
 
 const sanitizeLog = (input: string | null | undefined): string => {
   if (!input) return '';
@@ -863,36 +862,203 @@ export async function getDoctorDashboard(doctorUserId: string) {
  */
 export async function getPatientDashboard(patientId: string) {
   try {
-    // TODO: Implement full patient dashboard with proper relationship fixes
-    // For now, return basic mock data to get the build working
+    // Get patient with user details
+    const patient = await prisma.patient.findUnique({
+      where: { id: patientId },
+      include: {
+        user: {
+          select: {
+            firstName: true,
+            lastName: true,
+            email: true,
+            dateOfBirth: true,
+            gender: true
+          }
+        },
+        primaryCareDoctor: {
+          include: {
+            user: {
+              select: {
+                firstName: true,
+                lastName: true
+              }
+            },
+            specialty: true
+          }
+        }
+      }
+    });
+
+    if (!patient) {
+      throw new Error('Patient not found');
+    }
+
+    // Get upcoming appointments
+    const upcomingAppointments = await prisma.appointment.findMany({
+      where: {
+        patientId: patientId,
+        startDate: {
+          gte: new Date()
+        }
+      },
+      orderBy: { startDate: 'asc' },
+      take: 5
+    });
+
+    // Get active care plans
+    const activeCarePlans = await prisma.carePlan.findMany({
+      where: {
+        patientId: patientId,
+        status: 'ACTIVE'
+      },
+      take: 3
+    });
+
+    // Get recent vital readings
+    const recentVitals = await prisma.vitalReading.findMany({
+      where: {
+        patientId: patientId
+      },
+      orderBy: { createdAt: 'desc' },
+      take: 10
+    });
+
+    // Get adherence records
+    const adherenceRecords = await prisma.adherenceRecord.findMany({
+      where: {
+        patientId: patientId
+      },
+      orderBy: { createdAt: 'desc' },
+      take: 20
+    });
+
+    // Calculate adherence statistics
+    const totalScheduled = adherenceRecords.length;
+    const totalCompleted = adherenceRecords.filter(r => r.isCompleted).length;
+    const adherenceScore = totalScheduled > 0 ? Math.round((totalCompleted / totalScheduled) * 100) : 0;
+
+    // Get today's scheduled events
+    const today = new Date();
+    const startOfDay = new Date(today.setHours(0, 0, 0, 0));
+    const endOfDay = new Date(today.setHours(23, 59, 59, 999));
+
+    const todayEvents = await prisma.scheduledEvent.findMany({
+      where: {
+        patientId: patientId,
+        scheduledFor: {
+          gte: startOfDay,
+          lte: endOfDay
+        }
+      }
+    });
+
+    // Get overdue items
+    const overdueEvents = await prisma.scheduledEvent.findMany({
+      where: {
+        patientId: patientId,
+        scheduledFor: {
+          lt: new Date()
+        },
+        status: 'SCHEDULED'
+      },
+      orderBy: { scheduledFor: 'asc' },
+      take: 10
+    });
+
+    // Get recent activities (completed events)
+    const recentActivities = await prisma.scheduledEvent.findMany({
+      where: {
+        patientId: patientId,
+        status: 'COMPLETED'
+      },
+      orderBy: { updatedAt: 'desc' },
+      take: 10
+    });
+
+    // Get alerts
+    const alerts = await prisma.emergencyAlert.findMany({
+      where: {
+        patientId: patientId,
+        resolved: false
+      },
+      orderBy: { createdAt: 'desc' },
+      take: 5
+    });
+
     return {
-      patient: {
-        id: patientId,
-        name: 'John Patient',
-        email: 'patient@example.com',
-        age: 30,
-        gender: 'male',
-        medicalRecordNumber: 'MRN-12345',
-        primaryDoctor: null,
+      adherenceSummary: {
+        today: {
+          medications_due: todayEvents.filter(e => e.eventType === 'MEDICATION').length,
+          medications_taken: todayEvents.filter(e => e.eventType === 'MEDICATION' && e.status === 'COMPLETED').length,
+          vitals_due: todayEvents.filter(e => e.eventType === 'VITAL_CHECK').length,
+          vitals_recorded: todayEvents.filter(e => e.eventType === 'VITAL_CHECK' && e.status === 'COMPLETED').length,
+          exercises_due: todayEvents.filter(e => e.eventType === 'EXERCISE').length,
+          exercises_completed: todayEvents.filter(e => e.eventType === 'EXERCISE' && e.status === 'COMPLETED').length
+        },
+        weekly: {
+          adherenceRate: adherenceScore,
+          missedMedications: adherenceRecords.filter(r => !r.isCompleted && r.adherenceType === 'MEDICATION').length,
+          completedActivities: totalCompleted
+        },
+        monthly: {
+          overallScore: adherenceScore,
+          trend: adherenceScore >= 80 ? 'improving' : adherenceScore >= 60 ? 'stable' : 'declining'
+        }
       },
-      statistics: {
-        upcomingAppointmentsCount: 0,
-        activeMedicationsCount: 0,
-        recentVitalsCount: 0,
-        activeCarePlansCount: 0,
-        adherenceScore: 0,
+      upcomingEvents: todayEvents.map(event => ({
+        id: event.id,
+        eventType: event.eventType,
+        title: event.title,
+        description: event.description,
+        scheduledFor: event.scheduledFor.toISOString(),
+        priority: event.priority,
+        status: event.status,
+        eventData: event.eventData
+      })),
+      overdueItems: overdueEvents.map(event => ({
+        id: event.id,
+        type: event.eventType,
+        title: event.title,
+        dueDate: event.scheduledFor.toISOString(),
+        hoursOverdue: Math.floor((Date.now() - event.scheduledFor.getTime()) / (1000 * 60 * 60)),
+        priority: event.priority
+      })),
+      recentActivities: recentActivities.map(event => ({
+        id: event.id,
+        type: event.eventType,
+        title: event.title,
+        completedAt: event.updatedAt?.toISOString() || event.createdAt.toISOString(),
+        result: event.eventData
+      })),
+      healthMetrics: {
+        weight: recentVitals.find(v => v.vitalType === 'weight') ? {
+          value: parseFloat(recentVitals.find(v => v.vitalType === 'weight')?.value || '0'),
+          date: recentVitals.find(v => v.vitalType === 'weight')?.createdAt.toISOString() || '',
+          trend: 'stable' as const
+        } : { value: 0, date: '', trend: 'stable' as const },
+        bloodPressure: recentVitals.find(v => v.vitalType === 'blood_pressure') ? {
+          systolic: 120,
+          diastolic: 80,
+          date: recentVitals.find(v => v.vitalType === 'blood_pressure')?.createdAt.toISOString() || ''
+        } : { systolic: 0, diastolic: 0, date: '' },
+        heartRate: recentVitals.find(v => v.vitalType === 'heart_rate') ? {
+          value: parseFloat(recentVitals.find(v => v.vitalType === 'heart_rate')?.value || '0'),
+          date: recentVitals.find(v => v.vitalType === 'heart_rate')?.createdAt.toISOString() || ''
+        } : { value: 0, date: '' },
+        bloodSugar: recentVitals.find(v => v.vitalType === 'blood_glucose') ? {
+          value: parseFloat(recentVitals.find(v => v.vitalType === 'blood_glucose')?.value || '0'),
+          date: recentVitals.find(v => v.vitalType === 'blood_glucose')?.createdAt.toISOString() || ''
+        } : { value: 0, date: '' }
       },
-      upcomingAppointments: [],
-      carePlans: [],
-      recentVitals: [],
-      carePlans: [],
-      adherence: {
-        score: 0,
-        totalScheduled: 0,
-        totalTaken: 0,
-        recentRecords: [],
-      },
-      timestamp: new Date().toISOString(),
+      alerts: alerts.map(alert => ({
+        id: alert.id,
+        type: alert.priorityLevel === 'HIGH' ? 'error' : alert.priorityLevel === 'MEDIUM' ? 'warning' : 'info',
+        title: alert.alertType,
+        message: alert.message,
+        action_required: alert.priorityLevel === 'HIGH',
+        createdAt: alert.createdAt.toISOString()
+      })),
+      timestamp: new Date().toISOString()
     };
   } catch (error) {
     console.error('Get patient dashboard error:', error);
