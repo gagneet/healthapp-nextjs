@@ -482,6 +482,8 @@ exports.Prisma.AppointmentScalarFieldEnum = {
   providerId: 'providerId',
   providerName: 'providerName',
   description: 'description',
+  appointmentType: 'appointmentType',
+  notes: 'notes',
   startDate: 'startDate',
   endDate: 'endDate',
   startTime: 'startTime',
