@@ -127,20 +127,35 @@ export default function LoginPage() {
   const onSubmit = async (data: LoginFormData) => {
     setIsLoading(true)
     logger.debug('Login attempt with:', { email: data.email, redirectPath: config.redirectPath })
-    
+
     try {
       const result = await signIn('credentials', {
         email: data.email,
         password: data.password,
         redirect: false,
       })
-      
+
       logger.debug('NextAuth signIn result:', result)
-      
+
       if (result?.ok) {
         logger.info('Login successful')
         toast.success('Login successful!')
-        // NextAuth will handle the session, and the useEffect above will redirect
+
+        // Wait a moment for the session to update, then manually navigate
+        setTimeout(async () => {
+          // Get fresh session to determine redirect path
+          const response = await fetch('/api/auth/session')
+          const sessionData = await response.json()
+
+          if (sessionData?.user?.role) {
+            const redirectPath = getRedirectPathForRole(sessionData.user.role)
+            logger.info('Redirecting to:', redirectPath)
+            router.push(redirectPath)
+          } else {
+            // Fallback redirect if role not found
+            router.push('/dashboard')
+          }
+        }, 100)
       } else {
         logger.warn('Login failed:', result?.error)
         toast.error(result?.error || 'Login failed. Please check your credentials.')

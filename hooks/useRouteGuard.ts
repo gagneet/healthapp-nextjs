@@ -56,11 +56,11 @@ const COMMON_ROUTES = [
 export function useRouteGuard() {
   const router = useRouter()
   const pathname = usePathname()
-  const { user, isAuthenticated, isLoading } = useAuth()
+  const { user, isAuthenticated, loading } = useAuth()
 
   useEffect(() => {
     // Don't run guard while loading
-    if (isLoading) return
+    if (loading) return
 
     logger.debug('Route guard checking path:', pathname)
 
@@ -107,7 +107,7 @@ export function useRouteGuard() {
       const defaultDashboard = getDashboardForRole(user.role)
       router.push(defaultDashboard)
     }
-  }, [pathname, user, isAuthenticated, isLoading, router])
+  }, [pathname, user, isAuthenticated, loading, router])
 
   return {
     isRouteImplemented: (path: string) => {
