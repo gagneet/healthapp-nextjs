@@ -2,6 +2,138 @@
 
 ## Common Issues and Solutions
 
+### Issue: Login Successful But No Role Found in Session
+
+**Symptoms:**
+- User logs in successfully
+- Browser console shows: `[LoginPage] [ERROR] Login successful but no role found in session`
+- User is not redirected to dashboard
+- Auth.js authentication succeeds but role is missing
+
+**Root Cause:**
+Auth.js v5 session callback was mutating the session user object instead of creating a new object with all properties properly spread. This caused the role and other healthcare-specific fields to not be included in the final session object.
+
+**Solution:**
+
+#### Fixed in v0.9.1:
+The session callback in `lib/auth.ts` has been updated to use the spread operator to properly include all fields:
+
+```typescript
+// Correct implementation (v0.9.1+)
+session.user = {
+    ...session.user,
+    id: token.id as string,
+    role: token.role as UserRole,
+    businessId: (token.businessId as string | null) || null,
+    // ... all other healthcare fields
+}
+```
+
+#### If You Still Experience This Issue:
+
+```bash
+# 1. Pull latest code
+git pull origin master
+
+# 2. Rebuild application
+npm run build
+
+# 3. Restart PM2
+pm2 restart healthapp-nextjs
+
+# 4. Clear browser cache and test login
+```
+
+#### Manual Fix (if needed):
+Edit `lib/auth.ts` around line 318-337 and update the session callback to use the spread operator pattern shown above.
+
+---
+
+### Issue: Can't Reach Database Server
+
+**Symptoms:**
+- Login fails with database connection error
+- Console shows: `Can't reach database server at postgres:5432`
+- Auth.js callback route errors
+- Application starts but database queries fail
+
+**Root Causes:**
+1. Docker Swarm PostgreSQL service network conflict
+2. Next.js standalone build with hardcoded old DATABASE_URL
+3. PM2 using `next start` instead of standalone server
+4. Environment variables not loaded properly
+
+**Solution:**
+
+#### Quick Fix (Use Localhost PostgreSQL):
+
+```bash
+# 1. Update .env file to use localhost
+sed -i 's|@postgres:5432|@localhost:5432|g' .env
+sed -i 's/^POSTGRES_HOST=postgres/POSTGRES_HOST=localhost/g' .env
+
+# 2. Regenerate Prisma client
+npx prisma generate
+
+# 3. Rebuild Next.js with new environment
+npm run build
+
+# 4. Copy static assets to standalone
+cp -r public .next/standalone/
+cp -r .next/static .next/standalone/.next/
+
+# 5. Restart with PM2 ecosystem config
+pm2 delete healthapp-nextjs
+pm2 start ecosystem.config.cjs
+pm2 save
+
+# 6. Verify application is running
+pm2 status
+pm2 logs healthapp-nextjs --lines 20
+```
+
+#### Docker Swarm PostgreSQL Fix:
+
+If you need to use Docker Swarm PostgreSQL instead of localhost:
+
+```bash
+# 1. Check Docker Swarm service status
+docker service ps healthapp-test_postgres --no-trunc
+
+# 2. If showing network errors, remove and redeploy stack
+docker stack rm healthapp-test
+sleep 30  # Wait for cleanup
+docker stack deploy -c docker-compose.yml healthapp-test
+
+# 3. Wait for PostgreSQL to be ready
+docker service ps healthapp-test_postgres
+
+# 4. Update .env to use docker service name
+DATABASE_URL="postgresql://user:pass@postgres:5432/healthapp_test?schema=public"
+
+# 5. Follow steps 2-6 from Quick Fix above
+```
+
+#### Verify Database Connectivity:
+
+```bash
+# Test PostgreSQL connection
+PGPASSWORD=secure_test_postgres psql -h localhost -p 5432 -U healthapp_user -d healthapp_test -c "SELECT current_database();"
+
+# Check if port 5432 is listening
+netstat -tlnp | grep 5432
+
+# Verify PM2 loaded DATABASE_URL
+pm2 show healthapp-nextjs | grep DATABASE_URL
+```
+
+**Prevention:**
+- Always use `ecosystem.config.cjs` for PM2 deployment (it loads all env vars from .env)
+- Rebuild Next.js application after changing DATABASE_URL
+- Use `npx prisma generate` after DATABASE_URL changes
+
+---
+
 ### Issue: Port 3002 Already in Use
 
 **Symptoms:**
@@ -471,5 +603,6 @@ pm2 update
 
 ---
 
-*Last Updated: January 2026*
+*Last Updated: January 19, 2026*
 *Healthcare Management Platform v0.9.1*
+*Includes fixes for Auth.js session role issue and database connectivity*

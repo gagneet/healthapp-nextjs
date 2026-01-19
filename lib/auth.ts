@@ -318,18 +318,20 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         async session({ session, token }) {
             // Send properties to the client
             if (token && session.user) {
-                const extendedUser = session.user
-                extendedUser.id = token.id as string
-                extendedUser.role = token.role as UserRole
-                extendedUser.businessId = token.businessId as string | null
-                extendedUser.profileId = token.profileId as string | null
-                extendedUser.accountStatus = token.accountStatus as UserAccountStatus
-                extendedUser.organizationId = token.organizationId as string | null
-                extendedUser.profileData = token.profileData ? JSON.parse(JSON.stringify(token.profileData)) : null
-                extendedUser.canPrescribeMedication = token.canPrescribeMedication as boolean
-                extendedUser.canAccessPatientData = token.canAccessPatientData as boolean
-                extendedUser.canManageProviders = token.canManageProviders as boolean
-                extendedUser.canViewAllPatients = token.canViewAllPatients as boolean
+                session.user = {
+                    ...session.user,
+                    id: token.id as string,
+                    role: token.role as UserRole,
+                    businessId: (token.businessId as string | null) || null,
+                    profileId: (token.profileId as string | null) || null,
+                    accountStatus: token.accountStatus as UserAccountStatus,
+                    organizationId: (token.organizationId as string | null) || null,
+                    profileData: token.profileData || null,
+                    canPrescribeMedication: token.canPrescribeMedication as boolean,
+                    canAccessPatientData: token.canAccessPatientData as boolean,
+                    canManageProviders: token.canManageProviders as boolean,
+                    canViewAllPatients: token.canViewAllPatients as boolean
+                }
             }
             return session
         },
