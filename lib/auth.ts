@@ -397,7 +397,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         async redirect({ url, baseUrl }) {
             if (url.startsWith("/")) return `${baseUrl}${url}`
             if (new URL(url).origin === baseUrl) return url
-            return `${baseUrl}/dashboard`
+            // Redirect to login as fallback - dashboard redirect will be handled by role
+            return `${baseUrl}/auth/login`
         }
     },
 

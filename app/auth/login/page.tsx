@@ -69,7 +69,7 @@ const getRedirectPathForRole = (role: string): string => {
   switch (role) {
     case 'DOCTOR':
       return '/dashboard/doctor'
-    case 'PATIENT': 
+    case 'PATIENT':
       return '/dashboard/patient'
     case 'HOSPITAL_ADMIN':
       return '/dashboard/hospital'
@@ -77,9 +77,12 @@ const getRedirectPathForRole = (role: string): string => {
     case 'ADMIN':
       return '/dashboard/admin'
     case 'HSP':
-      return '/dashboard/hsp'
+      // HSP dashboard not yet implemented, redirect to hospital dashboard
+      return '/dashboard/hospital'
     default:
-      return '/dashboard'
+      // Unknown role, redirect to login with error
+      logger.error('Unknown role in getRedirectPathForRole:', role)
+      return '/auth/login?error=invalid_role'
   }
 }
 
@@ -100,7 +103,7 @@ export default function LoginPage() {
     title: 'Login to the Health Care Application',
     subtitle: 'Access your healthcare dashboard',
     icon: '💚',
-    redirectPath: '/dashboard',
+    redirectPath: '/auth/login', // Will be determined by user's actual role from session
   }
 
   const {
@@ -152,8 +155,12 @@ export default function LoginPage() {
             logger.info('Redirecting to:', redirectPath)
             router.push(redirectPath)
           } else {
-            // Fallback redirect if role not found
-            router.push('/dashboard')
+            // If role not found, something is wrong - redirect to login with error
+            logger.error('Login successful but no role found in session')
+            toast.error('Account configuration error. Please contact support.')
+            setTimeout(() => {
+              router.push('/auth/login?error=no_role')
+            }, 2000)
           }
         }, 100)
       } else {
