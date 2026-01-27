@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   // Disable static optimization entirely for dynamic healthcare app
-  output: 'standalone',
+  // output: 'standalone', // Disabled - causes issues with next start and Prisma
   trailingSlash: false,
   
   // Completely disable static generation - configured per-route instead
@@ -116,7 +116,7 @@ const nextConfig = {
   
   // Handle static generation issues for Docker builds
   generateBuildId: async () => {
-    return 'healthapp-' + Date.now();
+    return `healthapp-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
   },
   
 };

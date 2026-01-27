@@ -1,13 +1,17 @@
+require('dotenv').config();
+
 module.exports = {
   apps: [{
     name: 'healthapp-nextjs',
-    script: '.next/standalone/server.js',
+    script: 'npm',
+    args: 'run dev',
     cwd: '/home/gagneet/healthapp-nextjs',
     instances: 1,
-    exec_mode: 'cluster',
+    exec_mode: 'fork',
     env: {
-      NODE_ENV: 'development',
-      PORT: '3003'
+      ...process.env,
+      PORT: '3002',
+      NODE_ENV: 'development'
     },
     error_file: '/home/gagneet/healthapp-nextjs/logs/pm2-error.log',
     out_file: '/home/gagneet/healthapp-nextjs/logs/pm2-out.log',

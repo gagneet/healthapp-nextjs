@@ -1,6 +1,6 @@
 'use client'
 
-import { BeakerIcon, HeartIcon, ScaleIcon, ThermometerIcon } from '@heroicons/react/24/outline'
+import { BeakerIcon, HeartIcon, ScaleIcon, SunIcon } from '@heroicons/react/24/outline'
 import { useEffect, useState } from 'react'
 
 interface HealthMetric {
@@ -49,7 +49,7 @@ export default function HealthSummary({ patientId }: HealthSummaryProps) {
         unit: '°F',
         status: 'normal',
         lastUpdated: '2025-01-13T14:15:00Z',
-        icon: ThermometerIcon
+        icon: SunIcon
       },
       {
         id: '4',
@@ -110,30 +110,38 @@ export default function HealthSummary({ patientId }: HealthSummaryProps) {
 
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-      {metrics.map((metric) => (
-        <div key={metric.id} className={`p-4 rounded-lg border-2 ${getStatusColor(metric.status)}`}>
-          <div className="flex items-center justify-between mb-2">
-            <metric.icon className="h-6 w-6" />
-            <span className={`px-2 py-1 text-xs rounded-full border ${getStatusColor(metric.status)}`}>
-              {metric.status}
-            </span>
-          </div>
-          
-          <div className="mb-1">
-            <div className="text-2xl font-bold text-gray-900">
-              {metric.value}
+      {metrics.map((metric) => {
+        const MetricIcon = typeof metric.icon === 'function' ? metric.icon : HeartIcon
+
+        if (MetricIcon !== metric.icon) {
+          console.warn('HealthSummary metric icon invalid:', metric)
+        }
+
+        return (
+          <div key={metric.id} className={`p-4 rounded-lg border-2 ${getStatusColor(metric.status)}`}>
+            <div className="flex items-center justify-between mb-2">
+              <MetricIcon className="h-6 w-6" />
+              <span className={`px-2 py-1 text-xs rounded-full border ${getStatusColor(metric.status)}`}>
+                {metric.status}
+              </span>
             </div>
-            <div className="text-sm text-gray-600">
-              {metric.unit}
+            
+            <div className="mb-1">
+              <div className="text-2xl font-bold text-gray-900">
+                {metric.value}
+              </div>
+              <div className="text-sm text-gray-600">
+                {metric.unit}
+              </div>
+            </div>
+            
+            <div className="text-xs text-gray-500">
+              <div className="font-medium">{metric.name}</div>
+              <div>{formatLastUpdated(metric.lastUpdated)}</div>
             </div>
           </div>
-          
-          <div className="text-xs text-gray-500">
-            <div className="font-medium">{metric.name}</div>
-            <div>{formatLastUpdated(metric.lastUpdated)}</div>
-          </div>
-        </div>
-      ))}
+        )
+      })}
     </div>
   )
 }

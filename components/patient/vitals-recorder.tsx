@@ -1,6 +1,6 @@
 'use client'
 
-import { HeartIcon, ScaleIcon, ThermometerIcon, XMarkIcon } from '@heroicons/react/24/outline'
+import { HeartIcon, ScaleIcon, SunIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import { useState } from 'react'
 import toast from 'react-hot-toast'
 
@@ -14,7 +14,7 @@ interface VitalsRecorderProps {
 const vitalTypes = [
   { id: 'blood_pressure', name: 'Blood Pressure', unit: 'mmHg', icon: HeartIcon, hasSystolicDiastolic: true },
   { id: 'heart_rate', name: 'Heart Rate', unit: 'bpm', icon: HeartIcon },
-  { id: 'temperature', name: 'Temperature', unit: '°F', icon: ThermometerIcon },
+  { id: 'temperature', name: 'Temperature', unit: '°F', icon: SunIcon },
   { id: 'weight', name: 'Weight', unit: 'lbs', icon: ScaleIcon },
   { id: 'blood_glucose', name: 'Blood Glucose', unit: 'mg/dL', icon: HeartIcon },
   { id: 'oxygen_saturation', name: 'Oxygen Saturation', unit: '%', icon: HeartIcon }
