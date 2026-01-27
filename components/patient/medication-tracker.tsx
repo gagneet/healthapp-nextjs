@@ -15,8 +15,8 @@ interface Medication {
   id: string
   name: string
   dosage: string
-  frequency: string
-  instructions: string
+  frequency?: string | null
+  instructions?: string | null
   nextDue?: string
 }
 
@@ -41,35 +41,29 @@ export default function MedicationTracker({ isOpen, onClose, onMedicationTaken, 
   const fetchMedications = async () => {
     setIsLoading(true)
     try {
-      // Mock medications for now - replace with actual API call
-      const mockMedications: Medication[] = [
-        {
-          id: '1',
-          name: 'Metformin',
-          dosage: '500mg',
-          frequency: 'Twice daily',
-          instructions: 'Take with meals',
-          nextDue: '2025-01-16T08:00'
-        },
-        {
-          id: '2',
-          name: 'Lisinopril',
-          dosage: '10mg',
-          frequency: 'Once daily',
-          instructions: 'Take in the morning',
-          nextDue: '2025-01-16T09:00'
-        },
-        {
-          id: '3',
-          name: 'Atorvastatin',
-          dosage: '20mg',
-          frequency: 'Once daily',
-          instructions: 'Take at bedtime',
-          nextDue: '2025-01-16T22:00'
-        }
-      ]
-      
-      setMedications(mockMedications)
+      if (!patientId) {
+        setMedications([])
+        return
+      }
+
+      const response = await fetch(`/api/medications/patient/${patientId}`)
+      const result = await response.json()
+
+      if (!response.ok) {
+        throw new Error(result.payload?.error?.message || 'Failed to load medications')
+      }
+
+      const data = Array.isArray(result.payload?.data?.carePlans) ? result.payload.data.carePlans : []
+      const mappedMedications = data.map((medication: any) => ({
+        id: medication.id,
+        name: medication.name,
+        dosage: medication.dosage || '',
+        frequency: medication.frequency,
+        instructions: medication.notes || medication.instructions,
+        nextDue: medication.nextDue
+      }))
+
+      setMedications(mappedMedications)
     } catch (error) {
       console.error('Error fetching medications:', error)
       toast.error('Failed to load medications')
@@ -99,7 +93,7 @@ export default function MedicationTracker({ isOpen, onClose, onMedicationTaken, 
         medicationId: selectedMedication,
         dosage: customDosage || medication.dosage,
         notes: notes.trim() || undefined,
-        takenAt: takenAt
+        takenAt: takenAt || undefined
       }
 
       const response = await fetch('/api/patient/medications/take', {

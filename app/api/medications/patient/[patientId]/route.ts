@@ -43,7 +43,7 @@ export async function GET(
     const patientId = params.patientId;
 
     // Additional authorization: patients can only access their own medications
-    if (user.role === 'PATIENT' && user.patientId !== patientId) {
+    if (user.role === 'PATIENT' && user.profileId !== patientId) {
       return NextResponse.json(handleApiError({
         message: 'Access denied: You can only access your own medication data'
       }), { status: 403 });
