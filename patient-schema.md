@@ -1,0 +1,767 @@
+// ==============================================================
+// PATIENT MODULE - COMPLETE SCHEMA ADDITIONS
+// Add all these models to prisma/schema.prisma
+// ==============================================================
+
+// After adding, run:
+// npx prisma migrate dev --name add_patient_module_complete
+// npx prisma generate
+
+// ==============================================================
+// ENUMS - Add these enums to the schema
+// ==============================================================
+
+enum MedicationLogStatus {
+  PENDING
+  TAKEN
+  SKIPPED
+  LATE
+  MISSED
+}
+
+enum SideEffectSeverity {
+  MILD
+  MODERATE
+  SEVERE
+}
+
+enum RefillStatus {
+  PENDING
+  APPROVED
+  DENIED
+  DISPENSED
+}
+
+enum MealType {
+  BREAKFAST
+  MORNING_SNACK
+  LUNCH
+  AFTERNOON_SNACK
+  DINNER
+  EVENING_SNACK
+}
+
+enum ExerciseIntensity {
+  LOW
+  MODERATE
+  HIGH
+  VERY_HIGH
+}
+
+enum GoalCategory {
+  WEIGHT
+  BLOOD_PRESSURE
+  BLOOD_SUGAR
+  EXERCISE
+  NUTRITION
+  MEDICATION_ADHERENCE
+  SLEEP
+  STRESS
+  CUSTOM
+}
+
+enum GoalStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  ACHIEVED
+  MISSED
+  CANCELLED
+}
+
+enum CaregiverAccessLevel {
+  VIEW_ONLY
+  VIEW_AND_LOG
+  FULL_ACCESS
+}
+
+enum CaregiverAccessStatus {
+  PENDING
+  ACTIVE
+  REVOKED
+  EXPIRED
+}
+
+enum ReminderType {
+  MEDICATION
+  APPOINTMENT
+  VITAL_RECORDING
+  EXERCISE
+  MEAL
+  WATER_INTAKE
+  CUSTOM
+}
+
+enum ReminderStatus {
+  SCHEDULED
+  SENT
+  ACKNOWLEDGED
+  SNOOZED
+  EXPIRED
+}
+
+enum ContentType {
+  ARTICLE
+  VIDEO
+  INFOGRAPHIC
+  FAQ
+  GUIDE
+}
+
+enum ContentDifficulty {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+}
+
+enum MessageSenderType {
+  PATIENT
+  DOCTOR
+  HSP
+  SYSTEM
+}
+
+enum ConversationStatus {
+  OPEN
+  CLOSED
+  ARCHIVED
+}
+
+// ==============================================================
+// MEDICATION ADHERENCE TRACKING
+// ==============================================================
+
+model MedicationLog {
+  id                    String              @id @default(uuid())
+  medicationId          String
+  patientId             String
+  scheduledTime         DateTime
+  actualTime            DateTime?
+  status                MedicationLogStatus @default(PENDING)
+  skipReason            String?
+  notes                 String?
+  sideEffectsReported   Boolean             @default(false)
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
+  
+  medication            Medication          @relation(fields: [medicationId], references: [id], onDelete: Cascade)
+  patient               Patient             @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  sideEffects           SideEffectReport[]
+  
+  @@map("medication_logs")
+  @@index([patientId, scheduledTime])
+  @@index([medicationId, status])
+  @@index([patientId, status, scheduledTime])
+}
+
+model SideEffectReport {
+  id              String             @id @default(uuid())
+  medicationLogId String
+  patientId       String
+  symptom         String
+  severity        SideEffectSeverity
+  description     String?
+  reportedAt      DateTime           @default(now())
+  reviewedAt      DateTime?
+  reviewedBy      String?
+  
+  medicationLog   MedicationLog      @relation(fields: [medicationLogId], references: [id], onDelete: Cascade)
+  patient         Patient            @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  
+  @@map("side_effect_reports")
+}
+
+model RefillRequest {
+  id              String       @id @default(uuid())
+  medicationId    String
+  patientId       String
+  requestedAt     DateTime     @default(now())
+  status          RefillStatus @default(PENDING)
+  processedAt     DateTime?
+  processedBy     String?
+  notes           String?
+  quantity        Int?
+  
+  medication      Medication   @relation(fields: [medicationId], references: [id], onDelete: Cascade)
+  patient         Patient      @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  
+  @@map("refill_requests")
+}
+
+// ==============================================================
+// DIET & NUTRITION TRACKING
+// ==============================================================
+
+model DietPlan {
+  id              String     @id @default(uuid())
+  patientId       String
+  carePlanId      String?
+  name            String
+  description     String?
+  targetCalories  Int?
+  targetProtein   Int?       // grams
+  targetCarbs     Int?       // grams
+  targetFat       Int?       // grams
+  targetFiber     Int?       // grams
+  targetWater     Int?       // ml
+  restrictions    String[]   // e.g., ["gluten-free", "low-sodium"]
+  startDate       DateTime
+  endDate         DateTime?
+  isActive        Boolean    @default(true)
+  createdBy       String
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+  
+  patient         Patient    @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  carePlan        CarePlan?  @relation(fields: [carePlanId], references: [id])
+  meals           MealPlan[]
+  mealLogs        MealLog[]
+  
+  @@map("diet_plans")
+}
+
+model MealPlan {
+  id              String    @id @default(uuid())
+  dietPlanId      String
+  mealType        MealType
+  scheduledTime   String    // e.g., "08:00"
+  name            String
+  description     String?
+  targetCalories  Int?
+  foods           Json?     // Recommended foods
+  
+  dietPlan        DietPlan  @relation(fields: [dietPlanId], references: [id], onDelete: Cascade)
+  
+  @@map("meal_plans")
+}
+
+model MealLog {
+  id              String        @id @default(uuid())
+  patientId       String
+  dietPlanId      String?
+  mealType        MealType
+  loggedAt        DateTime      @default(now())
+  totalCalories   Int?
+  totalProtein    Float?
+  totalCarbs      Float?
+  totalFat        Float?
+  totalFiber      Float?
+  notes           String?
+  moodBefore      Int?          // 1-5 scale
+  moodAfter       Int?          // 1-5 scale
+  photoUrl        String?
+  
+  patient         Patient       @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  dietPlan        DietPlan?     @relation(fields: [dietPlanId], references: [id])
+  foods           FoodLogItem[]
+  
+  @@map("meal_logs")
+  @@index([patientId, loggedAt])
+}
+
+model FoodLogItem {
+  id              String   @id @default(uuid())
+  mealLogId       String
+  foodName        String
+  quantity        Float
+  unit            String   // e.g., "serving", "grams", "cups"
+  calories        Int?
+  protein         Float?
+  carbs           Float?
+  fat             Float?
+  fiber           Float?
+  
+  mealLog         MealLog  @relation(fields: [mealLogId], references: [id], onDelete: Cascade)
+  
+  @@map("food_log_items")
+}
+
+model WaterIntakeLog {
+  id              String   @id @default(uuid())
+  patientId       String
+  amount          Int      // ml
+  loggedAt        DateTime @default(now())
+  
+  patient         Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  
+  @@map("water_intake_logs")
+  @@index([patientId, loggedAt])
+}
+
+// ==============================================================
+// EXERCISE & ACTIVITY TRACKING
+// ==============================================================
+
+model ExercisePlan {
+  id                  String             @id @default(uuid())
+  patientId           String
+  carePlanId          String?
+  name                String
+  description         String?
+  weeklyGoalMinutes   Int?
+  weeklyGoalSessions  Int?
+  restrictions        String[]           // e.g., ["no high impact"]
+  startDate           DateTime
+  endDate             DateTime?
+  isActive            Boolean            @default(true)
+  createdBy           String
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+  
+  patient             Patient            @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  carePlan            CarePlan?          @relation(fields: [carePlanId], references: [id])
+  scheduledWorkouts   ScheduledWorkout[]
+  exerciseLogs        ExerciseLog[]
+  
+  @@map("exercise_plans")
+}
+
+model ScheduledWorkout {
+  id              String       @id @default(uuid())
+  exercisePlanId  String
+  dayOfWeek       Int          // 0-6 (Sunday-Saturday)
+  name            String
+  description     String?
+  targetDuration  Int          // minutes
+  exercises       Json         // Array of exercise objects
+  
+  exercisePlan    ExercisePlan @relation(fields: [exercisePlanId], references: [id], onDelete: Cascade)
+  
+  @@map("scheduled_workouts")
+}
+
+model ExerciseLog {
+  id              String            @id @default(uuid())
+  patientId       String
+  exercisePlanId  String?
+  activityType    String
+  name            String
+  duration        Int               // minutes
+  caloriesBurned  Int?
+  distance        Float?            // km
+  steps           Int?
+  heartRateAvg    Int?
+  heartRateMax    Int?
+  intensity       ExerciseIntensity
+  notes           String?
+  loggedAt        DateTime          @default(now())
+  
+  patient         Patient           @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  exercisePlan    ExercisePlan?     @relation(fields: [exercisePlanId], references: [id])
+  
+  @@map("exercise_logs")
+  @@index([patientId, loggedAt])
+}
+
+model DailyActivitySummary {
+  id                  String   @id @default(uuid())
+  patientId           String
+  date                DateTime @db.Date
+  totalSteps          Int      @default(0)
+  totalDistance       Float    @default(0) // km
+  totalCaloriesBurned Int      @default(0)
+  activeMinutes       Int      @default(0)
+  sedentaryMinutes    Int?
+  flightsClimbed      Int?
+  restingHeartRate    Int?
+  
+  patient             Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  
+  @@unique([patientId, date])
+  @@map("daily_activity_summaries")
+}
+
+// ==============================================================
+// HEALTH GOALS
+// ==============================================================
+
+model HealthGoal {
+  id                String           @id @default(uuid())
+  patientId         String
+  category          GoalCategory
+  title             String
+  description       String?
+  targetValue       Float?
+  currentValue      Float?
+  unit              String?
+  startDate         DateTime
+  targetDate        DateTime?
+  completedAt       DateTime?
+  status            GoalStatus       @default(IN_PROGRESS)
+  isPatientCreated  Boolean          @default(false)
+  createdBy         String
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  
+  patient           Patient          @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  milestones        GoalMilestone[]
+  progressLogs      GoalProgressLog[]
+  
+  @@map("health_goals")
+}
+
+model GoalMilestone {
+  id              String     @id @default(uuid())
+  goalId          String
+  title           String
+  targetValue     Float?
+  achievedAt      DateTime?
+  sortOrder       Int        @default(0)
+  
+  goal            HealthGoal @relation(fields: [goalId], references: [id], onDelete: Cascade)
+  
+  @@map("goal_milestones")
+}
+
+model GoalProgressLog {
+  id              String     @id @default(uuid())
+  goalId          String
+  value           Float
+  notes           String?
+  loggedAt        DateTime   @default(now())
+  
+  goal            HealthGoal @relation(fields: [goalId], references: [id], onDelete: Cascade)
+  
+  @@map("goal_progress_logs")
+}
+
+// ==============================================================
+// FAMILY/CAREGIVER ACCESS
+// ==============================================================
+
+model CaregiverAccess {
+  id              String                @id @default(uuid())
+  patientId       String
+  caregiverId     String
+  relationship    String                // e.g., "spouse", "parent", "child"
+  accessLevel     CaregiverAccessLevel  @default(VIEW_ONLY)
+  permissions     Json                  // Granular permissions
+  invitedAt       DateTime              @default(now())
+  acceptedAt      DateTime?
+  expiresAt       DateTime?
+  status          CaregiverAccessStatus @default(PENDING)
+  inviteToken     String?               @unique
+  
+  patient         Patient               @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  caregiver       User                  @relation(fields: [caregiverId], references: [id], onDelete: Cascade)
+  
+  @@unique([patientId, caregiverId])
+  @@map("caregiver_access")
+}
+
+model EmergencyContact {
+  id                  String   @id @default(uuid())
+  patientId           String
+  name                String
+  relationship        String
+  phone               String
+  email               String?
+  isPrimary           Boolean  @default(false)
+  notifyOnEmergency   Boolean  @default(true)
+  notifyOnMissedMeds  Boolean  @default(false)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  
+  patient             Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  
+  @@map("emergency_contacts")
+}
+
+// ==============================================================
+// NOTIFICATIONS & REMINDERS
+// ==============================================================
+
+model PatientNotificationPreference {
+  id                      String   @id @default(uuid())
+  patientId               String   @unique
+  
+  // Channel preferences
+  pushEnabled             Boolean  @default(true)
+  emailEnabled            Boolean  @default(true)
+  smsEnabled              Boolean  @default(false)
+  
+  // Notification type preferences
+  medicationReminders     Boolean  @default(true)
+  appointmentReminders    Boolean  @default(true)
+  vitalReminders          Boolean  @default(true)
+  exerciseReminders       Boolean  @default(true)
+  labResultAlerts         Boolean  @default(true)
+  achievementAlerts       Boolean  @default(true)
+  careTeamMessages        Boolean  @default(true)
+  
+  // Timing preferences
+  reminderLeadTime        Int      @default(15) // minutes before
+  quietHoursStart         String?  // e.g., "22:00"
+  quietHoursEnd           String?  // e.g., "07:00"
+  timezone                String   @default("UTC")
+  
+  patient                 Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  
+  @@map("patient_notification_preferences")
+}
+
+model PatientReminder {
+  id              String         @id @default(uuid())
+  patientId       String
+  type            ReminderType
+  title           String
+  message         String?
+  scheduledFor    DateTime
+  sentAt          DateTime?
+  acknowledgedAt  DateTime?
+  status          ReminderStatus @default(SCHEDULED)
+  relatedId       String?        // ID of related entity
+  relatedType     String?        // "medication", "appointment", etc.
+  
+  patient         Patient        @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  
+  @@map("patient_reminders")
+  @@index([patientId, scheduledFor])
+  @@index([status, scheduledFor])
+}
+
+// ==============================================================
+// EDUCATIONAL CONTENT
+// ==============================================================
+
+model EducationalContent {
+  id                  String              @id @default(uuid())
+  title               String
+  slug                String              @unique
+  contentType         ContentType
+  category            String
+  tags                String[]
+  summary             String?
+  content             String              // Rich text / markdown
+  mediaUrl            String?
+  thumbnailUrl        String?
+  duration            Int?                // For videos, in seconds
+  difficulty          ContentDifficulty   @default(BEGINNER)
+  relatedConditions   String[]
+  isPublished         Boolean             @default(false)
+  viewCount           Int                 @default(0)
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+  
+  patientViews        PatientContentView[]
+  
+  @@map("educational_content")
+}
+
+model PatientContentView {
+  id              String             @id @default(uuid())
+  patientId       String
+  contentId       String
+  viewedAt        DateTime           @default(now())
+  completedAt     DateTime?
+  rating          Int?               // 1-5
+  feedback        String?
+  
+  patient         Patient            @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  content         EducationalContent @relation(fields: [contentId], references: [id], onDelete: Cascade)
+  
+  @@unique([patientId, contentId])
+  @@map("patient_content_views")
+}
+
+// ==============================================================
+// SECURE MESSAGING
+// ==============================================================
+
+model MessageConversation {
+  id              String             @id @default(uuid())
+  patientId       String
+  providerId      String             // Doctor or HSP
+  providerType    String             // "doctor" or "hsp"
+  subject         String?
+  status          ConversationStatus @default(OPEN)
+  lastMessageAt   DateTime           @default(now())
+  createdAt       DateTime           @default(now())
+  
+  patient         Patient            @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  messages        PatientMessage[]
+  
+  @@map("message_conversations")
+  @@index([patientId, lastMessageAt])
+}
+
+model PatientMessage {
+  id              String              @id @default(uuid())
+  conversationId  String
+  senderId        String
+  senderType      MessageSenderType
+  content         String
+  attachments     Json?               // Array of attachment objects
+  isRead          Boolean             @default(false)
+  readAt          DateTime?
+  createdAt       DateTime            @default(now())
+  
+  conversation    MessageConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  
+  @@map("patient_messages")
+  @@index([conversationId, createdAt])
+}
+
+// ==============================================================
+// PATIENT PREFERENCES & SETTINGS
+// ==============================================================
+
+model PatientSettings {
+  id                      String   @id @default(uuid())
+  patientId               String   @unique
+  
+  // Display preferences
+  theme                   String   @default("light")
+  language                String   @default("en")
+  dateFormat              String   @default("MM/DD/YYYY")
+  timeFormat              String   @default("12h")
+  measurementSystem       String   @default("imperial")
+  
+  // Privacy settings
+  shareDataWithCareTeam   Boolean  @default(true)
+  allowAnonymousAnalytics Boolean  @default(true)
+  showOnLeaderboard       Boolean  @default(false)
+  
+  // Accessibility
+  fontSize                String   @default("medium")
+  highContrast            Boolean  @default(false)
+  reduceMotion            Boolean  @default(false)
+  
+  patient                 Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  
+  @@map("patient_settings")
+}
+
+
+// ==============================================================
+// RELATIONS TO ADD TO EXISTING MODELS
+// ==============================================================
+
+// ---------------------------------------------------------------
+// ADD TO EXISTING Patient MODEL:
+// ---------------------------------------------------------------
+// 
+// model Patient {
+//   // ... existing fields ...
+//   
+//   // Medication Tracking
+//   medicationLogs              MedicationLog[]
+//   sideEffectReports           SideEffectReport[]
+//   refillRequests              RefillRequest[]
+//   
+//   // Diet & Nutrition
+//   dietPlans                   DietPlan[]
+//   mealLogs                    MealLog[]
+//   waterIntakeLogs             WaterIntakeLog[]
+//   
+//   // Exercise & Activity
+//   exercisePlans               ExercisePlan[]
+//   exerciseLogs                ExerciseLog[]
+//   dailyActivitySummaries      DailyActivitySummary[]
+//   
+//   // Goals
+//   healthGoals                 HealthGoal[]
+//   
+//   // Family & Caregivers
+//   caregiverAccess             CaregiverAccess[]
+//   emergencyContacts           EmergencyContact[]
+//   
+//   // Notifications
+//   notificationPreference      PatientNotificationPreference?
+//   reminders                   PatientReminder[]
+//   
+//   // Education
+//   contentViews                PatientContentView[]
+//   
+//   // Messaging
+//   conversations               MessageConversation[]
+//   
+//   // Settings
+//   settings                    PatientSettings?
+// }
+
+// ---------------------------------------------------------------
+// ADD TO EXISTING User MODEL:
+// ---------------------------------------------------------------
+//
+// model User {
+//   // ... existing fields ...
+//   
+//   caregiverAccessTo           CaregiverAccess[]
+// }
+
+// ---------------------------------------------------------------
+// ADD TO EXISTING Medication MODEL:
+// ---------------------------------------------------------------
+//
+// model Medication {
+//   // ... existing fields ...
+//   
+//   logs                        MedicationLog[]
+//   refillRequests              RefillRequest[]
+// }
+
+// ---------------------------------------------------------------
+// ADD TO EXISTING CarePlan MODEL:
+// ---------------------------------------------------------------
+//
+// model CarePlan {
+//   // ... existing fields ...
+//   
+//   dietPlans                   DietPlan[]
+//   exercisePlans               ExercisePlan[]
+// }
+
+
+// ==============================================================
+// SUMMARY OF CHANGES
+// ==============================================================
+//
+// NEW MODELS (25 total):
+// 1.  MedicationLog
+// 2.  SideEffectReport
+// 3.  RefillRequest
+// 4.  DietPlan
+// 5.  MealPlan
+// 6.  MealLog
+// 7.  FoodLogItem
+// 8.  WaterIntakeLog
+// 9.  ExercisePlan
+// 10. ScheduledWorkout
+// 11. ExerciseLog
+// 12. DailyActivitySummary
+// 13. HealthGoal
+// 14. GoalMilestone
+// 15. GoalProgressLog
+// 16. CaregiverAccess
+// 17. EmergencyContact
+// 18. PatientNotificationPreference
+// 19. PatientReminder
+// 20. EducationalContent
+// 21. PatientContentView
+// 22. MessageConversation
+// 23. PatientMessage
+// 24. PatientSettings
+//
+// NEW ENUMS (15 total):
+// 1.  MedicationLogStatus
+// 2.  SideEffectSeverity
+// 3.  RefillStatus
+// 4.  MealType
+// 5.  ExerciseIntensity
+// 6.  GoalCategory
+// 7.  GoalStatus
+// 8.  CaregiverAccessLevel
+// 9.  CaregiverAccessStatus
+// 10. ReminderType
+// 11. ReminderStatus
+// 12. ContentType
+// 13. ContentDifficulty
+// 14. MessageSenderType
+// 15. ConversationStatus
+//
+// MODIFIED MODELS (4 total):
+// 1. Patient - add 14 new relations
+// 2. User - add caregiverAccessTo relation
+// 3. Medication - add logs and refillRequests relations
+// 4. CarePlan - add dietPlans and exercisePlans relations
+
