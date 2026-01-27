@@ -164,9 +164,17 @@ export default function PatientDashboard() {
 
   const handleCompleteEvent = async (eventId: string) => {
     try {
-      // TODO: Implement patient events API endpoints
-      console.log('Complete event:', eventId)
-      // For now, just refresh the dashboard data
+      const response = await fetch(`/api/patient/events/${eventId}/complete`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ completed_at: new Date().toISOString() })
+      })
+      if (!response.ok) {
+        const data = await response.json()
+        console.error('Failed to complete event:', data.payload?.error?.message || response.statusText)
+      }
       fetchDashboardData()
     } catch (error) {
       console.error('Failed to complete event:', error)
@@ -175,9 +183,17 @@ export default function PatientDashboard() {
 
   const handleMarkMissed = async (eventId: string) => {
     try {
-      // TODO: Implement patient events API endpoints
-      console.log('Mark missed event:', eventId)
-      // For now, just refresh the dashboard data
+      const response = await fetch(`/api/patient/events/${eventId}/missed`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ missed_at: new Date().toISOString() })
+      })
+      if (!response.ok) {
+        const data = await response.json()
+        console.error('Failed to mark event as missed:', data.payload?.error?.message || response.statusText)
+      }
       fetchDashboardData()
     } catch (error) {
       console.error('Failed to mark event as missed:', error)
