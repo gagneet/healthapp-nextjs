@@ -3,6 +3,16 @@
 import { BeakerIcon, HeartIcon, ScaleIcon, SunIcon } from '@heroicons/react/24/outline'
 import { useEffect, useState } from 'react'
 
+// Icon mapping for reliable client-side rendering
+const ICON_MAP = {
+  heart: HeartIcon,
+  scale: ScaleIcon,
+  sun: SunIcon,
+  beaker: BeakerIcon,
+} as const
+
+type IconType = keyof typeof ICON_MAP
+
 interface HealthMetric {
   id: string
   name: string
@@ -10,7 +20,7 @@ interface HealthMetric {
   unit: string
   status: 'normal' | 'warning' | 'critical'
   lastUpdated: string
-  icon: React.ComponentType<any>
+  iconType: IconType
 }
 
 interface HealthSummaryProps {
@@ -31,7 +41,7 @@ export default function HealthSummary({ patientId }: HealthSummaryProps) {
         unit: 'mmHg',
         status: 'normal',
         lastUpdated: '2025-01-15T10:30:00Z',
-        icon: HeartIcon
+        iconType: 'heart'
       },
       {
         id: '2',
@@ -40,7 +50,7 @@ export default function HealthSummary({ patientId }: HealthSummaryProps) {
         unit: 'lbs',
         status: 'normal',
         lastUpdated: '2025-01-14T08:00:00Z',
-        icon: ScaleIcon
+        iconType: 'scale'
       },
       {
         id: '3',
@@ -49,7 +59,7 @@ export default function HealthSummary({ patientId }: HealthSummaryProps) {
         unit: '°F',
         status: 'normal',
         lastUpdated: '2025-01-13T14:15:00Z',
-        icon: SunIcon
+        iconType: 'sun'
       },
       {
         id: '4',
@@ -58,7 +68,7 @@ export default function HealthSummary({ patientId }: HealthSummaryProps) {
         unit: 'mg/dL',
         status: 'normal',
         lastUpdated: '2025-01-15T07:00:00Z',
-        icon: BeakerIcon
+        iconType: 'beaker'
       }
     ]
 
@@ -111,11 +121,7 @@ export default function HealthSummary({ patientId }: HealthSummaryProps) {
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
       {metrics.map((metric) => {
-        const MetricIcon = typeof metric.icon === 'function' ? metric.icon : HeartIcon
-
-        if (MetricIcon !== metric.icon) {
-          console.warn('HealthSummary metric icon invalid:', metric)
-        }
+        const MetricIcon = ICON_MAP[metric.iconType] || HeartIcon
 
         return (
           <div key={metric.id} className={`p-4 rounded-lg border-2 ${getStatusColor(metric.status)}`}>
@@ -125,7 +131,7 @@ export default function HealthSummary({ patientId }: HealthSummaryProps) {
                 {metric.status}
               </span>
             </div>
-            
+
             <div className="mb-1">
               <div className="text-2xl font-bold text-gray-900">
                 {metric.value}
@@ -134,7 +140,7 @@ export default function HealthSummary({ patientId }: HealthSummaryProps) {
                 {metric.unit}
               </div>
             </div>
-            
+
             <div className="text-xs text-gray-500">
               <div className="font-medium">{metric.name}</div>
               <div>{formatLastUpdated(metric.lastUpdated)}</div>

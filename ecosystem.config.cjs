@@ -4,14 +4,14 @@ module.exports = {
   apps: [{
     name: 'healthapp-nextjs',
     script: 'npm',
-    args: 'run dev',
+    args: 'start',
     cwd: '/home/gagneet/healthapp-nextjs',
     instances: 1,
     exec_mode: 'fork',
     env: {
       ...process.env,
       PORT: '3002',
-      NODE_ENV: 'development'
+      NODE_ENV: 'production'
     },
     error_file: '/home/gagneet/healthapp-nextjs/logs/pm2-error.log',
     out_file: '/home/gagneet/healthapp-nextjs/logs/pm2-out.log',
