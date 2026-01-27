@@ -3,6 +3,9 @@ import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 
+
+export const dynamic = 'force-dynamic';
+
 const updateSubscriptionSchema = z.object({
   action: z.enum(['PAUSE', 'RESUME', 'CANCEL', 'UPGRADE', 'DOWNGRADE', 'UPDATE_PAYMENT_METHOD']),
   newPlanId: z.string().uuid().optional(),

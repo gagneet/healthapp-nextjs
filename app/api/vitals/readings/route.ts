@@ -3,6 +3,9 @@ import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 
+
+export const dynamic = 'force-dynamic';
+
 const recordVitalSchema = z.object({
   patientId: z.string().uuid(),
   vitalTypeId: z.string().uuid(),

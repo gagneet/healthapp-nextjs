@@ -4,6 +4,7 @@ import { auth } from "@/lib/auth";
 /**
  * Main API info endpoint - adapted from src/routes/index.ts
  */
+
 export async function GET(request: NextRequest) {
   return NextResponse.json({
     status: true,

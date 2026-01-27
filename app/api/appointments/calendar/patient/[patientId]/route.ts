@@ -3,6 +3,9 @@ import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 
+
+export const dynamic = 'force-dynamic';
+
 const patientCalendarSchema = z.object({
   startDate: z.string().date().optional(),
   endDate: z.string().date().optional(),

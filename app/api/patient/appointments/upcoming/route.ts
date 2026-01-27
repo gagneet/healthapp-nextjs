@@ -7,6 +7,9 @@ import { NextRequest, NextResponse } from 'next/server';
  * GET /api/patient/appointments/upcoming
  * Get upcoming appointments for the authenticated patient
  */
+
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: NextRequest) {
   try {
     const session = await auth();

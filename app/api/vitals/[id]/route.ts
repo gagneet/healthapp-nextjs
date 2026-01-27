@@ -8,6 +8,9 @@ import { prisma } from "@/lib/prisma";
  * GET /api/vitals/{id}
  * Get a single vital reading by its ID
  */
+
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
   try {
     // Rate limiting

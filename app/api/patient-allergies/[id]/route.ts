@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 
 import { checkRateLimit } from "@/lib/auth-helpers";
 import { 
+
   updatePatientAllergy, 
   deletePatientAllergy, 
   verifyPatientAllergy,
@@ -14,6 +15,9 @@ import {
  * PUT /api/patient-allergies/[id]
  * Update a patient allergy record
  */
+
+export const dynamic = 'force-dynamic';
+
 export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
   try {
     // Rate limiting

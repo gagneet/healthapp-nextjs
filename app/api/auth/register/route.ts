@@ -12,6 +12,7 @@ import { z } from "zod"
 import { randomUUID } from "crypto"
 
 // Enhanced registration schema with healthcare-specific validation
+
 const registerSchema = z.object({
   email: z.string()
     .email("Invalid email format")
@@ -59,6 +60,7 @@ const registerSchema = z.object({
 }).refine((data) => {
   if (data.role === 'DOCTOR') {
     return !!data.medicalLicenseNumber;
+
   }
   return true;
 }, {

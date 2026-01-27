@@ -4,6 +4,9 @@ import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 import { Prisma } from '@/prisma/generated/prisma';
 
+
+export const dynamic = 'force-dynamic';
+
 const patientDataPayload = Prisma.validator<Prisma.PatientInclude>()({
   user: true,
   vitalReadings: true,

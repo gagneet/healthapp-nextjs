@@ -1,5 +1,4 @@
 // Force dynamic rendering for API routes using headers/auth
-export const dynamic = "force-dynamic"
 
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from "@/lib/auth";
@@ -7,6 +6,9 @@ import ConsultationBookingService from '@/lib/services/ConsultationBookingServic
 
 
 
+
+
+export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
   try {

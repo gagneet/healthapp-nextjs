@@ -8,6 +8,9 @@ import { prisma } from '@/lib/prisma';
  * GET /api/patients/[id]
  * Get detailed patient information by ID
  */
+
+export const dynamic = 'force-dynamic';
+
 export const GET = withErrorHandling(async (
   request: NextRequest,
   { params }: { params: { patientId: string } }

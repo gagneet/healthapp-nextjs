@@ -7,6 +7,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma"
 import { 
+
   createSuccessResponse, 
   createErrorResponse, 
   createUnauthorizedResponse,
@@ -26,6 +27,9 @@ import { generatePatientId } from "@/lib/id-generation"
  * Retrieve patients list with filtering and pagination
  * Business Logic: Only doctors, HSPs, and admins can access patient lists
  */
+
+export const dynamic = 'force-dynamic';
+
 export const GET = withErrorHandling(async (request: NextRequest) => {
   const session = await auth()
   
@@ -68,6 +72,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
       case 'DOCTOR':
         // Doctors can only see their assigned patients
         whereClause.primaryCareDoctorId = session.user.profileId;
+
         break;
       case 'HSP':
         // HSPs can see patients through care team assignments

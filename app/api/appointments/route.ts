@@ -6,6 +6,9 @@ import { Prisma } from '@/prisma/generated/prisma';
 import { APPOINTMENT_TYPES } from '@/lib/constants';
 
 
+
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: NextRequest) {
   try {
     const session = await auth();

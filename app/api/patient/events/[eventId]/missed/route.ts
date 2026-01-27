@@ -7,6 +7,9 @@ import { NextRequest, NextResponse } from 'next/server';
  * POST /api/patient/events/[eventId]/missed
  * Mark a scheduled event as missed
  */
+
+export const dynamic = 'force-dynamic';
+
 export async function POST(
   request: NextRequest,
   { params }: { params: { eventId: string } }

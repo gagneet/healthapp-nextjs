@@ -7,6 +7,7 @@ import { authenticateUser, handleApiError, formatApiSuccess } from '@/lib/api-se
  * POST /api/auth/sign-in
  * User authentication endpoint
  */
+
 export async function POST(request: NextRequest) {
   try {
     // Rate limiting

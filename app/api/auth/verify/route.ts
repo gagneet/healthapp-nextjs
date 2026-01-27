@@ -6,6 +6,9 @@ import { handleApiError, formatApiSuccess } from '@/lib/api-services';
  * GET /api/auth/verify
  * Verify current Auth.js v5 session
  */
+
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: NextRequest) {
   try {
     // Authenticate user with Auth.js v5

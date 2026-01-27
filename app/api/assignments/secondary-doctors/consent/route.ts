@@ -5,6 +5,9 @@ import { prisma } from '@/lib/prisma';
 import { randomUUID } from 'crypto';
 
 // Generate OTP for patient consent
+
+export const dynamic = 'force-dynamic';
+
 export async function POST(request: NextRequest) {
   try {
     const session = await auth();

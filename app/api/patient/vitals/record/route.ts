@@ -4,6 +4,9 @@ import { prisma } from '@/lib/prisma';
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 
+
+export const dynamic = 'force-dynamic';
+
 const vitalRecordSchema = z.object({
   vitalType: z.enum(['blood_pressure', 'heart_rate', 'temperature', 'weight', 'height', 'blood_glucose', 'oxygen_saturation']),
   value: z.string(),

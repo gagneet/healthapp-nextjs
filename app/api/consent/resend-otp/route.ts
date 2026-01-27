@@ -3,6 +3,9 @@ import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 
+
+export const dynamic = 'force-dynamic';
+
 const resendOtpSchema = z.object({
   otpId: z.string().uuid(),
   patientId: z.string().uuid(),

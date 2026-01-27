@@ -4,6 +4,9 @@ import { prisma } from '@/lib/prisma';
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 
+
+export const dynamic = 'force-dynamic';
+
 const dietQuerySchema = z.object({
   limit: z.number().int().positive().max(50).default(20),
   offset: z.number().int().nonnegative().default(0)

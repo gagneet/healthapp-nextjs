@@ -16,7 +16,9 @@ import {
 } from "@/lib/api-response"
 import { SearchConditions, DoctorSearchFields, HSPSearchFields } from "@/app/lib/types";
 
-export const dynamic = 'force-dynamic'
+
+export const dynamic = 'force-dynamic';
+
 export const runtime = 'nodejs'
 
 /**

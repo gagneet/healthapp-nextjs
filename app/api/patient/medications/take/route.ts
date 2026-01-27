@@ -4,6 +4,9 @@ import { prisma } from '@/lib/prisma';
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 
+
+export const dynamic = 'force-dynamic';
+
 const medicationTakeSchema = z.object({
   medicationId: z.string().uuid(),
   dosage: z.string().min(1),

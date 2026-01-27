@@ -4,6 +4,9 @@ import VideoConsultationService from '@/lib/services/VideoConsultationService';
 
 
 
+
+export const dynamic = 'force-dynamic';
+
 export async function POST(
   request: NextRequest,
   { params }: { params: { id: string } }

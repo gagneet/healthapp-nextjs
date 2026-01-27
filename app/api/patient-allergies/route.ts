@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 
 import { checkRateLimit } from "@/lib/auth-helpers";
 import { 
+
   getPatientAllergies, 
   createPatientAllergy, 
   handleApiError, 
@@ -14,6 +15,9 @@ import {
  * Retrieve patient allergies with filtering
  * Query params: patientId, allergyType, severity, verified, page, limit
  */
+
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: NextRequest) {
   try {
     // Rate limiting

@@ -7,6 +7,9 @@ import { getPatients, handleApiError, formatApiSuccess } from '@/lib/api-service
  * GET /api/patients/pagination
  * Get paginated list of patients for authorized users
  */
+
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: NextRequest) {
   try {
     // Rate limiting

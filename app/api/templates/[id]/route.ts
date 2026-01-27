@@ -6,6 +6,9 @@ import { prisma } from '@/lib/prisma';
  * GET /api/templates/{id}
  * Get a specific care plan template
  */
+
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
   try {
     const session = await auth();

@@ -5,6 +5,9 @@ import { z } from 'zod';
 import { Prisma } from '@/prisma/generated/prisma';
 
 // Schema for setting doctor availability
+
+export const dynamic = 'force-dynamic';
+
 const setAvailabilitySchema = z.object({
   availabilityType: z.enum(['individual', 'clinic', 'hospital_provider']),
   weeklySchedule: z.array(z.object({

@@ -8,6 +8,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma"
 import { 
+
   createSuccessResponse, 
   createErrorResponse, 
   createUnauthorizedResponse,
@@ -24,6 +25,9 @@ import {
  * Retrieve vital signs with filtering and pagination
  * Business Logic: Patients can view their own vitals, healthcare providers can view patient vitals
  */
+
+export const dynamic = 'force-dynamic';
+
 export const GET = withErrorHandling(async (request: NextRequest) => {
   const session = await auth()
   
@@ -37,6 +41,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
   }
 
     const { searchParams } = new URL(request.url);
+
     const patientId = searchParams.get('patientId');
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '10');

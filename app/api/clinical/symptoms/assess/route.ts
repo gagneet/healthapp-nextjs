@@ -4,6 +4,9 @@ import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 
 // Clinical symptom assessment schema
+
+export const dynamic = 'force-dynamic';
+
 const symptomAssessmentSchema = z.object({
   patientId: z.string().uuid(),
   symptoms: z.array(z.object({

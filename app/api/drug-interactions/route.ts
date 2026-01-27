@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 
 import { checkRateLimit } from "@/lib/auth-helpers";
 import { 
+
   getDrugInteractions, 
   createDrugInteraction, 
   handleApiError, 
@@ -14,6 +15,9 @@ import {
  * Search and retrieve drug interactions
  * Query params: drug1, drug2, severity, search, page, limit
  */
+
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: NextRequest) {
   try {
     // Rate limiting

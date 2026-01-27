@@ -6,6 +6,9 @@ import { prisma } from '@/lib/prisma';
  * GET /api/user/sessions
  * Get current user's active sessions
  */
+
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: NextRequest) {
   try {
     const session = await auth();

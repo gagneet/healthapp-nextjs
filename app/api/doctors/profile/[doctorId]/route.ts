@@ -13,13 +13,15 @@ import {
   withErrorHandling
 } from "@/lib/api-response"
 
-export const dynamic = 'force-dynamic'; // Prevent caching
 
 /**
  * GET /api/doctors/profile/[doctorId]
  * Retrieve doctor profile by doctor ID
  * Business Logic: Only allow if the user is requesting their own profile or has admin access
  */
+
+export const dynamic = 'force-dynamic';
+
 export const GET = withErrorHandling(async (
   request: NextRequest,
   { params }: { params: { doctorId: string } }
@@ -31,6 +33,7 @@ export const GET = withErrorHandling(async (
   }
 
   const { doctorId } = params;
+
   if (!doctorId || typeof doctorId !== 'string') {
     return createErrorResponse(new Error('Invalid doctor ID format'), 400);
   }

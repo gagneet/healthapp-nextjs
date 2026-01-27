@@ -4,6 +4,9 @@ import { auth } from "@/lib/auth";
 import { prisma } from '@/lib/prisma';
 import type { HealthcareRole } from '@/types/auth';
 
+
+export const dynamic = 'force-dynamic';
+
 interface SearchFilters {
   value?: string;
   limit?: number;

@@ -8,6 +8,9 @@ import { prisma } from "@/lib/prisma";
  * GET /api/medications/patient/[patientId]
  * Get all medications for a specific patient
  */
+
+export const dynamic = 'force-dynamic';
+
 export async function GET(
   request: NextRequest,
   { params }: { params: { patientId: string } }

@@ -8,6 +8,9 @@ import { prisma } from "@/lib/prisma";
  * GET /api/medications/{id}
  * Get a single medication by its ID
  */
+
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
   try {
     // Rate limiting

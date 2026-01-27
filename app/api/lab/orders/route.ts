@@ -5,6 +5,9 @@ import LaboratoryService from '@/lib/services/LaboratoryService';
 
 
 
+
+export const dynamic = 'force-dynamic';
+
 export async function POST(request: NextRequest) {
   try {
     const session = await auth();

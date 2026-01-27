@@ -4,6 +4,9 @@ import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 import { startOfMonth, endOfMonth, startOfWeek, endOfWeek, startOfDay, endOfDay } from 'date-fns';
 
+
+export const dynamic = 'force-dynamic';
+
 const isValidDate = (val: string) => {
   // This validation is for a string, so we don't need to check for !val.
   // The .optional() chain handles cases where the field is not provided.

@@ -4,6 +4,9 @@ import { auth } from "@/lib/auth";
 
 // import { seedComprehensiveHealthcareData, clearTestData } from '@/lib/seed';
 
+
+export const dynamic = 'force-dynamic';
+
 export async function POST(request: NextRequest) {
   try {
     const session = await auth();

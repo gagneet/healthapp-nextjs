@@ -4,6 +4,9 @@ import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 import { Prisma, ConsultationStatus } from '@/prisma/generated/prisma';
 
+
+export const dynamic = 'force-dynamic';
+
 const rescheduleSchema = z.object({
   newStartTime: z.string().datetime(),
   newEndTime: z.string().datetime().optional(),

@@ -6,6 +6,9 @@ import { prisma } from '@/lib/prisma';
  * DELETE /api/user/sessions/[id]
  * Revoke a specific session
  */
+
+export const dynamic = 'force-dynamic';
+
 export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
   try {
     const session = await auth();

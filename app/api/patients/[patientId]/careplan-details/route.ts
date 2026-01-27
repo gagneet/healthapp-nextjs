@@ -4,6 +4,9 @@ import { prisma } from '@/lib/prisma';
 import { Medication, Medicine, Prescription } from '@/prisma/generated/prisma';
 
 // Define a type for the enhanced medication object
+
+export const dynamic = 'force-dynamic';
+
 type EnhancedMedication = Medication & {
   medicine: Medicine;
   prescriptionDetails?: {

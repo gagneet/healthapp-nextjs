@@ -4,6 +4,9 @@ import { prisma } from '@/lib/prisma';
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 
+
+export const dynamic = 'force-dynamic';
+
 const reminderQuerySchema = z.object({
   status: z.string().optional(),
   limit: z.number().int().positive().max(100).default(20),

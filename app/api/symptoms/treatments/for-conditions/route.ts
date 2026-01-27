@@ -6,6 +6,7 @@
 
 import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@/lib/auth";
+
 import { prisma } from "@/lib/prisma"
 import { 
   createSuccessResponse, 
@@ -16,7 +17,9 @@ import {
 } from "@/lib/api-response"
 import { z } from "zod"
 
-export const dynamic = 'force-dynamic'
+
+export const dynamic = 'force-dynamic';
+
 export const runtime = 'nodejs'
 
 const ConditionTreatmentSchema = z.object({

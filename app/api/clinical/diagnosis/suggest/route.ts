@@ -4,6 +4,9 @@ import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 
 // Clinical diagnosis suggestion schema
+
+export const dynamic = 'force-dynamic';
+
 const diagnosisSuggestionSchema = z.object({
   assessmentId: z.string().uuid(),
   patientId: z.string().uuid(),

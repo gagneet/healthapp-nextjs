@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma"
 import {
+
   createSuccessResponse,
   createErrorResponse,
   createUnauthorizedResponse,
@@ -11,7 +12,11 @@ import {
 import { writeFile, mkdir } from 'fs/promises'
 import path, { join } from 'path'
 
+
+export const dynamic = 'force-dynamic';
+
 const MB = 1024 * 1024;
+
 const MAX_FILE_SIZE = 5 * MB; // 5MB
 const ALLOWED_FILE_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
 

@@ -6,6 +6,9 @@ import { prisma } from '@/lib/prisma';
  * GET /api/doctors/recent-patients
  * Get recently active patients for the authenticated doctor
  */
+
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: NextRequest) {
   try {
     const session = await auth();

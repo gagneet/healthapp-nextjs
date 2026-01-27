@@ -18,7 +18,9 @@ import {
 import { z } from "zod"
 import { SecondaryDoctorAssignmentConsentStatus } from '@/prisma/generated/prisma';
 
-export const dynamic = 'force-dynamic'
+
+export const dynamic = 'force-dynamic';
+
 export const runtime = 'nodejs'
 
 const AssignSecondaryDoctorSchema = z.object({

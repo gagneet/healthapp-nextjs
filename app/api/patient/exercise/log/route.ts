@@ -4,6 +4,9 @@ import { prisma } from '@/lib/prisma';
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 
+
+export const dynamic = 'force-dynamic';
+
 const exerciseLogSchema = z.object({
   title: z.string().min(1),
   durationMinutes: z.number().int().positive(),

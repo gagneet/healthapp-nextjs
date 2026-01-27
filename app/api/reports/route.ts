@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import {
+
   createSuccessResponse,
   createErrorResponse,
   createUnauthorizedResponse,
@@ -10,6 +11,9 @@ import {
   withErrorHandling,
 } from "@/lib/api-response";
 import { z } from "zod";
+
+
+export const dynamic = 'force-dynamic';
 
 const s3Client = new S3Client({
     region: process.env.AWS_REGION!,
