@@ -11,6 +11,10 @@
 // ENUMS - Add these enums to the schema
 // ==============================================================
 
+// SESSION STATUS UPDATE (2026-01-27)
+// ✅ Schema additions from this document have been applied to prisma/schema.prisma.
+// ⚠️ Migrations require SHADOW_DATABASE_URL or elevated DB privileges.
+
 enum MedicationLogStatus {
   PENDING
   TAKEN
@@ -764,4 +768,3 @@ model PatientSettings {
 // 2. User - add caregiverAccessTo relation
 // 3. Medication - add logs and refillRequests relations
 // 4. CarePlan - add dietPlans and exercisePlans relations
-

@@ -79,6 +79,29 @@ The Healthcare Management Platform is a patient adherence-focused application bu
 
 ---
 
+## 2.1 Session Update (2026-01-27)
+
+### ✅ Implemented in this session
+- Patient dashboard actions wired to API (`/api/patient/events/[eventId]/complete|missed`) and real dashboard data fetch.
+- Medication tracker wired to real meds list (`/api/medications/patient/[patientId]`) and adherence logging (`/api/patient/medications/take`).
+- Patient reminders, diet, and exercise pages + APIs:
+  - `/api/patient/reminders`
+  - `/api/patient/diet` and `/api/patient/diet/log`
+  - `/api/patient/exercise` and `/api/patient/exercise/log`
+- Patient-side schema additions from `patient-schema.md` added to `prisma/schema.prisma` and Prisma client generated.
+- Build fixes: 3D body diagram Html alias and dynamic API route markers for auth/headers routes.
+
+### 🔶 Pending Patient TODOs (high-level)
+- Medication adherence completion: patient meds schedule endpoint, medication history endpoint, adherence stats UI.
+- Diet/exercise expansion: plan + activity/nutrition summary endpoints and UI components.
+- Vitals: patient vitals list + trends + alerts endpoints and charts.
+- Appointments: patient appointment list/detail/reschedule endpoints and UI.
+- Care plans: patient care plan list/detail endpoints and UI.
+- Patient messaging, lab results view, video consultations, health goals, gamification UI, caregiver access, educational content.
+- Patient settings API + notification preferences.
+
+---
+
 ## 3. Gap Analysis
 
 ### 3.1 Patient Dashboard Gaps
