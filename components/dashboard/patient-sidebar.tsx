@@ -13,6 +13,7 @@ import {
   CogIcon,
   ShieldCheckIcon,
   BellIcon,
+  BellAlertIcon,
   CameraIcon,
   PlusIcon,
   XMarkIcon,
@@ -36,6 +37,7 @@ interface SidebarProps {
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard/patient', icon: HomeIcon },
+  { name: 'Alerts', href: '/dashboard/patient/alerts', icon: BellAlertIcon, badge: true },
   { name: 'Medications', href: '/dashboard/patient/medications', icon: BeakerIcon },
   { name: 'Appointments', href: '/dashboard/patient/appointments', icon: CalendarIcon },
   { name: 'Vital Readings', href: '/dashboard/patient/vitals', icon: HeartIcon },
