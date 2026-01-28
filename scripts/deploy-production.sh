@@ -593,7 +593,7 @@ build_docker_images() {
     docker pull node:22-alpine || log_warning "Failed to pull node:22-alpine"
     docker pull postgres:17-alpine || log_warning "Failed to pull postgres:17-alpine"
     docker pull redis:7.4-alpine || log_warning "Failed to pull redis:7.4-alpine"
-    docker pull dpage/pgadmin4:latest || log_warning "Failed to pull pgadmin4"
+    docker pull dpage/pgadmin4:8.13 || log_warning "Failed to pull pgadmin4"
 
     log_info "Building production application image..."
     if docker build \
@@ -628,7 +628,7 @@ deploy_stack() {
     export APP_IMAGE="healthapp:prod"
     export POSTGRES_IMAGE="postgres:17-alpine"
     export REDIS_IMAGE="redis:7.4-alpine"
-    export PGADMIN_IMAGE="dpage/pgadmin4:latest"
+    export PGADMIN_IMAGE="dpage/pgadmin4:8.13"
     export DEPLOY_IMAGE="healthapp:prod"
 
     # Set defaults from .env or use sensible defaults

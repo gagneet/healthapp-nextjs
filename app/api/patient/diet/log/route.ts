@@ -48,13 +48,18 @@ export async function POST(request: NextRequest) {
 
     const loggedAt = validatedData.loggedAt ? new Date(validatedData.loggedAt) : new Date();
 
+    // Store title in notes field with structured format
+    const notesWithTitle = validatedData.title 
+      ? `Title: ${validatedData.title}${validatedData.notes ? `\n\n${validatedData.notes}` : ''}`
+      : validatedData.notes;
+
     const mealLog = await prisma.mealLog.create({
       data: {
         patientId: patient.id,
         mealType: validatedData.mealType || 'LUNCH',
         loggedAt,
         totalCalories: validatedData.calories,
-        notes: validatedData.notes,
+        notes: notesWithTitle,
       }
     });
 
