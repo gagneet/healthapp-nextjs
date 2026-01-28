@@ -46,23 +46,20 @@ export async function GET(request: NextRequest) {
       offset: parseInt(searchParams.get('offset') || '0')
     });
 
-    const exerciseLogs = await prisma.scheduledEvent.findMany({
-      where: {
-        patientId: patient.id,
-        eventType: 'EXERCISE'
-      },
-      orderBy: { scheduledFor: 'desc' },
+    const exerciseLogs = await prisma.exerciseLog.findMany({
+      where: { patientId: patient.id },
+      orderBy: { loggedAt: 'desc' },
       take: queryData.limit,
       skip: queryData.offset
     });
 
     return NextResponse.json(formatApiSuccess(exerciseLogs.map(log => ({
       id: log.id,
-      title: log.title,
-      description: log.description,
-      loggedAt: log.scheduledFor,
-      status: log.status,
-      durationMinutes: (log.eventData as Record<string, unknown> | null)?.durationMinutes ?? null
+      title: log.name,
+      description: log.notes,
+      loggedAt: log.loggedAt,
+      status: 'COMPLETED',
+      durationMinutes: log.duration ?? null
     })), 'Exercise entries retrieved successfully'));
   } catch (error) {
     console.error('Exercise list error:', error);

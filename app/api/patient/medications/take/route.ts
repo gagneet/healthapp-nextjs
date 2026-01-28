@@ -84,6 +84,22 @@ export async function POST(request: NextRequest) {
       }
     });
 
+    await prisma.medicationLog.create({
+      data: {
+        id: crypto.randomUUID(),
+        medicationId: medication.id,
+        patientId: patient.id,
+        scheduledAt: takenAt,
+        takenAt,
+        dosageTaken: validatedData.dosage,
+        notes: validatedData.notes,
+        adherenceStatus: 'TAKEN',
+        reminderSent: false,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      }
+    });
+
     return NextResponse.json(formatApiSuccess({
       id: adherenceLog.id,
       medicationId: medication.id,

@@ -10,6 +10,7 @@ export const dynamic = 'force-dynamic';
 const exerciseLogSchema = z.object({
   title: z.string().min(1),
   durationMinutes: z.number().int().positive(),
+  intensity: z.enum(['LOW', 'MODERATE', 'HIGH', 'VERY_HIGH']).optional(),
   notes: z.string().optional(),
   loggedAt: z.string().datetime().optional()
 });
@@ -47,20 +48,15 @@ export async function POST(request: NextRequest) {
 
     const loggedAt = validatedData.loggedAt ? new Date(validatedData.loggedAt) : new Date();
 
-    const scheduledEvent = await prisma.scheduledEvent.create({
+    const exerciseLog = await prisma.exerciseLog.create({
       data: {
         patientId: patient.id,
-        eventType: 'EXERCISE',
-        title: validatedData.title,
-        description: validatedData.notes,
-        scheduledFor: loggedAt,
-        status: 'COMPLETED',
-        eventData: {
-          durationMinutes: validatedData.durationMinutes
-        },
-        completedAt: loggedAt,
-        completedBy: session.user.id,
-        createdAt: new Date()
+        activityType: 'exercise',
+        name: validatedData.title,
+        duration: validatedData.durationMinutes,
+        intensity: validatedData.intensity || 'MODERATE',
+        notes: validatedData.notes,
+        loggedAt,
       }
     });
 
@@ -72,7 +68,7 @@ export async function POST(request: NextRequest) {
         recordedAt: loggedAt,
         isCompleted: true,
         responseData: {
-          eventId: scheduledEvent.id,
+          exerciseLogId: exerciseLog.id,
           durationMinutes: validatedData.durationMinutes
         },
         notes: validatedData.notes
@@ -80,9 +76,10 @@ export async function POST(request: NextRequest) {
     });
 
     return NextResponse.json(formatApiSuccess({
-      id: scheduledEvent.id,
-      title: scheduledEvent.title,
-      scheduledFor: scheduledEvent.scheduledFor
+      id: exerciseLog.id,
+      title: exerciseLog.name,
+      scheduledFor: exerciseLog.loggedAt,
+      intensity: exerciseLog.intensity
     }, 'Exercise entry logged successfully'));
   } catch (error) {
     console.error('Exercise log error:', error);

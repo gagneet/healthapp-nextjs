@@ -11,7 +11,8 @@ const dietLogSchema = z.object({
   title: z.string().min(1),
   calories: z.number().int().positive().optional(),
   notes: z.string().optional(),
-  loggedAt: z.string().datetime().optional()
+  loggedAt: z.string().datetime().optional(),
+  mealType: z.enum(['BREAKFAST', 'MORNING_SNACK', 'LUNCH', 'AFTERNOON_SNACK', 'DINNER', 'EVENING_SNACK']).optional(),
 });
 
 /**
@@ -47,20 +48,13 @@ export async function POST(request: NextRequest) {
 
     const loggedAt = validatedData.loggedAt ? new Date(validatedData.loggedAt) : new Date();
 
-    const scheduledEvent = await prisma.scheduledEvent.create({
+    const mealLog = await prisma.mealLog.create({
       data: {
         patientId: patient.id,
-        eventType: 'DIET_LOG',
-        title: validatedData.title,
-        description: validatedData.notes,
-        scheduledFor: loggedAt,
-        status: 'COMPLETED',
-        eventData: {
-          calories: validatedData.calories ?? null
-        },
-        completedAt: loggedAt,
-        completedBy: session.user.id,
-        createdAt: new Date()
+        mealType: validatedData.mealType || 'LUNCH',
+        loggedAt,
+        totalCalories: validatedData.calories,
+        notes: validatedData.notes,
       }
     });
 
@@ -72,7 +66,7 @@ export async function POST(request: NextRequest) {
         recordedAt: loggedAt,
         isCompleted: true,
         responseData: {
-          eventId: scheduledEvent.id,
+          mealLogId: mealLog.id,
           calories: validatedData.calories ?? null
         },
         notes: validatedData.notes
@@ -80,9 +74,10 @@ export async function POST(request: NextRequest) {
     });
 
     return NextResponse.json(formatApiSuccess({
-      id: scheduledEvent.id,
-      title: scheduledEvent.title,
-      scheduledFor: scheduledEvent.scheduledFor
+      id: mealLog.id,
+      title: validatedData.title,
+      scheduledFor: mealLog.loggedAt,
+      mealType: mealLog.mealType
     }, 'Diet entry logged successfully'));
   } catch (error) {
     console.error('Diet log error:', error);

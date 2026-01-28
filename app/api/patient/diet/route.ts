@@ -46,23 +46,21 @@ export async function GET(request: NextRequest) {
       offset: parseInt(searchParams.get('offset') || '0')
     });
 
-    const dietLogs = await prisma.scheduledEvent.findMany({
-      where: {
-        patientId: patient.id,
-        eventType: 'DIET_LOG'
-      },
-      orderBy: { scheduledFor: 'desc' },
+    const mealLogs = await prisma.mealLog.findMany({
+      where: { patientId: patient.id },
+      orderBy: { loggedAt: 'desc' },
       take: queryData.limit,
       skip: queryData.offset
     });
 
-    return NextResponse.json(formatApiSuccess(dietLogs.map(log => ({
+    return NextResponse.json(formatApiSuccess(mealLogs.map(log => ({
       id: log.id,
-      title: log.title,
-      description: log.description,
-      loggedAt: log.scheduledFor,
-      status: log.status,
-      calories: (log.eventData as Record<string, unknown> | null)?.calories ?? null
+      title: log.mealType.replace('_', ' ').toLowerCase(),
+      description: log.notes,
+      loggedAt: log.loggedAt,
+      status: 'COMPLETED',
+      calories: log.totalCalories ?? null,
+      mealType: log.mealType
     })), 'Diet entries retrieved successfully'));
   } catch (error) {
     console.error('Diet list error:', error);
