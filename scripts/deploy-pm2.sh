@@ -26,6 +26,9 @@ PM2_APP_NAME="healthapp-nextjs"
 # Options with defaults
 SKIP_INSTALL=false
 SKIP_BUILD=false
+CLEAN_INSTALL=false
+CLEAR_CACHE=false
+VERIFY_ONLY=false
 MIGRATE=true
 SEED=false
 CHECK_SCHEMA=true
@@ -92,6 +95,9 @@ Usage: ./scripts/deploy-pm2.sh [OPTIONS]
 
 OPTIONS:
   --skip-install         Skip npm install
+  --clean               Clean node_modules and .next before install
+  --clear-cache         Clear npm cache before install (fixes corruption)
+  --verify-only         Verify package installation without building
   --skip-build          Skip build step (use existing build)
   --no-migrate          Skip database migrations
   --seed                Run database seeders
@@ -105,6 +111,18 @@ OPTIONS:
 EXAMPLES:
   # Standard deployment
   ./scripts/deploy-pm2.sh
+
+  # Clean install (fixes corrupted node_modules)
+  ./scripts/deploy-pm2.sh --clean
+
+  # Fix npm cache corruption issues
+  ./scripts/deploy-pm2.sh --clear-cache
+
+  # Complete clean reinstall
+  ./scripts/deploy-pm2.sh --clean --clear-cache
+
+  # Verify packages without building
+  ./scripts/deploy-pm2.sh --verify-only
 
   # Quick restart (skip install and build)
   ./scripts/deploy-pm2.sh --skip-install --skip-build
@@ -127,6 +145,18 @@ parse_args() {
         case $1 in
             --skip-install)
                 SKIP_INSTALL=true
+                shift
+                ;;
+            --clean)
+                CLEAN_INSTALL=true
+                shift
+                ;;
+            --clear-cache)
+                CLEAR_CACHE=true
+                shift
+                ;;
+            --verify-only)
+                VERIFY_ONLY=true
                 shift
                 ;;
             --skip-build)
@@ -177,6 +207,13 @@ parse_args() {
     if [ "$CREATE_MIGRATION" = true ] && [ -z "$MIGRATION_NAME" ]; then
         log_error "--create-migration requires --migration-name"
         exit 1
+    fi
+
+    # Verify-only implies skip build
+    if [ "$VERIFY_ONLY" = true ]; then
+        SKIP_BUILD=true
+        MIGRATE=false
+        SEED=false
     fi
 }
 
@@ -254,8 +291,8 @@ check_schema_drift() {
     fi
 
     log_info "Validating schema..."
-    if npx prisma validate; then
-        log_success "✅ Schema syntax valid"
+    if npm run db:generate > /dev/null 2>&1; then
+        log_success "✅ Schema syntax valid (Prisma client generated)"
     else
         log_error "Schema validation failed"
         exit 1
@@ -263,7 +300,7 @@ check_schema_drift() {
 
     log_info "Checking migration status..."
     local migrate_output
-    migrate_output=$(npx prisma migrate status 2>&1)
+    migrate_output=$(npm exec -- prisma migrate status 2>&1)
 
     if echo "$migrate_output" | grep -q "Database schema is up to date"; then
         log_success "✅ Schema in sync"
@@ -307,7 +344,7 @@ create_migration() {
     log_warning "Creating migration: $MIGRATION_NAME"
     confirm "Create this migration?"
 
-    if npx prisma migrate dev --name "$MIGRATION_NAME" --skip-generate; then
+    if npm exec -- prisma migrate dev --name "$MIGRATION_NAME" --skip-generate; then
         log_success "✅ Migration created: $MIGRATION_NAME"
 
         local latest=$(ls -t prisma/migrations | head -1)
@@ -333,20 +370,84 @@ install_dependencies() {
 
     log_step "Installing Dependencies"
 
-    log_info "Running npm install..."
-    if npm install; then
-        log_success "Dependencies installed"
+    # Clear npm cache if requested
+    if [ "$CLEAR_CACHE" = true ]; then
+        log_warning "Clearing npm cache..."
+        if npm cache clean --force; then
+            log_success "npm cache cleared"
+        else
+            log_warning "Failed to clear npm cache (continuing anyway)"
+        fi
+    fi
+
+    # Clean install if requested
+    if [ "$CLEAN_INSTALL" = true ]; then
+        log_warning "Cleaning node_modules and .next (keeping package-lock.json)..."
+        rm -rf node_modules .next
+        log_success "Clean completed"
+
+        log_info "Running npm ci (clean install with locked versions)..."
+        if npm ci; then
+            log_success "Dependencies installed from package-lock.json"
+        else
+            log_error "npm ci failed - package-lock.json may be corrupted"
+            log_error "Try: git restore package-lock.json && npm ci"
+            exit 1
+        fi
     else
-        log_error "npm install failed"
+        log_info "Running npm install..."
+        if npm install; then
+            log_success "Dependencies installed"
+        else
+            log_error "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            log_error "npm install failed"
+            log_error "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            log_error ""
+            log_error "Try manually:"
+            log_error "  git restore package-lock.json  # Restore locked versions"
+            log_error "  npm ci                         # Clean install"
+            log_error ""
+            exit 1
+        fi
+    fi
+
+    # Verify all critical packages
+    verify_critical_packages
+}
+
+verify_critical_packages() {
+    log_info "Verifying critical packages..."
+
+    local missing_packages=()
+
+    # Check each critical package directory (core packages only)
+    [ ! -d "node_modules/next" ] && missing_packages+=("next")
+    [ ! -d "node_modules/react" ] && missing_packages+=("react")
+    [ ! -d "node_modules/@prisma/client" ] && missing_packages+=("@prisma/client")
+
+    if [ ${#missing_packages[@]} -gt 0 ]; then
+        log_error "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        log_error "CRITICAL: Missing packages detected"
+        log_error "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        log_error ""
+        log_error "Missing packages:"
+        for pkg in "${missing_packages[@]}"; do
+            log_error "  ❌ $pkg"
+        done
+        log_error ""
+        log_error "This indicates npm installation failed or is corrupted."
+        log_error ""
+        log_error "Try: ./scripts/deploy-pm2.sh --clean --clear-cache"
+        log_error ""
         exit 1
     fi
 
-    # Ensure critical Tailwind CSS plugins are installed
-    log_info "Ensuring Tailwind CSS plugins are installed..."
-    if npm install @tailwindcss/forms @tailwindcss/typography --save-dev; then
-        log_success "Tailwind CSS plugins verified"
-    else
-        log_warning "Failed to install Tailwind CSS plugins (may already exist)"
+    log_success "✅ All critical packages verified"
+
+    if [ "$VERIFY_ONLY" = true ]; then
+        log_step "Package Verification Complete"
+        log_success "All required packages are installed correctly"
+        exit 0
     fi
 }
 
@@ -354,7 +455,7 @@ generate_prisma() {
     log_step "Generating Prisma Client"
 
     log_info "Running prisma generate..."
-    if npx prisma generate; then
+    if npm run db:generate; then
         log_success "Prisma client generated"
     else
         log_error "Prisma generate failed"
@@ -392,7 +493,7 @@ run_migrations() {
     log_step "Running Database Migrations"
 
     log_info "Applying migrations..."
-    if npx prisma migrate deploy; then
+    if npm run migrate; then
         log_success "✅ Migrations applied"
     else
         log_error "Migration deployment failed"
@@ -411,7 +512,7 @@ run_seed() {
     log_warning "Seeding database..."
     confirm "Run database seeding?"
 
-    if npx prisma db seed; then
+    if npm run seed; then
         log_success "Seeding completed"
     else
         log_warning "Seeding failed (may already have data)"
