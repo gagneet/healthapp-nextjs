@@ -1,21 +1,19 @@
 // Express Request/Response type extensions
-import { Request, Response, NextFunction } from 'express';
-import { JwtPayload } from 'jsonwebtoken';
+import type { Request, Response, NextFunction } from 'express';
+import type { JwtPayload } from 'jsonwebtoken';
 
 // Extend Express Request interface to include user information
-declare global {
-  namespace Express {
-    interface Request {
-      user?: JwtPayload & {
-        userId: string;
-        email: string;
-        role?: string;
-        id: string;
-        [key: string]: any;
-      };
-      userCategory?: string;
-      fileValidationError?: string;
-    }
+declare module 'express-serve-static-core' {
+  interface Request {
+    user?: JwtPayload & {
+      userId: string;
+      email: string;
+      role?: string;
+      id: string;
+      [key: string]: any;
+    };
+    userCategory?: string;
+    fileValidationError?: string;
   }
 }
 

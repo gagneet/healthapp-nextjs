@@ -36,6 +36,8 @@ export interface ExpressResponse {
   setHeader: (key: string, value: string) => void;
 }
 
+type ExpressNextFunction = (error?: unknown) => void;
+
 /**
  * Creates Express-like request object from Next.js request
  */
@@ -108,7 +110,7 @@ export async function parseRequestBody(request: NextRequest): Promise<any> {
  * for use in Next.js API routes
  */
 export function adaptExpressRoute(
-  handler: (req: ExpressRequest, res: ExpressResponse, next?: Function) => Promise<any> | any
+  handler: (req: ExpressRequest, res: ExpressResponse, next?: ExpressNextFunction) => Promise<any> | any
 ) {
   return async function(request: NextRequest, context?: { params?: Record<string, string> }) {
     try {
@@ -155,7 +157,7 @@ export function adaptExpressRoute(
  * Adapter for Express middleware
  */
 export function adaptExpressMiddleware(
-  middleware: (req: ExpressRequest, res: ExpressResponse, next: Function) => Promise<any> | any
+  middleware: (req: ExpressRequest, res: ExpressResponse, next: ExpressNextFunction) => Promise<any> | any
 ) {
   return async function(req: ExpressRequest, res: ExpressResponse): Promise<boolean> {
     return new Promise((resolve, reject) => {
@@ -178,7 +180,7 @@ export function adaptExpressMiddleware(
 export async function applyMiddleware(
   req: ExpressRequest,
   res: ExpressResponse,
-  middlewares: Array<(req: ExpressRequest, res: ExpressResponse, next: Function) => any>
+  middlewares: Array<(req: ExpressRequest, res: ExpressResponse, next: ExpressNextFunction) => any>
 ): Promise<boolean> {
   for (const middleware of middlewares) {
     const adaptedMiddleware = adaptExpressMiddleware(middleware);
