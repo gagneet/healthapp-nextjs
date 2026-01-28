@@ -2,7 +2,7 @@
 
 import { useState, useRef, useMemo, Suspense } from 'react'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
-import {  OrbitControls, Text, Html as DreiHtml, useHelper } from '@react-three/drei'
+import { OrbitControls, Text, Html as DreiHtml, useHelper } from '@react-three/drei'
 import * as THREE from 'three'
 
 interface Symptom {
