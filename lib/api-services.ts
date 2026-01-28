@@ -127,7 +127,7 @@ export async function authenticateUser(email: string, password: string): Promise
 export async function verifyToken(token: string) {
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET || 'healthcare-secret-key') as any;
-    
+
     const user = await prisma.user.findUnique({
       where: { id: decoded.userId },
       select: {
@@ -160,7 +160,7 @@ export async function verifyToken(token: string) {
  * Create new user with healthcare role
  */
 export async function createUser(userData: {
-  email:string;
+  email: string;
   password: string;
   role: string;
   firstName: string;
@@ -179,16 +179,16 @@ export async function createUser(userData: {
 
     // Validate medical license for doctors
     if (
-        userData.role === 'DOCTOR' &&
-        (
-            typeof userData.medicalLicenseNumber !== 'string' ||
-            userData.medicalLicenseNumber.trim().length === 0
-        )
+      userData.role === 'DOCTOR' &&
+      (
+        typeof userData.medicalLicenseNumber !== 'string' ||
+        userData.medicalLicenseNumber.trim().length === 0
+      )
     ) {
-        return {
-            success: false,
-            message: 'Medical license number is required for doctors'
-        };
+      return {
+        success: false,
+        message: 'Medical license number is required for doctors'
+      };
     }
 
     // Check if user already exists
@@ -208,41 +208,41 @@ export async function createUser(userData: {
 
     // Create user and profile in a transaction
     const result = await prisma.$transaction(async (tx) => {
-        const user = await tx.user.create({
-            data: {
-                email: userData.email.toLowerCase(),
-                passwordHash: hashedPassword,
-                role: userData.role as any,
-                firstName: userData.firstName,
-                lastName: userData.lastName,
-                accountStatus: 'PENDING_VERIFICATION'
-            }
-        });
-
-        if (userData.role === 'PATIENT') {
-            await tx.patient.create({
-                data: {
-                    userId: user.id,
-                    patientId: `PAT-${randomUUID()}`,
-                }
-            });
-        } else if (userData.role === 'DOCTOR') {
-            await tx.doctor.create({
-                data: {
-                    userId: user.id,
-                    doctorId: `DOC-${randomUUID()}`,
-                    medicalLicenseNumber: userData.medicalLicenseNumber,
-                }
-            });
-        } else if (userData.role === 'HSP') {
-            await tx.hsp.create({
-                data: {
-                    userId: user.id,
-                    hspId: `HSP-${randomUUID()}`,
-                }
-            });
+      const user = await tx.user.create({
+        data: {
+          email: userData.email.toLowerCase(),
+          passwordHash: hashedPassword,
+          role: userData.role as any,
+          firstName: userData.firstName,
+          lastName: userData.lastName,
+          accountStatus: 'PENDING_VERIFICATION'
         }
-        return user;
+      });
+
+      if (userData.role === 'PATIENT') {
+        await tx.patient.create({
+          data: {
+            userId: user.id,
+            patientId: `PAT-${randomUUID()}`,
+          }
+        });
+      } else if (userData.role === 'DOCTOR') {
+        await tx.doctor.create({
+          data: {
+            userId: user.id,
+            doctorId: `DOC-${randomUUID()}`,
+            medicalLicenseNumber: userData.medicalLicenseNumber,
+          }
+        });
+      } else if (userData.role === 'HSP') {
+        await tx.hsp.create({
+          data: {
+            userId: user.id,
+            hspId: `HSP-${randomUUID()}`,
+          }
+        });
+      }
+      return user;
     });
 
     return {
@@ -261,13 +261,13 @@ export async function createUser(userData: {
   } catch (error) {
     console.error('User creation error:', error);
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
-        if (error.code === 'P2002') {
-            // This can happen if the generated ID or another unique field collides.
-            return {
-                success: false,
-                message: 'Registration failed due to a conflict with existing data.'
-            };
-        }
+      if (error.code === 'P2002') {
+        // This can happen if the generated ID or another unique field collides.
+        return {
+          success: false,
+          message: 'Registration failed due to a conflict with existing data.'
+        };
+      }
     }
     return {
       success: false,
@@ -292,7 +292,7 @@ export async function getPatients(doctorId: string, pagination: {
 }) {
   try {
     const skip = (pagination.page - 1) * pagination.limit;
-    
+
     // Build where clause - use primary care doctor relationship
     const whereClause: any = {
       primaryCareDoctorId: doctorId,
@@ -392,11 +392,11 @@ export async function getPatients(doctorId: string, pagination: {
           if (pagination.sortBy === 'name') {
             return { user: { firstName: pagination.sortOrder || 'asc' } };
           }
-          
+
           // Handle field name mapping and default sorting
           const sortField = pagination.sortBy === 'createdAt' ? 'createdAt' : (pagination.sortBy || 'createdAt');
           const sortOrder = pagination.sortOrder || 'desc';
-          
+
           return { [sortField]: sortOrder };
         })(),
       }),
@@ -468,7 +468,7 @@ export async function getPatient(patientId: string) {
         },
       },
     });
-    
+
     if (!patient) {
       return null;
     }
@@ -596,265 +596,184 @@ export async function createPatient(patientData: {
  */
 export async function getDoctorDashboard(doctorUserId: string) {
   try {
-    // Get doctor user data with profile
-    const doctorUser = await prisma.user.findUnique({
-      where: { id: doctorUserId },
+    // 1. Get Doctor ID from User ID
+    const doctor = await prisma.doctor.findUnique({
+      where: { userId: doctorUserId },
       include: {
-        doctorProfile: {
-          include: {
-            specialty: true,
-            organization: true
-          }
-        }
+        user: true
       }
     });
 
-    if (!doctorUser || doctorUser.role !== 'DOCTOR') {
-      throw new Error('Doctor not found or invalid role');
+    if (!doctor) {
+      throw new Error('Doctor profile not found');
     }
 
-    let doctorProfile = doctorUser.doctorProfile;
-    
-    // Handle missing doctor profile with detailed logging and mock data
-    if (!doctorProfile?.id) {
-      console.warn('=== MISSING DOCTOR PROFILE ===');
-      console.warn('Doctor User ID:', sanitizeLog(doctorUserId));
-      console.warn('Doctor Email:', sanitizeLog(doctorUser.email));
-      console.warn('Doctor Role:', doctorUser.role);
-      console.warn('Profile Object:', JSON.stringify(doctorProfile, null, 2));
-      console.warn('This indicates a data integrity issue - user has DOCTOR role but no doctor profile');
-      console.warn('Possible causes:');
-      console.warn('1. Doctor user was created without corresponding doctor profile');
-      console.warn('2. Database seeding did not create doctor profile');
-      console.warn('3. Doctor profile was deleted but user still has DOCTOR role');
-      console.warn('Using mock data to prevent application crash');
-      console.warn('===============================');
-      
-      // Use mock data to gracefully handle the missing profile
-      doctorProfile = {
-        id: 'mock-doctor-profile-' + doctorUserId,
-        userId: doctorUserId,
-        doctorId: 'mock-doctor-' + doctorUserId,
-        medicalLicenseNumber: 'MOCK-LICENSE-' + Date.now(),
-        specialtyId: null,
-        yearsOfExperience: 0,
-        consultationFee: 0,
-        organizationId: null,
-        // Add other required fields from the Doctor model with mock values
-        npiNumber: null,
-        boardCertifications: [],
-        medicalSchool: null,
-        residencyPrograms: {},
-        specialties: [],
-        subSpecialties: [],
-        capabilities: [],
-        isVerified: false,
-        verificationDocuments: {},
-        verificationDate: null,
-        verifiedBy: null,
-        availabilitySchedule: {},
-        languagesSpoken: [],
-        notificationPreferences: {},
-        practiceName: null,
-        practiceAddress: {},
-        practicePhone: null,
-        signaturePic: null,
-        razorpayAccountId: null,
-        totalPatients: 0,
-        activeTreatmentPlans: 0,
-        activeCarePlans: 0,
-        averageRating: null,
-        totalReviews: 0,
-        isAvailableOnline: false,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        deletedAt: null,
-        profilePictureUrl: null,
-        bannerImageUrl: null,
-        qualificationDetails: {},
-        registrationDetails: {},
-        subscriptionDetails: {},
-        signatureImageUrl: null,
-        signatureData: null,
-        gender: null,
-        mobileNumber: null,
-      };
-      
-      console.warn('Using mock profile:', JSON.stringify(doctorProfile, null, 2));
-    }
-
-    // Get statistics for this doctor
-    const [totalPatients, todayAppointments, activeCarePlans, recentVitalsCount] = await Promise.all([
-      // Total patients assigned to this doctor
-      prisma.patient.count({
-        where: {
-          primaryCareDoctorId: doctorProfile?.id || null
-        }
+    // 2. Fetch Stats
+    const [
+      totalPatients,
+      todayAppointments,
+      pendingRefills,
+      highRiskPatients
+    ] = await Promise.all([
+      // Total Assigment
+      prisma.patientDoctorAssignment.count({
+        where: { doctorId: doctor.id, isActive: true } // Assuming isActive or isPrimary check? Schema says isPrimary boolean
       }),
-      
-      // Today's appointments
+      // Today Appointments
       prisma.appointment.count({
         where: {
-          doctorId: doctorProfile?.id || null,
-          startDate: {
+          doctorId: doctor.id,
+          startTime: {
             gte: new Date(new Date().setHours(0, 0, 0, 0)),
             lt: new Date(new Date().setHours(23, 59, 59, 999))
           },
-          // Note: Appointment model doesn't have status field, using date filter instead
-          startTime: { not: null } // Only appointments with actual times
+          status: { not: 'CANCELLED' }
         }
       }),
-
-      // Active care plans
-      prisma.carePlan.count({
+      // Pending Refills (from MedicationPrescription or Messages? 
+      // Schema has RefillStatus enum? 
+      // Let's assume Notification of type REFILL for now or count pending 
+      // Actually notifications is best for "Requests"
+      prisma.notification.count({
         where: {
-          createdByDoctorId: doctorProfile?.id,
-          status: 'ACTIVE'
+          userId: doctorUserId,
+          type: 'MEDICATION_REFILL_DUE', // or similar
+          isRead: false
         }
       }),
-
-      // Recent vitals count (last 7 days)
-      prisma.vitalReading.count({
+      // High Risk Patients (using PatientRiskScore)
+      prisma.patientRiskScore.count({
         where: {
-          patient: {
-            primaryCareDoctorId: doctorProfile?.id || null
-          },
-          createdAt: {
-            gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
-          }
+          doctorId: doctor.id,
+          overallRisk: { gte: 70 } // High risk threshold
         }
       })
     ]);
 
-    // Get recent patients (last 5 modified)
-    const recentPatients = await prisma.patient.findMany({
-      where: {
-        primaryCareDoctorId: doctorProfile?.id || 'none'
-      },
-      include: {
-        user: {
-          select: {
-            firstName: true,
-            lastName: true,
-            email: true
-          }
-        }
-      },
-      orderBy: { updatedAt: 'desc' },
-      take: 5
-    });
-
-    // Get upcoming appointments (next 3)
-    const upcomingAppointments = await prisma.appointment.findMany({
-      where: {
-        doctorId: doctorProfile?.id || 'none',
-        startDate: {
-          gte: new Date()
-        },
-        startTime: { not: null } // Only scheduled appointments with actual times
-      },
+    // 3. Get Recent Patients (via Assignment)
+    const recentAssignments = await prisma.patientDoctorAssignment.findMany({
+      where: { doctorId: doctor.id },
       include: {
         patient: {
           include: {
-            user: {
-              select: {
-                firstName: true,
-                lastName: true
-              }
+            user: { select: { firstName: true, lastName: true, email: true } },
+            riskScores: {
+              where: { doctorId: doctor.id },
+              orderBy: { calculatedAt: 'desc' },
+              take: 1
             }
           }
         }
       },
-      orderBy: { startTime: 'asc' },
-      take: 3
+      orderBy: { assignedAt: 'desc' }, // or updatedAt if available? assignedAt is standard
+      take: 5
     });
 
-    // Check if we're using mock data and return development message
-    const isUsingMockData = doctorProfile.id.startsWith('mock-doctor-profile-');
-    
-    if (isUsingMockData) {
-      console.warn('Returning mock dashboard data due to missing doctor profile');
-      return {
-        developmentMessage: 'This page is still under development. We are working on implementing the doctor dashboard features.',
-        usingMockData: true,
-        doctor: {
-          id: doctorUser.id,
-          name: `${doctorUser.firstName} ${doctorUser.lastName}`.trim(),
-          email: doctorUser.email,
-          specialty: 'General Medicine',
-          license: doctorProfile.medicalLicenseNumber,
-          experience: 0
-        },
-        statistics: {
-          totalPatients: 0,
-          todayAppointments: 0,
-          activeCarePlans: 0,
-          recentVitalsCount: 0,
-        },
-        recentActivity: {
-          recentPatients: [],
-          vitals: []
-        },
-        upcomingAppointments: [],
-        timestamp: new Date().toISOString(),
-        debugInfo: {
-          doctorId: doctorUserId,
-          profileStatus: 'Missing - using mock data',
-          reason: 'Doctor user exists but no corresponding doctor profile found'
+    // 4. Get Upcoming Appointments
+    const appointments = await prisma.appointment.findMany({
+      where: {
+        doctorId: doctor.id,
+        startTime: { gte: new Date() },
+        status: { not: 'CANCELLED' }
+      },
+      include: {
+        patient: {
+          include: {
+            user: { select: { firstName: true, lastName: true } }
+          }
+        }
+      },
+      orderBy: { startTime: 'asc' },
+      take: 5
+    });
+
+    return {
+      doctor: {
+        id: doctor.id,
+        name: `${doctor.user.firstName} ${doctor.user.lastName}`,
+        specialty: doctor.primarySpecialization,
+        license: doctor.registrationNumber
+      },
+      statistics: {
+        totalPatients,
+        todayAppointments,
+        pendingRefills,
+        highRiskPatients
+      },
+      recentPatients: recentAssignments.map(a => ({
+        id: a.patient.id,
+        name: `${a.patient.user.firstName} ${a.patient.user.lastName}`,
+        riskScore: a.patient.riskScores[0]?.overallRisk || 0
+      })),
+      upcomingAppointments: appointments.map(appt => ({
+        id: appt.id,
+        patientName: `${appt.patient.user.firstName} ${appt.patient.user.lastName}`,
+        time: appt.startTime,
+        type: appt.type
+      }))
+    };
+  } catch (error) {
+    console.error('Dashboard Error:', error);
+    throw new Error('Failed to load dashboard');
+  }
+}
+doctorId: doctorUserId,
+  profileStatus: 'Missing - using mock data',
+    reason: 'Doctor user exists but no corresponding doctor profile found'
         }
       };
     }
 
-    return {
-      stats: {
-        totalPatients: totalPatients,
-        criticalAlerts: 0, // Will be calculated from critical alerts API
-        appointments_today: todayAppointments,
-        medication_adherence: Math.floor(Math.random() * 30) + 70, // Mock data
-        activeCarePlans: activeCarePlans,
-        recent_vitals: recentVitalsCount
-      },
-      doctor: {
-        id: doctorUser.id,
-        name: `${doctorUser.firstName} ${doctorUser.lastName}`.trim(),
-        email: doctorUser.email,
-        specialty: (doctorProfile && doctorProfile.specialty && typeof doctorProfile.specialty.name === 'string')
-          ? doctorProfile.specialty.name
-          : 'General Medicine',
-        license: doctorProfile?.medicalLicenseNumber,
-        experience: doctorProfile?.yearsOfExperience
-      },
-      recentActivity: {
-        recentPatients: recentPatients.map(patient => ({
-          id: patient.id,
-          name: `${patient.user?.firstName} ${patient.user?.lastName}`.trim(),
-          email: patient.user?.email,
-          lastVisit: patient.updatedAt
-        })),
-        vitals: [], // Can be populated with recent vital readings if needed
-      },
-      upcomingAppointments: upcomingAppointments.map(apt => ({
-        id: apt.id,
-        patientName: `${apt.patient?.user?.firstName} ${apt.patient?.user?.lastName}`.trim(),
-        date: apt.startDate,
-        time: apt.startTime,
-        description: apt.description
-      })),
-      timestamp: new Date().toISOString(),
-    };
+return {
+  stats: {
+    totalPatients: totalPatients,
+    criticalAlerts: 0, // Will be calculated from critical alerts API
+    appointments_today: todayAppointments,
+    medication_adherence: Math.floor(Math.random() * 30) + 70, // Mock data
+    activeCarePlans: activeCarePlans,
+    recent_vitals: recentVitalsCount
+  },
+  doctor: {
+    id: doctorUser.id,
+    name: `${doctorUser.firstName} ${doctorUser.lastName}`.trim(),
+    email: doctorUser.email,
+    specialty: (doctorProfile && doctorProfile.specialty && typeof doctorProfile.specialty.name === 'string')
+      ? doctorProfile.specialty.name
+      : 'General Medicine',
+    license: doctorProfile?.medicalLicenseNumber,
+    experience: doctorProfile?.yearsOfExperience
+  },
+  recentActivity: {
+    recentPatients: recentPatients.map(patient => ({
+      id: patient.id,
+      name: `${patient.user?.firstName} ${patient.user?.lastName}`.trim(),
+      email: patient.user?.email,
+      lastVisit: patient.updatedAt
+    })),
+    vitals: [], // Can be populated with recent vital readings if needed
+  },
+  upcomingAppointments: upcomingAppointments.map(apt => ({
+    id: apt.id,
+    patientName: `${apt.patient?.user?.firstName} ${apt.patient?.user?.lastName}`.trim(),
+    date: apt.startDate,
+    time: apt.startTime,
+    description: apt.description
+  })),
+  timestamp: new Date().toISOString(),
+};
   } catch (error) {
-    // Detailed server logging for debugging
-    console.error('=== DOCTOR DASHBOARD ERROR ===');
-    console.error('Error Type:', error instanceof Error ? error.constructor.name : typeof error);
-    console.error('Error Message:', error instanceof Error ? error.message : String(error));
-    console.error('Doctor User ID:', sanitizeLog(doctorUserId));
-    // Note: doctorUser and doctorProfile might not be defined here if the error occurred during their fetch
-    console.error('Full Error Stack:', error instanceof Error ? error.stack : 'No stack trace available');
-    console.error('===========================');
-    
-    // User-friendly error message
-    throw new Error('This page is still under development. We are working on implementing the doctor dashboard features. Please check back later or contact support if this issue persists.');
-  }
+  // Detailed server logging for debugging
+  console.error('=== DOCTOR DASHBOARD ERROR ===');
+  console.error('Error Type:', error instanceof Error ? error.constructor.name : typeof error);
+  console.error('Error Message:', error instanceof Error ? error.message : String(error));
+  console.error('Doctor User ID:', sanitizeLog(doctorUserId));
+  // Note: doctorUser and doctorProfile might not be defined here if the error occurred during their fetch
+  console.error('Full Error Stack:', error instanceof Error ? error.stack : 'No stack trace available');
+  console.error('===========================');
+
+  // User-friendly error message
+  throw new Error('This page is still under development. We are working on implementing the doctor dashboard features. Please check back later or contact support if this issue persists.');
+}
 }
 
 /**
@@ -1161,7 +1080,7 @@ export async function getHealthStatus() {
  */
 export function handleApiError(error: any) {
   console.error('API Error:', error);
-  
+
   return {
     status: false,
     statusCode: 500,
@@ -1191,28 +1110,28 @@ export async function getDrugInteractions(searchParams: {
 }) {
   try {
     const skip = (searchParams.page - 1) * searchParams.limit;
-    
+
     // Build where clause for drug interaction search
     const whereClause: any = {};
-    
+
     if (searchParams.drug1) {
       whereClause.drugNameOne = {
         contains: searchParams.drug1,
         mode: 'insensitive',
       };
     }
-    
+
     if (searchParams.drug2) {
       whereClause.drugNameTwo = {
         contains: searchParams.drug2,
         mode: 'insensitive',
       };
     }
-    
+
     if (searchParams.severity) {
       whereClause.severityLevel = searchParams.severity.toUpperCase();
     }
-    
+
     if (searchParams.search) {
       whereClause.OR = [
         {
@@ -1333,12 +1252,12 @@ export async function checkPatientDrugInteractions(params: {
 }) {
   try {
     const { patientId, medications, newMedication, requestedBy } = params;
-    
+
     // Get all medication combinations to check
-    const medicationsToCheck = newMedication 
+    const medicationsToCheck = newMedication
       ? [...carePlans, newMedication]
       : medications;
-    
+
     const interactionResults = [];
     const criticalInteractions = [];
     const warnings = [];
@@ -1348,7 +1267,7 @@ export async function checkPatientDrugInteractions(params: {
       for (let j = i + 1; j < medicationsToCheck.length; j++) {
         const drug1 = medicationsToCheck[i];
         const drug2 = medicationsToCheck[j];
-        
+
         // Query for interactions between these two drugs
         const interactions = await prisma.drugInteraction.findMany({
           where: {
@@ -1420,11 +1339,11 @@ export async function checkPatientDrugInteractions(params: {
       interactions: interactionResults,
       criticalInteractions,
       warnings,
-      recommendation: criticalInteractions.length > 0 
-        ? 'REVIEW_REQUIRED' 
-        : warnings.length > 0 
-        ? 'MONITOR_PATIENT' 
-        : 'NO_SIGNIFICANT_INTERACTIONS',
+      recommendation: criticalInteractions.length > 0
+        ? 'REVIEW_REQUIRED'
+        : warnings.length > 0
+          ? 'MONITOR_PATIENT'
+          : 'NO_SIGNIFICANT_INTERACTIONS',
       checkTimestamp: new Date().toISOString(),
     };
   } catch (error) {
@@ -1451,25 +1370,25 @@ export async function getPatientAllergies(searchParams: {
 }) {
   try {
     const skip = (searchParams.page - 1) * searchParams.limit;
-    
+
     // Build where clause for allergy search
     const whereClause: any = {
       patientId: searchParams.patientId,
       isActive: true, // Only show active (not deleted) allergies
     };
-    
+
     if (searchParams.allergyType) {
       whereClause.allergenType = searchParams.allergyType.toUpperCase();
     }
-    
+
     if (searchParams.severity) {
       whereClause.reactionSeverity = searchParams.severity.toUpperCase();
     }
-    
+
     if (searchParams.verified !== undefined) {
       whereClause.verifiedByDoctor = searchParams.verified;
     }
-    
+
     if (searchParams.search) {
       whereClause.OR = [
         {
@@ -1643,7 +1562,7 @@ export async function updatePatientAllergy(allergyId: string, updateData: any) {
   try {
     // Prepare update data with correct field names
     const dataToUpdate: any = {};
-    
+
     if (updateData.allergen) dataToUpdate.allergenName = updateData.allergen;
     if (updateData.allergenType) dataToUpdate.allergenType = updateData.allergenType.toUpperCase();
     if (updateData.severity) dataToUpdate.reactionSeverity = updateData.severity.toUpperCase();
@@ -1759,30 +1678,30 @@ export async function getEmergencyAlerts(searchParams: {
 }) {
   try {
     const skip = (searchParams.page - 1) * searchParams.limit;
-    
+
     // Build where clause for emergency alerts search
     const whereClause: any = {};
-    
+
     if (searchParams.patientId) {
       whereClause.patientId = searchParams.patientId;
     }
-    
+
     if (searchParams.alertType) {
       whereClause.alertType = searchParams.alertType.toUpperCase();
     }
-    
+
     if (searchParams.severity) {
       whereClause.severityLevel = searchParams.severity.toUpperCase();
     }
-    
+
     if (searchParams.status) {
       whereClause.alertStatus = searchParams.status.toUpperCase();
     }
-    
+
     if (searchParams.resolved !== undefined) {
       whereClause.isResolved = searchParams.resolved;
     }
-    
+
     if (searchParams.search) {
       whereClause.OR = [
         {

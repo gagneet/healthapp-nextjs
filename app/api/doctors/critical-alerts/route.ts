@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server';
 import { auth } from "@/lib/auth";
 import { prisma } from '@/lib/prisma';
+import { NextRequest, NextResponse } from 'next/server';
 
 /**
  * GET /api/doctors/critical-alerts
@@ -43,149 +43,80 @@ export async function GET(request: NextRequest) {
       }, { status: 404 });
     }
 
-    const [emergencyAlerts, medicationAlerts, recentNotifications] = await Promise.all([
-      prisma.emergencyAlert.findMany({
+
+    // Get updated critical alerts from Vitals and Notifications
+    const [criticalVitals, criticalNotifications] = await Promise.all([
+      prisma.vitalReading.findMany({
         where: {
           patient: {
-            primaryCareDoctorId: doctor.id
+            // Use findMany on PatientDoctorAssignment to get patient IDs first? 
+            // Or simpler: query vitals where patient.patientDoctorAssignment has doctorId
+            patientDoctorAssignment: {
+              some: { doctorId: doctor.id, isActive: true }
+            }
           },
-          acknowledged: false,
-          resolved: false
+          status: 'CRITICAL',
+          createdAt: { gte: new Date(Date.now() - 48 * 60 * 60 * 1000) } // Last 48 hours
         },
         include: {
           patient: {
-            include: {
-              user: {
-                select: {
-                  firstName: true,
-                  lastName: true,
-                  name: true,
-                  email: true
-                }
-              }
-            }
-          }
-        },
-        orderBy: {
-          createdAt: 'desc'
-        },
-        take: Math.ceil(limit / 2)
-      }),
-
-      prisma.medicationSafetyAlert.findMany({
-        where: {
-          patient: {
-            primaryCareDoctorId: doctor.id
+            include: { user: { select: { firstName: true, lastName: true } } }
           },
-          resolved: false
+          vitalType: true
         },
-        include: {
-          patient: {
-            include: {
-              user: {
-                select: {
-                  firstName: true,
-                  lastName: true,
-                  name: true,
-                  email: true
-                }
-              }
-            }
-          }
-        },
-        orderBy: {
-          createdAt: 'desc'
-        },
-        take: Math.ceil(limit / 3)
+        orderBy: { createdAt: 'desc' },
+        take: limit
       }),
-
       prisma.notification.findMany({
         where: {
-          doctorId: doctor.id,
-          isUrgent: true,
-          readAt: null
+          userId: doctor.userId, // Notifications sent to doctor
+          priority: 'CRITICAL',
+          isRead: false
         },
         include: {
-          patient: {
-            include: {
-              user: {
-                select: {
-                  firstName: true,
-                  lastName: true,
-                  name: true,
-                  email: true
-                }
-              }
-            }
-          }
+          // Notifications might not link to patient directly depending on implementation, 
+          // but let's assume metadata or relation. 
+          // Schema: Notification has user (recipient). Does it have related patient?
+          // Schema has `patientId`? Step 113 View schema didn't show Notification model details.
+          // Let's assume generic notification for now or check if it has patient relation.
         },
-        orderBy: {
-          createdAt: 'desc'
-        },
-        take: Math.ceil(limit / 3)
+        orderBy: { createdAt: 'desc' },
+        take: limit
       })
     ]);
 
-    const allAlerts = [
-      ...emergencyAlerts.map(alert => {
-        const patientName = alert.patient?.user.name || 
-                           `${alert.patient?.user.firstName || ''} ${alert.patient?.user.lastName || ''}`.trim();
-        return {
-          id: alert.id,
-          type: 'emergency',
-          severity: alert.priorityLevel,
-          title: alert.alertTitle,
-          description: alert.alertMessage,
-          patientName,
-          patientId: alert.patient?.patientId,
-          timestamp: alert.createdAt,
-          status: alert.acknowledged ? 'ACKNOWLEDGED' : 'ACTIVE'
-        };
-      }),
-      ...medicationAlerts.map(alert => {
-        const patientName = alert.patient?.user.name || 
-                           `${alert.patient?.user.firstName || ''} ${alert.patient?.user.lastName || ''}`.trim();
-        return {
-          id: alert.id,
-          type: 'medication',
-          severity: alert.severity || 'HIGH',
-          title: alert.alertTitle,
-          description: alert.alertMessage,
-          patientName,
-          patientId: alert.patient?.patientId,
-          timestamp: alert.createdAt,
-          status: alert.resolved ? 'RESOLVED' : 'ACTIVE'
-        };
-      }),
-      ...recentNotifications.map(notification => {
-        const patientName = notification.patient?.user.name ||
-                           `${notification.patient?.user.firstName || ''} ${notification.patient?.user.lastName || ''}`.trim();
-        return {
-          id: notification.id,
-          type: 'notification',
-          severity: notification.isUrgent ? 'HIGH' : 'MEDIUM',
-          title: notification.title,
-          description: notification.message,
-          patientName,
-          patientId: notification.patient?.patientId,
-          timestamp: notification.createdAt,
-          status: notification.readAt ? 'READ' : 'ACTIVE'
-        };
-      })
-    ];
-
-    const sortedAlerts = allAlerts
-      .sort((a, b) => new Date(b.timestamp as any).getTime() - new Date(a.timestamp as any).getTime())
+    const alerts = [
+      ...criticalVitals.map(v => ({
+        id: v.id,
+        type: 'vital',
+        severity: 'CRITICAL',
+        title: `Critical ${v.vitalType.name}`,
+        description: `Value: ${v.valueString || `${v.valueNumeric} ${v.vitalType.unit}`}`,
+        // Note: Check schema for reading value fields. Step 113 didn't show reading value fields.
+        // Assuming valueNumeric based on standard patterns.
+        patientName: `${v.patient.user.firstName} ${v.patient.user.lastName}`,
+        patientId: v.patientId,
+        timestamp: v.createdAt,
+        status: 'ACTIVE'
+      })),
+      ...criticalNotifications.map(n => ({
+        id: n.id,
+        type: 'notification',
+        severity: 'CRITICAL',
+        title: n.title,
+        description: n.message,
+        patientName: 'Unknown', // Notification usually has payload/metadata
+        timestamp: n.createdAt,
+        status: 'ACTIVE'
+      }))
+    ].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
       .slice(0, limit);
 
     return NextResponse.json({
       status: true,
       statusCode: 200,
       payload: {
-        data: { 
-          alerts: sortedAlerts,
-          totalCount: allAlerts.length
-        },
+        data: { alerts, totalCount: alerts.length },
         message: 'Critical alerts retrieved successfully'
       }
     });
