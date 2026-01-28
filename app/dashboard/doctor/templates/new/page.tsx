@@ -1,7 +1,13 @@
+'use client'
+
+export const dynamic = 'force-dynamic'
+
+
+
+
 /**
  * New Template Page - Doctor Dashboard
  */
-'use client'
 
 import React, { useState } from 'react'
 import { useRouter } from 'next/navigation'

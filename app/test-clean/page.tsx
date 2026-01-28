@@ -1,5 +1,10 @@
 'use client'
 
+export const dynamic = 'force-dynamic'
+
+
+
+
 import { HeartIcon, StarIcon, UserIcon } from '@heroicons/react/24/outline'
 
 export default function TestCleanPage() {

@@ -1,7 +1,13 @@
 'use client'
 
+export const dynamic = 'force-dynamic'
+
+
+
+
 import { ReactNode } from 'react'
 import { Sidebar } from '@/components/dashboard/sidebar'
+
 // Removed withAuth import - using RouteGuardLayout instead
 
 interface HospitalLayoutProps {

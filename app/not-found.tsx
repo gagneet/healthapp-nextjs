@@ -1,7 +1,11 @@
 'use client'
 
-// Force dynamic rendering for not-found page
 export const dynamic = 'force-dynamic'
+
+
+
+
+// Force dynamic rendering for not-found page
 
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/auth-context'
