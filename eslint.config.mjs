@@ -12,6 +12,20 @@ const compat = new FlatCompat({
 });
 
 export default [
+  {
+    ignores: [
+      ".next/**",
+      "node_modules/**",
+      "prisma/generated/**",
+      "scripts/**",
+      "tests/**",
+      "archive/**",
+      "logs/**",
+      "coverage/**",
+      "test-patient-creation.js",
+      "tailwind.config.js",
+    ],
+  },
   ...compat.extends("next/core-web-vitals", "next/typescript"),
   {
     rules: {

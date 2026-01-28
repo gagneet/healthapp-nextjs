@@ -1,5 +1,5 @@
 // Database and Sequelize types
-import { Model, Optional, CreationOptional, InferAttributes, InferCreationAttributes } from 'sequelize';
+import { Optional, CreationOptional } from 'sequelize';
 
 // Base model attributes that all models should have
 export interface BaseModelAttributes {
@@ -26,7 +26,7 @@ export interface UserAttributes extends BaseModelAttributes {
   role?: string;
 }
 
-export interface UserCreationAttributes extends Optional<UserAttributes, 'id' | 'createdAt' | 'updatedAt'> {}
+export type UserCreationAttributes = Optional<UserAttributes, 'id' | 'createdAt' | 'updatedAt'>;
 
 // Patient model attributes
 export interface PatientAttributes extends BaseModelAttributes {

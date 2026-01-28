@@ -18,6 +18,12 @@ import {
   XMarkIcon,
   Bars3Icon,
   ArrowDownTrayIcon,
+  ChatBubbleLeftRightIcon,
+  VideoCameraIcon,
+  FlagIcon,
+  TrophyIcon,
+  UserGroupIcon,
+  AcademicCapIcon,
 } from '@heroicons/react/24/outline'
 import { useAuth } from '@/lib/auth-context'
 import { userHelpers } from '@/lib/auth'
@@ -36,6 +42,13 @@ const navigation = [
   { name: 'Diet', href: '/dashboard/patient/diet', icon: DocumentTextIcon },
   { name: 'Exercise', href: '/dashboard/patient/exercise', icon: HeartIcon },
   { name: 'Care Plans', href: '/dashboard/patient/care-plans', icon: DocumentTextIcon },
+  { name: 'Messages', href: '/dashboard/patient/messages', icon: ChatBubbleLeftRightIcon },
+  { name: 'Lab Results', href: '/dashboard/patient/lab-results', icon: BeakerIcon },
+  { name: 'Video Consults', href: '/dashboard/patient/video-consultations', icon: VideoCameraIcon },
+  { name: 'Goals', href: '/dashboard/patient/goals', icon: FlagIcon },
+  { name: 'Achievements', href: '/dashboard/patient/achievements', icon: TrophyIcon },
+  { name: 'Caregivers', href: '/dashboard/patient/caregivers', icon: UserGroupIcon },
+  { name: 'Education', href: '/dashboard/patient/education', icon: AcademicCapIcon },
   { name: 'Reminders', href: '/dashboard/patient/reminders', icon: BellIcon },
   { name: 'Symptoms', href: '/dashboard/patient/symptoms', icon: UserIcon },
   { name: 'Prescriptions', href: '/dashboard/patient/prescriptions', icon: DocumentTextIcon },

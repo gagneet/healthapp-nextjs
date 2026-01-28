@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/prisma';
+import { LabOrderStatus } from '@/prisma/generated/prisma';
 import * as crypto from 'crypto';
 import { GenericLabClient, LabIntegrationConfig } from '@/lib/lab-integrations/GenericLabClient';
 
@@ -188,20 +189,15 @@ export class LaboratoryService {
       // Create lab order in database
       const labOrder = await prisma.labOrder.create({
         data: {
-          order_number: orderNumber,
+          orderNumber,
           doctorId: data.doctorId,
           patientId: data.patientId,
-          ordered_tests: data.testCodes,
+          orderedTests: data.testCodes,
           priority: data.priority,
-          status: 'pending',
-          fasting_required: data.fastingRequired || fastingRequired,
-          special_instructions: data.specialInstructions,
-          expected_collection_date: data.expectedCollectionDate,
-          order_reason: data.orderReason,
-          estimated_cost: totalCost,
-          estimated_tat_hours: Math.max(...data.testCodes.map(() => 12)), // Mock calculation
-          createdAt: new Date(),
-          updatedAt: new Date(),
+          status: LabOrderStatus.ORDERED,
+          specialInstructions: data.specialInstructions,
+          expectedResultDate: data.expectedCollectionDate,
+          clinicalIndication: data.orderReason,
         },
         include: {
           doctor: {
@@ -278,27 +274,24 @@ export class LaboratoryService {
 
       // Create lab results
       const results = await Promise.all(
-        resultsData.testResults.map(result => 
-          prisma.labResult.create({
-            data: {
-              lab_order_id: resultsData.orderId,
-              test_code: result.testCode,
-              test_name: result.testName,
-              result_value: result.result,
-              unit: result.unit,
-              reference_range: result.referenceRange,
-              status: result.status,
-              abnormal_flag: result.flag,
-              notes: result.notes,
-              collected_at: resultsData.collectedAt,
-              processed_at: resultsData.processedAt || new Date(),
-              reviewed_by: resultsData.reviewedBy,
-              createdAt: new Date(),
-              updatedAt: new Date(),
-            }
-          })
-        )
-      );
+          resultsData.testResults.map(result =>
+            prisma.labResult.create({
+              data: {
+                labOrderId: resultsData.orderId,
+                testCode: result.testCode,
+                testName: result.testName,
+                resultValue: result.result,
+                resultUnit: result.unit,
+                referenceRange: result.referenceRange,
+                resultStatus: result.status,
+                abnormalFlag: result.flag,
+                comments: result.notes,
+                collectionDate: resultsData.collectedAt,
+                resultDate: resultsData.processedAt || new Date(),
+              }
+            })
+          )
+        );
 
       // Update lab order status
       const hasAbnormal = resultsData.testResults.some(r => r.status === 'abnormal' || r.status === 'critical');
@@ -307,20 +300,20 @@ export class LaboratoryService {
       const updatedOrder = await prisma.labOrder.update({
         where: { id: resultsData.orderId },
         data: {
-          status: 'completed',
-          results_available: true,
-          abnormal_results: hasAbnormal,
-          critical_results: hasCritical,
-          completed_at: new Date(),
+          status: hasCritical ? LabOrderStatus.REPORT_READY : LabOrderStatus.COMPLETED,
+          resultsAvailable: true,
+          criticalValues: hasCritical,
+          resultsData: resultsData.testResults,
           updatedAt: new Date(),
         }
       });
 
       // Trigger notifications for critical results
       if (hasCritical) {
-        await this.handleCriticalResults(labOrder, results.filter(r => 
-          resultsData.testResults.find(tr => tr.testCode === r.test_code)?.status === 'critical'
-        ));
+        await this.handleCriticalResults(
+          labOrder,
+          results.filter((result) => result.criticalFlag || result.resultStatus === 'critical')
+        );
       }
 
       return {
@@ -350,7 +343,7 @@ export class LaboratoryService {
         : { patientId: userId };
 
       if (status) {
-        (whereClause as any).status = status;
+        (whereClause as { status?: string }).status = status;
       }
 
       const orders = await prisma.labOrder.findMany({
@@ -384,12 +377,12 @@ export class LaboratoryService {
           },
           results: {
             orderBy: {
-              createdAt: 'desc'
+              resultDate: 'desc'
             }
           }
         },
         orderBy: {
-          createdAt: 'desc'
+          orderDate: 'desc'
         }
       });
 
@@ -422,8 +415,8 @@ export class LaboratoryService {
           patient: { include: { user: true } },
           results: {
             orderBy: [
-              { test_code: 'asc' },
-              { createdAt: 'desc' }
+              { testCode: 'asc' },
+              { resultDate: 'desc' }
             ]
           }
         }
@@ -486,7 +479,7 @@ export class LaboratoryService {
       const labClient = new GenericLabClient(mockLabConfig);
 
       const payload = {
-        orderNumber: order.order_number,
+        orderNumber: order.orderNumber,
         patient: {
           id: order.patient.user.id,
           name: `${order.patient.user.firstName} ${order.patient.user.lastName}`,
@@ -498,9 +491,9 @@ export class LaboratoryService {
           name: `${order.doctor.user.firstName} ${order.doctor.user.lastName}`,
           npi: order.doctor.medicalLicenseNumber,
         },
-        tests: order.ordered_tests,
+        tests: order.orderedTests,
         priority: order.priority,
-        specialInstructions: order.special_instructions,
+        specialInstructions: order.specialInstructions,
       };
 
       const result = await labClient.submitOrder(payload);
@@ -508,7 +501,7 @@ export class LaboratoryService {
       if (result.success && result.externalOrderId) {
         await prisma.labOrder.update({
           where: { id: order.id },
-          data: { external_lab_order_id: result.externalOrderId },
+          data: { externalLabOrderId: result.externalOrderId },
         });
       }
 
@@ -528,23 +521,20 @@ export class LaboratoryService {
       // Create critical alerts
       const alerts = await Promise.all(
         criticalResults.map(result => 
-          prisma.medicalAlert.create({
+          prisma.patientAlert.create({
             data: {
               patientId: order.patientId,
-              doctorId: order.doctorId,
-              alert_type: 'critical_lab_result',
-              severity: 'critical',
-              title: `Critical Lab Result: ${result.test_name}`,
-              description: `Critical result for ${result.test_name}: ${result.result_value} ${result.unit}`,
-              data: {
+              alertType: 'SYSTEM',
+              severity: 'CRITICAL',
+              title: `Critical Lab Result: ${result.testName}`,
+              message: `Critical result for ${result.testName}: ${result.resultValue ?? 'N/A'} ${result.resultUnit ?? ''}`.trim(),
+              metadata: {
                 orderId: order.id,
-                testCode: result.test_code,
-                result: result.result_value,
-                referenceRange: result.reference_range
+                testCode: result.testCode,
+                result: result.resultValue,
+                referenceRange: result.referenceRange,
               },
-              requires_action: true,
-              createdAt: new Date(),
-              updatedAt: new Date(),
+              actionRequired: true,
             }
           })
         )
@@ -575,7 +565,7 @@ export class LaboratoryService {
     };
 
     results.forEach(result => {
-      switch (result.status) {
+      switch (result.resultStatus) {
         case 'normal':
           summary.normalCount++;
           break;
@@ -591,7 +581,7 @@ export class LaboratoryService {
       }
 
       // Count by test category (would be enhanced with actual test categorization)
-      const category = this.categorizeTest(result.test_code);
+      const category = this.categorizeTest(result.testCode || '');
       summary.categories[category] = (summary.categories[category] || 0) + 1;
     });
 
@@ -632,19 +622,19 @@ export class LaboratoryService {
     try {
       const results = await prisma.labResult.findMany({
         where: {
-          lab_order: {
+          labOrder: {
             patientId: patientId,
           },
-          test_code: testCode,
+          testCode,
         },
         orderBy: {
-          result_date: 'asc',
+          resultDate: 'asc',
         },
         select: {
-          result_date: true,
-          numeric_value: true,
-          result_unit: true,
-          reference_range: true,
+          resultDate: true,
+          numericValue: true,
+          resultUnit: true,
+          referenceRange: true,
         },
       });
 
@@ -686,7 +676,7 @@ export class LaboratoryService {
       }
 
       // Check if order can be cancelled
-      if (['completed', 'cancelled'].includes(order.status)) {
+      if ([LabOrderStatus.COMPLETED, LabOrderStatus.CANCELLED].includes(order.status)) {
         return {
           success: false,
           error: `Cannot cancel order with status: ${order.status}`
@@ -697,10 +687,12 @@ export class LaboratoryService {
       const cancelledOrder = await prisma.labOrder.update({
         where: { id: orderId },
         data: {
-          status: 'cancelled',
-          cancellation_reason: reason,
-          cancelled_at: new Date(),
-          updatedAt: new Date(),
+          status: LabOrderStatus.CANCELLED,
+          resultsData: {
+            ...(order.resultsData && typeof order.resultsData === 'object' ? order.resultsData : {}),
+            cancellationReason: reason,
+            cancelledAt: new Date().toISOString(),
+          },
         }
       });
 

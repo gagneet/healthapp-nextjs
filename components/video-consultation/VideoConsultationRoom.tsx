@@ -8,8 +8,8 @@ import {
   useDaily,
   useLocalParticipant,
   useParticipant,
-  useVideo,
-  useAudio,
+  useVideoTrack,
+  useAudioTrack,
   useAppMessage,
   useScreenShare,
   useRecording,
@@ -47,19 +47,23 @@ type AdherenceRecordWithRelations = Prisma.AdherenceRecordGetPayload<{
 
 const ParticipantTile = ({ sessionId }: { sessionId: string }) => {
   const participant = useParticipant(sessionId);
-  const { isPlayable, cam, isScreen } = useVideo(sessionId);
-  const { isPlayable: isAudioPlayable } = useAudio(sessionId);
+  const videoTrack = useVideoTrack(sessionId);
+  const audioTrack = useAudioTrack(sessionId);
 
   if (!participant) return null;
 
+  const { isPlayable, track: cam, persistentTrack } = videoTrack;
+  const { isPlayable: isAudioPlayable } = audioTrack;
+  const isScreen = persistentTrack?.kind === 'video' && persistentTrack?.label?.includes('screen');
+
   return (
     <div className="relative w-full h-full bg-gray-800 rounded-lg overflow-hidden">
-      {isPlayable && !isScreen ? (
+      {isPlayable && !isScreen && cam ? (
         <video
           autoPlay
           muted={participant.local}
           playsInline
-          ref={(ref) => ref && cam?.track && (ref.srcObject = new MediaStream([cam.track]))}
+          ref={(ref) => ref && cam && (ref.srcObject = new MediaStream([cam]))}
           className="w-full h-full object-cover"
         />
       ) : (

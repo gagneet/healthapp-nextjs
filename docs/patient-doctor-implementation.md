@@ -6,12 +6,13 @@ A unified ecosystem for Patients, Doctors, and Healthcare Service Providers (HSP
 
 ---
 
-## **📌 Goal Overview**
+## 📌 Goal Overview
 
 ### **Patient Portal**
-- Medication, Diet & Exercise Adherence  
-- Health Tracking  
-- Engagement & Reminders  
+- Medication, Diet & Exercise Adherence
+- Health Tracking
+- Engagement & Reminders
+- Messaging, Lab Results, Video Consultations, Goals, Gamification, Caregiver Access, Education
 
 ### **Doctor Portal**
 - Remote Patient Monitoring (RPM)  
@@ -108,6 +109,11 @@ Must comply with **HIPAA / DISHA** for cross‑role data sharing.
 - **Plan Management** — Create/Edit non‑medication `TreatmentPlan`  
 
 ---
+
+## ✅ Patient Portal Implementation Status
+- Implemented: medication adherence, diet/exercise tracking, vitals alerts, appointments, care plans, settings.
+- Implemented: messaging, lab results, video consultations, goals, gamification, caregiver access, education pages + APIs.
+- Pending: medication side effects/refill UI, patient alerts/notification center, video consult booking workflow polish, caregiver invite UX.
 
 ## **5. Shared Features (All Roles)**
 

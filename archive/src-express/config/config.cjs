@@ -1,4 +1,5 @@
 // src/config/config.cjs - Sequelize CLI Configuration (CommonJS)
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 require('dotenv').config();
 
 module.exports = {

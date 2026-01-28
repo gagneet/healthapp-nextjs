@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/prisma';
+import { ConsultationPriority, ConsultationStatus, ConsultationType } from '@/prisma/generated/prisma';
 import * as crypto from 'crypto';
 
 export interface CreateConsultationData {
@@ -21,6 +22,18 @@ export interface JoinConsultationData {
 export class VideoConsultationService {
   private readonly DAILY_API_URL = process.env.DAILY_API_URL || 'https://api.daily.co/v1';
   private readonly DAILY_API_KEY = process.env.DAILY_API_KEY;
+  private readonly consultationTypeMap: Record<CreateConsultationData['consultationType'], ConsultationType> = {
+    emergency: ConsultationType.EMERGENCY_CONSULTATION,
+    scheduled: ConsultationType.VIDEO_CONSULTATION,
+    followup: ConsultationType.FOLLOW_UP_CONSULTATION,
+    second_opinion: ConsultationType.SPECIALIST_REFERRAL,
+  };
+  private readonly priorityMap: Record<CreateConsultationData['priority'], ConsultationPriority> = {
+    low: ConsultationPriority.ROUTINE,
+    medium: ConsultationPriority.ROUTINE,
+    high: ConsultationPriority.URGENT,
+    emergency: ConsultationPriority.EMERGENCY,
+  };
 
   /**
    * Create a new Daily.co video call room
@@ -88,32 +101,30 @@ export class VideoConsultationService {
       
       const consultation = await prisma.videoConsultation.create({
         data: {
-          consultation_id: crypto.randomUUID(),
+          consultationId: crypto.randomUUID(),
           doctorId: data.doctorId,
           patientId: data.patientId,
-          appointment_id: data.appointmentId,
-          room_id: dailyRoom.id,
-          room_token: null, // We will generate meeting tokens on demand
-          doctor_join_url: dailyRoom.url,
-          patient_join_url: dailyRoom.url,
-          scheduled_start: data.scheduledStartTime,
-          scheduled_end: new Date(data.scheduledStartTime.getTime() + (data.duration * 60 * 1000)),
-          duration_minutes: data.duration,
-          consultation_type: data.consultationType.toUpperCase() as any,
-          priority: data.priority.toUpperCase() as any,
-          status: 'SCHEDULED' as any,
-          consultation_notes: data.notes,
-          created_by: data.doctorId,
-          recording_enabled: this.shouldEnableRecording(data.consultationType),
-          createdAt: new Date(),
-          updatedAt: new Date(),
+          appointmentId: data.appointmentId,
+          roomId: dailyRoom.id,
+          roomToken: null,
+          doctorJoinUrl: dailyRoom.url,
+          patientJoinUrl: dailyRoom.url,
+          scheduledStart: data.scheduledStartTime,
+          scheduledEnd: new Date(data.scheduledStartTime.getTime() + (data.duration * 60 * 1000)),
+          durationMinutes: data.duration,
+          consultationType: this.consultationTypeMap[data.consultationType],
+          priority: this.priorityMap[data.priority],
+          status: ConsultationStatus.SCHEDULED,
+          consultationNotes: data.notes,
+          createdBy: data.doctorId,
+          recordingEnabled: this.shouldEnableRecording(data.consultationType),
         },
         include: {
           doctor: {
             select: {
               id: true,
               user: { select: { firstName: true, lastName: true, email: true } },
-              specialization: true,
+              specialty: { select: { name: true } },
             }
           },
           patient: {
@@ -124,7 +135,7 @@ export class VideoConsultationService {
             }
           },
           appointment: {
-            select: { id: true, appointment_date: true, status: true, }
+            select: { id: true, startDate: true, status: true },
           }
         }
       });
@@ -150,7 +161,7 @@ export class VideoConsultationService {
   async joinConsultation({ consultationId, userId, userType }: JoinConsultationData) {
     try {
       const consultation = await prisma.videoConsultation.findUnique({
-        where: { consultation_id: consultationId },
+        where: { consultationId },
         include: {
           doctor: { include: { user: true } },
           patient: { include: { user: true } }
@@ -166,25 +177,25 @@ export class VideoConsultationService {
         return canJoin;
       }
 
-      if (consultation.status === 'SCHEDULED') {
+      if (consultation.status === ConsultationStatus.SCHEDULED) {
         await prisma.videoConsultation.update({
           where: { id: consultation.id },
-          data: { status: 'IN_PROGRESS', actual_start: new Date(), updatedAt: new Date() }
+          data: { status: ConsultationStatus.IN_PROGRESS, actualStart: new Date() }
         });
       }
 
       // The joinUrl is the same for both participants now
-      const joinUrl = consultation.doctor_join_url;
+      const joinUrl = consultation.doctorJoinUrl;
 
       return {
         success: true,
         joinUrl,
-        roomId: consultation.room_id,
+        roomId: consultation.roomId,
         consultation: {
-          id: consultation.consultation_id,
+          id: consultation.consultationId,
           status: consultation.status,
-          recordingEnabled: consultation.recording_enabled,
-          duration: consultation.duration_minutes,
+          recordingEnabled: consultation.recordingEnabled,
+          duration: consultation.durationMinutes,
         }
       };
     } catch (error) {
@@ -203,7 +214,7 @@ export class VideoConsultationService {
   async endConsultation(consultationId: string, userId: string, summary?: string) {
     try {
       const consultation = await prisma.videoConsultation.findUnique({
-        where: { consultation_id: consultationId },
+        where: { consultationId },
       });
 
       if (!consultation) {
@@ -217,11 +228,9 @@ export class VideoConsultationService {
       const updatedConsultation = await prisma.videoConsultation.update({
         where: { id: consultation.id },
         data: {
-          status: 'COMPLETED',
-          actual_end: new Date(),
-          // The 'summary' parameter is stored in 'consultation_notes' as per the database schema.
-          consultation_notes: summary,
-          updatedAt: new Date(),
+          status: ConsultationStatus.COMPLETED,
+          actualEnd: new Date(),
+          consultationNotes: summary,
         }
       });
 
@@ -250,9 +259,9 @@ export class VideoConsultationService {
       const consultations = await prisma.videoConsultation.findMany({
         where: whereClause,
         include: {
-          doctor: { select: { id: true, user: { select: { firstName: true, lastName: true, } }, specialization: true, } },
+          doctor: { select: { id: true, user: { select: { firstName: true, lastName: true } }, specialty: { select: { name: true } } } },
           patient: { select: { id: true, user: { select: { firstName: true, lastName: true, } }, } },
-          appointment: { select: { id: true, appointment_date: true, } }
+          appointment: { select: { id: true, startDate: true } }
         },
         orderBy: { createdAt: 'desc' },
         skip: (page - 1) * limit,
@@ -296,10 +305,10 @@ export class VideoConsultationService {
     }
 
     const now = new Date();
-    const scheduledTime = new Date(consultation.scheduled_start);
-    const maxJoinTime = new Date(scheduledTime.getTime() + (consultation.duration_minutes || 60) * 60 * 1000 + (30 * 60 * 1000));
+    const scheduledTime = new Date(consultation.scheduledStart);
+    const maxJoinTime = new Date(scheduledTime.getTime() + (consultation.durationMinutes || 60) * 60 * 1000 + (30 * 60 * 1000));
 
-    if (now > maxJoinTime && consultation.status !== 'IN_PROGRESS') {
+    if (now > maxJoinTime && consultation.status !== ConsultationStatus.IN_PROGRESS) {
       return { success: false, error: 'Consultation has expired' };
     }
 
@@ -312,7 +321,7 @@ export class VideoConsultationService {
   async toggleRecording(consultationId: string, action: 'start' | 'stop', userId: string) {
     try {
       const consultation = await prisma.videoConsultation.findUnique({
-        where: { consultation_id: consultationId },
+        where: { consultationId },
       });
 
       if (!consultation) {
@@ -324,7 +333,7 @@ export class VideoConsultationService {
       }
 
       const response = await this._dailyApiRequest(`/recordings`, 'POST', {
-        room: consultation.room_id,
+        room: consultation.roomId,
         action: action,
       });
 
@@ -335,7 +344,7 @@ export class VideoConsultationService {
       if (action === 'stop' && response.data.url) {
         await prisma.videoConsultation.update({
           where: { id: consultation.id },
-          data: { recording_url: response.data.url },
+          data: { recordingUrl: response.data.url },
         });
       }
 
@@ -395,17 +404,17 @@ export class VideoConsultationService {
   async getActiveConsultations(userId: string, userType: 'doctor' | 'patient') {
     try {
       const whereClause = {
-        status: 'IN_PROGRESS' as any,
+        status: ConsultationStatus.IN_PROGRESS,
         ...(userType === 'doctor' ? { doctorId: userId } : { patientId: userId })
       };
 
       const consultations = await prisma.videoConsultation.findMany({
         where: whereClause,
         include: {
-          doctor: { select: { id: true, user: { select: { firstName: true, lastName: true, } }, specialization: true, } },
+          doctor: { select: { id: true, user: { select: { firstName: true, lastName: true } }, specialty: { select: { name: true } } } },
           patient: { select: { id: true, user: { select: { firstName: true, lastName: true, } }, } }
         },
-        orderBy: { actual_start: 'desc' },
+        orderBy: { actualStart: 'desc' },
       });
 
       return { success: true, consultations };

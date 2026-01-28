@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/prisma';
+import { ConsultationStatus } from '@/prisma/generated/prisma';
 import VideoConsultationService from './VideoConsultationService';
 
 export interface BookConsultationData {
@@ -129,7 +130,7 @@ export class ConsultationBookingService {
             lt: endOfDay
           },
           status: {
-            in: ['SCHEDULED', 'CONFIRMED', 'IN_PROGRESS']
+            in: [ConsultationStatus.SCHEDULED, ConsultationStatus.IN_PROGRESS]
           }
         },
         orderBy: {
@@ -196,7 +197,7 @@ export class ConsultationBookingService {
         where: {
           doctorId: doctorId,
           status: {
-            in: ['SCHEDULED', 'CONFIRMED', 'IN_PROGRESS']
+            in: [ConsultationStatus.SCHEDULED, ConsultationStatus.IN_PROGRESS]
           },
           AND: [
             {
