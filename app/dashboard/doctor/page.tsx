@@ -85,12 +85,22 @@ export default function DoctorDashboard() {
 
       const data = apiResponse.payload.data
 
+      // Calculate medication adherence from recent patients if available
+      let medicationAdherence = 0;
+      if (data.recentPatients && data.recentPatients.length > 0) {
+        const totalAdherence = data.recentPatients.reduce((sum: number, p: any) => {
+          // If patient has adherence data, use it; otherwise assume 0
+          return sum + (p.adherence || 0);
+        }, 0);
+        medicationAdherence = Math.round(totalAdherence / data.recentPatients.length);
+      }
+
       // Map to UI state
       setDashboardStats({
         totalPatients: data.statistics.totalPatients,
         criticalAlerts: data.statistics.highRiskPatients, // Using high risk count for alerts widget
         appointments_today: data.statistics.todayAppointments,
-        medication_adherence: 85 // Mocking adherence for now or calculate from recentPatients logic?
+        medication_adherence: medicationAdherence
       })
 
       // Use recent patients from main response
