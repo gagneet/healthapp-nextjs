@@ -53,15 +53,32 @@ export async function GET(request: NextRequest) {
       skip: queryData.offset
     });
 
-    return NextResponse.json(formatApiSuccess(mealLogs.map(log => ({
-      id: log.id,
-      title: log.mealType.replace('_', ' ').toLowerCase(),
-      description: log.notes,
-      loggedAt: log.loggedAt,
-      status: 'COMPLETED',
-      calories: log.totalCalories ?? null,
-      mealType: log.mealType
-    })), 'Diet entries retrieved successfully'));
+    // Helper function to extract title from notes
+    const extractTitleAndNotes = (notes: string | null) => {
+      if (!notes) return { title: null, description: null };
+      
+      const titleMatch = notes.match(/^Title: (.+?)(?:\n\n|$)/);
+      if (titleMatch) {
+        const title = titleMatch[1];
+        const description = notes.substring(titleMatch[0].length).trim() || null;
+        return { title, description };
+      }
+      
+      return { title: null, description: notes };
+    };
+
+    return NextResponse.json(formatApiSuccess(mealLogs.map(log => {
+      const { title, description } = extractTitleAndNotes(log.notes);
+      return {
+        id: log.id,
+        title: title || log.mealType.replace('_', ' ').toLowerCase(),
+        description,
+        loggedAt: log.loggedAt,
+        status: 'COMPLETED',
+        calories: log.totalCalories ?? null,
+        mealType: log.mealType
+      };
+    }), 'Diet entries retrieved successfully'));
   } catch (error) {
     console.error('Diet list error:', error);
     if (error instanceof z.ZodError) {
