@@ -1,5 +1,42 @@
 # Issues encountered and resolution summary
 
+## Build Fix - January 28, 2026 (Commit: e1906a6)
+
+### Issue: Webpack Build Failures and Video Consultation Hook Errors
+
+**Problems:**
+1. Webpack error: Cannot find module '@tailwindcss/forms' during build
+2. Import warnings: useVideo/useAudio not exported from @daily-co/daily-react
+
+**Root Causes:**
+1. Tailwind CSS plugins listed in package.json but not installed in node_modules
+2. Using deprecated hook names (useVideo/useAudio) instead of correct API (useVideoTrack/useAudioTrack)
+
+**Solutions Applied:**
+1. **Updated deploy-pm2.sh script:**
+   - Added automatic Tailwind CSS plugin installation after npm install
+   - Ensures @tailwindcss/forms and @tailwindcss/typography are always present
+
+2. **Fixed VideoConsultationRoom.tsx component:**
+   - Changed imports: useVideo → useVideoTrack, useAudio → useAudioTrack
+   - Updated hook usage to match @daily-co/daily-react v0.23.2 API
+   - Fixed MediaStream track references for video rendering
+
+**Verification:**
+- ✅ Build completes successfully: `npm run build` → "Compiled successfully"
+- ✅ No webpack module errors
+- ✅ No @daily-co/daily-react import warnings
+- ✅ Deployment script ensures dependencies are verified
+
+**Impact:**
+- Resolves critical build failures preventing production deployment
+- Updates video consultation feature to latest Daily React API standards
+- Prevents future dependency-related build issues
+
+**Documentation:** See docs/BUILD_FIX_JAN_2026.md for detailed analysis
+
+---
+
 ## Logging dn Dashboard display issues
 
 ● Perfect! The server is running on port 3005. Now let me test our API endpoints to verify our fixes work:
