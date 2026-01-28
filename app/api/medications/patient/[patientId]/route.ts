@@ -8,6 +8,9 @@ import { prisma } from "@/lib/prisma";
  * GET /api/medications/patient/[patientId]
  * Get all medications for a specific patient
  */
+
+export const dynamic = 'force-dynamic';
+
 export async function GET(
   request: NextRequest,
   { params }: { params: { patientId: string } }
@@ -43,7 +46,7 @@ export async function GET(
     const patientId = params.patientId;
 
     // Additional authorization: patients can only access their own medications
-    if (user.role === 'PATIENT' && user.patientId !== patientId) {
+    if (user.role === 'PATIENT' && user.profileId !== patientId) {
       return NextResponse.json(handleApiError({
         message: 'Access denied: You can only access your own medication data'
       }), { status: 403 });

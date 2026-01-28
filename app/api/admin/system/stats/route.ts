@@ -4,7 +4,9 @@ import { auth } from "@/lib/auth";
 import { prisma } from '@/lib/prisma';
 import { Specialty, Doctor, User } from '@/prisma/generated/prisma';
 
-export const dynamic = 'force-dynamic'
+
+export const dynamic = 'force-dynamic';
+
 export const runtime = 'nodejs'
 
 export async function GET(request: NextRequest) {

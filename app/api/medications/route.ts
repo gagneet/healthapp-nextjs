@@ -7,6 +7,9 @@ import { getMedications, createMedication, handleApiError, formatApiSuccess } fr
  * GET /api/medications
  * Search and retrieve medications
  */
+
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: NextRequest) {
   try {
     // Rate limiting

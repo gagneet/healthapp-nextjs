@@ -4,11 +4,14 @@ import { prisma } from '@/lib/prisma';
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 
+
+export const dynamic = 'force-dynamic';
+
 const medicationTakeSchema = z.object({
-  medicationId: z.string(),
-  dosage: z.string(),
+  medicationId: z.string().uuid(),
+  dosage: z.string().min(1),
   notes: z.string().optional(),
-  takenAt: z.string().optional()
+  takenAt: z.string().datetime().optional()
 });
 
 /**
@@ -42,32 +45,69 @@ export async function POST(request: NextRequest) {
       }), { status: 404 });
     }
 
-    // Create medication log entry
-    const medicationLog = await prisma.medicationLog.create({
+    const medication = await prisma.medication.findFirst({
+      where: {
+        id: validatedData.medicationId,
+        participantId: patient.id,
+        deletedAt: null
+      },
+      select: {
+        id: true,
+        startDate: true,
+        endDate: true,
+        details: true
+      }
+    });
+
+    if (!medication) {
+      return NextResponse.json(handleApiError({
+        message: 'Medication not found or access denied'
+      }), { status: 404 });
+    }
+
+    const takenAt = validatedData.takenAt ? new Date(validatedData.takenAt) : new Date();
+    const medicationDetails = medication.details as Record<string, unknown> | null;
+    const instructions = typeof medicationDetails?.instructions === 'string' ? medicationDetails.instructions : null;
+
+    const adherenceLog = await prisma.adherenceLog.create({
       data: {
         patientId: patient.id,
-        medicationId: validatedData.medicationId,
-        dosage: validatedData.dosage,
-        takenAt: validatedData.takenAt ? new Date(validatedData.takenAt) : new Date(),
-        adherenceStatus: 'TAKEN',
+        adherenceType: 'medication',
+        relatedMedicationId: medication.id,
+        scheduledDatetime: takenAt,
+        actualDatetime: takenAt,
+        status: 'taken',
+        completionPercentage: 100,
+        patientNotes: validatedData.notes,
+        recordedBy: 'patient',
+        recordedByUserId: session.user.id
+      }
+    });
+
+    await prisma.medicationLog.create({
+      data: {
+        id: crypto.randomUUID(),
+        medicationId: medication.id,
+        patientId: patient.id,
+        scheduledAt: takenAt,
+        takenAt,
+        dosageTaken: validatedData.dosage,
         notes: validatedData.notes,
-        createdAt: new Date()
+        adherenceStatus: 'TAKEN',
+        reminderSent: false,
+        createdAt: new Date(),
+        updatedAt: new Date()
       }
     });
 
-    // Create adherence record
-    await prisma.adherenceRecord.create({
-      data: {
-        patientId: patient.id,
-        adherenceType: 'MEDICATION',
-        scheduledAt: new Date(), // This should ideally come from a scheduled medication time
-        completedAt: validatedData.takenAt ? new Date(validatedData.takenAt) : new Date(),
-        isCompleted: true,
-        notes: `Medication taken: ${validatedData.dosage}${validatedData.notes ? '. ' + validatedData.notes : ''}`
-      }
-    });
-
-    return NextResponse.json(formatApiSuccess(medicationLog, 'Medication intake recorded successfully'));
+    return NextResponse.json(formatApiSuccess({
+      id: adherenceLog.id,
+      medicationId: medication.id,
+      takenAt: adherenceLog.actualDatetime,
+      dosage: validatedData.dosage,
+      instructions,
+      notes: adherenceLog.patientNotes
+    }, 'Medication intake recorded successfully'));
   } catch (error) {
     console.error('Record medication intake error:', error);
     return NextResponse.json(handleApiError(error), { status: 500 });

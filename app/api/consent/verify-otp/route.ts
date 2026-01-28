@@ -3,6 +3,9 @@ import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 
+
+export const dynamic = 'force-dynamic';
+
 const verifyOtpSchema = z.object({
   otpId: z.string().uuid(),
   otpCode: z.string().length(6),

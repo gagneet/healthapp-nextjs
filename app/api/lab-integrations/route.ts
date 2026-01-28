@@ -3,6 +3,9 @@ import { auth } from "@/lib/auth";
 
 // In-memory store for lab integration configurations.
 // In a real application, this should be stored in a secure, encrypted database.
+
+export const dynamic = 'force-dynamic';
+
 const labIntegrations = [
   {
     id: 'quest',

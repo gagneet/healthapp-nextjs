@@ -5,7 +5,6 @@ import { Toaster } from 'react-hot-toast'
 import { AuthProvider } from '@/lib/auth-context'
 
 // Force all pages to be dynamic (no static generation)
-export const dynamic = 'force-dynamic'
 export const revalidate = 0
 import ErrorBoundary from '@/components/ErrorBoundary'
 import GlobalErrorHandler from '@/components/GlobalErrorHandler'

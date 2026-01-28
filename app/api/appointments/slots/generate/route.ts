@@ -4,6 +4,9 @@ import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 import { AppointmentSlotType } from '@/prisma/generated/prisma';
 
+
+export const dynamic = 'force-dynamic';
+
 const generateSlotsSchema = z.object({
   doctorId: z.string().uuid(),
   startDate: z.string().date(),

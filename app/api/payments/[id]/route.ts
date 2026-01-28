@@ -4,6 +4,9 @@ import { auth } from "@/lib/auth";
 import { prisma } from '@/lib/prisma';
 
 // Get specific payment by ID
+
+export const dynamic = 'force-dynamic';
+
 export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }

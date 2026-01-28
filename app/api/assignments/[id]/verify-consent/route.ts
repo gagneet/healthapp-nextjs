@@ -6,6 +6,9 @@ import SecondaryDoctorService from '@/lib/secondary-doctor-service';
  * POST /api/assignments/{id}/verify-consent
  * Verify patient consent via OTP for secondary doctor assignments
  */
+
+export const dynamic = 'force-dynamic';
+
 export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
   try {
     const session = await auth();

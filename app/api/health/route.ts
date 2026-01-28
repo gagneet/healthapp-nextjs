@@ -39,6 +39,7 @@ import { handleApiError, formatApiSuccess } from '@/lib/api-services';
  *                 error:
  *                   type: string
  */
+
 export async function GET(request: NextRequest) {
   try {
     // Check database connection with retry logic

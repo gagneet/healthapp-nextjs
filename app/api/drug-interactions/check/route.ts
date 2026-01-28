@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 
 import { checkRateLimit } from "@/lib/auth-helpers";
 import { 
+
   checkPatientDrugInteractions, 
   handleApiError, 
   formatApiSuccess 
@@ -13,6 +14,9 @@ import {
  * Check for drug interactions for a specific patient
  * Body: { patientId: string, carePlans: string[], newMedication?: string }
  */
+
+export const dynamic = 'force-dynamic';
+
 export async function POST(request: NextRequest) {
   try {
     // Rate limiting

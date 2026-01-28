@@ -1,5 +1,4 @@
 // Force dynamic rendering for API routes using headers/auth
-export const dynamic = 'force-dynamic'
 
 /**
  * Admin Dashboard API Route
@@ -23,6 +22,9 @@ import {
  * Retrieve comprehensive admin dashboard analytics and statistics
  * Business Logic: Only system admins can access admin dashboard
  */
+
+export const dynamic = 'force-dynamic';
+
 export const GET = withErrorHandling(async (request: NextRequest) => {
   const session = await auth()
   

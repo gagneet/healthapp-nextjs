@@ -1,0 +1,117 @@
+# Dockerfile.production - Optimized Production Next.js deployment
+# Multi-stage build for minimal image size and faster builds
+
+FROM node:22-alpine AS base
+
+# Install system dependencies required for Prisma and healthcare apps
+RUN apk add --no-cache \
+    libc6-compat \
+    postgresql-client \
+    curl \
+    bash \
+    openssl \
+    ca-certificates \
+    netcat-openbsd
+
+WORKDIR /app
+
+# ============================================================================
+# Dependencies stage - Install production dependencies only
+# ============================================================================
+FROM base AS deps
+
+# Copy package files only
+COPY package.json package-lock.json* ./
+
+# Install dependencies
+# Use --legacy-peer-deps if needed for compatibility
+RUN npm ci --only=production --ignore-scripts && \
+    npm cache clean --force
+
+# ============================================================================
+# Build stage - Build the application
+# ============================================================================
+FROM base AS builder
+
+WORKDIR /app
+
+# Copy package files
+COPY package.json package-lock.json* ./
+
+# Install ALL dependencies (including devDependencies for build)
+RUN npm ci --ignore-scripts
+
+# Copy ONLY necessary source files for build (not node_modules or .next)
+COPY prisma ./prisma
+COPY public ./public
+COPY app ./app
+COPY lib ./lib
+COPY components ./components
+COPY styles ./styles
+COPY next.config.js ./
+COPY tsconfig.json ./
+COPY tailwind.config.ts ./
+COPY postcss.config.js ./
+
+# Accept database URL as build argument
+ARG DATABASE_URL=postgresql://dummy:dummy@localhost:5432/dummy
+
+# Set build environment variables
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV NODE_ENV=production
+ENV DATABASE_URL=$DATABASE_URL
+
+# Generate Prisma client
+RUN npx prisma generate
+
+# Build Next.js application (standalone output)
+RUN npm run build
+
+# ============================================================================
+# Runtime stage - Create minimal production image
+# ============================================================================
+FROM base AS runner
+
+WORKDIR /app
+
+# Set production environment
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+
+# Create non-root user for security
+RUN addgroup --system --gid 1001 nodejs && \
+    adduser --system --uid 1001 nextjs
+
+# Copy only necessary files from builder
+# Next.js standalone build includes minimal dependencies
+COPY --from=builder --chown=nextjs:nodejs /app/public ./public
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+
+# Copy Prisma client and schema
+COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules/.prisma ./node_modules/.prisma
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules/@prisma ./node_modules/@prisma
+
+# Copy lib directory for utilities
+COPY --from=builder --chown=nextjs:nodejs /app/lib ./lib
+
+# Copy package.json for reference
+COPY --from=builder --chown=nextjs:nodejs /app/package.json ./package.json
+
+# Switch to non-root user
+USER nextjs
+
+# Expose application port
+EXPOSE 3002
+
+# Set environment variables
+ENV PORT=3002
+ENV HOSTNAME="0.0.0.0"
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+  CMD curl -f http://localhost:3002/api/health || exit 1
+
+# Start the application
+CMD ["node", "server.js"]

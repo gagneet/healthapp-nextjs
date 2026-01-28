@@ -3,6 +3,9 @@ import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 
+
+export const dynamic = 'force-dynamic';
+
 const createSubscriptionSchema = z.object({
   planId: z.string().uuid(),
   paymentProvider: z.enum(['STRIPE', 'RAZORPAY']).default('STRIPE'),

@@ -6,10 +6,14 @@
 
 import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@/lib/auth";
+
 import { prisma } from "@/lib/prisma"
 import { z } from "zod"
 
 // Validation schema for HIPAA consent
+
+export const dynamic = 'force-dynamic';
+
 const hipaaConsentSchema = z.object({
   hipaaConsented: z.boolean(),
   termsAccepted: z.boolean(),

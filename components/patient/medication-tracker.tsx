@@ -7,16 +7,35 @@ import toast from 'react-hot-toast'
 interface MedicationTrackerProps {
   isOpen: boolean
   onClose: () => void
-  onMedicationTaken: (medication: any) => void
+  onMedicationTaken: (medication: MedicationTakenRecord) => void
   patientId?: string
+}
+
+interface MedicationTakenRecord {
+  id: string
+  medicationId: string
+  takenAt: string
+  dosage: string
+  instructions?: string | null
+  notes?: string | null
+}
+
+interface MedicationApiItem {
+  id: string
+  name: string
+  dosage?: string | null
+  frequency?: string | null
+  instructions?: string | null
+  notes?: string | null
+  nextDue?: string | null
 }
 
 interface Medication {
   id: string
   name: string
   dosage: string
-  frequency: string
-  instructions: string
+  frequency?: string | null
+  instructions?: string | null
   nextDue?: string
 }
 
@@ -41,35 +60,30 @@ export default function MedicationTracker({ isOpen, onClose, onMedicationTaken, 
   const fetchMedications = async () => {
     setIsLoading(true)
     try {
-      // Mock medications for now - replace with actual API call
-      const mockMedications: Medication[] = [
-        {
-          id: '1',
-          name: 'Metformin',
-          dosage: '500mg',
-          frequency: 'Twice daily',
-          instructions: 'Take with meals',
-          nextDue: '2025-01-16T08:00'
-        },
-        {
-          id: '2',
-          name: 'Lisinopril',
-          dosage: '10mg',
-          frequency: 'Once daily',
-          instructions: 'Take in the morning',
-          nextDue: '2025-01-16T09:00'
-        },
-        {
-          id: '3',
-          name: 'Atorvastatin',
-          dosage: '20mg',
-          frequency: 'Once daily',
-          instructions: 'Take at bedtime',
-          nextDue: '2025-01-16T22:00'
-        }
-      ]
-      
-      setMedications(mockMedications)
+      if (!patientId) {
+        setMedications([])
+        return
+      }
+
+      const response = await fetch(`/api/medications/patient/${patientId}`)
+      const result: { payload?: { data?: { carePlans?: MedicationApiItem[] }; error?: { message?: string } } } = await response.json()
+
+      if (!response.ok) {
+        throw new Error(result.payload?.error?.message || 'Failed to load medications')
+      }
+
+      const carePlans = result.payload?.data?.carePlans
+      const data: MedicationApiItem[] = Array.isArray(carePlans) ? carePlans : []
+      const mappedMedications = data.map((medication) => ({
+        id: medication.id,
+        name: medication.name,
+        dosage: medication.dosage || '',
+        frequency: medication.frequency,
+        instructions: medication.notes || medication.instructions,
+        nextDue: medication.nextDue || undefined
+      }))
+
+      setMedications(mappedMedications)
     } catch (error) {
       console.error('Error fetching medications:', error)
       toast.error('Failed to load medications')
@@ -86,7 +100,7 @@ export default function MedicationTracker({ isOpen, onClose, onMedicationTaken, 
       return
     }
 
-    const medication = medications.find(m => m.id === selectedMedication)
+    const medication = medications.find((m) => m.id === selectedMedication)
     if (!medication) {
       toast.error('Selected medication not found')
       return
@@ -99,7 +113,7 @@ export default function MedicationTracker({ isOpen, onClose, onMedicationTaken, 
         medicationId: selectedMedication,
         dosage: customDosage || medication.dosage,
         notes: notes.trim() || undefined,
-        takenAt: takenAt
+        takenAt: takenAt || undefined
       }
 
       const response = await fetch('/api/patient/medications/take', {
@@ -110,9 +124,9 @@ export default function MedicationTracker({ isOpen, onClose, onMedicationTaken, 
         body: JSON.stringify(medicationData)
       })
 
-      const result = await response.json()
+      const result: { payload?: { data?: MedicationTakenRecord; error?: { message?: string } } } = await response.json()
 
-      if (response.ok) {
+      if (response.ok && result.payload?.data) {
         toast.success(`${medication.name} recorded successfully!`)
         onMedicationTaken(result.payload.data)
         handleClose()

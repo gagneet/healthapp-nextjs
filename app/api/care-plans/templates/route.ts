@@ -8,6 +8,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma"
 import { 
+
   createSuccessResponse, 
   createErrorResponse, 
   createUnauthorizedResponse,
@@ -21,6 +22,9 @@ import { z } from "zod"
  * Retrieve care plan templates based on user role and specialty
  * Business Logic: Role-based filtering for healthcare templates
  */
+
+export const dynamic = 'force-dynamic';
+
 export const GET = withErrorHandling(async (request: NextRequest) => {
   const session = await auth()
   
@@ -132,6 +136,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
         total
       }
     );
+
 })
 
 /**

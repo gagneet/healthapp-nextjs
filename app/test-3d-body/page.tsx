@@ -1,5 +1,10 @@
 'use client'
 
+export const dynamic = 'force-dynamic'
+
+
+
+
 import { useState } from 'react'
 import BodyDiagram3D from '@/components/ui/body-diagram-3d'
 import SymptomReporter from '@/components/patient/symptom-reporter'
@@ -236,6 +241,7 @@ export default function Test3DBodyPage() {
           onClose={() => setShowSymptomReporter(false)}
           onSymptomSubmit={handleSymptomSubmit}
           patientId="test-patient"
+
           gender={gender}
         />
       </div>

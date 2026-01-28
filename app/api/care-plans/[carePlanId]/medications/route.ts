@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import {
+
   createSuccessResponse,
   createErrorResponse,
   createUnauthorizedResponse,
@@ -9,6 +10,9 @@ import {
   withErrorHandling,
 } from "@/lib/api-response";
 import { z } from "zod";
+
+
+export const dynamic = 'force-dynamic';
 
 const createMedicationSchema = z.object({
   medicineId: z.string().uuid(),

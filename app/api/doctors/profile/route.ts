@@ -8,6 +8,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma"
 import { 
+
   createSuccessResponse, 
   createErrorResponse, 
   createUnauthorizedResponse,
@@ -20,6 +21,9 @@ import {
  * Retrieve comprehensive doctor profile with statistics and preferences
  * Business Logic: Doctor can only access their own profile
  */
+
+export const dynamic = 'force-dynamic';
+
 export const GET = withErrorHandling(async (request: NextRequest) => {
   const session = await auth()
   
@@ -145,6 +149,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
     }
 
     return createSuccessResponse(profileData);
+
   } catch (error) {
     console.error("Failed to fetch doctor profile:", error)
     throw error

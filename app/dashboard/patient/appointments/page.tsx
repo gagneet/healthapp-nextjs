@@ -1,7 +1,11 @@
 'use client'
 
-// Force dynamic rendering for authenticated pages
 export const dynamic = 'force-dynamic'
+
+
+
+
+// Force dynamic rendering for authenticated pages
 
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/lib/auth-context'
@@ -31,17 +35,43 @@ interface Appointment {
   reminder_sent: boolean
 }
 
+interface AppointmentDetail {
+  id: string
+  appointmentType?: string | null
+  status?: string | null
+  startDate?: string | null
+  startTime?: string | null
+  endTime?: string | null
+  notes?: string | null
+  location?: string | null
+  doctor?: {
+    user?: {
+      firstName?: string | null
+      lastName?: string | null
+      email?: string | null
+    } | null
+    specialty?: {
+      name?: string | null
+    } | null
+  } | null
+}
+
 export default function AppointmentsPage() {
   const { user } = useAuth()
   const [appointments, setAppointments] = useState<Appointment[]>([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState<'upcoming' | 'past' | 'all'>('upcoming')
+  const [reschedulingId, setReschedulingId] = useState<string | null>(null)
+  const [selectedAppointmentId, setSelectedAppointmentId] = useState<string | null>(null)
+  const [appointmentDetail, setAppointmentDetail] = useState<AppointmentDetail | null>(null)
+  const [detailLoading, setDetailLoading] = useState(false)
+  const [detailError, setDetailError] = useState<string | null>(null)
 
   useEffect(() => {
     fetchAppointments()
   }, [])
 
-  const fetchAppointments = async () => {
+    const fetchAppointments = async () => {
     try {
       setLoading(true)
       const response = await fetch('/api/patient/appointments', {
@@ -50,7 +80,7 @@ export default function AppointmentsPage() {
         },
       })
       if (response.ok) {
-        const data = await response.json()
+        const data: { payload?: { data?: Appointment[] } } = await response.json()
         setAppointments(data.payload?.data || [])
       }
     } catch (error) {
@@ -64,8 +94,8 @@ export default function AppointmentsPage() {
     if (!confirm('Are you sure you want to cancel this appointment?')) return
 
     try {
-      const response = await fetch(`/api/patient/appointments/${appointmentId}/cancel`, {
-        method: 'PATCH',
+      const response = await fetch(`/api/appointments/${appointmentId}/cancel`, {
+        method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
           'Content-Type': 'application/json',
@@ -79,8 +109,8 @@ export default function AppointmentsPage() {
     }
   }
 
-  const filteredAppointments = appointments.filter(apt => {
-    const appointmentDate = new Date(apt.appointment_date + 'T' + apt.appointment_time)
+  const filteredAppointments = appointments.filter((apt) => {
+    const appointmentDate = new Date(`${apt.appointment_date}T${apt.appointment_time}`)
     const now = new Date()
 
     switch (filter) {
@@ -95,7 +125,63 @@ export default function AppointmentsPage() {
     }
   })
 
-  const getStatusColor = (status: string) => {
+  const handleReschedule = async (appointmentId: string) => {
+    const newStart = prompt('Enter new start time (YYYY-MM-DDTHH:mm:ssZ)')
+    if (!newStart) return
+    const endTime = prompt('Enter new end time (YYYY-MM-DDTHH:mm:ssZ) (optional)') || undefined
+
+    try {
+      setReschedulingId(appointmentId)
+      const response = await fetch(`/api/patient/appointments/${appointmentId}/reschedule`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          startDate: new Date(newStart).toISOString(),
+          startTime: new Date(newStart).toISOString(),
+          endTime: endTime ? new Date(endTime).toISOString() : undefined,
+        }),
+      })
+      if (response.ok) {
+        fetchAppointments()
+      }
+    } catch (error) {
+      console.error('Failed to reschedule appointment:', error)
+    } finally {
+      setReschedulingId(null)
+    }
+  }
+
+  const fetchAppointmentDetail = async (appointmentId: string) => {
+    setDetailLoading(true)
+    setDetailError(null)
+    try {
+      const response = await fetch(`/api/patient/appointments/${appointmentId}`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
+      })
+      const data = await response.json()
+      if (!response.ok) {
+        throw new Error(data.payload?.error?.message || 'Failed to load appointment details')
+      }
+      setAppointmentDetail(data.payload?.data || null)
+    } catch (error) {
+      console.error('Failed to fetch appointment detail:', error)
+      setDetailError('Unable to load appointment details')
+    } finally {
+      setDetailLoading(false)
+    }
+  }
+
+  const handleViewDetails = (appointmentId: string) => {
+    setSelectedAppointmentId(appointmentId)
+    fetchAppointmentDetail(appointmentId)
+  }
+
+  const getStatusColor = (status: Appointment['status']) => {
     switch (status) {
       case 'scheduled':
         return 'bg-blue-100 text-blue-800'
@@ -110,7 +196,7 @@ export default function AppointmentsPage() {
     }
   }
 
-  const getStatusIcon = (status: string) => {
+  const getStatusIcon = (status: Appointment['status']) => {
     switch (status) {
       case 'scheduled':
         return <CalendarIcon className="w-4 h-4" />
@@ -125,7 +211,7 @@ export default function AppointmentsPage() {
     }
   }
 
-  const getTypeIcon = (type: string) => {
+  const getTypeIcon = (type: Appointment['type']) => {
     switch (type) {
       case 'telemedicine':
         return <VideoCameraIcon className="w-4 h-4" />
@@ -256,8 +342,18 @@ export default function AppointmentsPage() {
                           Join Video Call
                         </button>
                       )}
-                      <button className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors text-sm">
-                        Reschedule
+                      <button
+                        className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm"
+                        onClick={() => handleViewDetails(appointment.id)}
+                      >
+                        View Details
+                      </button>
+                      <button
+                        className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors text-sm disabled:opacity-50"
+                        onClick={() => handleReschedule(appointment.id)}
+                        disabled={reschedulingId === appointment.id}
+                      >
+                        {reschedulingId === appointment.id ? 'Rescheduling...' : 'Reschedule'}
                       </button>
                       <button
                         onClick={() => cancelAppointment(appointment.id)}
@@ -294,6 +390,61 @@ export default function AppointmentsPage() {
               <div className="font-medium text-gray-900">Telemedicine</div>
               <div className="text-sm text-gray-600">Schedule video consultation</div>
             </button>
+          </div>
+        </div>
+      )}
+
+      {selectedAppointmentId && (
+        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-lg w-full max-w-lg p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-900">Appointment Details</h3>
+              <button
+                onClick={() => {
+                  setSelectedAppointmentId(null)
+                  setAppointmentDetail(null)
+                }}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                ×
+              </button>
+            </div>
+            {detailLoading ? (
+              <p className="text-sm text-gray-500">Loading details...</p>
+            ) : detailError ? (
+              <p className="text-sm text-red-600">{detailError}</p>
+            ) : appointmentDetail ? (
+              <div className="space-y-3 text-sm text-gray-700">
+                <div>
+                  <span className="font-medium">Doctor:</span>{' '}
+                  {appointmentDetail.doctor?.user?.firstName || 'Doctor'} {appointmentDetail.doctor?.user?.lastName || ''}
+                </div>
+                <div>
+                  <span className="font-medium">Specialty:</span> {appointmentDetail.doctor?.specialty?.name || 'General'}
+                </div>
+                <div>
+                  <span className="font-medium">Date:</span> {appointmentDetail.startDate ? new Date(appointmentDetail.startDate).toLocaleDateString() : 'TBD'}
+                </div>
+                <div>
+                  <span className="font-medium">Time:</span> {appointmentDetail.startTime ? new Date(appointmentDetail.startTime).toLocaleTimeString() : 'TBD'}
+                </div>
+                <div>
+                  <span className="font-medium">Status:</span> {appointmentDetail.status || 'scheduled'}
+                </div>
+                {appointmentDetail.location && (
+                  <div>
+                    <span className="font-medium">Location:</span> {appointmentDetail.location}
+                  </div>
+                )}
+                {appointmentDetail.notes && (
+                  <div>
+                    <span className="font-medium">Notes:</span> {appointmentDetail.notes}
+                  </div>
+                )}
+              </div>
+            ) : (
+              <p className="text-sm text-gray-500">No details available.</p>
+            )}
           </div>
         </div>
       )}

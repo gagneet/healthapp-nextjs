@@ -1,12 +1,17 @@
-# Dependencies
+# Dependencies - CRITICAL: Exclude from Docker build
+node_modules/
 node_modules
+**/node_modules
+prisma/generated/
 generated/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# Next.js build output
+# Next.js build output - CRITICAL: Exclude from Docker build
+.next/
 .next
+out/
 out
 
 # Production build files

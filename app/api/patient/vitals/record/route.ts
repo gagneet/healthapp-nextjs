@@ -4,13 +4,17 @@ import { prisma } from '@/lib/prisma';
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 
+export const dynamic = 'force-dynamic';
+
 const vitalRecordSchema = z.object({
-  vitalType: z.enum(['blood_pressure', 'heart_rate', 'temperature', 'weight', 'height', 'blood_glucose', 'oxygen_saturation']),
-  value: z.string(),
-  unit: z.string(),
+  vitalTypeId: z.string().uuid(),
+  value: z.number().optional(),
+  unit: z.string().optional(),
   notes: z.string().optional(),
-  systolic: z.number().optional(),
-  diastolic: z.number().optional()
+  systolicValue: z.number().optional(),
+  diastolicValue: z.number().optional(),
+  pulseRate: z.number().int().optional(),
+  oxygenSaturation: z.number().optional(),
 });
 
 /**
@@ -33,9 +37,9 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const validatedData = vitalRecordSchema.parse(body);
 
-    // Get patient profile
     const patient = await prisma.patient.findUnique({
-      where: { userId: session.user.id }
+      where: { userId: session.user.id },
+      select: { id: true },
     });
 
     if (!patient) {
@@ -44,56 +48,87 @@ export async function POST(request: NextRequest) {
       }), { status: 404 });
     }
 
-    // Create vital reading
+    const vitalType = await prisma.vitalType.findUnique({
+      where: { id: validatedData.vitalTypeId },
+      select: { id: true, unit: true, name: true },
+    });
+
+    if (!vitalType) {
+      return NextResponse.json(handleApiError({ message: 'Vital type not found' }), { status: 404 });
+    }
+
     const vitalReading = await prisma.vitalReading.create({
       data: {
         patientId: patient.id,
-        vitalType: validatedData.vitalType,
+        vitalTypeId: vitalType.id,
         value: validatedData.value,
-        unit: validatedData.unit,
+        unit: validatedData.unit ?? vitalType.unit ?? null,
         notes: validatedData.notes,
-        systolic: validatedData.systolic,
-        diastolic: validatedData.diastolic,
-        recordedAt: new Date(),
-        createdAt: new Date()
+        systolicValue: validatedData.systolicValue,
+        diastolicValue: validatedData.diastolicValue,
+        pulseRate: validatedData.pulseRate,
+        oxygenSaturation: validatedData.oxygenSaturation,
+        readingTime: new Date(),
       }
     });
 
-    // Check for any vital alert rules
     const alertRules = await prisma.vitalAlertRule.findMany({
       where: {
-        patientId: patient.id,
-        vitalType: validatedData.vitalType,
+        vitalType: vitalType.name,
         isActive: true
       }
     });
 
-    // Check if any alerts should be triggered
+    const severityToPriority = (severity: typeof alertRules[number]['alertLevel']) => {
+      switch (severity) {
+        case 'CRITICAL':
+          return 'EMERGENCY';
+        case 'HIGH':
+          return 'HIGH';
+        case 'MEDIUM':
+          return 'MEDIUM';
+        case 'LOW':
+        default:
+          return 'LOW';
+      }
+    };
+
     for (const rule of alertRules) {
-      const numericValue = parseFloat(validatedData.value);
+      const numericValue = validatedData.value ?? validatedData.systolicValue ?? 0;
+      const thresholdMin = rule.thresholdMin !== null ? Number(rule.thresholdMin) : null;
+      const thresholdMax = rule.thresholdMax !== null ? Number(rule.thresholdMax) : null;
+      const thresholdValue = rule.thresholdValue !== null ? Number(rule.thresholdValue) : null;
       let shouldAlert = false;
 
-      if (rule.minValue !== null && numericValue < rule.minValue) {
-        shouldAlert = true;
-      }
-      if (rule.maxValue !== null && numericValue > rule.maxValue) {
-        shouldAlert = true;
+      switch (rule.conditionType) {
+        case 'GREATER_THAN':
+          shouldAlert = thresholdValue !== null && numericValue > thresholdValue;
+          break;
+        case 'LESS_THAN':
+          shouldAlert = thresholdValue !== null && numericValue < thresholdValue;
+          break;
+        case 'BETWEEN':
+          shouldAlert = thresholdMin !== null && thresholdMax !== null &&
+            numericValue >= thresholdMin && numericValue <= thresholdMax;
+          break;
+        case 'OUTSIDE_RANGE':
+          shouldAlert = (thresholdMin !== null && numericValue < thresholdMin) ||
+            (thresholdMax !== null && numericValue > thresholdMax);
+          break;
+        default:
+          shouldAlert = false;
       }
 
       if (shouldAlert) {
         await prisma.emergencyAlert.create({
           data: {
             patientId: patient.id,
-            alertType: 'VITAL_SIGN_ABNORMAL',
-            priorityLevel: rule.alertLevel || 'MEDIUM',
-            message: `${validatedData.vitalType} reading of ${validatedData.value} ${validatedData.unit} is outside normal range`,
-            triggerData: {
-              vitalType: validatedData.vitalType,
-              value: validatedData.value,
-              unit: validatedData.unit,
-              rule: rule.ruleName
-            },
-            resolved: false,
+            alertType: 'VITAL_CRITICAL',
+            priorityLevel: severityToPriority(rule.alertLevel),
+            alertTitle: rule.name,
+            alertMessage: rule.alertMessage,
+            triggeredByRule: rule.name,
+            vitalReadingId: vitalReading.id,
             createdAt: new Date()
           }
         });

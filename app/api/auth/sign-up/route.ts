@@ -1,5 +1,4 @@
 // Force dynamic rendering for API routes using headers/auth
-export const dynamic = "force-dynamic"
 
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from "@/lib/auth";
@@ -10,6 +9,7 @@ import { createUser, handleApiError, formatApiSuccess } from '@/lib/api-services
  * POST /api/auth/sign-up
  * User registration endpoint
  */
+
 export async function POST(request: NextRequest) {
   try {
     // Rate limiting

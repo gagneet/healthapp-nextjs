@@ -6,6 +6,9 @@ import { prisma } from '@/lib/prisma';
  * GET /api/user/settings
  * Get current user's settings
  */
+
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: NextRequest) {
   try {
     const session = await auth();

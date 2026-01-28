@@ -6,6 +6,9 @@ import { getDoctorDashboard, handleApiError, formatApiSuccess } from '@/lib/api-
  * GET /api/doctors/dashboard
  * Get doctor dashboard data with stats and recent activity
  */
+
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: NextRequest) {
   try {
     // Authenticate user and check if they're a doctor

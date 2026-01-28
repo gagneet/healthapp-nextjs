@@ -9,6 +9,9 @@ import { handleApiError, formatApiSuccess } from '@/lib/api-services';
  * Fetch drug interaction data from RxNorm API
  * Query params: rxcui1, rxcui2, drugName
  */
+
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: NextRequest) {
   try {
     // Rate limiting - more restrictive for external API calls

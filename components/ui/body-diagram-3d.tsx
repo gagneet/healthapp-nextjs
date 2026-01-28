@@ -2,7 +2,7 @@
 
 import { useState, useRef, useMemo, Suspense } from 'react'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
-import { OrbitControls, Text, Html, useHelper } from '@react-three/drei'
+import { OrbitControls, Text, Html as DreiHtml, useHelper } from '@react-three/drei'
 import * as THREE from 'three'
 
 interface Symptom {
@@ -220,12 +220,12 @@ function SymptomMarker({
 
       {/* Tooltip on hover */}
       {hovered && (
-        <Html distanceFactor={10}>
+        <DreiHtml distanceFactor={10}>
           <div className="bg-black text-white px-2 py-1 rounded text-sm whitespace-nowrap pointer-events-none">
             <div className="font-medium">{symptom.name}</div>
             <div className="text-xs">Severity: {symptom.severity}/10</div>
           </div>
-        </Html>
+        </DreiHtml>
       )}
     </group>
   )

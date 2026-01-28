@@ -7,6 +7,9 @@ import SecondaryDoctorService from '@/lib/secondary-doctor-service';
  * GET /api/doctors/patient-access/{patientId}
  * Check if current doctor can access a specific patient
  */
+
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: NextRequest, { params }: { params: { patientId: string } }) {
   try {
     const session = await auth();

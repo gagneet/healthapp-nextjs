@@ -4,6 +4,9 @@ import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 import { Prisma } from '@/prisma/generated/prisma';
 
+
+export const dynamic = 'force-dynamic';
+
 const cancelSchema = z.object({
   reason: z.string().min(1, 'Reason is required for cancellation'),
   cancelledBy: z.enum(['PATIENT', 'DOCTOR', 'SYSTEM']).optional(),

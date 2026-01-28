@@ -4,6 +4,9 @@ import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 import { addDays, addYears } from 'date-fns';
 
+
+export const dynamic = 'force-dynamic';
+
 const createPrescriptionSchema = z.object({
   patientId: z.string().uuid(),
   medicationName: z.string().min(1),

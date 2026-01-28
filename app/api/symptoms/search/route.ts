@@ -15,7 +15,9 @@ import {
   withErrorHandling
 } from "@/lib/api-response"
 
-export const dynamic = 'force-dynamic'
+
+export const dynamic = 'force-dynamic';
+
 export const runtime = 'nodejs'
 
 /**
@@ -80,6 +82,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
     // Extract unique symptoms matching the query
     const matchingSymptoms = new Set<{
       name: string;
+
       category: string;
       severity: string[];
       relatedDiagnoses: string[];

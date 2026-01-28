@@ -4,6 +4,9 @@ import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 import { ConsultationStatus } from '@/prisma/generated/prisma';
 
+
+export const dynamic = 'force-dynamic';
+
 const conflictCheckSchema = z.object({
   doctorId: z.string().uuid(),
   startTime: z.string().datetime(),

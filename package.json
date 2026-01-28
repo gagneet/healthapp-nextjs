@@ -24,6 +24,7 @@
   "homepage": "https://github.com/gagneet/healthapp-nextjs#readme",
   "scripts": {
     "dev": "next dev -p 3002",
+    "prebuild": "rm -rf .next",
     "build": "npm run db:generate && next build",
     "build:docker": "next build && echo 'Docker build completed - skipping static export for dynamic auth pages'",
     "start": "next start -p 3002",
@@ -53,8 +54,8 @@
   },
   "devDependencies": {
     "@babel/preset-env": "^7.28.3",
-    "@tailwindcss/forms": "^0.5.0",
-    "@tailwindcss/typography": "^0.5.0",
+    "@tailwindcss/forms": "^0.5.11",
+    "@tailwindcss/typography": "^0.5.19",
     "@types/jest": "^29.5.14",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^22.8.7",

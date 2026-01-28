@@ -5,6 +5,9 @@ import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import { z } from 'zod';
 
+
+export const dynamic = 'force-dynamic';
+
 const generatePdfSchema = z.object({
     patientId: z.string().uuid(),
 });

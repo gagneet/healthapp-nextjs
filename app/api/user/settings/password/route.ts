@@ -6,6 +6,9 @@ import { prisma } from '@/lib/prisma';
  * POST /api/user/settings/password
  * Change user password
  */
+
+export const dynamic = 'force-dynamic';
+
 export async function POST(request: NextRequest) {
   try {
     const session = await auth();

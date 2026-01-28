@@ -4,6 +4,9 @@ import { auth } from "@/lib/auth";
 import { prisma } from '@/lib/prisma';
 
 // Phone number format helper function
+
+export const dynamic = 'force-dynamic';
+
 function getPhoneSearchFormats(phoneNumber: string): string[] {
   // Remove all non-digits
   const digitsOnly = phoneNumber.replace(/\D/g, '');

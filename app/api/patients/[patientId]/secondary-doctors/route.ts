@@ -6,6 +6,9 @@ import SecondaryDoctorService, { AssignmentType } from '@/lib/secondary-doctor-s
  * GET /api/patients/{id}/secondary-doctors
  * Get all secondary doctor assignments for a patient
  */
+
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
   try {
     const session = await auth();

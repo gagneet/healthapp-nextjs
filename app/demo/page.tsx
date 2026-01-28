@@ -1,7 +1,13 @@
+'use client'
+
+export const dynamic = 'force-dynamic'
+
+
+
+
 /**
  * Demo Page - Healthcare Management Platform
  */
-'use client'
 
 import React from 'react'
 import Link from 'next/link'

@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 
 import { checkRateLimit } from "@/lib/auth-helpers";
 import { 
+
   getEmergencyAlerts, 
   createEmergencyAlert, 
   handleApiError, 
@@ -14,6 +15,9 @@ import {
  * Retrieve emergency alerts with filtering
  * Query params: patientId, alertType, severity, status, resolved, page, limit
  */
+
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: NextRequest) {
   try {
     // Rate limiting

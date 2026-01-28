@@ -396,7 +396,8 @@ exports.Prisma.DietPlanScalarFieldEnum = {
   isActive: 'isActive',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
-  deletedAt: 'deletedAt'
+  deletedAt: 'deletedAt',
+  patientId: 'patientId'
 };
 
 exports.Prisma.WorkoutPlanScalarFieldEnum = {
@@ -413,7 +414,8 @@ exports.Prisma.WorkoutPlanScalarFieldEnum = {
   isActive: 'isActive',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
-  deletedAt: 'deletedAt'
+  deletedAt: 'deletedAt',
+  patientId: 'patientId'
 };
 
 exports.Prisma.CarePlanToDietPlanScalarFieldEnum = {
@@ -1382,6 +1384,287 @@ exports.Prisma.EmergencyContactScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.SideEffectReportScalarFieldEnum = {
+  id: 'id',
+  medicationLogId: 'medicationLogId',
+  patientId: 'patientId',
+  symptom: 'symptom',
+  severity: 'severity',
+  description: 'description',
+  reportedAt: 'reportedAt',
+  reviewedAt: 'reviewedAt',
+  reviewedBy: 'reviewedBy'
+};
+
+exports.Prisma.RefillRequestScalarFieldEnum = {
+  id: 'id',
+  medicationId: 'medicationId',
+  patientId: 'patientId',
+  requestedAt: 'requestedAt',
+  status: 'status',
+  processedAt: 'processedAt',
+  processedBy: 'processedBy',
+  notes: 'notes',
+  quantity: 'quantity'
+};
+
+exports.Prisma.MealPlanScalarFieldEnum = {
+  id: 'id',
+  dietPlanId: 'dietPlanId',
+  mealType: 'mealType',
+  scheduledTime: 'scheduledTime',
+  name: 'name',
+  description: 'description',
+  targetCalories: 'targetCalories',
+  foods: 'foods'
+};
+
+exports.Prisma.MealLogScalarFieldEnum = {
+  id: 'id',
+  patientId: 'patientId',
+  dietPlanId: 'dietPlanId',
+  mealType: 'mealType',
+  loggedAt: 'loggedAt',
+  totalCalories: 'totalCalories',
+  totalProtein: 'totalProtein',
+  totalCarbs: 'totalCarbs',
+  totalFat: 'totalFat',
+  totalFiber: 'totalFiber',
+  notes: 'notes',
+  moodBefore: 'moodBefore',
+  moodAfter: 'moodAfter',
+  photoUrl: 'photoUrl'
+};
+
+exports.Prisma.FoodLogItemScalarFieldEnum = {
+  id: 'id',
+  mealLogId: 'mealLogId',
+  foodName: 'foodName',
+  quantity: 'quantity',
+  unit: 'unit',
+  calories: 'calories',
+  protein: 'protein',
+  carbs: 'carbs',
+  fat: 'fat',
+  fiber: 'fiber'
+};
+
+exports.Prisma.WaterIntakeLogScalarFieldEnum = {
+  id: 'id',
+  patientId: 'patientId',
+  amount: 'amount',
+  loggedAt: 'loggedAt'
+};
+
+exports.Prisma.ExercisePlanScalarFieldEnum = {
+  id: 'id',
+  patientId: 'patientId',
+  carePlanId: 'carePlanId',
+  name: 'name',
+  description: 'description',
+  weeklyGoalMinutes: 'weeklyGoalMinutes',
+  weeklyGoalSessions: 'weeklyGoalSessions',
+  restrictions: 'restrictions',
+  startDate: 'startDate',
+  endDate: 'endDate',
+  isActive: 'isActive',
+  createdBy: 'createdBy',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.ScheduledWorkoutScalarFieldEnum = {
+  id: 'id',
+  exercisePlanId: 'exercisePlanId',
+  dayOfWeek: 'dayOfWeek',
+  name: 'name',
+  description: 'description',
+  targetDuration: 'targetDuration',
+  exercises: 'exercises'
+};
+
+exports.Prisma.ExerciseLogScalarFieldEnum = {
+  id: 'id',
+  patientId: 'patientId',
+  exercisePlanId: 'exercisePlanId',
+  activityType: 'activityType',
+  name: 'name',
+  duration: 'duration',
+  caloriesBurned: 'caloriesBurned',
+  distance: 'distance',
+  steps: 'steps',
+  heartRateAvg: 'heartRateAvg',
+  heartRateMax: 'heartRateMax',
+  intensity: 'intensity',
+  notes: 'notes',
+  loggedAt: 'loggedAt'
+};
+
+exports.Prisma.DailyActivitySummaryScalarFieldEnum = {
+  id: 'id',
+  patientId: 'patientId',
+  date: 'date',
+  totalSteps: 'totalSteps',
+  totalDistance: 'totalDistance',
+  totalCaloriesBurned: 'totalCaloriesBurned',
+  activeMinutes: 'activeMinutes',
+  sedentaryMinutes: 'sedentaryMinutes',
+  flightsClimbed: 'flightsClimbed',
+  restingHeartRate: 'restingHeartRate'
+};
+
+exports.Prisma.HealthGoalScalarFieldEnum = {
+  id: 'id',
+  patientId: 'patientId',
+  category: 'category',
+  title: 'title',
+  description: 'description',
+  targetValue: 'targetValue',
+  currentValue: 'currentValue',
+  unit: 'unit',
+  startDate: 'startDate',
+  targetDate: 'targetDate',
+  completedAt: 'completedAt',
+  status: 'status',
+  isPatientCreated: 'isPatientCreated',
+  createdBy: 'createdBy',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.GoalMilestoneScalarFieldEnum = {
+  id: 'id',
+  goalId: 'goalId',
+  title: 'title',
+  targetValue: 'targetValue',
+  achievedAt: 'achievedAt',
+  sortOrder: 'sortOrder'
+};
+
+exports.Prisma.GoalProgressLogScalarFieldEnum = {
+  id: 'id',
+  goalId: 'goalId',
+  value: 'value',
+  notes: 'notes',
+  loggedAt: 'loggedAt'
+};
+
+exports.Prisma.CaregiverAccessScalarFieldEnum = {
+  id: 'id',
+  patientId: 'patientId',
+  caregiverId: 'caregiverId',
+  relationship: 'relationship',
+  accessLevel: 'accessLevel',
+  permissions: 'permissions',
+  invitedAt: 'invitedAt',
+  acceptedAt: 'acceptedAt',
+  expiresAt: 'expiresAt',
+  status: 'status',
+  inviteToken: 'inviteToken'
+};
+
+exports.Prisma.PatientNotificationPreferenceScalarFieldEnum = {
+  id: 'id',
+  patientId: 'patientId',
+  pushEnabled: 'pushEnabled',
+  emailEnabled: 'emailEnabled',
+  smsEnabled: 'smsEnabled',
+  medicationReminders: 'medicationReminders',
+  appointmentReminders: 'appointmentReminders',
+  vitalReminders: 'vitalReminders',
+  exerciseReminders: 'exerciseReminders',
+  labResultAlerts: 'labResultAlerts',
+  achievementAlerts: 'achievementAlerts',
+  careTeamMessages: 'careTeamMessages',
+  reminderLeadTime: 'reminderLeadTime',
+  quietHoursStart: 'quietHoursStart',
+  quietHoursEnd: 'quietHoursEnd',
+  timezone: 'timezone'
+};
+
+exports.Prisma.PatientReminderScalarFieldEnum = {
+  id: 'id',
+  patientId: 'patientId',
+  type: 'type',
+  title: 'title',
+  message: 'message',
+  scheduledFor: 'scheduledFor',
+  sentAt: 'sentAt',
+  acknowledgedAt: 'acknowledgedAt',
+  status: 'status',
+  relatedId: 'relatedId',
+  relatedType: 'relatedType'
+};
+
+exports.Prisma.EducationalContentScalarFieldEnum = {
+  id: 'id',
+  title: 'title',
+  slug: 'slug',
+  contentType: 'contentType',
+  category: 'category',
+  tags: 'tags',
+  summary: 'summary',
+  content: 'content',
+  mediaUrl: 'mediaUrl',
+  thumbnailUrl: 'thumbnailUrl',
+  duration: 'duration',
+  difficulty: 'difficulty',
+  relatedConditions: 'relatedConditions',
+  isPublished: 'isPublished',
+  viewCount: 'viewCount',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.PatientContentViewScalarFieldEnum = {
+  id: 'id',
+  patientId: 'patientId',
+  contentId: 'contentId',
+  viewedAt: 'viewedAt',
+  completedAt: 'completedAt',
+  rating: 'rating',
+  feedback: 'feedback'
+};
+
+exports.Prisma.MessageConversationScalarFieldEnum = {
+  id: 'id',
+  patientId: 'patientId',
+  providerId: 'providerId',
+  providerType: 'providerType',
+  subject: 'subject',
+  status: 'status',
+  lastMessageAt: 'lastMessageAt',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.PatientMessageScalarFieldEnum = {
+  id: 'id',
+  conversationId: 'conversationId',
+  senderId: 'senderId',
+  senderType: 'senderType',
+  content: 'content',
+  attachments: 'attachments',
+  isRead: 'isRead',
+  readAt: 'readAt',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.PatientSettingsScalarFieldEnum = {
+  id: 'id',
+  patientId: 'patientId',
+  theme: 'theme',
+  language: 'language',
+  dateFormat: 'dateFormat',
+  timeFormat: 'timeFormat',
+  measurementSystem: 'measurementSystem',
+  shareDataWithCareTeam: 'shareDataWithCareTeam',
+  allowAnonymousAnalytics: 'allowAnonymousAnalytics',
+  showOnLeaderboard: 'showOnLeaderboard',
+  fontSize: 'fontSize',
+  highContrast: 'highContrast',
+  reduceMotion: 'reduceMotion'
+};
+
 exports.Prisma.VideoConsultationScalarFieldEnum = {
   id: 'id',
   consultationId: 'consultationId',
@@ -2158,6 +2441,113 @@ exports.VitalConditionType = exports.$Enums.VitalConditionType = {
   PERCENTAGE_CHANGE: 'PERCENTAGE_CHANGE'
 };
 
+exports.SideEffectSeverity = exports.$Enums.SideEffectSeverity = {
+  MILD: 'MILD',
+  MODERATE: 'MODERATE',
+  SEVERE: 'SEVERE'
+};
+
+exports.RefillStatus = exports.$Enums.RefillStatus = {
+  PENDING: 'PENDING',
+  APPROVED: 'APPROVED',
+  DENIED: 'DENIED',
+  DISPENSED: 'DISPENSED'
+};
+
+exports.MealType = exports.$Enums.MealType = {
+  BREAKFAST: 'BREAKFAST',
+  MORNING_SNACK: 'MORNING_SNACK',
+  LUNCH: 'LUNCH',
+  AFTERNOON_SNACK: 'AFTERNOON_SNACK',
+  DINNER: 'DINNER',
+  EVENING_SNACK: 'EVENING_SNACK'
+};
+
+exports.ExerciseIntensity = exports.$Enums.ExerciseIntensity = {
+  LOW: 'LOW',
+  MODERATE: 'MODERATE',
+  HIGH: 'HIGH',
+  VERY_HIGH: 'VERY_HIGH'
+};
+
+exports.GoalCategory = exports.$Enums.GoalCategory = {
+  WEIGHT: 'WEIGHT',
+  BLOOD_PRESSURE: 'BLOOD_PRESSURE',
+  BLOOD_SUGAR: 'BLOOD_SUGAR',
+  EXERCISE: 'EXERCISE',
+  NUTRITION: 'NUTRITION',
+  MEDICATION_ADHERENCE: 'MEDICATION_ADHERENCE',
+  SLEEP: 'SLEEP',
+  STRESS: 'STRESS',
+  CUSTOM: 'CUSTOM'
+};
+
+exports.GoalStatus = exports.$Enums.GoalStatus = {
+  NOT_STARTED: 'NOT_STARTED',
+  IN_PROGRESS: 'IN_PROGRESS',
+  ACHIEVED: 'ACHIEVED',
+  MISSED: 'MISSED',
+  CANCELLED: 'CANCELLED'
+};
+
+exports.CaregiverAccessLevel = exports.$Enums.CaregiverAccessLevel = {
+  VIEW_ONLY: 'VIEW_ONLY',
+  VIEW_AND_LOG: 'VIEW_AND_LOG',
+  FULL_ACCESS: 'FULL_ACCESS'
+};
+
+exports.CaregiverAccessStatus = exports.$Enums.CaregiverAccessStatus = {
+  PENDING: 'PENDING',
+  ACTIVE: 'ACTIVE',
+  REVOKED: 'REVOKED',
+  EXPIRED: 'EXPIRED'
+};
+
+exports.ReminderType = exports.$Enums.ReminderType = {
+  MEDICATION: 'MEDICATION',
+  APPOINTMENT: 'APPOINTMENT',
+  VITAL_RECORDING: 'VITAL_RECORDING',
+  EXERCISE: 'EXERCISE',
+  MEAL: 'MEAL',
+  WATER_INTAKE: 'WATER_INTAKE',
+  CUSTOM: 'CUSTOM'
+};
+
+exports.ReminderStatus = exports.$Enums.ReminderStatus = {
+  SCHEDULED: 'SCHEDULED',
+  SENT: 'SENT',
+  ACKNOWLEDGED: 'ACKNOWLEDGED',
+  SNOOZED: 'SNOOZED',
+  EXPIRED: 'EXPIRED'
+};
+
+exports.ContentType = exports.$Enums.ContentType = {
+  ARTICLE: 'ARTICLE',
+  VIDEO: 'VIDEO',
+  INFOGRAPHIC: 'INFOGRAPHIC',
+  FAQ: 'FAQ',
+  GUIDE: 'GUIDE'
+};
+
+exports.ContentDifficulty = exports.$Enums.ContentDifficulty = {
+  BEGINNER: 'BEGINNER',
+  INTERMEDIATE: 'INTERMEDIATE',
+  ADVANCED: 'ADVANCED'
+};
+
+exports.ConversationStatus = exports.$Enums.ConversationStatus = {
+  OPEN: 'OPEN',
+  CLOSED: 'CLOSED',
+  ARCHIVED: 'ARCHIVED'
+};
+
+exports.MessageSenderType = exports.$Enums.MessageSenderType = {
+  PATIENT: 'PATIENT',
+  DOCTOR: 'DOCTOR',
+  HSP: 'HSP',
+  SYSTEM: 'SYSTEM'
+};
+
 exports.ConsultationType = exports.$Enums.ConsultationType = {
   VIDEO_CONSULTATION: 'VIDEO_CONSULTATION',
   AUDIO_CONSULTATION: 'AUDIO_CONSULTATION',
@@ -2304,6 +2694,27 @@ exports.Prisma.ModelName = {
   EmergencyAlert: 'EmergencyAlert',
   VitalAlertRule: 'VitalAlertRule',
   EmergencyContact: 'EmergencyContact',
+  SideEffectReport: 'SideEffectReport',
+  RefillRequest: 'RefillRequest',
+  MealPlan: 'MealPlan',
+  MealLog: 'MealLog',
+  FoodLogItem: 'FoodLogItem',
+  WaterIntakeLog: 'WaterIntakeLog',
+  ExercisePlan: 'ExercisePlan',
+  ScheduledWorkout: 'ScheduledWorkout',
+  ExerciseLog: 'ExerciseLog',
+  DailyActivitySummary: 'DailyActivitySummary',
+  HealthGoal: 'HealthGoal',
+  GoalMilestone: 'GoalMilestone',
+  GoalProgressLog: 'GoalProgressLog',
+  CaregiverAccess: 'CaregiverAccess',
+  PatientNotificationPreference: 'PatientNotificationPreference',
+  PatientReminder: 'PatientReminder',
+  EducationalContent: 'EducationalContent',
+  PatientContentView: 'PatientContentView',
+  MessageConversation: 'MessageConversation',
+  PatientMessage: 'PatientMessage',
+  PatientSettings: 'PatientSettings',
   VideoConsultation: 'VideoConsultation',
   ConsultationPrescription: 'ConsultationPrescription',
   ConsultationNote: 'ConsultationNote',

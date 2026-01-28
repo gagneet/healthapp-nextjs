@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 
 import { checkRateLimit } from "@/lib/auth-helpers";
 import { 
+
   acknowledgeEmergencyAlert, 
   resolveEmergencyAlert, 
   escalateEmergencyAlert,
@@ -14,6 +15,9 @@ import {
  * PATCH /api/emergency-alerts/[id]
  * Acknowledge, resolve, or escalate an emergency alert
  */
+
+export const dynamic = 'force-dynamic';
+
 export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
   try {
     // Rate limiting

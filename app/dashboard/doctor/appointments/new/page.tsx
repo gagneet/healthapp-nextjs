@@ -1,7 +1,13 @@
+'use client'
+
+export const dynamic = 'force-dynamic'
+
+
+
+
 /**
  * New Appointment Page - Doctor Dashboard
  */
-'use client'
 
 import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'

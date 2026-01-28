@@ -6,6 +6,9 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import { z } from 'zod';
 
+
+export const dynamic = 'force-dynamic';
+
 const uploadSchema = z.object({
     patientId: z.string().uuid(),
     name: z.string().min(1, 'Report name is required'),

@@ -7,6 +7,9 @@ import { formatApiSuccess, getPatientDashboard, handleApiError } from '@/lib/api
  * GET /api/patient/dashboard/[id]
  * Get patient dashboard data with real health metrics and upcoming events
  */
+
+export const dynamic = 'force-dynamic';
+
 export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
