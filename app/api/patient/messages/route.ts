@@ -111,6 +111,26 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const data = createSchema.parse(body)
 
+    // Verify provider exists based on type
+    let providerExists = false
+    if (data.providerType === 'doctor') {
+      const doctor = await prisma.doctor.findUnique({
+        where: { id: data.providerId },
+        select: { id: true }
+      })
+      providerExists = !!doctor
+    } else if (data.providerType === 'hsp') {
+      const hsp = await prisma.healthcareServiceProvider.findUnique({
+        where: { id: data.providerId },
+        select: { id: true }
+      })
+      providerExists = !!hsp
+    }
+
+    if (!providerExists) {
+      return NextResponse.json(handleApiError({ message: 'Provider not found' }), { status: 404 })
+    }
+
     const conversation = await prisma.messageConversation.create({
       data: {
         patientId: patient.id,
