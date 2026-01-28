@@ -42,26 +42,31 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     const body = await request.json()
     const data = progressSchema.parse(body)
 
-    const progress = await prisma.goalProgressLog.create({
-      data: {
-        goalId: goal.id,
-        value: data.value,
-        notes: data.notes,
-        loggedAt: new Date(),
-      },
+    // Use transaction to ensure data consistency
+    const result = await prisma.$transaction(async (tx) => {
+      const progress = await tx.goalProgressLog.create({
+        data: {
+          goalId: goal.id,
+          value: data.value,
+          notes: data.notes,
+          loggedAt: new Date(),
+        },
+      })
+
+      await tx.healthGoal.update({
+        where: { id: goal.id },
+        data: {
+          currentValue: data.value,
+          status: goal.targetValue && data.value >= goal.targetValue ? 'ACHIEVED' : goal.status,
+          completedAt: goal.targetValue && data.value >= goal.targetValue ? new Date() : goal.completedAt,
+          updatedAt: new Date(),
+        },
+      })
+
+      return progress
     })
 
-    await prisma.healthGoal.update({
-      where: { id: goal.id },
-      data: {
-        currentValue: data.value,
-        status: goal.targetValue && data.value >= goal.targetValue ? 'ACHIEVED' : goal.status,
-        completedAt: goal.targetValue && data.value >= goal.targetValue ? new Date() : goal.completedAt,
-        updatedAt: new Date(),
-      },
-    })
-
-    return NextResponse.json(formatApiSuccess(progress, 'Goal progress recorded successfully'))
+    return NextResponse.json(formatApiSuccess(result, 'Goal progress recorded successfully'))
   } catch (error) {
     return NextResponse.json(handleApiError(error), { status: 500 })
   }
