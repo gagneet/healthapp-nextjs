@@ -9,9 +9,17 @@ import SpeechToText from '@/components/common/speech-to-text'
 interface SymptomReporterProps {
   patientId?: string
   gender?: 'male' | 'female'
-  onSymptomSubmit?: (symptomData: any) => void
+  onSymptomSubmit?: (symptomData: SymptomSubmissionResult) => void
   onClose?: () => void
   isOpen?: boolean
+}
+
+interface SymptomSubmissionResult {
+  id: string
+  symptomName: string
+  severity?: number | null
+  description?: string | null
+  recordedAt?: string | null
 }
 
 interface SymptomFormData {
@@ -106,8 +114,10 @@ export default function SymptomReporter({
       })
 
       if (response.ok) {
-        const result = await response.json()
-        onSymptomSubmit?.(result.payload.data)
+        const result: { payload?: { data?: SymptomSubmissionResult } } = await response.json()
+        if (result.payload?.data) {
+          onSymptomSubmit?.(result.payload.data)
+        }
         handleReset()
         // Show success message
         if (typeof window !== 'undefined' && window.alert) {

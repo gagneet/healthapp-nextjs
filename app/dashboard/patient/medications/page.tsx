@@ -1,7 +1,11 @@
 'use client'
 
-// Force dynamic rendering for authenticated pages
 export const dynamic = 'force-dynamic'
+
+
+
+
+// Force dynamic rendering for authenticated pages
 
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/lib/auth-context'
@@ -17,22 +21,21 @@ import {
 interface Medication {
   id: string
   name: string
-  dosage: string
-  frequency: string
-  instructions: string
-  prescribedDate: string
-  endDate?: string
-  status: 'active' | 'completed' | 'discontinued'
-  next_dose?: string
-  taken_today: boolean
-  side_effects?: string[]
+  dosage: string | null
+  frequency: string | null
+  instructions: string | null
+  scheduledAt?: string | null
+  status: 'TAKEN' | 'MISSED' | 'PENDING'
+  prescribedDate?: string | null
+  endDate?: string | null
+  side_effects?: string[] | null
 }
 
 export default function MedicationsPage() {
   const { user } = useAuth()
   const [medications, setMedications] = useState<Medication[]>([])
   const [loading, setLoading] = useState(true)
-  const [filter, setFilter] = useState<'all' | 'active' | 'completed' | 'discontinued'>('active')
+  const [filter, setFilter] = useState<'all' | 'TAKEN' | 'MISSED' | 'PENDING'>('all')
 
   useEffect(() => {
     fetchMedications()
@@ -47,8 +50,8 @@ export default function MedicationsPage() {
         },
       })
       if (response.ok) {
-        const data = await response.json()
-        setMedications(data.payload?.data || [])
+        const data: { payload?: { data?: { schedule?: Medication[] } } } = await response.json()
+        setMedications(data.payload?.data?.schedule || [])
       }
     } catch (error) {
       console.error('Failed to fetch carePlans: ', error)
@@ -59,12 +62,13 @@ export default function MedicationsPage() {
 
   const markAsTaken = async (medicationId: string) => {
     try {
-      const response = await fetch(`/api/patient/medications/${medicationId}/take`, {
+      const response = await fetch('/api/patient/medications/take', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
           'Content-Type': 'application/json',
         },
+        body: JSON.stringify({ medicationId, dosage: '1 dose' }),
       })
       if (response.ok) {
         fetchMedications() // Refresh the list
@@ -74,32 +78,32 @@ export default function MedicationsPage() {
     }
   }
 
-  const filteredMedications = medications.filter(med => {
+  const filteredMedications = medications.filter((med) => {
     if (filter === 'all') return true
     return med.status === filter
   })
 
-  const getStatusColor = (status: string) => {
+  const getStatusColor = (status: Medication['status']) => {
     switch (status) {
-      case 'active':
+      case 'TAKEN':
         return 'bg-green-100 text-green-800'
-      case 'completed':
-        return 'bg-blue-100 text-blue-800'
-      case 'discontinued':
+      case 'MISSED':
         return 'bg-red-100 text-red-800'
+      case 'PENDING':
+        return 'bg-yellow-100 text-yellow-800'
       default:
         return 'bg-gray-100 text-gray-800'
     }
   }
 
-  const getStatusIcon = (status: string) => {
+  const getStatusIcon = (status: Medication['status']) => {
     switch (status) {
-      case 'active':
+      case 'TAKEN':
         return <CheckCircleIcon className="w-4 h-4" />
-      case 'completed':
-        return <CheckCircleIcon className="w-4 h-4" />
-      case 'discontinued':
+      case 'MISSED':
         return <XCircleIcon className="w-4 h-4" />
+      case 'PENDING':
+        return <ClockIcon className="w-4 h-4" />
       default:
         return <ClockIcon className="w-4 h-4" />
     }
@@ -136,11 +140,11 @@ export default function MedicationsPage() {
       <div className="mb-6">
         <div className="border-b border-gray-200">
           <nav className="-mb-px flex space-x-8">
-            {(['all', 'active', 'completed', 'discontinued'] as const).map((status) => (
+            {(['all', 'PENDING', 'TAKEN', 'MISSED'] as const).map((status) => (
               <button
                 key={status}
                 onClick={() => setFilter(status)}
-                className={`py-2 px-1 border-b-2 font-medium text-sm capitalize transition-colors ${
+                className={`py-2 px-1 border-b-2 font-medium text-sm uppercase transition-colors ${
                   filter === status
                     ? 'border-blue-500 text-blue-600'
                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
@@ -160,10 +164,10 @@ export default function MedicationsPage() {
             <BeakerIcon className="mx-auto h-12 w-12 text-gray-400" />
             <h3 className="mt-2 text-sm font-medium text-gray-900">No medications found</h3>
             <p className="mt-1 text-sm text-gray-500">
-              {filter === 'active' 
-                ? 'You have no active medications at this time.'
-                : `No ${filter} medications found.`}
-            </p>
+                {filter === 'all'
+                  ? 'You have no active medications at this time.'
+                  : `No ${filter} medications found.`}
+              </p>
           </div>
         ) : (
           filteredMedications.map((medication) => (
@@ -193,24 +197,24 @@ export default function MedicationsPage() {
                     </div>
                   </div>
 
-                  {medication.status === 'active' && (
+                  {medication.status !== 'TAKEN' && (
                     <div className="flex flex-col items-end space-y-2">
-                      {medication.next_dose && (
+                      {medication.scheduledAt && (
                         <div className="text-sm text-gray-500 flex items-center">
                           <ClockIcon className="w-4 h-4 mr-1" />
-                          Next: {new Date(medication.next_dose).toLocaleTimeString()}
+                          Scheduled: {new Date(medication.scheduledAt).toLocaleTimeString()}
                         </div>
                       )}
                       <button
                         onClick={() => markAsTaken(medication.id)}
-                        disabled={medication.taken_today}
+                        disabled={medication.status === 'TAKEN'}
                         className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                          medication.taken_today
+                          medication.status === 'TAKEN'
                             ? 'bg-green-100 text-green-700 cursor-not-allowed'
                             : 'bg-blue-600 text-white hover:bg-blue-700'
                         }`}
                       >
-                        {medication.taken_today ? 'Taken Today' : 'Mark as Taken'}
+                        {medication.status === 'TAKEN' ? 'Taken Today' : 'Mark as Taken'}
                       </button>
                     </div>
                   )}
@@ -221,8 +225,8 @@ export default function MedicationsPage() {
                   <div className="flex items-center justify-between text-sm text-gray-500">
                     <div className="flex items-center">
                       <CalendarIcon className="w-4 h-4 mr-1" />
-                      Prescribed: {new Date(medication.prescribedDate).toLocaleDateString()}
-                    </div>
+                          Prescribed: {medication.scheduledAt ? new Date(medication.scheduledAt).toLocaleDateString() : 'N/A'}
+                        </div>
                     {medication.endDate && (
                       <div>
                         End Date: {new Date(medication.endDate).toLocaleDateString()}
@@ -262,19 +266,19 @@ export default function MedicationsPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="text-center">
               <div className="text-2xl font-bold text-blue-600">
-                {medications.filter(m => m.status === 'active').length}
+                {medications.length}
               </div>
-              <div className="text-sm text-blue-700">Active Medications</div>
+              <div className="text-sm text-blue-700">Total Medications</div>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-green-600">
-                {medications.filter(m => m.taken_today).length}
+                {medications.filter((m) => m.status === 'TAKEN').length}
               </div>
               <div className="text-sm text-green-700">Taken Today</div>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-yellow-600">
-                {medications.filter(m => m.status === 'active' && !m.taken_today).length}
+                {medications.filter((m) => m.status === 'PENDING').length}
               </div>
               <div className="text-sm text-yellow-700">Pending Today</div>
             </div>

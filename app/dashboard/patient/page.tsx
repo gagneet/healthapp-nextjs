@@ -1,7 +1,11 @@
 'use client'
 
-// Force dynamic rendering for authenticated pages
 export const dynamic = 'force-dynamic'
+
+
+
+
+// Force dynamic rendering for authenticated pages
 
 import AppointmentsList from '@/components/patient/appointments-list'
 import HealthSummary from '@/components/patient/health-summary'
@@ -43,20 +47,20 @@ const SymptomReporter = dynamicImport(() => import('@/components/patient/symptom
 interface PatientDashboardData {
   adherenceSummary: {
     today: {
-      medicationsDue: number
-      medicationsTaken: number
-      vitalsDue: number
-      vitalsRecorded: number
-      exercisesDue: number
-      exercisesCompleted: number
+      medications_due: number
+      medications_taken: number
+      vitals_due: number
+      vitals_recorded: number
+      exercises_due: number
+      exercises_completed: number
     }
     weekly: {
-      adherenceRate: number
-      missedMedications: number
-      completedActivities: number
+      adherence_rate: number
+      missed_medications: number
+      completed_activities: number
     }
     monthly: {
-      overallScore: number
+      overall_score: number
       trend: 'improving' | 'declining' | 'stable'
     }
   }
@@ -80,7 +84,7 @@ interface ScheduledEventType {
   scheduledFor: string
   priority: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL'
   status: 'SCHEDULED' | 'PENDING' | 'COMPLETED' | 'MISSED'
-  eventData: any
+  eventData: Record<string, unknown> | null
 }
 
 interface OverdueItem {
@@ -97,8 +101,10 @@ interface ActivityRecord {
   type: string
   title: string
   completedAt: string
-  result: any
+  result: Record<string, unknown> | null
 }
+
+type ActiveView = 'overview' | 'medications' | 'vitals' | 'activities'
 
 interface AlertType {
   id: string
@@ -107,6 +113,18 @@ interface AlertType {
   message: string
   action_required: boolean
   createdAt: string
+}
+
+type NavigationTab = {
+  id: ActiveView
+  label: string
+  icon: typeof ChartBarIcon
+}
+
+type BottomTab = {
+  id: ActiveView | 'symptoms'
+  label: string
+  icon: typeof ChartBarIcon
 }
 
 // Chart colors
@@ -127,7 +145,7 @@ export default function PatientDashboard() {
   const [showSymptomReporter, setShowSymptomReporter] = useState(false)
   const [showVitalsRecorder, setShowVitalsRecorder] = useState(false)
   const [showMedicationTracker, setShowMedicationTracker] = useState(false)
-  const [activeView, setActiveView] = useState<'overview' | 'medications' | 'vitals' | 'activities'>('overview')
+  const [activeView, setActiveView] = useState<ActiveView>('overview')
 
   const fetchDashboardData = useCallback(async () => {
     if (!user?.id) return
@@ -248,9 +266,9 @@ export default function PatientDashboard() {
   }
 
   // Prepare chart data with null safety
-  const adherenceToday = dashboardData?.adherenceSummary?.today || {}
-  const medicationsTaken = adherenceToday.medications_taken || 0
-  const medicationsDue = adherenceToday.medications_due || 0
+  const adherenceToday = dashboardData?.adherenceSummary?.today
+  const medicationsTaken = adherenceToday?.medications_taken || 0
+  const medicationsDue = adherenceToday?.medications_due || 0
   
   const adherenceChartData = [
     { name: 'Taken', value: medicationsTaken, color: COLORS.success },
@@ -278,20 +296,20 @@ export default function PatientDashboard() {
       {/* Navigation Tabs - Mobile */}
       <div className="bg-white border-b px-4 md:hidden">
         <div className="flex space-x-1 overflow-x-auto">
-          {[
+          {([
             { id: 'overview', label: 'Overview', icon: ChartBarIcon },
             { id: 'medications', label: 'Meds', icon: BeakerIcon },
             { id: 'vitals', label: 'Vitals', icon: HeartIcon },
             { id: 'activities', label: 'Activities', icon: PlayIcon },
-          ].map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveView(tab.id as any)}
-              className={`flex items-center px-4 py-3 text-sm font-medium border-b-2 whitespace-nowrap ${
-                activeView === tab.id
-                  ? 'border-blue-600 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700'
-              }`}
+          ] as NavigationTab[]).map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveView(tab.id)}
+                className={`flex items-center px-4 py-3 text-sm font-medium border-b-2 whitespace-nowrap ${
+                  activeView === tab.id
+                    ? 'border-blue-600 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700'
+                }`}
             >
               <tab.icon className="h-4 w-4 mr-2" />
               {tab.label}
@@ -415,7 +433,7 @@ export default function PatientDashboard() {
                   <div className="ml-4">
                     <p className="text-sm font-medium text-gray-600">Score</p>
                     <p className="text-2xl font-bold text-gray-900">
-                      {dashboardData?.adherenceSummary?.monthly?.overallScore || 0}%
+                      {dashboardData?.adherenceSummary?.monthly?.overall_score || 0}%
                     </p>
                   </div>
                 </div>
@@ -661,26 +679,26 @@ export default function PatientDashboard() {
       {/* Mobile Bottom Navigation */}
       <div className="fixed bottom-0 left-0 right-0 bg-white border-t md:hidden">
         <div className="grid grid-cols-5 py-2">
-          {[
+          {([
             { id: 'overview', label: 'Home', icon: ChartBarIcon },
             { id: 'medications', label: 'Meds', icon: BeakerIcon },
             { id: 'vitals', label: 'Vitals', icon: HeartIcon },
             { id: 'activities', label: 'Activity', icon: PlayIcon },
             { id: 'symptoms', label: 'Symptoms', icon: UserIcon },
-          ].map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => {
-                if (tab.id === 'symptoms') {
-                  setShowSymptomReporter(true)
-                } else if (tab.id === 'medications') {
-                  setShowMedicationTracker(true)
-                } else if (tab.id === 'vitals') {
-                  setShowVitalsRecorder(true)
-                } else {
-                  setActiveView(tab.id as any)
-                }
-              }}
+          ] as BottomTab[]).map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => {
+                  if (tab.id === 'symptoms') {
+                    setShowSymptomReporter(true)
+                  } else if (tab.id === 'medications') {
+                    setShowMedicationTracker(true)
+                  } else if (tab.id === 'vitals') {
+                    setShowVitalsRecorder(true)
+                  } else {
+                    setActiveView(tab.id)
+                  }
+                }}
               className={`flex flex-col items-center py-2 px-1 ${
                 activeView === tab.id
                   ? 'text-blue-600'

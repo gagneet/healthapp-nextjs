@@ -1,7 +1,11 @@
 'use client'
 
-// Force dynamic rendering for authenticated pages
 export const dynamic = 'force-dynamic'
+
+
+
+
+// Force dynamic rendering for authenticated pages
 
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/lib/auth-context'
@@ -17,6 +21,10 @@ import {
   TrashIcon,
 } from '@heroicons/react/24/outline'
 
+type ProfileVisibility = 'public' | 'private' | 'doctors_only'
+type ThemePreference = 'light' | 'dark' | 'system'
+type MeasurementUnits = 'metric' | 'imperial'
+
 interface UserSettings {
   notifications: {
     email: boolean
@@ -27,7 +35,7 @@ interface UserSettings {
     vital_reminders: boolean
   }
   privacy: {
-    profileVisibility: 'public' | 'private' | 'doctors_only'
+    profileVisibility: ProfileVisibility
     share_data_research: boolean
     allow_marketing: boolean
   }
@@ -37,11 +45,11 @@ interface UserSettings {
     sessionTimeout: number
   }
   preferences: {
-    theme: 'light' | 'dark' | 'system'
+    theme: ThemePreference
     language: string
     timezone: string
     dateFormat: string
-    measurement_units: 'metric' | 'imperial'
+    measurement_units: MeasurementUnits
   }
 }
 
@@ -263,7 +271,7 @@ export default function SettingsPage() {
                 <select
                   value={settings?.privacy.profileVisibility}
                   onChange={(e) => updateSettings({
-                    privacy: { ...settings?.privacy!, profileVisibility: e.target.value as any }
+                    privacy: { ...settings?.privacy!, profileVisibility: e.target.value as ProfileVisibility }
                   })}
                   className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
@@ -397,7 +405,7 @@ export default function SettingsPage() {
                 <select
                   value={settings?.preferences.theme}
                   onChange={(e) => updateSettings({
-                    preferences: { ...settings?.preferences!, theme: e.target.value as any }
+                    preferences: { ...settings?.preferences!, theme: e.target.value as ThemePreference }
                   })}
                   className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
@@ -445,7 +453,7 @@ export default function SettingsPage() {
                 <select
                   value={settings?.preferences.measurement_units}
                   onChange={(e) => updateSettings({
-                    preferences: { ...settings?.preferences!, measurement_units: e.target.value as any }
+                    preferences: { ...settings?.preferences!, measurement_units: e.target.value as MeasurementUnits }
                   })}
                   className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >

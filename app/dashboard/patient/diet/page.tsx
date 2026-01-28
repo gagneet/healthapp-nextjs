@@ -1,5 +1,10 @@
 'use client'
 
+export const dynamic = 'force-dynamic'
+
+
+
+
 import { PlusIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline'
 import { useEffect, useState } from 'react'
 import { formatDateTime } from '@/lib/utils'
@@ -10,6 +15,7 @@ interface DietLogEntry {
   description?: string
   loggedAt: string
   calories?: number | null
+  mealType?: string | null
 }
 
 export default function PatientDietPage() {
@@ -20,6 +26,7 @@ export default function PatientDietPage() {
   const [title, setTitle] = useState('')
   const [calories, setCalories] = useState('')
   const [notes, setNotes] = useState('')
+  const [mealType, setMealType] = useState('LUNCH')
 
   const fetchEntries = async () => {
     setIsLoading(true)
@@ -48,12 +55,14 @@ export default function PatientDietPage() {
     if (!title.trim()) return
     setIsSubmitting(true)
     try {
+      const trimmedTitle = title.trim()
       const response = await fetch('/api/patient/diet/log', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          title: title.trim(),
-          calories: calories ? parseInt(calories) : undefined,
+          title: trimmedTitle,
+          mealType,
+          calories: calories ? parseInt(calories, 10) : undefined,
           notes: notes.trim() || undefined
         })
       })
@@ -62,6 +71,7 @@ export default function PatientDietPage() {
         throw new Error(result.payload?.error?.message || 'Failed to log diet entry')
       }
       setTitle('')
+      setMealType('LUNCH')
       setCalories('')
       setNotes('')
       fetchEntries()
@@ -114,6 +124,21 @@ export default function PatientDietPage() {
           />
         </div>
         <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Meal type</label>
+          <select
+            value={mealType}
+            onChange={(e) => setMealType(e.target.value)}
+            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
+          >
+            <option value="BREAKFAST">Breakfast</option>
+            <option value="MORNING_SNACK">Morning Snack</option>
+            <option value="LUNCH">Lunch</option>
+            <option value="AFTERNOON_SNACK">Afternoon Snack</option>
+            <option value="DINNER">Dinner</option>
+            <option value="EVENING_SNACK">Evening Snack</option>
+          </select>
+        </div>
+        <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Calories (optional)</label>
           <input
             value={calories}
@@ -154,6 +179,11 @@ export default function PatientDietPage() {
               <div className="flex items-start justify-between">
                 <div>
                   <h3 className="text-base font-medium text-gray-900">{entry.title}</h3>
+                  {entry.mealType && (
+                    <p className="text-xs text-gray-500 mt-1">
+                      {entry.mealType.replace('_', ' ').toLowerCase()}
+                    </p>
+                  )}
                   {entry.description && <p className="text-sm text-gray-600 mt-1">{entry.description}</p>}
                   <p className="text-xs text-gray-500 mt-2">{formatDateTime(entry.loggedAt)}</p>
                 </div>

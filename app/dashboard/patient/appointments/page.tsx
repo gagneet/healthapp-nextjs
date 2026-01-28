@@ -1,7 +1,11 @@
 'use client'
 
-// Force dynamic rendering for authenticated pages
 export const dynamic = 'force-dynamic'
+
+
+
+
+// Force dynamic rendering for authenticated pages
 
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/lib/auth-context'
@@ -36,12 +40,13 @@ export default function AppointmentsPage() {
   const [appointments, setAppointments] = useState<Appointment[]>([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState<'upcoming' | 'past' | 'all'>('upcoming')
+  const [reschedulingId, setReschedulingId] = useState<string | null>(null)
 
   useEffect(() => {
     fetchAppointments()
   }, [])
 
-  const fetchAppointments = async () => {
+    const fetchAppointments = async () => {
     try {
       setLoading(true)
       const response = await fetch('/api/patient/appointments', {
@@ -50,7 +55,7 @@ export default function AppointmentsPage() {
         },
       })
       if (response.ok) {
-        const data = await response.json()
+        const data: { payload?: { data?: Appointment[] } } = await response.json()
         setAppointments(data.payload?.data || [])
       }
     } catch (error) {
@@ -64,8 +69,8 @@ export default function AppointmentsPage() {
     if (!confirm('Are you sure you want to cancel this appointment?')) return
 
     try {
-      const response = await fetch(`/api/patient/appointments/${appointmentId}/cancel`, {
-        method: 'PATCH',
+      const response = await fetch(`/api/appointments/${appointmentId}/cancel`, {
+        method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
           'Content-Type': 'application/json',
@@ -79,8 +84,8 @@ export default function AppointmentsPage() {
     }
   }
 
-  const filteredAppointments = appointments.filter(apt => {
-    const appointmentDate = new Date(apt.appointment_date + 'T' + apt.appointment_time)
+  const filteredAppointments = appointments.filter((apt) => {
+    const appointmentDate = new Date(`${apt.appointment_date}T${apt.appointment_time}`)
     const now = new Date()
 
     switch (filter) {
@@ -95,7 +100,36 @@ export default function AppointmentsPage() {
     }
   })
 
-  const getStatusColor = (status: string) => {
+  const handleReschedule = async (appointmentId: string) => {
+    const newStart = prompt('Enter new start time (YYYY-MM-DDTHH:mm:ssZ)')
+    if (!newStart) return
+    const endTime = prompt('Enter new end time (YYYY-MM-DDTHH:mm:ssZ) (optional)') || undefined
+
+    try {
+      setReschedulingId(appointmentId)
+      const response = await fetch(`/api/patient/appointments/${appointmentId}/reschedule`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          startDate: new Date(newStart).toISOString(),
+          startTime: new Date(newStart).toISOString(),
+          endTime: endTime ? new Date(endTime).toISOString() : undefined,
+        }),
+      })
+      if (response.ok) {
+        fetchAppointments()
+      }
+    } catch (error) {
+      console.error('Failed to reschedule appointment:', error)
+    } finally {
+      setReschedulingId(null)
+    }
+  }
+
+  const getStatusColor = (status: Appointment['status']) => {
     switch (status) {
       case 'scheduled':
         return 'bg-blue-100 text-blue-800'
@@ -110,7 +144,7 @@ export default function AppointmentsPage() {
     }
   }
 
-  const getStatusIcon = (status: string) => {
+  const getStatusIcon = (status: Appointment['status']) => {
     switch (status) {
       case 'scheduled':
         return <CalendarIcon className="w-4 h-4" />
@@ -125,7 +159,7 @@ export default function AppointmentsPage() {
     }
   }
 
-  const getTypeIcon = (type: string) => {
+  const getTypeIcon = (type: Appointment['type']) => {
     switch (type) {
       case 'telemedicine':
         return <VideoCameraIcon className="w-4 h-4" />
@@ -256,8 +290,12 @@ export default function AppointmentsPage() {
                           Join Video Call
                         </button>
                       )}
-                      <button className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors text-sm">
-                        Reschedule
+                      <button
+                        className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors text-sm disabled:opacity-50"
+                        onClick={() => handleReschedule(appointment.id)}
+                        disabled={reschedulingId === appointment.id}
+                      >
+                        {reschedulingId === appointment.id ? 'Rescheduling...' : 'Reschedule'}
                       </button>
                       <button
                         onClick={() => cancelAppointment(appointment.id)}

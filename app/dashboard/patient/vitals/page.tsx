@@ -1,7 +1,11 @@
 'use client'
 
-// Force dynamic rendering for authenticated pages
 export const dynamic = 'force-dynamic'
+
+
+
+
+// Force dynamic rendering for authenticated pages
 
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/lib/auth-context'
@@ -43,13 +47,18 @@ export default function VitalsPage() {
   const [loading, setLoading] = useState(true)
   const [showAddForm, setShowAddForm] = useState(false)
   const [selectedVital, setSelectedVital] = useState('')
+  const [inputValue, setInputValue] = useState('')
+  const [systolicValue, setSystolicValue] = useState('')
+  const [diastolicValue, setDiastolicValue] = useState('')
+  const [notes, setNotes] = useState('')
+  const [saving, setSaving] = useState(false)
 
   const vitalTypes = [
     { id: 'blood_pressure', name: 'Blood Pressure', unit: 'mmHg', hasDouble: true },
     { id: 'heart_rate', name: 'Heart Rate', unit: 'bpm', hasDouble: false },
     { id: 'temperature', name: 'Temperature', unit: '°F', hasDouble: false },
     { id: 'weight', name: 'Weight', unit: 'lbs', hasDouble: false },
-    { id: 'blood_sugar', name: 'Blood Sugar', unit: 'mg/dL', hasDouble: false },
+    { id: 'blood_glucose', name: 'Blood Glucose', unit: 'mg/dL', hasDouble: false },
     { id: 'oxygen_saturation', name: 'Oxygen Saturation', unit: '%', hasDouble: false },
   ]
 
@@ -93,7 +102,81 @@ export default function VitalsPage() {
     }
   }
 
-  const getStatusColor = (status: string) => {
+  const handleSaveVital = async (event: React.FormEvent) => {
+    event.preventDefault()
+    if (!selectedVital) return
+    const selected = vitalTypes.find((type) => type.id === selectedVital)
+    if (!selected) return
+
+    try {
+      setSaving(true)
+      const response = await fetch('/api/vital-types', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
+      })
+      if (!response.ok) {
+        throw new Error('Failed to load vital types')
+      }
+      const data = await response.json()
+      const vitalType = Array.isArray(data.payload?.data)
+        ? data.payload.data.find((type: { id: string; name: string }) =>
+          type.name.toLowerCase().includes(selected.id.replace('_', ' '))
+        )
+        : null
+      if (!vitalType) {
+        throw new Error('Vital type not found')
+      }
+
+      const payload: {
+        vitalTypeId: string
+        value?: number
+        unit?: string
+        systolicValue?: number
+        diastolicValue?: number
+        notes?: string
+      } = {
+        vitalTypeId: vitalType.id,
+        unit: selected.unit,
+        notes: notes.trim() || undefined,
+      }
+
+      if (selected.hasDouble) {
+        payload.systolicValue = systolicValue ? Number(systolicValue) : undefined
+        payload.diastolicValue = diastolicValue ? Number(diastolicValue) : undefined
+      } else {
+        payload.value = inputValue ? Number(inputValue) : undefined
+      }
+
+      const saveResponse = await fetch('/api/patient/vitals/record', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      })
+
+      if (!saveResponse.ok) {
+        throw new Error('Failed to save vital')
+      }
+
+      setShowAddForm(false)
+      setSelectedVital('')
+      setInputValue('')
+      setSystolicValue('')
+      setDiastolicValue('')
+      setNotes('')
+      await fetchVitals()
+      await fetchTrends()
+    } catch (error) {
+      console.error('Failed to save vital:', error)
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const getStatusColor = (status: VitalReading['status']) => {
     switch (status) {
       case 'normal':
         return 'bg-green-100 text-green-800'
@@ -106,7 +189,7 @@ export default function VitalsPage() {
     }
   }
 
-  const getStatusIcon = (status: string) => {
+  const getStatusIcon = (status: VitalReading['status']) => {
     switch (status) {
       case 'critical':
         return <ExclamationTriangleIcon className="w-4 h-4" />
@@ -115,7 +198,7 @@ export default function VitalsPage() {
     }
   }
 
-  const getTrendIcon = (trend: string) => {
+  const getTrendIcon = (trend: VitalTrend['trend']) => {
     switch (trend) {
       case 'up':
         return <ArrowTrendingUpIcon className="w-4 h-4 text-red-500" />
@@ -269,7 +352,7 @@ export default function VitalsPage() {
               </button>
             </div>
             
-            <form className="space-y-4">
+            <form className="space-y-4" onSubmit={handleSaveVital}>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Vital Type
@@ -290,55 +373,63 @@ export default function VitalsPage() {
 
               {selectedVital && (
                 <>
-                  {vitalTypes.find(t => t.id === selectedVital)?.hasDouble ? (
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
+                    {vitalTypes.find(t => t.id === selectedVital)?.hasDouble ? (
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
                           Systolic
                         </label>
-                        <input
-                          type="number"
-                          className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          placeholder="120"
-                        />
-                      </div>
-                      <div>
+                          <input
+                            type="number"
+                            value={systolicValue}
+                            onChange={(event) => setSystolicValue(event.target.value)}
+                            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            placeholder="120"
+                          />
+                        </div>
+                        <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
                           Diastolic
                         </label>
-                        <input
-                          type="number"
-                          className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          placeholder="80"
-                        />
+                          <input
+                            type="number"
+                            value={diastolicValue}
+                            onChange={(event) => setDiastolicValue(event.target.value)}
+                            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            placeholder="80"
+                          />
+                        </div>
                       </div>
-                    </div>
-                  ) : (
-                    <div>
+                    ) : (
+                      <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         Value ({vitalTypes.find(t => t.id === selectedVital)?.unit})
                       </label>
-                      <input
-                        type="number"
-                        step="0.1"
-                        className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        placeholder="Enter value"
-                      />
-                    </div>
-                  )}
+                        <input
+                          type="number"
+                          step="0.1"
+                          value={inputValue}
+                          onChange={(event) => setInputValue(event.target.value)}
+                          className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          placeholder="Enter value"
+                        />
+                      </div>
+                    )}
 
-                  <div>
+                    <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Notes (optional)
                     </label>
-                    <textarea
-                      rows={3}
-                      className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="Any additional notes..."
-                    />
-                  </div>
-                </>
-              )}
+                      <textarea
+                        rows={3}
+                        value={notes}
+                        onChange={(event) => setNotes(event.target.value)}
+                        className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="Any additional notes..."
+                      />
+                    </div>
+                  </>
+                )}
 
               <div className="flex justify-end space-x-3 pt-4">
                 <button
@@ -350,9 +441,10 @@ export default function VitalsPage() {
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50"
+                  disabled={saving || !selectedVital}
                 >
-                  Save Reading
+                  {saving ? 'Saving...' : 'Save Reading'}
                 </button>
               </div>
             </form>

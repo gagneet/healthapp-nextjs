@@ -1,5 +1,10 @@
 'use client'
 
+export const dynamic = 'force-dynamic'
+
+
+
+
 import { PlusIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline'
 import { useEffect, useState } from 'react'
 import { formatDateTime } from '@/lib/utils'
@@ -20,6 +25,7 @@ export default function PatientExercisePage() {
   const [title, setTitle] = useState('')
   const [durationMinutes, setDurationMinutes] = useState('')
   const [notes, setNotes] = useState('')
+  const [intensity, setIntensity] = useState('MODERATE')
 
   const fetchEntries = async () => {
     setIsLoading(true)
@@ -48,12 +54,14 @@ export default function PatientExercisePage() {
     if (!title.trim() || !durationMinutes) return
     setIsSubmitting(true)
     try {
+      const trimmedTitle = title.trim()
       const response = await fetch('/api/patient/exercise/log', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          title: title.trim(),
-          durationMinutes: parseInt(durationMinutes),
+          title: trimmedTitle,
+          durationMinutes: parseInt(durationMinutes, 10),
+          intensity,
           notes: notes.trim() || undefined
         })
       })
@@ -64,6 +72,7 @@ export default function PatientExercisePage() {
       setTitle('')
       setDurationMinutes('')
       setNotes('')
+      setIntensity('MODERATE')
       fetchEntries()
     } catch (err) {
       console.error('Exercise log error:', err)
@@ -122,6 +131,19 @@ export default function PatientExercisePage() {
             min="1"
             className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
           />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Intensity</label>
+          <select
+            value={intensity}
+            onChange={(e) => setIntensity(e.target.value)}
+            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
+          >
+            <option value="LOW">Low</option>
+            <option value="MODERATE">Moderate</option>
+            <option value="HIGH">High</option>
+            <option value="VERY_HIGH">Very high</option>
+          </select>
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>

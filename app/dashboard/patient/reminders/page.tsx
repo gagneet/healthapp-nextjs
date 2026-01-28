@@ -1,5 +1,10 @@
 'use client'
 
+export const dynamic = 'force-dynamic'
+
+
+
+
 import { BellIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline'
 import { useEffect, useState } from 'react'
 import { formatDateTime } from '@/lib/utils'

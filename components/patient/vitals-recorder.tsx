@@ -7,8 +7,17 @@ import toast from 'react-hot-toast'
 interface VitalsRecorderProps {
   isOpen: boolean
   onClose: () => void
-  onVitalRecorded: (vital: any) => void
+  onVitalRecorded: (vital: VitalRecordResult) => void
   patientId?: string
+}
+
+interface VitalRecordResult {
+  id: string
+  patientId: string
+  vitalTypeId: string
+  value: number | null
+  unit: string | null
+  readingTime: string
 }
 
 const vitalTypes = [
@@ -46,16 +55,46 @@ export default function VitalsRecorder({ isOpen, onClose, onVitalRecorded, patie
     setIsSubmitting(true)
 
     try {
-      const vitalData: any = {
-        vitalType: selectedVitalType,
-        value: selectedVital?.hasSystolicDiastolic ? `${systolic}/${diastolic}` : value,
-        unit: selectedVital?.unit || '',
+      const vitalTypeResponse = await fetch('/api/vital-types', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
+      })
+      if (!vitalTypeResponse.ok) {
+        throw new Error('Failed to load vital types')
+      }
+      const vitalTypeResult: { data?: Array<{ id: string; name: string; unit?: string | null }>; payload?: { data?: Array<{ id: string; name: string; unit?: string | null }> } } = await vitalTypeResponse.json()
+      const vitalTypesResponse: Array<{ id: string; name: string; unit?: string | null }> = Array.isArray(vitalTypeResult.data)
+        ? vitalTypeResult.data
+        : Array.isArray(vitalTypeResult.payload?.data)
+          ? vitalTypeResult.payload.data
+          : []
+      const matchKey = selectedVitalType.replace('_', ' ')
+      const matchingType = vitalTypesResponse.find((type) =>
+        type.name.toLowerCase().includes(matchKey)
+      )
+      if (!matchingType) {
+        throw new Error('Vital type not found')
+      }
+
+      const vitalData: {
+        vitalTypeId: string
+        value?: number
+        unit?: string
+        notes?: string
+        systolicValue?: number
+        diastolicValue?: number
+      } = {
+        vitalTypeId: matchingType.id,
+        unit: selectedVital?.unit || matchingType.unit || '',
         notes: notes.trim() || undefined
       }
 
       if (selectedVital?.hasSystolicDiastolic) {
-        vitalData.systolic = parseInt(systolic)
-        vitalData.diastolic = parseInt(diastolic)
+        vitalData.systolicValue = systolic ? parseInt(systolic, 10) : undefined
+        vitalData.diastolicValue = diastolic ? parseInt(diastolic, 10) : undefined
+      } else {
+        vitalData.value = value ? parseFloat(value) : undefined
       }
 
       const response = await fetch('/api/patient/vitals/record', {
@@ -66,9 +105,9 @@ export default function VitalsRecorder({ isOpen, onClose, onVitalRecorded, patie
         body: JSON.stringify(vitalData)
       })
 
-      const result = await response.json()
+      const result: { payload?: { data?: VitalRecordResult; error?: { message?: string } } } = await response.json()
 
-      if (response.ok) {
+      if (response.ok && result.payload?.data) {
         toast.success('Vital signs recorded successfully!')
         onVitalRecorded(result.payload.data)
         handleClose()

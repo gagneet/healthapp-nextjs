@@ -1,7 +1,13 @@
 'use client'
 
+export const dynamic = 'force-dynamic'
+
+
+
+
 import { ReactNode, useState } from 'react'
 import PatientSidebar, { SidebarToggle } from '@/components/dashboard/patient-sidebar'
+
 // Removed withAuth import - using RouteGuardLayout instead
 
 interface PatientLayoutProps {

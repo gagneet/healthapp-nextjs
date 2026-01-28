@@ -7,8 +7,27 @@ import toast from 'react-hot-toast'
 interface MedicationTrackerProps {
   isOpen: boolean
   onClose: () => void
-  onMedicationTaken: (medication: any) => void
+  onMedicationTaken: (medication: MedicationTakenRecord) => void
   patientId?: string
+}
+
+interface MedicationTakenRecord {
+  id: string
+  medicationId: string
+  takenAt: string
+  dosage: string
+  instructions?: string | null
+  notes?: string | null
+}
+
+interface MedicationApiItem {
+  id: string
+  name: string
+  dosage?: string | null
+  frequency?: string | null
+  instructions?: string | null
+  notes?: string | null
+  nextDue?: string | null
 }
 
 interface Medication {
@@ -47,20 +66,21 @@ export default function MedicationTracker({ isOpen, onClose, onMedicationTaken, 
       }
 
       const response = await fetch(`/api/medications/patient/${patientId}`)
-      const result = await response.json()
+      const result: { payload?: { data?: { carePlans?: MedicationApiItem[] }; error?: { message?: string } } } = await response.json()
 
       if (!response.ok) {
         throw new Error(result.payload?.error?.message || 'Failed to load medications')
       }
 
-      const data = Array.isArray(result.payload?.data?.carePlans) ? result.payload.data.carePlans : []
-      const mappedMedications = data.map((medication: any) => ({
+      const carePlans = result.payload?.data?.carePlans
+      const data: MedicationApiItem[] = Array.isArray(carePlans) ? carePlans : []
+      const mappedMedications = data.map((medication) => ({
         id: medication.id,
         name: medication.name,
         dosage: medication.dosage || '',
         frequency: medication.frequency,
         instructions: medication.notes || medication.instructions,
-        nextDue: medication.nextDue
+        nextDue: medication.nextDue || undefined
       }))
 
       setMedications(mappedMedications)
@@ -80,7 +100,7 @@ export default function MedicationTracker({ isOpen, onClose, onMedicationTaken, 
       return
     }
 
-    const medication = medications.find(m => m.id === selectedMedication)
+    const medication = medications.find((m) => m.id === selectedMedication)
     if (!medication) {
       toast.error('Selected medication not found')
       return
@@ -104,9 +124,9 @@ export default function MedicationTracker({ isOpen, onClose, onMedicationTaken, 
         body: JSON.stringify(medicationData)
       })
 
-      const result = await response.json()
+      const result: { payload?: { data?: MedicationTakenRecord; error?: { message?: string } } } = await response.json()
 
-      if (response.ok) {
+      if (response.ok && result.payload?.data) {
         toast.success(`${medication.name} recorded successfully!`)
         onMedicationTaken(result.payload.data)
         handleClose()
