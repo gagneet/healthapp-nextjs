@@ -16,7 +16,11 @@ import {
   XCircleIcon,
   ExclamationTriangleIcon,
   CalendarIcon,
+  ArrowPathIcon,
+  FaceFrownIcon,
 } from '@heroicons/react/24/outline'
+import SideEffectReporter from '@/components/patient/SideEffectReporter'
+import RefillRequestModal from '@/components/patient/RefillRequestModal'
 
 interface Medication {
   id: string
@@ -66,6 +70,12 @@ export default function MedicationsPage() {
   const [adherenceStats, setAdherenceStats] = useState<AdherenceStats | null>(null)
   const [statsLoading, setStatsLoading] = useState(false)
   const [statsError, setStatsError] = useState<string | null>(null)
+
+  // Side effects and refill modals
+  const [showSideEffectModal, setShowSideEffectModal] = useState(false)
+  const [showRefillModal, setShowRefillModal] = useState(false)
+  const [selectedMedication, setSelectedMedication] = useState<Medication | null>(null)
+  const [selectedMedicationLogId, setSelectedMedicationLogId] = useState<string | null>(null)
 
   useEffect(() => {
     fetchMedications()
@@ -177,6 +187,39 @@ export default function MedicationsPage() {
     } catch (error) {
       console.error('Failed to mark medication as taken:', error)
     }
+  }
+
+  const handleReportSideEffect = (medication: Medication, logId: string) => {
+    setSelectedMedication(medication)
+    setSelectedMedicationLogId(logId)
+    setShowSideEffectModal(true)
+  }
+
+  const handleRequestRefill = (medication: Medication) => {
+    setSelectedMedication(medication)
+    setShowRefillModal(true)
+  }
+
+  const handleCloseSideEffectModal = () => {
+    setShowSideEffectModal(false)
+    setSelectedMedication(null)
+    setSelectedMedicationLogId(null)
+  }
+
+  const handleCloseRefillModal = () => {
+    setShowRefillModal(false)
+    setSelectedMedication(null)
+  }
+
+  const handleSideEffectSubmitted = () => {
+    handleCloseSideEffectModal()
+    fetchMedications()
+    fetchHistory()
+  }
+
+  const handleRefillSubmitted = () => {
+    handleCloseRefillModal()
+    // Could show a success message here
   }
 
   const filteredMedications = medications.filter((med) => {
@@ -368,6 +411,24 @@ export default function MedicationsPage() {
                       </div>
                     </div>
                   )}
+
+                  {/* Action Buttons */}
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    <button
+                      onClick={() => handleReportSideEffect(medication, medication.id)}
+                      className="inline-flex items-center px-3 py-1.5 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors"
+                    >
+                      <FaceFrownIcon className="w-4 h-4 mr-1.5" />
+                      Report Side Effect
+                    </button>
+                    <button
+                      onClick={() => handleRequestRefill(medication)}
+                      className="inline-flex items-center px-3 py-1.5 border border-blue-300 rounded-md text-sm font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 transition-colors"
+                    >
+                      <ArrowPathIcon className="w-4 h-4 mr-1.5" />
+                      Request Refill
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -493,6 +554,26 @@ export default function MedicationsPage() {
           )}
         </div>
       </div>
+
+      {/* Modals */}
+      {showSideEffectModal && selectedMedication && selectedMedicationLogId && (
+        <SideEffectReporter
+          medicationLogId={selectedMedicationLogId}
+          medicationName={selectedMedication.name}
+          onClose={handleCloseSideEffectModal}
+          onSubmit={handleSideEffectSubmitted}
+        />
+      )}
+
+      {showRefillModal && selectedMedication && (
+        <RefillRequestModal
+          carePlanMedicationId={selectedMedication.id}
+          medicationName={selectedMedication.name}
+          currentDosage={selectedMedication.dosage || undefined}
+          onClose={handleCloseRefillModal}
+          onSubmit={handleRefillSubmitted}
+        />
+      )}
     </div>
   )
 }

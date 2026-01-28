@@ -717,64 +717,6 @@ export async function getDoctorDashboard(doctorUserId: string) {
     throw new Error('Failed to load dashboard');
   }
 }
-doctorId: doctorUserId,
-  profileStatus: 'Missing - using mock data',
-    reason: 'Doctor user exists but no corresponding doctor profile found'
-        }
-      };
-    }
-
-return {
-  stats: {
-    totalPatients: totalPatients,
-    criticalAlerts: 0, // Will be calculated from critical alerts API
-    appointments_today: todayAppointments,
-    medication_adherence: Math.floor(Math.random() * 30) + 70, // Mock data
-    activeCarePlans: activeCarePlans,
-    recent_vitals: recentVitalsCount
-  },
-  doctor: {
-    id: doctorUser.id,
-    name: `${doctorUser.firstName} ${doctorUser.lastName}`.trim(),
-    email: doctorUser.email,
-    specialty: (doctorProfile && doctorProfile.specialty && typeof doctorProfile.specialty.name === 'string')
-      ? doctorProfile.specialty.name
-      : 'General Medicine',
-    license: doctorProfile?.medicalLicenseNumber,
-    experience: doctorProfile?.yearsOfExperience
-  },
-  recentActivity: {
-    recentPatients: recentPatients.map(patient => ({
-      id: patient.id,
-      name: `${patient.user?.firstName} ${patient.user?.lastName}`.trim(),
-      email: patient.user?.email,
-      lastVisit: patient.updatedAt
-    })),
-    vitals: [], // Can be populated with recent vital readings if needed
-  },
-  upcomingAppointments: upcomingAppointments.map(apt => ({
-    id: apt.id,
-    patientName: `${apt.patient?.user?.firstName} ${apt.patient?.user?.lastName}`.trim(),
-    date: apt.startDate,
-    time: apt.startTime,
-    description: apt.description
-  })),
-  timestamp: new Date().toISOString(),
-};
-  } catch (error) {
-  // Detailed server logging for debugging
-  console.error('=== DOCTOR DASHBOARD ERROR ===');
-  console.error('Error Type:', error instanceof Error ? error.constructor.name : typeof error);
-  console.error('Error Message:', error instanceof Error ? error.message : String(error));
-  console.error('Doctor User ID:', sanitizeLog(doctorUserId));
-  // Note: doctorUser and doctorProfile might not be defined here if the error occurred during their fetch
-  console.error('Full Error Stack:', error instanceof Error ? error.stack : 'No stack trace available');
-  console.error('===========================');
-
-  // User-friendly error message
-  throw new Error('This page is still under development. We are working on implementing the doctor dashboard features. Please check back later or contact support if this issue persists.');
-}
-}
 
 /**
  * Get patient dashboard with real healthcare data using introspected schema
