@@ -728,7 +728,6 @@ model User {
   sentMessages          Message[]    @relation("MessageSender")
   notifications         Notification[]
   auditLogs             AuditLog[]
-  caregiverAccess       CaregiverAccess[]
   
   @@map("users")
 }
@@ -801,7 +800,6 @@ model Doctor {
   availability            DoctorAvailability[]
   templates               DoctorTemplate[]
   labOrders               LabOrder[]
-  riskScores              PatientRiskScore[]
   
   @@map("doctors")
   @@index([primarySpecialization])
@@ -1473,7 +1471,6 @@ model Patient {
   abdmConsents            ABDMConsent[]
   badges                  PatientBadge[]
   achievements            PatientAchievement[]
-  riskScores              PatientRiskScore[]
   
   @@map("patients")
 }
@@ -2527,36 +2524,3 @@ model MedicalTermTranslation {
   @@unique([termEn, termType])
   @@map("medical_term_translations")
 }
-
-// ==============================================================
-// MODELS - RISK ASSESSMENT
-// ==============================================================
-
-model PatientRiskScore {
-  id              String   @id @default(uuid())
-  patientId       String
-  doctorId        String
-  
-  overallRisk     Int
-  adherenceRisk   Int
-  clinicalRisk    Int
-  hospitalizationRisk Int?
-  
-  riskFactors     Json
-  
-  calculatedAt    DateTime @default(now())
-  algorithm       String   @default("v1")
-  
-  manualOverride  Boolean  @default(false)
-  overrideReason  String?
-  overrideBy      String?
-  overrideAt      DateTime?
-  
-  patient         Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
-  doctor          Doctor   @relation(fields: [doctorId], references: [id])
-  
-  @@map("patient_risk_scores")
-  @@index([patientId])
-  @@index([doctorId, overallRisk])
-}
-
