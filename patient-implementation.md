@@ -54,19 +54,19 @@ The Healthcare Management Platform is a patient adherence-focused application bu
 
 | Feature | Status | Missing |
 |---------|--------|---------|
-| Medication Tracking UI | 50% | Adherence logging, reminders UI |
-| Vital Signs Recording | 60% | Full history, trends, device integration |
-| Appointment Viewing | 40% | Calendar view, reminders, booking |
-| Care Plan Viewing | 30% | Detailed view, progress tracking |
+| Medication Tracking UI | 85% | Side effects, refill requests UI |
+| Vital Signs Recording | 85% | Device integration, charts |
+| Appointment Viewing | 75% | Calendar view, reminders, booking |
+| Care Plan Viewing | 80% | Progress tracking |
 | Notifications | 20% | Patient-specific notification center |
 
 ### ❌ NOT IMPLEMENTED
 
 | Feature | Priority | Effort |
 |---------|----------|--------|
-| Medication Adherence Logging | High | Medium |
-| Diet Plan Tracking | High | High |
-| Exercise/Workout Tracking | High | High |
+| Medication Adherence Logging | Medium | Medium |
+| Diet Plan Tracking | Medium | High |
+| Exercise/Workout Tracking | Medium | High |
 | Gamification UI | High | High |
 | Video Consultation (Patient) | High | Medium |
 | Lab Results Viewing | Medium | Medium |
@@ -90,15 +90,15 @@ The Healthcare Management Platform is a patient adherence-focused application bu
   - `/api/patient/exercise` and `/api/patient/exercise/log`
 - Patient-side schema additions from `patient-schema.md` added to `prisma/schema.prisma` and Prisma client generated.
 - Build fixes: 3D body diagram Html alias and dynamic API route markers for auth/headers routes.
+- Medication adherence history + stats UI wired to `/api/patient/medications/history` and `/api/patient/medications/adherence-stats`.
+- Diet plan + nutrition summary UI wired to `/api/patient/diet/plan` and `/api/patient/diet/nutrition-summary`.
+- Exercise plan + activity summary UI wired to `/api/patient/exercise/plan` and `/api/patient/exercise/activity`.
+- Vitals alerts UI wired to `/api/patient/vitals/alerts`.
+- Appointment detail modal wired to `/api/patient/appointments/[id]`.
+- Patient care plan list/detail UI wired to `/api/patient/care-plans`.
 
 ### 🔶 Pending Patient TODOs (high-level)
-- Medication adherence completion: patient meds schedule endpoint, medication history endpoint, adherence stats UI.
-- Diet/exercise expansion: plan + activity/nutrition summary endpoints and UI components.
-- Vitals: patient vitals list + trends + alerts endpoints and charts.
-- Appointments: patient appointment list/detail/reschedule endpoints and UI.
-- Care plans: patient care plan list/detail endpoints and UI.
-- Patient messaging, lab results view, video consultations, health goals, gamification UI, caregiver access, educational content.
-- Patient settings API + notification preferences.
+- Messaging, lab results view, video consultations, health goals, gamification UI, caregiver access, educational content.
 
 ---
 

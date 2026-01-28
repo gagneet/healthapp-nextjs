@@ -35,6 +35,7 @@ const navigation = [
   { name: 'Vital Readings', href: '/dashboard/patient/vitals', icon: HeartIcon },
   { name: 'Diet', href: '/dashboard/patient/diet', icon: DocumentTextIcon },
   { name: 'Exercise', href: '/dashboard/patient/exercise', icon: HeartIcon },
+  { name: 'Care Plans', href: '/dashboard/patient/care-plans', icon: DocumentTextIcon },
   { name: 'Reminders', href: '/dashboard/patient/reminders', icon: BellIcon },
   { name: 'Symptoms', href: '/dashboard/patient/symptoms', icon: UserIcon },
   { name: 'Prescriptions', href: '/dashboard/patient/prescriptions', icon: DocumentTextIcon },

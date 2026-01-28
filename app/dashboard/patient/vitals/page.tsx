@@ -40,6 +40,14 @@ interface VitalTrend {
   trend: 'up' | 'down' | 'stable'
 }
 
+interface VitalAlert {
+  id: string
+  vitalType: string
+  value: number | null
+  alertLevel: 'WARNING' | 'CRITICAL' | 'EMERGENCY'
+  recordedAt: string
+}
+
 export default function VitalsPage() {
   const { user } = useAuth()
   const [vitals, setVitals] = useState<VitalReading[]>([])
@@ -52,6 +60,9 @@ export default function VitalsPage() {
   const [diastolicValue, setDiastolicValue] = useState('')
   const [notes, setNotes] = useState('')
   const [saving, setSaving] = useState(false)
+  const [alerts, setAlerts] = useState<VitalAlert[]>([])
+  const [alertsLoading, setAlertsLoading] = useState(false)
+  const [alertsError, setAlertsError] = useState<string | null>(null)
 
   const vitalTypes = [
     { id: 'blood_pressure', name: 'Blood Pressure', unit: 'mmHg', hasDouble: true },
@@ -65,6 +76,7 @@ export default function VitalsPage() {
   useEffect(() => {
     fetchVitals()
     fetchTrends()
+    fetchAlerts()
   }, [])
 
   const fetchVitals = async () => {
@@ -99,6 +111,29 @@ export default function VitalsPage() {
       }
     } catch (error) {
       console.error('Failed to fetch trends:', error)
+    }
+  }
+
+  const fetchAlerts = async () => {
+    setAlertsLoading(true)
+    setAlertsError(null)
+    try {
+      const response = await fetch('/api/patient/vitals/alerts', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
+      })
+      const data = await response.json()
+      if (response.ok) {
+        setAlerts(data.payload?.data || [])
+      } else {
+        setAlertsError(data.payload?.error?.message || 'Failed to load alerts')
+      }
+    } catch (error) {
+      console.error('Failed to fetch alerts:', error)
+      setAlertsError('Unable to load vital alerts')
+    } finally {
+      setAlertsLoading(false)
     }
   }
 
@@ -169,6 +204,7 @@ export default function VitalsPage() {
       setNotes('')
       await fetchVitals()
       await fetchTrends()
+      await fetchAlerts()
     } catch (error) {
       console.error('Failed to save vital:', error)
     } finally {
@@ -206,6 +242,19 @@ export default function VitalsPage() {
         return <ArrowTrendingDownIcon className="w-4 h-4 text-green-500" />
       default:
         return <div className="w-4 h-4 bg-gray-300 rounded-full"></div>
+    }
+  }
+
+  const getAlertBadge = (level: VitalAlert['alertLevel']) => {
+    switch (level) {
+      case 'EMERGENCY':
+        return 'bg-red-100 text-red-800'
+      case 'CRITICAL':
+        return 'bg-orange-100 text-orange-800'
+      case 'WARNING':
+        return 'bg-yellow-100 text-yellow-800'
+      default:
+        return 'bg-gray-100 text-gray-800'
     }
   }
 
@@ -279,6 +328,37 @@ export default function VitalsPage() {
           </div>
         </div>
       )}
+
+      {/* Alerts */}
+      <div className="mb-8">
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">Vital Alerts</h2>
+        {alertsLoading ? (
+          <div className="text-sm text-gray-500">Loading alerts...</div>
+        ) : alertsError ? (
+          <div className="text-sm text-red-600">{alertsError}</div>
+        ) : alerts.length === 0 ? (
+          <div className="text-sm text-gray-500">No recent alerts.</div>
+        ) : (
+          <div className="space-y-3">
+            {alerts.map((alert) => (
+              <div key={alert.id} className="bg-white border border-gray-200 rounded-lg p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-900">{alert.vitalType}</p>
+                    <p className="text-xs text-gray-500">{new Date(alert.recordedAt).toLocaleString()}</p>
+                    {alert.value !== null && (
+                      <p className="text-sm text-gray-700 mt-1">Value: {alert.value}</p>
+                    )}
+                  </div>
+                  <span className={`px-2 py-1 text-xs rounded-full ${getAlertBadge(alert.alertLevel)}`}>
+                    {alert.alertLevel.toLowerCase()}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
 
       {/* Vitals List */}
       <div className="space-y-4">

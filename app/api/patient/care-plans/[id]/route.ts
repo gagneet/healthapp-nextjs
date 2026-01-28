@@ -31,9 +31,17 @@ export async function GET(request: Request, { params }: { params: { id: string }
     const carePlan = await prisma.carePlan.findFirst({
       where: { id: params.id, patientId: patient.id },
       include: {
-        prescribedMedications: true,
+        prescribedMedications: {
+          include: {
+            medicine: { select: { name: true } },
+          },
+        },
         appointments: true,
-        vitalRequirements: true,
+        vitalRequirements: {
+          include: {
+            vitalType: { select: { name: true, unit: true } },
+          },
+        },
         diets: { include: { dietPlan: true } },
         workouts: { include: { workoutPlan: true } },
       },
