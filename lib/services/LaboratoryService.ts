@@ -300,7 +300,7 @@ export class LaboratoryService {
       const updatedOrder = await prisma.labOrder.update({
         where: { id: resultsData.orderId },
         data: {
-          status: hasCritical ? 'REPORT_READY' : 'COMPLETED',
+          status: hasCritical ? LabOrderStatus.REPORT_READY : LabOrderStatus.COMPLETED,
           resultsAvailable: true,
           criticalValues: hasCritical,
           resultsData: resultsData.testResults,
