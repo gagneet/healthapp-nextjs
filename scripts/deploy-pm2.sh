@@ -340,6 +340,14 @@ install_dependencies() {
         log_error "npm install failed"
         exit 1
     fi
+
+    # Ensure critical Tailwind CSS plugins are installed
+    log_info "Ensuring Tailwind CSS plugins are installed..."
+    if npm install @tailwindcss/forms @tailwindcss/typography --save-dev; then
+        log_success "Tailwind CSS plugins verified"
+    else
+        log_warning "Failed to install Tailwind CSS plugins (may already exist)"
+    fi
 }
 
 generate_prisma() {
