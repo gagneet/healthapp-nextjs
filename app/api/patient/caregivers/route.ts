@@ -68,6 +68,16 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const data = createSchema.parse(body)
 
+    // Verify caregiver exists before creating access
+    const caregiverUser = await prisma.user.findUnique({
+      where: { id: data.caregiverId },
+      select: { id: true, role: true }
+    })
+
+    if (!caregiverUser) {
+      return NextResponse.json(handleApiError({ message: 'Caregiver user not found' }), { status: 404 })
+    }
+
     const caregiver = await prisma.caregiverAccess.upsert({
       where: { patientId_caregiverId: { patientId: patient.id, caregiverId: data.caregiverId } },
       update: {
