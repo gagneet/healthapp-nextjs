@@ -27,11 +27,18 @@ Execute implementations in the order specified by the Priority Matrix.
 - Medication tracker uses real API data and adherence logging endpoint.
 - Patient reminders, diet, and exercise pages + APIs (diet/log, exercise/log).
 - Schema additions from `patient-schema.md` applied to Prisma schema; Prisma client generated.
+- Medication adherence history + stats UI.
+- Diet/exercise plan + nutrition/activity summary UI.
+- Vitals alerts UI, appointment details, care plan list/detail.
+- Added patient messaging, lab results, video consults, goals, gamification, caregiver access, education APIs + pages.
 
 ### Pending (Top)
-- Messaging, lab results, video consults, goals, gamification, caregiver access, education content.
+- Medication side effects + refill request UI.
+- Patient alerts/notification center enhancements.
+- Video consult booking flow from patient side.
+- Goal progress logging UI + caregiver invite workflows.
 
-## PHASE 1: MEDICATION ADHERENCE SYSTEM
+## PHASE 1: MEDICATION ADHERENCE SYSTEM (Implemented)
 
 ### Task 1.1: Add Medication Logging Schema
 

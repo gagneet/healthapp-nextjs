@@ -60,6 +60,33 @@ export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState('notifications')
   const [showChangePassword, setShowChangePassword] = useState(false)
   const [showDeleteAccount, setShowDeleteAccount] = useState(false)
+  const safeSettings: UserSettings = settings ?? {
+    notifications: {
+      email: false,
+      sms: false,
+      push: false,
+      medication_reminders: false,
+      appointmentReminders: false,
+      vital_reminders: false,
+    },
+    privacy: {
+      profileVisibility: 'doctors_only',
+      share_data_research: false,
+      allow_marketing: false,
+    },
+    security: {
+      twoFactorEnabled: false,
+      loginNotifications: false,
+      sessionTimeout: 30,
+    },
+    preferences: {
+      theme: 'system',
+      language: 'en',
+      timezone: 'UTC',
+      dateFormat: 'MM/DD/YYYY',
+      measurement_units: 'metric',
+    },
+  }
 
   useEffect(() => {
     fetchSettings()
@@ -172,9 +199,9 @@ export default function SettingsPage() {
                     </div>
                     <input
                       type="checkbox"
-                      checked={settings?.notifications.email}
+                      checked={safeSettings.notifications.email}
                       onChange={(e) => updateSettings({
-                        notifications: { ...settings?.notifications!, email: e.target.checked }
+                        notifications: { ...safeSettings.notifications, email: e.target.checked }
                       })}
                       className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                     />
@@ -186,9 +213,9 @@ export default function SettingsPage() {
                     </div>
                     <input
                       type="checkbox"
-                      checked={settings?.notifications.sms}
+                      checked={safeSettings.notifications.sms}
                       onChange={(e) => updateSettings({
-                        notifications: { ...settings?.notifications!, sms: e.target.checked }
+                        notifications: { ...safeSettings.notifications, sms: e.target.checked }
                       })}
                       className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                     />
@@ -200,9 +227,9 @@ export default function SettingsPage() {
                     </div>
                     <input
                       type="checkbox"
-                      checked={settings?.notifications.push}
+                      checked={safeSettings.notifications.push}
                       onChange={(e) => updateSettings({
-                        notifications: { ...settings?.notifications!, push: e.target.checked }
+                        notifications: { ...safeSettings.notifications, push: e.target.checked }
                       })}
                       className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                     />
@@ -220,9 +247,9 @@ export default function SettingsPage() {
                     </div>
                     <input
                       type="checkbox"
-                      checked={settings?.notifications.medication_reminders}
+                      checked={safeSettings.notifications.medication_reminders}
                       onChange={(e) => updateSettings({
-                        notifications: { ...settings?.notifications!, medication_reminders: e.target.checked }
+                        notifications: { ...safeSettings.notifications, medication_reminders: e.target.checked }
                       })}
                       className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                     />
@@ -234,9 +261,9 @@ export default function SettingsPage() {
                     </div>
                     <input
                       type="checkbox"
-                      checked={settings?.notifications.appointmentReminders}
+                      checked={safeSettings.notifications.appointmentReminders}
                       onChange={(e) => updateSettings({
-                        notifications: { ...settings?.notifications!, appointmentReminders: e.target.checked }
+                        notifications: { ...safeSettings.notifications, appointmentReminders: e.target.checked }
                       })}
                       className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                     />
@@ -248,9 +275,9 @@ export default function SettingsPage() {
                     </div>
                     <input
                       type="checkbox"
-                      checked={settings?.notifications.vital_reminders}
+                      checked={safeSettings.notifications.vital_reminders}
                       onChange={(e) => updateSettings({
-                        notifications: { ...settings?.notifications!, vital_reminders: e.target.checked }
+                        notifications: { ...safeSettings.notifications, vital_reminders: e.target.checked }
                       })}
                       className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                     />
@@ -269,9 +296,9 @@ export default function SettingsPage() {
                 <h4 className="text-sm font-medium text-gray-900 mb-2">Profile Visibility</h4>
                 <p className="text-sm text-gray-500 mb-4">Control who can see your profile information</p>
                 <select
-                  value={settings?.privacy.profileVisibility}
+                  value={safeSettings.privacy.profileVisibility}
                   onChange={(e) => updateSettings({
-                    privacy: { ...settings?.privacy!, profileVisibility: e.target.value as ProfileVisibility }
+                    privacy: { ...safeSettings.privacy, profileVisibility: e.target.value as ProfileVisibility }
                   })}
                   className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
@@ -288,9 +315,9 @@ export default function SettingsPage() {
                 </div>
                 <input
                   type="checkbox"
-                  checked={settings?.privacy.share_data_research}
+                  checked={safeSettings.privacy.share_data_research}
                   onChange={(e) => updateSettings({
-                    privacy: { ...settings?.privacy!, share_data_research: e.target.checked }
+                    privacy: { ...safeSettings.privacy, share_data_research: e.target.checked }
                   })}
                   className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                 />
@@ -303,9 +330,9 @@ export default function SettingsPage() {
                 </div>
                 <input
                   type="checkbox"
-                  checked={settings?.privacy.allow_marketing}
+                  checked={safeSettings.privacy.allow_marketing}
                   onChange={(e) => updateSettings({
-                    privacy: { ...settings?.privacy!, allow_marketing: e.target.checked }
+                    privacy: { ...safeSettings.privacy, allow_marketing: e.target.checked }
                   })}
                   className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                 />
@@ -326,14 +353,14 @@ export default function SettingsPage() {
                   </div>
                   <input
                     type="checkbox"
-                    checked={settings?.security.twoFactorEnabled}
+                    checked={safeSettings.security.twoFactorEnabled}
                     onChange={(e) => updateSettings({
-                      security: { ...settings?.security!, twoFactorEnabled: e.target.checked }
+                      security: { ...safeSettings.security, twoFactorEnabled: e.target.checked }
                     })}
                     className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                   />
                 </div>
-                {settings?.security.twoFactorEnabled && (
+                {safeSettings.security.twoFactorEnabled && (
                   <div className="bg-green-50 border border-green-200 rounded-md p-4">
                     <p className="text-sm text-green-700">
                       Two-factor authentication is enabled. Use your authenticator app to generate codes.
@@ -349,9 +376,9 @@ export default function SettingsPage() {
                 </div>
                 <input
                   type="checkbox"
-                  checked={settings?.security.loginNotifications}
+                  checked={safeSettings.security.loginNotifications}
                   onChange={(e) => updateSettings({
-                    security: { ...settings?.security!, loginNotifications: e.target.checked }
+                    security: { ...safeSettings.security, loginNotifications: e.target.checked }
                   })}
                   className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                 />
@@ -361,9 +388,9 @@ export default function SettingsPage() {
                 <h4 className="text-sm font-medium text-gray-900 mb-2">Session Timeout</h4>
                 <p className="text-sm text-gray-500 mb-4">Automatically log out after inactivity</p>
                 <select
-                  value={settings?.security.sessionTimeout}
+                  value={safeSettings.security.sessionTimeout}
                   onChange={(e) => updateSettings({
-                    security: { ...settings?.security!, sessionTimeout: parseInt(e.target.value) }
+                    security: { ...safeSettings.security, sessionTimeout: parseInt(e.target.value) }
                   })}
                   className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
@@ -403,9 +430,9 @@ export default function SettingsPage() {
               <div>
                 <h4 className="text-sm font-medium text-gray-900 mb-2">Theme</h4>
                 <select
-                  value={settings?.preferences.theme}
+                  value={safeSettings.preferences.theme}
                   onChange={(e) => updateSettings({
-                    preferences: { ...settings?.preferences!, theme: e.target.value as ThemePreference }
+                    preferences: { ...safeSettings.preferences, theme: e.target.value as ThemePreference }
                   })}
                   className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
@@ -418,9 +445,9 @@ export default function SettingsPage() {
               <div>
                 <h4 className="text-sm font-medium text-gray-900 mb-2">Language</h4>
                 <select
-                  value={settings?.preferences.language}
+                  value={safeSettings.preferences.language}
                   onChange={(e) => updateSettings({
-                    preferences: { ...settings?.preferences!, language: e.target.value }
+                    preferences: { ...safeSettings.preferences, language: e.target.value }
                   })}
                   className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
@@ -434,9 +461,9 @@ export default function SettingsPage() {
               <div>
                 <h4 className="text-sm font-medium text-gray-900 mb-2">Timezone</h4>
                 <select
-                  value={settings?.preferences.timezone}
+                  value={safeSettings.preferences.timezone}
                   onChange={(e) => updateSettings({
-                    preferences: { ...settings?.preferences!, timezone: e.target.value }
+                    preferences: { ...safeSettings.preferences, timezone: e.target.value }
                   })}
                   className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
@@ -451,9 +478,9 @@ export default function SettingsPage() {
               <div>
                 <h4 className="text-sm font-medium text-gray-900 mb-2">Measurement Units</h4>
                 <select
-                  value={settings?.preferences.measurement_units}
+                  value={safeSettings.preferences.measurement_units}
                   onChange={(e) => updateSettings({
-                    preferences: { ...settings?.preferences!, measurement_units: e.target.value as MeasurementUnits }
+                    preferences: { ...safeSettings.preferences, measurement_units: e.target.value as MeasurementUnits }
                   })}
                   className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >

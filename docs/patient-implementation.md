@@ -96,9 +96,20 @@ The Healthcare Management Platform is a patient adherence-focused application bu
 - Vitals alerts UI wired to `/api/patient/vitals/alerts`.
 - Appointment detail modal wired to `/api/patient/appointments/[id]`.
 - Patient care plan list/detail UI wired to `/api/patient/care-plans`.
+- Added patient messaging, lab results, video consultations, goals, gamification, caregiver access, and education pages with patient APIs:
+  - `/api/patient/messages` + `/api/patient/messages/[conversationId]`
+  - `/api/patient/lab-orders` + `/api/patient/lab-orders/[id]`
+  - `/api/patient/video-consultations` + `/api/patient/video-consultations/[id]/join`
+  - `/api/patient/goals` + `/api/patient/goals/[id]` + `/api/patient/goals/[id]/progress`
+  - `/api/patient/gamification`
+  - `/api/patient/caregivers`
+  - `/api/patient/education`
+- Sidebar navigation updated for new patient sections.
 
 ### 🔶 Pending Patient TODOs (high-level)
-- Messaging, lab results view, video consultations, health goals, gamification UI, caregiver access, educational content.
+- Medication side effects + refill request UI.
+- Patient alert center (patient alerts + emergency alerts) and notification preferences beyond reminders.
+- Improvements: messaging provider details, lab trends, video consult booking flow, goal progress UI, caregiver invite flows.
 
 ---
 
